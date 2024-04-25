@@ -3,8 +3,8 @@ import '../App.css';
 import './fields.css';
 
 function MyComponent() {
-    const inputs = Array.from({ length: 50 }, (_, index) => (
-        <input key={index} type='text' placeholder={`Field Name ${index + 1}`} />
+    const inputs = Array.from({ length: 48 }, (_, index) => (
+        <input key={index} className='inputContainer' type='text' placeholder={`Field Name ${index + 1}`} />
     ));
 
     return (
@@ -12,7 +12,7 @@ function MyComponent() {
             <h1 className='projectName'>NCHLOD</h1>
 
             <div className='fields'>
-                <div className='inputContainer'>{inputs}</div>
+                {inputs}
             </div>
         </div>
     );
