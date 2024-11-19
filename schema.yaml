@@ -1,12 +1,13 @@
 id: NCHLOD
-name: Nepal Cultural Heritage Linked Open Data
+name: nepalCulturalHeritageLinkedOpenData
 description: A schema based on CIDOC CRM to represent Nepal's cultural heritage data.
 imports:
   - linkml:types
 prefixes:
   crm: "http://www.cidoc-crm.org/cidoc-crm/"
   linkml: "https://w3id.org/linkml/"
-default_prefix: crm
+  nchlod: "https://cair-nepal.org/nchlod" # example domain
+default_prefix: nchlod
 
 classes:
   E4_Period:
