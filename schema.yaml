@@ -1,12 +1,13 @@
 id: NCHLOD
-name: Nepal Cultural Heritage Linked Open Data
+name: nepalCulturalHeritageLinkedOpenData
 description: A schema based on CIDOC CRM to represent Nepal's cultural heritage data.
 imports:
   - linkml:types
 prefixes:
   crm: "http://www.cidoc-crm.org/cidoc-crm/"
   linkml: "https://w3id.org/linkml/"
-default_prefix: crm
+  nchlod: "https://cair-nepal.org/nchlod" # example domain
+default_prefix: nchlod
 
 classes:
   E4_Period:
@@ -278,6 +279,10 @@ slots:
 
   written_in:
     description: "The language in which a linguistic object is written."
+    range: E56_Language
+
+  has_language:
+    description: "The language in which an appellation or linguistic object is used. This property associates the linguistic object or appellation with a specific language, indicating the cultural or linguistic context in which it is valid and used."
     range: E56_Language
 
   depicted_in:
