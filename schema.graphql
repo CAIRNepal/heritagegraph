@@ -1,0 +1,204 @@
+# metamodel_version: 1.7.0
+type E10TransferOfCustody
+  {
+    transferred: E22Human-MadeObject
+    hasTime: E52Time-Span
+  }
+
+type E11Modification
+  {
+    modified: E22Human-MadeObject
+    hasTime: E52Time-Span
+  }
+
+type E12Production
+  {
+    producedObject: E22Human-MadeObject
+    hasTime: E52Time-Span
+  }
+
+type E13AttributeAssignment
+  {
+    assignedAttribute: String
+    assignedBy: E39Actor
+  }
+
+type E21Person
+  {
+    hasName: String
+  }
+
+type E22Human-MadeObject
+  {
+    madeOf: E57Material
+    hasDimension: E54Dimension
+  }
+
+type E33LinguisticObject
+  {
+    writtenIn: E56Language
+  }
+
+type E36VisualItem
+  {
+    depictedIn: E36VisualItem
+  }
+
+type E39Actor
+  {
+    participatedIn: E5Event
+  }
+
+type E41LinguisticAppellation
+  {
+    hasLanguage: E56Language
+  }
+
+type E42Identifier
+  {
+    identifiesObject: E22Human-MadeObject
+  }
+
+type E4Period
+  {
+    hasBeginning: Datetime
+    hasEnd: Datetime
+  }
+
+type E52Time-Span
+  {
+    hasBeginning: Datetime
+    hasEnd: Datetime
+  }
+
+type E53Place
+  {
+    hasCoordinates: String
+  }
+
+type E54Dimension
+  {
+    hasUnit: E58MeasurementUnit
+    hasValue: Float
+  }
+
+type E55Type
+  {
+    referencedIn: E55Type
+  }
+
+type E56Language
+  {
+    spokenBy: E39Actor
+  }
+
+type E57Material
+  {
+    usedIn: E57Material
+  }
+
+type E58MeasurementUnit
+  {
+    unitOf: E58MeasurementUnit
+  }
+
+type E5Event
+  {
+    occurredIn: E53Place
+    hasTime: E52Time-Span
+  }
+
+type E65Creation
+  {
+    createdConcept: E73InformationObject
+  }
+
+type E66Formation
+  {
+    formedGroup: E74Group
+    hasTime: E52Time-Span
+  }
+
+type E67Birth
+  {
+    bornPerson: E21Person
+    hasTime: E52Time-Span
+  }
+
+type E68Dissolution
+  {
+    dissolvedGroup: E74Group
+    hasTime: E52Time-Span
+  }
+
+type E69Death
+  {
+    deceasedPerson: E21Person
+    hasTime: E52Time-Span
+  }
+
+type E6Destruction
+  {
+    destroyed: E22Human-MadeObject
+    hasTime: E52Time-Span
+  }
+
+type E73InformationObject
+  {
+    containsInformation: String
+  }
+
+type E74Group
+  {
+    hasMembers: E39Actor
+  }
+
+type E79PartAddition
+  {
+    addedPart: E22Human-MadeObject
+  }
+
+type E7Activity
+  {
+    used: E57Material
+    produced: E22Human-MadeObject
+    hasTime: E52Time-Span
+  }
+
+type E80PartRemoval
+  {
+    removedPart: E22Human-MadeObject
+  }
+
+type E85Joining
+  {
+    joinedPeople: E21Person
+  }
+
+type E86Leaving
+  {
+    separatedPeople: E21Person
+  }
+
+type E89PropositionalObject
+  {
+    proposition: String
+  }
+
+type E8Acquisition
+  {
+    acquired: E22Human-MadeObject
+    hasTime: E52Time-Span
+  }
+
+type E97MonetaryAmount
+  {
+    hasValue: Float
+  }
+
+type E98Currency
+  {
+    usedInTransaction: E98Currency
+  }
+
+
