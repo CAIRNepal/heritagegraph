@@ -1,0 +1,81 @@
+Metadata-Version: 2.1
+Name: linkml
+Version: 1.8.4
+Summary: Linked Open Data Modeling Language
+Home-page: https://linkml.io/linkml/
+Keywords: schema,linked data,data modeling,rdf,owl,biolink
+Author: Chris Mungall
+Author-email: cjmungall@lbl.gov
+Requires-Python: >=3.8.1,<4.0.0
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Healthcare Industry
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Provides-Extra: black
+Provides-Extra: numpydantic
+Provides-Extra: shacl
+Provides-Extra: tests
+Requires-Dist: antlr4-python3-runtime (>=4.9.0,<4.10)
+Requires-Dist: black (>=24.0.0) ; extra == "black" or extra == "tests"
+Requires-Dist: click (>=7.0)
+Requires-Dist: graphviz (>=0.10.1)
+Requires-Dist: hbreader
+Requires-Dist: isodate (>=0.6.0)
+Requires-Dist: jinja2 (>=3.1.0)
+Requires-Dist: jsonasobj2 (>=1.0.3,<2.0.0)
+Requires-Dist: jsonschema[format] (>=4.0.0)
+Requires-Dist: linkml-dataops
+Requires-Dist: linkml-runtime (>=1.8.1,<2.0.0)
+Requires-Dist: numpydantic (>=1.6.1) ; (python_version >= "3.9") and (extra == "numpydantic" or extra == "tests")
+Requires-Dist: openpyxl
+Requires-Dist: parse
+Requires-Dist: prefixcommons (>=0.1.7)
+Requires-Dist: prefixmaps (>=0.2.2)
+Requires-Dist: pydantic (>=1.0.0,<3.0.0)
+Requires-Dist: pyjsg (>=0.11.6)
+Requires-Dist: pyshacl (>=0.25.0,<0.26.0) ; extra == "shacl" or extra == "tests"
+Requires-Dist: pyshex (>=0.7.20)
+Requires-Dist: pyshexc (>=0.8.3)
+Requires-Dist: python-dateutil
+Requires-Dist: pyyaml
+Requires-Dist: rdflib (>=6.0.0)
+Requires-Dist: requests (>=2.22)
+Requires-Dist: sqlalchemy (>=1.4.31)
+Requires-Dist: typing-extensions (>=4.4.0) ; python_version < "3.9"
+Requires-Dist: watchdog (>=0.9.0)
+Project-URL: Documentation, https://linkml.io/linkml/
+Project-URL: Repository, https://github.com/linkml/linkml
+Description-Content-Type: text/markdown
+
+[![Pyversions](https://img.shields.io/pypi/pyversions/linkml.svg)](https://pypi.python.org/pypi/linkml)
+![](https://github.com/linkml/linkml/workflows/Build/badge.svg)
+[![PyPi](https://img.shields.io/pypi/v/linkml.svg)](https://pypi.python.org/pypi/linkml)
+[![badge](https://img.shields.io/badge/launch-binder-579ACA.svg)](https://mybinder.org/v2/gh/linkml/linkml/main?filepath=notebooks)
+[![DOI](https://zenodo.org/badge/13996/linkml/linkml.svg)](https://zenodo.org/badge/latestdoi/13996/linkml/linkml)
+[![PyPIDownloadsTotal](https://pepy.tech/badge/linkml)](https://pepy.tech/project/linkml)
+[![PyPIDownloadsMonth](https://img.shields.io/pypi/dm/linkml?logo=PyPI&color=blue)](https://pypi.org/project/linkml)
+[![codecov](https://codecov.io/gh/linkml/linkml/branch/main/graph/badge.svg?token=WNQNG986UN)](https://codecov.io/gh/linkml/linkml)
+
+
+# LinkML - Linked Data Modeling Language
+
+LinkML is a linked data modeling language following object-oriented and ontological principles. LinkML models are typically authored in YAML, and can be converted to other schema representation formats such as JSON or RDF.
+
+This repo holds the tools for generating and working with LinkML. For the LinkML schema (metamodel), please see https://github.com/linkml/linkml-model
+
+The complete documentation for LinkML can be found here:
+
+ - [linkml.io/linkml](https://linkml.io/linkml)
+

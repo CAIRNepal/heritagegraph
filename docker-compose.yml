@@ -1,0 +1,29 @@
+version: "3"
+services:
+  oxigraph:
+    image: ghcr.io/oxigraph/oxigraph:0.4.0-rc.1
+    volumes:
+      - ./data:/data
+    networks:
+      - oxigraph_network
+
+  nginx-auth:
+    image: nginx:1.21.4
+    environment:
+      OXIGRAPH_USER: username
+      OXIGRAPH_PASSWORD: password
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "7878:7878"
+    entrypoint: >
+      sh -c 'echo -n "$$OXIGRAPH_USER:" >> /etc/nginx/.htpasswd &&
+      echo "$$OXIGRAPH_PASSWORD" | openssl passwd -stdin -apr1 >> /etc/nginx/.htpasswd &&
+      cat /etc/nginx/.htpasswd &&
+      /docker-entrypoint.sh nginx'
+    networks:
+      - oxigraph_network
+
+networks:
+  oxigraph_network:
+    driver: bridge
