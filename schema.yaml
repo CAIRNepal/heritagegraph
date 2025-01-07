@@ -10,6 +10,7 @@ prefixes:
 default_prefix: nchlod
 
 classes:
+  
 
   E4_Period:
     description: "This class comprises identifiable periods of time."
@@ -213,7 +214,59 @@ classes:
     slots:
       - used_in_transaction
 
+  Contributor:
+    description: "Represents an individual or group contributing to the dataset or project."
+    slots:
+      - name
+      - role
+      - affiliation
+      - contribution_date
+      - email
+      - start_date
+      - end_date
+      
+  Place:
+    description: "The location associated with an event or cultural heritage object in which the contributor has contributed."
+    slots:
+      - name
+      - coordinates
+
+
+
 slots:
+  start_date:
+    description: "The starting point of the contribution of the user."
+    range: datetime
+  end_data:
+    description: "The ending point of the contribution of the user."
+    range: datetime
+
+  coordinates:
+    description: "The geographic coordinates of a place."
+    range: string
+  
+  name:
+    description: "The name of an entity (e.g., a contributor, place, or event)."
+    range: string
+
+  role:
+    description: "The role of a contributor in the project (e.g., researcher, developer, curator)."
+    range: string
+
+  affiliation:
+    description: "The organization or institution a contributor is affiliated with."
+    range: string
+
+  contribution_date:
+    description: "The date when the contribution was made."
+    range: datetime
+
+  email:
+    description: "The contact email of the contributor."
+    range: string
+  
+
+
   has_beginning:
     description: "The starting point of a time span."
     range: datetime
