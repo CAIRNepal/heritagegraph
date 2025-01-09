@@ -10,10 +10,10 @@ What is HeritageGraph?
 
 Cultural heritage holds the memories, stories, and wisdom of humanity. By preserving it digitally, we not only protect our shared past but also ensure that future generations can reconnect with it and gain new insights. **HeritageGraph** helps us to achieve this by using Knowledge Graphs.
 
-Why Digitalize Cultural Heritage?
+Why Digitize Cultural Heritage?
 ----------------------------------
 
-Digitalizing cultural heritage is essential for a number of reasons:
+Digitizing cultural heritage is essential for a number of reasons:
 
 - **Preservation**: Protecting valuable cultural artifacts and traditions from physical degradation and loss.
 - **Accessibility**: Making cultural heritage accessible to a wider audience, from students to researchers.
