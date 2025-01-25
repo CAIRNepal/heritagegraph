@@ -1,0 +1,1067 @@
+@prefix nchlod: <https://cair-nepal.org/nchlod> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<NCHLOD.owl.ttl> a owl:Ontology ;
+    rdfs:label "nepalCulturalHeritageLinkedOpenData" ;
+    skos:definition "A schema based on CIDOC CRM to represent Nepal's cultural heritage data." .
+
+nchlod:Contributor a owl:Class ;
+    rdfs:label "Contributor" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:contribution_date ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:name ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:role ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:affiliation ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:name ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:name ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:dateTime ;
+            owl:onProperty nchlod:contribution_date ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:affiliation ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:dateTime ;
+            owl:onProperty nchlod:end_date ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:email ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:end_date ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:affiliation ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:role ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:dateTime ;
+            owl:onProperty nchlod:start_date ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:start_date ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:end_date ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:email ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:role ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:contribution_date ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:start_date ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:email ] ;
+    skos:definition "Represents an individual or group contributing to the dataset or project." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E10TransferOfCustody a owl:Class ;
+    rdfs:label "E10_Transfer_of_Custody" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:transferred ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:transferred ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:transferred ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ] ;
+    skos:definition "This class comprises events that result in the transfer of custody of an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E11Modification a owl:Class ;
+    rdfs:label "E11_Modification" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:modified ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:modified ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:modified ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ] ;
+    skos:definition "This class comprises events that result in the modification of an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E12Production a owl:Class ;
+    rdfs:label "E12_Production" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:produced_object ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:produced_object ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:produced_object ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ] ;
+    skos:definition "The beginning of existence of a physical thing." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E13AttributeAssignment a owl:Class ;
+    rdfs:label "E13_Attribute_Assignment" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:assigned_attribute ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E39Actor ;
+            owl:onProperty nchlod:assigned_by ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:assigned_attribute ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:assigned_by ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:assigned_attribute ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:assigned_by ] ;
+    skos:definition "This class is used for recording previously believed values." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E33LinguisticObject a owl:Class ;
+    rdfs:label "E33_Linguistic_Object" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:written_in ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:written_in ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E56Language ;
+            owl:onProperty nchlod:written_in ] ;
+    skos:definition "This class comprises statements, inscriptions, or textual objects." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E41LinguisticAppellation a owl:Class ;
+    rdfs:label "E41_Linguistic_Appellation" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E56Language ;
+            owl:onProperty nchlod:has_language ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_language ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_language ] ;
+    skos:definition "This class comprises names, titles, or other linguistic identifiers." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E42Identifier a owl:Class ;
+    rdfs:label "E42_Identifier" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:identifies_object ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:identifies_object ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:identifies_object ] ;
+    skos:definition "This class comprises identifiers of things." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E4Period a owl:Class ;
+    rdfs:label "E4_Period" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_beginning ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_beginning ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:dateTime ;
+            owl:onProperty nchlod:has_beginning ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_end ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_end ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:dateTime ;
+            owl:onProperty nchlod:has_end ] ;
+    skos:definition "This class comprises identifiable periods of time." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E65Creation a owl:Class ;
+    rdfs:label "E65_Creation" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:created_concept ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E73InformationObject ;
+            owl:onProperty nchlod:created_concept ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:created_concept ] ;
+    skos:definition "An activity that results in the creation of non-physical things." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E66Formation a owl:Class ;
+    rdfs:label "E66_Formation" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:formed_group ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E74Group ;
+            owl:onProperty nchlod:formed_group ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:formed_group ] ;
+    skos:definition "An event that results in the formation of a group." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E67Birth a owl:Class ;
+    rdfs:label "E67_Birth" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E21Person ;
+            owl:onProperty nchlod:born_person ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:born_person ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:born_person ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ] ;
+    skos:definition "The event of the birth of a person." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E68Dissolution a owl:Class ;
+    rdfs:label "E68_Dissolution" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:dissolved_group ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E74Group ;
+            owl:onProperty nchlod:dissolved_group ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:dissolved_group ] ;
+    skos:definition "The event that results in the dissolution of a group." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E69Death a owl:Class ;
+    rdfs:label "E69_Death" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:deceased_person ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E21Person ;
+            owl:onProperty nchlod:deceased_person ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:deceased_person ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ] ;
+    skos:definition "The event of the death of a person." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E6Destruction a owl:Class ;
+    rdfs:label "E6_Destruction" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:destroyed ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:destroyed ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:destroyed ] ;
+    skos:definition "This class comprises events that result in the destruction of an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E79PartAddition a owl:Class ;
+    rdfs:label "E79_Part_Addition" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:added_part ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:added_part ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:added_part ] ;
+    skos:definition "An event that results in the addition of a part to an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E7Activity a owl:Class ;
+    rdfs:label "E7_Activity" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:produced ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:used ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E57Material ;
+            owl:onProperty nchlod:used ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:produced ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:produced ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:used ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ] ;
+    skos:definition "This class comprises actions or processes that result in changes of state." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E80PartRemoval a owl:Class ;
+    rdfs:label "E80_Part_Removal" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:removed_part ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:removed_part ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:removed_part ] ;
+    skos:definition "An event that results in the removal of a part from an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E85Joining a owl:Class ;
+    rdfs:label "E85_Joining" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:joined_people ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:joined_people ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E21Person ;
+            owl:onProperty nchlod:joined_people ] ;
+    skos:definition "An event that records the joining of two individuals in a marriage." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E86Leaving a owl:Class ;
+    rdfs:label "E86_Leaving" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:separated_people ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E21Person ;
+            owl:onProperty nchlod:separated_people ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:separated_people ] ;
+    skos:definition "An event that records the dissolution of a marriage." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E89PropositionalObject a owl:Class ;
+    rdfs:label "E89_Propositional_Object" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:proposition ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:proposition ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:proposition ] ;
+    skos:definition "This class refers to propositions or promises about reality." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E8Acquisition a owl:Class ;
+    rdfs:label "E8_Acquisition" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E22HumanMadeObject ;
+            owl:onProperty nchlod:acquired ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:acquired ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:acquired ] ;
+    skos:definition "This class comprises events that result in the acquisition of an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E97MonetaryAmount a owl:Class ;
+    rdfs:label "E97_Monetary_Amount" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_value ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:float ;
+            owl:onProperty nchlod:has_value ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_value ] ;
+    skos:definition "This class comprises amounts of money for prices or payments." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:Place a owl:Class ;
+    rdfs:label "Place" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:name ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:name ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:coordinates ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:name ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:coordinates ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:coordinates ] ;
+    skos:definition "The location associated with an event or cultural heritage object in which the contributor has contributed." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E36VisualItem a owl:Class ;
+    rdfs:label "E36_Visual_Item" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:depicted_in ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E36VisualItem ;
+            owl:onProperty nchlod:depicted_in ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:depicted_in ] ;
+    skos:definition "This class comprises images and other forms of visual representation." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E53Place a owl:Class ;
+    rdfs:label "E53_Place" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_coordinates ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:has_coordinates ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_coordinates ] ;
+    skos:definition "This class comprises locations in the natural world." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E54Dimension a owl:Class ;
+    rdfs:label "E54_Dimension" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_value ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:float ;
+            owl:onProperty nchlod:has_value ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_value ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_unit ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_unit ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E58MeasurementUnit ;
+            owl:onProperty nchlod:has_unit ] ;
+    skos:definition "This class comprises measurable dimensions of objects." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E55Type a owl:Class ;
+    rdfs:label "E55_Type" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E55Type ;
+            owl:onProperty nchlod:referenced_in ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:referenced_in ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:referenced_in ] ;
+    skos:definition "This class refers to external vocabularies, such as AAT." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E5Event a owl:Class ;
+    rdfs:label "E5_Event" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:occurred_in ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:occurred_in ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E52Time-Span ;
+            owl:onProperty nchlod:has_time ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E53Place ;
+            owl:onProperty nchlod:occurred_in ] ;
+    skos:definition "This class comprises changes of state in the Nepal." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E73InformationObject a owl:Class ;
+    rdfs:label "E73_Information_Object" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:contains_information ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:contains_information ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:contains_information ] ;
+    skos:definition "This class comprises concepts, schemes, and textual objects." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E98Currency a owl:Class ;
+    rdfs:label "E98_Currency" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:used_in_transaction ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E98Currency ;
+            owl:onProperty nchlod:used_in_transaction ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:used_in_transaction ] ;
+    skos:definition "The currency of the monetary amount." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:acquired a owl:ObjectProperty ;
+    rdfs:label "acquired" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The object that was acquired in an acquisition event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:added_part a owl:ObjectProperty ;
+    rdfs:label "added_part" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The part that was added during an addition event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:affiliation a owl:DatatypeProperty ;
+    rdfs:label "affiliation" ;
+    rdfs:range xsd:string ;
+    skos:definition "The organization or institution a contributor is affiliated with." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:assigned_attribute a owl:DatatypeProperty ;
+    rdfs:label "assigned_attribute" ;
+    rdfs:range xsd:string ;
+    skos:definition "The attribute that was assigned during an attribute assignment event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:assigned_by a owl:ObjectProperty ;
+    rdfs:label "assigned_by" ;
+    rdfs:range nchlod:E39Actor ;
+    skos:definition "The actor who assigned the attribute." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:born_person a owl:ObjectProperty ;
+    rdfs:label "born_person" ;
+    rdfs:range nchlod:E21Person ;
+    skos:definition "The person born during a birth event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:contains_information a owl:DatatypeProperty ;
+    rdfs:label "contains_information" ;
+    rdfs:range xsd:string ;
+    skos:definition "The information contained in an information object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:contribution_date a owl:DatatypeProperty ;
+    rdfs:label "contribution_date" ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "The date when the contribution was made." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:coordinates a owl:DatatypeProperty ;
+    rdfs:label "coordinates" ;
+    rdfs:range xsd:string ;
+    skos:definition "The geographic coordinates of a place." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:created_concept a owl:ObjectProperty ;
+    rdfs:label "created_concept" ;
+    rdfs:range nchlod:E73InformationObject ;
+    skos:definition "The concept or information object created during a creation event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:deceased_person a owl:ObjectProperty ;
+    rdfs:label "deceased_person" ;
+    rdfs:range nchlod:E21Person ;
+    skos:definition "The person who died during a death event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:depicted_in a owl:ObjectProperty ;
+    rdfs:label "depicted_in" ;
+    rdfs:range nchlod:E36VisualItem ;
+    skos:definition "The visual item where an object or event is depicted." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:destroyed a owl:ObjectProperty ;
+    rdfs:label "destroyed" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The object that was destroyed in an event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:dissolved_group a owl:ObjectProperty ;
+    rdfs:label "dissolved_group" ;
+    rdfs:range nchlod:E74Group ;
+    skos:definition "The group dissolved during a dissolution event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:email a owl:DatatypeProperty ;
+    rdfs:label "email" ;
+    rdfs:range xsd:string ;
+    skos:definition "The contact email of the contributor." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:end_date a owl:DatatypeProperty ;
+    rdfs:label "end_date" ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "The ending point of the contribution of the user." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:formed_group a owl:ObjectProperty ;
+    rdfs:label "formed_group" ;
+    rdfs:range nchlod:E74Group ;
+    skos:definition "The group formed during a formation event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_coordinates a owl:DatatypeProperty ;
+    rdfs:label "has_coordinates" ;
+    rdfs:range xsd:string ;
+    skos:definition "The geographic coordinates of a place." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_dimension a owl:ObjectProperty ;
+    rdfs:label "has_dimension" ;
+    rdfs:range nchlod:E54Dimension ;
+    skos:definition "The dimensions of an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_language a owl:ObjectProperty ;
+    rdfs:label "has_language" ;
+    rdfs:range nchlod:E56Language ;
+    skos:definition "The language in which an appellation or linguistic object is used. This property associates the linguistic object or appellation with a specific language, indicating the cultural or linguistic context in which it is valid and used." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_members a owl:ObjectProperty ;
+    rdfs:label "has_members" ;
+    rdfs:range nchlod:E39Actor ;
+    skos:definition "The members of a group." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_name a owl:DatatypeProperty ;
+    rdfs:label "has_name" ;
+    rdfs:range xsd:string ;
+    skos:definition "The name of a person." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_unit a owl:ObjectProperty ;
+    rdfs:label "has_unit" ;
+    rdfs:range nchlod:E58MeasurementUnit ;
+    skos:definition "The unit of measurement for a dimension." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:identifies_object a owl:ObjectProperty ;
+    rdfs:label "identifies_object" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The object that an identifier refers to." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:joined_people a owl:ObjectProperty ;
+    rdfs:label "joined_people" ;
+    rdfs:range nchlod:E21Person ;
+    skos:definition "The people joined together during a marriage event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:made_of a owl:ObjectProperty ;
+    rdfs:label "made_of" ;
+    rdfs:range nchlod:E57Material ;
+    skos:definition "The material that an object is made of." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:modified a owl:ObjectProperty ;
+    rdfs:label "modified" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The object that was modified in a modification event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:occurred_in a owl:ObjectProperty ;
+    rdfs:label "occurred_in" ;
+    rdfs:range nchlod:E53Place ;
+    skos:definition "The location where an event occurred." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:participated_in a owl:ObjectProperty ;
+    rdfs:label "participated_in" ;
+    rdfs:range nchlod:E5Event ;
+    skos:definition "The event in which an actor participated." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:produced a owl:ObjectProperty ;
+    rdfs:label "produced" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The object or outcome produced as a result of an activity." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:produced_object a owl:ObjectProperty ;
+    rdfs:label "produced_object" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The physical object produced during a production event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:proposition a owl:DatatypeProperty ;
+    rdfs:label "proposition" ;
+    rdfs:range xsd:string ;
+    skos:definition "The propositional content of a statement or promise." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:referenced_in a owl:ObjectProperty ;
+    rdfs:label "referenced_in" ;
+    rdfs:range nchlod:E55Type ;
+    skos:definition "The external vocabulary or type that an object is associated with." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:removed_part a owl:ObjectProperty ;
+    rdfs:label "removed_part" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The part that was removed during a removal event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:role a owl:DatatypeProperty ;
+    rdfs:label "role" ;
+    rdfs:range xsd:string ;
+    skos:definition "The role of a contributor in the project (e.g., researcher, developer, curator)." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:separated_people a owl:ObjectProperty ;
+    rdfs:label "separated_people" ;
+    rdfs:range nchlod:E21Person ;
+    skos:definition "The people separated during a divorce event." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:spoken_by a owl:ObjectProperty ;
+    rdfs:label "spoken_by" ;
+    rdfs:range nchlod:E39Actor ;
+    skos:definition "The actor who speaks a particular language." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:start_date a owl:DatatypeProperty ;
+    rdfs:label "start_date" ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "The starting point of the contribution of the user." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:transferred a owl:ObjectProperty ;
+    rdfs:label "transferred" ;
+    rdfs:range nchlod:E22HumanMadeObject ;
+    skos:definition "The object that was transferred during an event of custody transfer." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:unit_of a owl:ObjectProperty ;
+    rdfs:label "unit_of" ;
+    rdfs:range nchlod:E58MeasurementUnit ;
+    skos:definition "The measurement unit for a dimension." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:used a owl:ObjectProperty ;
+    rdfs:label "used" ;
+    rdfs:range nchlod:E57Material ;
+    skos:definition "The materials or objects used during an activity." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:used_in a owl:ObjectProperty ;
+    rdfs:label "used_in" ;
+    rdfs:range nchlod:E57Material ;
+    skos:definition "The material used in an object or activity." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:used_in_transaction a owl:ObjectProperty ;
+    rdfs:label "used_in_transaction" ;
+    rdfs:range nchlod:E98Currency ;
+    skos:definition "The currency used in a monetary transaction." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:written_in a owl:ObjectProperty ;
+    rdfs:label "written_in" ;
+    rdfs:range nchlod:E56Language ;
+    skos:definition "The language in which a linguistic object is written." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E56Language a owl:Class ;
+    rdfs:label "E56_Language" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E39Actor ;
+            owl:onProperty nchlod:spoken_by ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:spoken_by ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:spoken_by ] ;
+    skos:definition "This class comprises the languages in which textual objects are written." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E58MeasurementUnit a owl:Class ;
+    rdfs:label "E58_Measurement_Unit" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E58MeasurementUnit ;
+            owl:onProperty nchlod:unit_of ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:unit_of ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:unit_of ] ;
+    skos:definition "The unit of measurement for a dimension value, such as inches." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E74Group a owl:Class ;
+    rdfs:label "E74_Group" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E39Actor ;
+            owl:onProperty nchlod:has_members ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_members ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_members ] ;
+    skos:definition "This class comprises groups of people or organizations." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E39Actor a owl:Class ;
+    rdfs:label "E39_Actor" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:participated_in ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E5Event ;
+            owl:onProperty nchlod:participated_in ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:participated_in ] ;
+    skos:definition "This class comprises individual actors or groups that perform actions." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E57Material a owl:Class ;
+    rdfs:label "E57_Material" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:used_in ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:used_in ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E57Material ;
+            owl:onProperty nchlod:used_in ] ;
+    skos:definition "This class refers to the materials that make up an object." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_beginning a owl:DatatypeProperty ;
+    rdfs:label "has_beginning" ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "The starting point of a time span." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_end a owl:DatatypeProperty ;
+    rdfs:label "has_end" ;
+    rdfs:range xsd:dateTime ;
+    skos:definition "The ending point of a time span." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_value a owl:DatatypeProperty ;
+    rdfs:label "has_value" ;
+    rdfs:range xsd:float ;
+    skos:definition "The value of a dimension or monetary amount." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:name a owl:DatatypeProperty ;
+    rdfs:label "name" ;
+    rdfs:range xsd:string ;
+    skos:definition "The name of an entity (e.g., a contributor, place, or event)." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E21Person a owl:Class ;
+    rdfs:label "E21_Person" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom xsd:string ;
+            owl:onProperty nchlod:has_name ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_name ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_name ] ;
+    skos:definition "This class comprises individual people." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E52Time-Span a owl:Class ;
+    rdfs:label "E52_Time-Span" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_beginning ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:dateTime ;
+            owl:onProperty nchlod:has_end ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_end ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom xsd:dateTime ;
+            owl:onProperty nchlod:has_beginning ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_beginning ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_end ] ;
+    skos:definition "This class collects the beginning and ending of time spans." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:E22HumanMadeObject a owl:Class ;
+    rdfs:label "E22_Human_Made_Object" ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:has_dimension ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E54Dimension ;
+            owl:onProperty nchlod:has_dimension ],
+        [ a owl:Restriction ;
+            owl:allValuesFrom nchlod:E57Material ;
+            owl:onProperty nchlod:made_of ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:has_dimension ],
+        [ a owl:Restriction ;
+            owl:maxCardinality 1 ;
+            owl:onProperty nchlod:made_of ],
+        [ a owl:Restriction ;
+            owl:minCardinality 0 ;
+            owl:onProperty nchlod:made_of ] ;
+    skos:definition "This class comprises physical objects created by humans." ;
+    skos:inScheme <NCHLOD> .
+
+nchlod:has_time a owl:ObjectProperty ;
+    rdfs:label "has_time" ;
+    rdfs:range nchlod:E52Time-Span ;
+    skos:definition "The time span during which an event occurred." ;
+    skos:inScheme <NCHLOD> .
+
+

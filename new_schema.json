@@ -1,0 +1,5233 @@
+[
+  {
+    "@id": "https://cair-nepal.org/Contributor",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "Represents an individual or group contributing to the dataset or project."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodContributor"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodContributor"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b41"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/affiliation"
+      },
+      {
+        "@id": "https://cair-nepal.org/contribution_date"
+      },
+      {
+        "@id": "https://cair-nepal.org/email"
+      },
+      {
+        "@id": "https://cair-nepal.org/end_date"
+      },
+      {
+        "@id": "https://cair-nepal.org/name"
+      },
+      {
+        "@id": "https://cair-nepal.org/role"
+      },
+      {
+        "@id": "https://cair-nepal.org/start_date"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b41"
+  },
+  {
+    "@id": "https://cair-nepal.org/sparqlpath",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://purl.org/dc/terms/conformsTo": [
+      {
+        "@value": "https://www.w3.org/TR/sparql11-query/#propertypaths"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A string encoding a SPARQL Property Path. The value of the string MUST conform to SPARQL syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded as RDF."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"sparqlpath\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Sparqlpath"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#string"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E21Person",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises individual people."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE21Person"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE21Person"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b40"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_name"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b40"
+  },
+  {
+    "@id": "https://cair-nepal.org/assigned_by",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The actor who assigned the attribute."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodassigned_by"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E13AttributeAssignment"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E13AttributeAssignment"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E39Actor"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodassigned_by"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E56Language",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises the languages in which textual objects are written."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE56Language"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE56Language"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b30"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/spoken_by"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b30"
+  },
+  {
+    "@id": "https://cair-nepal.org/E57Material",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class refers to the materials that make up an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE57Material"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE57Material"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b38"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/used_in"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b38"
+  },
+  {
+    "@id": "https://cair-nepal.org/coordinates",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The geographic coordinates of a place."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcoordinates"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Place"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Place"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcoordinates"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/destroyed",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The object that was destroyed in an event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddestroyed"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E6Destruction"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E6Destruction"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddestroyed"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E11Modification",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises events that result in the modification of an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE11Modification"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE11Modification"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b16"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      },
+      {
+        "@id": "https://cair-nepal.org/modified"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b16"
+  },
+  {
+    "@id": "https://cair-nepal.org/nepalCulturalHeritageLinkedOpenData",
+    "@type": [
+      "https://w3id.org/linkml/SchemaDefinition"
+    ],
+    "http://purl.org/dc/terms/license": [
+      {
+        "@value": "https://creativecommons.org/publicdomain/zero/1.0/"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A schema based on CIDOC CRM to represent Nepal's cultural heritage data."
+      }
+    ],
+    "http://www.w3.org/ns/shacl#declare": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b1"
+      },
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b2"
+      },
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b3"
+      }
+    ],
+    "https://w3id.org/linkml/classes": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      },
+      {
+        "@id": "https://cair-nepal.org/E10TransferOfCustody"
+      },
+      {
+        "@id": "https://cair-nepal.org/E11Modification"
+      },
+      {
+        "@id": "https://cair-nepal.org/E12Production"
+      },
+      {
+        "@id": "https://cair-nepal.org/E13AttributeAssignment"
+      },
+      {
+        "@id": "https://cair-nepal.org/E21Person"
+      },
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      },
+      {
+        "@id": "https://cair-nepal.org/E33LinguisticObject"
+      },
+      {
+        "@id": "https://cair-nepal.org/E36VisualItem"
+      },
+      {
+        "@id": "https://cair-nepal.org/E39Actor"
+      },
+      {
+        "@id": "https://cair-nepal.org/E41LinguisticAppellation"
+      },
+      {
+        "@id": "https://cair-nepal.org/E42Identifier"
+      },
+      {
+        "@id": "https://cair-nepal.org/E4Period"
+      },
+      {
+        "@id": "https://cair-nepal.org/E52Time-Span"
+      },
+      {
+        "@id": "https://cair-nepal.org/E53Place"
+      },
+      {
+        "@id": "https://cair-nepal.org/E54Dimension"
+      },
+      {
+        "@id": "https://cair-nepal.org/E55Type"
+      },
+      {
+        "@id": "https://cair-nepal.org/E56Language"
+      },
+      {
+        "@id": "https://cair-nepal.org/E57Material"
+      },
+      {
+        "@id": "https://cair-nepal.org/E58MeasurementUnit"
+      },
+      {
+        "@id": "https://cair-nepal.org/E5Event"
+      },
+      {
+        "@id": "https://cair-nepal.org/E65Creation"
+      },
+      {
+        "@id": "https://cair-nepal.org/E66Formation"
+      },
+      {
+        "@id": "https://cair-nepal.org/E67Birth"
+      },
+      {
+        "@id": "https://cair-nepal.org/E68Dissolution"
+      },
+      {
+        "@id": "https://cair-nepal.org/E69Death"
+      },
+      {
+        "@id": "https://cair-nepal.org/E6Destruction"
+      },
+      {
+        "@id": "https://cair-nepal.org/E73InformationObject"
+      },
+      {
+        "@id": "https://cair-nepal.org/E74Group"
+      },
+      {
+        "@id": "https://cair-nepal.org/E79PartAddition"
+      },
+      {
+        "@id": "https://cair-nepal.org/E7Activity"
+      },
+      {
+        "@id": "https://cair-nepal.org/E80PartRemoval"
+      },
+      {
+        "@id": "https://cair-nepal.org/E85Joining"
+      },
+      {
+        "@id": "https://cair-nepal.org/E86Leaving"
+      },
+      {
+        "@id": "https://cair-nepal.org/E89PropositionalObject"
+      },
+      {
+        "@id": "https://cair-nepal.org/E8Acquisition"
+      },
+      {
+        "@id": "https://cair-nepal.org/E97MonetaryAmount"
+      },
+      {
+        "@id": "https://cair-nepal.org/E98Currency"
+      },
+      {
+        "@id": "https://cair-nepal.org/Place"
+      }
+    ],
+    "https://w3id.org/linkml/default_prefix": [
+      {
+        "@value": "nchlod"
+      }
+    ],
+    "https://w3id.org/linkml/default_range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/generation_date": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#dateTime",
+        "@value": "2025-01-07T18:41:52"
+      }
+    ],
+    "https://w3id.org/linkml/id": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/imports": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/metamodel_version": [
+      {
+        "@value": "1.7.0"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/acquired"
+      },
+      {
+        "@id": "https://cair-nepal.org/added_part"
+      },
+      {
+        "@id": "https://cair-nepal.org/affiliation"
+      },
+      {
+        "@id": "https://cair-nepal.org/assigned_attribute"
+      },
+      {
+        "@id": "https://cair-nepal.org/assigned_by"
+      },
+      {
+        "@id": "https://cair-nepal.org/born_person"
+      },
+      {
+        "@id": "https://cair-nepal.org/contains_information"
+      },
+      {
+        "@id": "https://cair-nepal.org/contribution_date"
+      },
+      {
+        "@id": "https://cair-nepal.org/coordinates"
+      },
+      {
+        "@id": "https://cair-nepal.org/created_concept"
+      },
+      {
+        "@id": "https://cair-nepal.org/deceased_person"
+      },
+      {
+        "@id": "https://cair-nepal.org/depicted_in"
+      },
+      {
+        "@id": "https://cair-nepal.org/destroyed"
+      },
+      {
+        "@id": "https://cair-nepal.org/dissolved_group"
+      },
+      {
+        "@id": "https://cair-nepal.org/email"
+      },
+      {
+        "@id": "https://cair-nepal.org/end_date"
+      },
+      {
+        "@id": "https://cair-nepal.org/formed_group"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_beginning"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_coordinates"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_dimension"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_end"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_language"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_members"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_name"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_unit"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_value"
+      },
+      {
+        "@id": "https://cair-nepal.org/identifies_object"
+      },
+      {
+        "@id": "https://cair-nepal.org/joined_people"
+      },
+      {
+        "@id": "https://cair-nepal.org/made_of"
+      },
+      {
+        "@id": "https://cair-nepal.org/modified"
+      },
+      {
+        "@id": "https://cair-nepal.org/name"
+      },
+      {
+        "@id": "https://cair-nepal.org/occurred_in"
+      },
+      {
+        "@id": "https://cair-nepal.org/participated_in"
+      },
+      {
+        "@id": "https://cair-nepal.org/produced"
+      },
+      {
+        "@id": "https://cair-nepal.org/produced_object"
+      },
+      {
+        "@id": "https://cair-nepal.org/proposition"
+      },
+      {
+        "@id": "https://cair-nepal.org/referenced_in"
+      },
+      {
+        "@id": "https://cair-nepal.org/removed_part"
+      },
+      {
+        "@id": "https://cair-nepal.org/role"
+      },
+      {
+        "@id": "https://cair-nepal.org/separated_people"
+      },
+      {
+        "@id": "https://cair-nepal.org/spoken_by"
+      },
+      {
+        "@id": "https://cair-nepal.org/start_date"
+      },
+      {
+        "@id": "https://cair-nepal.org/transferred"
+      },
+      {
+        "@id": "https://cair-nepal.org/unit_of"
+      },
+      {
+        "@id": "https://cair-nepal.org/used"
+      },
+      {
+        "@id": "https://cair-nepal.org/used_in"
+      },
+      {
+        "@id": "https://cair-nepal.org/used_in_transaction"
+      },
+      {
+        "@id": "https://cair-nepal.org/written_in"
+      }
+    ],
+    "https://w3id.org/linkml/source_file": [
+      {
+        "@value": "new_schema.yaml"
+      }
+    ],
+    "https://w3id.org/linkml/source_file_date": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#dateTime",
+        "@value": "2025-01-07T18:30:40"
+      }
+    ],
+    "https://w3id.org/linkml/source_file_size": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#integer",
+        "@value": 11732
+      }
+    ],
+    "https://w3id.org/linkml/types": [
+      {
+        "@id": "https://cair-nepal.org/boolean"
+      },
+      {
+        "@id": "https://cair-nepal.org/curie"
+      },
+      {
+        "@id": "https://cair-nepal.org/date"
+      },
+      {
+        "@id": "https://cair-nepal.org/date_or_datetime"
+      },
+      {
+        "@id": "https://cair-nepal.org/datetime"
+      },
+      {
+        "@id": "https://cair-nepal.org/decimal"
+      },
+      {
+        "@id": "https://cair-nepal.org/double"
+      },
+      {
+        "@id": "https://cair-nepal.org/float"
+      },
+      {
+        "@id": "https://cair-nepal.org/integer"
+      },
+      {
+        "@id": "https://cair-nepal.org/jsonpath"
+      },
+      {
+        "@id": "https://cair-nepal.org/jsonpointer"
+      },
+      {
+        "@id": "https://cair-nepal.org/ncname"
+      },
+      {
+        "@id": "https://cair-nepal.org/nodeidentifier"
+      },
+      {
+        "@id": "https://cair-nepal.org/objectidentifier"
+      },
+      {
+        "@id": "https://cair-nepal.org/sparqlpath"
+      },
+      {
+        "@id": "https://cair-nepal.org/string"
+      },
+      {
+        "@id": "https://cair-nepal.org/time"
+      },
+      {
+        "@id": "https://cair-nepal.org/uri"
+      },
+      {
+        "@id": "https://cair-nepal.org/uriorcurie"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b1",
+    "http://www.w3.org/ns/shacl#namespace": [
+      {
+        "@id": "https://cair-nepal.org/nchlod"
+      }
+    ],
+    "http://www.w3.org/ns/shacl#prefix": [
+      {
+        "@value": "nchlod"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b2",
+    "http://www.w3.org/ns/shacl#namespace": [
+      {
+        "@id": "http://www.cidoc-crm.org/cidoc-crm/"
+      }
+    ],
+    "http://www.w3.org/ns/shacl#prefix": [
+      {
+        "@value": "crm"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b3",
+    "http://www.w3.org/ns/shacl#namespace": [
+      {
+        "@id": "https://w3id.org/linkml/"
+      }
+    ],
+    "http://www.w3.org/ns/shacl#prefix": [
+      {
+        "@value": "linkml"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E80PartRemoval",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "An event that results in the removal of a part from an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE80PartRemoval"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE80PartRemoval"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b10"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/removed_part"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b10"
+  },
+  {
+    "@id": "https://cair-nepal.org/E58MeasurementUnit",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The unit of measurement for a dimension value, such as inches."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE58MeasurementUnit"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE58MeasurementUnit"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b31"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/unit_of"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b31"
+  },
+  {
+    "@id": "https://cair-nepal.org/role",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The role of a contributor in the project (e.g., researcher, developer, curator)."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodrole"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodrole"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/start_date",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The starting point of the contribution of the user."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodstart_date"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/datetime"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodstart_date"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/decimal",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#broadMatch": [
+      {
+        "@id": "http://schema.org/Number"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A real number with arbitrary precision that conforms to the xsd:decimal specification"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"decimal\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "Decimal"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Decimal"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#decimal"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/deceased_person",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The person who died during a death event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddeceased_person"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E69Death"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E69Death"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E21Person"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddeceased_person"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E5Event",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises changes of state in the Nepal."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE5Event"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE5Event"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b32"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      },
+      {
+        "@id": "https://cair-nepal.org/occurred_in"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b32"
+  },
+  {
+    "@id": "https://cair-nepal.org/email",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The contact email of the contributor."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodemail"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodemail"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/added_part",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The part that was added during an addition event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodadded_part"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E79PartAddition"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E79PartAddition"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodadded_part"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/time",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A time object represents a (local) time of day, independent of any particular day"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"time\"."
+      },
+      {
+        "@value": "URI is dateTime because OWL reasoners do not work with straight date or time"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#exactMatch": [
+      {
+        "@id": "http://schema.org/Time"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "XSDTime"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Time"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#time"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E53Place",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises locations in the natural world."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE53Place"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE53Place"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b19"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_coordinates"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b19"
+  },
+  {
+    "@id": "https://cair-nepal.org/E73InformationObject",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises concepts, schemes, and textual objects."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE73InformationObject"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE73InformationObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b25"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/contains_information"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b25"
+  },
+  {
+    "@id": "https://cair-nepal.org/separated_people",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The people separated during a divorce event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodseparated_people"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E86Leaving"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E86Leaving"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E21Person"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodseparated_people"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/double",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#closeMatch": [
+      {
+        "@id": "http://schema.org/Float"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A real number that conforms to the xsd:double specification"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"double\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "float"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Double"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#double"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E6Destruction",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises events that result in the destruction of an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE6Destruction"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE6Destruction"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b24"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/destroyed"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b24"
+  },
+  {
+    "@id": "https://cair-nepal.org/E22HumanMadeObject",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises physical objects created by humans."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b42"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_dimension"
+      },
+      {
+        "@id": "https://cair-nepal.org/made_of"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b42"
+  },
+  {
+    "@id": "https://cair-nepal.org/participated_in",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The event in which an actor participated."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodparticipated_in"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E39Actor"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E39Actor"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E5Event"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodparticipated_in"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E89PropositionalObject",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class refers to propositions or promises about reality."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE89PropositionalObject"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE89PropositionalObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b13"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/proposition"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b13"
+  },
+  {
+    "@id": "https://cair-nepal.org/E8Acquisition",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises events that result in the acquisition of an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE8Acquisition"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE8Acquisition"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b26"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/acquired"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b26"
+  },
+  {
+    "@id": "https://cair-nepal.org/written_in",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The language in which a linguistic object is written."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodwritten_in"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E33LinguisticObject"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E33LinguisticObject"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E56Language"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodwritten_in"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E74Group",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises groups of people or organizations."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE74Group"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE74Group"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b34"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_members"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b34"
+  },
+  {
+    "@id": "https://cair-nepal.org/dissolved_group",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The group dissolved during a dissolution event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddissolved_group"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E68Dissolution"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E68Dissolution"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E74Group"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddissolved_group"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/has_name",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The name of a person."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_name"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E21Person"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E21Person"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_name"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E39Actor",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises individual actors or groups that perform actions."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE39Actor"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE39Actor"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b36"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/participated_in"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b36"
+  },
+  {
+    "@id": "https://cair-nepal.org/born_person",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The person born during a birth event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodborn_person"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E67Birth"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E67Birth"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E21Person"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodborn_person"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E7Activity",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises actions or processes that result in changes of state."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE7Activity"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE7Activity"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b39"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      },
+      {
+        "@id": "https://cair-nepal.org/produced"
+      },
+      {
+        "@id": "https://cair-nepal.org/used"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b39"
+  },
+  {
+    "@id": "https://cair-nepal.org/E69Death",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The event of the death of a person."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE69Death"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE69Death"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b33"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/deceased_person"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b33"
+  },
+  {
+    "@id": "https://cair-nepal.org/has_beginning",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The starting point of a time span."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_beginning"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E4Period"
+      },
+      {
+        "@id": "https://cair-nepal.org/E52Time-Span"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E52Time-Span"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/datetime"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_beginning"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/depicted_in",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The visual item where an object or event is depicted."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddepicted_in"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E36VisualItem"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E36VisualItem"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E36VisualItem"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchloddepicted_in"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E52Time-Span",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class collects the beginning and ending of time spans."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE52Time-Span"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE52Time-Span"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b37"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_beginning"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_end"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b37"
+  },
+  {
+    "@id": "https://cair-nepal.org/uriorcurie",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "a URI or a CURIE"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uriorcurie\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "URIorCURIE"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Uriorcurie"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#anyURI"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/has_time",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The time span during which an event occurred."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_time"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E10TransferOfCustody"
+      },
+      {
+        "@id": "https://cair-nepal.org/E11Modification"
+      },
+      {
+        "@id": "https://cair-nepal.org/E12Production"
+      },
+      {
+        "@id": "https://cair-nepal.org/E5Event"
+      },
+      {
+        "@id": "https://cair-nepal.org/E66Formation"
+      },
+      {
+        "@id": "https://cair-nepal.org/E67Birth"
+      },
+      {
+        "@id": "https://cair-nepal.org/E68Dissolution"
+      },
+      {
+        "@id": "https://cair-nepal.org/E69Death"
+      },
+      {
+        "@id": "https://cair-nepal.org/E6Destruction"
+      },
+      {
+        "@id": "https://cair-nepal.org/E7Activity"
+      },
+      {
+        "@id": "https://cair-nepal.org/E8Acquisition"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E69Death"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E52Time-Span"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_time"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/affiliation",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The organization or institution a contributor is affiliated with."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodaffiliation"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodaffiliation"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E12Production",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The beginning of existence of a physical thing."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE12Production"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE12Production"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b17"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      },
+      {
+        "@id": "https://cair-nepal.org/produced_object"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b17"
+  },
+  {
+    "@id": "https://cair-nepal.org/Place",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The location associated with an event or cultural heritage object in which the contributor has contributed."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodPlace"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodPlace"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b35"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/coordinates"
+      },
+      {
+        "@id": "https://cair-nepal.org/name"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b35"
+  },
+  {
+    "@id": "https://cair-nepal.org/acquired",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The object that was acquired in an acquisition event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodacquired"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E8Acquisition"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E8Acquisition"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodacquired"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E85Joining",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "An event that records the joining of two individuals in a marriage."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE85Joining"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE85Joining"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b11"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/joined_people"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b11"
+  },
+  {
+    "@id": "https://cair-nepal.org/E4Period",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises identifiable periods of time."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE4Period"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE4Period"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b7"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_beginning"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_end"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b7"
+  },
+  {
+    "@id": "https://cair-nepal.org/unit_of",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The measurement unit for a dimension."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodunit_of"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E58MeasurementUnit"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E58MeasurementUnit"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E58MeasurementUnit"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodunit_of"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/assigned_attribute",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The attribute that was assigned during an attribute assignment event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodassigned_attribute"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E13AttributeAssignment"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E13AttributeAssignment"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodassigned_attribute"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/contains_information",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The information contained in an information object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcontains_information"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E73InformationObject"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E73InformationObject"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcontains_information"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E41LinguisticAppellation",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises names, titles, or other linguistic identifiers."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE41LinguisticAppellation"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE41LinguisticAppellation"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b5"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_language"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b5"
+  },
+  {
+    "@id": "https://cair-nepal.org/date_or_datetime",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "Either a date or a datetime"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date_or_datetime\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/DateOrDatetime"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "https://w3id.org/linkml/DateOrDatetime"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/has_coordinates",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The geographic coordinates of a place."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_coordinates"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E53Place"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E53Place"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_coordinates"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/float",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A real number that conforms to the xsd:float specification"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"float\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#exactMatch": [
+      {
+        "@id": "http://schema.org/Float"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "float"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Float"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#float"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/joined_people",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The people joined together during a marriage event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodjoined_people"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E85Joining"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E85Joining"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E21Person"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodjoined_people"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E67Birth",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The event of the birth of a person."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE67Birth"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE67Birth"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b22"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/born_person"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b22"
+  },
+  {
+    "@id": "https://cair-nepal.org/jsonpointer",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://purl.org/dc/terms/conformsTo": [
+      {
+        "@value": "https://datatracker.ietf.org/doc/html/rfc6901"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A string encoding a JSON Pointer. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to a valid object within the current instance document when encoded in tree form."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpointer\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Jsonpointer"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#string"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/jsonpath",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://purl.org/dc/terms/conformsTo": [
+      {
+        "@value": "https://www.ietf.org/archive/id/draft-goessner-dispatch-jsonpath-00.html"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A string encoding a JSON Path. The value of the string MUST conform to JSON Point syntax and SHOULD dereference to zero or more valid objects within the current instance document when encoded in tree form."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"jsonpath\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Jsonpath"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#string"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E10TransferOfCustody",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises events that result in the transfer of custody of an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE10TransferOfCustody"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE10TransferOfCustody"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b15"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      },
+      {
+        "@id": "https://cair-nepal.org/transferred"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b15"
+  },
+  {
+    "@id": "https://cair-nepal.org/E66Formation",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "An event that results in the formation of a group."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE66Formation"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE66Formation"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b21"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/formed_group"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b21"
+  },
+  {
+    "@id": "https://cair-nepal.org/occurred_in",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The location where an event occurred."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodoccurred_in"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E5Event"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E5Event"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E53Place"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodoccurred_in"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/has_members",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The members of a group."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_members"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E74Group"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E74Group"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E39Actor"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_members"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E36VisualItem",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises images and other forms of visual representation."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE36VisualItem"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE36VisualItem"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b18"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/depicted_in"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b18"
+  },
+  {
+    "@id": "https://cair-nepal.org/referenced_in",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The external vocabulary or type that an object is associated with."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodreferenced_in"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E55Type"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E55Type"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E55Type"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodreferenced_in"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/string",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A character string"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "In RDF serializations, a slot with range of string is treated as a literal or type xsd:string.   If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"string\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#exactMatch": [
+      {
+        "@id": "http://schema.org/Text"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/String"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#string"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E54Dimension",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises measurable dimensions of objects."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE54Dimension"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE54Dimension"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b29"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_unit"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_value"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b29"
+  },
+  {
+    "@id": "https://cair-nepal.org/made_of",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The material that an object is made of."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodmade_of"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E57Material"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodmade_of"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/used",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The materials or objects used during an activity."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodused"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E7Activity"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E7Activity"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E57Material"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodused"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/modified",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The object that was modified in a modification event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodmodified"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E11Modification"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E11Modification"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodmodified"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/spoken_by",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The actor who speaks a particular language."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodspoken_by"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E56Language"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E56Language"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E39Actor"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodspoken_by"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/proposition",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The propositional content of a statement or promise."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodproposition"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E89PropositionalObject"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E89PropositionalObject"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodproposition"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E13AttributeAssignment",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class is used for recording previously believed values."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE13AttributeAssignment"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE13AttributeAssignment"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b28"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/assigned_attribute"
+      },
+      {
+        "@id": "https://cair-nepal.org/assigned_by"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b28"
+  },
+  {
+    "@id": "https://cair-nepal.org/has_unit",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The unit of measurement for a dimension."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_unit"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E54Dimension"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E54Dimension"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E58MeasurementUnit"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_unit"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E86Leaving",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "An event that records the dissolution of a marriage."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE86Leaving"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE86Leaving"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b12"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/separated_people"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b12"
+  },
+  {
+    "@id": "https://cair-nepal.org/objectidentifier",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A URI or CURIE that represents an object in the model."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"objectidentifier\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#note": [
+      {
+        "@value": "Used for inheritance and type checking"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "ElementIdentifier"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Objectidentifier"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/ns/shex#iri"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/name",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The name of an entity (e.g., a contributor, place, or event)."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodname"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      },
+      {
+        "@id": "https://cair-nepal.org/Place"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Place"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/string"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodname"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/has_language",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The language in which an appellation or linguistic object is used. This property associates the linguistic object or appellation with a specific language, indicating the cultural or linguistic context in which it is valid and used."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_language"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E41LinguisticAppellation"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E41LinguisticAppellation"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E56Language"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_language"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/curie",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://purl.org/dc/terms/conformsTo": [
+      {
+        "@value": "https://www.w3.org/TR/curie/"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "a compact URI"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"curie\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#note": [
+      {
+        "@value": "in RDF serializations this MUST be expanded to a URI"
+      },
+      {
+        "@value": "in non-RDF serializations MAY be serialized as the compact representation"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "Curie"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Curie"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#string"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E79PartAddition",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "An event that results in the addition of a part to an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE79PartAddition"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE79PartAddition"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b9"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/added_part"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b9"
+  },
+  {
+    "@id": "https://cair-nepal.org/E33LinguisticObject",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises statements, inscriptions, or textual objects."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE33LinguisticObject"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE33LinguisticObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b4"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/written_in"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b4"
+  },
+  {
+    "@id": "https://cair-nepal.org/has_value",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The value of a dimension or monetary amount."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_value"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E54Dimension"
+      },
+      {
+        "@id": "https://cair-nepal.org/E97MonetaryAmount"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E97MonetaryAmount"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/float"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_value"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E65Creation",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "An activity that results in the creation of non-physical things."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE65Creation"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE65Creation"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b8"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/created_concept"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b8"
+  },
+  {
+    "@id": "https://cair-nepal.org/has_end",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The ending point of a time span."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_end"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E4Period"
+      },
+      {
+        "@id": "https://cair-nepal.org/E52Time-Span"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E52Time-Span"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/datetime"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_end"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/created_concept",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The concept or information object created during a creation event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcreated_concept"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E65Creation"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E65Creation"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E73InformationObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcreated_concept"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/date",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "a date (year, month and day) in an idealized calendar"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"date\"."
+      },
+      {
+        "@value": "URI is dateTime because OWL reasoners don't work with straight date or time"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#exactMatch": [
+      {
+        "@id": "http://schema.org/Date"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "XSDDate"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Date"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#date"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/boolean",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A binary (true or false) value"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"boolean\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#exactMatch": [
+      {
+        "@id": "http://schema.org/Boolean"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "Bool"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Boolean"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "bool"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#boolean"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E98Currency",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The currency of the monetary amount."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE98Currency"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE98Currency"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b27"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/used_in_transaction"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b27"
+  },
+  {
+    "@id": "https://cair-nepal.org/datetime",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The combination of a date and time"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"datetime\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#exactMatch": [
+      {
+        "@id": "http://schema.org/DateTime"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "XSDDateTime"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Datetime"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#dateTime"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E42Identifier",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises identifiers of things."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE42Identifier"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE42Identifier"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b6"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/identifies_object"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b6"
+  },
+  {
+    "@id": "https://cair-nepal.org/formed_group",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The group formed during a formation event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodformed_group"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E66Formation"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E66Formation"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E74Group"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodformed_group"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/integer",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "An integer"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"integer\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#exactMatch": [
+      {
+        "@id": "http://schema.org/Integer"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "int"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Integer"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#integer"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E55Type",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class refers to external vocabularies, such as AAT."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE55Type"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE55Type"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b20"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/referenced_in"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b20"
+  },
+  {
+    "@id": "https://cair-nepal.org/has_dimension",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The dimensions of an object."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_dimension"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E54Dimension"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodhas_dimension"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/nodeidentifier",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "A URI, CURIE or BNODE that represents a node in a model."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"nodeidentifier\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "NodeIdentifier"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Nodeidentifier"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/ns/shex#nonLiteral"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/identifies_object",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The object that an identifier refers to."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodidentifies_object"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E42Identifier"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E42Identifier"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodidentifies_object"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/ncname",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "Prefix part of CURIE"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"ncname\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "NCName"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Ncname"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#string"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/contribution_date",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The date when the contribution was made."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcontribution_date"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/datetime"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodcontribution_date"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/used_in_transaction",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The currency used in a monetary transaction."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodused_in_transaction"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E98Currency"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E98Currency"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E98Currency"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodused_in_transaction"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/end_date",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The ending point of the contribution of the user."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodend_date"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/Contributor"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/datetime"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodend_date"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/transferred",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The object that was transferred during an event of custody transfer."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodtransferred"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E10TransferOfCustody"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E10TransferOfCustody"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodtransferred"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E97MonetaryAmount",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "This class comprises amounts of money for prices or payments."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE97MonetaryAmount"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE97MonetaryAmount"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b14"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/has_value"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b14"
+  },
+  {
+    "@id": "https://cair-nepal.org/uri",
+    "@type": [
+      "https://w3id.org/linkml/TypeDefinition"
+    ],
+    "http://purl.org/dc/terms/conformsTo": [
+      {
+        "@value": "https://www.ietf.org/rfc/rfc3987.txt"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#closeMatch": [
+      {
+        "@id": "http://schema.org/URL"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "a complete URI"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#editorialNote": [
+      {
+        "@value": "If you are authoring schemas in LinkML YAML, the type is referenced with the lower case \"uri\"."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://w3id.org/linkml/types"
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#note": [
+      {
+        "@value": "in RDF serializations a slot with range of uri is treated as a literal or type xsd:anyURI unless it is an identifier or a reference to an identifier, in which case it is translated directly to a node"
+      }
+    ],
+    "https://w3id.org/linkml/base": [
+      {
+        "@value": "URI"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://w3id.org/linkml/Uri"
+      }
+    ],
+    "https://w3id.org/linkml/imported_from": [
+      {
+        "@value": "linkml:types"
+      }
+    ],
+    "https://w3id.org/linkml/repr": [
+      {
+        "@value": "str"
+      }
+    ],
+    "https://w3id.org/linkml/uri": [
+      {
+        "@id": "http://www.w3.org/2001/XMLSchema#anyURI"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/removed_part",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The part that was removed during a removal event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodremoved_part"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E80PartRemoval"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E80PartRemoval"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodremoved_part"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/produced_object",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The physical object produced during a production event."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodproduced_object"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E12Production"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E12Production"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodproduced_object"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/used_in",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The material used in an object or activity."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodused_in"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E57Material"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E57Material"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E57Material"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodused_in"
+      }
+    ]
+  },
+  {
+    "@id": "https://cair-nepal.org/E68Dissolution",
+    "@type": [
+      "https://w3id.org/linkml/ClassDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The event that results in the dissolution of a group."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/class_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE68Dissolution"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodE68Dissolution"
+      }
+    ],
+    "https://w3id.org/linkml/slot_usage": [
+      {
+        "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b23"
+      }
+    ],
+    "https://w3id.org/linkml/slots": [
+      {
+        "@id": "https://cair-nepal.org/dissolved_group"
+      },
+      {
+        "@id": "https://cair-nepal.org/has_time"
+      }
+    ]
+  },
+  {
+    "@id": "_:n976d2dc1576b43d687ffc11804ad6ac1b23"
+  },
+  {
+    "@id": "https://cair-nepal.org/produced",
+    "@type": [
+      "https://w3id.org/linkml/SlotDefinition"
+    ],
+    "http://www.w3.org/2004/02/skos/core#definition": [
+      {
+        "@value": "The object or outcome produced as a result of an activity."
+      }
+    ],
+    "http://www.w3.org/2004/02/skos/core#inScheme": [
+      {
+        "@id": "https://cair-nepal.org/NCHLOD"
+      }
+    ],
+    "https://w3id.org/linkml/definition_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodproduced"
+      }
+    ],
+    "https://w3id.org/linkml/domain_of": [
+      {
+        "@id": "https://cair-nepal.org/E7Activity"
+      }
+    ],
+    "https://w3id.org/linkml/inlined": [
+      {
+        "@type": "http://www.w3.org/2001/XMLSchema#boolean",
+        "@value": true
+      }
+    ],
+    "https://w3id.org/linkml/owner": [
+      {
+        "@id": "https://cair-nepal.org/E7Activity"
+      }
+    ],
+    "https://w3id.org/linkml/range": [
+      {
+        "@id": "https://cair-nepal.org/E22HumanMadeObject"
+      }
+    ],
+    "https://w3id.org/linkml/slot_uri": [
+      {
+        "@id": "https://cair-nepal.org/nchlodproduced"
+      }
+    ]
+  }
+]
