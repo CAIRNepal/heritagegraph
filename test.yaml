@@ -1,0 +1,195 @@
+id: NCHLOD
+name: nepalCulturalHeritageLinkedOpenData
+description: A schema based on CIDOC CRM to represent Nepal's cultural heritage data.
+imports:
+  - linkml:types
+prefixes:
+  crm: "http://www.cidoc-crm.org/cidoc-crm/"
+  linkml: "https://w3id.org/linkml/"
+  nchlod: "https://cair-nepal.org/nchlod"
+default_prefix: nchlod
+
+classes:
+  E4_Period:
+    description: "Identifiable periods of time."
+    slots:
+      - has_beginning
+      - has_end
+    is_a: E52_Time-Span
+
+  E5_Event:
+    description: "Changes of state in cultural heritage context."
+    slots:
+      - occurred_in
+      - has_time
+      - participated_in
+    is_a: E7_Activity
+
+  E6_Destruction:
+    is_a: E5_Event
+    description: "Events resulting in object destruction."
+    slots:
+      - destroyed
+      - destroyed_by
+
+  E7_Activity:
+    description: "Actions causing state changes."
+    slots:
+      - used
+      - produced
+      - carried_out_by
+
+  E8_Acquisition:
+    is_a: E7_Activity
+    description: "Events resulting in object acquisition."
+    slots:
+      - acquired_from
+
+  E10_Transfer_of_Custody:
+    is_a: E7_Activity
+    description: "Transfer of object custody."
+    slots:
+      - transferred_to
+
+  E11_Modification:
+    is_a: E7_Activity
+    description: "Events modifying objects."
+    slots:
+      - modified_technique
+
+  E12_Production:
+    is_a: E7_Activity
+    description: "Creation of physical objects."
+    slots:
+      - production_technique
+
+  E13_Attribute_Assignment:
+    is_a: E7_Activity
+    description: "Attribute assignment activities."
+    slots:
+      - assigned_to
+
+  E21_Person:
+    is_a: E39_Actor
+    description: "Individual people."
+    slots:
+      - member_of
+
+  E22_Human_Made_Object:
+    description: "Human-created physical objects."
+    slots:
+      - current_location
+      - creation_date
+      - created_by
+    is_a: E36_Visual_Item
+
+  E33_Linguistic_Object:
+    is_a: E73_Information_Object
+    description: "Textual/linguistic objects."
+    slots:
+      - translation_of
+
+  E36_Visual_Item:
+    description: "Visual representations."
+    slots:
+      - depicts_object
+      - depiction_technique
+
+  E39_Actor:
+    description: "Actors performing actions."
+    slots:
+      - affiliated_with
+      - contact_point
+
+  E52_Time-Span:
+    description: "Temporal intervals."
+    slots:
+      - during
+
+  E53_Place:
+    description: "Geographic locations."
+    slots:
+      - part_of
+      - contains_places
+
+  E54_Dimension:
+    description: "Object measurements."
+    slots:
+      - measurement_technique
+
+  E55_Type:
+    description: "Classification types."
+    slots:
+      - subcategory_of
+
+  E56_Language:
+    description: "Linguistic systems."
+    slots:
+      - has_dialect
+
+  E57_Material:
+    description: "Physical materials."
+    slots:
+      - material_composition
+
+  Contributor:
+    is_a: E39_Actor
+    description: "Dataset contributors."
+    slots:
+      - contributes_to
+
+  Place:
+    is_a: E53_Place
+    description: "Cultural heritage locations."
+    slots:
+      - cultural_significance
+
+slots:
+  # Add missing inverse relationships
+  has_members:
+    range: E39_Actor
+    inverse: member_of
+  
+  member_of:
+    range: E74_Group
+    inverse: has_members
+
+  depicts_object:
+    range: E22_Human_Made_Object
+    inverse: depicted_in
+
+  created_by:
+    range: E39_Actor
+    inverse: creator_of
+
+  part_of:
+    range: E53_Place
+    inverse: contains_places
+
+  # Add missing temporal relationships
+  during:
+    range: E4_Period
+    inverse: contains_events
+
+  # Connect materials to objects
+  material_composition:
+    range: E57_Material
+    inverse: used_in_objects
+
+  # Add provenance relationships
+  current_location:
+    range: E53_Place
+    inverse: located_objects
+
+  # Connect contributors to activities
+  contributes_to:
+    range: E7_Activity
+    inverse: contributors
+
+  # Add missing visualization links
+  depiction_technique:
+    range: E55_Type
+
+  # Connect cultural significance
+  cultural_significance:
+    range: E89_Propositional_Object
