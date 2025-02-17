@@ -1,39 +1,35 @@
-from SPARQLWrapper import SPARQLWrapper, JSON
+import requests
 
-# Define the SPARQL endpoint
-sparql_endpoint = "http://localhost:7878/query"
+# Oxigraph SPARQL endpoint
+endpoint = "http://localhost:7878/update"
 
-# Initialize SPARQLWrapper
-sparql = SPARQLWrapper(sparql_endpoint)
-
-# Define the SELECT query to retrieve data
+# SPARQL INSERT query
 query = """
-PREFIX ex: <http://example.org/>
-SELECT ?s ?p ?o
-WHERE {
-    ?s ?p ?o .
+INSERT DATA {
+    <http://example.org/Alice> <http://example.org/knows> <http://example.org/Bob> .
 }
 """
 
-# Set the query and return format
-sparql.setQuery(query)
-sparql.setReturnFormat(JSON)
+# Send the SPARQL query
+response = requests.post(endpoint, data={"update": query}, headers={"Content-Type": "application/x-www-form-urlencoded"})
 
-# Execute the query and print the response
-try:
-    # Execute the query
-    results = sparql.query().convert()
+# Check response
+print("Status Code:", response.status_code)
+print("Response:", response.text)
+import requests
 
-    # Print the raw JSON response (optional, for debugging)
-    print("Raw JSON Response:")
-    print(results)
+# SPARQL Query endpoint
+endpoint = "http://localhost:7878/query"
 
-    # Process and print the retrieved triples
-    print("\nRetrieved Triples:")
-    for result in results["results"]["bindings"]:
-        subject = result["s"]["value"]
-        predicate = result["p"]["value"]
-        obj = result["o"]["value"]
-        print(f"{subject} {predicate} {obj}")
-except Exception as e:
-    print("Error occurred:", e)
+# SPARQL SELECT query
+query = """
+SELECT ?s ?p ?o WHERE {
+    ?s ?p ?o .
+} LIMIT 10
+"""
+
+# Send the query
+response = requests.get(endpoint, params={"query": query}, headers={"Accept": "application/sparql-results+json"})
+
+# Print results
+print("Response:", response.json())
