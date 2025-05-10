@@ -1,5 +1,4 @@
 # Codespell configuration is within .codespellrc
----
 name: Codespell and Docs Generation
 
 on:
@@ -26,11 +25,13 @@ jobs:
       - name: Run Codespell
         uses: codespell-project/actions-codespell@v2
         with:
-          skip: '*.env,*.git,*.myenv,requirements.txt'
+          ignore_words_file: .codespellignore
+          skip: '*.env,*.git,*.myenv,requirements.txt,package-lock.json,yarn.lock,pnpm-lock.yaml'
 
   build-docs:
     name: Generate Sphinx Documentation
     runs-on: ubuntu-latest
+    needs: codespell  # Run docs generation only after codespell passes
 
     steps:
       - name: Checkout repository
