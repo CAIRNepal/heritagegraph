@@ -1,0 +1,18 @@
+# Frontend Dockerfile (build stage only)
+FROM node:16-slim as build
+
+WORKDIR /app
+
+# Copy package.json and lockfile
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the actual source code (src/, public/, etc.)
+COPY heritage_graph_ui/ ./
+
+# Build the project
+RUN npm run build
+
+# Output will be at /app/heritage_graph_ui/build

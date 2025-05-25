@@ -1,27 +1,36 @@
-version: '3.9'
+version: '3.8'
 
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: heritage_backend
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    volumes:
+      - .:/app
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app
-    working_dir: /app
-    entrypoint: ["/app/entrypoint.sh"]
-    command: ["python", "heritage_graph/manage.py", "runserver", "0.0.0.0:8000"]
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
 
-  frontend:
+  frontend_build:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app/frontend
-    working_dir: /app/frontend
-    command: ["npm", "start"]
+      context: .
+      target: build  # if you use multi-stage build with target 'build'
+      dockerfile: Dockerfile.frontend
+    container_name: heritage_frontend_build
+    # No need to expose ports or run anything here since this is build stage
+
+  nginx:
+    image: nginx:latest
+    container_name: heritage_nginx
     depends_on:
       - backend
+      - frontend_build
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /app/heritage_graph_ui/build:/usr/share/nginx/html:ro
