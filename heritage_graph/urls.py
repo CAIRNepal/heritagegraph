@@ -10,7 +10,7 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from heritage_data.views import RegisterView, CurrentUserView
+from .apps.heritage_data.views import RegisterView, CurrentUserView
 
 # DefaultRouter for API endpoints
 router = DefaultRouter()
@@ -19,7 +19,7 @@ router = DefaultRouter()
 schema_view = get_schema_view(
     openapi.Info(
         title="My API Documentation",
-        default_version="v1",  
+        default_version="v1",
         description="API documentation for the backend services",
         terms_of_service="https://www.example.com/terms/",
         contact=openapi.Contact(email="support@example.com"),
@@ -34,14 +34,14 @@ urlpatterns = [
     path('schema/', SpectacularAPIView.as_view(), name='schema'),  # OpenAPI schema
     path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),  # Swagger UI
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),  # ReDoc
-    path("openapi.json", schema_view.without_ui(cache_timeout=0), name="schema-json"),  
+    path("openapi.json", schema_view.without_ui(cache_timeout=0), name="schema-json"),
 
     # Admin
     path('admin/', admin.site.urls),
 
     # API Endpoints
     path('', include(router.urls)),  # DefaultRouter URLs
-    path('data/', include('heritage_data.urls')),  # Heritage Data App
+    path('data/', include('heritage_graph.apps.heritage_data.urls')),  # Heritage Data App
 
     # Authentication
     path("auth/", include("djoser.urls")),  # Djoser URLs

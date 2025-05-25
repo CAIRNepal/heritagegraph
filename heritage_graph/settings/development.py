@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from heritage_graph import apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -33,12 +33,13 @@ ALLOWED_HOSTS = ["0.0.0.0", "localhost", "127.0.0.1"]
 INSTALLED_APPS = [
     # installed apps
     "rest_framework",
-    "heritagegraph.apps.heritage_data",
+    "heritage_graph.apps.heritage_data",
     "djoser",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_extensions",
     "drf_spectacular",
+
     # Pre-installed apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -60,7 +61,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "heritagegraph.urls"
+ROOT_URLCONF = "heritage_graph.urls"
 
 TEMPLATES = [
     {
@@ -78,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "heritagegraph.wsgi.application"
+WSGI_APPLICATION = "heritage_graph.wsgi.application"
 
 
 # Database
