@@ -1,5 +1,5 @@
 {
-  "name": "@civicactions/data-catalog-app",
+  "name": "HeritageGraph",
   "version": "1.6.1",
   "private": false,
   "homepage": "/",
@@ -42,11 +42,11 @@
     "wretch": "^2.11.0"
   },
   "scripts": {
-    "start": "vite --host 0.0.0.0",
-    "build": "vite build --base=/",
-    "test": "vitest",
-    "preview": "vite preview",
-    "sass": "sass ./src/theme/index.scss ./src/theme/index.css"
+    "start": "cd heritage_graph_ui && vite --host 0.0.0.0",
+    "build": "cd heritage_graph_ui && vite build --base=/",
+    "test": "cd heritage_graph_ui && vitest",
+    "preview": "cd heritage_graph_ui && vite preview",
+    "sass": "cd heritage_graph_ui && sass ./src/theme/index.scss ./src/theme/index.css"
   },
   "eslintConfig": {
     "extends": "react-app"

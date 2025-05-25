@@ -4,7 +4,7 @@ import { Announcement } from "@civicactions/data-catalog-components";
 import Layout from '../../components/Layout';
 import config from '../../assets/config';
 import { Spin } from 'antd';
-import { version, dependencies } from '../../../package.json';
+// import { version, dependencies } from '../../../package.json';
 import WebformSubmissionTable from "../../components/table";
 
 const WebformSubmissions = () => {
@@ -13,10 +13,10 @@ const WebformSubmissions = () => {
   useEffect(() => {
     axios.get('https://nchlod.ddev.site/jsonapi/webform_submission/nchlod1')
       .then(response => {
-        console.log('API response:', response); 
+        console.log('API response:', response);
         if (response.data && response.data.data) {
           const ids = response.data.data.map(submission => submission.id);
-          console.log('Extracted IDs:', ids); 
+          console.log('Extracted IDs:', ids);
           setSubmissionIds(ids);
         } else {
           console.error('Unexpected response structure:', response);
