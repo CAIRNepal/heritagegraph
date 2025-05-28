@@ -1,36 +1,39 @@
-version: '3.8'
+version: '3.9'
 
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    container_name: heritage_backend
-    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
-    volumes:
-      - .:/app
+    container_name: chlod-backend
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
     environment:
-      - PYTHONDONTWRITEBYTECODE=1
-      - PYTHONUNBUFFERED=1
+      - DJANGO_SETTINGS_MODULE=heritage_graph.settings.development
+    # depends_on:
+    #   - db
 
-  frontend_build:
+  frontend:
     build:
       context: .
-      target: build  # if you use multi-stage build with target 'build'
       dockerfile: Dockerfile.frontend
-    container_name: heritage_frontend_build
-    # No need to expose ports or run anything here since this is build stage
-
-  nginx:
-    image: nginx:latest
-    container_name: heritage_nginx
-    depends_on:
-      - backend
-      - frontend_build
+    container_name: chlod-frontend
     ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - /app/heritage_graph_ui/build:/usr/share/nginx/html:ro
+      - "3000:80"  # serve React on http://localhost:3000
+
+#   db:
+#     image: postgres:15-alpine
+#     container_name: chlod-db
+#     environment:
+#       POSTGRES_DB: heritage
+#       POSTGRES_USER: admin
+#       POSTGRES_PASSWORD: admin
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     ports:
+#       - "5432:5432"
+
+# volumes:
+#   postgres_data:
