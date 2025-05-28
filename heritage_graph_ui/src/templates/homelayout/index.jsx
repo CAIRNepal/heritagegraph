@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import AppLayout from "../../components/AppLayout";
-import config from "../../assets/config";
 import { Input, Space, Button, Table, Tag, Card, Row, Col, Statistic } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
@@ -13,23 +12,30 @@ const Dashboard = () => {
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
 
-  const currentUsername = "nabin2004";  
+  const currentUsername = "nabin2004";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get("/data/leaderboard/");
-        setHomeData(response.data);
+        // Defensive: ensure response.data is an array
+        if (Array.isArray(response.data)) {
+          setHomeData(response.data);
+        } else {
+          console.error("Leaderboard data is not an array:", response.data);
+          setHomeData([]); // fallback empty array
+        }
       } catch (error) {
         console.error("Error fetching leaderboard data:", error);
+        setHomeData([]); // fallback empty array on error
       } finally {
         setLoading(false);
       }
     };
-  
+
     fetchData();
   }, []);
-  
+
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -90,6 +96,22 @@ const Dashboard = () => {
       ),
   });
 
+  // Defensive checks before reduce: ensure homeData is an array
+  const isArrayData = Array.isArray(homeData);
+
+  const totalSubmissions = isArrayData
+    ? homeData.reduce((sum, user) => sum + (user.total_submissions || 0), 0)
+    : 0;
+  const totalAccepted = isArrayData
+    ? homeData.reduce((sum, user) => sum + (user.accepted_submissions || 0), 0)
+    : 0;
+  const averageScore = isArrayData && homeData.length > 0
+    ? (homeData.reduce((sum, user) => sum + (user.score || 0), 0) / homeData.length).toFixed(2)
+    : 0;
+
+  const yourData = isArrayData ? homeData.find(user => user.username === currentUsername) : null;
+  const yourRank = yourData ? yourData.rank : "N/A";
+
   const columns = [
     {
       title: "Rank",
@@ -135,15 +157,6 @@ const Dashboard = () => {
     },
   ];
 
-  const totalSubmissions = homeData.reduce((sum, user) => sum + (user.total_submissions || 0), 0);
-  const totalAccepted = homeData.reduce((sum, user) => sum + (user.accepted_submissions || 0), 0);
-  const averageScore = homeData.length > 0
-    ? (homeData.reduce((sum, user) => sum + (user.score || 0), 0) / homeData.length).toFixed(2)
-    : 0;
-
-  const yourData = homeData.find(user => user.username === currentUsername);
-  const yourRank = yourData ? yourData.rank : "N/A";
-
   return (
     <AppLayout title="Dashboard">
       <div style={{ padding: "24px", background: "#f4f7fb", borderRadius: "8px" }}>
@@ -180,7 +193,7 @@ const Dashboard = () => {
           </Col>
         </Row>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '34px' }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "34px" }}>
           <Space>
             <Button type="primary" href="/submissions" style={{ borderRadius: "8px" }}>
               Explore Submissions

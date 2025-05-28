@@ -53,24 +53,35 @@ const DiffViewer = () => {
     if (!slug) {
       setLoadingSubmissions(true);
       axios.get('/data/submissions/')
-        .then(res => setSubmissions(res.data))
-        .catch(err => console.error("Failed to fetch submissions", err))
+        .then(res => {
+          setSubmissions(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => {
+          setSubmissions([]);
+        })
         .finally(() => setLoadingSubmissions(false));
       return;
     }
 
     const fetchData = async () => {
-      const [originalRes, suggestionsRes] = await Promise.all([
-        fetch(`/data/submissions/${slug}`),
-        fetch(`/data/submissions/${slug}/edit-suggestions`)
-      ]);
-      const originalData = await originalRes.json();
-      const suggestionsData = await suggestionsRes.json();
-
-      setOriginal(originalData);
-      setSuggestions(suggestionsData);
-      if (suggestionsData.length > 0) {
-        setSelectedId(suggestionsData[0].id);
+      try {
+        const [originalRes, suggestionsRes] = await Promise.all([
+          fetch(`/data/submissions/${slug}`),
+          fetch(`/data/submissions/${slug}/edit-suggestions`)
+        ]);
+        const originalData = await originalRes.json();
+        const suggestionsData = await suggestionsRes.json();
+        setOriginal(originalData || null);
+        setSuggestions(Array.isArray(suggestionsData) ? suggestionsData : []);
+        if (Array.isArray(suggestionsData) && suggestionsData.length > 0) {
+          setSelectedId(suggestionsData[0].id);
+        } else {
+          setSelectedId(null);
+        }
+      } catch {
+        setOriginal(null);
+        setSuggestions([]);
+        setSelectedId(null);
       }
     };
 
@@ -84,9 +95,13 @@ const DiffViewer = () => {
         const originalText = `${original.title}\n\n${original.description}`;
         const modifiedText = `${selectedSuggestion.title}\n\n${selectedSuggestion.description}`;
         setDiff(getDiff(originalText.trim(), modifiedText.trim()));
+      } else {
+        setDiff([]);
       }
+    } else {
+      setDiff([]);
     }
-  }, [original, selectedId]);
+  }, [original, selectedId, suggestions]);
 
   if (!slug) return (
     <AppLayout title="Choose Submission">
@@ -122,7 +137,7 @@ const DiffViewer = () => {
               option?.children?.toLowerCase().includes(input.toLowerCase())
             }
           >
-            {submissions.map((s) => (
+            {(Array.isArray(submissions) ? submissions : []).map((s) => (
               <Option key={s.submission_id} value={s.submission_id}>
                 <Text strong>{s.title}</Text>
               </Option>
@@ -133,7 +148,7 @@ const DiffViewer = () => {
     </AppLayout>
   );
 
-  if (!original || suggestions.length === 0) return (
+  if (!original || !Array.isArray(suggestions) || suggestions.length === 0) return (
     <AppLayout title="No Submission Found">
       <Card style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <Title level={3} style={{ textAlign: 'center', color: config.primaryColor, fontWeight: 'bold', marginBottom: '20px' }}>
@@ -169,7 +184,7 @@ const DiffViewer = () => {
                 style={{ minWidth: 250 }}
                 placeholder="Select an edit suggestion"
               >
-                {suggestions.map((s) => (
+                {(Array.isArray(suggestions) ? suggestions : []).map((s) => (
                   <Option key={s.id} value={s.id}>
                     {s.title} — by {s.suggested_by}
                   </Option>
@@ -217,12 +232,12 @@ const DiffViewer = () => {
               {diff.map((item, index) => (
                 <Paragraph
                   key={index}
-                  type={item.type === "removed" || item.type === "edited" ? "danger" : undefined}
-                  delete={item.type === "removed"}
                   style={{
-                    backgroundColor: (item.type === "removed" || item.type === "edited") ? "#fff1f0" : "transparent",
+                    backgroundColor: item.type === "removed" || item.type === "edited" ? "#fff1f0" : undefined,
                     padding: "4px 8px",
                     marginBottom: 12,
+                    whiteSpace: "pre-wrap",
+                    color: item.type === "removed" || item.type === "edited" ? "#cf1322" : undefined,
                   }}
                 >
                   {item.original || ""}
@@ -230,16 +245,17 @@ const DiffViewer = () => {
               ))}
             </Col>
             <Col span={12}>
-              <Text strong>Modified</Text>
+              <Text strong>Suggested Edit</Text>
               <Divider />
               {diff.map((item, index) => (
                 <Paragraph
                   key={index}
                   style={{
-                    backgroundColor: (item.type === "added" || item.type === "edited") ? "#e6fffb" : "transparent",
+                    backgroundColor: item.type === "added" || item.type === "edited" ? "#e6fffb" : undefined,
                     padding: "4px 8px",
-                    color: (item.type === "added" || item.type === "edited") ? "#08979c" : undefined,
                     marginBottom: 12,
+                    whiteSpace: "pre-wrap",
+                    color: item.type === "added" || item.type === "edited" ? "#08979c" : undefined,
                   }}
                 >
                   {item.modified || ""}

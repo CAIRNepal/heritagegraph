@@ -22,7 +22,7 @@ import {
 import { useSearchParams, useNavigate } from "react-router-dom";
 import AppLayout from "../../../components/AppLayout";
 import config from "../../../assets/config";
-import axios from 'axios';
+import axios from "axios";
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -33,7 +33,7 @@ const BlogVersionTracker = () => {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // New error state
+  const [error, setError] = useState(null);
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [submissions, setSubmissions] = useState([]);
 
@@ -46,7 +46,7 @@ const BlogVersionTracker = () => {
 
     const fetchData = async () => {
       setLoading(true);
-      setError(null); // Reset error state
+      setError(null);
       try {
         const [liveRes, versionsRes, suggestionsRes] = await Promise.all([
           fetch(`/data/submissions/${submissionId}`),
@@ -71,34 +71,40 @@ const BlogVersionTracker = () => {
           user: live.submitted_by,
         };
 
-        const versionEntries = versions.map((v) => ({
-          id: `version-${v.version_number}`,
-          type: "version",
-          title: `Version ${v.version_number}`,
-          timestamp: v.updated_at,
-          content: v.description,
-          user: v.updated_by,
-        }));
+        const versionEntries = Array.isArray(versions)
+          ? versions.map((v) => ({
+              id: `version-${v.version_number}`,
+              type: "version",
+              title: `Version ${v.version_number}`,
+              timestamp: v.updated_at,
+              content: v.description,
+              user: v.updated_by,
+            }))
+          : [];
 
-        const suggestionEntries = suggestions.map((s) => ({
-          id: `suggestion-${s.id}`,
-          type: "suggestion",
-          title: `Suggestion by ${s.suggested_by}`,
-          timestamp: s.created_at,
-          content: s.description,
-          user: s.suggested_by,
-          approved: s.approved,
-        }));
+        const suggestionEntries = Array.isArray(suggestions)
+          ? suggestions.map((s) => ({
+              id: `suggestion-${s.id}`,
+              type: "suggestion",
+              title: `Suggestion by ${s.suggested_by}`,
+              timestamp: s.created_at,
+              content: s.description,
+              user: s.suggested_by,
+              approved: s.approved,
+            }))
+          : [];
 
-        const allEntries = [liveEntry, ...versionEntries, ...suggestionEntries].sort(
+        const allEntries = [liveEntry, ...versionEntries, ...suggestionEntries].filter(Boolean).sort(
           (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
         );
 
         setEntries(allEntries);
-        setSelectedEntry(allEntries[0] || null);
+        setSelectedEntry(allEntries.length > 0 ? allEntries[0] : null);
       } catch (error) {
         setError("Error fetching version data. Please try again later.");
         console.error("Error fetching version data:", error);
+        setEntries([]);
+        setSelectedEntry(null);
       } finally {
         setLoading(false);
       }
@@ -108,11 +114,17 @@ const BlogVersionTracker = () => {
   }, [submissionId]);
 
   useEffect(() => {
-    const currentItems = entries.slice(
-      (currentPage - 1) * ITEMS_PER_PAGE,
-      currentPage * ITEMS_PER_PAGE
-    );
-    if (currentItems.length && !currentItems.some((v) => v.id === selectedEntry?.id)) {
+    const currentItems = Array.isArray(entries)
+      ? entries.slice(
+          (currentPage - 1) * ITEMS_PER_PAGE,
+          currentPage * ITEMS_PER_PAGE
+        )
+      : [];
+
+    if (
+      currentItems.length > 0 &&
+      !currentItems.some((v) => v.id === selectedEntry?.id)
+    ) {
       setSelectedEntry(currentItems[0]);
     }
   }, [currentPage, entries, selectedEntry]);
@@ -120,9 +132,13 @@ const BlogVersionTracker = () => {
   useEffect(() => {
     if (!submissionId) {
       setLoadingSubmissions(true);
-      axios.get("/data/submissions/")
-        .then((res) => setSubmissions(res.data))
-        .catch((err) => console.error("Failed to fetch submissions", err))
+      axios
+        .get("/data/submissions/")
+        .then((res) => setSubmissions(Array.isArray(res.data) ? res.data : []))
+        .catch((err) => {
+          console.error("Failed to fetch submissions", err);
+          setSubmissions([]);
+        })
         .finally(() => setLoadingSubmissions(false));
     }
   }, [submissionId]);
@@ -130,13 +146,25 @@ const BlogVersionTracker = () => {
   const renderTag = (entry) => {
     switch (entry.type) {
       case "live":
-        return <Tag icon={<StarOutlined />} color="geekblue">Live</Tag>;
+        return (
+          <Tag icon={<StarOutlined />} color="geekblue">
+            Live
+          </Tag>
+        );
       case "version":
-        return <Tag icon={<CheckCircleOutlined />} color="blue">Version</Tag>;
+        return (
+          <Tag icon={<CheckCircleOutlined />} color="blue">
+            Version
+          </Tag>
+        );
       case "suggestion":
         if (entry.approved === true) return <Tag color="green">Approved</Tag>;
         if (entry.approved === false) return <Tag color="red">Rejected</Tag>;
-        return <Tag icon={<HourglassOutlined />} color="orange">Pending</Tag>;
+        return (
+          <Tag icon={<HourglassOutlined />} color="orange">
+            Pending
+          </Tag>
+        );
       default:
         return null;
     }
@@ -145,8 +173,22 @@ const BlogVersionTracker = () => {
   if (!submissionId) {
     return (
       <AppLayout title="Choose Submission">
-        <Card style={{ minHeight: "70vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <Title level={3} style={{ textAlign: "center", color: config.primaryColor, textTransform: "uppercase" }}>
+        <Card
+          style={{
+            minHeight: "70vh",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+        >
+          <Title
+            level={3}
+            style={{
+              textAlign: "center",
+              color: config.primaryColor,
+              textTransform: "uppercase",
+            }}
+          >
             Select a Submission to Suggest Edits
           </Title>
           {loadingSubmissions ? (
@@ -177,11 +219,13 @@ const BlogVersionTracker = () => {
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {submissions.map((s) => (
-                <Option key={s.submission_id} value={s.submission_id}>
-                  <Text strong>{s.title}</Text>
-                </Option>
-              ))}
+              {Array.isArray(submissions) && submissions.length > 0
+                ? submissions.map((s) => (
+                    <Option key={s.submission_id} value={s.submission_id}>
+                      <Text strong>{s.title}</Text>
+                    </Option>
+                  ))
+                : null}
             </Select>
           )}
         </Card>
@@ -203,8 +247,13 @@ const BlogVersionTracker = () => {
         {loading ? (
           <Spin size="large" style={{ display: "block", margin: "40px auto" }} />
         ) : error ? (
-          <Alert message={error} type="error" showIcon style={{ marginBottom: 20 }} />
-        ) : entries.length === 0 ? (
+          <Alert
+            message={error}
+            type="error"
+            showIcon
+            style={{ marginBottom: 20 }}
+          />
+        ) : !Array.isArray(entries) || entries.length === 0 ? (
           <Text type="secondary">No version or suggestion data available.</Text>
         ) : (
           <Row gutter={[24, 16]}>
@@ -216,10 +265,13 @@ const BlogVersionTracker = () => {
               >
                 <List
                   itemLayout="horizontal"
-                  dataSource={entries.slice(
-                    (currentPage - 1) * ITEMS_PER_PAGE,
-                    currentPage * ITEMS_PER_PAGE
-                  )}
+                  dataSource={Array.isArray(entries)
+                    ? entries.slice(
+                        (currentPage - 1) * ITEMS_PER_PAGE,
+                        currentPage * ITEMS_PER_PAGE
+                      )
+                    : []
+                  }
                   pagination={{
                     pageSize: ITEMS_PER_PAGE,
                     total: entries.length,
@@ -232,7 +284,8 @@ const BlogVersionTracker = () => {
                       onClick={() => setSelectedEntry(item)}
                       style={{
                         cursor: "pointer",
-                        backgroundColor: selectedEntry?.id === item.id ? "#e6f7ff" : "transparent",
+                        backgroundColor:
+                          selectedEntry?.id === item.id ? "#e6f7ff" : "transparent",
                         borderRadius: 6,
                         padding: 12,
                         marginBottom: 6,
@@ -255,7 +308,9 @@ const BlogVersionTracker = () => {
                           <Space size="small">
                             <ClockCircleOutlined style={{ fontSize: 12 }} />
                             <Text type="secondary" style={{ fontSize: 12 }}>
-                              {new Date(item.timestamp).toLocaleString()}
+                              {item.timestamp
+                                ? new Date(item.timestamp).toLocaleString()
+                                : "No timestamp"}
                             </Text>
                           </Space>
                         }
@@ -276,7 +331,7 @@ const BlogVersionTracker = () => {
                 }}
               >
                 <Space direction="vertical" style={{ width: "100%" }}>
-                  <Title level={5}>{selectedEntry?.title}</Title>
+                  <Title level={5}>{selectedEntry?.title || "No selection"}</Title>
                   <Text type="secondary">
                     {selectedEntry?.timestamp
                       ? new Date(selectedEntry.timestamp).toLocaleString()

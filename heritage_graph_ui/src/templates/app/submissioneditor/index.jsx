@@ -34,181 +34,201 @@ const SubmissionEditor = () => {
   const [loadingSubmissions, setLoadingSubmissions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-
+  // Diff calculation function (line-by-line)
   const getDiff = (originalText, modifiedText) => {
     const oLines = originalText.split("\n");
     const mLines = modifiedText.split("\n");
-    const diff = [];
+    const diffResult = [];
     let i = 0, j = 0;
 
     while (i < oLines.length || j < mLines.length) {
       if (i < oLines.length && j < mLines.length && oLines[i] === mLines[j]) {
-        diff.push({ type: "same", original: oLines[i], modified: mLines[j] });
+        diffResult.push({ type: "same", original: oLines[i], modified: mLines[j] });
         i++; j++;
       } else if (i < oLines.length && j < mLines.length) {
-        diff.push({ type: "edited", original: oLines[i], modified: mLines[j] });
+        diffResult.push({ type: "edited", original: oLines[i], modified: mLines[j] });
         i++; j++;
       } else if (i < oLines.length) {
-        diff.push({ type: "removed", original: oLines[i] });
+        diffResult.push({ type: "removed", original: oLines[i] });
         i++;
       } else if (j < mLines.length) {
-        diff.push({ type: "added", modified: mLines[j] });
+        diffResult.push({ type: "added", modified: mLines[j] });
         j++;
       }
     }
 
-    return diff;
+    return diffResult;
   };
 
+  // Update diff and hasChanges whenever original or live text changes
   useEffect(() => {
     if (original) {
-      const originalTitle = original.title.trim();
-      const originalDescription = original.description.trim();
+      const originalTitle = original.title?.trim() || '';
+      const originalDescription = original.description?.trim() || '';
       const currentTitle = liveTitle.trim();
       const currentDescription = liveDescription.trim();
-  
+
       const isChanged = originalTitle !== currentTitle || originalDescription !== currentDescription;
       setHasChanges(isChanged);
-  
+
       const originalText = `${originalTitle}\n\n${originalDescription}`;
       const modifiedText = `${currentTitle}\n\n${currentDescription}`;
       setDiff(getDiff(originalText, modifiedText));
     }
   }, [original, liveTitle, liveDescription]);
-  
 
+  // Load submissions list or single submission + suggestions based on submissionId
   useEffect(() => {
+    setError('');
+    setSuccess('');
     if (!submissionId) {
       setLoadingSubmissions(true);
       axios.get('/data/submissions/')
-        .then(res => setSubmissions(res.data))
-        .catch(err => console.error("Failed to fetch submissions", err))
+        .then(res => {
+          if (Array.isArray(res.data)) {
+            setSubmissions(res.data);
+          } else {
+            setError("Invalid submissions data format.");
+            setSubmissions([]);
+          }
+        })
+        .catch(() => setError("Failed to fetch submissions."))
         .finally(() => setLoadingSubmissions(false));
       return;
     }
 
+    // Load submission details
     axios.get(`/data/submissions/${submissionId}/`)
       .then(res => {
         const data = res.data;
         setOriginal(data);
-        setLiveTitle(data.title);
-        setLiveDescription(data.description);
+        setLiveTitle(data.title || '');
+        setLiveDescription(data.description || '');
         form.setFieldsValue({
-          title: data.title,
-          description: data.description,
+          title: data.title || '',
+          description: data.description || '',
           field1: data.contribution_data?.field1 || '',
           field2: data.contribution_data?.field2 || '',
         });
       })
       .catch(() => setError('Failed to fetch submission data.'));
 
+    // Load suggestions
     axios.get(`/data/submissions/${submissionId}/edit-suggestions`)
       .then(res => {
-        const suggestions = res.data;
-        setSuggestions(suggestions);
-        if (suggestions.length > 0) {
-          setSelectedId(suggestions.submission_id);
+        const suggestionsData = res.data;
+        if (Array.isArray(suggestionsData)) {
+          setSuggestions(suggestionsData);
+          if (suggestionsData.length > 0) {
+            // Select first suggestion's id if it exists
+            setSelectedId(suggestionsData[0]?.submission_id || null);
+          } else {
+            setSelectedId(null);
+          }
+        } else {
+          setSuggestions([]);
+          setSelectedId(null);
         }
       })
       .catch(() => setError('Failed to load suggestions.'));
   }, [submissionId, form]);
 
-  useEffect(() => {
-    if (original) {
-      const originalText = `${original.title}\n\n${original.description}`;
-      const modifiedText = `${liveTitle}\n\n${liveDescription}`;
-      setDiff(getDiff(originalText.trim(), modifiedText.trim()));
+  // Form submission handler
+  const handleSubmit = async () => {
+    if (!submissionId) {
+      setError("No submission selected. Please choose a submission first.");
+      return;
     }
-  }, [original, liveTitle, liveDescription]);
 
-const handleSubmit = async () => {
-  if (!submissionId) {
-    setError("No submission selected. Please choose a submission first.");
-    return;
-  }
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+      setError('');
+      setSuccess('');
 
-  try {
-    const values = await form.validateFields();
-    setLoading(true);
-    setError('');
-    setSuccess('');
+      const payload = {
+        submission: submissionId,
+        title: values.title,
+        description: values.description,
+        contribution_data: {
+          field1: values.field1,
+          field2: values.field2,
+        },
+      };
 
-    const payload = {
-      submission: submissionId, 
-      title: values.title,
-      description: values.description,
-      contribution_data: {
-        field1: values.field1,
-        field2: values.field2,
-      },
-    };
+      const response = await axios.post(
+        `/data/submission-suggestions/`,
+        payload,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
 
-    const response = await axios.post(
-      `/data/submission-suggestions/`,
-      payload,
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-
-    if (response.status === 201 || response.status === 200) {
-      setSuccess('Suggestion submitted successfully!');
-      form.resetFields();
-    } else {
-      setError('Failed to submit suggestion.');
+      if (response.status === 201 || response.status === 200) {
+        setSuccess('Suggestion submitted successfully!');
+        form.resetFields();
+        // Reset live title and description to empty to avoid confusion
+        setLiveTitle('');
+        setLiveDescription('');
+      } else {
+        setError('Failed to submit suggestion.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred during submission.');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-    setError('An error occurred during submission.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
+  // Render Select for submissions if no submissionId in URL
   if (!submissionId) {
     return (
       <AppLayout title="Choose Submission">
-<Card style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-  <Title level={3} style={{ textAlign: 'center', color: config.primaryColor , textTransform: 'uppercase',}}>Select a Submission to Suggest Edits</Title>
-  {loadingSubmissions ? (
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <Spin size="large" />
-    </div>
-  ) : (
-    <Select
-      showSearch
-      placeholder="Choose a submission below to begin suggesting improvements..."
-      optionFilterProp="children"
-      onChange={(selectedSubmissionId) => {
-        navigate(`?submissionId=${selectedSubmissionId}`);
-      }}
-      style={{
-        width: '100%',
-        fontSize: '16px',
-        borderRadius: 12,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-        height: 60,
-        display: 'flex',
-        alignItems: 'center',
-      }}
-      size="large"
-      listHeight={400}
-      dropdownStyle={{ borderRadius: 12, maxHeight: 500, overflow: 'auto' }}
-      filterOption={(input, option) =>
-        option?.children?.toLowerCase().includes(input.toLowerCase())
-      }
-    >
-      {submissions.map((s) => (
-        <Option key={s.submission_id} value={s.submission_id}>
-          <Text strong>{s.title}</Text> 
-        </Option>
-      ))}
-    </Select>
-  )}
-</Card>
-
+        <Card style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Title level={3} style={{ textAlign: 'center', color: config.primaryColor, textTransform: 'uppercase' }}>
+            Select a Submission to Suggest Edits
+          </Title>
+          {loadingSubmissions ? (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <Spin size="large" />
+            </div>
+          ) : (
+            <Select
+              showSearch
+              placeholder="Choose a submission below to begin suggesting improvements..."
+              optionFilterProp="children"
+              onChange={(selectedSubmissionId) => {
+                navigate(`?submissionId=${selectedSubmissionId}`);
+              }}
+              style={{
+                width: '100%',
+                fontSize: 16,
+                borderRadius: 12,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                height: 60,
+                display: 'flex',
+                alignItems: 'center',
+              }}
+              size="large"
+              listHeight={400}
+              dropdownStyle={{ borderRadius: 12, maxHeight: 500, overflow: 'auto' }}
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+              value={null}
+            >
+              {submissions.map((s) => (
+                <Option key={s.submission_id} value={s.submission_id}>
+                  <Text strong>{s.title}</Text>
+                </Option>
+              ))}
+            </Select>
+          )}
+        </Card>
       </AppLayout>
     );
   }
 
+  // Main form and diff view rendering
   return (
     <AppLayout title="Suggest an Edit">
       <div className={`dc-page ${config.container}`}>
@@ -216,16 +236,25 @@ const handleSubmit = async () => {
         <Paragraph>Propose changes to improve this submission. Your suggestion will be reviewed by moderators.</Paragraph>
 
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
-          <Form.Item label="Updated Title" name="title" rules={[{ required: true }]}> 
-            <Input placeholder="Enter updated title" onChange={e => setLiveTitle(e.target.value)} />
+          <Form.Item label="Updated Title" name="title" rules={[{ required: true }]}>
+            <Input
+              placeholder="Enter updated title"
+              onChange={e => setLiveTitle(e.target.value)}
+              value={liveTitle}
+            />
           </Form.Item>
-          <Form.Item label="Updated Description" name="description" rules={[{ required: true }]}> 
-            <TextArea rows={4} placeholder="Enter updated description" onChange={e => setLiveDescription(e.target.value)} />
+          <Form.Item label="Updated Description" name="description" rules={[{ required: true }]}>
+            <TextArea
+              rows={4}
+              placeholder="Enter updated description"
+              onChange={e => setLiveDescription(e.target.value)}
+              value={liveDescription}
+            />
           </Form.Item>
-          <Form.Item label="Field 1" name="field1" rules={[{ required: true }]}> 
+          <Form.Item label="Field 1" name="field1" rules={[{ required: true }]}>
             <Input placeholder="New value for field1" />
           </Form.Item>
-          <Form.Item label="Field 2" name="field2" rules={[{ required: true }]}> 
+          <Form.Item label="Field 2" name="field2" rules={[{ required: true }]}>
             <Input type="number" placeholder="New value for field2" />
           </Form.Item>
           <Form.Item>
@@ -255,64 +284,46 @@ const handleSubmit = async () => {
             <Spin size="large" />
           ) : viewMode === "inline" ? (
             <div>
-              {diff.map((item, index) => {
+              {Array.isArray(diff) && diff.length > 0 ? diff.map((item, index) => {
                 const baseStyle = { marginBottom: 12 };
                 if (item.type === "same") {
                   return <Paragraph key={index} style={baseStyle}>{item.original}</Paragraph>;
-                } else if (item.type === "removed") {
+                } else if (item.type === "edited") {
                   return (
-                    <Paragraph key={index} type="danger" delete style={{ ...baseStyle, backgroundColor: "#fff1f0", padding: "4px 8px" }}>{item.original}</Paragraph>
+                    <Paragraph key={index} style={{ ...baseStyle, backgroundColor: '#fff5b1' }}>
+                      <Text delete>{item.original}</Text> <Text strong>{item.modified}</Text>
+                    </Paragraph>
                   );
                 } else if (item.type === "added") {
                   return (
-                    <Paragraph key={index} style={{ ...baseStyle, backgroundColor: "#e6fffb", padding: "4px 8px", color: "#08979c" }}>{item.modified}</Paragraph>
+                    <Paragraph key={index} style={{ ...baseStyle, backgroundColor: '#d0ffd6' }}>
+                      <Text strong>{item.modified}</Text>
+                    </Paragraph>
+                  );
+                } else if (item.type === "removed") {
+                  return (
+                    <Paragraph key={index} style={{ ...baseStyle, backgroundColor: '#ffd6d6' }}>
+                      <Text delete>{item.original}</Text>
+                    </Paragraph>
                   );
                 } else {
-                  return (
-                    <div key={index}>
-                      <Paragraph type="danger" delete style={{ ...baseStyle, backgroundColor: "#fff1f0", padding: "4px 8px" }}>{item.original}</Paragraph>
-                      <Paragraph style={{ ...baseStyle, backgroundColor: "#e6fffb", padding: "4px 8px", color: "#08979c" }}>{item.modified}</Paragraph>
-                    </div>
-                  );
+                  return null;
                 }
-              })}
+              }) : <Paragraph>No differences detected.</Paragraph>}
             </div>
           ) : (
-            <Row gutter={16}>
+            <Row gutter={24}>
               <Col span={12}>
-                <Text strong>Original</Text>
-                <Divider />
-                {diff.map((item, index) => (
-                  <Paragraph
-                    key={index}
-                    type={item.type === "removed" || item.type === "edited" ? "danger" : undefined}
-                    delete={item.type === "removed"}
-                    style={{
-                      backgroundColor: ["removed", "edited"].includes(item.type) ? "#fff1f0" : "transparent",
-                      padding: "4px 8px",
-                      marginBottom: 12,
-                    }}
-                  >
-                    {item.original || ""}
-                  </Paragraph>
-                ))}
+                <Card title="Original">
+                  <Title level={5}>{original.title}</Title>
+                  <Paragraph>{original.description}</Paragraph>
+                </Card>
               </Col>
               <Col span={12}>
-                <Text strong>Modified</Text>
-                <Divider />
-                {diff.map((item, index) => (
-                  <Paragraph
-                    key={index}
-                    style={{
-                      backgroundColor: ["added", "edited"].includes(item.type) ? "#e6fffb" : "transparent",
-                      padding: "4px 8px",
-                      color: ["added", "edited"].includes(item.type) ? "#08979c" : undefined,
-                      marginBottom: 12,
-                    }}
-                  >
-                    {item.modified || ""}
-                  </Paragraph>
-                ))}
+                <Card title="Modified">
+                  <Title level={5}>{liveTitle}</Title>
+                  <Paragraph>{liveDescription}</Paragraph>
+                </Card>
               </Col>
             </Row>
           )}

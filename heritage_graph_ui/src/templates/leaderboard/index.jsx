@@ -13,12 +13,18 @@ const Leaderboard = () => {
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
 
-  // Fetch data from API
+  // Fetch leaderboard data from API
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await axios.get("/data/leaderboard"); // Uses Vite proxy
-        setLeaderboardData(response.data);
+        const response = await axios.get("/data/leaderboard"); // Using Vite proxy here
+        // Map data to add unique 'key' property for each row
+        setLeaderboardData(
+          response.data.map((item, index) => ({
+            key: item.id || index, // Use item.id if available, else fallback to index
+            ...item,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       } finally {
@@ -71,9 +77,15 @@ const Leaderboard = () => {
         </Space>
       </div>
     ),
-    filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? "#076096" : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]?.toString().toLowerCase().includes(value.toLowerCase()),
+    filterIcon: (filtered) => (
+      <SearchOutlined style={{ color: filtered ? "#076096" : undefined }} />
+    ),
+    onFilter: (value, record) => {
+      const recordValue = record[dataIndex];
+      return recordValue
+        ? recordValue.toString().toLowerCase().includes(value.toLowerCase())
+        : false;
+    },
     render: (text) =>
       searchedColumn === dataIndex ? (
         <Highlighter
@@ -95,17 +107,15 @@ const Leaderboard = () => {
       sorter: (a, b) => a.rank - b.rank,
       width: "10%",
       render: (rank) => {
-        let rankLabel = "";
         if (rank === 1) {
-          rankLabel = <Tag color="#b07f00">🥇 1st</Tag>; // Gold
+          return <Tag color="#b07f00">🥇 1st</Tag>; // Gold
         } else if (rank === 2) {
-          rankLabel = <Tag color="#8a8a8a">🥈 2nd</Tag>; // Silver
+          return <Tag color="#8a8a8a">🥈 2nd</Tag>; // Silver
         } else if (rank === 3) {
-          rankLabel = <Tag color="#704214">🥉 3rd</Tag>; // Bronze
+          return <Tag color="#704214">🥉 3rd</Tag>; // Bronze
         } else {
-          rankLabel = <span>{rank}</span>;
+          return <span>{rank}</span>;
         }
-        return rankLabel;
       },
     },
     {
