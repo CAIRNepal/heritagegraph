@@ -1,0 +1,70 @@
+{
+  "name": "@civicactions/data-catalog-app",
+  "version": "1.6.1",
+  "private": false,
+  "homepage": "/",
+  "dependencies": {
+    "@civicactions/data-catalog-components": "1.18.0",
+    "@clerk/clerk-react": "^5.30.0",
+    "@clerk/nextjs": "^6.14.3",
+    "@fortawesome/fontawesome-svg-core": "^6.4.2",
+    "@fortawesome/free-brands-svg-icons": "^6.4.2",
+    "@fortawesome/free-solid-svg-icons": "^6.4.2",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@react-login-page/base": "^1.0.4",
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/supabase-js": "^2.49.3",
+    "@tanstack/react-query": "^5.14.1",
+    "antd": "^5.22.1",
+    "autoprefixer": "^10.4.20",
+    "axios": "^1.8.4",
+    "bootstrap": "^4.4.1",
+    "excerpts": "^0.0.3",
+    "html-to-react": "1.7.0",
+    "js-cookie": "^3.0.5",
+    "postcss": "^8.4.49",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-helmet": "^6.1.0",
+    "react-highlight-words": "^0.20.0",
+    "react-hook-form": "^7.53.2",
+    "react-js-pagination": "^3.0.3",
+    "react-router-dom": "^6.28.0",
+    "swagger-ui-react": "^4.15.5",
+    "swr": "^2.2.5",
+    "tailwindcss": "^3.4.15",
+    "wretch": "^2.11.0"
+  },
+  "scripts": {
+    "start": "vite",
+    "build": "vite build --base=/",
+    "test": "vitest",
+    "preview": "vite preview",
+    "sass": "sass ./src/theme/index.scss ./src/theme/index.css"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@testing-library/cypress": "^10.0.1",
+    "@types/js-cookie": "^3.0.6",
+    "@vitejs/plugin-react": "^4.2.0",
+    "reactstrap": "^9.2.1",
+    "sass": "^1.69.5",
+    "vite": "^4.4.9",
+    "vitest": "^0.34.2"
+  }
+}
