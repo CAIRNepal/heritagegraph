@@ -11,7 +11,7 @@ import Layout from '../../components/Layout';
 import FeaturedDatasets from '../../components/FeaturedDatasets';
 import copy from "../../assets/copy.json";
 import { Breadcrumb, Card, Button, Typography, Avatar, Row, Col } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons'
 
 const { Title } = Typography;
 
@@ -50,7 +50,7 @@ const Home = () => {
 
   const fDatasets = orderedDatasets.length > 3 ? orderedDatasets.slice(orderedDatasets.length - 3, orderedDatasets.length) : orderedDatasets;
 
-  const items = (themes && themes.length) ? 
+  const items = (themes && themes.length) ?
     themes.map(x => {
       let item = {
         identifier: x.identifier,

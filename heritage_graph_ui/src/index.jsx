@@ -37,6 +37,9 @@ import BlogVersionTracker from './templates/app/versiontrack';
 import Submissioneditor from './templates/app/submissioneditor';
 import ErrorBoundary from './ErrorBoundary';
 import QueuePage from './templates/app/QueuePage';
+import HeritageLandingPage from './templates/landingPage';
+
+import './theme/index.css';
 
 const router = createBrowserRouter([
   {
@@ -165,6 +168,10 @@ const router = createBrowserRouter([
   {
     path: '/queuepage',
     element: <QueuePage />
+  },
+  {
+    path: '/landing',
+    element: <HeritageLandingPage />
   }
 ]);
 
