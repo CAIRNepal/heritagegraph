@@ -168,24 +168,26 @@ export default function Home() {
             </h1>
           </motion.div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:block">
-            <div className="flex items-center gap-8">
-              {["Explore", "About", "Contact"].map((item, index) => (
-                <motion.a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-blue-800 hover:text-blue-600 transition-all duration-300 relative group"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.1 }}
-                >
-                  {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-sky-500 transition-all duration-300 group-hover:w-full" />
-                </motion.a>
-              ))}
-            </div>
-          </nav>
+{/* Desktop Navigation */}
+<nav className="hidden md:flex items-center gap-8">
+  <div className="flex items-center gap-8">
+    {["Explore", "About", "Contact"].map((item, index) => (
+      <motion.a
+        key={item}
+        href={`#${item.toLowerCase()}`}
+        className="text-blue-800 hover:text-blue-600 transition-all duration-300 relative group"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+      >
+        {item}
+        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-sky-500 transition-all duration-300 group-hover:w-full" />
+      </motion.a>
+    ))}
+  </div>
+  <Button>Sign In</Button>
+  <Button>Sign Up</Button>
+</nav>
 
           {/* Mobile Menu */}
           <div className="md:hidden">
