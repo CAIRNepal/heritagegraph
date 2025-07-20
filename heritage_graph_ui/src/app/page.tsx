@@ -379,6 +379,7 @@ export default function Home() {
           </div>
         </section>
 
+        
         {/* Team Section */}
         <section className="relative py-24 px-6">
           <div className="max-w-4xl mx-auto text-center">
@@ -404,13 +405,15 @@ export default function Home() {
                     </div>
                     <h3 className="text-xl font-bold text-blue-900 mb-2">CAIR-Nepal</h3>
                     <p className="text-blue-700 mb-4">Center for Artificial Intelligence Research</p>
-                    <Button
-                      variant="ghost"
-                      className="text-blue-600 hover:text-blue-500 hover:bg-blue-100/50"
+                    <a
+                      href="https://www.cair-nepal.org/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center text-blue-600 hover:text-blue-500 hover:bg-blue-100/50 px-4 py-2 rounded-md transition-all duration-300"
                     >
                       <ExternalLink className="w-4 h-4 mr-2" />
                       Visit Website
-                    </Button>
+                    </a>
                   </div>
                 </div>
               </motion.div>
