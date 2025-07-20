@@ -81,7 +81,7 @@ class FormSubmissionAPIView(APIView):
     - 400: If `cultural_heritage_id` is invalid.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(
         operation_summary="Submit cultural heritage form",
@@ -237,33 +237,29 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LeaderboardView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        # Aggregate data based on total submissions, accepted submissions, and score
         leaderboard = User.objects.annotate(
             total_submissions=Count('submissions', distinct=True),
             accepted_submissions=Count('submissions', filter=Q(submissions__status='accepted')),
-            score=Count('submissions', filter=Q(submissions__status='accepted')) * 10  # Score calculation logic
-        ).order_by('-total_submissions', '-accepted_submissions', '-score')  # Order by total submissions, then accepted submissions, then score
+            score=Count('submissions', filter=Q(submissions__status='accepted')) * 10
+        ).order_by('-score', '-accepted_submissions', '-total_submissions')
 
-        # Rank the users
         ranked_data = []
         current_rank = 1
 
-        # Loop through the leaderboard and assign ranks
         for idx, user in enumerate(leaderboard):
-            if idx > 0 and (user.total_submissions != leaderboard[idx - 1].total_submissions or
+            if idx > 0 and (user.score != leaderboard[idx - 1].score or
                             user.accepted_submissions != leaderboard[idx - 1].accepted_submissions or
-                            user.score != leaderboard[idx - 1].score):
+                            user.total_submissions != leaderboard[idx - 1].total_submissions):
                 current_rank = idx + 1
 
             ranked_data.append({
                 "rank": current_rank,
                 "user_id": user.id,
                 "username": user.username,
-                "total_submissions": user.total_submissions,
-                "accepted_submissions": user.accepted_submissions,
+                "institution": user.institution if hasattr(user, 'institution') else "N/A",
+                "country": user.country if hasattr(user, 'country') else "N/A",
                 "score": user.score
             })
 
