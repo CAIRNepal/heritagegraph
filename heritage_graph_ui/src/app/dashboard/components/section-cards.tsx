@@ -14,82 +14,98 @@ import {
 
 export function SectionCards() {
   return (
-    <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      {[
-        {
-          title: "Total Submissions",
-          value: "1,250",
-          change: "+12.5%",
-          trend: "up",
-          description: "Growth this month",
-          footnote: "Based on verified user entries"
-        },
-        {
-          title: "Approval Rate",
-          value: "72.4%",
-          change: "-4.1%",
-          trend: "down",
-          description: "Slight drop in approvals",
-          footnote: "Consider reviewing guidelines with contributors"
-        },
-        {
-          title: "Your Contributor Rank",
-          value: "#47",
-          change: "+2 spots",
-          trend: "up",
-          description: "Rank improved",
-          footnote: "Top 50 contributors platform-wide"
-        },
-        {
-          title: "Community Impact Score",
-          value: "4.5 / 5",
-          change: "+0.3",
-          trend: "up",
-          description: "Positive feedback trend",
-          footnote: "Based on peer reviews & curator scores"
-        }
-      ].map((card, index) => (
-        <Card 
-          key={index}
-          className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-300 transition-colors"
-        >
-          <CardHeader>
-            <CardDescription className="text-blue-700">{card.title}</CardDescription>
-            <CardTitle className="text-2xl font-semibold tabular-nums text-blue-900 @[250px]/card:text-3xl">
-              {card.value}
-            </CardTitle>
-            <CardAction>
-              <Badge 
-                variant="outline" 
-                className={`border-blue-200 ${
-                  card.trend === 'up' ? 'text-blue-600' : 'text-amber-600'
-                }`}
-              >
-                {card.trend === 'up' ? (
-                  <IconTrendingUp className="size-4" />
-                ) : (
-                  <IconTrendingDown className="size-4" />
-                )}
-                {card.change}
-              </Badge>
-            </CardAction>
-          </CardHeader>
-          <CardFooter className="flex-col items-start gap-1.5 text-sm">
-            <div className={`flex items-center gap-2 font-medium ${
-              card.trend === 'up' ? 'text-blue-600' : 'text-amber-600'
-            }`}>
-              {card.description} {card.trend === 'up' ? (
-                <IconTrendingUp className="size-4" />
-              ) : (
-                <IconTrendingDown className="size-4" />
-              )}
-            </div>
-            <div className="text-blue-600/80">
-              {card.footnote}
-            </div>
-          </CardFooter>
-        </Card>
-      ))}
+    <div className="grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Total Submissions</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            1,250
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              <IconTrendingUp className="size-4" />
+              +12.5%
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="flex items-center gap-2 font-medium">
+            Growth this month <IconTrendingUp className="size-4" />
+          </div>
+          <div className="text-muted-foreground">
+            Based on verified user entries
+          </div>
+        </CardFooter>
+      </Card>
+
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Approval Rate</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            72.4%
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              <IconTrendingDown className="size-4" />
+              -4.1%
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="flex items-center gap-2 font-medium">
+            Slight drop in approvals <IconTrendingDown className="size-4" />
+          </div>
+          <div className="text-muted-foreground">
+            Consider reviewing guidelines with contributors
+          </div>
+        </CardFooter>
+      </Card>
+
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Your Contributor Rank</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            #47
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              <IconTrendingUp className="size-4" />
+              +2 spots
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="flex items-center gap-2 font-medium">
+            Rank improved <IconTrendingUp className="size-4" />
+          </div>
+          <div className="text-muted-foreground">
+            Top 50 contributors platform-wide
+          </div>
+        </CardFooter>
+      </Card>
+
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Community Impact Score</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+            4.5 / 5
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              <IconTrendingUp className="size-4" />
+              +0.3
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="flex items-center gap-2 font-medium">
+            Positive feedback trend <IconTrendingUp className="size-4" />
+          </div>
+          <div className="text-muted-foreground">
+            Based on peer reviews & curator scores
+          </div>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

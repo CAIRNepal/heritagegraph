@@ -60,11 +60,17 @@ const data = {
       url: "/dashboard/notification",
       icon: IconChartBar,
     },
+
     {
       title: "team",
       url: "/dashboard/team",
       icon: IconUsers,
     },
+    // {
+    //   title: "Team",
+    //   url: "#",
+    //   icon: IconUsers,
+    // },
   ],
   navClouds: [
     {
@@ -114,7 +120,23 @@ const data = {
       ],
     },
   ],
-  navSecondary: [],
+  navSecondary: [
+    // {
+    //   title: "Settings",
+    //   url: "#",
+    //   icon: IconSettings,
+    // },
+    // {
+    //   title: "Get Help",
+    //   url: "#",
+    //   icon: IconHelp,
+    // },
+    // {
+    //   title: "Search",
+    //   url: "#",
+    //   icon: IconSearch,
+    // },
+  ],
   data: [
     {
       name: "Graph Library",
@@ -136,11 +158,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar 
-      collapsible="offcanvas" 
-      className="bg-white/80 backdrop-blur-sm border-r border-blue-200"
-      {...props}
-    >
+    <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -148,11 +166,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/dashboard" className="hover:bg-blue-100/50">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-sky-600 rounded-lg flex items-center justify-center">
-                  <IconInnerShadowTop className="text-white" />
-                </div>
-                <span className="text-base font-semibold text-blue-900">HeritageGraph</span>
+              <a href="/dashboard">
+                <IconInnerShadowTop className="!size-10" />
+                <span className="text-base font-semibold">HeritageGraph</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
