@@ -68,9 +68,12 @@ class Submission(models.Model):
     submission_id = models.CharField(max_length=11, unique=True, blank=True)
 
     def save(self, *args, **kwargs):
+        if not self.submission_id:
+            self.submission_id = generate_unique_submission_id()
+        
         is_update = self.pk is not None
         super().save(*args, **kwargs)
-
+    
         if is_update:
             latest_version = self.versions.first()
             next_version = (latest_version.version_number + 1) if latest_version else 1
@@ -80,9 +83,8 @@ class Submission(models.Model):
                 title=self.title,
                 description=self.description,
                 contribution_data=self.contribution_data,
-                updated_by=self.contributor  # or whoever's editing it
-            )
-    
+                updated_by=self.contributor  
+            )    
     title = models.CharField(max_length=255)
     description = models.TextField()
     contributor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')

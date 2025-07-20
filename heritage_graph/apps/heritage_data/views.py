@@ -81,7 +81,7 @@ class FormSubmissionAPIView(APIView):
     - 400: If `cultural_heritage_id` is invalid.
     """
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         operation_summary="Submit cultural heritage form",
@@ -100,7 +100,6 @@ class FormSubmissionAPIView(APIView):
                     },
                     description="Fallback object for title and description"
                 ),
-                # Note: Add more expected fields here as needed
             },
             required=[],
         ),

@@ -11,6 +11,7 @@ export default function MyComponent() {
   const fetchUsers = async () => {
     try {
       const token = await getToken()
+      console.log(token)
       if (!token) throw new Error("No token available")
 
       const res = await fetch("http://localhost:8000/data/leaderboard", {
