@@ -32,4 +32,5 @@ urlpatterns = [
 
     path('testthelogin',views.UserViewSet.as_view({'get': 'list'}), name='user-list'),
     # path('testthelogin/<int:pk>/', views.UserViewSet.as_view({'get': 'retrieve'}), name='user-detail'),
+    path('user-stats/', views.UserStatsAPIView.as_view(), name='user-stats'),
 ]

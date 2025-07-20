@@ -33,6 +33,15 @@ from rest_framework.exceptions import ValidationError, PermissionDenied
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from django.db.models import Count, Q
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Submission, UserProfile
+from .serializers import UserStatsSerializer
+from datetime import datetime, timedelta
+
+
 
 
 
@@ -540,3 +549,105 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+
+class UserStatsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # Total submissions ever
+        total_submissions = Submission.objects.filter(contributor=user).count()
+
+        # Total submissions last month for growth calculation
+        today = datetime.today()
+        last_month_start = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
+        last_month_end = today.replace(day=1) - timedelta(days=1)
+
+        submissions_last_month = Submission.objects.filter(
+            contributor=user,
+            created_at__gte=last_month_start,
+            created_at__lte=last_month_end,
+        ).count()
+
+        submissions_this_month = Submission.objects.filter(
+            contributor=user,
+            created_at__gte=today.replace(day=1),
+        ).count()
+
+        # Calculate growth: (this_month - last_month) / last_month * 100
+        if submissions_last_month == 0:
+            submissions_growth = 100.0 if submissions_this_month > 0 else 0.0
+        else:
+            submissions_growth = ((submissions_this_month - submissions_last_month) / submissions_last_month) * 100
+
+        # Approval rate
+        total_reviewed = Submission.objects.filter(
+            contributor=user,
+            status__in=['accepted', 'rejected']
+        ).count()
+
+        accepted_count = Submission.objects.filter(
+            contributor=user,
+            status='accepted'
+        ).count()
+
+        approval_rate = (accepted_count / total_reviewed * 100) if total_reviewed > 0 else 0.0
+
+        # Approval rate change: compare last month accepted vs reviewed
+        last_month_reviewed = Submission.objects.filter(
+            contributor=user,
+            status__in=['accepted', 'rejected'],
+            created_at__gte=last_month_start,
+            created_at__lte=last_month_end,
+        ).count()
+
+        last_month_accepted = Submission.objects.filter(
+            contributor=user,
+            status='accepted',
+            created_at__gte=last_month_start,
+            created_at__lte=last_month_end,
+        ).count()
+
+        if last_month_reviewed == 0:
+            approval_rate_change = 0.0
+        else:
+            last_month_approval_rate = (last_month_accepted / last_month_reviewed) * 100
+            approval_rate_change = approval_rate - last_month_approval_rate
+
+        # Contributor rank calculation (rank among all users by score)
+        profiles = UserProfile.objects.order_by('-score').values_list('user_id', flat=True)
+        try:
+            contributor_rank = list(profiles).index(user.id) + 1
+        except ValueError:
+            contributor_rank = None
+
+        # Rank change logic:
+        # For demo: let's just mock rank change as +2 spots
+        rank_change = +2  # You need a separate model to track historical rank changes properly.
+
+        # Community impact score from user profile (assuming float between 0 and 5)
+        # Here we assume score is stored in UserProfile.score but scaled 0-100, map to 0-5
+        user_profile = UserProfile.objects.filter(user=user).first()
+        if user_profile:
+            community_impact_score = round(user_profile.score / 20, 2)  # convert 0-100 scale to 0-5
+            impact_score_change = 0.3  # mock value; requires historical data to compute properly
+        else:
+            community_impact_score = 0.0
+            impact_score_change = 0.0
+
+        data = {
+            "total_submissions": total_submissions,
+            "submissions_growth": round(submissions_growth, 2),
+            "approval_rate": round(approval_rate, 2),
+            "approval_rate_change": round(approval_rate_change, 2),
+            "contributor_rank": contributor_rank or 0,
+            "rank_change": rank_change,
+            "community_impact_score": community_impact_score,
+            "impact_score_change": impact_score_change,
+        }
+
+        serializer = UserStatsSerializer(data)
+        return Response(serializer.data)

@@ -165,3 +165,15 @@ class SubmissionIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
         fields = ['submission_id']  
+
+
+
+class UserStatsSerializer(serializers.Serializer):
+    total_submissions = serializers.IntegerField()
+    submissions_growth = serializers.FloatField()
+    approval_rate = serializers.FloatField()
+    approval_rate_change = serializers.FloatField()
+    contributor_rank = serializers.IntegerField()
+    rank_change = serializers.IntegerField()
+    community_impact_score = serializers.FloatField()
+    impact_score_change = serializers.FloatField()
