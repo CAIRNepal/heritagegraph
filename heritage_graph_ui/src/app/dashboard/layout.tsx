@@ -62,7 +62,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
                     <SignedOut>
                       <SignInButton />
-                      <SignUpButton asChild>
+                      <SignUpButton>
                         <button className="bg-primary text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 transition hover:bg-primary/90">
                           Sign Up
                         </button>

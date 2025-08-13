@@ -105,10 +105,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { description } from "./chart-area-interactive"
 
 export const schema = z.object({
   id: z.number(),
   header: z.string(),
+  headline: z.string(),
+  description: z.string(),
   type: z.string(),
   status: z.string(),
   target: z.string(),
@@ -420,20 +423,20 @@ export function DataTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="outline">Outline</SelectItem>
-            <SelectItem value="past-performance">Past Performance</SelectItem>
-            <SelectItem value="key-personnel">Key Personnel</SelectItem>
-            <SelectItem value="focus-documents">Focus Documents</SelectItem>
+            <SelectItem value="past-performance">Under Review</SelectItem>
+            <SelectItem value="key-personnel">Reviewed</SelectItem>
+            <SelectItem value="focus-documents">Accepted</SelectItem>
           </SelectContent>
         </Select>
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
+          <TabsTrigger value="outline">Submitted</TabsTrigger>
           <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
+            Under Review <Badge variant="secondary">3</Badge>
           </TabsTrigger>
           <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
+            Reviewed <Badge variant="secondary">2</Badge>
           </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
+          <TabsTrigger value="focus-documents">Accepted</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -661,13 +664,13 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         <DrawerHeader className="gap-1">
           <DrawerTitle>{item.header}</DrawerTitle>
           <DrawerDescription>
-            Showing total visitors for the last 6 months
+            Showing information about this monument
           </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           {!isMobile && (
             <>
-              <ChartContainer config={chartConfig}>
+              {/* <ChartContainer config={chartConfig}>
                 <AreaChart
                   accessibilityLayer
                   data={chartData}
@@ -706,17 +709,23 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                     stackId="a"
                   />
                 </AreaChart>
-              </ChartContainer>
+              </ChartContainer> */}
+
+    <div className="rounded-lg border p-4">
+      <h3 className="text-lg font-medium mb-4">Visual Summary</h3>
+      <div className="aspect-video bg-muted/50 rounded-md flex items-center justify-center">
+        {/* Replace with your actual image or image component */}
+        <span className="text-muted-foreground">Image Preview</span>
+      </div>
+    </div>
               <Separator />
               <div className="grid gap-2">
                 <div className="flex gap-2 leading-none font-medium">
-                  Trending up by 5.2% this month{" "}
+                   {item.headline}{" "}
                   <IconTrendingUp className="size-4" />
                 </div>
                 <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just
-                  some random text to test the layout. It spans multiple lines
-                  and should wrap around.
+                  {item.description}
                 </div>
               </div>
               <Separator />
