@@ -55,11 +55,11 @@ const data = {
       url: "/dashboard/contribute",
       icon: IconChartBar,
     },
-    {
-      title: "Notification",
-      url: "/dashboard/notification",
-      icon: IconChartBar,
-    },
+    // {
+    //   title: "Notification",
+    //   url: "/dashboard/notification",
+    //   icon: IconChartBar,
+    // },
 
     {
       title: "team",

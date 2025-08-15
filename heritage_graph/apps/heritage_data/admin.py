@@ -54,8 +54,8 @@ class ModerationAdmin(admin.ModelAdmin):
 
 # Admin for UserProfile model
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'organization', 'score', 'position', 'birth_date', 'university_school')  # Key fields for display
-    list_filter = ('organization', 'university_school')  # Filters for narrowing search
+    list_display = ('clerk_user_id','user', 'organization', 'score', 'position', 'birth_date', 'university_school')  # Key fields for display
+    list_filter = ('clerk_user_id','organization', 'university_school')  # Filters for narrowing search
     search_fields = ('user__username', 'organization', 'university_school')  # Searchable fields
     ordering = ('user__username',)  # Order by username
 

@@ -111,10 +111,11 @@ class Moderation(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    clerk_user_id = models.CharField(max_length=255, blank=True, null=True, unique=True)  # <-- new field
     first_name = models.CharField(max_length=50, blank=True)
     middle_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=50, blank=True)
-    email = models.EmailField(blank=True)  # Removed unique=True
+    email = models.EmailField(blank=True)
     birth_date = models.DateField(blank=True, null=True)
     organization = models.CharField(max_length=255, blank=True)
     position = models.CharField(max_length=255, blank=True)
@@ -123,7 +124,6 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return self.user.username
-
 class ActivityLog(models.Model):
     ACTION_CHOICES = [
         ('add', 'Added'),
