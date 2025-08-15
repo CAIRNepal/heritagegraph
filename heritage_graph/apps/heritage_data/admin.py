@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Submission, Moderation, ActivityLog, UserProfile, CulturalHeritage, Media, Contributor, Comments, SubmissionVersion, SubmissionEditSuggestion
+from .models import Submission, Moderation, ActivityLog, UserProfile, CulturalHeritage, Media, Contributor, Comments, SubmissionVersion, SubmissionEditSuggestion, UserStats
 
 # Admin for CulturalHeritage model
 class CulturalHeritageAdmin(admin.ModelAdmin):
@@ -89,6 +89,23 @@ class SubmissionEditSuggestionAdmin(admin.ModelAdmin):
     list_filter = ('approved', 'suggested_by', 'reviewed_by', 'created_at')
     search_fields = ('submission__title', 'suggested_by__username', 'reviewed_by__username')
     readonly_fields = ('created_at', 'reviewed_at')
+
+@admin.register(UserStats)
+class UserStatsAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 
+        'total_submissions', 
+        'submissions_this_month', 
+        'submissions_last_month',
+        'submissions_growth',
+        'approval_rate',
+        'approval_rate_change',
+        'contributor_rank',
+        'community_impact_score',
+        'updated_at',
+    )
+    search_fields = ('user__username',)
+    readonly_fields = ('updated_at',)
 
 
 # Register all models with their respective admin classes

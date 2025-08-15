@@ -34,7 +34,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
 
-const ITEMS_PER_PAGE = 20; 
+const ITEMS_PER_PAGE = 20;
 
 export default function LeaderboardPage() {
   const [data, setData] = useState([]);
@@ -59,9 +59,9 @@ export default function LeaderboardPage() {
           json.map((entry, i) => ({
             rank: entry.rank || i + 1,
             name: entry.username || "Unknown",
-            institution: entry.institution || "N/A",
-            country: entry.country || "N/A",
-            score: entry.score || 0,
+            institution: entry.institution && entry.institution !== "N/A" ? entry.institution : "",
+            country: entry.country && entry.country !== "N/A" ? entry.country : "",
+            total_submission: entry.total_submission || 0,
             avatar: `/avatars/${(entry.username || "user").toLowerCase()}.png`,
           }))
         );
@@ -129,7 +129,7 @@ export default function LeaderboardPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Institutions</SelectItem>
-              {[...new Set(data.map((d) => d.institution))].map((inst) => (
+              {[...new Set(data.map((d) => d.institution).filter((inst) => inst))].map((inst) => (
                 <SelectItem key={inst} value={inst}>
                   {inst}
                 </SelectItem>
@@ -154,7 +154,7 @@ export default function LeaderboardPage() {
                       <TableHead>Name</TableHead>
                       <TableHead className="hidden md:table-cell">Institution</TableHead>
                       <TableHead className="hidden sm:table-cell text-center">Country</TableHead>
-                      <TableHead className="text-right">Score</TableHead>
+                      <TableHead className="text-right">Total Submissions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -191,11 +191,11 @@ export default function LeaderboardPage() {
                             </Avatar>
                             <span className="font-medium">{entry.name}</span>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">{entry.institution}</TableCell>
+                          <TableCell className="hidden md:table-cell">{entry.institution || "-"}</TableCell>
                           <TableCell className="hidden sm:table-cell text-center text-xl">
-                            {entry.country}
+                            {entry.country || "-"}
                           </TableCell>
-                          <TableCell className="text-right font-semibold">{entry.score}</TableCell>
+                          <TableCell className="text-right font-semibold">{entry.total_submission}</TableCell>
                         </TableRow>
                       ))
                     )}

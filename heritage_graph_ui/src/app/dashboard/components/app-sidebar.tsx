@@ -167,7 +167,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <a href="/dashboard">
-                <IconInnerShadowTop className="!size-10" />
+                {/* <IconInnerShadowTop className="!size-10" /> */}
                 <span className="text-base font-semibold">HeritageGraph</span>
               </a>
             </SidebarMenuButton>

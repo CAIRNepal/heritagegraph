@@ -1,84 +1,82 @@
-# from django.db.models.signals import post_save, post_delete
-# from django.dispatch import receiver
-# from django.contrib.auth.models import User
-# from .models import Submission, Moderation, ActivityLog, UserProfile
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from datetime import datetime, timedelta
+from .models import Submission, UserStats, UserProfile
+from django.db.models import Count, Q  # ✅ Correct import
 
+@receiver(post_save, sender=Submission)
+def update_user_stats(sender, instance, **kwargs):
+    user = instance.contributor
+    today = datetime.today()
+    first_day_this_month = today.replace(day=1)
+    last_month_end = first_day_this_month - timedelta(days=1)
+    last_month_start = last_month_end.replace(day=1)
 
-# # Handle creating/updating the user profile
-# @receiver(post_save, sender=User)
-# def create_or_update_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         UserProfile.objects.create(user=instance)
-#     else:
-#         instance.profile.save()
+    submissions = Submission.objects.filter(contributor=user)
 
+    total_submissions = submissions.count()
+    submissions_this_month = submissions.filter(created_at__gte=first_day_this_month).count()
+    submissions_last_month = submissions.filter(
+        created_at__gte=last_month_start,
+        created_at__lte=last_month_end
+    ).count()
 
-# # Log when a new submission is created or updated
-# @receiver(post_save, sender=Submission)
-# def log_submission_create(sender, instance, created, **kwargs):
-#     if created:
-#         action_description = f"Created submission '{instance.title}'"
-#         action_type = 'add'
-#     else:
-#         action_description = f"Updated submission '{instance.title}'"
-#         action_type = 'edit'
-    
-#     ActivityLog.objects.create(
-#         user=instance.contributor,
-#         action=action_type,
-#         description=action_description
-#     )
+    # Growth
+    if submissions_last_month == 0:
+        submissions_growth = 100.0 if submissions_this_month > 0 else 0.0
+    else:
+        submissions_growth = ((submissions_this_month - submissions_last_month) / submissions_last_month) * 100
 
+    # Approval
+    reviewed_counts = submissions.filter(status__in=['accepted', 'rejected']).aggregate(
+        total_reviewed=Count('id'),
+        accepted_count=Count('id', filter=Q(status='accepted'))
+    )
+    total_reviewed = reviewed_counts['total_reviewed']
+    accepted_count = reviewed_counts['accepted_count']
+    approval_rate = (accepted_count / total_reviewed * 100) if total_reviewed else 0.0
 
-# # Log when a submission is deleted
-# @receiver(post_delete, sender=Submission)
-# def log_submission_delete(sender, instance, **kwargs):
-#     action_description = f"Deleted submission '{instance.title}'"
-#     ActivityLog.objects.create(
-#         user=instance.contributor,
-#         action='delete',
-#         description=action_description
-#     )
+    # Last month approval
+    last_month_counts = submissions.filter(
+        status__in=['accepted', 'rejected'],
+        created_at__gte=last_month_start,
+        created_at__lte=last_month_end
+    ).aggregate(
+        total_reviewed=Count('id'),
+        accepted_count=Count('id', filter=Q(status='accepted'))
+    )
+    last_month_reviewed = last_month_counts['total_reviewed']
+    last_month_accepted = last_month_counts['accepted_count']
+    last_month_approval_rate = (last_month_accepted / last_month_reviewed * 100) if last_month_reviewed else 0.0
+    approval_rate_change = approval_rate - last_month_approval_rate
 
+    # Contributor rank
+    profiles = UserProfile.objects.order_by('-score').values_list('user_id', flat=True)
+    try:
+        contributor_rank = list(profiles).index(user.id) + 1
+    except ValueError:
+        contributor_rank = 0
 
-# # Log when moderation is added/updated or a comment is made
-# @receiver(post_save, sender=Moderation)
-# def log_moderation_update_or_comment(sender, instance, created, **kwargs):
-#     if created:
-#         action_description = f"Moderation added for submission '{instance.submission.title}'"
-#         action_type = 'review'
-#     else:
-#         action_description = f"Moderation updated for submission '{instance.submission.title}'"
-#         action_type = 'edit'
-        
-#     ActivityLog.objects.create(
-#         user=instance.moderator,
-#         action=action_type,
-#         description=action_description
-#     )
-    
-#     # Log comment if any
-#     if instance.comment:
-#         comment_action_description = f"Commented on submission '{instance.submission.title}'"
-#         ActivityLog.objects.create(
-#             user=instance.moderator,
-#             action='comment',
-#             description=comment_action_description
-#         )
+    rank_change = 2  # placeholder
+    user_profile = UserProfile.objects.filter(user=user).first()
+    community_impact_score = round(user_profile.score / 20, 2) if user_profile else 0.0
+    impact_score_change = 0.3  # placeholder
 
-
-# # Log when a user's profile is created or updated
-# @receiver(post_save, sender=UserProfile)
-# def log_profile_update(sender, instance, created, **kwargs):
-#     if created:
-#         action_description = f"User profile created for '{instance.user.username}'"
-#         action_type = 'add'
-#     else:
-#         action_description = f"User profile updated for '{instance.user.username}'"
-#         action_type = 'edit'
-    
-#     ActivityLog.objects.create(
-#         user=instance.user,
-#         action=action_type,
-#         description=action_description
-#     )
+    # Create or update UserStats
+    stats, _ = UserStats.objects.update_or_create(
+        user=user,
+        defaults={
+            'total_submissions': total_submissions,
+            'submissions_this_month': submissions_this_month,
+            'submissions_last_month': submissions_last_month,
+            'submissions_growth': submissions_growth,
+            'total_reviewed': total_reviewed,
+            'accepted_count': accepted_count,
+            'approval_rate': approval_rate,
+            'approval_rate_change': approval_rate_change,
+            'contributor_rank': contributor_rank,
+            'rank_change': rank_change,
+            'community_impact_score': community_impact_score,
+            'impact_score_change': impact_score_change,
+        }
+    )

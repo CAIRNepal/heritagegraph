@@ -40,6 +40,10 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Submission, UserProfile
 from .serializers import UserStatsSerializer
 from datetime import datetime, timedelta
+from .models import Submission, CulturalHeritage
+
+from .models import UserStats
+from .serializers import UserStatsSerializer
 
 
 
@@ -75,19 +79,8 @@ class FormSubmissionAPIView(APIView):
     """
     Handles submission of cultural heritage form data.
 
-    This endpoint accepts a JSON payload which can include top-level fields like "title" and "description",
-    or nested under a "heritage" key. It stores the full submitted JSON and associates the submission with 
-    an optional cultural heritage entity.
-
-    Request fields:
-    - title (string): Optional. Title of the submission. Falls back to heritage.title.
-    - description (string): Optional. Description of the submission. Falls back to heritage.description.
-    - cultural_heritage_id (int): Optional. ID of a CulturalHeritage object to associate with this submission.
-    - ... any additional fields are stored in `contribution_data`.
-
-    Returns:
-    - 201: JSON representation of the created submission.
-    - 400: If `cultural_heritage_id` is invalid.
+    Accepts JSON payload with top-level fields (title, description, etc.) or nested under 'heritage'.
+    Stores all submitted data in contribution_data and links optional CulturalHeritage.
     """
 
     permission_classes = [permissions.IsAuthenticated]
@@ -109,6 +102,7 @@ class FormSubmissionAPIView(APIView):
                     },
                     description="Fallback object for title and description"
                 ),
+                # Swagger won't list all 80+ new fields explicitly to avoid clutter
             },
             required=[],
         ),
@@ -124,27 +118,60 @@ class FormSubmissionAPIView(APIView):
         title = data.get("title") or data.get("heritage", {}).get("title", "")
         description = data.get("description") or data.get("heritage", {}).get("description", "")
 
-        cultural_heritage_id = data.get("cultural_heritage_id")
+        # Optional CulturalHeritage linkage
         cultural_heritage = None
+        cultural_heritage_id = data.get("cultural_heritage_id")
         if cultural_heritage_id:
             try:
-                from .models import CulturalHeritage
                 cultural_heritage = CulturalHeritage.objects.get(id=cultural_heritage_id)
             except CulturalHeritage.DoesNotExist:
                 return Response({"error": "Invalid cultural_heritage_id"}, status=status.HTTP_400_BAD_REQUEST)
 
-        submission = Submission.objects.create(
-            title=title,
-            description=description,
-            contributor=user,
-            cultural_heritage=cultural_heritage,
-            contribution_data=data,
-            status="pending"
-        )
+        # Prepare submission data
+        submission_data = {
+            "title": title,
+            "description": description,
+            "contributor": user,
+            "cultural_heritage": cultural_heritage,
+            "status": "pending",
+        }
+
+        # List of all new fields added to Submission model
+        new_fields = [
+            'Activity', 'Alternative_name_s', 'Anglicized_name', 'Base_plinth_depth',
+            'Base_plinth_height', 'Base_plinth_width', 'Cakula_depth', 'Cakula_height',
+            'Cakula_width', 'Capital_depth', 'Capital_height', 'Capital_width', 'Circumference',
+            'City_quarter_tola', 'Column_depth', 'Column_height', 'Column_width',
+            'Commentary', 'Date_BCE_CE', 'Date_VS_NS', 'Depth', 'Description_for_past_interventions',
+            'Description_in_Nepali', 'Details', 'District', 'Edge_at_platform', 'Editorial_team',
+            'End_date', 'Event_name', 'Forms_of_columns', 'Gate', 'Height', 'Heritage_focus_area',
+            'Identified_threats', 'Image_declaration', 'Inscription_identification_number',
+            'Lintel_depth', 'Lintel_height', 'Main_deity_in_the_sanctum', 'Maps_and_drawing_type',
+            'Monument_assessment', 'Monument_depth', 'Monument_diameter', 'Monument_height_approximate',
+            'Monument_length', 'Monument_name', 'Monument_shape', 'Monument_type',
+            'Municipality_village_council', 'Name', 'Name_in_Devanagari', 'Nepali_month',
+            'Number_of_bays_front', 'Number_of_bays_sides', 'Number_of_doors', 'Number_of_plinth',
+            'Number_of_roofs', 'Number_of_storeys', 'Number_of_struts', 'Number_of_wood_carved_windows',
+            'Object_ID_number', 'Object_location', 'Object_material', 'Object_type', 'Paksa',
+            'Peculiarities', 'Period', 'Platforms_floor', 'Profile_at_base', 'Province_number',
+            'Reference_source', 'Religion', 'Roofing', 'Short_description', 'Sources',
+            'Thickness_of_main_wall', 'Tithi', 'Top_plinth_depth', 'Top_plinth_height',
+            'Top_plinth_width', 'Type_of_bricks', 'Type_of_roof', 'Width', 'Year_SS_NS_VS'
+        ]
+
+        # Populate new fields if provided
+        for field in new_fields:
+            if field in data:
+                submission_data[field] = data[field]
+
+        # Store all extra fields in contribution_data
+        submission_data["contribution_data"] = data
+
+        # Create submission
+        submission = Submission.objects.create(**submission_data)
 
         serializer = SubmissionSerializer(submission)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
 
 # Public view: List all submissions (pending and reviewed)
@@ -246,7 +273,6 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LeaderboardView(APIView):
-
     def get(self, request):
         leaderboard = User.objects.annotate(
             total_submissions=Count('submissions', distinct=True),
@@ -264,6 +290,7 @@ class LeaderboardView(APIView):
                 current_rank = idx + 1
 
             ranked_data.append({
+                "total_submission": user.total_submissions,
                 "rank": current_rank,
                 "user_id": user.id,
                 "username": user.username,
@@ -552,102 +579,88 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 
+# class UserStatsAPIView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def get(self, request):
+#         user = request.user
+#         today = datetime.today()
+#         first_day_this_month = today.replace(day=1)
+#         last_month_end = first_day_this_month - timedelta(days=1)
+#         last_month_start = last_month_end.replace(day=1)
+
+#         # Fetch all relevant submissions in one query
+#         submissions = Submission.objects.filter(contributor=user)
+
+#         # Aggregate counts
+#         total_submissions = submissions.count()
+#         submissions_this_month = submissions.filter(created_at__gte=first_day_this_month).count()
+#         submissions_last_month = submissions.filter(
+#             created_at__gte=last_month_start,
+#             created_at__lte=last_month_end
+#         ).count()
+
+#         # Growth
+#         if submissions_last_month == 0:
+#             submissions_growth = 100.0 if submissions_this_month > 0 else 0.0
+#         else:
+#             submissions_growth = ((submissions_this_month - submissions_last_month) / submissions_last_month) * 100
+
+#         # Approval counts in one query
+#         reviewed_counts = submissions.filter(status__in=['accepted', 'rejected']).aggregate(
+#             total_reviewed=Count('id'),
+#             accepted_count=Count('id', filter=Q(status='accepted'))
+#         )
+#         total_reviewed = reviewed_counts['total_reviewed']
+#         accepted_count = reviewed_counts['accepted_count']
+#         approval_rate = (accepted_count / total_reviewed * 100) if total_reviewed else 0.0
+
+#         # Last month approval
+#         last_month_counts = submissions.filter(
+#             status__in=['accepted', 'rejected'],
+#             created_at__gte=last_month_start,
+#             created_at__lte=last_month_end
+#         ).aggregate(
+#             total_reviewed=Count('id'),
+#             accepted_count=Count('id', filter=Q(status='accepted'))
+#         )
+#         last_month_reviewed = last_month_counts['total_reviewed']
+#         last_month_accepted = last_month_counts['accepted_count']
+
+#         last_month_approval_rate = (last_month_accepted / last_month_reviewed * 100) if last_month_reviewed else 0.0
+#         approval_rate_change = approval_rate - last_month_approval_rate
+
+#         # Contributor rank
+#         profiles = UserProfile.objects.order_by('-score').values_list('user_id', flat=True)
+#         try:
+#             contributor_rank = list(profiles).index(user.id) + 1
+#         except ValueError:
+#             contributor_rank = 0
+
+#         rank_change = 2  # placeholder
+#         user_profile = UserProfile.objects.filter(user=user).first()
+#         community_impact_score = round(user_profile.score / 20, 2) if user_profile else 0.0
+#         impact_score_change = 0.3  # placeholder
+
+#         data = {
+#             "total_submissions": total_submissions,
+#             "submissions_growth": round(submissions_growth, 2),
+#             "approval_rate": round(approval_rate, 2),
+#             "approval_rate_change": round(approval_rate_change, 2),
+#             "contributor_rank": contributor_rank,
+#             "rank_change": rank_change,
+#             "community_impact_score": community_impact_score,
+#             "impact_score_change": impact_score_change,
+#         }
+
+#         serializer = UserStatsSerializer(data)
+#         return Response(serializer.data)
+
+
 class UserStatsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-
-        # Total submissions ever
-        total_submissions = Submission.objects.filter(contributor=user).count()
-
-        # Total submissions last month for growth calculation
-        today = datetime.today()
-        last_month_start = (today.replace(day=1) - timedelta(days=1)).replace(day=1)
-        last_month_end = today.replace(day=1) - timedelta(days=1)
-
-        submissions_last_month = Submission.objects.filter(
-            contributor=user,
-            created_at__gte=last_month_start,
-            created_at__lte=last_month_end,
-        ).count()
-
-        submissions_this_month = Submission.objects.filter(
-            contributor=user,
-            created_at__gte=today.replace(day=1),
-        ).count()
-
-        # Calculate growth: (this_month - last_month) / last_month * 100
-        if submissions_last_month == 0:
-            submissions_growth = 100.0 if submissions_this_month > 0 else 0.0
-        else:
-            submissions_growth = ((submissions_this_month - submissions_last_month) / submissions_last_month) * 100
-
-        # Approval rate
-        total_reviewed = Submission.objects.filter(
-            contributor=user,
-            status__in=['accepted', 'rejected']
-        ).count()
-
-        accepted_count = Submission.objects.filter(
-            contributor=user,
-            status='accepted'
-        ).count()
-
-        approval_rate = (accepted_count / total_reviewed * 100) if total_reviewed > 0 else 0.0
-
-        # Approval rate change: compare last month accepted vs reviewed
-        last_month_reviewed = Submission.objects.filter(
-            contributor=user,
-            status__in=['accepted', 'rejected'],
-            created_at__gte=last_month_start,
-            created_at__lte=last_month_end,
-        ).count()
-
-        last_month_accepted = Submission.objects.filter(
-            contributor=user,
-            status='accepted',
-            created_at__gte=last_month_start,
-            created_at__lte=last_month_end,
-        ).count()
-
-        if last_month_reviewed == 0:
-            approval_rate_change = 0.0
-        else:
-            last_month_approval_rate = (last_month_accepted / last_month_reviewed) * 100
-            approval_rate_change = approval_rate - last_month_approval_rate
-
-        # Contributor rank calculation (rank among all users by score)
-        profiles = UserProfile.objects.order_by('-score').values_list('user_id', flat=True)
-        try:
-            contributor_rank = list(profiles).index(user.id) + 1
-        except ValueError:
-            contributor_rank = None
-
-        # Rank change logic:
-        # For demo: let's just mock rank change as +2 spots
-        rank_change = +2  # You need a separate model to track historical rank changes properly.
-
-        # Community impact score from user profile (assuming float between 0 and 5)
-        # Here we assume score is stored in UserProfile.score but scaled 0-100, map to 0-5
-        user_profile = UserProfile.objects.filter(user=user).first()
-        if user_profile:
-            community_impact_score = round(user_profile.score / 20, 2)  # convert 0-100 scale to 0-5
-            impact_score_change = 0.3  # mock value; requires historical data to compute properly
-        else:
-            community_impact_score = 0.0
-            impact_score_change = 0.0
-
-        data = {
-            "total_submissions": total_submissions,
-            "submissions_growth": round(submissions_growth, 2),
-            "approval_rate": round(approval_rate, 2),
-            "approval_rate_change": round(approval_rate_change, 2),
-            "contributor_rank": contributor_rank or 0,
-            "rank_change": rank_change,
-            "community_impact_score": community_impact_score,
-            "impact_score_change": impact_score_change,
-        }
-
-        serializer = UserStatsSerializer(data)
+        stats, _ = UserStats.objects.get_or_create(user=request.user)
+        serializer = UserStatsSerializer(stats)
         return Response(serializer.data)

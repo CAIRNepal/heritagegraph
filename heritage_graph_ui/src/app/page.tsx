@@ -2,6 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { motion, useScroll, useTransform } from "framer-motion"
+import { useRouter } from "next/navigation";
+import {
+  ClerkProvider,
+  SignInButton,
+  SignUpButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs'
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -12,6 +22,7 @@ import {
   NavigationMenuViewport,
 } from "@/components/ui/navigation-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button"
 import {
   Accordion,
@@ -20,6 +31,10 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion"
 import { Menu, Star, Globe, BookOpen, Building, Scroll, Users, Github, Mail, ExternalLink, LucideIcon } from "lucide-react"
+
+
+
+
 
 // Animation Variants
 const fadeInUp = {
@@ -109,10 +124,20 @@ interface PreservationItem {
 }
 
 export default function Home() {
+  // const { getToken, isSignedIn } = useAuth()
   const [isScrolled, setIsScrolled] = useState(false)
   const { scrollYProgress } = useScroll()
   const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [0.95, 1])
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, -100])
+
+  const router = useRouter();
+
+
+  useEffect(() => {
+    if (SignedIn) {
+      router.push("/dashboard");
+    }
+  }, [SignedIn, router]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50)
@@ -142,6 +167,7 @@ export default function Home() {
   ]
 
   return (
+  <ClerkProvider>
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 text-blue-900 font-sans scroll-smooth overflow-x-hidden">
       <GradientOrbs />
       <FloatingParticles />
@@ -185,8 +211,10 @@ export default function Home() {
       </motion.a>
     ))}
   </div>
-  <Button>Sign In</Button>
-  <Button>Sign Up</Button>
+  {/* <Button>Sign In</Button> */}
+  <SignInButton/>
+  <SignUpButton/>
+  {/* <Button>Sign Up</Button> */}
 </nav>
 
           {/* Mobile Menu */}
@@ -545,5 +573,6 @@ export default function Home() {
         </div>
       </footer>
     </div>
+  </ClerkProvider>
   )
 }
