@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface Submission {
   [key: string]: any
@@ -34,13 +35,17 @@ export default function SubmissionPage({ params }: { params: { submission_id: st
 
   if (!submission) return <p>Loading...</p>
 
-  // Filter out keys that are already displayed
   const remainingFields = Object.entries(submission).filter(
-    ([key]) => !SHOWN_KEYS.includes(key)
+    ([key, value]) =>
+      !SHOWN_KEYS.includes(key) &&
+      value !== null &&
+      value !== undefined &&
+      value !== "N/A" &&
+      value !== ""
   )
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
       {/* Main card */}
       <Card>
         <CardHeader>
@@ -71,21 +76,29 @@ export default function SubmissionPage({ params }: { params: { submission_id: st
 
       <Separator />
 
-      {/* Remaining fields */}
+      {/* Remaining fields in table format */}
       {remainingFields.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Other Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <ul className="list-disc list-inside space-y-1">
-              {remainingFields.map(([key, value]) => (
-                <li key={key}>
-                  <span className="font-medium">{key.replace(/_/g, " ")}:</span>{" "}
-                  <span>{value ? value.toString() : "N/A"}</span>
-                </li>
-              ))}
-            </ul>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Field</TableHead>
+                  <TableHead>Value</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {remainingFields.map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableCell className="font-medium">{key.replace(/_/g, " ")}</TableCell>
+                    <TableCell>{value.toString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
       )}

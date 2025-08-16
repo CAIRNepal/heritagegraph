@@ -8,6 +8,7 @@ import {
   IconListDetails,
   IconUsers,
 } from "@tabler/icons-react"
+import { BellDotIcon, BellIcon } from "lucide-react"
 
 const data = {
   user: {
@@ -24,13 +25,19 @@ const data = {
     {
       title: "Leaderboard",
       url: "/dashboard/leaderboard",
-      icon: IconListDetails,
+      icon: IconChartBar,
     },
     {
       title: "Form",
       url: "/dashboard/contribute",
       icon: IconChartBar,
     },
+    {
+      title: "Notification",
+      url: "/dashboard/notification",
+      icon: BellIcon,
+    },
+
     {
       title: "Team",
       url: "/dashboard/team",
