@@ -108,6 +108,12 @@ import {
 } from "@/components/ui/tabs"
 import { rankItem } from "@tanstack/match-sorter-utils"
 
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+
 // Updated schema to match the new data structure
 export const schema = z.object({
   submission_id: z.string(),
@@ -320,6 +326,7 @@ export function DataTable() {
     [data]
   )
 
+
   const table = useReactTable({
     data,
     columns,
@@ -453,6 +460,16 @@ export function DataTable() {
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
+
+  =============================================================================
+          <HoverCard>
+  <HoverCardTrigger>Hover</HoverCardTrigger>
+  <HoverCardContent>
+    The React Framework – created and maintained by @vercel.
+  </HoverCardContent>
+</HoverCard>
+  =============================================================================
+
           <Button variant="outline" size="sm">
             <IconPlus />
             <span className="hidden lg:inline">Add Submission</span>
@@ -660,60 +677,70 @@ const chartConfig = {
     color: "var(--primary)",
   },
 } satisfies ChartConfig
+import { useState } from "react"
 
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
+  const [open, setOpen] = useState(false) // control drawer manually
 
   return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
-      <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.title}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.title}</DrawerTitle>
-          <DrawerDescription>
-            Submission ID: {item.submission_id}
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          {!isMobile && (
-            <>
-              <div className="rounded-lg border p-4">
-                <h3 className="text-lg font-medium mb-4">Submission Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="font-medium">Contributor</p>
-                    <p className="text-muted-foreground">{item.contributor_username}</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Status</p>
-                    <p className="text-muted-foreground">
-                      {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Created At</p>
-                    <p className="text-muted-foreground">
-                      {new Date(item.created_at).toLocaleDateString()}
-                    </p>
+    <>
+      <HoverCard>
+        <HoverCardTrigger asChild>
+          <Button
+            variant="link"
+            className="text-foreground w-fit px-0 text-left"
+            onClick={() => setOpen(true)} // open drawer on click
+          >
+            {item.title}
+          </Button>
+        </HoverCardTrigger>
+        <HoverCardContent className="p-2 space-y-1 max-w-xs line-clamp-3">
+          <p className="text-sm text-muted-foreground">@{item.contributor_username}</p>
+          <p className="text-base">{item.description}</p>
+        </HoverCardContent>
+      </HoverCard>
+
+      <Drawer open={open} onOpenChange={setOpen} direction={isMobile ? "bottom" : "right"}>
+        <DrawerContent>
+          <DrawerHeader className="gap-1">
+            <DrawerTitle>{item.title}</DrawerTitle>
+            <DrawerDescription>Submission ID: {item.submission_id}</DrawerDescription>
+          </DrawerHeader>
+          <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
+            {!isMobile && (
+              <>
+                <div className="rounded-lg border p-4">
+                  <h3 className="text-lg font-medium mb-4">Submission Details</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium">Contributor</p>
+                      <p className="text-muted-foreground">{item.contributor_username}</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Status</p>
+                      <p className="text-muted-foreground">
+                        {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Created At</p>
+                      <p className="text-muted-foreground">
+                        {new Date(item.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <Separator />
-              <div className="grid gap-2">
-                <div className="flex gap-2 leading-none font-medium">
-                  {item.title} <IconTrendingUp className="size-4" />
+                <Separator />
+                <div className="grid gap-2">
+                  <div className="flex gap-2 leading-none font-medium">
+                    {item.title} <IconTrendingUp className="size-4" />
+                  </div>
+                  <div className="text-muted-foreground">{item.description || "No description provided"}</div>
                 </div>
-                <div className="text-muted-foreground">
-                  {item.description || "No description provided"}
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
+                <Separator />
+              </>
+            )}
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <Label htmlFor="title">Title</Label>
@@ -742,15 +769,16 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                 <Input id="contributor" defaultValue={item.contributor_username} readOnly />
               </div>
             </div>
-          </form>
-        </div>
-        <DrawerFooter>
-          <Button>Save Changes</Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+          </form>         
+           </div>
+          <DrawerFooter>
+            <Button>Save Changes</Button>
+            <DrawerClose asChild>
+              <Button variant="outline">Close</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </>
   )
 }
