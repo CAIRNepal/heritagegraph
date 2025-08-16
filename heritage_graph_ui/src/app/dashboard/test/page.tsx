@@ -14,7 +14,7 @@ export default function MyComponent() {
       console.log(token)
       if (!token) throw new Error("No token available")
 
-      const res = await fetch("http://37.27.182.103:8000/data/leaderboard", {
+      const res = await fetch("http://localhost:8000/data/leaderboard", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

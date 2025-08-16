@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} >
         <body className="antialiased min-h-screen bg-background text-foreground">
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <SidebarProvider
@@ -58,7 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <SiteHeader />
                   
                   <div className="ml-auto flex items-center gap-4">
-                    <ThemeToggle /> {/* ✅ Theme switch safely here */}
+                    <ThemeToggle /> 
 
                     <SignedOut>
                       <SignInButton />

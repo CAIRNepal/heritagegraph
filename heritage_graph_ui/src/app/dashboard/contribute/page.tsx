@@ -110,7 +110,7 @@ export default function ContributePage() {
     setIsSubmitting(true)
     try {
       const token = await getToken()
-      const res = await fetch("http://37.27.182.103:8000/data/form-submit/", {
+      const res = await fetch("http://localhost:8000/data/form-submit/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

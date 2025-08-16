@@ -37,6 +37,7 @@ import {
 import {
   ColumnDef,
   ColumnFiltersState,
+  FilterFn,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -105,6 +106,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
+import { rankItem } from "@tanstack/match-sorter-utils"
 
 // Updated schema to match the new data structure
 export const schema = z.object({
@@ -137,11 +139,19 @@ function DragHandle({ id }: { id: string }) {
   )
 }
 
+// Custom fuzzy filter
+const fuzzyFilter: FilterFn<unknown> = (row, columnId, value, addMeta) => {
+  const itemRank = rankItem(row.getValue(columnId), value)
+  addMeta({ itemRank })
+  return itemRank.passed
+}
+
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
   {
     id: "drag",
     header: () => null,
     cell: ({ row }) => <DragHandle id={row.original.submission_id} />,
+    enableHiding: false,
   },
   {
     id: "select",
@@ -176,6 +186,8 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       return <TableCellViewer item={row.original} />
     },
     enableHiding: false,
+    enableColumnFilter: true,
+    filterFn: "fuzzy",
   },
   {
     accessorKey: "description",
@@ -185,29 +197,36 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         {row.original.description || "No description"}
       </div>
     ),
+    enableColumnFilter: true,
+    filterFn: "fuzzy",
   },
   {
     accessorKey: "contributor_username",
     header: "Contributor",
     cell: ({ row }) => row.original.contributor_username,
+    enableColumnFilter: true,
+    filterFn: "fuzzy",
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
-      <Badge 
-        variant="outline" 
+      <Badge
+        variant="outline"
         className={
-          row.original.status === "approved" 
-            ? "text-green-500" 
-            : row.original.status === "pending" 
-              ? "text-yellow-500" 
-              : "text-red-500"
+          row.original.status === "approved"
+            ? "text-green-500"
+            : row.original.status === "pending"
+            ? "text-yellow-500"
+            : "text-red-500"
         }
       >
         {row.original.status.charAt(0).toUpperCase() + row.original.status.slice(1)}
       </Badge>
     ),
+    enableColumnFilter: true,
+    filterFn: (row, columnId, value: string) =>
+      row.getValue<string>(columnId).toLowerCase().includes(value.toLowerCase()),
   },
   {
     accessorKey: "created_at",
@@ -216,9 +235,15 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       const date = new Date(row.original.created_at)
       return date.toLocaleDateString()
     },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, value: string) => {
+      const cellValue = new Date(row.getValue<string>(columnId)).toLocaleDateString()
+      return cellValue.includes(value)
+    },
   },
   {
     id: "actions",
+    header: "Actions",
     cell: () => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -240,6 +265,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
         </DropdownMenuContent>
       </DropdownMenu>
     ),
+    enableColumnFilter: false,
   },
 ]
 
@@ -297,6 +323,9 @@ export function DataTable() {
   const table = useReactTable({
     data,
     columns,
+    filterFns: {
+      fuzzy: fuzzyFilter,
+    },
     state: {
       sorting,
       columnVisibility,
@@ -444,17 +473,45 @@ export function DataTable() {
           >
             <Table>
               <TableHeader className="bg-muted sticky top-0 z-10">
+                {/* Header Row */}
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+
+                {/* Filter Row */}
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={`${headerGroup.id}-filter`} className="bg-background">
                     {headerGroup.headers.map((header) => {
+                      const column = header.column
                       return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
+                        <TableHead key={`${header.id}-filter`}>
+                          {column.getCanFilter() ? (
+                            <div className="w-full pt-2">
+                              <Input
+                                placeholder={`Filter ${typeof header.column.columnDef.header === "function"
+                                  ? header.column.columnDef.header?.({})?.toString() || ""
+                                  : header.column.columnDef.header || ""
+                                }`}
+                                value={(column.getFilterValue() as string) ?? ""}
+                                onChange={(e) => column.setFilterValue(e.target.value)}
+                                className="h-8 text-sm"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          ) : (
+                            <div className="pt-2" />
+                          )}
                         </TableHead>
                       )
                     })}
@@ -553,7 +610,9 @@ export function DataTable() {
                 variant="outline"
                 className="hidden size-8 lg:flex"
                 size="icon"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                onClick={() =>
+                  table.setPageIndex(table.getPageCount() - 1)
+                }
                 disabled={!table.getCanNextPage()}
               >
                 <span className="sr-only">Go to last page</span>

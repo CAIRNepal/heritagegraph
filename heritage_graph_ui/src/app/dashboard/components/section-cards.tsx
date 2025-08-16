@@ -14,7 +14,7 @@ export function SectionCards() {
     const fetchStats = async () => {
       try {
         const token = await getToken();
-        const res = await fetch("http://37.27.182.103:8000/data/user-stats/", {
+        const res = await fetch("http://localhost:8000/data/user-stats/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error(`API error: ${res.status}`);

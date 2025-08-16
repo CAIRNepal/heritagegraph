@@ -47,7 +47,7 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://37.27.182.103:8000/data/leaderboard/", {
+        const res = await fetch("http://localhost:8000/data/leaderboard/", {
           method: "GET",
           headers: {
             Accept: "*/*",

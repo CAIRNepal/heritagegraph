@@ -17,6 +17,12 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconBook,
+  IconBuilding,
+  IconGlobe,
+  IconMap,
+  IconMusic,
+  IconHistory,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -137,22 +143,57 @@ const data = {
     //   icon: IconSearch,
     // },
   ],
-  data: [
-    {
-      name: "Graph Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Graph Explore",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "SPARQL",
-      url: "#",
-      icon: IconFileWord,
-    },
+  // data: [
+  //   {
+  //     name: "Graph Library",
+  //     url: "#",
+  //     icon: IconDatabase,
+  //   },
+  //   {
+  //     name: "Graph Explore",
+  //     url: "#",
+  //     icon: IconReport,
+  //   },
+  //   {
+  //     name: "SPARQL",
+  //     url: "#",
+  //     icon: IconFileWord,
+  //   },
+  // ],
+
+  navKnowledgebase: [
+    { name: "Monuments", url: "/dashboard/knowledge/monuments", icon: IconBuilding },
+    { name: "Artifacts", url: "/dashboard/knowledge/artifacts", icon: IconFolder },
+    { name: "Festivals & Rituals", url: "/dashboard/knowledge/festivals", icon: IconHistory },
+    { name: "Performing Arts", url: "/dashboard/knowledge/performing-arts", icon: IconMusic },
+    { name: "Languages & Literature", url: "/dashboard/knowledge/literature", icon: IconBook },
+    { name: "People & Lineages", url: "/dashboard/knowledge/people", icon: IconUsers },
+    { name: "Places", url: "/dashboard/knowledge/places", icon: IconMap },
+    { name: "Intangible Heritage", url: "/dashboard/knowledge/intangible", icon: IconGlobe },
+  ],
+
+  navCuration: [
+    { name: "Contributions Queue", url: "/curation/contributions", icon: IconFileDescription },
+    { name: "Verification Queue", url: "/curation/verification", icon: IconReport },
+    { name: "Activity Log", url: "/curation/activity", icon: IconChartBar },
+  ],
+
+  navCommunity: [
+    { name: "Contributors", url: "/community/contributors", icon: IconUsers },
+    { name: "Organizations", url: "/community/organizations", icon: IconBuilding },
+    { name: "Leaderboard", url: "/community/leaderboard", icon: IconListDetails },
+  ],
+
+  navResources: [
+    { name: "Data Releases", url: "/resources/releases", icon: IconDatabase },
+    { name: "Data Licensing", url: "/resources/licensing", icon: IconFileWord },
+    { name: "APIs & Tools", url: "/resources/apis", icon: IconFileAi },
+  ],
+
+  navAbout: [
+    { name: "About", url: "/about", icon: IconHelp },
+    { name: "Documentation", url: "/docs", icon: IconFileDescription },
+    { name: "Contact", url: "/contact", icon: IconSearch },
   ],
 }
 
@@ -175,8 +216,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.data} />
+        {/* <NavMain items={data.navMain} /> */}
+        {/* <NavDocuments items={data.data} /> */}
+        <NavDocuments items={data.navKnowledgebase} />
+         <NavDocuments items={data.navCuration} />
+         <NavDocuments items={data.navCommunity} />
+         <NavDocuments items={data.navResources} />
+        <NavDocuments items={data.navAbout} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>
