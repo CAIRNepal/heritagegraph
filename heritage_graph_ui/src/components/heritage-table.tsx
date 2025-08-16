@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import {
   closestCenter,
   DndContext,
@@ -247,32 +248,43 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       return cellValue.includes(value)
     },
   },
-  {
-    id: "actions",
-    header: "Actions",
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-            size="icon"
-          >
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-    enableColumnFilter: false,
+{
+  id: "actions",
+  header: "Actions",
+  cell: ({ row }) => {
+    const submissionId = row.original.submission_id;
+
+    return (
+      // <DropdownMenu>
+      //   <DropdownMenuTrigger asChild>
+      //     <Button
+      //       variant="ghost"
+      //       className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+      //       size="icon"
+      //     >
+      //       <IconDotsVertical />
+      //       <span className="sr-only">Open menu</span>
+      //     </Button>
+      //   </DropdownMenuTrigger>
+      //   <DropdownMenuContent align="end" className="w-32">
+      //     <DropdownMenuItem>
+      //     </DropdownMenuItem>
+      //     <DropdownMenuItem>Edit</DropdownMenuItem>
+      //     <DropdownMenuItem>Make a copy</DropdownMenuItem>
+      //     <DropdownMenuItem>Favorite</DropdownMenuItem>
+      //     <DropdownMenuSeparator />
+      //     <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+      //   </DropdownMenuContent>
+      // </DropdownMenu>
+      <Button>
+      <Link href={`/dashboard/knowledge/viewreport/${submissionId}`}>
+              View
+      </Link>
+      </Button>
+    );
   },
+  enableColumnFilter: false,
+}
 ]
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
@@ -461,14 +473,6 @@ export function DataTable() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-  =============================================================================
-          <HoverCard>
-  <HoverCardTrigger>Hover</HoverCardTrigger>
-  <HoverCardContent>
-    The React Framework – created and maintained by @vercel.
-  </HoverCardContent>
-</HoverCard>
-  =============================================================================
 
           <Button variant="outline" size="sm">
             <IconPlus />
@@ -678,6 +682,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 import { useState } from "react"
+import { Bluetooth } from "lucide-react"
 
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile()
@@ -772,7 +777,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </form>         
            </div>
           <DrawerFooter>
-            <Button>Save Changes</Button>
+              <Button variant="outline"><a href={`/dashboard/knowledge/viewreport/${item.submission_id}`}>View Detail</a></Button>
             <DrawerClose asChild>
               <Button variant="outline">Close</Button>
             </DrawerClose>
