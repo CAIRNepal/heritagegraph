@@ -267,20 +267,24 @@ export default function Home() {
                 Preserving Cultural Heritage Through AI
               </div>
 
-              <h1 className="text-5xl md:text-7xl font-black leading-tight">
+              <h1 className="text-4xl md:text-6xl font-black leading-tight">
                 <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-500 bg-clip-text text-transparent">
-                  Nepal's Cultural
+                 Preserving Our Shared Cultural Heritage
                 </span>
                 <br />
-                <span className="text-blue-900">Heritage</span>
-              </h1>
+                  {/* Subtitle */}
+  <p className="mt-2 text-base md:text-lg font-medium text-slate-800">
+    Understanding Identity, Safeguarding the Future
+  </p>
+
+</h1>
             </motion.div>
 
             <motion.p
               variants={fadeInUp}
-              className="text-xl md:text-2xl text-blue-800 max-w-2xl mx-auto leading-relaxed"
+              className="text-base md:text-lg text-blue-700 max-w-2xl mx-auto leading-relaxed"
             >
-              Explore the history, art, and traditions that define Nepal's identity — digitally preserved through
+              Explore the history, art, and traditions that shape our shared identity — digitally preserved through
               <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text font-semibold">
                 {" "}
                 Knowledge Graphs
