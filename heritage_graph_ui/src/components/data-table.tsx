@@ -323,7 +323,7 @@ export function DataTable() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/data/submissions/")
+        const response = await fetch("http://37.27.182.103:8000/data/submissions/")
         const result = await response.json()
         setData(result)
       } catch (error) {
