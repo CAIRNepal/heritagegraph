@@ -1,0 +1,17 @@
+# heritage_graph_ui/Dockerfile.frontend
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY heritage_graph_ui/package*.json ./
+RUN npm install
+
+# Copy frontend source
+COPY heritage_graph_ui/ .
+
+# Expose Next.js port
+EXPOSE 3000
+
+# Dev mode (for prod: npm run build && npm start)
+CMD ["npm", "run", "dev"]

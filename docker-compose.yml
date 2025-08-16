@@ -1,0 +1,47 @@
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: django_api
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./heritage_graph:/app/heritage_graph
+      - ./manage.py:/app/manage.py
+      - ./requirements.txt:/app/requirements.txt
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./heritage_graph/.env
+    # depends_on:
+    #   - db
+
+  frontend:
+    build:
+      context: .
+      dockerfile: heritage_graph_ui/Dockerfile.frontend
+    container_name: nextjs_app
+    volumes:
+      - ./heritage_graph_ui:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chlod_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
