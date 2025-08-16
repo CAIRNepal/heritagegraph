@@ -41,9 +41,6 @@ class JWTAuthenticationMiddleware(BaseAuthentication):
         # 2. Fetch user info from Clerk
         clerk = ClerkSDK()
         info, found = clerk.fetch_user_info(user_id)
-        print("==========================================")
-        print(info, found, user_id)
-        print("==========================================")
 
         # 3. Determine Django username
         # django_username = info.get("username") if found and info.get("username") else user_id
@@ -97,9 +94,6 @@ class ClerkSDK:
         )
         if response.status_code == 200:
             data = response.json()
-            print("===========================================")
-            print("Data: ", data)
-            print("===========================================")
 
             return {
                 "data": data,
