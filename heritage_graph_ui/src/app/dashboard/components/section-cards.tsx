@@ -98,6 +98,7 @@ export function SectionCards() {
           </div>
         </div>
       ))}
+
     </div>
   );
 }

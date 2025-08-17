@@ -172,15 +172,15 @@ const data = {
   ],
 
   navCuration: [
-    { name: "Contributions Queue", url: "/curation/contributions", icon: IconFileDescription },
-    { name: "Verification Queue", url: "/curation/verification", icon: IconReport },
-    { name: "Activity Log", url: "/curation/activity", icon: IconChartBar },
+    { name: "Contributions Queue", url: "/dashboard/curation/contributions", icon: IconFileDescription },
+    // { name: "Verification Queue", url: "/curation/verification", icon: IconReport },
+    { name: "Activity Log", url: "/dashboard/curation/activity", icon: IconChartBar },
   ],
 
   navCommunity: [
-    { name: "Contributors", url: "/community/contributors", icon: IconUsers },
-    { name: "Organizations", url: "/community/organizations", icon: IconBuilding },
-    { name: "Leaderboard", url: "/community/leaderboard", icon: IconListDetails },
+    { name: "Contributors", url: "/dashboard/community/contributors", icon: IconUsers },
+    { name: "Organizations", url: "/dashboard/community/organizations", icon: IconBuilding },
+    // { name: "Leaderboard", url: "/dashboard/community/leaderboard", icon: IconListDetails },
   ],
 
   navResources: [
