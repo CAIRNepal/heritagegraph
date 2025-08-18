@@ -1,15 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -18,9 +10,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import CommentSection from '@/components/heritage-commenting';
+import SubmissionLayout from './Layout';
 
 interface Submission {
   [key: string]: any;
+}
+
+interface Comment {
+  id: number;
+  author: string;
+  content: string;
+  timestamp: string;
+  votes: number;
+  replies?: Comment[];
 }
 
 const SHOWN_KEYS = [
@@ -42,86 +46,99 @@ export default function SubmissionPage({
   params: { submission_id: string };
 }) {
   const [submission, setSubmission] = useState<Submission | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
     fetch(`http://localhost:8000/data/submissions/${params.submission_id}/`)
       .then((res) => res.json())
       .then(setSubmission)
       .catch(console.error);
+
+    fetch(`http://localhost:8000/data/submissions/${params.submission_id}/comments/`)
+      .then((res) => res.json())
+      .then((data) => {
+        const transformedComments = data.map((comment: any) => ({
+          id: comment.id,
+          author: comment.author || 'Anonymous',
+          content: comment.text,
+          timestamp: comment.timestamp || new Date().toLocaleString(),
+          votes: comment.votes || 0,
+          replies: comment.replies || [],
+        }));
+        setComments(transformedComments);
+      })
+      .catch(console.error);
   }, [params.submission_id]);
 
-  if (!submission) return <p>Loading...</p>;
+  if (!submission)
+    return <div className="p-6 text-center text-gray-500">Loading submission...</div>;
 
   const remainingFields = Object.entries(submission).filter(
-    ([key, value]) =>
-      !SHOWN_KEYS.includes(key) &&
-      value !== null &&
-      value !== undefined &&
-      value !== 'N/A' &&
-      value !== '',
+    ([key, value]) => !SHOWN_KEYS.includes(key) && value && value !== 'N/A',
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Main card */}
-      <Card>
+    <SubmissionLayout
+      submissionId={params.submission_id}
+      commentsCount={comments.length}
+    >
+      {/* Header Card */}
+      {/* <Card>
         <CardHeader>
-          <CardTitle>{submission.title}</CardTitle>
-          <CardDescription>
-            Submission ID: {submission.submission_id} | Contributor:{' '}
-            {submission.contributor_username} | Status: {submission.status}
-          </CardDescription>
+          <CardTitle className="text-2xl font-bold text-gray-900">{submission.title}</CardTitle>
+          <p className="text-sm text-gray-500">
+            <span className="font-medium">ID:</span> {submission.submission_id} |{" "}
+            <span className="font-medium">Contributor:</span> {submission.contributor_username} |{" "}
+            <span className="font-medium">Status:</span> {submission.status}
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground">{submission.description}</p>
-          {submission.Monument_name && (
-            <div>
-              <h3 className="font-medium">Monument Name</h3>
-              <p>{submission.Monument_name}</p>
-            </div>
-          )}
-          {submission.Activity && (
-            <div>
-              <h3 className="font-medium">Activity</h3>
-              <p>{submission.Activity}</p>
-            </div>
-          )}
-          <div className="flex justify-end">
-            <Button variant="outline">Edit / View More</Button>
-          </div>
+        <CardContent>
+          <p className="text-gray-700">{submission.description}</p>
         </CardContent>
-      </Card>
+      </Card> */}
 
-      <Separator />
-
-      {/* Remaining fields in table format */}
+      {/* Metadata Table */}
       {remainingFields.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Other Details</CardTitle>
+            <CardTitle className="text-lg font-semibold">Additional Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Field</TableHead>
-                  <TableHead>Value</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {remainingFields.map(([key, value]) => (
-                  <TableRow key={key}>
-                    <TableCell className="font-medium">
-                      {key.replace(/_/g, ' ')}
-                    </TableCell>
-                    <TableCell>{value.toString()}</TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-1/3">Field</TableHead>
+                    <TableHead>Value</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {remainingFields.map(([key, value]) => (
+                    <TableRow key={key}>
+                      <TableCell className="font-medium capitalize">
+                        {key.replace(/_/g, ' ')}
+                      </TableCell>
+                      <TableCell>{value.toString()}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}
-    </div>
+
+      <Separator />
+
+      {/* Comments Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Comments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CommentSection comments={comments} setComments={setComments} />
+        </CardContent>
+      </Card>
+    </SubmissionLayout>
   );
 }

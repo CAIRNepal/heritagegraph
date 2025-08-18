@@ -1,14 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Input } from '@/components/ui/input';
 import {
   IconChartBar,
   IconDashboard,
-  IconListDetails,
   IconUsers,
+  IconBell,
+  IconSearch,
 } from '@tabler/icons-react';
-import { BellDotIcon, BellIcon } from 'lucide-react';
 
 const data = {
   user: {
@@ -35,9 +37,8 @@ const data = {
     {
       title: 'Notification',
       url: '/dashboard/notification',
-      icon: BellIcon,
+      icon: IconBell,
     },
-
     {
       title: 'Team',
       url: '/dashboard/team',
@@ -47,8 +48,16 @@ const data = {
 };
 
 export function SiteHeader() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    console.log(e.target.value);
+    // TODO: implement search functionality later
+  };
+
   return (
-    <header className="flex h-[--header-height] shrink-0 items-center gap-4  px-4 lg:px-6">
+    <header className="flex h-[--header-height] shrink-0 items-center gap-4 px-4 lg:px-6">
       {/* Left side */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
@@ -57,6 +66,18 @@ export function SiteHeader() {
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <h1 className="text-base font-semibold">HeritageGraph1</h1>
+      </div>
+
+      {/* Search bar */}
+      <div className="ml-6 hidden md:flex items-center gap-2">
+        <Input
+          type="text"
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          className="w-64"
+        />
+        <IconSearch className="w-4 h-4 text-muted-foreground" />
       </div>
 
       {/* Horizontal menu */}
