@@ -1,5 +1,5 @@
-import { type Metadata } from 'next'
-import { ReactNode } from 'react'
+import { type Metadata } from 'next';
+import { ReactNode } from 'react';
 
 import {
   ClerkProvider,
@@ -8,35 +8,34 @@ import {
   SignedIn,
   SignedOut,
   UserButton,
-} from '@clerk/nextjs'
+} from '@clerk/nextjs';
 
-import { Geist, Geist_Mono } from 'next/font/google'
-import { AppSidebar } from '@/app/dashboard/components/app-sidebar'
-import { SiteHeader } from '@/components/site-header'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { ThemeProvider } from 'next-themes'
-import { ThemeToggle } from '@/components/theme-toggle' 
-
+import { Geist, Geist_Mono } from 'next/font/google';
+import { AppSidebar } from '@/app/dashboard/components/app-sidebar';
+import { SiteHeader } from '@/components/site-header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { ThemeProvider } from 'next-themes';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
-})
+});
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
-})
+});
 
 export const metadata: Metadata = {
   title: 'Heritage Graph Dashboard',
   description: 'Collaborative moderation, submission, and curation interface.',
-}
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} >
+      <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
         <body className="antialiased min-h-screen bg-background text-foreground">
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <SidebarProvider
@@ -56,9 +55,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   aria-label="Site Header"
                 >
                   <SiteHeader />
-                  
+
                   <div className="ml-auto flex items-center gap-4">
-                    <ThemeToggle /> 
+                    <ThemeToggle />
 
                     <SignedOut>
                       <SignInButton />
@@ -87,5 +86,5 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </body>
       </html>
     </ClerkProvider>
-  )
+  );
 }

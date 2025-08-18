@@ -1,19 +1,18 @@
 # middleware.py
-import datetime
+import os
 from datetime import datetime
 
-import environ
 import jwt
 import pytz
 import requests
 from django.contrib.auth.models import User
-from .models import UserProfile
 from django.core.cache import cache
+from dotenv import load_dotenv
 from jwt.algorithms import RSAAlgorithm
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-from dotenv import load_dotenv
-import os 
+
+from .models import UserProfile
 
 load_dotenv()
 
@@ -21,6 +20,7 @@ CLERK_API_URL = "https://api.clerk.com/v1"
 CLERK_FRONTEND_API_URL = os.getenv("CLERK_FRONTEND_API_URL")
 CLERK_SECRET_KEY = os.getenv("CLERK_SECRET_KEY")
 CACHE_KEY = "jwks_data"
+
 
 class JWTAuthenticationMiddleware(BaseAuthentication):
     def authenticate(self, request):
@@ -43,14 +43,13 @@ class JWTAuthenticationMiddleware(BaseAuthentication):
         info, found = clerk.fetch_user_info(user_id)
 
         # 3. Determine Django username
-        # django_username = info.get("username") if found and info.get("username") else user_id
         django_username = payload.get("username")
-        user_id = payload.get("sub")         #
+        user_id = payload.get("sub")  #
 
         # 4. Get or create Django user
         user, created = User.objects.get_or_create(username=django_username)
         profile, profile_created = UserProfile.objects.get_or_create(user=user)
-        profile.clerk_user_id = payload.get("sub")      
+        profile.clerk_user_id = payload.get("sub")
         profile.first_name = payload.get("first_name", profile.first_name)
         profile.last_name = payload.get("last_name", profile.last_name)
         profile.email = payload.get("email", profile.email)
@@ -83,8 +82,9 @@ class JWTAuthenticationMiddleware(BaseAuthentication):
             raise AuthenticationFailed("Token decode error.")
         except jwt.InvalidTokenError:
             raise AuthenticationFailed("Invalid token.")
-        
+
         return payload
+
 
 class ClerkSDK:
     def fetch_user_info(self, user_id: str):

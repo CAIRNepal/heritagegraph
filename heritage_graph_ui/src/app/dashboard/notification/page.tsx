@@ -1,58 +1,53 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { BellIcon } from "lucide-react";
+import { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { BellIcon } from 'lucide-react';
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
+} from '@/components/ui/pagination';
 
 const PAGE_SIZE = 2;
 
 const notifications = [
   {
     id: 1,
-    title: "New submission received",
-    message: "Alice just submitted a form for review.",
-    avatar: "/cair-logo/nabin.jpeg",
-    time: "2m ago",
-    type: "form",
+    title: 'New submission received',
+    message: 'Alice just submitted a form for review.',
+    avatar: '/cair-logo/nabin.jpeg',
+    time: '2m ago',
+    type: 'form',
   },
   {
     id: 2,
-    title: "Leaderboard updated",
-    message: "Charlie moved up to #3 on the leaderboard.",
-    avatar: "/cair-logo/niraj.jpeg",
-    time: "15m ago",
-    type: "rank",
+    title: 'Leaderboard updated',
+    message: 'Charlie moved up to #3 on the leaderboard.',
+    avatar: '/cair-logo/niraj.jpeg',
+    time: '15m ago',
+    type: 'rank',
   },
   {
     id: 3,
-    title: "System update",
-    message: "Maintenance scheduled for this weekend.",
-    avatar: "",
-    time: "1h ago",
-    type: "system",
+    title: 'System update',
+    message: 'Maintenance scheduled for this weekend.',
+    avatar: '',
+    time: '1h ago',
+    type: 'system',
   },
   {
     id: 4,
-    title: "Message from moderator",
-    message: "Your submission was approved. Great job!",
-    avatar: "/cair-logo/nabin.jpeg",
-    time: "3h ago",
-    type: "approval",
+    title: 'Message from moderator',
+    message: 'Your submission was approved. Great job!',
+    avatar: '/cair-logo/nabin.jpeg',
+    time: '3h ago',
+    type: 'approval',
   },
 ];
 

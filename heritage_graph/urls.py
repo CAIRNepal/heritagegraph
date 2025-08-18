@@ -1,16 +1,18 @@
 from django.contrib import admin
-from django.urls import path, include
 from django.contrib.auth.views import LogoutView
-from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
+from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
 )
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from .apps.heritage_data.views import RegisterView, CurrentUserView
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from .apps.heritage_data.views import CurrentUserView, RegisterView
 
 # DefaultRouter for API endpoints
 router = DefaultRouter()
@@ -31,26 +33,32 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     # API Documentation
-    path('schema/', SpectacularAPIView.as_view(), name='schema'),  # OpenAPI schema
-    path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),  # Swagger UI
-    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),  # ReDoc
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),  # OpenAPI schema
+    path(
+        "", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
+    ),  # Swagger UI
+    path(
+        "redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
+    ),  # ReDoc
     path("openapi.json", schema_view.without_ui(cache_timeout=0), name="schema-json"),
-
     # Admin
-    path('admin/', admin.site.urls),
-
+    path("admin/", admin.site.urls),
     # API Endpoints
-    path('', include(router.urls)),  # DefaultRouter URLs
-    path('data/', include('heritage_graph.apps.heritage_data.urls')),  # Heritage Data App
-
+    path("", include(router.urls)),  # DefaultRouter URLs
+    path(
+        "data/", include("heritage_graph.apps.heritage_data.urls")
+    ),  # Heritage Data App
     # Authentication
     path("auth/", include("djoser.urls")),  # Djoser URLs
     path("auth/", include("djoser.urls.jwt")),  # Djoser JWT URLs
-    path("auth/logout/", LogoutView.as_view(), name='logout'),  # Logout
-
+    path("auth/logout/", LogoutView.as_view(), name="logout"),  # Logout
     # JWT Token
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),  # Obtain JWT Token
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh JWT Token
-    path('api/register/', RegisterView.as_view(), name='register'),
-     path('api/user/info', CurrentUserView.as_view(), name='current-user'),
+    path(
+        "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
+    ),  # Obtain JWT Token
+    path(
+        "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
+    ),  # Refresh JWT Token
+    path("api/register/", RegisterView.as_view(), name="register"),
+    path("api/user/info", CurrentUserView.as_view(), name="current-user"),
 ]

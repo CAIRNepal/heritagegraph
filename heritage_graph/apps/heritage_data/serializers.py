@@ -1,13 +1,18 @@
-from rest_framework import serializers, generics
 from django.contrib.auth.models import User
-from .models import Submission, Moderation, Comments
-from .models import UserProfile
-from .models import ActivityLog
-from rest_framework.serializers import ModelSerializer, ValidationError
-from rest_framework.permissions import AllowAny  
-
 from rest_framework import serializers
-from .models import Submission, SubmissionEditSuggestion, SubmissionVersion
+from rest_framework.permissions import AllowAny
+from rest_framework.serializers import ModelSerializer, ValidationError
+
+from .models import (
+    ActivityLog,
+    Comments,
+    Moderation,
+    Submission,
+    SubmissionEditSuggestion,
+    SubmissionVersion,
+    UserProfile,
+)
+
 
 class SubmissionSerializer(serializers.ModelSerializer):
     contributor_username = serializers.SerializerMethodField(read_only=True)
@@ -15,139 +20,142 @@ class SubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
         fields = [
-            'submission_id',
-            'title',
-            'description',
-            'contributor',
-            'contributor_username',
-            'status',
-            'created_at',
-            
+            "submission_id",
+            "title",
+            "description",
+            "contributor",
+            "contributor_username",
+            "status",
+            "created_at",
             # Additional fields
-            'Activity',
-            'Alternative_name_s',
-            'Anglicized_name',
-            'Base_plinth_depth',
-            'Base_plinth_height',
-            'Base_plinth_width',
-            'Cakula_depth',
-            'Cakula_height',
-            'Cakula_width',
-            'Capital_depth',
-            'Capital_height',
-            'Capital_width',
-            'Circumference',
-            'City_quarter_tola',
-            'Column_depth',
-            'Column_height',
-            'Column_width',
-            'Commentary',
-            'Date_BCE_CE',
-            'Date_VS_NS',
-            'Depth',
-            'Description_for_past_interventions',
-            'Description_in_Nepali',
-            'Details',
-            'District',
-            'Edge_at_platform',
-            'Editorial_team',
-            'End_date',
-            'Event_name',
-            'Forms_of_columns',
-            'Gate',
-            'Height',
-            'Heritage_focus_area',
-            'Identified_threats',
-            'Image_declaration',
-            'Inscription_identification_number',
-            'Lintel_depth',
-            'Lintel_height',
-            'Main_deity_in_the_sanctum',
-            'Maps_and_drawing_type',
-            'Monument_assessment',
-            'Monument_depth',
-            'Monument_diameter',
-            'Monument_height_approximate',
-            'Monument_length',
-            'Monument_name',
-            'Monument_shape',
-            'Monument_type',
-            'Municipality_village_council',
-            'Name',
-            'Name_in_Devanagari',
-            'Nepali_month',
-            'Number_of_bays_front',
-            'Number_of_bays_sides',
-            'Number_of_doors',
-            'Number_of_plinth',
-            'Number_of_roofs',
-            'Number_of_storeys',
-            'Number_of_struts',
-            'Number_of_wood_carved_windows',
-            'Object_ID_number',
-            'Object_location',
-            'Object_material',
-            'Object_type',
-            'Paksa',
-            'Peculiarities',
-            'Period',
-            'Platform_floor',
-            'Profile_at_base',
-            'Province_number',
-            'Reference_source',
-            'Religion',
-            'Roofing',
-            'Short_description',
-            'Sources',
-            'Thickness_of_main_wall',
-            'Tithi',
-            'Top_plinth_depth',
-            'Top_plinth_height',
-            'Top_plinth_width',
-            'Type_of_bricks',
-            'Type_of_roof',
-            'Width',
-            'Year_SS_NS_VS',
+            "Activity",
+            "Alternative_name_s",
+            "Anglicized_name",
+            "Base_plinth_depth",
+            "Base_plinth_height",
+            "Base_plinth_width",
+            "Cakula_depth",
+            "Cakula_height",
+            "Cakula_width",
+            "Capital_depth",
+            "Capital_height",
+            "Capital_width",
+            "Circumference",
+            "City_quarter_tola",
+            "Column_depth",
+            "Column_height",
+            "Column_width",
+            "Commentary",
+            "Date_BCE_CE",
+            "Date_VS_NS",
+            "Depth",
+            "Description_for_past_interventions",
+            "Description_in_Nepali",
+            "Details",
+            "District",
+            "Edge_at_platform",
+            "Editorial_team",
+            "End_date",
+            "Event_name",
+            "Forms_of_columns",
+            "Gate",
+            "Height",
+            "Heritage_focus_area",
+            "Identified_threats",
+            "Image_declaration",
+            "Inscription_identification_number",
+            "Lintel_depth",
+            "Lintel_height",
+            "Main_deity_in_the_sanctum",
+            "Maps_and_drawing_type",
+            "Monument_assessment",
+            "Monument_depth",
+            "Monument_diameter",
+            "Monument_height_approximate",
+            "Monument_length",
+            "Monument_name",
+            "Monument_shape",
+            "Monument_type",
+            "Municipality_village_council",
+            "Name",
+            "Name_in_Devanagari",
+            "Nepali_month",
+            "Number_of_bays_front",
+            "Number_of_bays_sides",
+            "Number_of_doors",
+            "Number_of_plinth",
+            "Number_of_roofs",
+            "Number_of_storeys",
+            "Number_of_struts",
+            "Number_of_wood_carved_windows",
+            "Object_ID_number",
+            "Object_location",
+            "Object_material",
+            "Object_type",
+            "Paksa",
+            "Peculiarities",
+            "Period",
+            "Platform_floor",
+            "Profile_at_base",
+            "Province_number",
+            "Reference_source",
+            "Religion",
+            "Roofing",
+            "Short_description",
+            "Sources",
+            "Thickness_of_main_wall",
+            "Tithi",
+            "Top_plinth_depth",
+            "Top_plinth_height",
+            "Top_plinth_width",
+            "Type_of_bricks",
+            "Type_of_roof",
+            "Width",
+            "Year_SS_NS_VS",
         ]
         read_only_fields = [
-            'submission_id',
-            'contributor',
-            'contributor_username',
-            'status',
-            'created_at',
+            "submission_id",
+            "contributor",
+            "contributor_username",
+            "status",
+            "created_at",
         ]
 
     def get_contributor_username(self, obj):
-        return getattr(obj.contributor, 'username', None)
-        
+        return getattr(obj.contributor, "username", None)
+
+
 class ModerationSerializer(serializers.ModelSerializer):
-    submission = serializers.PrimaryKeyRelatedField(queryset=Submission.objects.filter(status='pending'))
+    submission = serializers.PrimaryKeyRelatedField(
+        queryset=Submission.objects.filter(status="pending")
+    )
+
     class Meta:
         model = Moderation
-        fields = ['id', 'submission', 'moderator', 'remarks', 'reviewed_at']
+        fields = ["id", "submission", "moderator", "remarks", "reviewed_at"]
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['organization', 'score']  
+        fields = ["organization", "score"]
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()  
+    profile = ProfileSerializer()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'profile']
+        fields = ["id", "username", "email", "first_name", "last_name", "profile"]
 
-    
 
 class ActivityLogSerializer(serializers.ModelSerializer):
-    permission_classes = [AllowAny]  
-    user = serializers.StringRelatedField()  
+    permission_classes = [AllowAny]
+    user = serializers.StringRelatedField()
 
     class Meta:
         model = ActivityLog
-        fields = ['user', 'action', 'description', 'timestamp']
-
+        fields = ["user", "action", "description", "timestamp"]
 
 
 class UserSignupSerializer(serializers.ModelSerializer):
@@ -161,44 +169,78 @@ class UserSignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'organization', 'position', 'birth_date', 'university_school']
+        fields = [
+            "username",
+            "email",
+            "password",
+            "first_name",
+            "last_name",
+            "organization",
+            "position",
+            "birth_date",
+            "university_school",
+        ]
         extra_kwargs = {
-            'password': {'write_only': True}, 
+            "password": {"write_only": True},
         }
 
     def create(self, validated_data):
         # Extract the additional profile-related fields
-        organization = validated_data.pop('organization', None)
-        position = validated_data.pop('position', None)
-        birth_date = validated_data.pop('birth_date', None)
-        university_school = validated_data.pop('university_school', None)
+        organization = validated_data.pop("organization", None)
+        position = validated_data.pop("position", None)
+        birth_date = validated_data.pop("birth_date", None)
+        university_school = validated_data.pop("university_school", None)
 
         # Extract the first name and last name for the user model
-        first_name = validated_data.pop('first_name', None)
-        last_name = validated_data.pop('last_name', None)
+        # first_name = validated_data.pop("first_name", None)
+        # last_name = validated_data.pop("last_name", None)
 
         # Create the user with first_name and last_name
         user = User.objects.create_user(**validated_data)
-        profile = UserProfile.objects.create(user=user, organization=organization, position=position, birth_date=birth_date, university_school=university_school)
+        profile = UserProfile.objects.create(
+            user=user,
+            organization=organization,
+            position=position,
+            birth_date=birth_date,
+            university_school=university_school,
+        )
         user.save()
         profile.save()
 
         # Check if the UserProfile already exists, if not, create one
         if not UserProfile.objects.filter(user=user).exists():
-            UserProfile.objects.create(user=user, organization=organization, position=position, birth_date=birth_date, university_school=university_school)
+            UserProfile.objects.create(
+                user=user,
+                organization=organization,
+                position=position,
+                birth_date=birth_date,
+                university_school=university_school,
+            )
 
         return user, profile
-    
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ['email', 'first_name', 'last_name', 'organization', 'score', 'birth_date', 'position', 'university_school']
+        fields = [
+            "email",
+            "first_name",
+            "last_name",
+            "organization",
+            "score",
+            "birth_date",
+            "position",
+            "university_school",
+        ]
+
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(read_only=True) 
+    profile = UserProfileSerializer(read_only=True)
+
     class Meta:
         model = User
-        fields = ['username','profile']
+        fields = ["username", "profile"]
 
 
 class RegisterSerializer(ModelSerializer):
@@ -207,6 +249,7 @@ class RegisterSerializer(ModelSerializer):
 
     Validates that the email is unique.
     """
+
     class Meta:
         model = User
         fields = ("username", "email", "password")
@@ -218,39 +261,61 @@ class RegisterSerializer(ModelSerializer):
         if User.objects.filter(email=value).exists():
             raise ValidationError("Email already exists.")
         return value
-    
+
+
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)  # show username
     submission = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Comments
-        fields = ['comment_id','id', 'submission', 'user', 'comment', 'created_at']
+        fields = ["comment_id", "id", "submission", "user", "comment", "created_at"]
+
 
 class SubmissionEditSuggestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubmissionEditSuggestion
-        fields = '__all__'
+        fields = "__all__"
+
 
 class SubmissionVersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubmissionVersion
-        fields = ['version_number', 'title', 'description', 'contribution_data', 'updated_by', 'updated_at']
+        fields = [
+            "version_number",
+            "title",
+            "description",
+            "contribution_data",
+            "updated_by",
+            "updated_at",
+        ]
 
 
-class SubmissionEditSuggestionSerializer(serializers.ModelSerializer):
-    suggested_by = serializers.StringRelatedField()  # Will show username instead of user ID
-    reviewed_by = serializers.StringRelatedField(required=False)
+# class SubmissionEditSuggestionSerializer(serializers.ModelSerializer):
+#     suggested_by = (
+#         serializers.StringRelatedField()
+#     )  # Will show username instead of user ID
+#     reviewed_by = serializers.StringRelatedField(required=False)
 
-    class Meta:
-        model = SubmissionEditSuggestion
-        fields = ['id', 'title', 'description', 'contribution_data', 'suggested_by', 'created_at', 'approved', 'reviewed_by', 'reviewed_at']
+#     class Meta:
+#         model = SubmissionEditSuggestion
+#         fields = [
+#             "id",
+#             "title",
+#             "description",
+#             "contribution_data",
+#             "suggested_by",
+#             "created_at",
+#             "approved",
+#             "reviewed_by",
+#             "reviewed_at",
+#         ]
+
 
 class SubmissionIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Submission
-        fields = ['submission_id']  
-
+        fields = ["submission_id"]
 
 
 class UserStatsSerializer(serializers.Serializer):

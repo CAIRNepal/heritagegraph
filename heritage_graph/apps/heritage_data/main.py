@@ -1,18 +1,18 @@
 # heritage/tests/test_models.py
 
-from django.test import TestCase
-from django.contrib.auth.models import User
-from django.utils import timezone
 from uuid import UUID
 
+from django.contrib.auth.models import User
+from django.test import TestCase
+from django.utils import timezone
 from models import (
+    Comment,
     FormSubmission,
     FormVersion,
-    Comment,
-    StatusTransition,
     Notification,
+    StatusTransition,
+    SubmissionTag,
     Tag,
-    SubmissionTag
 )
 
 
@@ -26,7 +26,7 @@ class FormSubmissionModelTest(TestCase):
             title="Machu Picchu",
             heritage_type="tangible",
             status="submitted",
-            assigned_reviewer=self.user
+            assigned_reviewer=self.user,
         )
         self.assertIsInstance(submission.id, UUID)
         self.assertEqual(submission.title, "Machu Picchu")
@@ -35,11 +35,15 @@ class FormSubmissionModelTest(TestCase):
         self.assertLessEqual(submission.created_at, timezone.now())
 
     def test_default_status(self):
-        submission = FormSubmission.objects.create(title="Great Barrier Reef", heritage_type="natural")
+        submission = FormSubmission.objects.create(
+            title="Great Barrier Reef", heritage_type="natural"
+        )
         self.assertEqual(submission.status, "submitted")
 
     def test_string_representation(self):
-        submission = FormSubmission.objects.create(title="Opera Singing", heritage_type="intangible")
+        submission = FormSubmission.objects.create(
+            title="Opera Singing", heritage_type="intangible"
+        )
         self.assertEqual(str(submission), "Opera Singing [Intangible Heritage]")
 
 
@@ -47,22 +51,25 @@ class FormVersionModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="author", password="pass")
         self.submission = FormSubmission.objects.create(
-            title="Angkor Wat",
-            heritage_type="tangible"
+            title="Angkor Wat", heritage_type="tangible"
         )
 
     def test_create_version(self):
         version = FormVersion.objects.create(
             submission=self.submission,
             data={"description": "Temple complex in Cambodia", "location": "Siem Reap"},
-            created_by=self.user
+            created_by=self.user,
         )
         self.assertEqual(version.version_number, 1)
         self.assertEqual(version.data["location"], "Siem Reap")
 
     def test_auto_increment_version_number(self):
-        FormVersion.objects.create(submission=self.submission, created_by=self.user)  # v1
-        v2 = FormVersion.objects.create(submission=self.submission, created_by=self.user)
+        FormVersion.objects.create(
+            submission=self.submission, created_by=self.user
+        )  # v1
+        v2 = FormVersion.objects.create(
+            submission=self.submission, created_by=self.user
+        )
         self.assertEqual(v2.version_number, 2)
 
     def test_unique_version_per_submission(self):
@@ -74,9 +81,7 @@ class FormVersionModelTest(TestCase):
 
     def test_string_representation(self):
         version = FormVersion.objects.create(
-            submission=self.submission,
-            created_by=self.user,
-            version_number=1
+            submission=self.submission, created_by=self.user, version_number=1
         )
         self.assertEqual(str(version), "v1 | Angkor Wat")
 
@@ -85,33 +90,36 @@ class CommentModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="commenter", password="pass")
         self.submission = FormSubmission.objects.create(
-            title="Flamenco",
-            heritage_type="intangible"
+            title="Flamenco", heritage_type="intangible"
         )
 
     def test_create_comment(self):
         comment = Comment.objects.create(
             submission=self.submission,
             author=self.user,
-            content="This is a beautiful cultural expression."
+            content="This is a beautiful cultural expression.",
         )
         self.assertEqual(comment.content, "This is a beautiful cultural expression.")
         self.assertEqual(comment.author, self.user)
         self.assertIsNone(comment.parent)
 
     def test_reply_to_comment(self):
-        parent = Comment.objects.create(submission=self.submission, author=self.user, content="Nice!")
+        parent = Comment.objects.create(
+            submission=self.submission, author=self.user, content="Nice!"
+        )
         reply = Comment.objects.create(
             submission=self.submission,
             author=self.user,
             content="Thanks!",
-            parent=parent
+            parent=parent,
         )
         self.assertEqual(reply.parent, parent)
         self.assertIn(reply, parent.replies.all())
 
     def test_string_representation(self):
-        comment = Comment.objects.create(submission=self.submission, author=self.user, content="Hello")
+        comment = Comment.objects.create(
+            submission=self.submission, author=self.user, content="Hello"
+        )
         expected = f"Comment by {self.user.username} on Flamenco"
         self.assertEqual(str(comment), expected)
 
@@ -120,9 +128,7 @@ class StatusTransitionModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="moderator", password="pass")
         self.submission = FormSubmission.objects.create(
-            title="Grand Canyon",
-            heritage_type="natural",
-            status="submitted"
+            title="Grand Canyon", heritage_type="natural", status="submitted"
         )
 
     def test_create_status_transition(self):
@@ -131,7 +137,7 @@ class StatusTransitionModelTest(TestCase):
             from_status="submitted",
             to_status="under_review",
             changed_by=self.user,
-            reason="Starting initial review"
+            reason="Starting initial review",
         )
         self.assertEqual(transition.from_status, "submitted")
         self.assertEqual(transition.to_status, "under_review")
@@ -143,13 +149,13 @@ class StatusTransitionModelTest(TestCase):
             submission=self.submission,
             from_status="submitted",
             to_status="under_review",
-            changed_by=self.user
+            changed_by=self.user,
         )
         t2 = StatusTransition.objects.create(
             submission=self.submission,
             from_status="under_review",
             to_status="changes_requested",
-            changed_by=self.user
+            changed_by=self.user,
         )
         transitions = list(self.submission.status_transitions.all())
         self.assertEqual(transitions, [t2, t1])  # reverse chronological
@@ -159,7 +165,7 @@ class StatusTransitionModelTest(TestCase):
             submission=self.submission,
             from_status="submitted",
             to_status="accepted",
-            changed_by=self.user
+            changed_by=self.user,
         )
         self.assertEqual(str(transition), "submitted → accepted by moderator")
 
@@ -173,7 +179,7 @@ class NotificationModelTest(TestCase):
             user=self.user,
             message="Your form has been accepted!",
             link="/forms/abc123/",
-            read=False
+            read=False,
         )
         self.assertEqual(notification.user, self.user)
         self.assertFalse(notification.read)
@@ -205,27 +211,30 @@ class SubmissionTagModelTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="tagger", password="pass")
         self.submission = FormSubmission.objects.create(
-            title="Samba de Roda",
-            heritage_type="intangible"
+            title="Samba de Roda", heritage_type="intangible"
         )
         self.tag = Tag.objects.create(name="Music")
 
     def test_tag_submission(self):
         rel = SubmissionTag.objects.create(
-            submission=self.submission,
-            tag=self.tag,
-            added_by=self.user
+            submission=self.submission, tag=self.tag, added_by=self.user
         )
         self.assertEqual(rel.submission, self.submission)
         self.assertEqual(rel.tag.name, "Music")
         self.assertEqual(rel.added_by, self.user)
 
     def test_prevent_duplicate_tag(self):
-        SubmissionTag.objects.create(submission=self.submission, tag=self.tag, added_by=self.user)
+        SubmissionTag.objects.create(
+            submission=self.submission, tag=self.tag, added_by=self.user
+        )
         with self.assertRaises(Exception):  # IntegrityError
-            SubmissionTag.objects.create(submission=self.submission, tag=self.tag, added_by=self.user)
+            SubmissionTag.objects.create(
+                submission=self.submission, tag=self.tag, added_by=self.user
+            )
 
     def test_reverse_relationship(self):
-        SubmissionTag.objects.create(submission=self.submission, tag=self.tag, added_by=self.user)
+        SubmissionTag.objects.create(
+            submission=self.submission, tag=self.tag, added_by=self.user
+        )
         self.assertEqual(self.submission.tag_relations.count(), 1)
         self.assertEqual(self.submission.tag_relations.first().tag.name, "Music")

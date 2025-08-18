@@ -1,8 +1,8 @@
-import { DataTable } from "@/components/heritage-table";
-import { SectionCards } from "@/app/dashboard/components/section-cards";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import data from "./data.json";
-import { Leaderboard } from "../../components/leaderboard-card";
+import { DataTable } from '@/components/heritage-table';
+import { SectionCards } from '@/app/dashboard/components/section-cards';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import data from './data.json';
+import { Leaderboard } from '../../components/leaderboard-card';
 
 export default function ContributorsPage() {
   return (
@@ -14,7 +14,9 @@ export default function ContributorsPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            HeritageGraph depends on its community to explore, preserve, and contribute to cultural knowledge. Anyone can join and start contributing to our knowledge graph.
+            HeritageGraph depends on its community to explore, preserve, and contribute
+            to cultural knowledge. Anyone can join and start contributing to our
+            knowledge graph.
           </p>
         </CardContent>
       </Card>

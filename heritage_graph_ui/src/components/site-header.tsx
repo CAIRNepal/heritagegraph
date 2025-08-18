@@ -1,50 +1,50 @@
-"use client"
+'use client';
 
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Separator } from '@/components/ui/separator';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import {
   IconChartBar,
   IconDashboard,
   IconListDetails,
   IconUsers,
-} from "@tabler/icons-react"
-import { BellDotIcon, BellIcon } from "lucide-react"
+} from '@tabler/icons-react';
+import { BellDotIcon, BellIcon } from 'lucide-react';
 
 const data = {
   user: {
-    name: "nabin2004",
-    email: "nabin.oli@cair-nepal.org",
-    avatar: "/avatars/shadcn.jpg",
+    name: 'nabin2004',
+    email: 'nabin.oli@cair-nepal.org',
+    avatar: '/avatars/shadcn.jpg',
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "/dashboard",
+      title: 'Dashboard',
+      url: '/dashboard',
       icon: IconDashboard,
     },
     {
-      title: "Leaderboard",
-      url: "/dashboard/leaderboard",
+      title: 'Leaderboard',
+      url: '/dashboard/leaderboard',
       icon: IconChartBar,
     },
     {
-      title: "Form",
-      url: "/dashboard/contribute",
+      title: 'Form',
+      url: '/dashboard/contribute',
       icon: IconChartBar,
     },
     {
-      title: "Notification",
-      url: "/dashboard/notification",
+      title: 'Notification',
+      url: '/dashboard/notification',
       icon: BellIcon,
     },
 
     {
-      title: "Team",
-      url: "/dashboard/team",
+      title: 'Team',
+      url: '/dashboard/team',
       icon: IconUsers,
     },
   ],
-}
+};
 
 export function SiteHeader() {
   return (
@@ -73,5 +73,5 @@ export function SiteHeader() {
         ))}
       </nav>
     </header>
-  )
+  );
 }

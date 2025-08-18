@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function OurTeam() {
   return (
@@ -16,7 +16,9 @@ export default function OurTeam() {
         <section className="text-sm sm:text-base leading-6">
           <h1 className="text-2xl font-bold mb-6">Our Team</h1>
           <p className="mb-8">
-            CAIR-Nepal brings together a multidisciplinary team working at the intersection of artificial intelligence, cultural heritage, and digital knowledge systems. Here are the minds behind the HeritageGraph project:
+            CAIR-Nepal brings together a multidisciplinary team working at the
+            intersection of artificial intelligence, cultural heritage, and digital
+            knowledge systems. Here are the minds behind the HeritageGraph project:
           </p>
 
           <div className="grid sm:grid-cols-2 gap-8">
@@ -122,13 +124,7 @@ export default function OurTeam() {
           className="flex items-center gap-2 hover:underline hover:underline-offset-4"
           href="/privacy-policy"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
           Privacy Policy
         </a>
         <a
@@ -137,13 +133,7 @@ export default function OurTeam() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
           Zenodo
         </a>
         <a

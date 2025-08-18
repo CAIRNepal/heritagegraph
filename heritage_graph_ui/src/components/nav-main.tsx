@@ -1,36 +1,33 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import Link from 'next/link';
+import { IconCirclePlusFilled, IconMail, type Icon } from '@tabler/icons-react';
 
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button';
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
 export function NavMain({
   items,
 }: {
   items: {
-    title: string
-    url: string
-    icon?: Icon
-  }[]
+    title: string;
+    url: string;
+    icon?: Icon;
+  }[];
 }) {
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
-
         {/* Top Action Row */}
         <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">            
-          </SidebarMenuItem>
+          <SidebarMenuItem className="flex items-center gap-2"></SidebarMenuItem>
         </SidebarMenu>
-
 
         {/* Navigation Links */}
         <SidebarMenu>
@@ -50,5 +47,5 @@ export function NavMain({
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  )
+  );
 }

@@ -1,6 +1,6 @@
-"use client"
+'use client';
 
-import * as React from "react"
+import * as React from 'react';
 import {
   IconCamera,
   IconChartBar,
@@ -23,12 +23,12 @@ import {
   IconMap,
   IconMusic,
   IconHistory,
-} from "@tabler/icons-react"
+} from '@tabler/icons-react';
 
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import { NavDocuments } from '@/components/nav-documents';
+import { NavMain } from '@/components/nav-main';
+import { NavSecondary } from '@/components/nav-secondary';
+import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
   SidebarContent,
@@ -37,38 +37,38 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from '@/components/ui/sidebar';
 
 const data = {
   user: {
-    name: "nabin2004",
-    email: "nabin.oli@cair-nepal.org",
-    avatar: "/avatars/shadcn.jpg",
+    name: 'nabin2004',
+    email: 'nabin.oli@cair-nepal.org',
+    avatar: '/avatars/shadcn.jpg',
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "/dashboard",
+      title: 'Dashboard',
+      url: '/dashboard',
       icon: IconDashboard,
     },
     {
-      title: "Leaderboard",
-      url: "/dashboard/leaderboard",
+      title: 'Leaderboard',
+      url: '/dashboard/leaderboard',
       icon: IconListDetails,
     },
     {
-      title: "Form",
-      url: "/dashboard/contribute",
+      title: 'Form',
+      url: '/dashboard/contribute',
       icon: IconChartBar,
     },
     {
-      title: "Notification",
-      url: "/dashboard/notification",
+      title: 'Notification',
+      url: '/dashboard/notification',
       icon: IconChartBar,
     },
     {
-      title: "team",
-      url: "/dashboard/team",
+      title: 'team',
+      url: '/dashboard/team',
       icon: IconUsers,
     },
     // {
@@ -79,48 +79,48 @@ const data = {
   ],
   navClouds: [
     {
-      title: "Capture",
+      title: 'Capture',
       icon: IconCamera,
       isActive: true,
-      url: "#",
+      url: '#',
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: 'Active Proposals',
+          url: '#',
         },
         {
-          title: "Archived",
-          url: "#",
+          title: 'Archived',
+          url: '#',
         },
       ],
     },
     {
-      title: "Proposal",
+      title: 'Proposal',
       icon: IconFileDescription,
-      url: "#",
+      url: '#',
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: 'Active Proposals',
+          url: '#',
         },
         {
-          title: "Archived",
-          url: "#",
+          title: 'Archived',
+          url: '#',
         },
       ],
     },
     {
-      title: "Prompts",
+      title: 'Prompts',
       icon: IconFileAi,
-      url: "#",
+      url: '#',
       items: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: 'Active Proposals',
+          url: '#',
         },
         {
-          title: "Archived",
-          url: "#",
+          title: 'Archived',
+          url: '#',
         },
       ],
     },
@@ -161,40 +161,84 @@ const data = {
   // ],
 
   navKnowledgebase: [
-    { name: "Monuments", url: "/dashboard/knowledge/monuments", icon: IconBuilding },
-    { name: "Artifacts", url: "/dashboard/knowledge/artifacts", icon: IconFolder },
-    { name: "Festivals & Rituals", url: "/dashboard/knowledge/festivals", icon: IconHistory },
-    { name: "Performing Arts", url: "/dashboard/knowledge/performing-arts", icon: IconMusic },
-    { name: "Languages & Literature", url: "/dashboard/knowledge/literature", icon: IconBook },
-    { name: "People & Lineages", url: "/dashboard/knowledge/people", icon: IconUsers },
-    { name: "Places", url: "/dashboard/knowledge/places", icon: IconMap },
-    { name: "Intangible Heritage", url: "/dashboard/knowledge/intangible", icon: IconGlobe },
+    {
+      name: 'Monuments',
+      url: '/dashboard/knowledge/monuments',
+      icon: IconBuilding,
+    },
+    {
+      name: 'Artifacts',
+      url: '/dashboard/knowledge/artifacts',
+      icon: IconFolder,
+    },
+    {
+      name: 'Festivals & Rituals',
+      url: '/dashboard/knowledge/festivals',
+      icon: IconHistory,
+    },
+    {
+      name: 'Performing Arts',
+      url: '/dashboard/knowledge/performing-arts',
+      icon: IconMusic,
+    },
+    {
+      name: 'Languages & Literature',
+      url: '/dashboard/knowledge/literature',
+      icon: IconBook,
+    },
+    {
+      name: 'People & Lineages',
+      url: '/dashboard/knowledge/people',
+      icon: IconUsers,
+    },
+    { name: 'Places', url: '/dashboard/knowledge/places', icon: IconMap },
+    {
+      name: 'Intangible Heritage',
+      url: '/dashboard/knowledge/intangible',
+      icon: IconGlobe,
+    },
   ],
 
   navCuration: [
-    { name: "Contributions Queue", url: "/dashboard/curation/contributions", icon: IconFileDescription },
+    {
+      name: 'Contributions Queue',
+      url: '/dashboard/curation/contributions',
+      icon: IconFileDescription,
+    },
     // { name: "Verification Queue", url: "/curation/verification", icon: IconReport },
-    { name: "Activity Log", url: "/dashboard/curation/activity", icon: IconChartBar },
+    {
+      name: 'Activity Log',
+      url: '/dashboard/curation/activity',
+      icon: IconChartBar,
+    },
   ],
 
   navCommunity: [
-    { name: "Contributors", url: "/dashboard/community/contributors", icon: IconUsers },
-    { name: "Organizations", url: "/dashboard/community/organizations", icon: IconBuilding },
+    {
+      name: 'Contributors',
+      url: '/dashboard/community/contributors',
+      icon: IconUsers,
+    },
+    {
+      name: 'Organizations',
+      url: '/dashboard/community/organizations',
+      icon: IconBuilding,
+    },
     // { name: "Leaderboard", url: "/dashboard/community/leaderboard", icon: IconListDetails },
   ],
 
   navResources: [
-    { name: "Data Releases", url: "/resources/releases", icon: IconDatabase },
-    { name: "Data Licensing", url: "/resources/licensing", icon: IconFileWord },
-    { name: "APIs & Tools", url: "/resources/apis", icon: IconFileAi },
+    { name: 'Data Releases', url: '/resources/releases', icon: IconDatabase },
+    { name: 'Data Licensing', url: '/resources/licensing', icon: IconFileWord },
+    { name: 'APIs & Tools', url: '/resources/apis', icon: IconFileAi },
   ],
 
   navAbout: [
-    { name: "About", url: "/about", icon: IconHelp },
-    { name: "Documentation", url: "/docs", icon: IconFileDescription },
-    { name: "Contact", url: "/contact", icon: IconSearch },
+    { name: 'About', url: '/about', icon: IconHelp },
+    { name: 'Documentation', url: '/docs', icon: IconFileDescription },
+    { name: 'Contact', url: '/contact', icon: IconSearch },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -218,12 +262,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavMain items={data.navMain} /> */}
         {/* <NavDocuments items={data.data} /> */}
         <NavDocuments items={data.navKnowledgebase} />
-         <NavDocuments items={data.navCuration} />
-         <NavDocuments items={data.navCommunity} />
-         <NavDocuments items={data.navResources} />
+        <NavDocuments items={data.navCuration} />
+        <NavDocuments items={data.navCommunity} />
+        <NavDocuments items={data.navResources} />
         <NavDocuments items={data.navAbout} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>
-  )
+  );
 }

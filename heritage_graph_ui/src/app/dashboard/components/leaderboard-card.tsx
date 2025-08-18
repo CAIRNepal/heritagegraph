@@ -1,11 +1,6 @@
-"use client";
+'use client';
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableHead,
@@ -13,10 +8,10 @@ import {
   TableBody,
   TableRow,
   TableCell,
-} from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+} from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 export function Leaderboard() {
   const [data, setData] = useState<any[]>([]);
@@ -26,15 +21,15 @@ export function Leaderboard() {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:8000/data/leaderboard/");
-        if (!res.ok) throw new Error("Failed to fetch leaderboard data");
+        const res = await fetch('http://localhost:8000/data/leaderboard/');
+        if (!res.ok) throw new Error('Failed to fetch leaderboard data');
         const json = await res.json();
         setData(
           json.map((entry: any, i: number) => ({
             rank: entry.rank || i + 1,
-            name: entry.username || "Unknown",
-            avatar: `/avatars/${(entry.username || "user").toLowerCase()}.png`,
-          }))
+            name: entry.username || 'Unknown',
+            avatar: `/avatars/${(entry.username || 'user').toLowerCase()}.png`,
+          })),
         );
       } catch (error) {
         console.error(error);
@@ -73,10 +68,10 @@ export function Leaderboard() {
                   <TableRow
                     key={entry.rank}
                     className={cn(
-                      "hover:bg-muted/60",
-                      entry.rank === 1 && "bg-yellow-100/60 dark:bg-yellow-900/20",
-                      entry.rank === 2 && "bg-gray-100 dark:bg-gray-800/20",
-                      entry.rank === 3 && "bg-amber-50 dark:bg-amber-900/20"
+                      'hover:bg-muted/60',
+                      entry.rank === 1 && 'bg-yellow-100/60 dark:bg-yellow-900/20',
+                      entry.rank === 2 && 'bg-gray-100 dark:bg-gray-800/20',
+                      entry.rank === 3 && 'bg-amber-50 dark:bg-amber-900/20',
                     )}
                   >
                     <TableCell className="font-semibold text-muted-foreground">
@@ -87,9 +82,9 @@ export function Leaderboard() {
                         <AvatarImage src={entry.avatar} alt={entry.name} />
                         <AvatarFallback>
                           {entry.name
-                            .split(" ")
+                            .split(' ')
                             .map((w) => w[0])
-                            .join("")
+                            .join('')
                             .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>

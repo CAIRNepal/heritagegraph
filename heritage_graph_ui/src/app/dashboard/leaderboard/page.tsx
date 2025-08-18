@@ -1,11 +1,6 @@
-"use client";
+'use client';
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableHead,
@@ -13,33 +8,33 @@ import {
   TableBody,
   TableRow,
   TableCell,
-} from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/table';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import { useState, useEffect, useMemo } from "react";
+} from '@/components/ui/pagination';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
+import { useState, useEffect, useMemo } from 'react';
 
 const ITEMS_PER_PAGE = 20;
 
 export default function LeaderboardPage() {
   const [data, setData] = useState([]);
-  const [query, setQuery] = useState("");
-  const [institutionFilter, setInstitutionFilter] = useState("all");
+  const [query, setQuery] = useState('');
+  const [institutionFilter, setInstitutionFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -47,23 +42,24 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const res = await fetch("http://localhost:8000/data/leaderboard/", {
-          method: "GET",
+        const res = await fetch('http://localhost:8000/data/leaderboard/', {
+          method: 'GET',
           headers: {
-            Accept: "*/*",
+            Accept: '*/*',
           },
         });
-        if (!res.ok) throw new Error("Failed to fetch leaderboard data");
+        if (!res.ok) throw new Error('Failed to fetch leaderboard data');
         const json = await res.json();
         setData(
           json.map((entry, i) => ({
             rank: entry.rank || i + 1,
-            name: entry.username || "Unknown",
-            institution: entry.institution && entry.institution !== "N/A" ? entry.institution : "",
-            country: entry.country && entry.country !== "N/A" ? entry.country : "",
+            name: entry.username || 'Unknown',
+            institution:
+              entry.institution && entry.institution !== 'N/A' ? entry.institution : '',
+            country: entry.country && entry.country !== 'N/A' ? entry.country : '',
             total_submission: entry.total_submission || 0,
-            avatar: `/avatars/${(entry.username || "user").toLowerCase()}.png`,
-          }))
+            avatar: `/avatars/${(entry.username || 'user').toLowerCase()}.png`,
+          })),
         );
       } catch (error) {
         console.error(error);
@@ -78,7 +74,7 @@ export default function LeaderboardPage() {
     return data.filter((entry) => {
       const matchesQuery = entry.name.toLowerCase().includes(query.toLowerCase());
       const matchesInstitution =
-        institutionFilter === "all" || institutionFilter === ""
+        institutionFilter === 'all' || institutionFilter === ''
           ? true
           : entry.institution === institutionFilter;
       return matchesQuery && matchesInstitution;
@@ -129,11 +125,13 @@ export default function LeaderboardPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Institutions</SelectItem>
-              {[...new Set(data.map((d) => d.institution).filter((inst) => inst))].map((inst) => (
-                <SelectItem key={inst} value={inst}>
-                  {inst}
-                </SelectItem>
-              ))}
+              {[...new Set(data.map((d) => d.institution).filter((inst) => inst))].map(
+                (inst) => (
+                  <SelectItem key={inst} value={inst}>
+                    {inst}
+                  </SelectItem>
+                ),
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -152,8 +150,12 @@ export default function LeaderboardPage() {
                     <TableRow>
                       <TableHead className="w-[60px]">Rank</TableHead>
                       <TableHead>Name</TableHead>
-                      <TableHead className="hidden md:table-cell">Institution</TableHead>
-                      <TableHead className="hidden sm:table-cell text-center">Country</TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        Institution
+                      </TableHead>
+                      <TableHead className="hidden sm:table-cell text-center">
+                        Country
+                      </TableHead>
                       <TableHead className="text-right">Total Submissions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -169,10 +171,11 @@ export default function LeaderboardPage() {
                         <TableRow
                           key={entry.rank}
                           className={cn(
-                            "hover:bg-muted/60",
-                            entry.rank === 1 && "bg-yellow-100/60 dark:bg-yellow-900/20",
-                            entry.rank === 2 && "bg-gray-100 dark:bg-gray-800/20",
-                            entry.rank === 3 && "bg-amber-50 dark:bg-amber-900/20"
+                            'hover:bg-muted/60',
+                            entry.rank === 1 &&
+                              'bg-yellow-100/60 dark:bg-yellow-900/20',
+                            entry.rank === 2 && 'bg-gray-100 dark:bg-gray-800/20',
+                            entry.rank === 3 && 'bg-amber-50 dark:bg-amber-900/20',
                           )}
                         >
                           <TableCell className="font-semibold text-muted-foreground">
@@ -183,19 +186,23 @@ export default function LeaderboardPage() {
                               <AvatarImage src={entry.avatar} alt={entry.name} />
                               <AvatarFallback>
                                 {entry.name
-                                  .split(" ")
+                                  .split(' ')
                                   .map((w) => w[0])
-                                  .join("")
+                                  .join('')
                                   .toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{entry.name}</span>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell">{entry.institution || "-"}</TableCell>
-                          <TableCell className="hidden sm:table-cell text-center text-xl">
-                            {entry.country || "-"}
+                          <TableCell className="hidden md:table-cell">
+                            {entry.institution || '-'}
                           </TableCell>
-                          <TableCell className="text-right font-semibold">{entry.total_submission}</TableCell>
+                          <TableCell className="hidden sm:table-cell text-center text-xl">
+                            {entry.country || '-'}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {entry.total_submission}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -218,7 +225,9 @@ export default function LeaderboardPage() {
                       </PaginationItem>
                       <PaginationItem>
                         <PaginationNext
-                          onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                          onClick={() =>
+                            setPage((prev) => Math.min(prev + 1, totalPages))
+                          }
                           aria-disabled={page === totalPages}
                         />
                       </PaginationItem>

@@ -1,85 +1,79 @@
-from django.contrib.auth import get_user_model
-from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import generics, status, viewsets
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework.exceptions import NotFound
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework.decorators import api_view, action
-from django.shortcuts import render
-from django.http import HttpResponse
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Submission, SubmissionEditSuggestion, SubmissionVersion
-from .serializers import SubmissionSerializer,SubmissionEditSuggestionSerializer, SubmissionSerializer, SubmissionVersionSerializer, SubmissionIdSerializer
-
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from .models import Submission
 import json
+
+# from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.utils import timezone
-
-from rest_framework import generics, permissions
-from rest_framework.exceptions import ValidationError, PermissionDenied
-
-
-#For Swagger documentation
-from drf_yasg.utils import swagger_auto_schema
+from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 
-from django.db.models import Count, Q
-from rest_framework.views import APIView
+# For Swagger documentation
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics, permissions, serializers, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .models import Submission, UserProfile
-from .serializers import UserStatsSerializer
-from datetime import datetime, timedelta
-from .models import Submission, CulturalHeritage
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import UserStats
-from .serializers import UserStatsSerializer
-
-
-
-
+from .models import (
+    ActivityLog,
+    Comments,
+    CulturalHeritage,
+    Moderation,
+    Submission,
+    SubmissionEditSuggestion,
+    SubmissionVersion,
+    UserStats,
+)
+from .serializers import (
+    ActivityLogSerializer,
+    CommentSerializer,
+    CustomUserSerializer,
+    ModerationSerializer,
+    RegisterSerializer,
+    SubmissionEditSuggestionSerializer,
+    SubmissionIdSerializer,
+    SubmissionSerializer,
+    SubmissionVersionSerializer,
+    UserSerializer,
+    UserSignupSerializer,
+    UserStatsSerializer,
+)
 
 # from .models import UserProfile, Comments
 # from .serializers import UserProfileSerializer
 
 
-from .models import Submission, Moderation, ActivityLog, Comments
-from .serializers import SubmissionSerializer, ModerationSerializer, CustomUserSerializer, ActivityLogSerializer, UserSignupSerializer, UserSerializer, RegisterSerializer, CommentSerializer
-from django.db.models import Count, Q
-
-User = get_user_model()
-
 class SubmissionCreateView(generics.CreateAPIView):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
-    permission_classes = [AllowAny]  
+    permission_classes = [AllowAny]
 
     def perform_create(self, serializer):
         serializer.save(contributor=self.request.user)
 
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
-        return Response({
-            "message": "Submission created successfully!",
-            "submission": response.data
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "message": "Submission created successfully!",
+                "submission": response.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class FormSubmissionAPIView(APIView):
     """
     Handles submission of cultural heritage form data.
 
-    Accepts JSON payload with top-level fields (title, description, etc.) or nested under 'heritage'.
+    Accepts JSON payload with top-level fields
     Stores all submitted data in contribution_data and links optional CulturalHeritage.
     """
 
@@ -87,45 +81,60 @@ class FormSubmissionAPIView(APIView):
 
     @swagger_auto_schema(
         operation_summary="Submit cultural heritage form",
-        operation_description="Creates a new submission with optional linkage to a CulturalHeritage entry.",
+        operation_description="Creates a new submission",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'title': openapi.Schema(type=openapi.TYPE_STRING, description='Title of the submission'),
-                'description': openapi.Schema(type=openapi.TYPE_STRING, description='Description of the submission'),
-                'cultural_heritage_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of related CulturalHeritage'),
-                'heritage': openapi.Schema(
+                "title": openapi.Schema(
+                    type=openapi.TYPE_STRING, description="Title of the submission"
+                ),
+                "description": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Description of the submission",
+                ),
+                "cultural_heritage_id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="ID of related CulturalHeritage",
+                ),
+                "heritage": openapi.Schema(
                     type=openapi.TYPE_OBJECT,
                     properties={
-                        'title': openapi.Schema(type=openapi.TYPE_STRING),
-                        'description': openapi.Schema(type=openapi.TYPE_STRING),
+                        "title": openapi.Schema(type=openapi.TYPE_STRING),
+                        "description": openapi.Schema(type=openapi.TYPE_STRING),
                     },
-                    description="Fallback object for title and description"
+                    description="Fallback object for title and description",
                 ),
                 # Swagger won't list all 80+ new fields explicitly to avoid clutter
             },
             required=[],
         ),
         responses={
-            201: openapi.Response('Created', SubmissionSerializer),
-            400: openapi.Response('Bad Request'),
-        }
+            201: openapi.Response("Created", SubmissionSerializer),
+            400: openapi.Response("Bad Request"),
+        },
     )
     def post(self, request):
         data = request.data
         user = request.user
 
         title = data.get("title") or data.get("heritage", {}).get("title", "")
-        description = data.get("description") or data.get("heritage", {}).get("description", "")
+        description = data.get("description") or data.get("heritage", {}).get(
+            "description", ""
+        )
 
         # Optional CulturalHeritage linkage
         cultural_heritage = None
         cultural_heritage_id = data.get("cultural_heritage_id")
         if cultural_heritage_id:
             try:
-                cultural_heritage = CulturalHeritage.objects.get(id=cultural_heritage_id)
+                cultural_heritage = CulturalHeritage.objects.get(
+                    id=cultural_heritage_id
+                )
             except CulturalHeritage.DoesNotExist:
-                return Response({"error": "Invalid cultural_heritage_id"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Invalid cultural_heritage_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         # Prepare submission data
         submission_data = {
@@ -138,25 +147,90 @@ class FormSubmissionAPIView(APIView):
 
         # List of all new fields added to Submission model
         new_fields = [
-            'Activity', 'Alternative_name_s', 'Anglicized_name', 'Base_plinth_depth',
-            'Base_plinth_height', 'Base_plinth_width', 'Cakula_depth', 'Cakula_height',
-            'Cakula_width', 'Capital_depth', 'Capital_height', 'Capital_width', 'Circumference',
-            'City_quarter_tola', 'Column_depth', 'Column_height', 'Column_width',
-            'Commentary', 'Date_BCE_CE', 'Date_VS_NS', 'Depth', 'Description_for_past_interventions',
-            'Description_in_Nepali', 'Details', 'District', 'Edge_at_platform', 'Editorial_team',
-            'End_date', 'Event_name', 'Forms_of_columns', 'Gate', 'Height', 'Heritage_focus_area',
-            'Identified_threats', 'Image_declaration', 'Inscription_identification_number',
-            'Lintel_depth', 'Lintel_height', 'Main_deity_in_the_sanctum', 'Maps_and_drawing_type',
-            'Monument_assessment', 'Monument_depth', 'Monument_diameter', 'Monument_height_approximate',
-            'Monument_length', 'Monument_name', 'Monument_shape', 'Monument_type',
-            'Municipality_village_council', 'Name', 'Name_in_Devanagari', 'Nepali_month',
-            'Number_of_bays_front', 'Number_of_bays_sides', 'Number_of_doors', 'Number_of_plinth',
-            'Number_of_roofs', 'Number_of_storeys', 'Number_of_struts', 'Number_of_wood_carved_windows',
-            'Object_ID_number', 'Object_location', 'Object_material', 'Object_type', 'Paksa',
-            'Peculiarities', 'Period', 'Platforms_floor', 'Profile_at_base', 'Province_number',
-            'Reference_source', 'Religion', 'Roofing', 'Short_description', 'Sources',
-            'Thickness_of_main_wall', 'Tithi', 'Top_plinth_depth', 'Top_plinth_height',
-            'Top_plinth_width', 'Type_of_bricks', 'Type_of_roof', 'Width', 'Year_SS_NS_VS'
+            "Activity",
+            "Alternative_name_s",
+            "Anglicized_name",
+            "Base_plinth_depth",
+            "Base_plinth_height",
+            "Base_plinth_width",
+            "Cakula_depth",
+            "Cakula_height",
+            "Cakula_width",
+            "Capital_depth",
+            "Capital_height",
+            "Capital_width",
+            "Circumference",
+            "City_quarter_tola",
+            "Column_depth",
+            "Column_height",
+            "Column_width",
+            "Commentary",
+            "Date_BCE_CE",
+            "Date_VS_NS",
+            "Depth",
+            "Description_for_past_interventions",
+            "Description_in_Nepali",
+            "Details",
+            "District",
+            "Edge_at_platform",
+            "Editorial_team",
+            "End_date",
+            "Event_name",
+            "Forms_of_columns",
+            "Gate",
+            "Height",
+            "Heritage_focus_area",
+            "Identified_threats",
+            "Image_declaration",
+            "Inscription_identification_number",
+            "Lintel_depth",
+            "Lintel_height",
+            "Main_deity_in_the_sanctum",
+            "Maps_and_drawing_type",
+            "Monument_assessment",
+            "Monument_depth",
+            "Monument_diameter",
+            "Monument_height_approximate",
+            "Monument_length",
+            "Monument_name",
+            "Monument_shape",
+            "Monument_type",
+            "Municipality_village_council",
+            "Name",
+            "Name_in_Devanagari",
+            "Nepali_month",
+            "Number_of_bays_front",
+            "Number_of_bays_sides",
+            "Number_of_doors",
+            "Number_of_plinth",
+            "Number_of_roofs",
+            "Number_of_storeys",
+            "Number_of_struts",
+            "Number_of_wood_carved_windows",
+            "Object_ID_number",
+            "Object_location",
+            "Object_material",
+            "Object_type",
+            "Paksa",
+            "Peculiarities",
+            "Period",
+            "Platforms_floor",
+            "Profile_at_base",
+            "Province_number",
+            "Reference_source",
+            "Religion",
+            "Roofing",
+            "Short_description",
+            "Sources",
+            "Thickness_of_main_wall",
+            "Tithi",
+            "Top_plinth_depth",
+            "Top_plinth_height",
+            "Top_plinth_width",
+            "Type_of_bricks",
+            "Type_of_roof",
+            "Width",
+            "Year_SS_NS_VS",
         ]
 
         # Populate new fields if provided
@@ -179,6 +253,7 @@ class SubmissionListView(generics.ListAPIView):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
 
+
 # Moderator view: Review a submission
 class ModerationReviewView(generics.UpdateAPIView):
     queryset = Moderation.objects.all()
@@ -192,17 +267,20 @@ class ModerationReviewView(generics.UpdateAPIView):
 
         # Update moderation details
         moderation.moderator = request.user
-        moderation.comment = data.get('comment', '')
+        moderation.comment = data.get("comment", "")
         moderation.save()
 
         # Update submission status
-        submission.status = data.get('status', submission.status)
+        submission.status = data.get("status", submission.status)
         submission.save()
 
-        return Response({
-            "submission": SubmissionSerializer(submission).data,
-            "moderation": ModerationSerializer(moderation).data
-        })
+        return Response(
+            {
+                "submission": SubmissionSerializer(submission).data,
+                "moderation": ModerationSerializer(moderation).data,
+            }
+        )
+
 
 class CustomUserMeView(APIView):
     permission_classes = [IsAuthenticated]
@@ -212,16 +290,15 @@ class CustomUserMeView(APIView):
         serializer = CustomUserSerializer(user)
         return Response(serializer.data)
 
+
 class ActivityLogView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
         # Fetch the latest activity logs, !!! NEEDS Pagination here !!!
-        logs = ActivityLog.objects.order_by('-timestamp')[:50]
+        logs = ActivityLog.objects.order_by("-timestamp")[:50]
         serializer = ActivityLogSerializer(logs, many=True)
         return Response(serializer.data)
-
-
 
 
 class LogoutView(APIView):
@@ -236,7 +313,7 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_200_OK)
         except (ObjectDoesNotExist, TokenError):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
+
 
 class UserRegistrationView(APIView):
     """
@@ -252,61 +329,75 @@ class UserRegistrationView(APIView):
             user, profile = serializer.save()
 
             # Return a response with the user and profile information
-            return Response({
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.first_name,
-                    'last_name': user.last_name
+            return Response(
+                {
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                        "first_name": user.first_name,
+                        "last_name": user.last_name,
+                    },
+                    "profile": {
+                        "organization": profile.organization,
+                        "position": profile.position,
+                        "birth_date": profile.birth_date,
+                        "university_school": profile.university_school,
+                    },
+                    "message": "User created successfully",
                 },
-                'profile': {
-                    'organization': profile.organization,
-                    'position': profile.position,
-                    'birth_date': profile.birth_date,
-                    'university_school': profile.university_school
-                },
-                'message': 'User created successfully'
-            }, status=status.HTTP_201_CREATED)
+                status=status.HTTP_201_CREATED,
+            )
 
         # If validation fails, return the validation errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
 class LeaderboardView(APIView):
     def get(self, request):
         leaderboard = User.objects.annotate(
-            total_submissions=Count('submissions', distinct=True),
-            accepted_submissions=Count('submissions', filter=Q(submissions__status='accepted')),
-            score=Count('submissions', filter=Q(submissions__status='accepted')) * 10
-        ).order_by('-score', '-accepted_submissions', '-total_submissions')
+            total_submissions=Count("submissions", distinct=True),
+            accepted_submissions=Count(
+                "submissions", filter=Q(submissions__status="accepted")
+            ),
+            score=Count("submissions", filter=Q(submissions__status="accepted")) * 10,
+        ).order_by("-score", "-accepted_submissions", "-total_submissions")
 
         ranked_data = []
         current_rank = 1
 
         for idx, user in enumerate(leaderboard):
-            if idx > 0 and (user.score != leaderboard[idx - 1].score or
-                            user.accepted_submissions != leaderboard[idx - 1].accepted_submissions or
-                            user.total_submissions != leaderboard[idx - 1].total_submissions):
+            if idx > 0 and (
+                user.score != leaderboard[idx - 1].score
+                or user.accepted_submissions
+                != leaderboard[idx - 1].accepted_submissions
+                or user.total_submissions != leaderboard[idx - 1].total_submissions
+            ):
                 current_rank = idx + 1
 
-            ranked_data.append({
-                "total_submission": user.total_submissions,
-                "rank": current_rank,
-                "user_id": user.id,
-                "username": user.username,
-                "institution": user.institution if hasattr(user, 'institution') else "N/A",
-                "country": user.country if hasattr(user, 'country') else "N/A",
-                "score": user.score
-            })
+            ranked_data.append(
+                {
+                    "total_submission": user.total_submissions,
+                    "rank": current_rank,
+                    "user_id": user.id,
+                    "username": user.username,
+                    "institution": (
+                        user.institution if hasattr(user, "institution") else "N/A"
+                    ),
+                    "country": user.country if hasattr(user, "country") else "N/A",
+                    "score": user.score,
+                }
+            )
 
         return Response(ranked_data)
-    
+
+
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer 
+    serializer_class = UserSerializer
 
     def get_object(self):
-        username = self.kwargs.get('username')
+        username = self.kwargs.get("username")
         try:
             user = User.objects.get(username=username)
             return user
@@ -317,12 +408,12 @@ class UserDetailView(generics.RetrieveAPIView):
 class SubmissionDetailView(generics.RetrieveAPIView):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
-    lookup_field = 'submission_id'
+    lookup_field = "submission_id"
 
     def get_queryset(self):
-        submission_id = self.kwargs['submission_id']
+        submission_id = self.kwargs["submission_id"]
         return Submission.objects.filter(submission_id=submission_id)
-    
+
 
 class RegisterView(APIView):
     """
@@ -332,15 +423,18 @@ class RegisterView(APIView):
     Accepts username, email, and password. Validates unique email.
     On success, returns a 201 status with a success message.
     """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({"message": "User created successfully!"}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "User created successfully!"},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 
 class CurrentUserView(APIView):
@@ -350,15 +444,18 @@ class CurrentUserView(APIView):
 
     This endpoint requires a valid JWT token in the Authorization header.
     """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        return Response({
-            "username": user.username,
-            "email": user.email,
-        })
-    
+        return Response(
+            {
+                "username": user.username,
+                "email": user.email,
+            }
+        )
+
 
 @csrf_exempt
 @login_required
@@ -373,7 +470,7 @@ def create_submission(request):
             description = heritage_data.get("description", "")
             status = data.get("status", "pending")
 
-            submission = Submission.objects.create(
+            Submission.objects.create(
                 title=title,
                 description=description,
                 contributor=user,
@@ -381,55 +478,79 @@ def create_submission(request):
                 contribution_data=data,
             )
 
-            return JsonResponse({"message": "Submission saved successfully!"}, status=201)
+            return JsonResponse(
+                {"message": "Submission saved successfully!"}, status=201
+            )
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON format"}, status=400)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+
 class PersonalStatsView(APIView):
     """
     API endpoint that returns the logged-in user's personal stats
     including rank, total submissions, accepted submissions, and score.
     """
+
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         operation_summary="Get personal leaderboard stats",
-        operation_description="Returns the rank, total submissions, accepted submissions, and score for the authenticated user.",
+        operation_description="Returns the leaderboard.",
         responses={
             200: openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'rank': openapi.Schema(type=openapi.TYPE_INTEGER, description="User's rank in the leaderboard"),
-                    'user_id': openapi.Schema(type=openapi.TYPE_INTEGER, description="User ID"),
-                    'username': openapi.Schema(type=openapi.TYPE_STRING, description="Username"),
-                    'total_submissions': openapi.Schema(type=openapi.TYPE_INTEGER, description="Total number of submissions"),
-                    'accepted_submissions': openapi.Schema(type=openapi.TYPE_INTEGER, description="Number of accepted submissions"),
-                    'score': openapi.Schema(type=openapi.TYPE_INTEGER, description="Calculated score (e.g., accepted submissions × 10)")
-                }
+                    "rank": openapi.Schema(
+                        type=openapi.TYPE_INTEGER,
+                        description="User's rank in the leaderboard",
+                    ),
+                    "user_id": openapi.Schema(
+                        type=openapi.TYPE_INTEGER, description="User ID"
+                    ),
+                    "username": openapi.Schema(
+                        type=openapi.TYPE_STRING, description="Username"
+                    ),
+                    "total_submissions": openapi.Schema(
+                        type=openapi.TYPE_INTEGER,
+                        description="Total number of submissions",
+                    ),
+                    "accepted_submissions": openapi.Schema(
+                        type=openapi.TYPE_INTEGER,
+                        description="Number of accepted submissions",
+                    ),
+                    "score": openapi.Schema(
+                        type=openapi.TYPE_INTEGER,
+                        description="Calculated score",
+                    ),
+                },
             ),
             404: openapi.Response(description="User not found in leaderboard"),
-            401: openapi.Response(description="Authentication credentials were not provided or invalid"),
-        }
+            401: openapi.Response(
+                description="Authentication credentials were not provided or invalid"
+            ),
+        },
     )
     def get(self, request):
         leaderboard = User.objects.annotate(
-            total_submissions=Count('submissions', distinct=True),
-            accepted_submissions=Count('submissions', filter=Q(submissions__status='accepted')),
-            score=Count('submissions', filter=Q(submissions__status='accepted')) * 10
-        ).order_by('-total_submissions', '-accepted_submissions', '-score')
+            total_submissions=Count("submissions", distinct=True),
+            accepted_submissions=Count(
+                "submissions", filter=Q(submissions__status="accepted")
+            ),
+            score=Count("submissions", filter=Q(submissions__status="accepted")) * 10,
+        ).order_by("-total_submissions", "-accepted_submissions", "-score")
 
-        ranked_data = []
         current_rank = 1
         user_rank_info = None
 
         for idx, user in enumerate(leaderboard):
             if idx > 0 and (
-                user.total_submissions != leaderboard[idx - 1].total_submissions or
-                user.accepted_submissions != leaderboard[idx - 1].accepted_submissions or
-                user.score != leaderboard[idx - 1].score
+                user.total_submissions != leaderboard[idx - 1].total_submissions
+                or user.accepted_submissions
+                != leaderboard[idx - 1].accepted_submissions
+                or user.score != leaderboard[idx - 1].score
             ):
                 current_rank = idx + 1
 
@@ -440,7 +561,7 @@ class PersonalStatsView(APIView):
                     "username": user.username,
                     "total_submissions": user.total_submissions,
                     "accepted_submissions": user.accepted_submissions,
-                    "score": user.score
+                    "score": user.score,
                 }
                 break
 
@@ -448,26 +569,29 @@ class PersonalStatsView(APIView):
             return Response(user_rank_info)
         else:
             return Response({"detail": "User not found in leaderboard"}, status=404)
-        
+
+
 class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        submission_id = self.request.query_params.get('submission_id')
+        submission_id = self.request.query_params.get("submission_id")
         if submission_id:
-            return Comments.objects.filter(submission_id=submission_id).order_by('-created_at')
-        return Comments.objects.all().order_by('-created_at')
+            return Comments.objects.filter(submission_id=submission_id).order_by(
+                "-created_at"
+            )
+        return Comments.objects.all().order_by("-created_at")
 
     def perform_create(self, serializer):
-        submission_id = self.request.data.get('submission_id')
+        submission_id = self.request.data.get("submission_id")
         if not submission_id:
-            raise ValidationError({'submission_id': 'This field is required.'})
+            raise ValidationError({"submission_id": "This field is required."})
 
         try:
             submission = Submission.objects.get(id=submission_id)
         except Submission.DoesNotExist:
-            raise ValidationError({'submission_id': 'Invalid submission ID.'})
+            raise ValidationError({"submission_id": "Invalid submission ID."})
 
         serializer.save(user=self.request.user, submission=submission)
 
@@ -489,11 +613,12 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
             raise PermissionDenied("You can only delete your own Comments.")
         instance.delete()
 
+
 class SubmissionSuggestionViewSet(viewsets.ModelViewSet):
     queryset = SubmissionEditSuggestion.objects.all()
     serializer_class = SubmissionEditSuggestionSerializer
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
         suggestion = self.get_object()
         submission = suggestion.submission
@@ -511,7 +636,7 @@ class SubmissionSuggestionViewSet(viewsets.ModelViewSet):
 
         return Response({"status": "approved"})
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):
         suggestion = self.get_object()
         suggestion.approved = False
@@ -520,48 +645,59 @@ class SubmissionSuggestionViewSet(viewsets.ModelViewSet):
         suggestion.save()
 
         return Response({"status": "rejected"})
-    
+
+
 class SubmissionVersionListView(APIView):
     def get(self, request, submission_id, *args, **kwargs):
         # Fetch the submission by its submission_id
         try:
             submission = Submission.objects.get(submission_id=submission_id)
         except Submission.DoesNotExist:
-            return Response({"detail": "Submission not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Submission not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # Get all versions for this submission
-        versions = SubmissionVersion.objects.filter(submission=submission).order_by('-version_number')
+        versions = SubmissionVersion.objects.filter(submission=submission).order_by(
+            "-version_number"
+        )
 
         # Serialize the versions
         serializer = SubmissionVersionSerializer(versions, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
 
 class SubmissionEditSuggestionListView(APIView):
     def get(self, request, submission_id, *args, **kwargs):
         try:
             submission = Submission.objects.get(submission_id=submission_id)
         except Submission.DoesNotExist:
-            return Response({"detail": "Submission not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "Submission not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # Get all edit suggestions for this submission
-        suggestions = SubmissionEditSuggestion.objects.filter(submission=submission).order_by('-created_at')
+        suggestions = SubmissionEditSuggestion.objects.filter(
+            submission=submission
+        ).order_by("-created_at")
 
         # Serialize the suggestions
         serializer = SubmissionEditSuggestionSerializer(suggestions, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class SubmissionIdListView(APIView):
     def get(self, request):
         # Get all submissions, just the ID field
         submissions = Submission.objects.all()
         serializer = SubmissionIdSerializer(submissions, many=True)
-        return Response([submission['submission_id'] for submission in serializer.data], status=status.HTTP_200_OK)
-    
-from django.contrib.auth.models import User
-from rest_framework import permissions, serializers, viewsets
+        return Response(
+            [submission["submission_id"] for submission in serializer.data],
+            status=status.HTTP_200_OK,
+        )
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -576,85 +712,6 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-
-
-# class UserStatsAPIView(APIView):
-#     permission_classes = [IsAuthenticated]
-
-#     def get(self, request):
-#         user = request.user
-#         today = datetime.today()
-#         first_day_this_month = today.replace(day=1)
-#         last_month_end = first_day_this_month - timedelta(days=1)
-#         last_month_start = last_month_end.replace(day=1)
-
-#         # Fetch all relevant submissions in one query
-#         submissions = Submission.objects.filter(contributor=user)
-
-#         # Aggregate counts
-#         total_submissions = submissions.count()
-#         submissions_this_month = submissions.filter(created_at__gte=first_day_this_month).count()
-#         submissions_last_month = submissions.filter(
-#             created_at__gte=last_month_start,
-#             created_at__lte=last_month_end
-#         ).count()
-
-#         # Growth
-#         if submissions_last_month == 0:
-#             submissions_growth = 100.0 if submissions_this_month > 0 else 0.0
-#         else:
-#             submissions_growth = ((submissions_this_month - submissions_last_month) / submissions_last_month) * 100
-
-#         # Approval counts in one query
-#         reviewed_counts = submissions.filter(status__in=['accepted', 'rejected']).aggregate(
-#             total_reviewed=Count('id'),
-#             accepted_count=Count('id', filter=Q(status='accepted'))
-#         )
-#         total_reviewed = reviewed_counts['total_reviewed']
-#         accepted_count = reviewed_counts['accepted_count']
-#         approval_rate = (accepted_count / total_reviewed * 100) if total_reviewed else 0.0
-
-#         # Last month approval
-#         last_month_counts = submissions.filter(
-#             status__in=['accepted', 'rejected'],
-#             created_at__gte=last_month_start,
-#             created_at__lte=last_month_end
-#         ).aggregate(
-#             total_reviewed=Count('id'),
-#             accepted_count=Count('id', filter=Q(status='accepted'))
-#         )
-#         last_month_reviewed = last_month_counts['total_reviewed']
-#         last_month_accepted = last_month_counts['accepted_count']
-
-#         last_month_approval_rate = (last_month_accepted / last_month_reviewed * 100) if last_month_reviewed else 0.0
-#         approval_rate_change = approval_rate - last_month_approval_rate
-
-#         # Contributor rank
-#         profiles = UserProfile.objects.order_by('-score').values_list('user_id', flat=True)
-#         try:
-#             contributor_rank = list(profiles).index(user.id) + 1
-#         except ValueError:
-#             contributor_rank = 0
-
-#         rank_change = 2  # placeholder
-#         user_profile = UserProfile.objects.filter(user=user).first()
-#         community_impact_score = round(user_profile.score / 20, 2) if user_profile else 0.0
-#         impact_score_change = 0.3  # placeholder
-
-#         data = {
-#             "total_submissions": total_submissions,
-#             "submissions_growth": round(submissions_growth, 2),
-#             "approval_rate": round(approval_rate, 2),
-#             "approval_rate_change": round(approval_rate_change, 2),
-#             "contributor_rank": contributor_rank,
-#             "rank_change": rank_change,
-#             "community_impact_score": community_impact_score,
-#             "impact_score_change": impact_score_change,
-#         }
-
-#         serializer = UserStatsSerializer(data)
-#         return Response(serializer.data)
 
 
 class UserStatsAPIView(APIView):
