@@ -228,15 +228,15 @@ const data = {
   ],
 
   navResources: [
-    { name: 'Data Releases', url: '/resources/releases', icon: IconDatabase },
-    { name: 'Data Licensing', url: '/resources/licensing', icon: IconFileWord },
-    { name: 'APIs & Tools', url: '/resources/apis', icon: IconFileAi },
+    // { name: 'Data Releases', url: '/resources/releases', icon: IconDatabase },
+    // { name: 'Data Licensing', url: '/resources/licensing', icon: IconFileWord },
+    // { name: 'APIs & Tools', url: '/resources/apis', icon: IconFileAi },
   ],
 
   navAbout: [
-    { name: 'About', url: '/about', icon: IconHelp },
-    { name: 'Documentation', url: '/docs', icon: IconFileDescription },
-    { name: 'Contact', url: '/contact', icon: IconSearch },
+    // { name: 'About', url: '/about', icon: IconHelp },
+    // { name: 'Documentation', url: '/docs', icon: IconFileDescription },
+    // { name: 'Contact', url: '/contact', icon: IconSearch },
   ],
 };
 
@@ -264,8 +264,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavDocuments items={data.navKnowledgebase} />
         <NavDocuments items={data.navCuration} />
         <NavDocuments items={data.navCommunity} />
-        <NavDocuments items={data.navResources} />
-        <NavDocuments items={data.navAbout} />
+        {/* <NavDocuments items={data.navResources} /> */}
+        {/* <NavDocuments items={data.navAbout} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
     </Sidebar>

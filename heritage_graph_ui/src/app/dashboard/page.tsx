@@ -1,5 +1,5 @@
 import { DataTable } from '@/components/data-table';
-import { SectionCards } from '@/app/dashboard/components/section-cards';
+// import { SectionCards } from '@/app/dashboard/components/section-cards';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Leaderboard } from './components/leaderboard-card';
 import { Button } from '@/components/ui/button';
@@ -56,7 +56,7 @@ export default function Page() {
 
       {/* SectionCards & Leaderboard */}
       <div className="flex flex-col md:flex-row gap-4">
-        <SectionCards />
+        {/* <SectionCards /> */}
         <Leaderboard />
       </div>
 

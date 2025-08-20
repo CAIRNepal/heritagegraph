@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -80,23 +81,48 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard" className="flex items-center gap-2">
+                  <IconUserCircle />
+                  Home
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
+
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/users" className="flex items-center gap-2">
+                  <IconUserCircle />
+                  View Profile
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconNotification />
-                Notifications
+
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/account" className="flex items-center gap-2">
+                  <IconUserCircle />
+                  Account
+                </Link>
               </DropdownMenuItem>
+              {/* <DropdownMenuItem asChild>
+                <Link href="/dashboard/billing" className="flex items-center gap-2">
+                  <IconCreditCard />
+                  Billing
+                </Link>
+              </DropdownMenuItem> */}
+              {/* <DropdownMenuItem asChild>
+                <Link href="/dashboard/notifications" className="flex items-center gap-2">
+                  <IconNotification />
+                  Notifications
+                </Link>
+              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <IconLogout />
-              Log out
+            <DropdownMenuItem asChild>
+              <Link
+                href="/dashboard/logout"
+                className="flex items-center gap-2 text-red-500"
+              >
+                <IconLogout />
+                Log out
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
