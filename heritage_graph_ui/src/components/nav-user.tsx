@@ -9,6 +9,8 @@ import {
   IconUserCircle,
 } from '@tabler/icons-react';
 
+import { Button } from '@/components/ui/button';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -25,6 +27,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+
+import { signOut } from 'next-auth/react';
 
 export function NavUser({
   user,
@@ -116,13 +120,10 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link
-                href="/dashboard/logout"
-                className="flex items-center gap-2 text-red-500"
-              >
+              <Button variant="ghost" className="w-full" onClick={() => signOut()}>
                 <IconLogout />
-                Log out
-              </Link>
+                Sign out
+              </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

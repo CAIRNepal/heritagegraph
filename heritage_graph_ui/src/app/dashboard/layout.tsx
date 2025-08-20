@@ -34,14 +34,6 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 //   description: "Collaborative moderation, submission, and curation interface.",
 // }
 
-const data = {
-  user: {
-    name: 'nabin2004',
-    email: 'nabin.oli@cair-nepal.org',
-    avatar: '/avatars/shadcn.jpg',
-  },
-};
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
@@ -67,15 +59,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <SiteHeader />
 
                   <div className="ml-auto flex items-center gap-4">
-                    <SidebarFooter>
+                    {/* <SidebarFooter>
                       <NavUser user={data.user} />
-                    </SidebarFooter>
+                    </SidebarFooter> */}
+
+                    {/* <button onClick={() => signOut()}>Sign Out</button>
+                    <button onClick={() => signIn()}>Sign In</button> */}
+
+                    <AuthButtons />
                     <ThemeToggle />
-
-                    {/* <button onClick={() => signOut()}>Sign Out</button> */}
-                    {/* <button onClick={() => signIn()}>Sign In</button> */}
-
-                    {/* <AuthButtons /> */}
                   </div>
                 </header>
 

@@ -1,30 +1,34 @@
 'use client';
 
-import { signIn, signOut, useSession } from 'next-auth/react';
+import { SidebarFooter } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { useSession, signIn } from 'next-auth/react';
+import { NavUser } from '@/components/nav-user';
 
-export default function AuthButtons() {
+export default function AuthSection() {
   const { data: session } = useSession();
 
-  if (session) {
-    return (
-      <div className="flex items-center gap-4">
-        <span className="text-sm">Hi, {session.user?.email}</span>
-        <button
-          onClick={() => signOut()}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
-        >
-          Sign out
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <button
-      onClick={() => signIn('keycloak')}
-      className="bg-primary text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 transition hover:bg-primary/90"
-    >
-      Sign In
-    </button>
+    <SidebarFooter>
+      {session ? (
+        <div className="flex flex-row">
+          {/* User Info */}
+          <NavUser
+            user={{
+              name: session.user?.name || session.user?.email || 'User',
+              email: session.user?.email || '',
+              avatar: '/avatars/shadcn.jpg', // Swap with session.user.image if available
+            }}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-3 w-full">
+          {/* Sign In */}
+          <Button className="w-full" onClick={() => signIn('keycloak')}>
+            Sign In
+          </Button>
+        </div>
+      )}
+    </SidebarFooter>
   );
 }
