@@ -721,3 +721,12 @@ class UserStatsAPIView(APIView):
         stats, _ = UserStats.objects.get_or_create(user=request.user)
         serializer = UserStatsSerializer(stats)
         return Response(serializer.data)
+
+
+class TestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # request.user is now a Django User object
+        roles = []
+        return Response({"message": f"Hello {request.user.username}, roles: {roles}"})

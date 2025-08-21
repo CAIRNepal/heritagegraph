@@ -61,4 +61,6 @@ urlpatterns = [
     ),
     path("testthelogin", views.UserViewSet.as_view({"get": "list"}), name="user-list"),
     path("user-stats/", views.UserStatsAPIView.as_view(), name="user-stats"),
+    # test
+    path("testme/", views.TestView.as_view(), name="Test this for auth health"),
 ]

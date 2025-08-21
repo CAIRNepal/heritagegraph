@@ -665,15 +665,35 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         <HoverCardTrigger asChild>
           <Button
             variant="link"
-            className="text-foreground w-fit px-0 text-left"
-            onClick={() => setOpen(true)} // open drawer on click
+            className="text-foreground w-fit px-0 text-left hover:underline"
+            onClick={() => setOpen(true)} // optional: opens drawer too
           >
             {item.title}
           </Button>
         </HoverCardTrigger>
-        <HoverCardContent className="p-2 space-y-1 max-w-xs line-clamp-3">
-          <p className="text-sm text-muted-foreground">@{item.contributor_username}</p>
-          <p className="text-base">{item.description}</p>
+
+        <HoverCardContent className="p-4 w-[500px] max-w-2xl space-y-3 rounded-2xl shadow-lg bg-background">
+          {/* Contributor row */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              @{item.contributor_username}
+            </p>
+            <Button variant="default" size="sm">
+              View Profile
+            </Button>
+          </div>
+
+          {/* Action button */}
+          <Link href={`/dashboard/knowledge/viewreport/${item.submission_id}`}>
+            <Button variant="secondary" className="w-full" size="sm">
+              View Submission
+            </Button>
+          </Link>
+
+          {/* Description / paragraph */}
+          <div className="prose prose-sm dark:prose-invert max-h-60 overflow-y-auto leading-relaxed">
+            <p className="text-base whitespace-pre-line">{item.description}</p>
+          </div>
         </HoverCardContent>
       </HoverCard>
 
