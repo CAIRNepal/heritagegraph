@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@clerk/nextjs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast, Toaster } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 type FieldConfig = {
   name: string;
@@ -17,16 +17,11 @@ type FieldConfig = {
   placeholder?: string;
 };
 
-// Define sections (pages) with relevant fields
 const steps: { title: string; fields: FieldConfig[] }[] = [
   {
     title: 'Basic Info',
     fields: [
-      {
-        name: 'title',
-        label: 'Title',
-        placeholder: 'E.g. Bhaktapur Durbar Square',
-      },
+      { name: 'title', label: 'Title', placeholder: 'E.g. Bhaktapur Durbar Square' },
       {
         name: 'description',
         label: 'Description',
@@ -43,58 +38,13 @@ const steps: { title: string; fields: FieldConfig[] }[] = [
     fields: [
       { name: 'City_quarter_tola', label: 'City Quarter (Tola)' },
       { name: 'District', label: 'District' },
-      {
-        name: 'Municipality_village_council',
-        label: 'Municipality / Village Council',
-      },
+      { name: 'Municipality_village_council', label: 'Municipality / Village Council' },
       { name: 'Province_number', label: 'Province Number' },
       { name: 'Object_location', label: 'Object Location' },
       { name: 'Object_ID_number', label: 'Object ID Number' },
     ],
   },
-  {
-    title: 'Physical Characteristics',
-    fields: [
-      { name: 'Base_plinth_depth', label: 'Base Plinth Depth' },
-      { name: 'Base_plinth_height', label: 'Base Plinth Height' },
-      { name: 'Base_plinth_width', label: 'Base Plinth Width' },
-      { name: 'Cakula_depth', label: 'Cakulā Depth' },
-      { name: 'Cakula_height', label: 'Cakulā Height' },
-      { name: 'Cakula_width', label: 'Cakulā Width' },
-      { name: 'Capital_depth', label: 'Capital Depth' },
-      { name: 'Capital_height', label: 'Capital Height' },
-      { name: 'Capital_width', label: 'Capital Width' },
-      { name: 'Height', label: 'Height' },
-      { name: 'Width', label: 'Width' },
-    ],
-  },
-  {
-    title: 'Additional Details',
-    fields: [
-      { name: 'Monument_name', label: 'Monument Name' },
-      { name: 'Monument_type', label: 'Monument Type' },
-      { name: 'Monument_shape', label: 'Monument Shape' },
-      {
-        name: 'Monument_height_approximate',
-        label: 'Monument Height (Approx.)',
-      },
-      { name: 'Monument_length', label: 'Monument Length' },
-      { name: 'Monument_depth', label: 'Monument Depth' },
-      { name: 'Monument_diameter', label: 'Monument Diameter' },
-      { name: 'Main_deity_in_the_sanctum', label: 'Main Deity in the Sanctum' },
-      { name: 'Religion', label: 'Religion' },
-    ],
-  },
-  {
-    title: 'References & Metadata',
-    fields: [
-      { name: 'Reference_source', label: 'Reference Source' },
-      { name: 'Sources', label: 'Sources' },
-      { name: 'Year_SS_NS_VS', label: 'Year (ŚS/NS/VS)' },
-      { name: 'Date_BCE_CE', label: 'Date (BCE/CE)' },
-      { name: 'Date_VS_NS', label: 'Date (VS/NS)' },
-    ],
-  },
+  // .....
 ];
 
 export default function ContributePage() {
@@ -102,7 +52,9 @@ export default function ContributePage() {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  const { getToken, isSignedIn } = useAuth();
+
+  const { data: session, status } = useSession();
+  const isSignedIn = status === 'authenticated';
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -122,17 +74,18 @@ export default function ContributePage() {
 
     setIsSubmitting(true);
     try {
-      const token = await getToken();
       const res = await fetch('http://localhost:8000/data/form-submit/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          ...(session?.accessToken && {
+            Authorization: `Bearer ${session.accessToken}`,
+          }),
         },
         body: JSON.stringify(formData),
       });
 
-      if (res.status === 201 || res.status === 200) {
+      if (res.ok) {
         toast(`Thank you for your contribution!`, {
           description: `Your entry "${formData.title}" has been submitted successfully.`,
           action: {

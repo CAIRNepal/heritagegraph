@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSession } from 'next-auth/react';
 import {
   Select,
   SelectContent,
@@ -32,6 +33,8 @@ import {
 } from 'lucide-react';
 
 export default function Users() {
+  const { data: session } = useSession();
+  console.log('Session: ', session?.user);
   const [activeTab, setActiveTab] = useState('activity');
   const [filters, setFilters] = useState({
     activityType: '',
@@ -58,7 +61,7 @@ export default function Users() {
                   <User className="h-10 w-10" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl">User Profile</CardTitle>
+                  <CardTitle className="text-xl">{session?.user.name}</CardTitle>
                   <p className="text-sm">Member since January 2023</p>
                 </div>
               </div>
