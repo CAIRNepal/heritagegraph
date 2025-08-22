@@ -11,6 +11,8 @@ import {
   IconBell,
   IconSearch,
 } from '@tabler/icons-react';
+import AuthButtons from '@/components/AuthButtons';
+import { ThemeToggle } from './theme-toggle';
 
 const data = {
   user: {
@@ -39,11 +41,11 @@ const data = {
       url: '/dashboard/notification',
       icon: IconBell,
     },
-    {
-      title: 'Team',
-      url: '/dashboard/team',
-      icon: IconUsers,
-    },
+    // {
+    //   title: 'Team',
+    //   url: '/dashboard/team',
+    //   icon: IconUsers,
+    // },
   ],
 };
 
@@ -81,7 +83,7 @@ export function SiteHeader() {
       </div>
 
       {/* Horizontal menu */}
-      <nav className="ml-auto hidden md:flex items-center gap-6">
+      {/* <nav className="ml-auto hidden md:flex items-center gap-3">
         {data.navMain.map((item) => (
           <a
             key={item.title}
@@ -92,7 +94,7 @@ export function SiteHeader() {
             <span>{item.title}</span>
           </a>
         ))}
-      </nav>
+      </nav> */}
     </header>
   );
 }

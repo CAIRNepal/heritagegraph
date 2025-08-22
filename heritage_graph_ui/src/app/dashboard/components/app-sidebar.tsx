@@ -24,7 +24,7 @@ import {
   IconMusic,
   IconHistory,
 } from '@tabler/icons-react';
-
+import AuthSection from '@/components/AuthButtons';
 import { NavDocuments } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
 import { NavSecondary } from '@/components/nav-secondary';
@@ -259,7 +259,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {/* <NavMain items={data.navMain} /> */}
+        <NavMain items={data.navMain} />
         {/* <NavDocuments items={data.data} /> */}
         <NavDocuments items={data.navKnowledgebase} />
         <NavDocuments items={data.navCuration} />
@@ -268,6 +268,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavDocuments items={data.navAbout} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
+      <AuthSection />
     </Sidebar>
   );
 }

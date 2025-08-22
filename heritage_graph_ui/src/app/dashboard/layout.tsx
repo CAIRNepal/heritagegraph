@@ -55,7 +55,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 } as React.CSSProperties
               }
             >
-              <AppSidebar variant="inset" />
+              <AppSidebar variant="sidebar" />
 
               <SidebarInset>
                 <header
@@ -66,13 +66,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   <SiteHeader />
 
                   <div className="ml-auto flex items-center gap-4">
-                    {/* <SidebarFooter>
-                      <NavUser user={data.user} />
-                    </SidebarFooter> */}
-
-                    {/* <button onClick={() => signOut()}>Sign Out</button>
-                    <button onClick={() => signIn()}>Sign In</button> */}
-
                     <AuthButtons />
                     <ThemeToggle />
                   </div>

@@ -681,7 +681,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               @{item.contributor_username}
             </p>
             <Link
-              href={`/dashboard/users/${session?.user?.username}`}
+              href={`/dashboard/users/${item.contributor_username}`}
               className="flex items-center gap-2"
             >
               <Button variant="default" size="sm">

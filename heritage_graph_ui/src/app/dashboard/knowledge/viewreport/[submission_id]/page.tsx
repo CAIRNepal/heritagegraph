@@ -82,21 +82,6 @@ export default function SubmissionPage({
       submissionId={params.submission_id}
       commentsCount={comments.length}
     >
-      {/* Header Card */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-gray-900">{submission.title}</CardTitle>
-          <p className="text-sm text-gray-500">
-            <span className="font-medium">ID:</span> {submission.submission_id} |{" "}
-            <span className="font-medium">Contributor:</span> {submission.contributor_username} |{" "}
-            <span className="font-medium">Status:</span> {submission.status}
-          </p>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-700">{submission.description}</p>
-        </CardContent>
-      </Card> */}
-
       {/* Metadata Table */}
       {remainingFields.length > 0 && (
         <Card>

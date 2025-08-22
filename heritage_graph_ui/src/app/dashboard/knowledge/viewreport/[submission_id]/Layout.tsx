@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useMemo, useEffect, useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
@@ -12,14 +12,16 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
 
+// ----------------------
+// Types
+// ----------------------
 interface SubmissionLayoutProps {
   submissionId: string;
-  submission: Submission;
   commentsCount?: number;
   children: ReactNode;
 }
+
 interface Submission {
   submission_id: string;
   title: string;
@@ -28,42 +30,98 @@ interface Submission {
   status: string;
 }
 
-interface Comment {
-  id: string;
-  content: string;
-  author: string;
-}
-
+// ----------------------
+// Component
+// ----------------------
 export default function SubmissionLayout({
   submissionId,
   commentsCount = 0,
   children,
 }: SubmissionLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [submission, setSubmission] = useState<Submission | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Determine current tab based on URL
+  // Determine current tab from path
   const currentTab = useMemo(() => {
     if (pathname?.endsWith('/comments')) return 'comments';
     if (pathname?.endsWith('/revisions')) return 'revisions';
     if (pathname?.endsWith('/flags')) return 'flags';
     if (pathname?.endsWith('/activity')) return 'activity';
-    return 'outline'; // default
+    return 'outline';
   }, [pathname]);
 
-  // Fetch submission data
+  // Fetch submission data once
   useEffect(() => {
-    fetch(`http://localhost:8000/data/submissions/${submissionId}/`)
-      .then((res) => res.json())
-      .then(setSubmission)
-      .catch(console.error);
+    const controller = new AbortController();
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+
+    async function fetchSubmission() {
+      try {
+        setLoading(true);
+        const res = await fetch(`${API_BASE_URL}/data/submissions/${submissionId}/`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Failed to fetch submission: ${res.statusText}`);
+        const data: Submission = await res.json();
+        setSubmission(data);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+          console.error(err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSubmission();
+    return () => controller.abort();
   }, [submissionId]);
 
-  if (!submission) return <p>Loading submission...</p>;
+  // Handlers for smooth tab navigation
+  const handleTabChange = (tab: string) => {
+    router.push(
+      `/dashboard/knowledge/viewreport/${submissionId}${tab === 'outline' ? '' : `/${tab}`}`,
+    );
+  };
 
+  // ----------------------
+  // Loading & Error States
+  // ----------------------
+  if (loading) {
+    return <p className="text-gray-500 animate-pulse">Loading submission...</p>;
+  }
+
+  if (error) {
+    return (
+      <Card className="border-red-500 bg-red-50 text-red-800">
+        <CardHeader>
+          <CardTitle>Error</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>{error}</p>
+          <button
+            onClick={() => router.refresh()}
+            className="mt-2 rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!submission) return null;
+
+  // ----------------------
+  // Render
+  // ----------------------
   return (
     <div className="space-y-6">
-      {/* Header Card */}
+      {/* Header */}
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-gray-900">
@@ -81,47 +139,30 @@ export default function SubmissionLayout({
         </CardContent>
       </Card>
 
-      {/* View Selector */}
-      <Select defaultValue="outline">
+      {/* Mobile View Selector */}
+      <Select defaultValue={currentTab} onValueChange={handleTabChange}>
         <SelectTrigger className="flex w-fit @4xl/main:hidden" id="view-selector">
           <SelectValue placeholder="Select a view" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="outline">Outline</SelectItem>
-          <SelectItem value="past-performance">Under Review</SelectItem>
-          <SelectItem value="key-personnel">Reviewed</SelectItem>
-          <SelectItem value="focus-documents">Accepted</SelectItem>
+          <SelectItem value="comments">Comments</SelectItem>
+          <SelectItem value="revisions">Revisions</SelectItem>
+          <SelectItem value="flags">Flags</SelectItem>
+          <SelectItem value="activity">Activity</SelectItem>
         </SelectContent>
       </Select>
 
       {/* Tabs */}
-      <Tabs value={currentTab}>
+      <Tabs value={currentTab} onValueChange={handleTabChange}>
         <TabsList>
-          <TabsTrigger value="outline">
-            <Link href={`/dashboard/knowledge/viewreport/${submissionId}`}>
-              Summary
-            </Link>
-          </TabsTrigger>
+          <TabsTrigger value="outline">Summary</TabsTrigger>
           <TabsTrigger value="comments">
-            <Link href={`/dashboard/knowledge/viewreport/${submissionId}/comments`}>
-              Comments <Badge variant="secondary">{commentsCount}</Badge>
-            </Link>
+            Comments <Badge variant="secondary">{commentsCount}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="revisions">
-            <Link href={`/dashboard/knowledge/viewreport/${submissionId}/revisions`}>
-              Revisions
-            </Link>
-          </TabsTrigger>
-          <TabsTrigger value="flags">
-            <Link href={`/dashboard/knowledge/viewreport/${submissionId}/flags`}>
-              Flags
-            </Link>
-          </TabsTrigger>
-          <TabsTrigger value="activity">
-            <Link href={`/dashboard/knowledge/viewreport/${submissionId}/activity`}>
-              Activity
-            </Link>
-          </TabsTrigger>
+          <TabsTrigger value="revisions">Revisions</TabsTrigger>
+          <TabsTrigger value="flags">Flags</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
       </Tabs>
 
