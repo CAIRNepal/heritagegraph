@@ -6,8 +6,8 @@ import * as HoverCardPrimitive from '@radix-ui/react-hover-card';
 import { cn } from '@/lib/utils';
 
 function HoverCard({
-  openDelay = 100, // default: 100ms (much quicker)
-  closeDelay = 100, // optional: make closing a bit faster too
+  openDelay = 10, // default: 100ms (much quicker)
+  closeDelay = 10, // optional: make closing a bit faster too
   ...props
 }: React.ComponentProps<typeof HoverCardPrimitive.Root>) {
   return (
@@ -28,7 +28,7 @@ function HoverCardTrigger({
 
 function HoverCardContent({
   className,
-  align = 'start',
+  align = 'end',
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof HoverCardPrimitive.Content>) {
