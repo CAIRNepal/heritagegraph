@@ -63,4 +63,10 @@ urlpatterns = [
     path("user-stats/", views.UserStatsAPIView.as_view(), name="user-stats"),
     # test
     path("testme/", views.TestView.as_view(), name="Test this for auth health"),
+    # user details
+    path(
+        "user/<str:username>/",
+        views.UserProfileDetail.as_view(),
+        name="user-profile-detail",
+    ),
 ]

@@ -36,8 +36,15 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="antialiased min-h-screen bg-background text-foreground">
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      suppressHydrationWarning
+    >
+      <body
+        className="antialiased min-h-screen bg-background text-foreground"
+        suppressHydrationWarning
+      >
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <SidebarProvider

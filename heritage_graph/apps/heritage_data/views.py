@@ -29,6 +29,7 @@ from .models import (
     Submission,
     SubmissionEditSuggestion,
     SubmissionVersion,
+    UserProfile,
     UserStats,
 )
 from .serializers import (
@@ -41,6 +42,7 @@ from .serializers import (
     SubmissionIdSerializer,
     SubmissionSerializer,
     SubmissionVersionSerializer,
+    UserProfileSerializer,
     UserSerializer,
     UserSignupSerializer,
     UserStatsSerializer,
@@ -730,3 +732,72 @@ class TestView(APIView):
         # request.user is now a Django User object
         roles = []
         return Response({"message": f"Hello {request.user.username}, roles: {roles}"})
+
+
+class UserProfileDetail(APIView):
+    """
+    GET: Public endpoint to fetch a user's profile.
+    POST: Protected endpoint to update user's own profile
+           (requires authentication via Keycloak JWT).
+    """
+
+    permission_classes = [AllowAny]  # default, overridden per method
+
+    def get_permissions(self):
+        """
+        Assign permissions per HTTP method.
+        """
+        if self.request.method == "POST":
+            return [IsAuthenticated()]  # instantiate, protects POST
+        return [AllowAny()]  # GET is public
+
+    def get(self, request, *args, **kwargs):
+        username = kwargs.get("username")
+        if not username:
+            return Response(
+                {"error": "username is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(username=username)
+            profile = UserProfile.objects.get(user=user)
+        except (User.DoesNotExist, UserProfile.DoesNotExist):
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        username = kwargs.get("username")
+        email = data.get("email")
+
+        if not username:
+            return Response(
+                {"error": "username is required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get or create User
+        user, _ = User.objects.get_or_create(
+            username=username, defaults={"email": email}
+        )
+
+        # Only allow the authenticated user to update their own profile
+        if request.user != user:
+            return Response(
+                {"error": "You do not have permission to update this profile."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Get or create UserProfile
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+        # Update fields with serializer
+        serializer = UserProfileSerializer(profile, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

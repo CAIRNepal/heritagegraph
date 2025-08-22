@@ -2,10 +2,11 @@ import secrets
 import string
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-User = get_user_model()
+User = get_user_model()  # noqa: F811
 
 
 def generate_unique_submission_id(length=11, max_attempts=100):
@@ -250,20 +251,38 @@ class Moderation(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    clerk_user_id = models.CharField(
-        max_length=255, blank=True, null=True, unique=True
-    )  # <-- new field
+    clerk_user_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
     first_name = models.CharField(max_length=50, blank=True)
     middle_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     birth_date = models.DateField(blank=True, null=True)
+
+    biography = models.TextField(blank=True)
+    area_of_expertise = models.CharField(max_length=255, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+
     organization = models.CharField(max_length=255, blank=True)
     position = models.CharField(max_length=255, blank=True)
+    university_school = models.CharField(max_length=255, blank=True)
+
+    # Fixed fields
+    social_links = models.JSONField(
+        blank=True,
+        null=True,
+        default=dict,
+        help_text="A JSON object of social links, e.g., "
+        "{'twitter': 'url', 'linkedin': 'url'}",
+    )
+    website_link = models.URLField(blank=True, null=True)
+
     score = models.IntegerField(
         default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
-    university_school = models.CharField(max_length=255, blank=True)
+
+    @property
+    def member_since(self):
+        return self.user.date_joined.strftime("%B %Y")
 
     def __str__(self):
         return self.user.username

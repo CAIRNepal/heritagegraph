@@ -327,3 +327,29 @@ class UserStatsSerializer(serializers.Serializer):
     rank_change = serializers.IntegerField()
     community_impact_score = serializers.FloatField()
     impact_score_change = serializers.FloatField()
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    email = serializers.EmailField(source="user.email", read_only=True)
+    member_since = serializers.CharField(read_only=True)  # property from model
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "username",
+            "email",
+            "first_name",
+            "middle_name",
+            "last_name",
+            "biography",
+            "area_of_expertise",
+            "country",
+            "organization",
+            "position",
+            "university_school",
+            "social_links",
+            "website_link",
+            "score",
+            "member_since",
+        ]
