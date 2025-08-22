@@ -109,6 +109,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
+import { useSession } from 'next-auth/react';
 
 // Updated schema to match the new data structure
 export const schema = z.object({
@@ -658,6 +659,7 @@ import { Bluetooth } from 'lucide-react';
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false); // control drawer manually
+  const { data: session, status } = useSession();
 
   return (
     <>
@@ -678,9 +680,14 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             <p className="text-sm text-muted-foreground">
               @{item.contributor_username}
             </p>
-            <Button variant="default" size="sm">
-              View Profile
-            </Button>
+            <Link
+              href={`/dashboard/users/${session?.user?.username}`}
+              className="flex items-center gap-2"
+            >
+              <Button variant="default" size="sm">
+                View Profile
+              </Button>
+            </Link>
           </div>
 
           {/* Action button */}

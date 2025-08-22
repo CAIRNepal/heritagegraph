@@ -28,7 +28,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 
 export function NavUser({
   user,
@@ -40,6 +40,9 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const { data: session, status } = useSession();
+
+  console.log('SESSION: ', session);
 
   return (
     <SidebarMenu>
@@ -93,7 +96,11 @@ export function NavUser({
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/users" className="flex items-center gap-2">
+                <Link
+                  href={`/dashboard/users/${session?.user?.username}`}
+                  className="flex items-center gap-2"
+                >
+                  {' '}
                   <IconUserCircle />
                   View Profile
                 </Link>
