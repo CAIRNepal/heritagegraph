@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import Link from "next/link";
 import {
   ClerkProvider,
   SignInButton,
@@ -198,31 +199,37 @@ export default function Home() {
               transition={{ duration: 0.6 }}
               className="flex items-center gap-3"
             >
+              
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-sky-600 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-4 h-4 text-white" />
+                <Link href="/">
+                  <BookOpen className="w-4 h-4 text-white" />
+                </Link>
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
-                HeritageGraph
+                <Link href="/">HeritageGraph</Link>
               </h1>
             </motion.div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               <div className="flex items-center gap-8">
-                {['Explore', 'About', 'Contact'].map((item, index) => (
-                  <motion.a
-                    key={item}
-                    href={`#${item.toLowerCase()}`}
-                    className="text-blue-800 hover:text-blue-600 transition-all duration-300 relative group"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                  >
-                    {item}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-sky-500 transition-all duration-300 group-hover:w-full" />
-                  </motion.a>
-                ))}
-              </div>
+  {['Explore', 'Dashboard', 'About', 'Contact'].map((item, index) => {
+    const href = item === 'Dashboard' ? '/dashboard' : `#${item.toLowerCase()}`;
+    return (
+      <motion.a
+        key={item}
+        href={href}
+        className="text-blue-800 hover:text-blue-600 transition-all duration-300 relative group"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+      >
+        {item}
+        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-sky-500 transition-all duration-300 group-hover:w-full" />
+      </motion.a>
+    );
+  })}
+</div>
               {/* <Button>Sign In</Button> */}
               <SignInButton />
               <SignUpButton />
@@ -247,7 +254,7 @@ export default function Home() {
                   className="bg-white/90 backdrop-blur-xl border-blue-200 text-blue-900"
                 >
                   <nav className="mt-8 flex flex-col gap-6">
-                    {['Explore', 'About', 'Contact'].map((item) => (
+                    {['Explore', 'Dashboard','About', 'Contact'].map((item) => (
                       <a
                         key={item}
                         href={`#${item.toLowerCase()}`}
