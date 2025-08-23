@@ -141,7 +141,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    if (SignedIn) {
+    if (!SignedIn) {
       router.push('/dashboard');
     }
   }, [SignedIn, router]);

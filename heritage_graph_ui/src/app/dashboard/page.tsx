@@ -57,7 +57,7 @@ export default function Page() {
       {/* SectionCards & Leaderboard */}
       <div className="flex flex-col md:flex-row gap-4">
         {/* <SectionCards /> */}
-        <Leaderboard />
+        {/* <Leaderboard /> */}
       </div>
 
       {/* DataTable */}
