@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import Link from "next/link";
+ 
+
+ 
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getSession } from 'next-auth/react'; 
 import {
   ClerkProvider,
   SignInButton,
@@ -43,6 +49,7 @@ import {
   Mail,
   ExternalLink,
   LucideIcon,
+  Link,
 } from 'lucide-react';
 
 // Animation Variants
@@ -138,14 +145,12 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [0.95, 1]);
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
-
+  const session = getServerSession(authOptions);
   const router = useRouter();
 
-  useEffect(() => {
-    if (!SignedIn) {
-      router.push('/dashboard');
-    }
-  }, [SignedIn, router]);
+  if (!session) {
+    redirect('/api/auth/signin'); // NextAuth login route
+  }
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -213,6 +218,7 @@ export default function Home() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               <div className="flex items-center gap-8">
+
   {['Explore', 'Dashboard', 'About', 'Contact'].map((item, index) => {
     const href = item === 'Dashboard' ? '/dashboard' : `#${item.toLowerCase()}`;
     return (
@@ -233,6 +239,12 @@ export default function Home() {
               {/* <Button>Sign In</Button> */}
               <SignInButton />
               <SignUpButton />
+ 
+{/*
+              <Button>
+                <a href="/dashboard">Sign In/Sign Up </a>
+              </Button>
+ */}
               {/* <Button>Sign Up</Button> */}
             </nav>
 
