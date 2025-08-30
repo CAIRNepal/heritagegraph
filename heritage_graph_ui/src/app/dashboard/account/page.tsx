@@ -1,6 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import {
+  DeviceActivity,
+  PersonalInfo,
+  savePersonalInfo,
+  useEnvironment,
+} from '@keycloak/keycloak-account-ui';
+
 import {
   Card,
   CardHeader,
@@ -27,11 +35,43 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
+/* ---------- Types ---------- */
+type ActiveTab = 'general' | 'signing-in' | 'device-activity';
+
+type SaveStatusType = '' | 'saving' | 'success';
+type SaveStatus = { type: SaveStatusType; message: string };
+
+type FormField =
+  | 'username'
+  | 'email'
+  | 'firstName'
+  | 'lastName'
+  | 'institution'
+  | 'university';
+
+type FormData = Record<FormField, string>;
+
+type Device = {
+  id: string;
+  platform: string;
+  browser: string;
+  current: boolean;
+  ip: string;
+  lastAccessed: string;
+  clients: string[];
+  started: string;
+  expires: string;
+};
+
+/* ---------- Component ---------- */
 export default function MyAccount() {
-  const [activeTab, setActiveTab] = useState('general');
-  const [isLoading, setIsLoading] = useState(true);
-  const [saveStatus, setSaveStatus] = useState({ type: '', message: '' });
-  const [formData, setFormData] = useState({
+  const [activeTab, setActiveTab] = useState<ActiveTab>('general');
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>({
+    type: '',
+    message: '',
+  });
+  const [formData, setFormData] = useState<FormData>({
     username: '',
     email: '',
     firstName: '',
@@ -40,7 +80,7 @@ export default function MyAccount() {
     university: '',
   });
 
-  const devices = [
+  const devices: Device[] = [
     {
       id: '1',
       platform: 'Ubuntu',
@@ -80,12 +120,13 @@ export default function MyAccount() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+    const key = id as FormField; // assert to our union
+    setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaveStatus({ type: 'saving', message: 'Saving changes...' });
     setTimeout(() => {
@@ -97,11 +138,11 @@ export default function MyAccount() {
     }, 1500);
   };
 
-  const handleSignOutDevice = (deviceId) => {
+  const handleSignOutDevice = (deviceId: string) => {
     console.log('Sign out device:', deviceId);
   };
 
-  const formatLabel = (field) => {
+  const formatLabel = (field: FormField): string => {
     return field
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, (str) => str.toUpperCase())
@@ -137,6 +178,15 @@ export default function MyAccount() {
       </div>
     );
   }
+
+  const fields: Readonly<FormField[]> = [
+    'firstName',
+    'lastName',
+    'username',
+    'email',
+    'institution',
+    'university',
+  ];
 
   return (
     <div className="font-sans min-h-screen p-6 sm:p-12 pb-20">
@@ -205,21 +255,16 @@ export default function MyAccount() {
               <CardContent>
                 <form onSubmit={handleSave} className="space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {[
-                      'firstName',
-                      'lastName',
-                      'username',
-                      'email',
-                      'institution',
-                      'university',
-                    ].map((field) => (
+                    {fields.map((field) => (
                       <div key={field} className="space-y-2">
                         <Label htmlFor={field}>{formatLabel(field)}</Label>
                         <Input
                           id={field}
                           value={formData[field]}
                           onChange={handleInputChange}
-                          placeholder={`Enter ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
+                          placeholder={`Enter ${field
+                            .replace(/([A-Z])/g, ' $1')
+                            .toLowerCase()}`}
                           type={field === 'email' ? 'email' : 'text'}
                           className="rounded-lg"
                           required={field !== 'university'}

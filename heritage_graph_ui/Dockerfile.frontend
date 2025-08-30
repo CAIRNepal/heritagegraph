@@ -1,17 +1,29 @@
-# heritage_graph_ui/Dockerfile.frontend
-FROM node:18-alpine
+# Stage 1: Build the app
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
-COPY heritage_graph_ui/package*.json ./
+# Copy package files and install dependencies
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy frontend source
-COPY heritage_graph_ui/ .
+# Copy source code
+COPY . .
 
-# Expose Next.js port
+# Build Next.js app
+# RUN npm run build
+RUN npm run build --no-lint
+
+# Stage 2: Run the app
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy built app from builder
+COPY --from=builder /app ./
+
+# Expose port
 EXPOSE 3000
 
-# Dev mode (for prod: npm run build && npm start)
-CMD ["npm", "run", "dev"]
+# Start the app
+CMD ["npm", "run", "start"]

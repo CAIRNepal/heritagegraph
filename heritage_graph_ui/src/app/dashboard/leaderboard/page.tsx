@@ -31,8 +31,17 @@ import { useState, useEffect, useMemo } from 'react';
 
 const ITEMS_PER_PAGE = 20;
 
+interface LeaderboardEntry {
+  rank: number;
+  username: string;
+  institution?: string;
+  country?: string;
+  total_submission: number;
+  avatar?: string;
+}
+
 export default function LeaderboardPage() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<LeaderboardEntry[]>([]);
   const [query, setQuery] = useState('');
   const [institutionFilter, setInstitutionFilter] = useState('all');
   const [page, setPage] = useState(1);
@@ -42,18 +51,18 @@ export default function LeaderboardPage() {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const res = await fetch('http://localhost:8000/data/leaderboard/', {
+        const res = await fetch('http://127.0.0.1:8000/data/leaderboard/', {
           method: 'GET',
-          headers: {
-            Accept: '*/*',
-          },
+          headers: { Accept: '*/*' },
         });
         if (!res.ok) throw new Error('Failed to fetch leaderboard data');
-        const json = await res.json();
+
+        const json: LeaderboardEntry[] = await res.json();
+
         setData(
           json.map((entry, i) => ({
             rank: entry.rank || i + 1,
-            name: entry.username || 'Unknown',
+            username: entry.username || 'Unknown',
             institution:
               entry.institution && entry.institution !== 'N/A' ? entry.institution : '',
             country: entry.country && entry.country !== 'N/A' ? entry.country : '',
@@ -72,7 +81,7 @@ export default function LeaderboardPage() {
 
   const filteredData = useMemo(() => {
     return data.filter((entry) => {
-      const matchesQuery = entry.name.toLowerCase().includes(query.toLowerCase());
+      const matchesQuery = entry.username.toLowerCase().includes(query.toLowerCase());
       const matchesInstitution =
         institutionFilter === 'all' || institutionFilter === ''
           ? true
@@ -125,9 +134,9 @@ export default function LeaderboardPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Institutions</SelectItem>
-              {[...new Set(data.map((d) => d.institution).filter((inst) => inst))].map(
+              {[...new Set(data.map((d) => d.institution).filter(Boolean))].map(
                 (inst) => (
-                  <SelectItem key={inst} value={inst}>
+                  <SelectItem key={inst} value={inst!}>
                     {inst}
                   </SelectItem>
                 ),
@@ -183,16 +192,16 @@ export default function LeaderboardPage() {
                           </TableCell>
                           <TableCell className="flex items-center gap-3">
                             <Avatar>
-                              <AvatarImage src={entry.avatar} alt={entry.name} />
+                              <AvatarImage src={entry.avatar} alt={entry.username} />
                               <AvatarFallback>
-                                {entry.name
+                                {entry.username
                                   .split(' ')
                                   .map((w) => w[0])
                                   .join('')
                                   .toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">{entry.name}</span>
+                            <span className="font-medium">{entry.username}</span>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {entry.institution || '-'}

@@ -4,47 +4,73 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
 
+interface Stats {
+  total_submissions: number;
+  submissions_growth: number;
+  approval_rate: number;
+  approval_rate_change: number;
+  contributor_rank: number;
+  rank_change: number;
+  community_impact_score: number;
+  impact_score_change: number;
+}
+
+interface CardData {
+  title: string;
+  value: string | number;
+  change: number;
+  changeIsPercent: boolean;
+  description: string;
+  footer: string;
+}
+
 export function SectionCards() {
   const { getToken } = useAuth();
-  const [stats, setStats] = useState(null);
-  const [error, setError] = useState(null);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const token = await getToken();
-        const res = await fetch('http://localhost:8000/data/user-stats/', {
+        const res = await fetch('http://127.0.0.1:8000/data/user-stats/', {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error(`API error: ${res.status}`);
-        const data = await res.json();
+        const data: Stats = await res.json();
         console.log('DATA: ', data);
         setStats(data);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Failed to fetch stats:', err);
-        setError(err.message);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred');
+        }
       } finally {
         setLoading(false);
       }
     };
+
     fetchStats();
   }, [getToken]);
 
-  const UpOrDown = ({ value }) =>
+  const UpOrDown: React.FC<{ value: number }> = ({ value }) =>
     value >= 0 ? (
       <IconTrendingUp className="inline w-4 h-4 text-green-500" />
     ) : (
       <IconTrendingDown className="inline w-4 h-4 text-red-500" />
     );
 
-  const formatChange = (val, isPercent = false) =>
+  const formatChange = (val: number, isPercent = false) =>
     `${val >= 0 ? '+' : ''}${val.toFixed(1)}${isPercent ? '%' : ''}`;
 
-  if (loading) return <div className="text-gray-500 font-medium"></div>;
+  if (loading) return <div className="text-gray-500 font-medium">Loading...</div>;
   if (error) return <div className="text-red-500 font-medium">Error: {error}</div>;
+  if (!stats) return null;
 
-  const cards = [
+  const cards: CardData[] = [
     {
       title: 'Total Submissions',
       value: stats.total_submissions,

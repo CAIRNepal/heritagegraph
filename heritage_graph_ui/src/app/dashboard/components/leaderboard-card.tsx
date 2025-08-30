@@ -13,7 +13,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
-export function Leaderboard() {
+type LeaderboardProps = {
+  type: 'Curation' | 'Revisions' | 'Moderation'; // extend if more types
+};
+
+export function Leaderboard({ type }: LeaderboardProps) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +25,8 @@ export function Leaderboard() {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const res = await fetch('http://localhost:8000/data/leaderboard/');
+        // 🔥 If your backend supports filtering by type, pass it here
+        const res = await fetch(`http://127.0.0.1:8000/data/leaderboard/?type=${type}`);
         if (!res.ok) throw new Error('Failed to fetch leaderboard data');
         const json = await res.json();
         setData(
@@ -38,12 +43,12 @@ export function Leaderboard() {
       }
     };
     fetchLeaderboard();
-  }, []);
+  }, [type]);
 
   return (
     <Card className="w-full shadow-md border border-border">
       <CardHeader>
-        <CardTitle className="text-lg sm:text-xl">🏆 Leaderboard</CardTitle>
+        <CardTitle className="text-lg sm:text-xl">🏆 {type} Leaderboard</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -83,7 +88,7 @@ export function Leaderboard() {
                         <AvatarFallback>
                           {entry.name
                             .split(' ')
-                            .map((w) => w[0])
+                            .map((w: string) => w[0])
                             .join('')
                             .toUpperCase()}
                         </AvatarFallback>

@@ -44,7 +44,6 @@ const steps: { title: string; fields: FieldConfig[] }[] = [
       { name: 'Object_ID_number', label: 'Object ID Number' },
     ],
   },
-  // .....
 ];
 
 export default function ContributePage() {
@@ -74,13 +73,14 @@ export default function ContributePage() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('http://localhost:8000/data/form-submit/', {
+      // Get token from session if stored in session.user.accessToken, otherwise remove this header
+      const token = (session?.user as any)?.accessToken;
+
+      const res = await fetch('http://127.0.0.1:8000/data/form-submit/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(session?.accessToken && {
-            Authorization: `Bearer ${session.accessToken}`,
-          }),
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify(formData),
       });

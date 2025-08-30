@@ -9,42 +9,39 @@ export default function MyComponent() {
   const [error, setError] = useState(null);
 
   const fetchUsers = async () => {
-    try {
-      const token = await getToken();
-      console.log(token);
-      if (!token) throw new Error('No token available');
-
-      const res = await fetch('http://localhost:8000/data/leaderboard', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Error ${res.status}: ${errorText}`);
-      }
-
-      const data = await res.json();
-      setUsers(data);
-      setError(null);
-      console.log(data);
-    } catch (err) {
-      setError(err.message);
-      setUsers(null);
-      console.error(err);
-    }
+    // try {
+    //   const token = await getToken();
+    //   console.log(token);
+    //   if (!token) throw new Error('No token available');
+    //   const res = await fetch('http://127.0.0.1:8000/data/leaderboard', {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   });
+    //   if (!res.ok) {
+    //     const errorText = await res.text();
+    //     throw new Error(`Error ${res.status}: ${errorText}`);
+    //   }
+    //   const data = await res.json();
+    //   setUsers(data);
+    //   setError(null);
+    //   console.log(data);
+    // } catch (err) {
+    //   setError(err.message);
+    //   setUsers(null);
+    //   console.error(err);
+    // }
   };
 
   return (
     <>
-      <button onClick={fetchUsers} disabled={!isSignedIn}>
+      {/* <button onClick={fetchUsers} disabled={!isSignedIn}>
         Call Django API
       </button>
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
       {users && (
         <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(users, null, 2)}</pre>
-      )}
+      )} */}
     </>
   );
 }

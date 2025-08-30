@@ -190,7 +190,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     },
     enableHiding: false,
     enableColumnFilter: true,
-    filterFn: 'fuzzy',
+    // filterFn: 'fuzzy',
   },
   {
     accessorKey: 'description',
@@ -201,14 +201,14 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       </div>
     ),
     enableColumnFilter: true,
-    filterFn: 'fuzzy',
+    // filterFn: 'fuzzy',
   },
   {
     accessorKey: 'contributor_username',
     header: 'Contributor',
     cell: ({ row }) => row.original.contributor_username,
     enableColumnFilter: true,
-    filterFn: 'fuzzy',
+    // filterFn: 'fuzzy',
   },
   {
     accessorKey: 'status',
@@ -244,41 +244,41 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       return cellValue.includes(value);
     },
   },
-  {
-    id: 'actions',
-    header: 'Actions',
-    cell: ({ row }) => {
-      const submissionId = row.original.submission_id;
+  // {
+  //   id: 'actions',
+  //   header: 'Actions',
+  //   cell: ({ row }) => {
+  //     const submissionId = row.original.submission_id;
 
-      return (
-        // <DropdownMenu>
-        //   <DropdownMenuTrigger asChild>
-        //     <Button
-        //       variant="ghost"
-        //       className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-        //       size="icon"
-        //     >
-        //       <IconDotsVertical />
-        //       <span className="sr-only">Open menu</span>
-        //     </Button>
-        //   </DropdownMenuTrigger>
-        //   <DropdownMenuContent align="end" className="w-32">
-        //     <DropdownMenuItem>
-        //     </DropdownMenuItem>
-        //     <DropdownMenuItem>Edit</DropdownMenuItem>
-        //     <DropdownMenuItem>Make a copy</DropdownMenuItem>
-        //     <DropdownMenuItem>Favorite</DropdownMenuItem>
-        //     <DropdownMenuSeparator />
-        //     <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        //   </DropdownMenuContent>
-        // </DropdownMenu>
-        <Button>
-          <Link href={`/dashboard/knowledge/viewreport/${submissionId}`}>View</Link>
-        </Button>
-      );
-    },
-    enableColumnFilter: false,
-  },
+  //     return (
+  //       // <DropdownMenu>
+  //       //   <DropdownMenuTrigger asChild>
+  //       //     <Button
+  //       //       variant="ghost"
+  //       //       className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+  //       //       size="icon"
+  //       //     >
+  //       //       <IconDotsVertical />
+  //       //       <span className="sr-only">Open menu</span>
+  //       //     </Button>
+  //       //   </DropdownMenuTrigger>
+  //       //   <DropdownMenuContent align="end" className="w-32">
+  //       //     <DropdownMenuItem>
+  //       //     </DropdownMenuItem>
+  //       //     <DropdownMenuItem>Edit</DropdownMenuItem>
+  //       //     <DropdownMenuItem>Make a copy</DropdownMenuItem>
+  //       //     <DropdownMenuItem>Favorite</DropdownMenuItem>
+  //       //     <DropdownMenuSeparator />
+  //       //     <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+  //       //   </DropdownMenuContent>
+  //       // </DropdownMenu>
+  //       <Button>
+  //         <Link href={`/dashboard/knowledge/viewreport/${submissionId}`}>View</Link>
+  //       </Button>
+  //     );
+  //   },
+  //   enableColumnFilter: false,
+  // },
 ];
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
@@ -317,6 +317,9 @@ export function DataTable() {
     pageIndex: 0,
     pageSize: 10,
   });
+
+  const [pageCount, setPageCount] = React.useState(-1); // server total pages
+
   const sortableId = React.useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -324,10 +327,16 @@ export function DataTable() {
     useSensor(KeyboardSensor, {}),
   );
 
+  // Ensures it's always an array
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ submission_id }) => submission_id) || [],
+    () => (Array.isArray(data) ? data.map((d) => d.submission_id) : []),
     [data],
   );
+
+  // const dataIds = React.useMemo<UniqueIdentifier[]>(
+  //   () => data?.map(({ submission_id }) => submission_id) || [],
+  //   [data],
+  // );
 
   const table = useReactTable({
     data,
@@ -355,15 +364,31 @@ export function DataTable() {
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+
+    //pagination for server side:
+    manualPagination: true,
+    pageCount,
   });
 
   // Fetch data from the API
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/data/submissions/');
+        // const response = await fetch('http://127.0.0.1:8000/data/submissions/');
+        const url = `http://127.0.0.1:8000/data/submissions/?page=${
+          pagination.pageIndex + 1
+        }&page_size=${pagination.pageSize}`;
+
+        const response = await fetch(url);
         const result = await response.json();
-        setData(result);
+
+        // Normalize for DRF pagination
+        const rows = Array.isArray(result.results) ? result.results : result;
+        setData(rows);
+        if (result.count) {
+          setPageCount(Math.ceil(result.count / pagination.pageSize));
+        }
+        // setData(result);
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error('Failed to load submissions');
@@ -373,15 +398,16 @@ export function DataTable() {
     };
 
     fetchData();
-  }, []);
+  }, [pagination.pageIndex, pagination.pageSize]);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
-      setData((data) => {
+      setData((old) => {
+        const safeData = Array.isArray(old) ? old : [];
         const oldIndex = dataIds.indexOf(active.id);
         const newIndex = dataIds.indexOf(over.id);
-        return arrayMove(data, oldIndex, newIndex);
+        return arrayMove(safeData, oldIndex, newIndex);
       });
     }
   }
@@ -416,7 +442,7 @@ export function DataTable() {
           </SelectContent>
         </Select>
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Submitted</TabsTrigger>
+          <TabsTrigger value="outline">All Submissions</TabsTrigger>
           <TabsTrigger value="past-performance">
             Under Review <Badge variant="secondary">3</Badge>
           </TabsTrigger>
@@ -506,7 +532,7 @@ export function DataTable() {
                                 placeholder={`Filter ${
                                   typeof header.column.columnDef.header === 'function'
                                     ? header.column.columnDef
-                                        .header?.({})
+                                        .header(header.getContext())
                                         ?.toString() || ''
                                     : header.column.columnDef.header || ''
                                 }`}
@@ -514,7 +540,7 @@ export function DataTable() {
                                 onChange={(e) => column.setFilterValue(e.target.value)}
                                 className="h-8 text-sm"
                                 onClick={(e) => e.stopPropagation()}
-                              />
+                              />{' '}
                             </div>
                           ) : (
                             <div className="pt-2" />
@@ -668,7 +694,10 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           <Button
             variant="link"
             className="text-foreground w-fit px-0 text-left hover:underline"
-            onClick={() => setOpen(true)} // optional: opens drawer too
+            onClick={() => {
+              setOpen(false); // close drawer if needed
+              window.location.href = `/dashboard/knowledge/viewreport/${item.submission_id}`;
+            }}
           >
             {item.title}
           </Button>

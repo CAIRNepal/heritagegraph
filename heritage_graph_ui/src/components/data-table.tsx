@@ -237,6 +237,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     ),
   },
 ];
+export type UniqueIdentifier = string | number;
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
@@ -274,6 +275,9 @@ export function DataTable() {
     pageIndex: 0,
     pageSize: 10,
   });
+
+  const [pageCount, setPageCount] = React.useState(-1); // server total pages
+
   const sortableId = React.useId();
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
@@ -282,7 +286,7 @@ export function DataTable() {
   );
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ submission_id }) => submission_id) || [],
+    () => data?.map(({ submission_id }) => submission_id as UniqueIdentifier) || [],
     [data],
   );
 
@@ -309,15 +313,23 @@ export function DataTable() {
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+
+    manualPagination: true,
+    pageCount,
   });
 
   // Fetch data from the API
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/data/submissions/');
+        const url = `http://127.0.0.1:8000/data/submissions/?page=${pagination.pageIndex + 1}&page_size=${pagination.pageSize}`;
+        const response = await fetch(url);
         const result = await response.json();
-        setData(result);
+
+        // setData(result);
+        // Django paginated response: { count, next, previous, results }
+        setData(result.results || []);
+        setPageCount(Math.ceil(result.count / pagination.pageSize));
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error('Failed to load submissions');

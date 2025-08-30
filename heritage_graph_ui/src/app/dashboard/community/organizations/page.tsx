@@ -34,7 +34,7 @@ export default function ContributorsPage() {
           <CardTitle className="text-xl font-semibold">All Contributors</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable data={data} />
+          <DataTable />
         </CardContent>
       </Card>
     </div>

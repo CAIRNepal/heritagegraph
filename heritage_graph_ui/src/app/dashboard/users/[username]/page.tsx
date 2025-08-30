@@ -46,6 +46,17 @@ import {
   Award,
 } from 'lucide-react';
 
+// Extend session type locally (so session.accessToken works)
+type CustomSession = {
+  accessToken?: string;
+  user?: {
+    username?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
+};
+
 type UserData = {
   username: string;
   email: string;
@@ -72,9 +83,10 @@ type UserData = {
 
 export default function UserPage() {
   const params = useParams();
-  const username = params.username;
-  const { data: session, status } = useSession();
-  // const { toast } = toast();
+  const username = params.username as string;
+  const { data: sessionData, status } = useSession();
+  const session = sessionData as CustomSession | null;
+
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -103,7 +115,7 @@ export default function UserPage() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch(`http://localhost:8000/data/user/${username}/`);
+        const res = await fetch(`http://127.0.0.1:8000/data/user/${username}/`);
         if (!res.ok) throw new Error('User not found');
         const data = await res.json();
         setUser(data);
@@ -130,17 +142,13 @@ export default function UserPage() {
         }
       } catch (err) {
         console.error(err);
-        toast({
-          title: 'Error',
-          description: 'Failed to load user data',
-          variant: 'destructive',
-        });
+        toast('Error', { description: 'Failed to load user data' });
       } finally {
         setLoading(false);
       }
     }
     fetchUser();
-  }, [username, toast]);
+  }, [username]);
 
   const copyEmail = () => {
     if (user?.email) {
@@ -165,7 +173,6 @@ export default function UserPage() {
     setUpdating(true);
 
     try {
-      // Prepare the data in the format expected by the API
       const updateData = {
         username: user?.username,
         email: user?.email,
@@ -188,53 +195,44 @@ export default function UserPage() {
         },
       };
 
-      // Remove undefined values
+      // ✅ Clean undefined keys
       Object.keys(updateData).forEach((key) => {
-        if (updateData[key] === undefined) {
-          delete updateData[key];
+        const typedKey = key as keyof typeof updateData;
+        if (updateData[typedKey] === undefined) {
+          delete updateData[typedKey];
         }
       });
 
       Object.keys(updateData.social_links).forEach((key) => {
-        if (updateData.social_links[key] === undefined) {
-          delete updateData.social_links[key];
+        const typedKey = key as keyof typeof updateData.social_links;
+        if (updateData.social_links[typedKey] === undefined) {
+          delete updateData.social_links[typedKey];
         }
       });
 
-      const response = await fetch(`http://localhost:8000/data/user/${username}/`, {
+      const response = await fetch(`http://127.0.0.1:8000/data/user/${username}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.accessToken}`,
+          Authorization: `Bearer ${session?.accessToken ?? ''}`,
         },
         body: JSON.stringify(updateData),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update user data');
-      }
+      if (!response.ok) throw new Error('Failed to update user data');
 
       const updatedUser = await response.json();
       setUser(updatedUser);
 
-      toast({
-        title: 'Success',
-        description: 'Profile updated successfully',
-      });
-
+      toast('Success', { description: 'Profile updated successfully' });
       setIsEditModalOpen(false);
     } catch (error) {
       console.error('Update error:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update profile',
-        variant: 'destructive',
-      });
+      toast('Error', { description: 'Failed to update profile' });
     } finally {
       setUpdating(false);
     }
   };
-
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -257,7 +255,8 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen p-6 sm:p-8 pb-20 bg-muted/20">
-      <div className="max-w-6xl mx-auto">
+      {/* <div className="max-w-6xl mx-auto"> */}
+      <div className="mx-auto">
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row gap-8 mb-8">
           {/* User Profile Card */}
