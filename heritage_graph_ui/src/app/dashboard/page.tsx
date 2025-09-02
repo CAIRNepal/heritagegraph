@@ -1,13 +1,47 @@
-// import { DataTable } from '@/components/data-table';
-// import { SectionCards } from '@/app/dashboard/components/section-cards';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Leaderboard } from './components/leaderboard-card';
 import { Button } from '@/components/ui/button';
-import data from './data.json';
-// import { HeritageTable } from '@/components/heritage-table';
 import { DataTable } from '@/components/heritage-table';
 
 export default function Page() {
+  const { data: session } = useSession();
+  const [backendData, setBackendData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!session?.accessToken) return;
+
+    const fetchBackend = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/data/testthelogin/', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            Accept: 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Failed to fetch data');
+        }
+
+        const data = await res.json();
+        console.log('Data: ', data);
+
+        setBackendData(data);
+      } catch (err: any) {
+        setError(err.message);
+      }
+    };
+
+    fetchBackend();
+  }, [session]);
+
   return (
     <div className="px-4 lg:px-6 space-y-6">
       {/* Compact Welcome Card */}
@@ -16,10 +50,6 @@ export default function Page() {
           <CardTitle className="text-2xl font-bold">Welcome Back!</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* <p className="text-base text-muted-foreground mb-4">
-      Explore, preserve, and contribute to the rich cultural heritage through our knowledge graph platform.
-    </p> */}
-
           <div className="flex flex-col sm:flex-row gap-2 justify-between">
             {[
               {
@@ -51,15 +81,24 @@ export default function Page() {
         </CardContent>
       </Card>
 
-      {/* SectionCards & Leaderboard */}
-      <div className="flex flex-col md:flex-row gap-4">
-        {/* <SectionCards /> */}
-        {/* <Leaderboard /> */}
-      </div>
+      {/* Show backend response */}
+      {/* <Card className="rounded-2xl shadow-md">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">Backend Data</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {error && <p className="text-red-500">Error: {error}</p>}
+          {!error && !backendData && <p>Loading data...</p>}
+          {backendData && (
+            <pre className="text-sm bg-gray-100 dark:bg-gray-900 p-2 rounded-md overflow-x-auto">
+              {JSON.stringify(backendData, null, 2)}
+            </pre>
+          )}
+        </CardContent>
+      </Card> */}
 
       {/* DataTable */}
       <DataTable />
-      {/* <HeritageTable /> */}
     </div>
   );
 }

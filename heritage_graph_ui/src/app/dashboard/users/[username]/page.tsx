@@ -396,222 +396,228 @@ export default function UserPage() {
                 </div>
               ) : null}
 
-              <div className="pt-4 border-t">
-                <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full gap-2">
-                      <Edit3 className="h-4 w-4" />
-                      Edit Profile
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Edit Profile</DialogTitle>
-                      <DialogDescription>
-                        Make changes to your profile here. Click save when you're done.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-                      <div className="grid grid-cols-2 gap-4">
+              {session?.user?.username === user.username && (
+                <div className="pt-4 border-t">
+                  <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full gap-2">
+                        <Edit3 className="h-4 w-4" />
+                        Edit Profile
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Edit Profile</DialogTitle>
+                        <DialogDescription>
+                          Make changes to your profile here. Click save when you're
+                          done.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="first_name">First Name</Label>
+                            <Input
+                              id="first_name"
+                              name="first_name"
+                              value={editFormData.first_name}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                          <div className="grid gap-2">
+                            <Label htmlFor="last_name">Last Name</Label>
+                            <Input
+                              id="last_name"
+                              name="last_name"
+                              value={editFormData.last_name}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </div>
+
                         <div className="grid gap-2">
-                          <Label htmlFor="first_name">First Name</Label>
+                          <Label htmlFor="middle_name">Middle Name (Optional)</Label>
                           <Input
-                            id="first_name"
-                            name="first_name"
-                            value={editFormData.first_name}
+                            id="middle_name"
+                            name="middle_name"
+                            value={editFormData.middle_name}
                             onChange={handleInputChange}
-                            required
                           />
                         </div>
+
                         <div className="grid gap-2">
-                          <Label htmlFor="last_name">Last Name</Label>
-                          <Input
-                            id="last_name"
-                            name="last_name"
-                            value={editFormData.last_name}
+                          <Label htmlFor="biography">Biography</Label>
+                          <Textarea
+                            id="biography"
+                            name="biography"
+                            value={editFormData.biography}
                             onChange={handleInputChange}
-                            required
+                            rows={4}
                           />
                         </div>
-                      </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="middle_name">Middle Name (Optional)</Label>
-                        <Input
-                          id="middle_name"
-                          name="middle_name"
-                          value={editFormData.middle_name}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="area_of_expertise">
+                            Area of Expertise (comma separated)
+                          </Label>
+                          <Input
+                            id="area_of_expertise"
+                            name="area_of_expertise"
+                            value={editFormData.area_of_expertise}
+                            onChange={handleInputChange}
+                          />
+                        </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="biography">Biography</Label>
-                        <Textarea
-                          id="biography"
-                          name="biography"
-                          value={editFormData.biography}
-                          onChange={handleInputChange}
-                          rows={4}
-                        />
-                      </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="country">Country</Label>
+                          <Input
+                            id="country"
+                            name="country"
+                            value={editFormData.country}
+                            onChange={handleInputChange}
+                          />
+                        </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="area_of_expertise">
-                          Area of Expertise (comma separated)
-                        </Label>
-                        <Input
-                          id="area_of_expertise"
-                          name="area_of_expertise"
-                          value={editFormData.area_of_expertise}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="organization">Organization</Label>
+                          <Input
+                            id="organization"
+                            name="organization"
+                            value={editFormData.organization}
+                            onChange={handleInputChange}
+                          />
+                        </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="country">Country</Label>
-                        <Input
-                          id="country"
-                          name="country"
-                          value={editFormData.country}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="position">Position</Label>
+                          <Input
+                            id="position"
+                            name="position"
+                            value={editFormData.position}
+                            onChange={handleInputChange}
+                          />
+                        </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="organization">Organization</Label>
-                        <Input
-                          id="organization"
-                          name="organization"
-                          value={editFormData.organization}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="university_school">University/School</Label>
+                          <Input
+                            id="university_school"
+                            name="university_school"
+                            value={editFormData.university_school}
+                            onChange={handleInputChange}
+                          />
+                        </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="position">Position</Label>
-                        <Input
-                          id="position"
-                          name="position"
-                          value={editFormData.position}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="website_link">Website Link</Label>
+                          <Input
+                            id="website_link"
+                            name="website_link"
+                            value={editFormData.website_link}
+                            onChange={handleInputChange}
+                          />
+                        </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="university_school">University/School</Label>
-                        <Input
-                          id="university_school"
-                          name="university_school"
-                          value={editFormData.university_school}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                        <div className="border-t pt-4 mt-2">
+                          <h3 className="text-lg font-medium mb-4">Social Links</h3>
+                          <div className="grid gap-4">
+                            <div className="grid gap-2">
+                              <Label
+                                htmlFor="twitter"
+                                className="flex items-center gap-2"
+                              >
+                                <Twitter className="h-4 w-4" /> Twitter
+                              </Label>
+                              <Input
+                                id="twitter"
+                                name="twitter"
+                                value={editFormData.twitter}
+                                onChange={handleInputChange}
+                              />
+                            </div>
 
-                      <div className="grid gap-2">
-                        <Label htmlFor="website_link">Website Link</Label>
-                        <Input
-                          id="website_link"
-                          name="website_link"
-                          value={editFormData.website_link}
-                          onChange={handleInputChange}
-                        />
-                      </div>
+                            <div className="grid gap-2">
+                              <Label
+                                htmlFor="linkedin"
+                                className="flex items-center gap-2"
+                              >
+                                <Linkedin className="h-4 w-4" /> LinkedIn
+                              </Label>
+                              <Input
+                                id="linkedin"
+                                name="linkedin"
+                                value={editFormData.linkedin}
+                                onChange={handleInputChange}
+                              />
+                            </div>
 
-                      <div className="border-t pt-4 mt-2">
-                        <h3 className="text-lg font-medium mb-4">Social Links</h3>
-                        <div className="grid gap-4">
-                          <div className="grid gap-2">
-                            <Label
-                              htmlFor="twitter"
-                              className="flex items-center gap-2"
-                            >
-                              <Twitter className="h-4 w-4" /> Twitter
-                            </Label>
-                            <Input
-                              id="twitter"
-                              name="twitter"
-                              value={editFormData.twitter}
-                              onChange={handleInputChange}
-                            />
-                          </div>
+                            <div className="grid gap-2">
+                              <Label
+                                htmlFor="github"
+                                className="flex items-center gap-2"
+                              >
+                                <Github className="h-4 w-4" /> GitHub
+                              </Label>
+                              <Input
+                                id="github"
+                                name="github"
+                                value={editFormData.github}
+                                onChange={handleInputChange}
+                              />
+                            </div>
 
-                          <div className="grid gap-2">
-                            <Label
-                              htmlFor="linkedin"
-                              className="flex items-center gap-2"
-                            >
-                              <Linkedin className="h-4 w-4" /> LinkedIn
-                            </Label>
-                            <Input
-                              id="linkedin"
-                              name="linkedin"
-                              value={editFormData.linkedin}
-                              onChange={handleInputChange}
-                            />
-                          </div>
+                            <div className="grid gap-2">
+                              <Label
+                                htmlFor="facebook"
+                                className="flex items-center gap-2"
+                              >
+                                <Facebook className="h-4 w-4" /> Facebook
+                              </Label>
+                              <Input
+                                id="facebook"
+                                name="facebook"
+                                value={editFormData.facebook}
+                                onChange={handleInputChange}
+                              />
+                            </div>
 
-                          <div className="grid gap-2">
-                            <Label htmlFor="github" className="flex items-center gap-2">
-                              <Github className="h-4 w-4" /> GitHub
-                            </Label>
-                            <Input
-                              id="github"
-                              name="github"
-                              value={editFormData.github}
-                              onChange={handleInputChange}
-                            />
-                          </div>
-
-                          <div className="grid gap-2">
-                            <Label
-                              htmlFor="facebook"
-                              className="flex items-center gap-2"
-                            >
-                              <Facebook className="h-4 w-4" /> Facebook
-                            </Label>
-                            <Input
-                              id="facebook"
-                              name="facebook"
-                              value={editFormData.facebook}
-                              onChange={handleInputChange}
-                            />
-                          </div>
-
-                          <div className="grid gap-2">
-                            <Label
-                              htmlFor="instagram"
-                              className="flex items-center gap-2"
-                            >
-                              <Instagram className="h-4 w-4" /> Instagram
-                            </Label>
-                            <Input
-                              id="instagram"
-                              name="instagram"
-                              value={editFormData.instagram}
-                              onChange={handleInputChange}
-                            />
+                            <div className="grid gap-2">
+                              <Label
+                                htmlFor="instagram"
+                                className="flex items-center gap-2"
+                              >
+                                <Instagram className="h-4 w-4" /> Instagram
+                              </Label>
+                              <Input
+                                id="instagram"
+                                name="instagram"
+                                value={editFormData.instagram}
+                                onChange={handleInputChange}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex justify-end gap-3 mt-6">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsEditModalOpen(false)}
-                          disabled={updating}
-                        >
-                          Cancel
-                        </Button>
-                        <Button type="submit" disabled={updating}>
-                          {updating ? 'Updating...' : 'Save Changes'}
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </div>
+                        <div className="flex justify-end gap-3 mt-6">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsEditModalOpen(false)}
+                            disabled={updating}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" disabled={updating}>
+                            {updating ? 'Updating...' : 'Save Changes'}
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
             </CardContent>
           </Card>
 

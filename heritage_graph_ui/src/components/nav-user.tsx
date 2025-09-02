@@ -1,16 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
-import {
-  IconCreditCard,
-  IconDotsVertical,
-  IconLogout,
-  IconNotification,
-  IconUserCircle,
-} from '@tabler/icons-react';
+import { IconDotsVertical, IconLogout, IconUserCircle } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -42,7 +36,36 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const { data: session, status } = useSession();
 
-  console.log('SESSION: ', session);
+  // 🔥 Initialize user in backend when logged in
+  useEffect(() => {
+    if (status === 'authenticated' && session?.accessToken) {
+      const initUser = async () => {
+        try {
+          const res = await fetch('http://localhost:8000/data/testthelogin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+            body: JSON.stringify({
+              name: user.name,
+              email: user.email,
+            }),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+          } else {
+            const data = await res.json();
+          }
+        } catch (err) {
+          console.error('Error initializing user:', err);
+        }
+      };
+
+      initUser();
+    }
+  }, [status, session, user]);
 
   return (
     <SidebarMenu>
@@ -109,10 +132,9 @@ export function NavUser({
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/dashboard/users/${session?.user?.username}`}
+                  href={`/dashboard/users/${session?.user?.username || ''}`}
                   className="flex items-center gap-2"
                 >
-                  {' '}
                   <IconUserCircle />
                   View Profile
                 </Link>
@@ -124,18 +146,6 @@ export function NavUser({
                   Account
                 </Link>
               </DropdownMenuItem>
-              {/* <DropdownMenuItem asChild>
-                <Link href="/dashboard/billing" className="flex items-center gap-2">
-                  <IconCreditCard />
-                  Billing
-                </Link>
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem asChild>
-                <Link href="/dashboard/notifications" className="flex items-center gap-2">
-                  <IconNotification />
-                  Notifications
-                </Link>
-              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>

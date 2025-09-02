@@ -206,7 +206,16 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   {
     accessorKey: 'contributor_username',
     header: 'Contributor',
-    cell: ({ row }) => row.original.contributor_username,
+    cell: ({ row }) => {
+      const username = row.original.contributor_username;
+      return (
+        <Link href={`/dashboard/users/${username}`}>
+          <Badge variant="secondary" className="cursor-pointer">
+            @{username}
+          </Badge>
+        </Link>
+      );
+    },
     enableColumnFilter: true,
     // filterFn: 'fuzzy',
   },
@@ -502,7 +511,7 @@ export function DataTable() {
             id={sortableId}
           >
             <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
+              <TableHeader className="bg-muted">
                 {/* Header Row */}
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
@@ -538,7 +547,7 @@ export function DataTable() {
                                 }`}
                                 value={(column.getFilterValue() as string) ?? ''}
                                 onChange={(e) => column.setFilterValue(e.target.value)}
-                                className="h-8 text-sm"
+                                className="h-10 text-sm"
                                 onClick={(e) => e.stopPropagation()}
                               />{' '}
                             </div>
@@ -551,7 +560,7 @@ export function DataTable() {
                   </TableRow>
                 ))}
               </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
+              <TableBody className="**:data-[slot=table-cell]:first:w-10">
                 {table.getRowModel().rows?.length ? (
                   <SortableContext
                     items={dataIds}
@@ -703,7 +712,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </Button>
         </HoverCardTrigger>
 
-        <HoverCardContent className="p-4 w-[500px] max-w-2xl space-y-3 rounded-2xl shadow-lg bg-background">
+        <HoverCardContent className="p-4 w-[500px] max-w-2xl space-y-3 rounded-xl shadow-lg bg-background">
           {/* Contributor row */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">

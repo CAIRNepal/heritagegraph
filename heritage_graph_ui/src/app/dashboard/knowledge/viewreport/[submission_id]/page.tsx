@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, ReactNode } from 'react';
+import { User, Hash, CheckCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
   Table,
@@ -109,16 +110,21 @@ function SubmissionLayout({
       {/* Header */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">{submission.title}</CardTitle>
-          <p className="text-sm text-gray-400">
-            <span className="font-medium">ID:</span> {submission.submission_id} |{' '}
-            <span className="font-medium">Contributor:</span>{' '}
-            {submission.contributor_username} |{' '}
-            <span className="font-medium">Status:</span> {submission.status}
+          <CardTitle>{submission.title}</CardTitle>
+          <p>
+            <Badge>
+              <User size={14} className="inline mr-1" />
+              {submission.contributor_username}
+            </Badge>{' '}
+            {'  '}
+            {/* <Hash size={14} className="inline mr-1" />
+          {submission.submission_id} {" "} <br/> */}
+            <CheckCircle size={14} className="inline mr-1" />
+            {submission.status}
           </p>
         </CardHeader>
         <CardContent>
-          <p className="">{submission.description}</p>
+          <p>{submission.description}</p>
         </CardContent>
       </Card>
 
@@ -234,10 +240,10 @@ export default function SubmissionPage({ params }: PageProps) {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        {/* <TableRow>
                           <TableHead className="w-1/3">Field</TableHead>
                           <TableHead>Value</TableHead>
-                        </TableRow>
+                        </TableRow> */}
                       </TableHeader>
                       <TableBody>
                         {remainingFields.map(([key, value]) => (
