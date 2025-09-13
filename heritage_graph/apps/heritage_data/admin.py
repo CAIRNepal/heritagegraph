@@ -7,6 +7,7 @@ from .models import (
     CulturalHeritage,
     Media,
     Moderation,
+    Notification,
     Submission,
     SubmissionEditSuggestion,
     SubmissionVersion,
@@ -201,6 +202,31 @@ class UserStatsAdmin(admin.ModelAdmin):
     )
     search_fields = ("user__username",)
     readonly_fields = ("updated_at",)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = (
+        "notification_id",
+        "user",
+        "notification_type",
+        "submission",
+        "is_read",
+        "created_at",
+    )
+    list_filter = ("notification_type", "is_read", "created_at")
+    search_fields = ("notification_id", "user__username", "message")
+    ordering = ("-created_at",)
+    readonly_fields = ("notification_id", "created_at")
+
+    # mark as read action
+    actions = ["mark_as_read"]
+
+    def mark_as_read(self, request, queryset):
+        updated_count = queryset.update(is_read=True)
+        self.message_user(request, f"{updated_count} notifications marked as read.")
+
+    mark_as_read.short_description = "Mark selected notifications as read"
 
 
 # Register all models with their respective admin classes

@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from "next/link";
+import Link from 'next/link';
 import {
   IconCamera,
   IconChartBar,
@@ -163,38 +163,38 @@ const data = {
 
   navKnowledgebase: [
     {
-      name: 'Monuments',
+      name: 'Interpretations',
       url: '/dashboard/knowledge/monuments',
       icon: IconBuilding,
     },
     {
-      name: 'Artifacts',
+      name: 'Sources',
       url: '/dashboard/knowledge/artifacts',
       icon: IconFolder,
     },
     {
-      name: 'Festivals & Rituals',
+      name: 'Composite Objects',
       url: '/dashboard/knowledge/festivals',
       icon: IconHistory,
     },
     {
-      name: 'Performing Arts',
+      name: 'Object Attributes',
       url: '/dashboard/knowledge/performing-arts',
       icon: IconMusic,
     },
     {
-      name: 'Languages & Literature',
+      name: 'Versions',
       url: '/dashboard/knowledge/literature',
       icon: IconBook,
     },
     {
-      name: 'People & Lineages',
+      name: 'Exhibitions',
       url: '/dashboard/knowledge/people',
       icon: IconUsers,
     },
-    { name: 'Places', url: '/dashboard/knowledge/places', icon: IconMap },
+    { name: 'Cultures', url: '/dashboard/knowledge/places', icon: IconMap },
     {
-      name: 'Intangible Heritage',
+      name: 'Functions',
       url: '/dashboard/knowledge/intangible',
       icon: IconGlobe,
     },
@@ -251,10 +251,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <Link href="/">
-                {/* <IconInnerShadowTop className="!size-10" /> */}
-                <span className="text-base font-semibold">HeritageGraph</span>
-              </Link>
+              {/* <Link href="/"> */}
+              {/* <IconInnerShadowTop className="!size-10" /> */}
+              {/* <span className="text-base font-semibold">HeritageGraph</span> */}
+              {/* </Link> */}
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

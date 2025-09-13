@@ -4,7 +4,14 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowDown, MessageSquare, Share, MoreHorizontal } from 'lucide-react';
+import {
+  ArrowUp,
+  ArrowDown,
+  MessageSquare,
+  ChevronRight,
+  ChevronDown,
+  ChevronLeft,
+} from 'lucide-react';
 
 interface Comment {
   id: number;
@@ -26,6 +33,7 @@ interface CommentSectionProps {
 
 export default function CommentSection({ comments, setComments }: CommentSectionProps) {
   const [newComment, setNewComment] = useState('');
+  const [focusedComment, setFocusedComment] = useState<Comment | null>(null);
 
   const addComment = () => {
     if (!newComment.trim()) return;
@@ -46,7 +54,6 @@ export default function CommentSection({ comments, setComments }: CommentSection
     const updateVotes = (comments: Comment[]): Comment[] =>
       comments.map((comment) => {
         if (comment.id === id) {
-          // User is changing their vote
           if (comment.userVote === direction) {
             return {
               ...comment,
@@ -55,9 +62,7 @@ export default function CommentSection({ comments, setComments }: CommentSection
                 direction === 'down' ? comment.downvotes - 1 : comment.downvotes,
               userVote: null,
             };
-          }
-          // User is voting opposite of previous vote
-          else if (comment.userVote) {
+          } else if (comment.userVote) {
             return {
               ...comment,
               upvotes: direction === 'up' ? comment.upvotes + 1 : comment.upvotes - 1,
@@ -65,9 +70,7 @@ export default function CommentSection({ comments, setComments }: CommentSection
                 direction === 'down' ? comment.downvotes + 1 : comment.downvotes - 1,
               userVote: direction,
             };
-          }
-          // User is voting for the first time
-          else {
+          } else {
             return {
               ...comment,
               upvotes: direction === 'up' ? comment.upvotes + 1 : comment.upvotes,
@@ -77,9 +80,8 @@ export default function CommentSection({ comments, setComments }: CommentSection
             };
           }
         }
-        if (comment.replies) {
+        if (comment.replies)
           return { ...comment, replies: updateVotes(comment.replies) };
-        }
         return comment;
       });
     setComments(updateVotes(comments));
@@ -110,29 +112,46 @@ export default function CommentSection({ comments, setComments }: CommentSection
     setComments(recursiveAdd(comments));
   };
 
+  const displayedComments = focusedComment ? [focusedComment] : comments;
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center space-x-2">
-        <h2 className="text-xl font-semibold">Comments</h2>
-        <span className="text-sm text-gray-500">• Sorted by: Top</span>
+        {focusedComment && (
+          <button
+            className="flex items-center space-x-1 text-gray-500"
+            onClick={() => setFocusedComment(null)}
+          >
+            <ChevronLeft size={16} />
+            <span>Back</span>
+          </button>
+        )}
+        <h2 className="text-xl font-semibold">
+          {focusedComment ? 'Replies' : 'Comments'}
+        </h2>
+        {!focusedComment && (
+          <span className="text-sm text-gray-500">• Sorted by: Top</span>
+        )}
       </div>
 
       {/* Input */}
-      <div className="flex space-x-2">
-        <Input
-          placeholder="What are your thoughts?"
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          className="flex-1"
-        />
-        <Button onClick={addComment}>Comment</Button>
-      </div>
+      {!focusedComment && (
+        <div className="flex space-x-2">
+          <Input
+            placeholder="What are your thoughts?"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            className="flex-1"
+          />
+          <Button onClick={addComment}>Comment</Button>
+        </div>
+      )}
 
-      {/* List */}
+      {/* Comments List */}
       <div className="space-y-4 mt-4">
         <AnimatePresence>
-          {comments.map((comment) => (
+          {displayedComments.map((comment) => (
             <motion.div
               key={comment.id}
               initial={{ opacity: 0, y: 15 }}
@@ -145,6 +164,7 @@ export default function CommentSection({ comments, setComments }: CommentSection
                 vote={vote}
                 addReply={addReply}
                 level={0}
+                onFocus={(c) => setFocusedComment(c)}
               />
             </motion.div>
           ))}
@@ -159,119 +179,120 @@ function CommentThread({
   vote,
   addReply,
   level,
+  onFocus,
 }: {
   comment: Comment;
   vote: (id: number, direction: 'up' | 'down') => void;
   addReply: (parentId: number, replyText: string) => void;
   level: number;
+  onFocus: (c: Comment) => void;
 }) {
   const [reply, setReply] = useState('');
   const [showReplyBox, setShowReplyBox] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [showReplies, setShowReplies] = useState(false);
 
   return (
-    <div className={`flex ${level > 0 ? 'ml-6 pl-2 border-l-2 border-gray-100' : ''}`}>
-      {/* Vote buttons */}
-      <div className="flex flex-col items-center mr-2 w-8">
-        <button
-          onClick={() => vote(comment.id, 'up')}
-          className={`${comment.userVote === 'up' ? 'text-orange-500' : 'text-gray-400 hover:text-orange-500'}`}
-        >
-          <ArrowUp size={16} />
-        </button>
-        <span className="text-xs font-medium my-1">
-          {comment.upvotes - comment.downvotes}
-        </span>
-        <button
-          onClick={() => vote(comment.id, 'down')}
-          className={`${comment.userVote === 'down' ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'}`}
-        >
-          <ArrowDown size={16} />
-        </button>
-      </div>
-
-      {/* Comment content */}
-      <div className="flex-1">
-        <div className="flex items-center space-x-1 text-xs text-gray-500">
-          <span
-            className={`font-medium ${comment.isModerator ? 'text-green-600' : ''}`}
+    <div className={`${level > 0 ? 'ml-6 border-l-2 border-gray-200 pl-4' : ''}`}>
+      {/* Vote + Content */}
+      <div className="flex space-x-2">
+        <div className="flex flex-col items-center w-10 shrink-0">
+          <button
+            onClick={() => vote(comment.id, 'up')}
+            className={`p-1 rounded ${comment.userVote === 'up' ? 'text-green-600 bg-green-100' : 'text-gray-400 hover:text-green-600'}`}
           >
-            {comment.author}
-          </span>
-          {comment.isModerator && (
-            <span className="px-1 py-0.5 bg-green-100 text-green-600 rounded text-xs">
-              MOD
-            </span>
-          )}
-          {comment.isTopPoster && (
-            <span className="px-1 py-0.5 bg-orange-100 text-orange-600 rounded text-xs">
-              Top 1% Poster
-            </span>
-          )}
-          <span>•</span>
-          <span>{comment.timestamp}</span>
+            <ArrowUp size={18} />
+          </button>
+          <span className="text-sm font-semibold my-1">{comment.upvotes}</span>
+          <button
+            onClick={() => vote(comment.id, 'down')}
+            className={`p-1 rounded ${comment.userVote === 'down' ? 'text-red-600 bg-red-100' : 'text-gray-400 hover:text-red-600'}`}
+          >
+            <ArrowDown size={18} />
+          </button>
+          <span className="text-sm font-semibold my-1">{comment.downvotes}</span>
         </div>
 
-        {!collapsed && (
-          <>
-            <p className="mt-1 text-sm">{comment.content}</p>
-            <div className="flex space-x-4 mt-1 text-xs text-gray-500">
+        <div className="flex-1">
+          <div className="flex items-center space-x-1 text-xs text-gray-500">
+            <span
+              className={`font-medium ${comment.isModerator ? 'text-green-600' : ''}`}
+            >
+              {comment.author}
+            </span>
+            {comment.isModerator && (
+              <span className="px-1 py-0.5 bg-green-100 text-green-600 rounded text-xs">
+                MOD
+              </span>
+            )}
+            {comment.isTopPoster && (
+              <span className="px-1 py-0.5 bg-orange-100 text-orange-600 rounded text-xs">
+                Top 1% Poster
+              </span>
+            )}
+            <span>•</span>
+            <span>{comment.timestamp}</span>
+          </div>
+
+          <p className="mt-1 text-sm">{comment.content}</p>
+
+          {/* Actions */}
+          <div className="flex space-x-4 mt-1 text-xs text-gray-500">
+            <button
+              className="flex items-center space-x-1 hover:bg-gray-100 px-1 py-0.5 rounded"
+              onClick={() => setShowReplyBox(!showReplyBox)}
+            >
+              <MessageSquare size={14} />
+              <span>Reply</span>
+            </button>
+            {comment.replies && comment.replies.length > 0 && (
               <button
                 className="flex items-center space-x-1 hover:bg-gray-100 px-1 py-0.5 rounded"
-                onClick={() => setShowReplyBox(!showReplyBox)}
+                onClick={() => onFocus(comment)}
               >
-                <MessageSquare size={14} />
-                <span>Reply</span>
+                <span>Show Replies ({comment.replies.length})</span>
               </button>
-              <button className="flex items-center space-x-1 hover:bg-gray-100 px-1 py-0.5 rounded">
-                <Share size={14} />
-                <span>Share</span>
-              </button>
-              <button className="flex items-center space-x-1 hover:bg-gray-100 px-1 py-0.5 rounded">
-                <MoreHorizontal size={14} />
-              </button>
-              <span className="text-xs text-gray-400">
-                {comment.upvotes} upvotes • {comment.downvotes} downvotes
-              </span>
-            </div>
-          </>
-        )}
-
-        {showReplyBox && !collapsed && (
-          <div className="mt-2 flex space-x-2">
-            <Input
-              placeholder="Write a reply..."
-              value={reply}
-              onChange={(e) => setReply(e.target.value)}
-              className="flex-1 text-sm h-8"
-            />
-            <Button
-              size="sm"
-              onClick={() => {
-                addReply(comment.id, reply);
-                setReply('');
-                setShowReplyBox(false);
-              }}
-            >
-              Reply
-            </Button>
+            )}
           </div>
-        )}
-
-        {comment.replies && comment.replies.length > 0 && !collapsed && (
-          <div className="mt-2 space-y-2">
-            {comment.replies.map((reply) => (
-              <CommentThread
-                key={reply.id}
-                comment={reply}
-                vote={vote}
-                addReply={addReply}
-                level={level + 1}
-              />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
+
+      {/* Reply Box */}
+      {showReplyBox && (
+        <div className="mt-2 flex space-x-2">
+          <Input
+            placeholder="Write a reply..."
+            value={reply}
+            onChange={(e) => setReply(e.target.value)}
+            className="flex-1 text-sm h-8"
+          />
+          <Button
+            size="sm"
+            onClick={() => {
+              addReply(comment.id, reply);
+              setReply('');
+              setShowReplyBox(false);
+            }}
+          >
+            Reply
+          </Button>
+        </div>
+      )}
+
+      {/* Nested Replies (only in focus) */}
+      {comment.replies && comment.replies.length > 0 && showReplies && (
+        <div className="mt-2 space-y-2">
+          {comment.replies.map((reply) => (
+            <CommentThread
+              key={reply.id}
+              comment={reply}
+              vote={vote}
+              addReply={addReply}
+              level={level + 1}
+              onFocus={onFocus}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

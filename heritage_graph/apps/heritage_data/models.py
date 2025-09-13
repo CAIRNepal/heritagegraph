@@ -401,3 +401,52 @@ def apply(self, reviewer):
     self.reviewed_at = timezone.now()
     self.reviewed_by = reviewer
     self.save()
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPE_CHOICES = [
+        ("submission_update", "Submission Update"),
+        ("comment", "Comment"),
+        ("moderation", "Moderation"),
+        ("suggestion_review", "Edit Suggestion Review"),
+        ("general", "General"),
+    ]
+
+    notification_id = models.CharField(
+        max_length=11, unique=True, blank=True, editable=False
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="notifications"
+    )
+    notification_type = models.CharField(
+        max_length=50, choices=NOTIFICATION_TYPE_CHOICES
+    )
+    submission = models.ForeignKey(
+        Submission,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
+    )
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.notification_id:
+            self.notification_id = self.generate_unique_notification_id()
+        super().save(*args, **kwargs)
+
+    def generate_unique_notification_id(self, length=11, max_attempts=100):
+        characters = string.ascii_letters + string.digits
+        for _ in range(max_attempts):
+            new_id = "".join(secrets.choice(characters) for _ in range(length))
+            if not Notification.objects.filter(notification_id=new_id).exists():
+                return new_id
+        raise Exception(
+            "Unable to generate a unique notification ID after many attempts."
+        )
+
+    def __str__(self):
+        status = "Read" if self.is_read else "Unread"
+        return f"Notification for {self.user.username} ({status}): {self.message[:50]}"

@@ -230,45 +230,47 @@ export default function SubmissionPage({ params }: PageProps) {
           <>
             {/* Metadata Table */}
             {remainingFields.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg font-semibold">
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Metadata Table */}
+                <Card className="flex-1 md:w-3/4">
+                  <CardHeader>
+                    {/* <CardTitle className="text-lg font-semibold">
                     Additional Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        {/* <TableRow>
-                          <TableHead className="w-1/3">Field</TableHead>
-                          <TableHead>Value</TableHead>
-                        </TableRow> */}
-                      </TableHeader>
-                      <TableBody>
-                        {remainingFields.map(([key, value]) => (
-                          <TableRow key={key}>
-                            <TableCell className="font-medium capitalize">
-                              {key.replace(/_/g, ' ')}
-                            </TableCell>
-                            <TableCell>{value?.toString()}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardTitle> */}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <Table>
+                        <TableHeader />
+                        <TableBody>
+                          {remainingFields.map(([key, value]) => (
+                            <TableRow key={key}>
+                              <TableCell className="font-medium capitalize">
+                                {key.replace(/_/g, ' ')}
+                              </TableCell>
+                              <TableCell>{value?.toString()}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Comments */}
+                <Card className="flex-1">
+                  <CardContent>
+                    <CommentSection comments={comments} setComments={setComments} />
+                  </CardContent>
+                </Card>
+              </div>
             )}
-            <Separator />
+            <Separator /> <Separator />
           </>
         );
       case 'comments':
         return (
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold">Comments</CardTitle>
-            </CardHeader>
             <CardContent>
               <CommentSection comments={comments} setComments={setComments} />
             </CardContent>

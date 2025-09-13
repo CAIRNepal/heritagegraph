@@ -434,7 +434,7 @@ export default function GraphPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xl flex items-center gap-2">
-                    <Network className="" /> Nepal Knowledge Graph
+                    <Network className="" /> KG Viewer
                   </CardTitle>
                   <CardDescription className="text-gray-600 dark:text-gray-400">
                     Explore relationships between entities

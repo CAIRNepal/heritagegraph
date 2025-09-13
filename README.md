@@ -107,8 +107,8 @@ python manage.py runserver
 
 Access the backend at:
 
-- API → [http://localhost:8000](http://localhost:8000)
-- Admin dashboard → [http://localhost:8000/admin](http://localhost:8000/admin) (use superuser credentials)
+- API → [http://37.27.182.103:8000](http://37.27.182.103:8000)
+- Admin dashboard → [http://37.27.182.103:8000/admin](http://37.27.182.103:8000/admin) (use superuser credentials)
 
 ---
 

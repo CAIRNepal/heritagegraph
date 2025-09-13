@@ -451,9 +451,9 @@ export default function ContributePage() {
   return (
     <>
       <Toaster richColors position="top-right" />
-      <div className="min-h-screen bg-muted/20 py-8">
-        <div className="container max-w-4xl mx-auto px-4">
-          <div className="mb-8 text-center">
+      <div className=" ">
+        <div className="container max-w-4xl mx-auto ">
+          <div className="mb-5 text-center">
             <h1 className="text-3xl font-bold tracking-tight">
               Cultural Heritage Contribution Form
             </h1>

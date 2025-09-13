@@ -15,13 +15,17 @@ RUN apt-get update && apt-get install -y \
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn  # install gunicorn
 
 # Copy backend source code
 COPY heritage_graph ./heritage_graph
 COPY manage.py .
 
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
 # Expose Django port
 EXPOSE 8000
 
-# Run Django dev server (replace with gunicorn in prod)
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Run Gunicorn
+CMD ["gunicorn", "heritage_graph.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
