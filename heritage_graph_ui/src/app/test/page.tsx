@@ -7,19 +7,19 @@ export default function Home() {
   const { data: session } = useSession();
 
   async function callDjango() {
-    // const res = await fetch('http://127.0.0.1:8000/data/testme/', {
-    //   headers: {
-    //     Authorization: `Bearer ${session?.accessToken}`,
-    //   },
-    // });
-    // const data = await res.json();
-    // console.log('Django says:', data);
-    // console.log('Session: ', session.accessToken);
+    const res = await fetch('http://127.0.0.1:8000/data/testme/', {
+      headers: {
+        Authorization: `Bearer ${session?.accessToken}`,
+      },
+    });
+    const data = await res.json();
+    console.log('Django says:', data);
+    console.log('Session: ', session.accessToken);
   }
 
   return (
     <div>
-      {/* {session ? (
+      {session ? (
         <>
           <p>Signed in as {session.user?.email}</p>
           <Button onClick={() => signOut()}>Sign out</Button>
@@ -27,7 +27,7 @@ export default function Home() {
         </>
       ) : (
         <Button onClick={() => signIn('keycloak')}>Sign in with Keycloak</Button>
-      )} */}
+      )}
     </div>
   );
 }
