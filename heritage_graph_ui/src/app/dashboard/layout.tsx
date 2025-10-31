@@ -1,6 +1,7 @@
 'use client';
 
-import { type Metadata } from 'next';
+import React from 'react';
+// import { type Metadata } from 'next';
 import { ReactNode } from 'react';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AppSidebar } from '@/app/dashboard/components/app-sidebar';
@@ -10,19 +11,19 @@ import { ThemeProvider } from 'next-themes';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 import { SessionProvider } from 'next-auth/react';
-import { useSession, signIn, signOut } from 'next-auth/react';
+// import { useSession, signIn, signOut } from 'next-auth/react';
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar';
+// import {
+//   Sidebar,
+//   SidebarContent,
+//   SidebarFooter,
+//   SidebarHeader,
+//   SidebarMenu,
+//   SidebarMenuButton,
+//   SidebarMenuItem,
+// } from '@/components/ui/sidebar';
 
-import { NavUser } from '@/components/nav-user';
+// import { NavUser } from '@/components/nav-user';
 
 import AuthButtons from '@/components/AuthButtons';
 

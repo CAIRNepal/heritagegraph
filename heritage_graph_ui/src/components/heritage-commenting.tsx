@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
@@ -8,8 +9,8 @@ import {
   ArrowUp,
   ArrowDown,
   MessageSquare,
-  ChevronRight,
-  ChevronDown,
+  // ChevronRight,
+  // ChevronDown,
   ChevronLeft,
 } from 'lucide-react';
 
@@ -189,7 +190,7 @@ function CommentThread({
 }) {
   const [reply, setReply] = useState('');
   const [showReplyBox, setShowReplyBox] = useState(false);
-  const [showReplies, setShowReplies] = useState(false);
+  const [showReplies] = useState(false);
 
   return (
     <div className={`${level > 0 ? 'ml-6 border-l-2 border-gray-200 pl-4' : ''}`}>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,6 @@ import { DataTable } from '@/components/heritage-table';
 
 export default function Page() {
   const { data: session } = useSession();
-  const [backendData, setBackendData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!session?.accessToken) return;
@@ -32,10 +30,8 @@ export default function Page() {
 
         const data = await res.json();
         console.log('Data: ', data);
-
-        setBackendData(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (_err: any) {
+        console.error('Error fetching backend data:', _err.message);
       }
     };
 
@@ -80,22 +76,6 @@ export default function Page() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Show backend response */}
-      {/* <Card className="rounded-2xl shadow-md">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Backend Data</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {error && <p className="text-red-500">Error: {error}</p>}
-          {!error && !backendData && <p>Loading data...</p>}
-          {backendData && (
-            <pre className="text-sm bg-gray-100 dark:bg-gray-900 p-2 rounded-md overflow-x-auto">
-              {JSON.stringify(backendData, null, 2)}
-            </pre>
-          )}
-        </CardContent>
-      </Card> */}
 
       {/* DataTable */}
       <DataTable />

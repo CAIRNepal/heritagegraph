@@ -38,7 +38,7 @@ export default function FeatureCard({
         className={`relative w-16 h-16 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center text-white mb-6 group-hover:shadow-lg transition-all duration-300`}
       >
         <motion.div
-          animate={{
+         animate={{
             y: [0, -3, 0],
             rotate: [0, 2, 0],
           }}

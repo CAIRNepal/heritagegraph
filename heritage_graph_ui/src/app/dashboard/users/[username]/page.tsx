@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -84,7 +85,7 @@ type UserData = {
 export default function UserPage() {
   const params = useParams();
   const username = params.username as string;
-  const { data: sessionData, status } = useSession();
+  const { data: sessionData } = useSession();
   const session = sessionData as CustomSession | null;
 
   const [user, setUser] = useState<UserData | null>(null);
@@ -409,7 +410,7 @@ export default function UserPage() {
                       <DialogHeader>
                         <DialogTitle>Edit Profile</DialogTitle>
                         <DialogDescription>
-                          Make changes to your profile here. Click save when you're
+                          Make changes to your profile here. Click save when you&apos;re
                           done.
                         </DialogDescription>
                       </DialogHeader>

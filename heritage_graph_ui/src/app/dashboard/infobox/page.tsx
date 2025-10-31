@@ -218,11 +218,11 @@ Banana plants are the world's largest herbaceous flowering plants...
             <div className="p-5 text-sm text-gray-700 dark:text-gray-300 space-y-3">
               <div className="pb-2 border-b border-gray-100 dark:border-gray-800 last:border-b-0 last:pb-0">
                 <p className="font-medium">2 Sept 2025</p>
-                <p className="text-gray-600 dark:text-gray-400">
-                  User{' '}
-                  <span className="text-blue-600 dark:text-blue-400">Editor42</span>{' '}
-                  added "Diseases" section.
-                </p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    User{' '}
+                    <span className="text-blue-600 dark:text-blue-400">Editor42</span>{' '}
+                    added &quot;Diseases&quot; section.
+                  </p>
               </div>
               <div className="pb-2 border-b border-gray-100 dark:border-gray-800 last:border-b-0 last:pb-0">
                 <p className="font-medium">28 Aug 2025</p>

@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 
-import {
-  DeviceActivity,
-  PersonalInfo,
-  savePersonalInfo,
-  useEnvironment,
-} from '@keycloak/keycloak-account-ui';
+// import {
+//   DeviceActivity,
+//   PersonalInfo,
+//   savePersonalInfo,
+//   useEnvironment,
+// } from '@keycloak/keycloak-account-ui';
 
 import {
   Card,

@@ -1,53 +1,54 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Input } from '@/components/ui/input';
 import {
-  IconChartBar,
-  IconDashboard,
-  IconUsers,
-  IconBell,
+  // IconChartBar,
+  // IconDashboard,
+  // IconUsers,
+  // IconBell,
   IconSearch,
 } from '@tabler/icons-react';
-import AuthButtons from '@/components/AuthButtons';
-import { ThemeToggle } from './theme-toggle';
+// import AuthButtons from '@/components/AuthButtons';
+// import { ThemeToggle } from './theme-toggle';
 
-const data = {
-  user: {
-    name: 'nabin2004',
-    email: 'nabin.oli@cair-nepal.org',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  navMain: [
-    {
-      title: 'Dashboard',
-      url: '/dashboard',
-      icon: IconDashboard,
-    },
-    {
-      title: 'Leaderboard',
-      url: '/dashboard/leaderboard',
-      icon: IconChartBar,
-    },
-    {
-      title: 'Form',
-      url: '/dashboard/contribute',
-      icon: IconChartBar,
-    },
-    {
-      title: 'Notification',
-      url: '/dashboard/notification',
-      icon: IconBell,
-    },
-    // {
-    //   title: 'Team',
-    //   url: '/dashboard/team',
-    //   icon: IconUsers,
-    // },
-  ],
-};
+// const data = {
+//   user: {
+//     name: 'nabin2004',
+//     email: 'nabin.oli@cair-nepal.org',
+//     avatar: '/avatars/shadcn.jpg',
+//   },
+//   navMain: [
+//     {
+//       title: 'Dashboard',
+//       url: '/dashboard',
+//       icon: IconDashboard,
+//     },
+//     {
+//       title: 'Leaderboard',
+//       url: '/dashboard/leaderboard',
+//       icon: IconChartBar,
+//     },
+//     {
+//       title: 'Form',
+//       url: '/dashboard/contribute',
+//       icon: IconChartBar,
+//     },
+//     {
+//       title: 'Notification',
+//       url: '/dashboard/notification',
+//       icon: IconBell,
+//     },
+//     // {
+//     //   title: 'Team',
+//     //   url: '/dashboard/team',
+//     //   icon: IconUsers,
+//     // },
+//   ],
+// };
 
 export function SiteHeader() {
   const [searchQuery, setSearchQuery] = useState('');

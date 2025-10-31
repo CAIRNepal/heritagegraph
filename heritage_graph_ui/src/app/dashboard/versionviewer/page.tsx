@@ -34,7 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Plus,
   Search,
@@ -47,15 +47,15 @@ import {
   History,
   ChevronDown,
   ChevronRight,
-  Download,
-  Upload,
-  Filter,
+  // Download,
+  // Upload,
+  // Filter,
   BarChart3,
   Copy,
-  Trash2,
-  Star,
+  // Trash2,
+  // Star,
   MoreHorizontal,
-  ExternalLink,
+  // ExternalLink,
 } from 'lucide-react';
 
 type FormVersion = {
@@ -170,9 +170,9 @@ const CustomNode = ({ data }: { data: any }) => {
     <div className="px-4 py-3 shadow-md rounded-md bg-white border border-gray-200 min-w-[240px] hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between">
         <div className="font-bold text-sm">{data.label}</div>
-        <Badge className={`text-xs ${statusColors[data.status]}`}>
-          {data.status.replace('_', ' ')}
-        </Badge>
+          <Badge className={`text-xs ${statusColors[data.status as keyof typeof statusColors]}`}>
+            {data.status.replace('_', ' ')}
+          </Badge>
       </div>
       <div className="mt-2 text-xs text-gray-600">
         {data.contributor && (

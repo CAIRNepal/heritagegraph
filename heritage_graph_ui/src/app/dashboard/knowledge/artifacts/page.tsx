@@ -7,7 +7,8 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import data from './data.json';
+// import data from './data.json';
+
 
 export default function Page() {
   return (
@@ -57,7 +58,7 @@ export default function Page() {
 
       {/* Data Table */}
       <div className="mt-4">
-        <DataTable data={data} />
+        <DataTable />
       </div>
     </div>
   );

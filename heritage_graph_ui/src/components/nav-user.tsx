@@ -54,9 +54,9 @@ export function NavUser({
           });
 
           if (!res.ok) {
-            const err = await res.json();
+            // const err = await res.json();
           } else {
-            const data = await res.json();
+            // const data = await res.json();
           }
         } catch (err) {
           console.error('Error initializing user:', err);

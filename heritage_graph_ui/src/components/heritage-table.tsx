@@ -27,8 +27,8 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconCircleCheckFilled,
-  IconDotsVertical,
+  // IconCircleCheckFilled,
+  // IconDotsVertical,
   IconGripVertical,
   IconLayoutColumns,
   IconLoader,
@@ -51,7 +51,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+// import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
@@ -59,10 +59,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
+  // ChartConfig,
+  // ChartContainer,
+  // ChartTooltip,
+  // ChartTooltipContent,
 } from '@/components/ui/chart';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -73,14 +73,14 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
+  // DrawerTrigger,
 } from '@/components/ui/drawer';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
+  // DropdownMenuItem,
+  // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -109,7 +109,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-import { useSession } from 'next-auth/react';
+// import { useSession } from 'next-auth/react';
 
 // Updated schema to match the new data structure
 export const schema = z.object({
@@ -669,32 +669,32 @@ export function DataTable() {
   );
 }
 
-const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 },
-];
+// const chartData = [
+//   { month: 'January', desktop: 186, mobile: 80 },
+//   { month: 'February', desktop: 305, mobile: 200 },
+//   { month: 'March', desktop: 237, mobile: 120 },
+//   { month: 'April', desktop: 73, mobile: 190 },
+//   { month: 'May', desktop: 209, mobile: 130 },
+//   { month: 'June', desktop: 214, mobile: 140 },
+// ];
 
-const chartConfig = {
-  desktop: {
-    label: 'Desktop',
-    color: 'var(--primary)',
-  },
-  mobile: {
-    label: 'Mobile',
-    color: 'var(--primary)',
-  },
-} satisfies ChartConfig;
+// const chartConfig = {
+//   desktop: {
+//     label: 'Desktop',
+//     color: 'var(--primary)',
+//   },
+//   mobile: {
+//     label: 'Mobile',
+//     color: 'var(--primary)',
+//   },
+// } satisfies ChartConfig;
 import { useState } from 'react';
-import { Bluetooth } from 'lucide-react';
+// import { Bluetooth } from 'lucide-react';
 
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile();
   const [open, setOpen] = useState(false); // control drawer manually
-  const { data: session, status } = useSession();
+  // const { data: session, status } = useSession();
 
   return (
     <>

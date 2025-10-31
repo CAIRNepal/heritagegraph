@@ -1,7 +1,7 @@
 import { DataTable } from '@/components/heritage-table';
-import { SectionCards } from '@/app/dashboard/components/section-cards';
+// import { SectionCards } from '@/app/dashboard/components/section-cards';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import data from './data.json';
+// import data from './data.json';
 import { Leaderboard } from '../../components/leaderboard-card';
 
 export default function ContributorsPage() {

@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo, ReactNode } from 'react';
-import { User, Hash, CheckCircle } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { useState, useEffect, ReactNode } from 'react';
+import { User, CheckCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from '@/components/ui/table';
 import {
@@ -21,7 +20,8 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import CommentSection from '@/components/heritage-commenting';
+// import CommentSection from '@/components/heritage-commenting';
+
 import {
   DndContext,
   closestCenter,
@@ -54,18 +54,11 @@ interface Comment {
 }
 
 interface SubmissionLayoutProps {
-  submissionId: string;
   submission: Submission;
   commentsCount?: number;
   children: ReactNode;
   currentTab: string;
   onTabChange: (tab: string) => void;
-}
-
-interface PageProps {
-  params: {
-    submission_id: string;
-  };
 }
 
 const SHOWN_KEYS = [
@@ -82,25 +75,21 @@ const SHOWN_KEYS = [
 ];
 
 function SubmissionLayout({
-  submissionId,
   submission,
   commentsCount = 0,
   children,
   currentTab,
   onTabChange,
 }: SubmissionLayoutProps) {
-  // Drag and drop sensors
   const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {}),
+    useSensor(MouseSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor),
   );
 
-  // Drag end handler for reordering tabs
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
-      // Handle tab reordering logic here
       console.log('Tab reordered from', active.id, 'to', over.id);
     }
   }
@@ -116,11 +105,7 @@ function SubmissionLayout({
               <User size={14} className="inline mr-1" />
               {submission.contributor_username}
             </Badge>{' '}
-            {'  '}
-            {/* <Hash size={14} className="inline mr-1" />
-          {submission.submission_id} {" "} <br/> */}
-            <CheckCircle size={14} className="inline mr-1" />
-            {submission.status}
+            <CheckCircle size={14} className="inline mr-1" /> {submission.status}
           </p>
         </CardHeader>
         <CardContent>
@@ -172,17 +157,22 @@ function SubmissionLayout({
   );
 }
 
-export default function SubmissionPage({ params }: PageProps) {
+export default function SubmissionPage() {
+  const params = useParams<{ submission_id: string }>();
+  const submissionId = params?.submission_id;
   const [submission, setSubmission] = useState<Submission | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [currentTab, setCurrentTab] = useState('outline');
+
   const API_BASE =
     process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/data/submissions';
 
   useEffect(() => {
+    if (!submissionId) return;
+
     const fetchSubmission = async () => {
       try {
-        const res = await fetch(`${API_BASE}/${params.submission_id}/`);
+        const res = await fetch(`${API_BASE}/${submissionId}/`);
         if (!res.ok) throw new Error(`Failed to fetch submission: ${res.status}`);
         const data = await res.json();
         setSubmission(data);
@@ -193,7 +183,7 @@ export default function SubmissionPage({ params }: PageProps) {
 
     const fetchComments = async () => {
       try {
-        const res = await fetch(`${API_BASE}/${params.submission_id}/comments/`);
+        const res = await fetch(`${API_BASE}/${submissionId}/comments/`);
         if (!res.ok) throw new Error(`Failed to fetch comments: ${res.status}`);
         const data = await res.json();
         const transformed = data.map((comment: any) => ({
@@ -212,7 +202,7 @@ export default function SubmissionPage({ params }: PageProps) {
 
     fetchSubmission();
     fetchComments();
-  }, [params.submission_id, API_BASE]);
+  }, [submissionId, API_BASE]);
 
   if (!submission) {
     return <div className="p-6 text-center text-gray-500">Loading submission...</div>;
@@ -222,26 +212,17 @@ export default function SubmissionPage({ params }: PageProps) {
     ([key, value]) => !SHOWN_KEYS.includes(key) && value && value !== 'N/A',
   );
 
-  // Render different content based on the current tab
   const renderTabContent = () => {
     switch (currentTab) {
       case 'outline':
         return (
           <>
-            {/* Metadata Table */}
             {remainingFields.length > 0 && (
               <div className="flex flex-col md:flex-row gap-4">
-                {/* Metadata Table */}
                 <Card className="flex-1 md:w-3/4">
-                  <CardHeader>
-                    {/* <CardTitle className="text-lg font-semibold">
-                    Additional Details
-                  </CardTitle> */}
-                  </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
                       <Table>
-                        <TableHeader />
                         <TableBody>
                           {remainingFields.map(([key, value]) => (
                             <TableRow key={key}>
@@ -256,11 +237,9 @@ export default function SubmissionPage({ params }: PageProps) {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Comments */}
                 <Card className="flex-1">
                   <CardContent>
-                    <CommentSection comments={comments} setComments={setComments} />
+                    {/* <CommentSection comments={comments} setComments={setComments} /> */}
                   </CardContent>
                 </Card>
               </div>
@@ -272,7 +251,7 @@ export default function SubmissionPage({ params }: PageProps) {
         return (
           <Card>
             <CardContent>
-              <CommentSection comments={comments} setComments={setComments} />
+              {/* <CommentSection comments={comments} setComments={setComments} /> */}
             </CardContent>
           </Card>
         );
@@ -280,7 +259,7 @@ export default function SubmissionPage({ params }: PageProps) {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">Revisions</CardTitle>
+              <CardTitle>Revisions</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-500">Revision history will be displayed here.</p>
@@ -291,7 +270,7 @@ export default function SubmissionPage({ params }: PageProps) {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">Flags</CardTitle>
+              <CardTitle>Flags</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-500">Flagged issues will be displayed here.</p>
@@ -302,7 +281,7 @@ export default function SubmissionPage({ params }: PageProps) {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-semibold">Activity</CardTitle>
+              <CardTitle>Activity</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-500">Activity log will be displayed here.</p>
@@ -316,7 +295,6 @@ export default function SubmissionPage({ params }: PageProps) {
 
   return (
     <SubmissionLayout
-      submissionId={params.submission_id}
       submission={submission}
       commentsCount={comments.length}
       currentTab={currentTab}

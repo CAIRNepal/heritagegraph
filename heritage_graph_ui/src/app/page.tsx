@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 // import {
 //   ClerkProvider,
 //   SignInButton,
@@ -20,7 +20,7 @@ import {
   AccordionContent,
 } from '@/components/ui/accordion';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { NavigationMenu, NavigationMenuItem } from '@/components/ui/navigation-menu';
+// import { NavigationMenu, NavigationMenuItem } from '@/components/ui/navigation-menu';
 import {
   Menu,
   Star,
@@ -104,7 +104,7 @@ export default function Home() {
   const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [0.95, 1]);
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, -100]);
   // const { isSignedIn } = useAuth(); // client-side auth check
-  const router = useRouter();
+  // const router = useRouter();
 
   // useEffect(() => {
   //   if (!isSignedIn) router.push('/sign-in'); // redirect client-side if not signed in
@@ -315,7 +315,7 @@ export default function Home() {
                 className="text-xl text-blue-700 max-w-3xl mx-auto"
               >
                 From centuries-old temples to rare manuscripts, we document and digitize
-                Nepal's diverse cultural assets using cutting-edge knowledge graph
+                Nepal&apos;s diverse cultural assets using cutting-edge knowledge graph
                 technology.
               </motion.p>
             </motion.div>
@@ -327,7 +327,7 @@ export default function Home() {
               variants={staggerContainer}
               className="grid md:grid-cols-3 gap-8"
             >
-              {preservationItems.map((item, index) => (
+              {preservationItems.map((item) => (
                 <motion.div
                   key={item.title}
                   variants={scaleIn}
@@ -379,13 +379,13 @@ export default function Home() {
                 variants={fadeInUp}
                 className="text-xl text-blue-800 max-w-4xl mx-auto leading-relaxed"
               >
-                Whether you're a researcher, student, or local expert, your insights are
+                Whether you&apos;re a researcher, student, or local expert, your insights are
                 valuable in helping us build a richer and more reliable cultural
                 knowledge graph. We actively welcome interdisciplinary research on — or
                 built upon — the HeritageGraph platform.
               </motion.p>
               <motion.p variants={fadeInUp} className="text-lg text-blue-700">
-                If you're interested in collaborating, feel free to reach out to
+                If you&apos;re interested in collaborating, feel free to reach out to
                 CAIR-Nepal.
               </motion.p>
               <motion.div
@@ -480,7 +480,7 @@ export default function Home() {
                 variants={fadeInUp}
                 className="text-xl text-blue-800 max-w-2xl mx-auto"
               >
-                Help us safeguard Nepal's intangible and tangible heritage — digitally,
+                Help us safeguard Nepal&apos;s intangible and tangible heritage — digitally,
                 collaboratively.
               </motion.p>
               <motion.div variants={fadeInUp}>
@@ -550,7 +550,7 @@ export default function Home() {
                       answer:
                         'The license for HeritageGraph has not yet been finalized, but we intend to choose one that balances community benefits with the future interests of CAIR.',
                     },
-                  ].map((item, index) => (
+                  ].map((item) => (
                     <AccordionItem
                       key={item.value}
                       value={item.value}

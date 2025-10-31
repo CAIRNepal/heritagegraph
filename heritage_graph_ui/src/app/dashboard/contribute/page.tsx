@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Card,
@@ -32,6 +33,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
+// --- TYPES ---
 type EntityType =
   | 'Historical Figure'
   | 'Temple'
@@ -47,12 +49,26 @@ type UploadedFile = {
   id: string;
 };
 
+// --- CONSTANTS ---
+const mockEntities = [
+  'Bhaktapur Durbar Square',
+  'Patan Durbar Square',
+  'Swayambhunath',
+  'Pashupatinath',
+  'Lumbini',
+  'Kathmandu Valley',
+  'Gurkha',
+  'Newari Culture',
+  'Kumari',
+];
+
+// --- COMPONENT ---
 export default function ContributePage() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const isSignedIn = status === 'authenticated';
 
-  // Step 0: Basic contact + entity selection
+  // Basic contact + entity selection
   const [contributorName, setContributorName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -60,7 +76,7 @@ export default function ContributePage() {
   const [otherEntityType, setOtherEntityType] = useState('');
   const [modeFieldBased, setModeFieldBased] = useState(true);
 
-  // Field-based fields (dynamic)
+  // Field-based fields
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dateOrEra, setDateOrEra] = useState('');
@@ -75,18 +91,7 @@ export default function ContributePage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // Related entities autocomplete (mock data)
-  const mockEntities = [
-    'Bhaktapur Durbar Square',
-    'Patan Durbar Square',
-    'Swayambhunath',
-    'Pashupatinath',
-    'Lumbini',
-    'Kathmandu Valley',
-    'Gurkha',
-    'Newari Culture',
-    'Kumari',
-  ];
+  // Related entities autocomplete
   const [relatedQuery, setRelatedQuery] = useState('');
   const [relatedResults, setRelatedResults] = useState<string[]>([]);
   const [relatedSelected, setRelatedSelected] = useState<string[]>([]);
@@ -94,7 +99,6 @@ export default function ContributePage() {
   // Form state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Entity options
   const entityOptions: EntityType[] = [
     'Historical Figure',
     'Temple',
@@ -105,7 +109,7 @@ export default function ContributePage() {
     'Other',
   ];
 
-  // Filter related entities based on query
+  // --- EFFECTS ---
   useEffect(() => {
     if (!relatedQuery.trim()) {
       setRelatedResults([]);
@@ -117,11 +121,9 @@ export default function ContributePage() {
     setRelatedResults(filtered);
   }, [relatedQuery]);
 
-  // Handle file uploads
+  // --- FUNCTIONS ---
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
-
-    const newUploads: UploadedFile[] = [];
 
     Array.from(files).forEach((file) => {
       if (file.size > 10 * 1024 * 1024) {
@@ -147,70 +149,58 @@ export default function ContributePage() {
     setUploads((prev) => prev.filter((upload) => upload.id !== id));
   };
 
-  // Handle drag and drop events
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
   };
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     handleFiles(e.dataTransfer.files);
   };
 
-  // Multi-select related entities
   const addRelated = (label: string) => {
     if (!relatedSelected.includes(label)) {
       setRelatedSelected((prev) => [...prev, label]);
     }
     setRelatedQuery('');
   };
-
   const removeRelated = (label: string) => {
     setRelatedSelected((prev) => prev.filter((s) => s !== label));
   };
 
-  // Form validation
   const validate = () => {
     if (!contributorName.trim()) {
       toast.error('Please enter your name.');
       return false;
     }
-
     if (!email.trim() && !phone.trim()) {
       toast.error('Provide at least an email or phone for contact.');
       return false;
     }
-
     if (email.trim() && !/^\S+@\S+\.\S+$/.test(email.trim())) {
       toast.error('Please enter a valid email address.');
       return false;
     }
-
     if (modeFieldBased) {
       if (!title.trim()) {
-        toast.error('Please provide the Name/Title for the field-based contribution.');
+        toast.error('Please provide a Name/Title for the contribution.');
         return false;
       }
       if (!description.trim()) {
-        toast.error('Please provide a Description for the field-based contribution.');
+        toast.error('Please provide a Description for the contribution.');
         return false;
       }
     } else {
       if (!paragraphText.trim() || paragraphText.trim().length < 20) {
-        toast.error(
-          'Please provide a substantial paragraph-based contribution (20+ chars).',
-        );
+        toast.error('Please provide a detailed paragraph (20+ chars).');
         return false;
       }
     }
-
     return true;
   };
 
@@ -249,8 +239,6 @@ export default function ContributePage() {
     setIsSubmitting(true);
     try {
       const payload = await buildPayload();
-
-      // @ts-ignore
       const token = (session as any)?.accessToken;
 
       const res = await fetch('http://127.0.0.1:8000/data/form-submit/', {
@@ -279,377 +267,373 @@ export default function ContributePage() {
     }
   };
 
-  // Render field-based form section
-  const renderFieldBased = () => {
-    return (
-      <div className="grid grid-cols-1 gap-6">
+  // --- RENDER FIELD-BASED FORM ---
+  const renderFieldBased = () => (
+    <div className="grid grid-cols-1 gap-6">
+      <div>
+        <Label htmlFor="title">Name / Title *</Label>
+        <Input
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="E.g. Bhaktapur Durbar Square"
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="description">Description *</Label>
+        <Textarea
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Provide a detailed description..."
+          rows={4}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="title">Name / Title *</Label>
+          <Label htmlFor="dateOrEra">Date / Era</Label>
           <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="E.g. Bhaktapur Durbar Square"
+            id="dateOrEra"
+            value={dateOrEra}
+            onChange={(e) => setDateOrEra(e.target.value)}
+            placeholder="E.g. 17th century or c. 1600s"
           />
         </div>
-
         <div>
-          <Label htmlFor="description">Description *</Label>
-          <Textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Provide a detailed description..."
-            rows={4}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="dateOrEra">Date / Era</Label>
-            <Input
-              id="dateOrEra"
-              value={dateOrEra}
-              onChange={(e) => setDateOrEra(e.target.value)}
-              placeholder="E.g. 17th century or c. 1600s"
-            />
-          </div>
-          <div>
-            <Label htmlFor="locationRegion">Location / Region</Label>
-            <Input
-              id="locationRegion"
-              value={locationRegion}
-              onChange={(e) => setLocationRegion(e.target.value)}
-              placeholder="City / District / Region"
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="media">Images / Media</Label>
-          <div
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-              isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'
-            }`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-            <p className="text-sm font-medium">
-              Drag & drop files here or click to browse
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Maximum file size: 10MB each
-            </p>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/*"
-            multiple
-            onChange={(e) => handleFiles(e.target.files)}
-            className="hidden"
-            id="mediaInput"
-          />
-
-          {uploads.length > 0 && (
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {uploads.map((upload) => (
-                <div
-                  key={upload.id}
-                  className="relative border rounded-md overflow-hidden group"
-                >
-                  <div className="aspect-video bg-muted flex items-center justify-center">
-                    {upload.file.type.startsWith('image/') ? (
-                      <img
-                        src={upload.dataUrl}
-                        alt={upload.file.name}
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <div className="p-4 text-center">
-                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p className="text-xs mt-1 truncate">{upload.file.name}</p>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => removeUpload(upload.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="related">Related Entities</Label>
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="related"
-              placeholder="Search related entities..."
-              value={relatedQuery}
-              onChange={(e) => setRelatedQuery(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-
-          {relatedQuery && relatedResults.length > 0 && (
-            <div className="mt-2 border rounded-md bg-background max-h-48 overflow-y-auto">
-              {relatedResults.map((result) => (
-                <div
-                  key={result}
-                  className="p-2 hover:bg-muted cursor-pointer transition-colors"
-                  onClick={() => addRelated(result)}
-                >
-                  {result}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {relatedSelected.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {relatedSelected.map((item) => (
-                <Badge
-                  key={item}
-                  variant="secondary"
-                  className="cursor-pointer px-2 py-1"
-                  onClick={() => removeRelated(item)}
-                >
-                  {item}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="additionalNotes">
-            Additional Notes / Cultural Significance
-          </Label>
-          <Textarea
-            id="additionalNotes"
-            value={additionalNotes}
-            onChange={(e) => setAdditionalNotes(e.target.value)}
-            placeholder="Any extra contextual information..."
-            rows={3}
+          <Label htmlFor="locationRegion">Location / Region</Label>
+          <Input
+            id="locationRegion"
+            value={locationRegion}
+            onChange={(e) => setLocationRegion(e.target.value)}
+            placeholder="City / District / Region"
           />
         </div>
       </div>
-    );
-  };
 
+      <div>
+        <Label htmlFor="media">Images / Media</Label>
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+            isDragging ? 'border-primary bg-primary/10' : 'border-muted-foreground/25'
+          }`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Upload className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
+          <p className="text-sm font-medium">
+            Drag & drop files here or click to browse
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Maximum file size: 10MB each
+          </p>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          onChange={(e) => handleFiles(e.target.files)}
+          className="hidden"
+          id="mediaInput"
+        />
+
+        {uploads.length > 0 && (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {uploads.map((upload) => (
+              <div
+                key={upload.id}
+                className="relative border rounded-md overflow-hidden group"
+              >
+                <div className="aspect-video bg-muted flex items-center justify-center">
+                  {upload.file.type.startsWith('image/') ? (
+                    <Image
+                      src={upload.dataUrl}
+                      alt={upload.file.name}
+                      width={400}
+                      height={250}
+                      className="object-cover w-full h-full"
+                    />
+                  ) : (
+                    <div className="p-4 text-center">
+                      <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                      <p className="text-xs mt-1 truncate">{upload.file.name}</p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => removeUpload(upload.id)}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="related">Related Entities</Label>
+        <div className="relative">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            id="related"
+            placeholder="Search related entities..."
+            value={relatedQuery}
+            onChange={(e) => setRelatedQuery(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+
+        {relatedQuery && relatedResults.length > 0 && (
+          <div className="mt-2 border rounded-md bg-background max-h-48 overflow-y-auto">
+            {relatedResults.map((result) => (
+              <div
+                key={result}
+                className="p-2 hover:bg-muted cursor-pointer transition-colors"
+                onClick={() => addRelated(result)}
+              >
+                {result}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {relatedSelected.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {relatedSelected.map((item) => (
+              <Badge
+                key={item}
+                variant="secondary"
+                className="cursor-pointer px-2 py-1"
+                onClick={() => removeRelated(item)}
+              >
+                {item}
+                <X className="ml-1 h-3 w-3" />
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="additionalNotes">
+          Additional Notes / Cultural Significance
+        </Label>
+        <Textarea
+          id="additionalNotes"
+          value={additionalNotes}
+          onChange={(e) => setAdditionalNotes(e.target.value)}
+          placeholder="Any extra contextual information..."
+          rows={3}
+        />
+      </div>
+    </div>
+  );
+
+  // --- RENDER ---
   return (
     <>
       <Toaster richColors position="top-right" />
-      <div className=" ">
-        <div className="container max-w-4xl mx-auto ">
-          <div className="mb-5 text-center">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Cultural Heritage Contribution Form
-            </h1>
-            <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
-              Help preserve cultural heritage by sharing your knowledge and resources
-            </p>
-          </div>
+      <div className="container max-w-4xl mx-auto">
+        <div className="mb-5 text-center">
+          <h1 className="text-3xl font-bold tracking-tight">
+            Cultural Heritage Contribution Form
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+            Help preserve cultural heritage by sharing your knowledge and resources
+          </p>
+        </div>
 
-          <div className="space-y-6">
-            <Card className="shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl">Contact & Contribution Type</CardTitle>
-                <CardDescription>
-                  Provide your contact information and select what type of heritage item
-                  you're contributing
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <Label htmlFor="contributorName">Your Name *</Label>
-                    <Input
-                      id="contributorName"
-                      value={contributorName}
-                      onChange={(e) => setContributorName(e.target.value)}
-                      placeholder='E.g. "Ram Kaji Shrestha"'
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email">Contact Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Required for notifications and follow-up (or provide phone)
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+977-98XXXXXXXX"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="entityType" className="flex items-center gap-1">
-                        Entity You Are Contributing
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="h-4 w-4 text-muted-foreground" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                Select the type of heritage item you are contributing
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </Label>
-                      <Select
-                        value={entityType}
-                        onValueChange={(value) => setEntityType(value as EntityType)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select entity type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {entityOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {entityType === 'Other' && (
-                      <div>
-                        <Label htmlFor="otherEntity">Specify Entity Type</Label>
-                        <Input
-                          id="otherEntity"
-                          value={otherEntityType}
-                          onChange={(e) => setOtherEntityType(e.target.value)}
-                          placeholder="Enter custom entity type"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex flex-col justify-end">
-                      <Label className="mb-2">Contribution Format</Label>
-                      <Tabs
-                        value={modeFieldBased ? 'field' : 'paragraph'}
-                        onValueChange={(value) => setModeFieldBased(value === 'field')}
-                        className="w-full"
-                      >
-                        <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="field">Field-based</TabsTrigger>
-                          <TabsTrigger value="paragraph">Paragraph-based</TabsTrigger>
-                        </TabsList>
-                      </Tabs>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {modeFieldBased
-                          ? 'Structured details with specific fields'
-                          : 'Freeform description in paragraph format'}
-                      </p>
-                    </div>
-                  </div>
+        <div className="space-y-6">
+          {/* Contact & Contribution Type */}
+          <Card className="shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">Contact & Contribution Type</CardTitle>
+              <CardDescription>
+                Provide your contact information and select the type of heritage item
+                you&apos;re contributing
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <Label htmlFor="contributorName">Your Name *</Label>
+                  <Input
+                    id="contributorName"
+                    value={contributorName}
+                    onChange={(e) => setContributorName(e.target.value)}
+                    placeholder='E.g. "Ram Kaji Shrestha"'
+                  />
                 </div>
-              </CardContent>
-            </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-xl">
-                  {modeFieldBased
-                    ? 'Field-based Contribution'
-                    : 'Paragraph-based Contribution'}
-                </CardTitle>
-                <CardDescription>
-                  {modeFieldBased
-                    ? 'Provide structured information about the cultural heritage item'
-                    : 'Write a comprehensive description of the cultural heritage item'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {modeFieldBased ? (
-                  renderFieldBased()
-                ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="paragraphText">Full Contribution Text *</Label>
-                    <Textarea
-                      id="paragraphText"
-                      value={paragraphText}
-                      onChange={(e) => setParagraphText(e.target.value)}
-                      placeholder="Provide all information in one continuous text, including descriptions, dates, locations, and relationships..."
-                      rows={12}
-                      className="resize-y min-h-[200px]"
+                    <Label htmlFor="email">Contact Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@example.com"
                     />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Provide all information in one continuous text, including
-                      descriptions, dates, locations, and relationships. This may be
-                      extracted with an agent or manual process.
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Required for notifications and follow-up (or provide phone)
                     </p>
                   </div>
-                )}
-              </CardContent>
 
-              <div className="flex flex-col sm:flex-row justify-between gap-3 p-6 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setTitle('');
-                    setDescription('');
-                    setDateOrEra('');
-                    setLocationRegion('');
-                    setAdditionalNotes('');
-                    setParagraphText('');
-                    setUploads([]);
-                    setRelatedSelected([]);
-                    toast.info('Form fields cleared');
-                  }}
-                  className="sm:w-auto"
-                >
-                  Clear Form
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="sm:w-auto"
-                  size="lg"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                      Submitting...
-                    </>
-                  ) : (
-                    'Submit Contribution'
+                  <div>
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+977-98XXXXXXXX"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="entityType" className="flex items-center gap-1">
+                      Entity You Are Contributing
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Info className="h-4 w-4 text-muted-foreground" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Select the type of heritage item you are contributing</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </Label>
+                    <Select
+                      value={entityType}
+                      onValueChange={(value) => setEntityType(value as EntityType)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select entity type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {entityOptions.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {entityType === 'Other' && (
+                    <div>
+                      <Label htmlFor="otherEntity">Specify Entity Type</Label>
+                      <Input
+                        id="otherEntity"
+                        value={otherEntityType}
+                        onChange={(e) => setOtherEntityType(e.target.value)}
+                        placeholder="Enter custom entity type"
+                      />
+                    </div>
                   )}
-                </Button>
+
+                  <div className="flex flex-col justify-end">
+                    <Label className="mb-2">Contribution Format</Label>
+                    <Tabs
+                      value={modeFieldBased ? 'field' : 'paragraph'}
+                      onValueChange={(value) => setModeFieldBased(value === 'field')}
+                      className="w-full"
+                    >
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="field">Field-based</TabsTrigger>
+                        <TabsTrigger value="paragraph">Paragraph-based</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {modeFieldBased
+                        ? 'Structured details with specific fields'
+                        : 'Freeform description in paragraph format'}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </Card>
-          </div>
+            </CardContent>
+          </Card>
+
+          {/* Contribution Content */}
+          <Card className="shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl">
+                {modeFieldBased ? 'Field-based Contribution' : 'Paragraph-based Contribution'}
+              </CardTitle>
+              <CardDescription>
+                {modeFieldBased
+                  ? 'Provide structured information about the cultural heritage item'
+                  : 'Write a comprehensive description of the cultural heritage item'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {modeFieldBased ? (
+                renderFieldBased()
+              ) : (
+                <div>
+                  <Label htmlFor="paragraphText">Full Contribution Text *</Label>
+                  <Textarea
+                    id="paragraphText"
+                    value={paragraphText}
+                    onChange={(e) => setParagraphText(e.target.value)}
+                    placeholder="Provide all information in one continuous text..."
+                    rows={12}
+                    className="resize-y min-h-[200px]"
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Provide all information in one continuous text, including
+                    descriptions, dates, locations, and relationships.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+
+            <div className="flex flex-col sm:flex-row justify-between gap-3 p-6 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setTitle('');
+                  setDescription('');
+                  setDateOrEra('');
+                  setLocationRegion('');
+                  setAdditionalNotes('');
+                  setParagraphText('');
+                  setUploads([]);
+                  setRelatedSelected([]);
+                  toast.info('Form fields cleared');
+                }}
+                className="sm:w-auto"
+              >
+                Clear Form
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="sm:w-auto"
+                size="lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Contribution'
+                )}
+              </Button>
+            </div>
+          </Card>
         </div>
       </div>
     </>

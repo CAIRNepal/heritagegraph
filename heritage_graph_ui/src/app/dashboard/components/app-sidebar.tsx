@@ -1,22 +1,22 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
+// import Link from 'next/link';
 import {
   IconCamera,
   IconChartBar,
   IconDashboard,
-  IconDatabase,
+  // IconDatabase,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
+  // IconFileWord,
   IconFolder,
-  IconHelp,
-  IconInnerShadowTop,
+  // IconHelp,
+  // IconInnerShadowTop,
   IconListDetails,
-  IconReport,
-  IconSearch,
-  IconSettings,
+  // IconReport,
+  // IconSearch,
+  // IconSettings,
   IconUsers,
   IconBook,
   IconBuilding,
@@ -29,11 +29,11 @@ import AuthSection from '@/components/AuthButtons';
 import { NavDocuments } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
 import { NavSecondary } from '@/components/nav-secondary';
-import { NavUser } from '@/components/nav-user';
+// import { NavUser } from '@/components/nav-user';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
+  // SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
