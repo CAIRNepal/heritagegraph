@@ -1,0 +1,16 @@
+services:
+  frontend:
+    image: nabin968/heritage-frontend:latest
+    container_name: heritage-frontend
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=http"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    restart: unless-stopped
+
+networks:
+  proxy:
+    external: true

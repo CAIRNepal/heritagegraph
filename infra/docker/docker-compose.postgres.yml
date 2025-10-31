@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     image: postgres:14
@@ -8,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: keycloak
-      POSTGRES_PASSWORD: supersecret123   # use strong passwords!
+      POSTGRES_PASSWORD: supersecret123   
     volumes:
       - keycloak-db-data:/var/lib/postgresql/data
     networks:
