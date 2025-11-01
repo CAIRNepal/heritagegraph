@@ -4,7 +4,7 @@ import os
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
-from heritage_graph.apps.heritage_data.models import Submission
+from apps.heritage_data.models import Submission
 
 
 class Command(BaseCommand):

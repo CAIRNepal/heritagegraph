@@ -11,7 +11,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 INSTALLED_APPS = [
     "rest_framework",
-    "heritage_graph.apps.heritage_data",
+    "apps.heritage_data",
     # "djoser",
     # "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
@@ -37,7 +37,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "heritage_graph.urls"
+ROOT_URLCONF = "urls"
 
 TEMPLATES = [
     {
@@ -55,7 +55,7 @@ TEMPLATES = [
     }
 ]
 
-WSGI_APPLICATION = "heritage_graph.wsgi.application"
+WSGI_APPLICATION = "wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -79,8 +79,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        # "heritage_graph.apps.heritage_data.clerk_auth.JWTAuthenticationMiddleware",
-        "heritage_graph.apps.heritage_data.authentication.KeycloakJWTAuthentication",
+        # "apps.heritage_data.clerk_auth.JWTAuthenticationMiddleware",
+        "apps.heritage_data.authentication.KeycloakJWTAuthentication",
         # "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
