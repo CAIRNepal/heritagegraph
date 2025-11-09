@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:15
+    container_name: heritagegraph_db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: supersecret123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    image: nabin968/heritagegraph-backend-prod:latest
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: appdb
+      DB_USER: appuser
+      DB_PASSWORD: supersecret123
+      ALLOWED_HOSTS: backend.olinabin.com.np,www.backend.olinabin.com.np,heritagegraph.olinabin.com.np
+
+    ports:
+      - "8000:8000"
+    networks:
+      - backend_net
+
+volumes:
+  pgdata:
+
+networks:
+  backend_net:

@@ -11,6 +11,19 @@ services:
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     restart: unless-stopped
 
+  backend:
+    image: nabin968/heritage-backend:latest
+    container_name: heritage-backend
+    networks:
+      - proxy
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`backend.localhost`)"
+      - "traefik.http.routers.backend.entrypoints=http"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000" # Change if your app listens on a different port
+    restart: unless-stopped
+
   keycloak-db:
     image: postgres:14
     container_name: keycloak-db
@@ -60,8 +73,6 @@ services:
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
     command: start-dev
 
-
-
   traefik:
     image: traefik:v2.10
     container_name: traefik
@@ -85,30 +96,8 @@ services:
     security_opt:
       - no-new-privileges:true
 
-
-  app-db:
-    image: postgres:14
-    container_name: heritagegraph-db
-    restart: always
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    volumes:
-      - app-db-data:/var/lib/postgresql/data
-    networks:
-      - backend
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
 volumes:
   keycloak-db-data:
-  app-db-data:
 
 networks:
   backend:

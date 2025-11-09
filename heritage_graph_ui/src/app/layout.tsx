@@ -10,8 +10,11 @@ const geistSans = Geist({
 });
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+  // variable: '--font-geist-mono',
   subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
+  variable: '--font-poppins',
+
 });
 
 export const metadata: Metadata = {

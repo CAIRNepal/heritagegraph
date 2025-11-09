@@ -38,7 +38,7 @@ export function NavDocuments({
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-      <SidebarGroupLabel>Documents</SidebarGroupLabel>
+      <SidebarGroupLabel>Options</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
@@ -58,12 +58,12 @@ export function NavDocuments({
                   <span className="sr-only">More</span>
                 </SidebarMenuAction>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
+              {/* <DropdownMenuContent
                 className="w-24 rounded-lg"
                 side={isMobile ? 'bottom' : 'right'}
                 align={isMobile ? 'end' : 'start'}
-              >
-                <DropdownMenuItem>
+              > */}
+                {/* <DropdownMenuItem>
                   <IconFolder />
                   <span>Open</span>
                 </DropdownMenuItem>
@@ -75,8 +75,8 @@ export function NavDocuments({
                 <DropdownMenuItem variant="destructive">
                   <IconTrash />
                   <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
+                </DropdownMenuItem> */}
+              {/* </DropdownMenuContent> */}
             </DropdownMenu>
           </SidebarMenuItem>
         ))}

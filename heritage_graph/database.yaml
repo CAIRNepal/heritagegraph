@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16
+    container_name: myapp_postgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - myapp_network
+
+  web:
+    image: nabin968/heritagegraph-backend-prod:latest
+    container_name: heritagegraph_web
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    networks:
+      - myapp_network
+    # command: >
+    #   sh -c "
+    #   python manage.py migrate &&
+    #   python manage.py collectstatic --noinput &&
+    #   gunicorn heritage_graph.wsgi:application --bind 0.0.0.0:8000
+    #   "
+
+networks:
+  myapp_network:
+
+volumes:
+  postgres_data:

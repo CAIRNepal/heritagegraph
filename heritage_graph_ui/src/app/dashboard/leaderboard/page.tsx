@@ -46,12 +46,13 @@ export default function LeaderboardPage() {
   const [institutionFilter, setInstitutionFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        const res = await fetch('http://127.0.0.1:8000/data/leaderboard/', {
+        const res = await fetch(`${API_URL}/data/leaderboard/`, {
           method: 'GET',
           headers: { Accept: '*/*' },
         });

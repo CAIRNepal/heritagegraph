@@ -17,13 +17,12 @@ export default function AuthSection() {
             user={{
               name: session.user?.name || session.user?.email || 'User',
               email: session.user?.email || '',
-              avatar: '/avatars/shadcn.jpg', // Swap with session.user.image if available
+              avatar: '/avatars/shadcn.jpg', 
             }}
           />
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3 w-full">
-          {/* Sign In */}
           <Button className="w-full" onClick={() => signIn('keycloak')}>
             Sign In
           </Button>
