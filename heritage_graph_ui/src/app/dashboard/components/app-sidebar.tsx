@@ -162,38 +162,42 @@ const data = {
 
   navKnowledgebase: [
     {
-      name: 'Interpretations',
+      title: 'Interpretations',
       url: '/dashboard/knowledge/monuments',
       icon: IconBuilding,
     },
     {
-      name: 'Sources',
+      title: 'Sources',
       url: '/dashboard/knowledge/artifacts',
       icon: IconFolder,
     },
     {
-      name: 'Composite Objects',
+      title: 'Composite Objects',
       url: '/dashboard/knowledge/festivals',
       icon: IconHistory,
     },
     {
-      name: 'Object Attributes',
+      title: 'Object Attributes',
       url: '/dashboard/knowledge/performing-arts',
       icon: IconMusic,
     },
     {
-      name: 'Versions',
+      title: 'Versions',
       url: '/dashboard/knowledge/literature',
       icon: IconBook,
     },
     {
-      name: 'Exhibitions',
+      title: 'Exhibitions',
       url: '/dashboard/knowledge/people',
       icon: IconUsers,
     },
-    { name: 'Cultures', url: '/dashboard/knowledge/places', icon: IconMap },
+    { 
+      title: 'Cultures', 
+      url: '/dashboard/knowledge/places', 
+      icon: IconMap 
+    },
     {
-      name: 'Functions',
+      title: 'Functions',
       url: '/dashboard/knowledge/intangible',
       icon: IconGlobe,
     },
@@ -201,13 +205,13 @@ const data = {
 
   navCuration: [
     {
-      name: 'Contributions Queue',
+      title: 'Contributions Queue',
       url: '/dashboard/curation/contributions',
       icon: IconFileDescription,
     },
     // { name: "Verification Queue", url: "/curation/verification", icon: IconReport },
     {
-      name: 'Activity Log',
+      title: 'Activity Log',
       url: '/dashboard/curation/activity',
       icon: IconChartBar,
     },
@@ -215,12 +219,12 @@ const data = {
 
   navCommunity: [
     {
-      name: 'Contributors',
+      title: 'Contributors',
       url: '/dashboard/community/contributors',
       icon: IconUsers,
     },
     {
-      name: 'Organizations',
+      title: 'Organizations',
       url: '/dashboard/community/organizations',
       icon: IconBuilding,
     },
@@ -260,13 +264,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        {/* <NavDocuments items={data.data} /> */}
-        <NavDocuments items={data.navKnowledgebase} />
-        <NavDocuments items={data.navCuration} />
-        <NavDocuments items={data.navCommunity} />
+        <NavMain items={data.navKnowledgebase} />
+        {/* <NavDocuments items={data.navKnowledgebase} /> */}
+        <NavMain items={data.navCuration} />
+        <NavMain items={data.navCommunity} />
         {/* <NavDocuments items={data.navResources} /> */}
         {/* <NavDocuments items={data.navAbout} /> */}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={data.navSecondary}/>
       </SidebarContent>
       {/* <AuthSection /> */}
     </Sidebar>
