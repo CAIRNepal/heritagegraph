@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
 
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/heritage-table';
 
@@ -41,8 +41,8 @@ export default function Page() {
   return (
     <div className="px-4 lg:px-6 space-y-6">
       {/* Compact Welcome Card */}
-      <CardTitle className="text-2xl font-bold">Welcome to Heritage Graph!</CardTitle>
-
+      <CardTitle className="text-2xl font-bold">Welcome to Heritage Graph</CardTitle>
+      <p>Heritage Graph is a project by CAIR-Nepal for preserving cultural heritages using Knowledge Graphs.</p>
       <Card className="rounded-2xl shadow-md">
         {/* <CardHeader> */}
           {/* <CardTitle className="text-2xl font-bold">Welcome Back!</CardTitle> */}
@@ -68,7 +68,7 @@ export default function Page() {
             ].map((item) => (
               <div
                 key={item.title}
-                className="flex-1 flex flex-col items-start p-2 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm"
+                className="flex-1 flex flex-col items-start rounded-lg"
               >
                 <span className="font-semibold">{item.title}</span>
                 <span className="text-muted-foreground">{item.desc}</span>
