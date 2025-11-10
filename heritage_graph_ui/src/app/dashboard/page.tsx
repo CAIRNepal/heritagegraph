@@ -41,10 +41,12 @@ export default function Page() {
   return (
     <div className="px-4 lg:px-6 space-y-6">
       {/* Compact Welcome Card */}
+      <CardTitle className="text-2xl font-bold">Welcome to Heritage Graph!</CardTitle>
+
       <Card className="rounded-2xl shadow-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold">Welcome Back!</CardTitle>
-        </CardHeader>
+        {/* <CardHeader> */}
+          {/* <CardTitle className="text-2xl font-bold">Welcome Back!</CardTitle> */}
+        {/* </CardHeader> */}
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-2 justify-between">
             {[
