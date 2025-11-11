@@ -31,10 +31,13 @@ export function NavUser({
     name: string;
     email: string;
     avatar: string;
+    username: string;
   };
 }) {
   const { isMobile } = useSidebar();
   const { data: session, status } = useSession();
+  console.log("HRRRRRE")
+  console.log(session?.user)
 
   // 🔥 Initialize user in backend when logged in
   useEffect(() => {
@@ -66,6 +69,11 @@ export function NavUser({
       initUser();
     }
   }, [status, session, user]);
+  console.log("==========================")
+  {console.log(user)}
+  console.log("==========================")
+
+
 
   return (
     <SidebarMenu>
@@ -132,7 +140,7 @@ export function NavUser({
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/dashboard/users/${session?.user?.username || ''}`}
+                  href={`/dashboard/users/${session?.user?.username}`}
                   className="flex items-center gap-2"
                 >
                   <IconUserCircle />

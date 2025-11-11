@@ -6,7 +6,7 @@ from rest_framework import authentication, exceptions
 from .models import UserProfile  # import your UserProfile model
 
 # Keycloak configuration
-KEYCLOAK_ISSUER = "http://keycloak.localhost:8080/realms/heritageRealm"
+KEYCLOAK_ISSUER = "http://keycloak.localhost/realms/HeritageRealm"
 KEYCLOAK_AUDIENCE = "account"
 KEYCLOAK_JWKS_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
 
@@ -38,9 +38,9 @@ class KeycloakJWTAuthentication(authentication.BaseAuthentication):
                 issuer=KEYCLOAK_ISSUER,
             )
 
-            # print("=========================================")
-            # print("Payload: ", payload)
-            # print("=========================================")
+            print("=========================================")
+            print("Payload: ", payload)
+            print("=========================================")
 
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed("Token has expired.")
