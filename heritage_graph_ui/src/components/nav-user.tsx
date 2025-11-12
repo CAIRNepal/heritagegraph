@@ -149,9 +149,12 @@ export function NavUser({
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/account" className="flex items-center gap-2">
+                <Link href="http://keycloak.localhost/realms/HeritageRealm/account" 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2">
                   <IconUserCircle />
-                  Account
+                  Account Settings
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

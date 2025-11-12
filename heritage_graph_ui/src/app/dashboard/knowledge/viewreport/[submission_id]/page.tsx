@@ -164,9 +164,8 @@ export default function SubmissionPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [currentTab, setCurrentTab] = useState('outline');
 
-  const API_BASE =
-    process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/data/submissions';
-
+  const API_BASE = "http://0.0.0.0:8000/data/submissions";
+  
   useEffect(() => {
     if (!submissionId) return;
 
@@ -175,6 +174,7 @@ export default function SubmissionPage() {
         const res = await fetch(`${API_BASE}/${submissionId}/`);
         if (!res.ok) throw new Error(`Failed to fetch submission: ${res.status}`);
         const data = await res.json();
+        console.log(data)
         setSubmission(data);
       } catch (err) {
         console.error(err);
