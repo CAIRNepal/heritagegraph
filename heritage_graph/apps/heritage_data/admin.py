@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from .models import (
     ActivityLog,
@@ -13,6 +14,9 @@ from .models import (
     SubmissionVersion,
     UserProfile,
     UserStats,
+    CulturalEntity,
+    Revision,
+    Activity,
 )
 
 
@@ -228,6 +232,144 @@ class NotificationAdmin(admin.ModelAdmin):
 
     mark_as_read.short_description = "Mark selected notifications as read"
 
+@admin.register(CulturalEntity)
+class CulturalEntityAdmin(admin.ModelAdmin):
+    list_display = (
+        "entity_id",
+        "name",
+        "category",
+        "status_colored",
+        "contributor",
+        "created_at",
+        "updated_at",
+    )
+    list_filter = ("status", "category", "created_at")
+    search_fields = ("name", "description", "contributor__username", "category")
+    readonly_fields = ("created_at", "updated_at")
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
+    list_per_page = 25
+
+    fieldsets = (
+        ("Basic Info", {
+            "fields": ("name", "description", "category", "status")
+        }),
+        ("Contributor & Metadata", {
+            "fields": ("contributor", "created_at", "updated_at")
+        }),
+    )
+
+    def status_colored(self, obj):
+        color_map = {
+            "draft": "#808080",            # gray
+            "pending_review": "#FFA500",   # orange
+            "accepted": "#008000",         # green
+            "rejected": "#FF0000",         # red
+            "pending_revision": "#4682B4", # steel blue
+        }
+        color = color_map.get(obj.status, "#000000")
+        return format_html('<b style="color:{};">{}</b>', color, obj.get_status_display())
+
+    status_colored.short_description = "Status"
+
+
+@admin.register(Revision)
+class RevisionAdmin(admin.ModelAdmin):
+    list_display = (
+        "entity",
+        "revision_number",
+        "created_by",
+        "created_at",
+        "short_data_preview",
+    )
+    list_filter = ("created_at",)
+    search_fields = ("entity__name", "created_by__username")
+    readonly_fields = ("created_at",)
+    ordering = ("-created_at",)
+    list_per_page = 25
+
+    fieldsets = (
+        ("Revision Info", {
+            "fields": ("entity", "revision_number", "data")
+        }),
+        ("Metadata", {
+            "fields": ("created_by", "created_at")
+        }),
+    )
+
+    def short_data_preview(self, obj):
+        """Show a shortened JSON preview in list view."""
+        preview = str(obj.data)
+        return (preview[:75] + "...") if len(preview) > 75 else preview
+
+    short_data_preview.short_description = "Revision Data (Preview)"
+
+
+@admin.register(Activity)
+class ActivityAdmin(admin.ModelAdmin):
+    list_display = (
+        "activity_id",
+        "entity",
+        "activity_type_colored",
+        "user",
+        "comment_short",
+        "created_at",
+    )
+    list_filter = ("activity_type", "created_at")
+    search_fields = ("entity__name", "user__username", "comment")
+    readonly_fields = ("created_at",)
+    ordering = ("-created_at",)
+    list_per_page = 25
+
+    fieldsets = (
+        ("Activity Info", {
+            "fields": ("entity", "activity_type", "comment")
+        }),
+        ("User & Timestamps", {
+            "fields": ("user", "created_at")
+        }),
+    )
+
+    def activity_type_colored(self, obj):
+        color_map = {
+            "submitted": "#4169E1",  # royal blue
+            "accepted": "#228B22",   # forest green
+            "rejected": "#B22222",   # firebrick
+            "revised": "#8B008B",    # dark magenta
+            "commented": "#708090",  # slate gray
+        }
+        color = color_map.get(obj.activity_type, "#000000")
+        return format_html('<b style="color:{};">{}</b>', color, obj.get_activity_type_display())
+
+    activity_type_colored.short_description = "Activity Type"
+
+    def comment_short(self, obj):
+        if not obj.comment:
+            return "-"
+        return (obj.comment[:50] + "...") if len(obj.comment) > 50 else obj.comment
+
+    comment_short.short_description = "Comment"
+
+
+# Optional: inline views for Revision & Activity in CulturalEntity admin
+class RevisionInline(admin.TabularInline):
+    model = Revision
+    extra = 0
+    readonly_fields = ("created_at", "created_by")
+    show_change_link = True
+    ordering = ("-revision_number",)
+
+
+class ActivityInline(admin.TabularInline):
+    model = Activity
+    extra = 0
+    readonly_fields = ("created_at", "user", "activity_type", "comment")
+    show_change_link = True
+    ordering = ("-created_at",)
+
+
+# Attach inlines to CulturalEntity admin
+CulturalEntityAdmin.inlines = [RevisionInline, ActivityInline]
 
 # Register all models with their respective admin classes
 admin.site.register(CulturalHeritage, CulturalHeritageAdmin)

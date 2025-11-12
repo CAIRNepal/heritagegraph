@@ -1,72 +1,86 @@
-from django.urls import path
-
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
-# import views
+
+# Create router
+router = DefaultRouter()
+router.register(r'cultural-entities', views.CulturalEntityViewSet, basename='culturalentity')
+router.register(r'contribution-queue', views.ContributionQueueViewSet, basename='contributionqueue')
+router.register(r'revisions', views.RevisionViewSet, basename='revision')
+router.register(r'activities', views.ActivityViewSet, basename='activity')
+
+# router.register(r'submissions', views.SubmissionViewSet, basename='submission')
+# router.register(r'comments', views.CommentViewSet, basename='comment')
 
 urlpatterns = [
-    path("submissions/", views.SubmissionListView.as_view(), name="submission-list"),
+    # Include all ViewSet URLs under /api/
+    path('api/', include(router.urls)),
+    
+    # Legacy API endpoints (consider migrating these to ViewSets over time)
+    path("api/submissions/", views.SubmissionListView.as_view(), name="submission-list"),
     path(
-        "submissions/<str:submission_id>/",
+        "api/submissions/<str:submission_id>/",
         views.SubmissionDetailView.as_view(),
         name="submission-detail",
     ),
     path(
-        "form-submit/", views.FormSubmissionAPIView.as_view(), name="create_submission"
+        "api/form-submit/", views.FormSubmissionAPIView.as_view(), name="create_submission"
     ),
     path(
-        "moderation/<int:pk>/",
+        "api/moderations/<int:pk>/",
         views.ModerationReviewView.as_view(),
         name="moderation-review",
     ),
-    # path('auth/users/me/', views.CustomUserMeView.as_view(), name='user-me'),
-    path("activity-logs/", views.ActivityLogView.as_view(), name="activity-logs"),
-    path("leaderboard/", views.LeaderboardView.as_view(), name="leaderboard"),
-    path("personal-stats/", views.PersonalStatsView.as_view(), name="personal-stats"),
-    # path('user/<str:username>/', views.UserDetailView.as_view(), name='user-detail'),
+    path("api/activity-logs/", views.ActivityLogView.as_view(), name="activity-logs"),
+    path("api/leaderboard/", views.LeaderboardView.as_view(), name="leaderboard"),
+    path("api/personal-stats/", views.PersonalStatsView.as_view(), name="personal-stats"),
+    
     # Comment URLs
     path(
-        "comments/", views.CommentListCreateView.as_view(), name="comment-list-create"
+        "api/comments/", views.CommentListCreateView.as_view(), name="comment-list-create"
     ),
     path(
-        "comments/<str:pk>/", views.CommentDetailView.as_view(), name="comment-detail"
+        "api/comments/<str:pk>/", views.CommentListCreateView.as_view(), name="comment-detail"
     ),
-    # path('submission/form/create/', create_submission, name="Formm submission")
-    # submission edit suggestion URLs here
+    
+    # submission edit suggestion URLs
     path(
-        "submission-suggestions/",
+        "api/submission-suggestions/",
         views.SubmissionSuggestionViewSet.as_view({"post": "create"}),
         name="submission-suggestion-create",
     ),
     path(
-        "submission-suggestions/<int:pk>/approve/",
+        "api/submission-suggestions/<int:pk>/approve/",
         views.SubmissionSuggestionViewSet.as_view({"post": "approve"}),
         name="submission-suggestion-approve",
     ),
     path(
-        "submission-suggestions/<int:pk>/reject/",
+        "api/submission-suggestions/<int:pk>/reject/",
         views.SubmissionSuggestionViewSet.as_view({"post": "reject"}),
         name="submission-suggestion-reject",
     ),
     path(
-        "submissions/<str:submission_id>/versions/",
+        "api/submissions/<str:submission_id>/versions/",
         views.SubmissionVersionListView.as_view(),
         name="submission-versions-list",
     ),
     path(
-        "submissions/<str:submission_id>/edit-suggestions",
+        "api/submissions/<str:submission_id>/edit-suggestions",
         views.SubmissionEditSuggestionListView.as_view(),
         name="submission-edit-suggestions-list",
     ),
     path(
-        "submissions/ids", views.SubmissionIdListView.as_view(), name="submission_ids"
+        "api/submissions/ids", views.SubmissionIdListView.as_view(), name="submission_ids"
     ),
-    path("testthelogin", views.UserViewSet.as_view({"get": "list"}), name="user-list"),
-    path("user-stats/", views.UserStatsAPIView.as_view(), name="user-stats"),
-    # test
-    path("testme/", views.TestView.as_view(), name="Test this for auth health"),
+    path("api/testthelogin", views.UserViewSet.as_view({"get": "list"}), name="user-list"),
+    path("api/user-stats/", views.UserStatsAPIView.as_view(), name="user-stats"),
+    
+    # test endpoints
+    path("api/testme/", views.TestView.as_view(), name="Test this for auth health"),
+    
     # user details
     path(
-        "user/<str:username>/",
+        "api/user/<str:username>/",
         views.UserProfileDetail.as_view(),
         name="user-profile-detail",
     ),

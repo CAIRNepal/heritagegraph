@@ -10,6 +10,17 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 
+from django.db.models import Q
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+from .models import CulturalEntity, Revision, Activity
+from .serializers import *
+from .permissions import IsContributorOrReadOnly, IsEditor
+
+
 # For Swagger documentation
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, permissions, serializers, status, viewsets
@@ -579,8 +590,12 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         submission_id = self.request.query_params.get("submission_id")
+        print("===========================")
+        print(submission_id)
+        print("===========================")
+
         if submission_id:
-            return Comments.objects.filter(submission_id=submission_id).order_by(
+            return Comments.objects.filter(entity_id=submission_id).order_by(
                 "-created_at"
             )
         return Comments.objects.all().order_by("-created_at")
@@ -801,3 +816,220 @@ class UserProfileDetail(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CulturalEntityViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing Cultural Entities
+    """
+    queryset = CulturalEntity.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['category', 'status']
+    search_fields = ['name', 'description']
+    ordering_fields = ['created_at', 'updated_at', 'name']
+    ordering = ['-created_at']
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return CulturalEntityCreateSerializer
+        elif self.action == 'update' or self.action == 'partial_update':
+            return CulturalEntityUpdateSerializer
+        elif self.action == 'list':
+            return CulturalEntityListSerializer
+        return CulturalEntityDetailSerializer
+    
+    def get_permissions(self):
+        if self.action in ['create', 'my_contributions', 'create_revision']:
+            permission_classes = [permissions.IsAuthenticated]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [permissions.IsAuthenticated, IsContributorOrReadOnly]
+        else:
+            permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+        return [permission() for permission in permission_classes]
+    
+    def get_queryset(self):
+        queryset = CulturalEntity.objects.all()
+        
+        # For list action, only show accepted entities to non-staff users
+        if self.action == 'list' and not self.request.user.is_staff:
+            queryset = queryset.filter()
+        
+        # Prefetch related data for performance
+        if self.action in ['retrieve', 'list']:
+            queryset = queryset.select_related('contributor', 'current_revision').prefetch_related('revisions', 'activities')
+        
+        return queryset
+    
+    def perform_create(self, serializer):
+        serializer.save(contributor=self.request.user)
+    
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def my_contributions(self, request):
+        """
+        Get contributions by the current user
+        """
+        contributions = CulturalEntity.objects.filter(contributor=request.user)
+        page = self.paginate_queryset(contributions)
+        if page is not None:
+            serializer = CulturalEntityListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = CulturalEntityListSerializer(contributions, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated, IsContributorOrReadOnly])
+    def create_revision(self, request, pk=None):
+        """
+        Create a new revision for an existing entity
+        """
+        entity = self.get_object()
+        
+        # Only allow revisions for rejected or draft entities
+        if entity.status not in ['rejected', 'draft']:
+            return Response(
+                {'error': 'Can only create revisions for rejected or draft entities'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = RevisionCreateSerializer(
+            data=request.data,
+            context={'entity': entity, 'request': request}
+        )
+        
+        if serializer.is_valid():
+            revision = serializer.save()
+            return Response(
+                RevisionSerializer(revision).data,
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    def submit_for_review(self, request, pk=None):
+        """
+        Submit a draft entity for review
+        """
+        entity = self.get_object()
+        
+        if entity.status != 'draft':
+            return Response(
+                {'error': 'Only draft entities can be submitted for review'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if entity.contributor != request.user:
+            return Response(
+                {'error': 'Only the contributor can submit for review'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        entity.submit_for_review()
+        return Response(
+            {'message': 'Entity submitted for review successfully'},
+            status=status.HTTP_200_OK
+        )
+
+class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for viewing and moderating contributions.
+    - GET requests (list/retrieve) are public.
+    - POST /moderate requires authentication + editor permissions.
+    """
+    serializer_class = ContributionQueueSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['category', 'status']
+    search_fields = ['name', 'description']
+
+    def get_permissions(self):
+        """
+        Make GET public, but restrict other actions to authenticated editors.
+        """
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated(), IsEditor()]
+
+    def get_queryset(self):
+        """
+        Only include pending or pending-revision contributions in the queue.
+        """
+        return (
+            CulturalEntity.objects.filter(status__in=['pending_review', 'pending_revision'])
+            .select_related('contributor')
+            .prefetch_related('activities')
+        )
+
+    @action(detail=True, methods=['post'])
+    def moderate(self, request, pk=None):
+        """
+        Moderate a contribution (accept or reject).
+        Only for authenticated editors.
+        """
+        entity = self.get_object()
+        serializer = ModerationActionSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        action = serializer.validated_data['action']
+        comment = serializer.validated_data.get('comment', '')
+
+        if action == 'accept':
+            entity.accept_contribution(request.user, comment)
+            return Response({'message': 'Entity accepted successfully'}, status=status.HTTP_200_OK)
+
+        elif action == 'reject':
+            entity.reject_contribution(request.user, comment)
+            return Response({'message': 'Entity rejected successfully'}, status=status.HTTP_200_OK)
+
+        return Response({'error': 'Invalid action'}, status=status.HTTP_400_BAD_REQUEST)
+
+class RevisionViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for viewing revisions
+    """
+    serializer_class = RevisionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    
+    def get_queryset(self):
+        return Revision.objects.select_related('created_by', 'entity')
+    
+    @action(detail=True, methods=['get'])
+    def entity_history(self, request, pk=None):
+        """
+        Get complete history of an entity including revisions and activities
+        """
+        revision = self.get_object()
+        entity = revision.entity
+        
+        entity_data = CulturalEntityDetailSerializer(entity).data
+        return Response(entity_data)
+
+class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for viewing activities.
+    Returns:
+      - All activities if no authenticated user or user is staff.
+      - User-specific activities (their own + ones on entities they contributed) otherwise.
+    """
+    serializer_class = ActivitySerializer
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ['activity_type', 'entity']
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        user = self.request.user
+
+        # If anonymous user → return all (or optionally none)
+        if not user or user.is_anonymous:
+            return Activity.objects.all().select_related('user', 'entity')
+
+        # Staff/admin → return all
+        if user.is_staff:
+            return Activity.objects.select_related('user', 'entity')
+
+        # Authenticated non-staff → user-specific
+        return Activity.objects.filter(
+            Q(user=user) | Q(entity__contributor=user)
+        ).select_related('user', 'entity')

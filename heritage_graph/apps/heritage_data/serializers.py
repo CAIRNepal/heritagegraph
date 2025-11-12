@@ -12,6 +12,9 @@ from .models import (
     SubmissionVersion,
     UserProfile,
 )
+from rest_framework import serializers
+from django.contrib.auth.models import User
+from .models import CulturalEntity, Revision, Activity
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -353,3 +356,121 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "score",
             "member_since",
         ]
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+
+class RevisionSerializer(serializers.ModelSerializer):
+    created_by = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = Revision
+        fields = ['revision_id', 'revision_number', 'data', 'created_by', 'created_at']
+        read_only_fields = ['revision_id', 'revision_number', 'created_by', 'created_at']
+
+class ActivitySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    
+    class Meta:
+        model = Activity
+        fields = ['activity_id', 'user', 'activity_type', 'comment', 'created_at']
+        read_only_fields = ['activity_id', 'user', 'created_at']
+
+class CulturalEntityListSerializer(serializers.ModelSerializer):
+    contributor = UserSerializer(read_only=True)
+    current_revision = RevisionSerializer(read_only=True)
+    
+    class Meta:
+        model = CulturalEntity
+        fields = [
+            'entity_id', 'name', 'category', 'status', 
+            'contributor', 'created_at', 'current_revision'
+        ]
+
+class CulturalEntityDetailSerializer(serializers.ModelSerializer):
+    contributor = UserSerializer(read_only=True)
+    current_revision = RevisionSerializer(read_only=True)
+    revisions = RevisionSerializer(many=True, read_only=True)
+    activities = ActivitySerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = CulturalEntity
+        fields = [
+            'entity_id', 'name', 'description', 'category', 'status',
+            'contributor', 'current_revision', 'created_at', 'updated_at',
+            'revisions', 'activities'
+        ]
+        read_only_fields = ['entity_id', 'created_at', 'updated_at', 'contributor']
+
+class CulturalEntityCreateSerializer(serializers.ModelSerializer):
+    form_data = serializers.JSONField(write_only=True)
+    
+    class Meta:
+        model = CulturalEntity
+        fields = ['name', 'description', 'category', 'form_data']
+    
+    def create(self, validated_data):
+        form_data = validated_data.pop('form_data')
+        request = self.context.get('request')
+        
+        # Create cultural entity
+        entity = CulturalEntity.objects.create(
+            **validated_data,
+            contributor=request.user,
+            status='draft'
+        )
+        
+        # Create first revision
+        entity.create_revision(request.user, form_data)
+        
+        # Submit for review
+        entity.submit_for_review()
+        
+        return entity
+
+class CulturalEntityUpdateSerializer(serializers.ModelSerializer):
+    form_data = serializers.JSONField(write_only=True)
+    
+    class Meta:
+        model = CulturalEntity
+        fields = ['name', 'description', 'category', 'form_data']
+        read_only_fields = ['entity_id', 'contributor', 'created_at']
+
+class RevisionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Revision
+        fields = ['data']
+    
+    def create(self, validated_data):
+        entity = self.context['entity']
+        request = self.context['request']
+        return entity.create_revision(request.user, validated_data['data'])
+
+class ModerationActionSerializer(serializers.Serializer):
+    action = serializers.ChoiceField(choices=['accept', 'reject'])
+    comment = serializers.CharField(required=False, allow_blank=True)
+
+class ContributionQueueSerializer(serializers.ModelSerializer):
+    contributor = UserSerializer(read_only=True)
+    current_revision = RevisionSerializer(read_only=True)
+    latest_revision = serializers.SerializerMethodField()
+    activity_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CulturalEntity
+        fields = [
+            'entity_id', 'name', 'category', 'status', 'contributor',
+            'created_at', 'current_revision', 'latest_revision', 'activity_count'
+        ]
+    
+    def get_latest_revision(self, obj):
+        latest = obj.get_latest_revision()
+        if latest:
+            return RevisionSerializer(latest).data
+        return None
+    
+    def get_activity_count(self, obj):
+        return obj.activities.count()
+

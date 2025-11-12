@@ -81,6 +81,7 @@ export default function Page() {
 
       {/* DataTable */}
       <DataTable />
+
     </div>
   );
 }

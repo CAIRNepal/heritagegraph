@@ -1,6 +1,6 @@
 import secrets
 import string
-
+import uuid
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -17,6 +17,280 @@ def generate_unique_submission_id(length=11, max_attempts=100):
             return new_id
     raise Exception("Unable to generate a unique submission ID after many attempts.")
 
+# Add these methods to the CulturalEntity model
+def get_current_revision_data(self):
+    """Get the data from the current revision"""
+    if self.current_revision:
+        return self.current_revision.data
+    return None
+
+def get_latest_revision(self):
+    """Get the most recent revision for this entity"""
+    return self.revisions.order_by('-revision_number').first()
+
+def submit_for_review(self):
+    """Submit the entity for editor review"""
+    self.status = 'pending_review'
+    self.save()
+    
+    # Log the activity
+    Activity.objects.create(
+        entity=self,
+        user=self.contributor,
+        activity_type='submitted'
+    )
+
+def accept_contribution(self, editor, comment=None):
+    """Accept the contribution and set it as published"""
+    latest_revision = self.get_latest_revision()
+    if latest_revision:
+        self.current_revision = latest_revision
+    self.status = 'accepted'
+    self.save()
+    
+    # Log the activity
+    Activity.objects.create(
+        entity=self,
+        user=editor,
+        activity_type='accepted',
+        comment=comment
+    )
+
+def reject_contribution(self, editor, comment):
+    """Reject the contribution"""
+    self.status = 'rejected'
+    self.save()
+    
+    # Log the activity
+    Activity.objects.create(
+        entity=self,
+        user=editor,
+        activity_type='rejected',
+        comment=comment
+    )
+
+def create_revision(self, user, form_data):
+    """Create a new revision for this entity"""
+    latest_rev = self.get_latest_revision()
+    new_revision_number = latest_rev.revision_number + 1 if latest_rev else 1
+    
+    new_revision = Revision.objects.create(
+        entity=self,
+        data=form_data,
+        revision_number=new_revision_number,
+        created_by=user
+    )
+    
+    # Update entity status
+    self.status = 'pending_revision'
+    self.save()
+    
+    # Log the activity
+    Activity.objects.create(
+        entity=self,
+        user=user,
+        activity_type='revised'
+    )
+    
+    return new_revision
+
+
+# Utility functions for views and management
+def get_contribution_queue():
+    """Get all entities pending review or revision"""
+    return CulturalEntity.objects.filter(
+        status__in=['pending_review', 'pending_revision']
+    ).select_related('contributor', 'current_revision')
+
+def get_user_contributions(user):
+    """Get all contributions by a specific user"""
+    return CulturalEntity.objects.filter(contributor=user).select_related('current_revision')
+
+def get_entity_history(entity_id):
+    """Get complete history of an entity including revisions and activities"""
+    entity = CulturalEntity.objects.prefetch_related('revisions', 'activities').get(entity_id=entity_id)
+    return {
+        'entity': entity,
+        'revisions': entity.revisions.all(),
+        'activities': entity.activities.all().select_related('user')
+    }
+
+class CulturalEntity(models.Model):
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('pending_review', 'Pending Review'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('pending_revision', 'Pending Revision'),
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('monument', 'Monument'),
+        ('artifact', 'Artifact'),
+        ('ritual', 'Ritual'),
+        ('festival', 'Festival'),
+        ('tradition', 'Tradition'),
+        ('document', 'Document'),
+        ('other', 'Other'),
+    ]
+    
+    entity_id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        verbose_name="Entity ID"
+    )
+    name = models.CharField(max_length=255, verbose_name="Entity Name")
+    description = models.TextField(verbose_name="Description")
+    category = models.CharField(
+        max_length=100, 
+        choices=CATEGORY_CHOICES,
+        verbose_name="Category"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='draft',
+        verbose_name="Status"
+    )
+    contributor = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='contributed_entities',
+        verbose_name="Contributor"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+    class Meta:
+        db_table = 'cultural_entities'
+        verbose_name = "Cultural Entity"
+        verbose_name_plural = "Cultural Entities"
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['category']),
+            models.Index(fields=['created_at']),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_status_display()})"
+
+class Revision(models.Model):
+    revision_id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        verbose_name="Revision ID"
+    )
+    entity = models.ForeignKey(
+        CulturalEntity,
+        on_delete=models.CASCADE,
+        related_name='revisions',
+        verbose_name="Cultural Entity"
+    )
+    data = models.JSONField(
+        verbose_name="Revision Data",
+        help_text="Complete form data for this revision in JSON format"
+    )
+    revision_number = models.PositiveIntegerField(
+        default=1,
+        verbose_name="Revision Number"
+    )
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='created_revisions',
+        verbose_name="Created By"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+
+    class Meta:
+        db_table = 'revisions'
+        verbose_name = "Revision"
+        verbose_name_plural = "Revisions"
+        indexes = [
+            models.Index(fields=['entity', 'revision_number']),
+            models.Index(fields=['created_at']),
+        ]
+        ordering = ['entity', '-revision_number']
+        unique_together = ['entity', 'revision_number']
+
+    def __str__(self):
+        return f"Revision {self.revision_number} for {self.entity.name}"
+
+class Activity(models.Model):
+    ACTIVITY_TYPES = [
+        ('submitted', 'Submitted'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('revised', 'Revised'),
+        ('commented', 'Commented'),
+    ]
+    
+    activity_id = models.UUIDField(
+        primary_key=True, 
+        default=uuid.uuid4, 
+        editable=False,
+        verbose_name="Activity ID"
+    )
+    entity = models.ForeignKey(
+        CulturalEntity,
+        on_delete=models.CASCADE,
+        related_name='activities',
+        verbose_name="Cultural Entity"
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='activities',
+        verbose_name="User"
+    )
+    activity_type = models.CharField(
+        max_length=20,
+        choices=ACTIVITY_TYPES,
+        verbose_name="Activity Type"
+    )
+    comment = models.TextField(
+        blank=True, 
+        null=True,
+        verbose_name="Comment",
+        help_text="Optional comment from editor or contributor"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+
+    class Meta:
+        db_table = 'activities'
+        verbose_name = "Activity"
+        verbose_name_plural = "Activities"
+        indexes = [
+            models.Index(fields=['entity', 'activity_type']),
+            models.Index(fields=['created_at']),
+        ]
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_activity_type_display()} by {self.user.username} on {self.entity.name}"
+
+CulturalEntity.add_to_class(
+    'current_revision',
+    models.ForeignKey(
+        Revision,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='current_for_entity',
+        verbose_name="Current Revision"
+    )
+)
+
+# Add the methods to the CulturalEntity class
+CulturalEntity.get_current_revision_data = get_current_revision_data
+CulturalEntity.get_latest_revision = get_latest_revision
+CulturalEntity.submit_for_review = submit_for_review
+CulturalEntity.accept_contribution = accept_contribution
+CulturalEntity.reject_contribution = reject_contribution
+CulturalEntity.create_revision = create_revision
 
 class CulturalHeritage(models.Model):
     TYPE_CHOICES = [
@@ -34,7 +308,6 @@ class CulturalHeritage(models.Model):
     def __str__(self):
         return self.title
 
-
 class Media(models.Model):
     MEDIA_TYPE_CHOICES = [
         ("image", "Image"),
@@ -50,7 +323,6 @@ class Media(models.Model):
 
     def __str__(self):
         return f"{self.media_type}: {self.file.name}"
-
 
 class Contributor(models.Model):
     user = models.ForeignKey(
@@ -248,7 +520,6 @@ class Moderation(models.Model):
         moderator_name = self.moderator.username if self.moderator else "No Moderator"
         return f"Moderation for {self.submission.title} by {moderator_name}"
 
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     clerk_user_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
@@ -326,7 +597,7 @@ class Comments(models.Model):
         max_length=11, unique=True, blank=True, editable=False
     )
     submission = models.ForeignKey(
-        "Submission", on_delete=models.CASCADE, related_name="comments"
+        "CulturalEntity", on_delete=models.CASCADE, related_name="comments"
     )
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="user_comments"
@@ -340,7 +611,7 @@ class Comments(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Comment by {self.user.username} on {self.submission.title}"
+        return f"Comment by {self.user.username} on {self.submission.entity_id}"
 
 
 class SubmissionVersion(models.Model):
