@@ -12,21 +12,17 @@ import { Button } from '@/components/ui/button';
 export default function Page() {
   return (
     <div className="px-4 lg:px-6 space-y-6">
-      {/* Interpretations Card */}
+      {/* Versions Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Interpretations</CardTitle>
+          <CardTitle className="text-2xl font-bold">Event</CardTitle>
         </CardHeader>
 
         <CardContent className="pt-0 flex flex-col md:flex-row gap-6 items-start">
           {/* Description column */}
           <div className="flex-1">
             <CardDescription>
-              Interpretations are analytical or curatorial insights that explain the
-              meaning, significance, or context of artifacts, artworks, or cultural
-              items. They synthesize evidence from multiple sources to provide
-              understanding of historical, cultural, or artistic perspectives,
-              highlighting symbolism, function, and broader impact.
+              Represents cultural, religious, or historical occurrences that are significant within a heritage context. Events can include festivals, ceremonies, coronations, rituals, or other gatherings that involve people, locations, and artifacts. Documenting events helps contextualize heritage by showing how cultural practices and artifacts were experienced, celebrated, or utilized.
             </CardDescription>
           </div>
 
@@ -34,21 +30,21 @@ export default function Page() {
           <div className="flex flex-col gap-3 md:w-48">
             <Button asChild variant="outline" size="sm">
               <a
-                href="https://example.com/interpretations-model"
+                href="https://example.com/versions-model"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Interpretations Model Docs
+                Event Model Docs
               </a>
             </Button>
 
             <Button asChild variant="outline" size="sm">
               <a
-                href="https://example.com/interpretations-curation"
+                href="https://example.com/versions-curation"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Interpretations Curation Docs
+                Event Curation Docs
               </a>
             </Button>
           </div>

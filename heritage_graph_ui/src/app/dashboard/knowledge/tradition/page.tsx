@@ -12,21 +12,17 @@ import { Button } from '@/components/ui/button';
 export default function Page() {
   return (
     <div className="px-4 lg:px-6 space-y-6">
-      {/* Object Attributes Card */}
+      {/* Exhibitions Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Object Attributes</CardTitle>
+          <CardTitle className="text-2xl font-bold">Tradition</CardTitle>
         </CardHeader>
 
         <CardContent className="pt-0 flex flex-col md:flex-row gap-6 items-start">
           {/* Description column */}
           <div className="flex-1">
             <CardDescription>
-              Object Attributes are the defining characteristics, properties, or
-              metadata of artifacts, objects, or cultural items. They describe features
-              such as material, dimensions, origin, condition, and other details that
-              help document, classify, and understand the items in collections or
-              studies.
+              Represents intangible cultural heritage, including rituals, crafts, oral stories, dances, festivals, or other practices passed down through generations. Traditions capture the living aspects of culture, reflecting societal values, beliefs, and practices, and help preserve knowledge that is not tied to physical artifacts.
             </CardDescription>
           </div>
 
@@ -34,21 +30,21 @@ export default function Page() {
           <div className="flex flex-col gap-3 md:w-48">
             <Button asChild variant="outline" size="sm">
               <a
-                href="https://example.com/object-attributes-model"
+                href="https://example.com/exhibition-model"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Object Attributes Model Docs
+                Tradition Model Docs
               </a>
             </Button>
 
             <Button asChild variant="outline" size="sm">
               <a
-                href="https://example.com/object-attributes-curation"
+                href="https://example.com/exhibition-curation"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Object Attributes Curation Docs
+                Tradition Curation Docs
               </a>
             </Button>
           </div>

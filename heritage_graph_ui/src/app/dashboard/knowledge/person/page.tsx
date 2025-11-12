@@ -15,18 +15,14 @@ export default function Page() {
       {/* Composite Objects Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Composite Objects</CardTitle>
+          <CardTitle className="text-2xl font-bold">Person</CardTitle>
         </CardHeader>
 
         <CardContent className="pt-0 flex flex-col md:flex-row gap-6 items-start">
           {/* Description column */}
           <div className="flex-1">
             <CardDescription>
-              Composite Objects are artifacts or collections made up of multiple
-              interconnected items, elements, or components. They often represent
-              complex cultural, historical, or artistic assemblies and are documented to
-              highlight their structure, significance, and the relationships between
-              individual components.
+              Represents individuals who are connected to cultural heritage, including artists, historians, rulers, or other notable figures. Persons provide context for artifacts, events, and traditions, helping to trace authorship, influence, and participation in cultural history.
             </CardDescription>
           </div>
 
@@ -38,7 +34,7 @@ export default function Page() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Composite Object Model Docs
+                Person Model Docs
               </a>
             </Button>
 
@@ -48,7 +44,7 @@ export default function Page() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Composite Object Curation Docs
+                Person Curation Docs
               </a>
             </Button>
           </div>

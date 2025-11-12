@@ -15,8 +15,8 @@ export default function AuthSection() {
           {/* User Info */}
           <NavUser
             user={{
-              name: session.user?.name || session.user?.email || 'User',
-              email: session.user?.email || '',
+              name: session.user?.name || 'User',
+              // email: session.user?.email || '',
               avatar: '/avatars/shadcn.jpg', 
             }}
           />

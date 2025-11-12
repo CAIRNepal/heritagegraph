@@ -15,18 +15,14 @@ export default function Page() {
       {/* Cultures Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Cultures</CardTitle>
+          <CardTitle className="text-2xl font-bold">Places</CardTitle>
         </CardHeader>
 
         <CardContent className="pt-0 flex flex-col md:flex-row gap-6 items-start">
           {/* Description column */}
           <div className="flex-1">
             <CardDescription>
-              Cultures encompass the beliefs, customs, practices, and artistic
-              expressions of a community or society. Understanding cultural context
-              helps interpret artifacts, traditions, and social behaviors, providing
-              insight into how people lived, interacted, and created meaning across time
-              and place.
+              Represents physical or geographical sites associated with cultural heritage. This includes temples, monuments, historical cities, museums, regions, and other sites where cultural activities or artifacts are found. Locations provide spatial context, helping to map, explore, and understand the distribution of heritage objects and events.            
             </CardDescription>
           </div>
 
@@ -38,7 +34,7 @@ export default function Page() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Cultures Model Docs
+                Places Model Docs
               </a>
             </Button>
 
@@ -48,7 +44,7 @@ export default function Page() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Cultures Curation Docs
+                Places Curation Docs
               </a>
             </Button>
           </div>

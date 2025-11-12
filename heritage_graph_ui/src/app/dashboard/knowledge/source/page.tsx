@@ -12,21 +12,17 @@ import { Button } from '@/components/ui/button';
 export default function Page() {
   return (
     <div className="px-4 lg:px-6 space-y-6">
-      {/* Versions Card */}
+      {/* Object Attributes Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Versions</CardTitle>
+          <CardTitle className="text-2xl font-bold">Source</CardTitle>
         </CardHeader>
 
         <CardContent className="pt-0 flex flex-col md:flex-row gap-6 items-start">
           {/* Description column */}
           <div className="flex-1">
             <CardDescription>
-              Versions track different states, editions, or iterations of artifacts,
-              objects, or datasets. They help document changes over time, highlight
-              updates, and provide context for historical, cultural, or scholarly
-              analysis. Each version represents a snapshot of the item at a specific
-              point in its lifecycle.
+                Represents references or documentation that provide evidence, context, or validation for cultural heritage entities, events, people, locations, or traditions. Sources can include scholarly publications, archival records, manuscripts, oral histories, research papers, or digital media. They ensure the accuracy, credibility, and traceability of the knowledge captured in the heritage knowledge graph.
             </CardDescription>
           </div>
 
@@ -34,21 +30,21 @@ export default function Page() {
           <div className="flex flex-col gap-3 md:w-48">
             <Button asChild variant="outline" size="sm">
               <a
-                href="https://example.com/versions-model"
+                href="https://example.com/object-attributes-model"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Versions Model Docs
+                Source Model Docs
               </a>
             </Button>
 
             <Button asChild variant="outline" size="sm">
               <a
-                href="https://example.com/versions-curation"
+                href="https://example.com/object-attributes-curation"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Versions Curation Docs
+                Source Curation Docs
               </a>
             </Button>
           </div>

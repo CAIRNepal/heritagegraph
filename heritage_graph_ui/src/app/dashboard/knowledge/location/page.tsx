@@ -15,17 +15,17 @@ export default function Page() {
       {/* Functions Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Functions</CardTitle>
+          <CardTitle className="text-2xl font-bold">Location</CardTitle>
         </CardHeader>
 
         <CardContent className="pt-0 flex flex-col md:flex-row gap-6 items-start">
           {/* Description column */}
           <div className="flex-1">
             <CardDescription>
-              Functions represent the roles or activities associated with artifacts,
-              objects, or cultural items. They provide insight into how objects were
-              used, their purpose within a historical or cultural context, and the
-              practical or symbolic significance they held within their communities.
+              Locations represent physical or geographical sites associated with cultural heritage. 
+              These include historical sites, monuments, museums, regions, and cities. Documenting 
+              locations helps contextualize artifacts, events, and traditions within their spatial 
+              and cultural settings, allowing researchers and the public to explore heritage geographically.
             </CardDescription>
           </div>
 
@@ -37,7 +37,7 @@ export default function Page() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Functions Model Docs
+                Location Model Docs
               </a>
             </Button>
 
@@ -47,7 +47,7 @@ export default function Page() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Functions Curation Docs
+                Location Curation Docs
               </a>
             </Button>
           </div>
