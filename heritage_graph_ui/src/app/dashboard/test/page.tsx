@@ -48,12 +48,18 @@
 // }
 
 'use client';
-
+import { useSession } from 'next-auth/react';1
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function Page() {
+  const { data: session } = useSession();
+            const token = (session as any)?.accessToken;
+      console.log("=======================token here==================")
+      console.log(token)
+      console.log("=======================token end==================")
+
   const handleClick = () => {
     alert('Hello World!');
   };

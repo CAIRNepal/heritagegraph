@@ -12,6 +12,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!session?.accessToken) return;
+    
 
     const fetchBackend = async () => {
       try {

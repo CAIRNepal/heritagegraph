@@ -37,7 +37,7 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const { data: session, status } = useSession();
   console.log("HRRRRRE")
-  console.log(session?.user)
+  console.log(session?.accessToken)
 
   // 🔥 Initialize user in backend when logged in
   useEffect(() => {
