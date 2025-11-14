@@ -12,6 +12,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 INSTALLED_APPS = [
     "rest_framework",
     "apps.heritage_data",
+    "apps.cidoc_data",
     # "djoser",
     # "rest_framework_simplejwt.token_blacklist",
     "corsheaders",

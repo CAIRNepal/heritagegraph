@@ -48,6 +48,10 @@ urlpatterns = [
     path(
         "data/", include("apps.heritage_data.urls")
     ),  # Heritage Data App
+    path(
+        "cidoc/", include("apps.cidoc_data.urls")
+    ),  # Heritage Data App
+
     # Authentication
     path("auth/", include("djoser.urls")),  # Djoser URLs
     path("auth/", include("djoser.urls.jwt")),  # Djoser JWT URLs

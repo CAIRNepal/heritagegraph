@@ -1,4 +1,4 @@
-import { DataTable } from '@/components/heritage-table';
+import { DataTable } from './heritage-table';
 import {
   Card,
   CardContent,
@@ -10,6 +10,27 @@ import { Button } from '@/components/ui/button';
 // import data from './data.json';
 
 export default function Page() {
+  const submissions = [
+  {
+    submission_id: "1",
+    title: "Test Submission",
+    description: "Some description",
+    contributor: 42,
+    contributor_username: "nabin",
+    status: "pending",
+    created_at: new Date().toISOString(),
+  },
+  {
+    submission_id: "2",
+    title: "Another Submission",
+    description: "More info",
+    contributor: 43,
+    contributor_username: "alex",
+    status: "approved",
+    created_at: new Date().toISOString(),
+  },
+];
+
   return (
     <div className="px-4 lg:px-6 space-y-6">
       {/* Cultures Card */}
@@ -53,7 +74,9 @@ export default function Page() {
 
       {/* Data Table */}
       <div className="mt-4">
-        <DataTable />
+
+    <DataTable />
+
       </div>
     </div>
   );

@@ -67,37 +67,60 @@ import {
 type Category = 'monument' | 'festival' | 'ritual' | 'tradition' | 'artifact' | 'other';
 type Status = 'pending_review' | 'approved' | 'rejected';
 
+// Original contributor type retained for UI compatibility (artifacts don't include contributor)
 interface Contributor {
-  id: number;
+  id?: number;
   username: string;
-  email: string;
-  first_name: string;
-  last_name: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
-interface CulturalEntity {
-  entity_id: string;
+// CIDOC artifact type (fields taken from the API sample you provided)
+interface CidocArtifact {
+  id: number;
+  name: string;
+  aliases?: string;
+  description?: string;
+  material?: string;
+  size?: string;
+  weight?: string;
+  date_created?: string; // e.g., "196 BCE"
+  condition?: string;
+  status?: string; // e.g., "on_display"
+  digital_representation?: string;
+  creator?: any;
+  origin_location?: any;
+  historical_period?: any;
+  associated_events?: any[];
+  documentation_sources?: any[];
+}
+
+// We still keep a "display entity" shape so we can reuse your UI (hover card expects contributor, created_at etc.)
+interface DisplayArtifact {
+  entity_id: string; // mapped from artifact.id
   name: string;
   description?: string;
   category: Category;
-  status: Status;
+  status: Status | string; // CIDOC status is different so allow string
   contributor: Contributor;
-  created_at: string;
-  current_revision: any;
+  created_at: string; // mapped from date_created or fallback to now
+  current_revision?: any;
+  raw: CidocArtifact; // keep raw artifact for full use
 }
 
-interface CulturalEntitiesResponse {
+interface CidocArtifactResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: CulturalEntity[];
+  results: CidocArtifact[];
 }
 
 // --- INITIAL STATE ---
 const INITIAL_FORM_STATE = {
   name: '',
   description: '',
-  category: 'monument' as Category,
+  category: 'artifact' as Category,
   form_data: {} as Record<string, any>,
 };
 
@@ -130,7 +153,7 @@ function Pagination({ currentPage, totalPages, onPageChange, className }: Pagina
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -182,7 +205,7 @@ function Pagination({ currentPage, totalPages, onPageChange, className }: Pagina
         <Button
           variant="outline"
           size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
         >
           Next
@@ -197,11 +220,11 @@ function Pagination({ currentPage, totalPages, onPageChange, className }: Pagina
   );
 }
 
-// --- HOVER CARD COMPONENT ---
+// --- HOVER CARD COMPONENT (adapted for artifacts) ---
 interface EntityHoverCardProps {
-  entity: CulturalEntity;
+  entity: DisplayArtifact;
   children: React.ReactNode;
-  currentUserSession: any; // Add session as prop
+  currentUserSession: any;
 }
 
 function EntityHoverCard({ entity, children, currentUserSession }: EntityHoverCardProps) {
@@ -210,14 +233,15 @@ function EntityHoverCard({ entity, children, currentUserSession }: EntityHoverCa
   const handleViewProfile = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Use the session passed as prop instead of calling useSession hook
-    router.push(`/dashboard/users/${currentUserSession?.user?.username}`);
+    // If session has username route to user's profile, otherwise to /dashboard
+    const username = currentUserSession?.user?.username || 'me';
+    router.push(`/dashboard/users/${username}`);
   };
 
   const handleViewSubmission = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    router.push(`/dashboard/knowledge/viewreport/${entity.entity_id}`);
+    router.push(`/dashboard/knowledge/entity/view/${entity.entity_id}`);
   };
 
   const truncateDescription = (text: string, maxLength: number = 150) => {
@@ -226,34 +250,61 @@ function EntityHoverCard({ entity, children, currentUserSession }: EntityHoverCa
     return text.substring(0, maxLength) + '...';
   };
 
+  const artifact = entity.raw;
+
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         {children}
       </HoverCardTrigger>
-      <HoverCardContent className="w-80" align="start">
+      <HoverCardContent className="w-96" align="start">
         <div className="space-y-3">
           <div>
-            <h4 className="text-sm font-semibold">{entity.name}</h4>
+            <h4 className="text-sm font-semibold">{artifact.name}</h4>
             <Badge variant="outline" className="mt-1">
-              {entity.category}
+              {artifact.material || 'Unknown material'}
             </Badge>
           </div>
           
           <div className="text-sm text-muted-foreground">
-            <p>{truncateDescription(entity.description || entity.current_revision?.description || '')}</p>
+            <p>{truncateDescription(artifact.description || '')}</p>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <User className="h-3 w-3" />
-              <span>{entity.contributor.username}</span>
+          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+            <div>
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>{artifact.date_created || 'Date unknown'}</span>
+              </div>
+              <div className="flex items-center gap-1 mt-1">
+                <User className="h-3 w-3" />
+                <span>{artifact.creator?.name || artifact.origin_location || 'Origin unknown'}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              <span>{new Date(entity.created_at).toLocaleDateString()}</span>
+            <div>
+              <div className="flex items-center gap-1">
+                <span className="text-muted-foreground text-xs">Size:</span>
+                <span className="ml-1">{artifact.size || '—'}</span>
+              </div>
+              <div className="flex items-center gap-1 mt-1">
+                <span className="text-muted-foreground text-xs">Condition:</span>
+                <span className="ml-1">{artifact.condition || '—'}</span>
+              </div>
             </div>
           </div>
+
+          {artifact.digital_representation && (
+            <div className="pt-2">
+              <a
+                href={artifact.digital_representation}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline"
+              >
+                View digital representation
+              </a>
+            </div>
+          )}
 
           <div className="flex gap-2 pt-2">
             <Button 
@@ -270,7 +321,7 @@ function EntityHoverCard({ entity, children, currentUserSession }: EntityHoverCa
               className="flex-1 text-xs"
               onClick={handleViewSubmission}
             >
-              View Submission
+              View Details
             </Button>
           </div>
         </div>
@@ -289,10 +340,10 @@ export default function CulturalEntitiesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // --- PENDING ENTITIES STATE ---
-  const [pendingEntities, setPendingEntities] = useState<CulturalEntity[]>([]);
+  // --- ARTIFACTS STATE (replacing pending entities) ---
+  const [artifacts, setArtifacts] = useState<DisplayArtifact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState<Category>('monument');
+  const [selectedCategory, setSelectedCategory] = useState<Category>('artifact');
   
   // --- PAGINATION STATE ---
   const [currentPage, setCurrentPage] = useState(1);
@@ -312,57 +363,91 @@ export default function CulturalEntitiesPage() {
     toast.info('Form cleared');
   }, []);
 
-  // --- FETCH PENDING ENTITIES ---
-  const fetchPendingEntities = useCallback(async (category: Category = 'monument', page: number = 1) => {
-    if (!isSignedIn) return;
-    
+  // --- FETCH ARTIFACTS (CIDOC API) ---
+  const fetchArtifacts = useCallback(async (page: number = 1) => {
+    // allow viewing even when not signed in; your original code restricted it
     setIsLoading(true);
-    try {
-      const token = (session as any)?.accessToken;
-      const offset = (page - 1) * pageSize;
-      
-      const res = await fetch(
-        `http://0.0.0.0:8000/data/api/cultural-entities/?category=${category}&status=pending_review&limit=${pageSize}&offset=${offset}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        }
-      );
 
-      if (res.ok) {
-        const data: CulturalEntitiesResponse = await res.json();
-        setPendingEntities(data.results);
-        setTotalCount(data.count);
-        setTotalPages(Math.ceil(data.count / pageSize));
-        setCurrentPage(page);
-      } else {
-        console.error('Failed to fetch pending entities');
-        toast.error('Failed to load pending entities');
+    try {
+      const offset = (page - 1) * pageSize;
+      const url = `http://0.0.0.0:8000/cidoc/artifacts/?limit=${pageSize}&offset=${offset}`;
+
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        console.error('Failed to fetch artifacts', res.statusText);
+        toast.error('Failed to load artifacts');
+        setArtifacts([]);
+        setTotalCount(0);
+        setTotalPages(1);
+        return;
       }
+
+      const data: CidocArtifactResponse = await res.json();
+
+      // Normalize artifacts into DisplayArtifact so UI keeps working
+      const normalized: DisplayArtifact[] = data.results.map((a) => {
+        // map date_created to an ISO-like string for created_at; if it's historic like "196 BCE" keep raw string as created_at
+        const createdAt = a.date_created ? String(a.date_created) : new Date().toISOString();
+
+        // contributor placeholder - CIDOC artifacts don't have a contributor; keep UI stable
+        const contributor: Contributor = {
+          username: a.creator?.username || a.creator?.name || 'system',
+        };
+
+        // status mapping: map CIDOC status to your Status type as best-effort
+        const statusMap: Record<string, Status> = {
+          pending_review: 'pending_review',
+          approved: 'approved',
+          rejected: 'rejected',
+        };
+
+        const mappedStatus = (a.status && statusMap[a.status]) ? statusMap[a.status] : 'approved';
+
+        return {
+          entity_id: String(a.id),
+          name: a.name,
+          description: a.description || '',
+          category: 'artifact' as Category,
+          status: mappedStatus,
+          contributor,
+          created_at: createdAt,
+          current_revision: null,
+          raw: a,
+        };
+      });
+
+      setArtifacts(normalized);
+      setTotalCount(data.count || normalized.length);
+      setTotalPages(Math.max(1, Math.ceil((data.count || normalized.length) / pageSize)));
+      setCurrentPage(page);
     } catch (err) {
-      console.error('Error fetching pending entities:', err);
-      toast.error('Error loading pending entities');
+      console.error('Error fetching artifacts:', err);
+      toast.error('Network error while loading artifacts');
+      setArtifacts([]);
+      setTotalCount(0);
+      setTotalPages(1);
     } finally {
       setIsLoading(false);
     }
-  }, [session, isSignedIn, pageSize]);
+  }, [pageSize]);
 
-  // Load pending entities when component mounts or category changes
+  // Load artifacts on mount and when page/category change
   useEffect(() => {
-    if (isSignedIn) {
-      setCurrentPage(1); // Reset to first page when category changes
-      fetchPendingEntities(selectedCategory, 1);
-    }
-  }, [fetchPendingEntities, selectedCategory, isSignedIn]);
+    setCurrentPage(1);
+    fetchArtifacts(1);
+  }, [fetchArtifacts, selectedCategory]);
 
   // Handle page change
   const handlePageChange = (page: number) => {
-    fetchPendingEntities(selectedCategory, page);
+    fetchArtifacts(page);
   };
 
-  // --- VALIDATION ---
+  // --- VALIDATION & SUBMISSION (kept from original; posting behavior left pointing to cultural-entities) ---
   const validateForm = useCallback((): boolean => {
     if (!formData.name.trim()) {
       toast.error('Please provide a Name.');
@@ -379,7 +464,6 @@ export default function CulturalEntitiesPage() {
     return true;
   }, [formData]);
 
-  // --- SUBMIT ---
   const handleSubmit = async () => {
     if (!validateForm()) return;
     if (!isSignedIn) {
@@ -410,10 +494,9 @@ export default function CulturalEntitiesPage() {
         const responseData = await res.json();
         toast.success(`"${formData.name}" submitted successfully!`);
         
-        // Refresh the pending entities list
-        fetchPendingEntities(selectedCategory, currentPage);
+        // refresh list (keep current page)
+        fetchArtifacts(currentPage);
         
-        // Close dialog and clear form
         setIsDialogOpen(false);
         clearForm();
       } else {
@@ -429,27 +512,32 @@ export default function CulturalEntitiesPage() {
     }
   };
 
-  // --- STATUS BADGE ---
-  const getStatusBadge = (status: Status) => {
-    const statusConfig = {
-      pending_review: { label: 'Pending Review', icon: Clock, variant: 'secondary' as const },
-      approved: { label: 'Approved', icon: CheckCircle, variant: 'default' as const },
-      rejected: { label: 'Rejected', icon: XCircle, variant: 'destructive' as const },
+  // --- STATUS BADGE (kept but simple) ---
+  const getStatusBadge = (status: Status | string) => {
+    const statusConfig: Record<string, { label: string; icon: any; variant: any }> = {
+      pending_review: { label: 'Pending Review', icon: Clock, variant: 'secondary' },
+      approved: { label: 'Approved', icon: CheckCircle, variant: 'default' },
+      rejected: { label: 'Rejected', icon: XCircle, variant: 'destructive' },
     };
     
-    const config = statusConfig[status];
+    const key = (status as string) in statusConfig ? (status as string) : 'approved';
+    const config = statusConfig[key];
     const Icon = config.icon;
     
     return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
+      <Badge variant={config.variant as any} className="flex items-center gap-1">
         <Icon className="h-3 w-3" />
         {config.label}
       </Badge>
     );
   };
 
-  // --- DATE FORMATTING ---
+  // Format date - if it's a historic label like "196 BCE" return as-is
   const formatDate = (dateString: string) => {
+    if (!dateString) return 'Unknown';
+    // try to parse ISO; if it fails, return original (e.g., "196 BCE")
+    const maybeIso = Date.parse(dateString);
+    if (isNaN(maybeIso)) return dateString;
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -464,111 +552,25 @@ export default function CulturalEntitiesPage() {
         {/* Header Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">Cultural Entities</CardTitle>
+            <CardTitle className="text-2xl font-bold">Cultural Entity</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 flex flex-col md:flex-row gap-6 items-start">
             {/* Description column */}
             <div className="flex-1">
               <CardDescription className="text-base">
-                Cultural entities represent tangible or intangible heritage objects, 
-                institutions, or concepts that embody the identity, history, or 
-                traditions of a culture. Examples include artifacts, monuments, 
-                historical sites, and collections that are documented, preserved, 
-                and studied to understand cultural heritage.
+                This view displays artifacts from the CIDOC API. Columns have been updated to show artifact-specific metadata (material, size, condition, date created, and a link to any digital representation).
               </CardDescription>
             </div>
 
-            {/* Links column */}
+            {/* Links / Actions column */}
             <div className="flex flex-col gap-3 md:w-48">
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Add Cultural Entity
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add New Cultural Entity</DialogTitle>
-                  </DialogHeader>
-                  
-                  {/* Form Content */}
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="name">Name *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => updateFormField('name', e.target.value)}
-                        placeholder="E.g., Pashupatinath Temple, Dashain Festival, Malla Period Artifact"
-                        disabled={!isSignedIn}
-                      />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="category">Category *</Label>
-                      <Select
-                        value={formData.category}
-                        onValueChange={(value) => updateFormField('category', value as Category)}
-                        disabled={!isSignedIn}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categoryOptions.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option.charAt(0).toUpperCase() + option.slice(1)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="description">Description *</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => updateFormField('description', e.target.value)}
-                        rows={6}
-                        placeholder="Provide a comprehensive description of the cultural entity, its historical significance, cultural importance, and any relevant details..."
-                        disabled={!isSignedIn}
-                      />
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-4">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          setIsDialogOpen(false);
-                          clearForm();
-                        }}
-                        disabled={!isSignedIn}
-                      >
-                        Cancel
-                      </Button>
-
-                      <Button 
-                        onClick={handleSubmit} 
-                        disabled={isSubmitting || !isSignedIn} 
-                        className="min-w-32"
-                      >
-                        {!isSignedIn ? (
-                          'Sign In to Submit'
-                        ) : isSubmitting ? (
-                          <>
-                            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                            Submitting...
-                          </>
-                        ) : (
-                          'Submit Entity'
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+<Button
+  className="flex items-center gap-2"
+  onClick={() => router.push('/dashboard/contribute/entity/')}
+>
+  <Plus className="h-4 w-4" />
+  Add Cultural Entity
+</Button>
 
               <Button asChild variant="outline" size="sm">
                 <a
@@ -593,21 +595,21 @@ export default function CulturalEntitiesPage() {
           </CardContent>
         </Card>
 
-        {/* Pending Entities Section */}
+        {/* Artifacts Section */}
         <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <CardTitle>Pending Review</CardTitle>
+                <CardTitle>Artifacts</CardTitle>
                 <CardDescription>
-                  Cultural entities waiting for approval. Currently showing: {selectedCategory}
+                  Artifacts from CIDOC. Showing: {selectedCategory}
                   {totalCount > 0 && ` (${totalCount} total)`}
                 </CardDescription>
               </div>
               
               <div className="flex items-center gap-2">
                 <Label htmlFor="category-filter" className="text-sm whitespace-nowrap">
-                  Filter by category:
+                  Filter (client)
                 </Label>
                 <Select
                   value={selectedCategory}
@@ -628,21 +630,17 @@ export default function CulturalEntitiesPage() {
             </div>
           </CardHeader>
           <CardContent>
-            {!isSignedIn ? (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Please sign in to view pending entities.</p>
-              </div>
-            ) : isLoading ? (
+            {isLoading ? (
               <div className="text-center py-8">
                 <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-                <p className="text-muted-foreground mt-2">Loading pending entities...</p>
+                <p className="text-muted-foreground mt-2">Loading artifacts...</p>
               </div>
-            ) : pendingEntities.length === 0 ? (
+            ) : artifacts.length === 0 ? (
               <div className="text-center py-8">
                 <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">No pending entities</h3>
+                <h3 className="font-semibold text-lg mb-2">No artifacts found</h3>
                 <p className="text-muted-foreground">
-                  There are no {selectedCategory} entities waiting for review.
+                  There are no artifacts to show for the selected filter.
                 </p>
               </div>
             ) : (
@@ -652,35 +650,29 @@ export default function CulturalEntitiesPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Name</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Contributor</TableHead>
-                        <TableHead>Submitted</TableHead>
+                        <TableHead>Material</TableHead>
+                        <TableHead>Size</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Condition</TableHead>
                         <TableHead className="w-20">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {pendingEntities.map((entity) => (
+                      {artifacts.map((entity) => (
                         <EntityHoverCard 
                           key={entity.entity_id} 
                           entity={entity}
-                          currentUserSession={session} // Pass session as prop
+                          currentUserSession={session}
                         >
                           <TableRow className="cursor-pointer">
                             <TableCell className="font-medium">{entity.name}</TableCell>
                             <TableCell>
                               <Badge variant="outline">
-                                {entity.category}
+                                {entity.raw.material || 'Unknown'}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {getStatusBadge(entity.status)}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <User className="h-4 w-4 text-muted-foreground" />
-                                <span>{entity.contributor.username}</span>
-                              </div>
+                              <div className="text-sm">{entity.raw.size || '—'}</div>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
@@ -689,9 +681,24 @@ export default function CulturalEntitiesPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Button variant="ghost" size="sm">
-                                <Eye className="h-4 w-4" />
-                              </Button>
+                              <div>{entity.raw.condition || '—'}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // open digital representation if available
+                                    const url = entity.raw.digital_representation;
+                                    if (url) window.open(url, '_blank', 'noopener');
+                                    else toast.info('No digital representation available');
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         </EntityHoverCard>
