@@ -1,0 +1,105 @@
+id: https://example.org/nchlod
+name: nepalCulturalHeritageOntology
+description: An ontology for Nepal's cultural heritage using LinkML
+license: MIT
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  nchlod: https://example.org/nchlod/
+  crm: http://www.cidoc-crm.org/cidoc-crm/ 
+
+default_prefix: nchlod
+
+classes:
+  Thing:
+    description: Root class for all entities
+
+  CulturalHeritage:
+    is_a: Thing
+    description: Represents cultural heritage entities
+
+  TangibleCulturalHeritage:
+    is_a: CulturalHeritage
+    description: Physical cultural heritage objects
+
+  IntangibleCulturalHeritage:
+    is_a: CulturalHeritage
+    description: Non-physical cultural heritage objects
+
+  # Tangible Cultural Heritage
+  Building:
+    is_a: TangibleCulturalHeritage
+    description: Represents buildings of cultural significance
+
+  NepaleseTemple:
+    is_a: Building
+    description: Traditional Nepalese temples with cultural and religious value
+
+  Artifact:
+    is_a: TangibleCulturalHeritage
+    description: Represents culturally significant artifacts
+
+  Statue:
+    is_a: Artifact
+    description: Statues of cultural and historical importance
+
+  Painting:
+    is_a: Artifact
+    description: Paintings depicting Nepalese heritage and culture
+
+  Manuscript:
+    is_a: Artifact
+    description: Ancient handwritten or printed manuscripts
+
+  Site:
+    is_a: TangibleCulturalHeritage
+    description: Represents culturally significant sites
+
+  HistoricalSite:
+    is_a: Site
+    description: Historical sites of importance in Nepal
+
+  PilgrimageSite:
+    is_a: Site
+    description: Religious pilgrimage sites
+
+  NaturalHeritageSite:
+    is_a: Site
+    description: Natural sites of cultural significance
+
+  # Intangible Cultural Heritage
+  Ritual:
+    is_a: IntangibleCulturalHeritage
+    description: Represents traditional rituals
+
+  NepaleseFestival:
+    is_a: Ritual
+    description: Traditional festivals celebrated in Nepal
+
+  Language:
+    is_a: IntangibleCulturalHeritage
+    description: Represents languages as part of cultural heritage
+
+  NepaliLanguage:
+    is_a: Language
+    description: The official language of Nepal, part of its cultural identity
+
+  Music:
+    is_a: IntangibleCulturalHeritage
+    description: Represents traditional Nepalese music forms
+
+  Dance:
+    is_a: IntangibleCulturalHeritage
+    description: Traditional Nepalese dance forms
+
+  Folklore:
+    is_a: IntangibleCulturalHeritage
+    description: Traditional stories and folklore of Nepal
+
+  Cuisine:
+    is_a: IntangibleCulturalHeritage
+    description: Traditional Nepalese cuisine
+
+  Tradition:
+    is_a: IntangibleCulturalHeritage
+    description: Represents general traditions passed through generations

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # HeritageGraph
 
 HeritageGraph is an initiative taken by researchers at **CAIR-Nepal**.
@@ -122,3 +123,9 @@ Access the backend at:
 ## 📜 License
 
 The license for this project is yet to be finalized. We’ll choose one that both empowers the community and benefits this project :-)
+=======
+# Nepal Cultural heritage Linked Open Data (NCHLOD)
+This repository contains the LinkML code for NCHLOD. It includes the following components:
+
+1. `schema.yaml`: Defines the schema for NCHLOD.
+>>>>>>> linkML-dev

@@ -1,0 +1,327 @@
+id: NCHLOD
+name: nepalCulturalHeritageLinkedOpenData
+description: A schema based on CIDOC CRM to represent Nepal's cultural heritage data.
+imports:
+  - linkml:types
+prefixes:
+  crm: "http://www.cidoc-crm.org/cidoc-crm/"
+  linkml: "https://w3id.org/linkml/"
+  nchlod: "https://cair-nepal.org/nchlod"
+default_prefix: nchlod
+
+classes:
+  E4_Period:
+    description: "Identifiable periods of time"
+    is_a: E52_Time-Span
+    slots:
+      - has_beginning
+      - has_end
+
+  E5_Event:
+    description: "Changes of state in cultural heritage context"
+    is_a: E4_Period
+    slots:
+      - occurred_in
+
+  E6_Destruction:
+    description: "Events resulting in destruction of objects"
+    is_a: E7_Activity
+    slots:
+      - destroyed
+
+  E7_Activity:
+    description: "Actions resulting in state changes"
+    is_a: E5_Event
+    slots:
+      - used
+      - produced
+
+  E8_Acquisition:
+    description: "Events of object acquisition"
+    is_a: E7_Activity
+    slots:
+      - acquired
+
+  E10_Transfer_of_Custody:
+    description: "Transfer of object custody events"
+    is_a: E7_Activity
+    slots:
+      - transferred
+
+  E11_Modification:
+    description: "Object modification events"
+    is_a: E7_Activity
+    slots:
+      - modified
+
+  E12_Production:
+    description: "Creation of physical things"
+    is_a: E11_Modification
+    slots:
+      - produced_object
+
+  E13_Attribute_Assignment:
+    description: "Recording of historical attribute values"
+    is_a: E7_Activity
+    slots:
+      - assigned_attribute
+      - assigned_by
+
+  E21_Person:
+    description: "Individual human beings"
+    is_a: E39_Actor
+    slots:
+      - has_appellation
+
+  E22_Human_Made_Object:
+    description: "Physical objects created by humans"
+    is_a: E70_Thing
+    slots:
+      - made_of
+
+  E33_Linguistic_Object:
+    description: "Textual/inscriptional objects"
+    is_a: E89_Propositional_Object
+    slots:
+      - written_in
+
+  E36_Visual_Item:
+    description: "Visual representations"
+    is_a: E89_Propositional_Object
+    slots:
+      - depicted_in
+
+  E39_Actor:
+    description: "Agents capable of intentional actions"
+    is_a: E77_Persistent_Item
+    slots:
+      - participated_in
+
+  E41_Linguistic_Appellation:
+    description: "Names and identifiers"
+    is_a: E70_Thing
+    slots:
+      - has_language
+
+  E42_Identifier:
+    description: "Formal identifiers"
+    is_a: E41_Linguistic_Appellation
+    slots:
+      - identifies_object
+
+  E52_Time-Span:
+    description: "Temporal intervals"
+    slots:
+      - has_beginning
+      - has_end
+
+  E53_Place:
+    description: "Geospatial locations"
+    slots:
+      - has_coordinates
+
+  E54_Dimension:
+    description: "Quantitative measurements"
+    slots:
+      - has_unit
+      - has_value
+
+  E55_Type:
+    description: "Classification concepts"
+    is_a: E70_Thing
+    slots:
+      - type_uri
+
+  E56_Language:
+    description: "Human languages"
+    is_a: E55_Type
+
+  E57_Material:
+    description: "Physical substances"
+    is_a: E55_Type
+    slots:
+      - used_in
+
+  E58_Measurement_Unit:
+    description: "Units of measure"
+    is_a: E55_Type
+
+  E65_Creation:
+    description: "Creation of conceptual items"
+    is_a: E7_Activity
+    slots:
+      - created_concept
+
+  E66_Formation:
+    description: "Group formation events"
+    is_a: E7_Activity
+    slots:
+      - formed_group
+
+  E67_Birth:
+    description: "Human birth events"
+    is_a: E7_Activity
+    slots:
+      - born_person
+
+  E68_Dissolution:
+    description: "Group dissolution events"
+    is_a: E7_Activity
+    slots:
+      - dissolved_group
+
+  E69_Death:
+    description: "Human death events"
+    is_a: E7_Activity
+    slots:
+      - deceased_person
+
+  E70_Thing:
+    description: "Persistent physical/conceptual items"
+    is_a: E77_Persistent_Item
+    slots:
+      - has_dimension
+
+  E73_Information_Object:
+    description: "Conceptual information carriers"
+    is_a: E89_Propositional_Object
+    slots:
+      - contains_information
+
+  E74_Group:
+    description: "Collections of actors"
+    is_a: E39_Actor
+    slots:
+      - has_members
+
+  E77_Persistent_Item:
+    description: "Enduring entities"
+    slots:
+      - has_type
+
+  E79_Part_Addition:
+    description: "Object augmentation events"
+    is_a: E11_Modification
+    slots:
+      - added_part
+
+  E80_Part_Removal:
+    description: "Object reduction events"
+    is_a: E11_Modification
+    slots:
+      - removed_part
+
+  E85_Joining:
+    description: "Marriage events"
+    is_a: E7_Activity
+    slots:
+      - joined_people
+
+  E86_Leaving:
+    description: "Marriage dissolution events"
+    is_a: E7_Activity
+    slots:
+      - separated_people
+
+  E89_Propositional_Object:
+    description: "Conceptual statements"
+    is_a: E70_Thing
+
+  E97_Monetary_Amount:
+    description: "Financial quantities"
+    is_a: E54_Dimension
+
+  E98_Currency:
+    description: "Monetary systems"
+    is_a: E58_Measurement_Unit
+
+  Contributor:
+    description: "Dataset/project contributors"
+    is_a: E39_Actor
+    slots:
+      - affiliation
+      - role
+      - contribution_period
+      - contact_point
+
+  Location_of_contribution:
+    description: "Geospatial context of contributions"
+    is_a: E53_Place
+
+slots:
+  # Temporal properties
+  has_beginning:
+    range: datetime
+  has_end:
+    range: datetime
+  contribution_period:
+    range: E52_Time-Span
+
+  # Spatial properties
+  has_coordinates:
+    range: string
+    
+
+  # Material properties
+  made_of:
+    range: E57_Material
+  used_in:
+    range: E22_Human_Made_Object
+
+  # Identification properties
+  has_appellation:
+    range: E41_Linguistic_Appellation
+  identifies_object:
+    range: E22_Human_Made_Object
+
+  # Event participation
+  participated_in:
+    range: E5_Event
+    multivalued: true
+
+  # Measurement properties
+  has_dimension:
+    range: E54_Dimension
+  has_unit:
+    range: E58_Measurement_Unit
+  has_value:
+    range: float
+
+  # Linguistic properties
+  written_in:
+    range: E56_Language
+  has_language:
+    range: E56_Language
+
+  # Group properties
+  has_members:
+    range: E39_Actor
+    multivalued: true
+
+  # Contributor properties
+  affiliation:
+    range: E74_Group
+  role:
+    range: E55_Type
+  contact_point:
+    range: string
+    pattern: "^\\S+@\\S+\\.\\S+$"
+
+  # Type properties
+  type_uri:
+    description: "External vocabulary reference"
+    range: uri
+
+  # Relationship properties
+  destroyed:
+    range: E22_Human_Made_Object
+  produced:
+    range: E22_Human_Made_Object
+  transferred:
+    range: E22_Human_Made_Object
+  modified:
+    range: E22_Human_Made_Object
+  added_part:
+    range: E22_Human_Made_Object
+  removed_part:
+    range: E22_Human_Made_Object

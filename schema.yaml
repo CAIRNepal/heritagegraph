@@ -1,0 +1,518 @@
+id: NCHLOD
+name: nepalCulturalHeritageLinkedOpenData
+description: A schema based on CIDOC CRM to represent Nepal's cultural heritage data.
+imports:
+  - linkml:types
+prefixes:
+  crm: "http://www.cidoc-crm.org/cidoc-crm/"
+  linkml: "https://w3id.org/linkml/"
+  nchlod: "https://cair-nepal.org/nchlod" # example domain
+default_prefix: nchlod
+
+classes:
+  
+
+  E4_Period:
+    description: "This class comprises identifiable periods of time."
+    is_a: E52_Timespan
+    slots:
+      - has_beginning
+      - has_end
+
+  E5_Event: 
+    description: "This class comprises changes of state in the Nepal."
+    is_a: E4_Period
+    slots:
+      - occurred_in
+      
+  
+  E6_Destruction:
+    description: "This class comprises events that result in the destruction of an object."
+    is_a: E7_Activity
+    slots:
+      - destroyed
+      
+  
+  E7_Activity:
+    description: "This class comprises actions or processes that result in changes of state."
+    is_a: E5_Event
+    slots:
+      - used
+      - produced
+      - has_time
+  
+  E8_Acquisition:
+    description: "This class comprises events that result in the acquisition of an object."
+    is_a: E7_Activity
+    slots:
+      - acquired
+      - has_time
+  
+  E10_Transfer_of_Custody:
+
+    description: "This class comprises events that result in the transfer of custody of an object."
+    is_a: E7_Activity
+    slots:
+      - transferred
+      - has_time
+  
+  E11_Modification:
+    description: "This class comprises events that result in the modification of an object."
+    is_a: E7_Activity
+    slots:
+      - modified
+      - has_time
+
+  E12_Production:
+    description: "The beginning of existence of a physical thing."
+    is_a: E11_Modification
+    slots:
+      - produced_object
+      - has_time
+
+  E13_Attribute_Assignment:
+
+    is_a: E7_Activity
+    description: "This class is used for recording previously believed values."
+    slots:
+      - assigned_attribute
+      - assigned_by
+
+  E21_Person:
+    description: "This class comprises individual people."
+    is_a : E39_Actor
+    slots:
+      - has_name
+
+  E22_Human_Made_Object:
+    
+    description: "This class comprises physical objects created by humans."
+    is_a : E70_Thing
+    slots:
+      - made_of
+      - has_dimension
+
+
+
+  E33_Linguistic_Object:
+    
+    description: "This class comprises statements, inscriptions, or textual objects."
+    is_a: E89_Propositional_Object
+    slots:
+      - written_in
+
+  E41_Linguistic_Appellation:
+    description: "This class comprises names, titles, or other linguistic identifiers."
+    is_a: E70_Thing
+    slots:
+      - has_language
+
+  E36_Visual_Item:
+    
+    description: "This class comprises images and other forms of visual representation."
+    is_a: E89_Propositional_Object
+    slots:
+      - depicted_in
+
+  E39_Actor:
+    
+    
+    description: "This class comprises people, either individually or in groups, who have the potential to perform intentional actions of kinds for which they can be held responsible"
+    is_a: E77_Persistent_Item
+    slots:
+      - participated_in
+
+  E42_Identifier:
+
+    
+    description: "This class comprises identifiers of things."
+    is_a: E41_Linguistic_Appellation
+    slots:
+      - identifies_object
+
+  E52_Timespan:
+    description: "This class collects the beginning and ending of time spans."
+    slots:
+      - has_beginning
+      - has_end
+
+  E53_Place:
+    description: "This class comprises locations in the natural world."
+    slots:
+      - has_coordinates
+
+  E54_Dimension:
+    description: "This class comprises measurable dimensions of objects."
+    slots:
+      - has_unit
+      - has_value
+
+  E55_Type:
+    
+    description: "This class refers to external vocabularies, such as AAT."
+    is_a: E70_Thing
+    slots:
+      - referenced_in
+
+  E56_Language:
+
+    
+    description: "This class comprises the languages in which textual objects are written."
+    is_a: E55_Type
+    slots:
+      - spoken_by
+
+  E57_Material:
+    description: "This class refers to the materials that make up an object."
+    is_a: E55_Type
+    slots:
+      - used_in
+      - contains
+
+  E58_Measurement_Unit:
+    
+    description: "The unit of measurement for a dimension value, such as inches."
+    is_a: E55_Type
+    slots:
+      - unit_of
+
+  E65_Creation:
+    
+    description: "An activity that results in the creation of non-physical things."
+    is_a: E7_Activity
+    slots:
+      - created_concept
+
+  E66_Formation:
+    
+    description: "An event that results in the formation of a group."
+    is_a: E7_Activity
+    slots:
+      - formed_group
+      - has_time
+
+  E67_Birth:
+    description: "The event of the birth of a person."
+    is_a: E7_Activity
+    slots:
+      - born_person
+      - has_time
+
+  E68_Dissolution:
+    
+    description: "The event that results in the dissolution of a group."
+    is_a: E7_Activity
+    slots:
+      - dissolved_group
+      - has_time
+
+  E69_Death:
+    
+    description: "The event of the death of a person."
+    is_a: E7_Activity
+    slots:
+      - deceased_person
+      - has_time
+  E70_Thing:
+    
+    
+    description: "This general class comprises discrete, identifiable, instances of E77 Persistent Item that are documented as single units, that either consist of matter or depend on being carried by matter and are characterized by relative stability."
+    is_a: E77_Persistent_Item
+    slots:
+      - has_dimension
+
+
+  E73_Information_Object:
+   
+    description: "This class comprises concepts, schemes, and textual objects."
+    is_a: E89_Propositional_Object
+    slots:
+      - contains_information
+
+  E74_Group:
+    
+    description: "This class comprises groups of people or organizations."
+    is_a: E39_Actor
+    slots:
+      - has_members
+  E77_Persistent_Item:
+    description: "Persistent Items may be physical entities, such as people, animals or things, conceptual entities such as ideas, concepts, products of the imagination or even names."
+    slots:
+      - has_type
+      
+  E79_Part_Addition:
+    
+    description: "An event that results in the addition of a part to an object."
+    is_a: E11_Modification
+    slots:
+      - added_part
+
+  E80_Part_Removal:
+    
+    description: "An event that results in the removal of a part from an object."
+    is_a: E11_Modification
+    slots:
+      - removed_part
+
+  E85_Joining:
+    description: "An event that records the joining of two individuals in a marriage."
+    is_a: E7_Activity
+    slots:
+      - joined_people
+
+  E86_Leaving:
+    
+    description: "An event that records the dissolution of a marriage."
+    is_a: E7_Activity
+    slots:
+      - separated_people
+
+  E89_Propositional_Object:
+    description: "This class refers to propositions or promises about reality."
+    is_a: E70_Thing
+    slots:
+      - proposition
+
+  E97_Monetary_Amount:
+    
+    description: "This class comprises amounts of money for prices or payments."
+    is_a: E54_Dimension
+    slots:
+      - has_value
+
+  E98_Currency:
+    
+    description: "The currency of the monetary amount."
+    is_a : E58_Measurement_Unit
+    slots:
+      - used_in_transaction
+
+  Contributor:
+    
+    description: "Represents an individual or group contributing to the dataset or project."
+    is_a: E39_Actor
+    slots:
+      - name
+      - role
+      - affiliation
+      - contribution_date
+      - email
+      - start_date
+      - end_date
+      
+  Location_of_contribution:
+    
+    description: "The location associated with an event or cultural heritage object in which the contributor has contributed."
+    is_a: E53_Place
+    slots:
+      - name
+      
+
+
+
+slots:  
+  contains:
+
+    description: " Contains information about"
+    range: E73_Information_Object
+
+  start_date:
+    description: "The starting point of the contribution of the user."
+    range: datetime
+
+  end_date:
+    description: "The ending point of the contribution of the user."
+    range: datetime
+  has_type:
+    description: "has value"
+    range: E21_Person
+
+  coordinates:
+    description: "The geographic coordinates of a place."
+    range: string
+  
+  name:
+    description: "The name of an entity (e.g., a contributor, place, or event)."
+    range: string
+
+  role:
+    description: "The role of a contributor in the project (e.g., researcher, developer, curator)."
+    range: string
+
+  affiliation:
+    description: "The organization or institution a contributor is affiliated with."
+    range: string
+
+  contribution_date:
+    description: "The date when the contribution was made."
+    range: datetime
+
+  email:
+    description: "The contact email of the contributor."
+    range: string
+  
+
+
+  has_beginning:
+    description: "The starting point of a time span."
+    range: datetime
+
+  has_end:
+    description: "The ending point of a time span."
+    range: datetime
+
+  occurred_in:
+    description: "The location where an event occurred."
+    range: E53_Place
+
+  has_time:
+    description: "The time span during which an event occurred."
+    range: E52_Timespan
+
+  destroyed:
+    description: "The object that was destroyed in an event."
+    range: E22_Human_Made_Object
+
+  used:
+    description: "The materials or objects used during an activity."
+    range: E57_Material
+
+  produced:
+    description: "The object or outcome produced as a result of an activity."
+    range: E22_Human_Made_Object
+
+  acquired:
+    description: "The object that was acquired in an acquisition event."
+    range: E22_Human_Made_Object
+
+  transferred:
+    description: "The object that was transferred during an event of custody transfer."
+    range: E22_Human_Made_Object
+
+  modified:
+    description: "The object that was modified in a modification event."
+    range: E22_Human_Made_Object
+
+  produced_object:
+    description: "The physical object produced during a production event."
+    range: E22_Human_Made_Object
+
+  assigned_attribute:
+    description: "The attribute that was assigned during an attribute assignment event."
+    range: string
+
+  assigned_by:
+    description: "The actor who assigned the attribute."
+    range: E39_Actor
+
+  has_name:
+    description: "The name of a person."
+    range: string
+
+  made_of:
+    description: "The material that an object is made of."
+    range: E57_Material
+
+  has_dimension:
+    description: "The dimensions of an object."
+    range: E54_Dimension
+
+  written_in:
+    description: "The language in which a linguistic object is written."
+    range: E56_Language
+
+  has_language:
+    description: "The language in which an appellation or linguistic object is used. This property associates the linguistic object or appellation with a specific language, indicating the cultural or linguistic context in which it is valid and used."
+    range: E56_Language
+
+  depicted_in:
+    description: "The visual item where an object or event is depicted."
+    range: E36_Visual_Item
+
+  participated_in:
+    description: "The event in which an actor participated."
+    range: E5_Event
+
+  identifies_object:
+    description: "The object that an identifier refers to."
+    range: E22_Human_Made_Object
+
+  has_coordinates:
+    description: "The geographic coordinates of a place."
+    range: string
+
+  has_unit:
+    description: "The unit of measurement for a dimension."
+    range: E58_Measurement_Unit
+
+  has_value:
+    description: "The value of a dimension or monetary amount."
+    range: float
+
+  referenced_in:
+    description: "The external vocabulary or type that an object is associated with."
+    range: string
+
+  spoken_by:
+    description: "The actor who speaks a particular language."
+    range: E39_Actor
+
+  used_in:
+    description: "The material used in an object or activity."
+    range: E22_Human_Made_Object
+
+  unit_of:
+    description: "The measurement unit for a dimension."
+    range: E58_Measurement_Unit
+
+  created_concept:
+    description: "The concept or information object created during a creation event."
+    range: E73_Information_Object
+
+  formed_group:
+    description: "The group formed during a formation event."
+    range: E74_Group
+
+  born_person:
+    description: "The person born during a birth event."
+    range: E21_Person
+
+  dissolved_group:
+    description: "The group dissolved during a dissolution event."
+    range: E74_Group
+
+  deceased_person:
+    description: "The person who died during a death event."
+    range: E21_Person
+
+  contains_information:
+    description: "The information contained in an information object."
+    range: string
+
+  has_members:
+    description: "The members of a group."
+    range: E39_Actor
+
+  added_part:
+    description: "The part that was added during an addition event."
+    range: E22_Human_Made_Object
+
+  removed_part:
+    description: "The part that was removed during a removal event."
+    range: E22_Human_Made_Object
+
+  joined_people:
+    description: "The people joined together during a marriage event."
+    range: E21_Person
+
+  separated_people:
+    description: "The people separated during a divorce event."
+    range: E21_Person
+
+  proposition:
+    description: "The propositional content of a statement or promise."
+    range: string
+
+  used_in_transaction:
+    description: "The currency used in a monetary transaction."
+    range: E98_Currency
