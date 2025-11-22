@@ -5,7 +5,7 @@ from rdflib import Namespace
 
 
 SCHEMA_FILE = "final_schema.yaml"
-DB_FILE = "oxigraph_db"
+DB_FILE = "oxigraphhhh_db"
 
 
 NCHLOD = Namespace("https://cair-nepal.org/nchlod/")
@@ -103,3 +103,5 @@ if __name__ == "__main__":
         query_relations()
     except Exception as e:
         print(f"An error occurred: {e}")
+        
+    
