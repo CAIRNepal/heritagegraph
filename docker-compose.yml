@@ -33,7 +33,7 @@ services:
 
   frontend:
     build:
-      context: .
+      # context: .
       dockerfile: Dockerfile.frontend
     container_name: heritage-frontend
     restart: unless-stopped
@@ -89,12 +89,18 @@ services:
       - backend
     volumes: 
       - ./keycloak-themes:/opt/keycloak/themes 
+      # - ./keycloak/themes/quick-theme.jar:/opt/keycloak/providers/quick-theme.jar
+      - ./keycloak/realm-export/realm.json:/opt/keycloak/data/import/realm.json
+
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`keycloak.localhost`)"
       - "traefik.http.routers.keycloak.entrypoints=web"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
-    command: start-dev
+    command: 
+      - start-dev
+      - --features=quick-theme
+      # - --import-realm
     restart: unless-stopped
 
 volumes:

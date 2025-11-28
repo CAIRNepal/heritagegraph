@@ -13,6 +13,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "apps.heritage_data",
     "apps.cidoc_data",
+
+    "django_prometheus",
     # "djoser",
     # "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
@@ -36,6 +38,10 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+
+    # prometheus
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "urls"

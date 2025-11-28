@@ -1,4 +1,4 @@
-// File: /home/nabin/Desktop/Allprojects/CHLOD/heritage_graph_landing/app/layout.tsx
+// File: /home/nabin2004/Desktop/heritageGRAPH/heritagegraph/heritage_graph_landing/app/layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -33,6 +33,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     # API Documentation
+    path('', include('django_prometheus.urls')),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),  # OpenAPI schema
     path(
         "docs", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"

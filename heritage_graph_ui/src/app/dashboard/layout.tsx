@@ -9,8 +9,8 @@ import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeProvider } from 'next-themes';
 import { ThemeToggle } from '@/components/theme-toggle';
-
 import { SessionProvider } from 'next-auth/react';
+
 // import { useSession, signIn, signOut } from 'next-auth/react';
 
 // import {
@@ -26,6 +26,7 @@ import { SessionProvider } from 'next-auth/react';
 // import { NavUser } from '@/components/nav-user';
 
 import AuthButtons from '@/components/AuthButtons';
+import Image from 'next/image';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
@@ -78,6 +79,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 >
                   {children}
                 </main>
+                        <footer className="px-6 py-4 border-t border-border flex flex-col md:flex-row items-center justify-center gap-4 text-sm text-muted-foreground">
+                  {/* Logos */}
+                  <div className="flex items-center gap-4">
+                    <Image src="/cair-logo/fulllogo_nobuffer.png" alt="HeritageGraph" width={150} height={150} />
+                    <Image src="/logo.svg" alt="Partner Logo" width={100} height={100} />
+                  </div>
+                
+                  {/* Optional copyright text */}
+                  <div className="mt-2 md:mt-0">
+                    &copy; 2025 HeritageGraph. All rights reserved.
+                  </div>
+                </footer>
+                
               </SidebarInset>
             </SidebarProvider>
           </ThemeProvider>

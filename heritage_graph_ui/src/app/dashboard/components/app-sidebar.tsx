@@ -1,7 +1,9 @@
 'use client';
 
 import * as React from 'react';
-// import Link from 'next/link';
+import Link from 'next/link';
+import Image from "next/image";
+
 import {
   IconCamera,
   IconChartBar,
@@ -22,6 +24,8 @@ import {
   IconUsers,
   IconBuilding,
 } from '@tabler/icons-react';
+
+// import { useSidebar } from '@/components/ui/sidebar';
 // import { NavDocuments } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
 // import { NavSecondary } from '@/components/nav-secondary';
@@ -34,6 +38,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
+  useSidebar,
+  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 
 const data = {
@@ -42,38 +49,38 @@ const data = {
     email: 'nabin.oli@cair-nepal.org',
     avatar: '/avatars/shadcn.jpg',
   },
-  navMain: [
-    {
-      title: 'Dashboard',
-      url: '/dashboard',
-      icon: IconLayoutDashboard,
-    },
-    {
-      title: 'Leaderboard',
-      url: '/dashboard/leaderboard',
-      icon: IconTrophy,
-    },
-    {
-      title: 'Contribute',
-      url: '/dashboard/contribute',
-      icon: IconPlus,
-    },
-    {
-      title: 'Notification',
-      url: '/dashboard/notification',
-      icon: IconBell,
-    },
-    {
-      title: 'team',
-      url: '/dashboard/team',
-      icon: IconUsersGroup,
-    },
-    // {
-    //   title: "Team",
-    //   url: "#",
-    //   icon: IconUsers,
-    // },
-  ],
+  // navMain: [
+  //   {
+  //     title: 'Dashboard',
+  //     url: '/dashboard',
+  //     icon: IconLayoutDashboard,
+  //   },
+  //   {
+  //     title: 'Leaderboard',
+  //     url: '/dashboard/leaderboard',
+  //     icon: IconTrophy,
+  //   },
+  //   {
+  //     title: 'Contribute',
+  //     url: '/dashboard/contribute',
+  //     icon: IconPlus,
+  //   },
+  //   {
+  //     title: 'Notification',
+  //     url: '/dashboard/notification',
+  //     icon: IconBell,
+  //   },
+  //   {
+  //     title: 'team',
+  //     url: '/dashboard/team',
+  //     icon: IconUsersGroup,
+  //   },
+  //   // {
+  //   //   title: "Team",
+  //   //   url: "#",
+  //   //   icon: IconUsers,
+  //   // },
+  // ],
   navClouds: [
     {
       title: 'Capture',
@@ -242,32 +249,48 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              {/* <Link href="/"> */}
-              {/* <IconInnerShadowTop className="!size-10" /> */}
-              {/* <span className="text-base font-semibold">HeritageGraph</span> */}
-              {/* </Link> */}
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+            
+<SidebarMenuButton
+  asChild
+  className="data-[slot=sidebar-menu-button]:!p-1.5"
+>
+  <div className="flex items-center justify-between w-full h-full">
+    <Link href="/dashboard" className="flex items-center">
+          <Image
+            src={isCollapsed ? "/logo1.svg" : "/logo.svg"}
+            alt="logo"
+            width={isCollapsed? 40: 150}
+            height={isCollapsed? 40: 150}
+          />
+      {/* <span className="">HeritageGraph</span> */}
+    </Link>
+  </div>
+
+</SidebarMenuButton>
+
+
+      </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavMain items={data.navKnowledgebase} />
+        {/* <NavMain items={data.navMain} /> */}
+        {/* <SidebarGroupLabel>Options</SidebarGroupLabel> */}
+        <NavMain navtitle="Knowledgebase"  items={data.navKnowledgebase} />
         {/* <NavDocuments items={data.navKnowledgebase} /> */}
-        <NavMain items={data.navCuration} />
-        <NavMain items={data.navCommunity} />
+        <NavMain navtitle="Curation" items={data.navCuration} />
+        <NavMain navtitle="Community" items={data.navCommunity} />
         {/* <NavDocuments items={data.navResources} /> */}
         {/* <NavDocuments items={data.navAbout} /> */}
-        <NavMain items={data.navSecondary}/>
+        {/* <NavMain items={data.navSecondary}/> */}
       </SidebarContent>
       {/* <AuthSection /> */}
     </Sidebar>

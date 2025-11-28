@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Grid } from '@/components/ui/grid';
+// import { Grid } from '@/components/ui/grid';
 
 const CONTRIBUTION_TYPES = [
   { name: 'Entity', path: '/dashboard/contribute/entity', description: 'Add historical figures, monuments, artifacts, etc.' },

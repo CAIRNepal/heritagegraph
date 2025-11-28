@@ -11,6 +11,8 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 //   SignedOut,
 //   useAuth,
 // } from '@clerk/nextjs';
+import { ThemeToggle } from '@/components/theme-toggle';
+import AuthButtons from '@/components/AuthButtons';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +23,8 @@ import {
 } from '@/components/ui/accordion';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 // import { NavigationMenu, NavigationMenuItem } from '@/components/ui/navigation-menu';
+import { SiteHeader } from '@/components/site-header';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import {
   Menu,
   Star,
@@ -142,16 +146,41 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 text-blue-900 font-sans scroll-smooth overflow-x-hidden">
-      <GradientOrbs />
-      <FloatingParticles />
+            
+<header
+  className="flex items-center justify-between px-4 h-16 bg-white border-b border-white"
+  role="banner"
+  aria-label="Site Header"
+>
+                  <SiteHeader />
+
+                  <div className="ml-auto flex items-center gap-4">
+                    <AuthButtons />
+                    <ThemeToggle />
+                  </div>
+                </header>
+      
+            {/* <SidebarProvider
+                    style={
+                      {
+                        '--sidebar-width': 'calc(var(--spacing) * 72)',
+                        '--header-height': 'calc(var(--spacing) * 12)',
+                      } as React.CSSProperties
+                    }
+                  />
+              {/* <SiteHeader /> */}
+        {/* <SidebarProvider /> */} 
+
+      {/* <GradientOrbs />
+      <FloatingParticles /> */}
 
       {/* Header */}
-      <motion.header
+      {/* <motion.header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'bg-white/80 backdrop-blur-xl border-b border-blue-200' : 'bg-transparent'}`}
         style={{ opacity: headerOpacity }}
-      >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <motion.div
+      > */}
+        {/* <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"> */}
+          {/* <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
@@ -165,9 +194,9 @@ export default function Home() {
             <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
               <Link href="/">HeritageGraph</Link>
             </h1>
-          </motion.div>
+          </motion.div> */}
 
-          <nav className="hidden md:flex items-center gap-8">
+          {/* <nav className="hidden md:flex items-center gap-8">
             {['Explore', 'Dashboard', 'About', 'Contact'].map((item) => {
               const href =
                 item === 'Dashboard' ? '/dashboard' : `#${item.toLowerCase()}`;
@@ -185,9 +214,9 @@ export default function Home() {
                 <SignInButton />
                 <SignUpButton />
               </SignedOut> */}
-          </nav>
+          {/* </nav> */} 
 
-          <div className="md:hidden">
+          {/* <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -213,7 +242,7 @@ export default function Home() {
             </Sheet>
           </div>
         </div>
-      </motion.header>
+      </motion.header> */}
 
       {/* Main Content */}
       <main className="relative">

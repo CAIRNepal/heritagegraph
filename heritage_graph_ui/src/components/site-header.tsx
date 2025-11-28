@@ -5,50 +5,53 @@ import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 import {
-  // IconChartBar,
-  // IconDashboard,
-  // IconUsers,
-  // IconBell,
+  IconBell,
+  IconLayoutDashboard,
+  IconTrophy,
+  IconPlus,
+  IconUsersGroup,
+
   IconSearch,
 } from '@tabler/icons-react';
 // import AuthButtons from '@/components/AuthButtons';
 // import { ThemeToggle } from './theme-toggle';
 
-// const data = {
-//   user: {
-//     name: 'nabin2004',
-//     email: 'nabin.oli@cair-nepal.org',
-//     avatar: '/avatars/shadcn.jpg',
-//   },
-//   navMain: [
-//     {
-//       title: 'Dashboard',
-//       url: '/dashboard',
-//       icon: IconDashboard,
-//     },
-//     {
-//       title: 'Leaderboard',
-//       url: '/dashboard/leaderboard',
-//       icon: IconChartBar,
-//     },
-//     {
-//       title: 'Form',
-//       url: '/dashboard/contribute',
-//       icon: IconChartBar,
-//     },
-//     {
-//       title: 'Notification',
-//       url: '/dashboard/notification',
-//       icon: IconBell,
-//     },
-//     // {
-//     //   title: 'Team',
-//     //   url: '/dashboard/team',
-//     //   icon: IconUsers,
-//     // },
-//   ],
-// };
+const data = {
+  user: {
+    name: 'nabin2004',
+    email: 'nabin.oli@cair-nepal.org',
+    avatar: '/avatars/shadcn.jpg',
+  },
+  navMain: [
+    {  
+      title: 'Dashboard',
+      url: '/dashboard',
+      icon: IconLayoutDashboard,
+    },
+    {
+      title: 'Leaderboard',
+      url: '/dashboard/leaderboard',
+      icon: IconTrophy,
+    },
+    {
+      title: 'Contribute',
+      url: '/dashboard/contribute',
+      icon: IconPlus,
+    },
+    {
+      title: 'Notification',
+      url: '/dashboard/notification',
+      icon: IconBell,
+    },
+    {
+      title: 'team',
+      url: '/dashboard/team',
+      icon: IconUsersGroup,
+    },
+  ],
+};
 
 export function SiteHeader() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,14 +66,19 @@ export function SiteHeader() {
     <header className="flex h-[--header-height] shrink-0 items-center gap-4 px-4 lg:px-6">
       {/* Left side */}
       <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-1" />
-        <Separator
+                  <div className='p-2 pt-3'>
+    <SidebarTrigger />
+    </div>
+
+
+        {/* <SidebarTrigger className="-ml-1" /> */}
+        {/* <Separator
           orientation="vertical"
           className="mx-2 data-[orientation=vertical]:h-10"
-        />
-<h1 className="text-xl font-extrabold tracking-tight">
+        /> */}
+{/* <h1 className="text-xl font-extrabold tracking-tight">
   Heritage Graph
-</h1>
+</h1> */}
       </div>
 
       {/* Search bar */}
@@ -86,18 +94,14 @@ export function SiteHeader() {
       </div>
 
       {/* Horizontal menu */}
-      {/* <nav className="ml-auto hidden md:flex items-center gap-3">
+      <nav className="ml-auto hidden md:flex items-center gap-3">
         {data.navMain.map((item) => (
-          <a
-            key={item.title}
-            href={item.url}
-            className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
+          <Link key={item.title} href={item.url} className="flex items-center gap-2 ...">
             <item.icon className="h-4 w-4" />
             <span>{item.title}</span>
-          </a>
+          </Link>
         ))}
-      </nav> */}
+      </nav>
     </header>
   );
 }

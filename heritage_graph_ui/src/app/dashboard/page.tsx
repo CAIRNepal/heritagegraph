@@ -2,6 +2,8 @@
 
 import { useSession } from 'next-auth/react';
 import { useEffect } from 'react';
+import Image from "next/image";
+
 
 import { Card, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,5 +86,6 @@ export default function Page() {
       <DataTable />
 
     </div>
+    
   );
 }

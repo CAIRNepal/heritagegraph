@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   Card,
   CardContent,
@@ -46,9 +46,24 @@ interface EntityData {
 
 type FormMode = 'new' | 'revise' | 'edit';
 
+// Custom hook to safely get search params
+function useSafeSearchParams() {
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
+  
+  useEffect(() => {
+    // This runs only on client side
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setSearchParams(params);
+    }
+  }, []);
+
+  return searchParams;
+}
+
 export default function CulturalEntityContributionPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSafeSearchParams();
   const { data: session, status } = useSession();
   const isSignedIn = status === 'authenticated';
 
@@ -62,6 +77,8 @@ export default function CulturalEntityContributionPage() {
 
   // Load entity data from URL parameters
   useEffect(() => {
+    if (!searchParams) return;
+
     const entityParam = searchParams.get('entity');
     const modeParam = searchParams.get('mode') as FormMode;
     
@@ -337,6 +354,17 @@ export default function CulturalEntityContributionPage() {
         return 'Submit Entity';
     }
   };
+
+  // Show loading state while search params are being initialized
+  if (!searchParams) {
+    return (
+      <div className="container max-w-2xl mx-auto space-y-6 px-4 lg:px-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold">Loading...</h1>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

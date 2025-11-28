@@ -5,9 +5,9 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 const handler = NextAuth({
   providers: [
     KeycloakProvider({
-      clientId: "HeritageGraph",
-      clientSecret: "sHNjcASWSVCSE7LSsJXibvut576zcbRo",
-      issuer: "http://keycloak.localhost/realms/HeritageRealm",
+      clientId: "heritageGraph",
+      clientSecret: "G7mrtxRqnAKQ4Lk1Fx14swacyIsj2tpk",
+      issuer: "http://keycloak.localhost/realms/heritageGraph",
       profile(profile) {
         return {
           id: profile.sub,
@@ -78,12 +78,12 @@ const handler = NextAuth({
       session.user.name = token.name;
       session.user.username = token.username;
       session.accessToken = token.accessToken;
-      session.idToken = token.idToken;
+      // session.idToken = token.idToken;
       return session;
     },
   },
 
-  debug: true, // helpful during development
+  debug: true, 
 });
 
 export { handler as GET, handler as POST };

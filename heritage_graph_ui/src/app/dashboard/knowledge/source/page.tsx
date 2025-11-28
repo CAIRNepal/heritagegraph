@@ -133,6 +133,12 @@ interface SourceHoverProps {
   children: React.ReactNode;
 }
 
+type SourceHoverCard = {
+  source: any; 
+  children: React.ReactNode;
+};
+
+
 function SourceHoverCard({ source, children }: SourceHoverCard) {
   const router = useRouter();
 
@@ -250,7 +256,7 @@ export default function SourcesPage() {
 
       if (search) url += `&search=${encodeURIComponent(search)}`;
       Object.entries(filterParams).forEach(([key, value]) => {
-        if (value && value !== 'all') url += `&${key}=${encodeURIComponent(value)}`;
+        if (value && value !== 'all') url += `&${key}=${encodeURIComponent(String(value))}`;
       });
 
       const res = await fetch(url, { headers: { accept: 'application/json' } });

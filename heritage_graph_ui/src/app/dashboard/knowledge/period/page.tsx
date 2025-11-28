@@ -278,7 +278,8 @@ export default function HistoricalPeriodsPage() {
       // Add filter parameters
       Object.entries(filterParams).forEach(([key, value]) => {
         if (value && value !== 'all') {
-          url += `&${key}=${encodeURIComponent(value)}`;
+          url += `&${key}=${encodeURIComponent(encodeURIComponent(String(value))
+)}`;
         }
       });
 

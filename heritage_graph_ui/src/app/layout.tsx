@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import NextAuthSessionProvider from './SessionProvider';
 import React from 'react';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -10,11 +11,9 @@ const geistSans = Geist({
 });
 
 const geistMono = Geist_Mono({
-  // variable: '--font-geist-mono',
   subsets: ['latin'],
   weight: ['400', '600', '700', '800'],
   variable: '--font-poppins',
-
 });
 
 export const metadata: Metadata = {
@@ -26,16 +25,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+        <SidebarProvider
+          style={{
+            '--sidebar-width': 'calc(var(--spacing) * 72)',
+            '--header-height': 'calc(var(--spacing) * 12)',
+          } as React.CSSProperties}
+        >
+          <NextAuthSessionProvider>{children}</NextAuthSessionProvider>
+        </SidebarProvider>
       </body>
     </html>
   );

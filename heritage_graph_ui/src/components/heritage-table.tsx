@@ -27,8 +27,6 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  // IconCircleCheckFilled,
-  // IconDotsVertical,
   IconGripVertical,
   IconLayoutColumns,
   IconLoader,
@@ -51,19 +49,12 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table';
-// import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  // ChartConfig,
-  // ChartContainer,
-  // ChartTooltip,
-  // ChartTooltipContent,
-} from '@/components/ui/chart';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Drawer,
@@ -73,14 +64,11 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  // DrawerTrigger,
 } from '@/components/ui/drawer';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  // DropdownMenuItem,
-  // DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
@@ -109,21 +97,26 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card';
-// import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 
-// Updated schema to match the new data structure
+// --- 1. UPDATED SCHEMA TO MATCH API RESPONSE ---
 export const schema = z.object({
-  submission_id: z.string(),
+  id: z.number(),
   title: z.string(),
   description: z.string(),
-  contributor: z.number(),
-  contributor_username: z.string(),
+  contributor: z.string(),
   status: z.string(),
   created_at: z.string(),
+  name: z.string(),
+  aliases: z.string().optional().nullable(),
+  birth_date: z.string().optional().nullable(),
+  death_date: z.string().optional().nullable(),
+  occupation: z.string().optional().nullable(),
+  biography: z.string().optional().nullable(),
 });
 
 // Create a separate component for the drag handle
-function DragHandle({ id }: { id: string }) {
+function DragHandle({ id }: { id: string | number }) {
   const { attributes, listeners } = useSortable({
     id,
   });
@@ -149,11 +142,12 @@ const fuzzyFilter: FilterFn<unknown> = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
+// --- 2. UPDATED COLUMNS DEFINITION ---
 const columns: ColumnDef<z.infer<typeof schema>>[] = [
   {
     id: 'drag',
     header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.submission_id} />,
+    cell: ({ row }) => <DragHandle id={row.original.id} />,
     enableHiding: false,
   },
   {
@@ -183,14 +177,19 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'title',
+    accessorKey: 'title', // Displaying Title (e.g., Lord Shiva)
     header: 'Title',
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />;
     },
     enableHiding: false,
     enableColumnFilter: true,
-    // filterFn: 'fuzzy',
+  },
+  {
+    accessorKey: 'name', // Added Name column (e.g., Mahadev)
+    header: 'Name',
+    cell: ({ row }) => <span>{row.original.name}</span>,
+    enableColumnFilter: true,
   },
   {
     accessorKey: 'description',
@@ -201,23 +200,21 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       </div>
     ),
     enableColumnFilter: true,
-    // filterFn: 'fuzzy',
   },
   {
-    accessorKey: 'contributor_username',
+    accessorKey: 'contributor', // Mapped to 'contributor' from JSON
     header: 'Contributor',
     cell: ({ row }) => {
-      const username = row.original.contributor_username;
+      const contributor = row.original.contributor;
       return (
-        <Link href={`/dashboard/users/${username}`}>
+        <Link href={`/dashboard/users/${contributor}`}>
           <Badge variant="secondary" className="cursor-pointer">
-            @{username}
+            @{contributor}
           </Badge>
         </Link>
       );
     },
     enableColumnFilter: true,
-    // filterFn: 'fuzzy',
   },
   {
     accessorKey: 'status',
@@ -229,16 +226,20 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
           row.original.status === 'approved'
             ? 'text-green-500'
             : row.original.status === 'pending'
-              ? 'text-yellow-500'
-              : 'text-red-500'
+            ? 'text-yellow-500'
+            : 'text-red-500'
         }
       >
-        {row.original.status.charAt(0).toUpperCase() + row.original.status.slice(1)}
+        {row.original.status.charAt(0).toUpperCase() +
+          row.original.status.slice(1)}
       </Badge>
     ),
     enableColumnFilter: true,
     filterFn: (row, columnId, value: string) =>
-      row.getValue<string>(columnId).toLowerCase().includes(value.toLowerCase()),
+      row
+        .getValue<string>(columnId)
+        .toLowerCase()
+        .includes(value.toLowerCase()),
   },
   {
     accessorKey: 'created_at',
@@ -249,50 +250,32 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     },
     enableColumnFilter: true,
     filterFn: (row, columnId, value: string) => {
-      const cellValue = new Date(row.getValue<string>(columnId)).toLocaleDateString();
+      const cellValue = new Date(
+        row.getValue<string>(columnId)
+      ).toLocaleDateString();
       return cellValue.includes(value);
     },
   },
-  // {
-  //   id: 'actions',
-  //   header: 'Actions',
-  //   cell: ({ row }) => {
-  //     const submissionId = row.original.submission_id;
-
-  //     return (
-  //       // <DropdownMenu>
-  //       //   <DropdownMenuTrigger asChild>
-  //       //     <Button
-  //       //       variant="ghost"
-  //       //       className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-  //       //       size="icon"
-  //       //     >
-  //       //       <IconDotsVertical />
-  //       //       <span className="sr-only">Open menu</span>
-  //       //     </Button>
-  //       //   </DropdownMenuTrigger>
-  //       //   <DropdownMenuContent align="end" className="w-32">
-  //       //     <DropdownMenuItem>
-  //       //     </DropdownMenuItem>
-  //       //     <DropdownMenuItem>Edit</DropdownMenuItem>
-  //       //     <DropdownMenuItem>Make a copy</DropdownMenuItem>
-  //       //     <DropdownMenuItem>Favorite</DropdownMenuItem>
-  //       //     <DropdownMenuSeparator />
-  //       //     <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-  //       //   </DropdownMenuContent>
-  //       // </DropdownMenu>
-  //       <Button>
-  //         <Link href={`/dashboard/knowledge/viewreport/${submissionId}`}>View</Link>
-  //       </Button>
-  //     );
-  //   },
-  //   enableColumnFilter: false,
-  // },
+  // Added Actions Button back for direct access
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => {
+      const id = row.original.id;
+      return (
+        <Button variant="ghost" size="sm" asChild>
+           <Link href={`/dashboard/knowledge/viewreport/${id}`}>View</Link>
+        </Button>
+      );
+    },
+    enableColumnFilter: false,
+  },
 ];
 
 function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
+  // Use id instead of submission_id
   const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: row.original.submission_id,
+    id: row.original.id, 
   });
 
   return (
@@ -327,7 +310,7 @@ export function DataTable() {
     pageSize: 10,
   });
 
-  const [pageCount, setPageCount] = React.useState(-1); // server total pages
+  const [pageCount, setPageCount] = React.useState(-1);
 
   const sortableId = React.useId();
   const sensors = useSensors(
@@ -336,16 +319,10 @@ export function DataTable() {
     useSensor(KeyboardSensor, {}),
   );
 
-  // Ensures it's always an array
   const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => (Array.isArray(data) ? data.map((d) => d.submission_id) : []),
-    [data],
+    () => (Array.isArray(data) ? data.map((d) => d.id) : []),
+    [data]
   );
-
-  // const dataIds = React.useMemo<UniqueIdentifier[]>(
-  //   () => data?.map(({ submission_id }) => submission_id) || [],
-  //   [data],
-  // );
 
   const table = useReactTable({
     data,
@@ -360,7 +337,8 @@ export function DataTable() {
       columnFilters,
       pagination,
     },
-    getRowId: (row) => row.submission_id,
+    // Updated to use 'id'
+    getRowId: (row) => row.id.toString(), 
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
@@ -373,31 +351,31 @@ export function DataTable() {
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-
-    //pagination for server side:
     manualPagination: true,
     pageCount,
   });
 
-  // Fetch data from the API
+  // --- 3. FETCH LOGIC UPDATED ---
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        // const response = await fetch('http://127.0.0.1:8000/data/submissions/');
-        const url = `http://127.0.0.1:8000/data/submissions/?page=${
-          pagination.pageIndex + 1
-        }&page_size=${pagination.pageSize}`;
-
+        const url = "http://127.0.0.1:8000/cidoc/search/?q=mahadev";
         const response = await fetch(url);
         const result = await response.json();
 
-        // Normalize for DRF pagination
-        const rows = Array.isArray(result.results) ? result.results : result;
+        // The JSON response structure is { persons: [...] }
+        const rows = result.persons || [];
+        
         setData(rows);
+        
+        // Handle count if your API provides it for pagination
         if (result.count) {
           setPageCount(Math.ceil(result.count / pagination.pageSize));
+        } else {
+           // Fallback if no count is returned (client side pagination simulation)
+           setPageCount(Math.ceil(rows.length / pagination.pageSize));
         }
-        // setData(result);
+
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error('Failed to load submissions');
@@ -409,13 +387,14 @@ export function DataTable() {
     fetchData();
   }, [pagination.pageIndex, pagination.pageSize]);
 
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active && over && active.id !== over.id) {
       setData((old) => {
         const safeData = Array.isArray(old) ? old : [];
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
+        const oldIndex = safeData.findIndex((item) => item.id === active.id);
+        const newIndex = safeData.findIndex((item) => item.id === over.id);
         return arrayMove(safeData, oldIndex, newIndex);
       });
     }
@@ -610,7 +589,7 @@ export function DataTable() {
               </Select>
             </div>
             <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount() || 1}
             </div>
             <div className="ml-auto flex items-center gap-2 lg:ml-0">
               <Button
@@ -669,32 +648,10 @@ export function DataTable() {
   );
 }
 
-// const chartData = [
-//   { month: 'January', desktop: 186, mobile: 80 },
-//   { month: 'February', desktop: 305, mobile: 200 },
-//   { month: 'March', desktop: 237, mobile: 120 },
-//   { month: 'April', desktop: 73, mobile: 190 },
-//   { month: 'May', desktop: 209, mobile: 130 },
-//   { month: 'June', desktop: 214, mobile: 140 },
-// ];
-
-// const chartConfig = {
-//   desktop: {
-//     label: 'Desktop',
-//     color: 'var(--primary)',
-//   },
-//   mobile: {
-//     label: 'Mobile',
-//     color: 'var(--primary)',
-//   },
-// } satisfies ChartConfig;
-import { useState } from 'react';
-// import { Bluetooth } from 'lucide-react';
-
+// --- 4. UPDATED DETAIL VIEWER ---
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
   const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false); // control drawer manually
-  // const { data: session, status } = useSession();
+  const [open, setOpen] = useState(false);
 
   return (
     <>
@@ -704,8 +661,8 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             variant="link"
             className="text-foreground w-fit px-0 text-left hover:underline"
             onClick={() => {
-              setOpen(false); // close drawer if needed
-              window.location.href = `/dashboard/knowledge/viewreport/${item.submission_id}`;
+              setOpen(false);
+              window.location.href = `/dashboard/knowledge/viewreport/${item.id}`;
             }}
           >
             {item.title}
@@ -713,13 +670,12 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         </HoverCardTrigger>
 
         <HoverCardContent className="p-4 w-[500px] max-w-2xl space-y-3 rounded-xl shadow-lg bg-background">
-          {/* Contributor row */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              @{item.contributor_username}
+              @{item.contributor}
             </p>
             <Link
-              href={`/dashboard/users/${item.contributor_username}`}
+              href={`/dashboard/users/${item.contributor}`}
               className="flex items-center gap-2"
             >
               <Button variant="default" size="sm">
@@ -728,16 +684,16 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </Link>
           </div>
 
-          {/* Action button */}
-          <Link href={`/dashboard/knowledge/viewreport/${item.submission_id}`}>
+          <Link href={`/dashboard/knowledge/viewreport/${item.id}`}>
             <Button variant="secondary" className="w-full" size="sm">
               View Submission
             </Button>
           </Link>
 
-          {/* Description / paragraph */}
           <div className="prose prose-sm dark:prose-invert max-h-60 overflow-y-auto leading-relaxed">
-            <p className="text-base whitespace-pre-line">{item.description}</p>
+             <p className="text-base font-semibold">{item.name}</p>
+             <p className="text-sm italic">{item.occupation}</p>
+             <p className="text-sm mt-2">{item.biography || item.description}</p>
           </div>
         </HoverCardContent>
       </HoverCard>
@@ -750,7 +706,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
         <DrawerContent>
           <DrawerHeader className="gap-1">
             <DrawerTitle>{item.title}</DrawerTitle>
-            <DrawerDescription>Submission ID: {item.submission_id}</DrawerDescription>
+            <DrawerDescription>ID: {item.id}</DrawerDescription>
           </DrawerHeader>
           <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
             {!isMobile && (
@@ -761,7 +717,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                     <div>
                       <p className="font-medium">Contributor</p>
                       <p className="text-muted-foreground">
-                        {item.contributor_username}
+                        {item.contributor}
                       </p>
                     </div>
                     <div>
@@ -776,15 +732,24 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                         {new Date(item.created_at).toLocaleDateString()}
                       </p>
                     </div>
+                     <div>
+                      <p className="font-medium">Aliases</p>
+                      <p className="text-muted-foreground">
+                        {item.aliases || 'N/A'}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <Separator />
                 <div className="grid gap-2">
                   <div className="flex gap-2 leading-none font-medium">
-                    {item.title} <IconTrendingUp className="size-4" />
+                    {item.name} <IconTrendingUp className="size-4" />
+                  </div>
+                  <div className="text-muted-foreground italic">
+                    {item.occupation}
                   </div>
                   <div className="text-muted-foreground">
-                    {item.description || 'No description provided'}
+                    {item.biography || item.description || 'No description provided'}
                   </div>
                 </div>
                 <Separator />
@@ -796,8 +761,8 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                 <Input id="title" defaultValue={item.title} />
               </div>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="description">Description</Label>
-                <Input id="description" defaultValue={item.description} />
+                <Label htmlFor="biography">Biography</Label>
+                <Input id="biography" defaultValue={item.biography || item.description} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-3">
@@ -817,7 +782,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                   <Label htmlFor="contributor">Contributor</Label>
                   <Input
                     id="contributor"
-                    defaultValue={item.contributor_username}
+                    defaultValue={item.contributor}
                     readOnly
                   />
                 </div>
@@ -826,7 +791,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <DrawerFooter>
             <Button variant="outline">
-              <a href={`/dashboard/knowledge/viewreport/${item.submission_id}`}>
+              <a href={`/dashboard/knowledge/viewreport/${item.id}`}>
                 View Detail
               </a>
             </Button>
