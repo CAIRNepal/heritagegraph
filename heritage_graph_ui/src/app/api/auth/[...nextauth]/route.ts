@@ -4,20 +4,20 @@ import KeycloakProvider from "next-auth/providers/keycloak";
 
 const handler = NextAuth({
   providers: [
-    KeycloakProvider({
-      clientId: "heritageGraph",
-      clientSecret: "G7mrtxRqnAKQ4Lk1Fx14swacyIsj2tpk",
-      issuer: "http://keycloak.localhost/realms/heritageGraph",
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name ?? profile.preferred_username,
-          email: profile.email,
-          image: profile.picture,
-          username: profile.preferred_username,
-        };
-      },
-    }),
+  KeycloakProvider({
+    clientId: process.env.KEYCLOAK_CLIENT_ID!,
+    clientSecret: process.env.KEYCLOAK_CLIENT_SECRET!,
+    issuer: process.env.KEYCLOAK_ISSUER!,
+    profile(profile) {
+      return {
+        id: profile.sub,
+        name: profile.name ?? profile.preferred_username,
+        email: profile.email,
+        image: profile.picture,
+        username: profile.preferred_username,
+      };
+    },
+})
   ],
 
   session: {

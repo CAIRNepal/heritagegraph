@@ -44,7 +44,7 @@ export default function Page() {
   return (
     <div className="px-4 lg:px-6 space-y-6">
       {/* Compact Welcome Card */}
-      <CardTitle className="text-2xl font-bold">Welcome to Heritage Graph</CardTitle>
+      <CardTitle className="text-2xl font-bold">Welcome to Heritage1 Graph</CardTitle>
       <p>Heritage Graph is a project by CAIR-Nepal for preserving cultural heritages using Knowledge Graphs.</p>
       <Card className="rounded-2xl shadow-md">
         {/* <CardHeader> */}
