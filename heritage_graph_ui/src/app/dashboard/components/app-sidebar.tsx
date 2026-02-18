@@ -29,7 +29,7 @@ import {
   IconCandle,
   IconConfetti,
   IconPalette,
-  IconPillar,
+  IconColumns,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -245,7 +245,7 @@ const data = {
     {
       title: 'Monument',
       url: '/dashboard/knowledge/monument',
-      icon: IconPillar,
+      icon: IconColumns,
     },
   ],
 
