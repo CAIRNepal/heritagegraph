@@ -12,6 +12,12 @@ from rest_framework import permissions
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+from apps.health_check import (
+    health_check,
+    health_check_detailed,
+    liveness_check,
+    readiness_check,
+)
 from apps.heritage_data.views import CurrentUserView, RegisterView
 
 # DefaultRouter for API endpoints
@@ -32,6 +38,11 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    # Health check endpoints (used by Docker, Traefik, and monitoring)
+    path("health/", health_check, name="health"),
+    path("health/detailed/", health_check_detailed, name="health-detailed"),
+    path("health/ready/", readiness_check, name="readiness"),
+    path("health/live/", liveness_check, name="liveness"),
     # API Documentation
     path('', include('django_prometheus.urls')),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),  # OpenAPI schema

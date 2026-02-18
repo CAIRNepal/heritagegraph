@@ -1,0 +1,105 @@
+# ================================================================
+# Traefik Dynamic Configuration (YAML)
+# ================================================================
+# This file contains dynamic configuration for Traefik.
+# It defines middlewares, routers, and services.
+
+# ================================================================
+# Middlewares
+# ================================================================
+http:
+  middlewares:
+    # Security headers middleware
+    securityHeaders:
+      headers:
+        accessControlAllowOriginList:
+          - "https://example.com"
+          - "https://www.example.com"
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - DELETE
+          - PATCH
+        accessControlAllowHeaders:
+          - "*"
+        accessControlMaxAge: 100
+        addVaryHeader: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        frameDeny: true
+        permissionsPolicy: "accelerometer=(), camera=(), microphone=(), geolocation=()"
+        stsSeconds: 63072000
+        stsIncludeSubdomains: true
+        stsPreload: true
+
+    # Compression middleware
+    compression:
+      compress:
+        minResponseBodyBytes: 1000
+        excludedContentTypes:
+          - "text/html"
+
+    # Rate limiting middleware (uncomment to enable)
+    # rateLimit:
+    #   rateLimit:
+    #     average: 100
+    #     burst: 50
+
+    # CORS middleware
+    cors:
+      headers:
+        accessControlAllowOriginList:
+          - "https://example.com"
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - POST
+          - PUT
+          - DELETE
+        accessControlAllowHeaders:
+          - "*"
+
+  # ================================================================
+  # Routers
+  # ================================================================
+  routers:
+    # Dashboard router
+    traefik-dashboard:
+      rule: Host(`traefik.localhost`)
+      service: api@internal
+      middlewares:
+        - securityHeaders
+
+    # API router (example)
+    api:
+      rule: Host(`api.localhost`)
+      service: api-service
+      middlewares:
+        - securityHeaders
+        - compression
+
+    # Frontend router (example)
+    frontend:
+      rule: Host(`frontend.localhost`) || Host(`localhost`)
+      service: frontend-service
+      middlewares:
+        - securityHeaders
+
+  # ================================================================
+  # Services (backend targets)
+  # ================================================================
+  services:
+    # API service
+    api-service:
+      loadBalancer:
+        servers:
+          - url: http://backend:8000
+
+    # Frontend service
+    frontend-service:
+      loadBalancer:
+        servers:
+          - url: http://frontend:3000

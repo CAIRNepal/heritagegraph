@@ -1,11 +1,27 @@
-# Stage 1: Build the app
-FROM node:jod-alpine3.21 AS builder
+# ================================================================
+# Multi-stage build for Next.js Frontend (heritage_graph_ui)
+# ================================================================
+
+# Stage 1: Dependencies
+FROM node:20-alpine AS dependencies
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+# Copy package files
+COPY package.json package-lock.json* pnpm-lock.yaml* ./
+
+# Install production dependencies
+RUN npm ci --only=production 2>/dev/null || npm install --only=production
+
+# ================================================================
+# Stage 2: Builder
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy package files and install all deps (including dev)
+COPY package.json package-lock.json* pnpm-lock.yaml* ./
+RUN npm ci 2>/dev/null || npm install
 
 # Copy source code
 COPY . .
@@ -16,6 +32,10 @@ ARG NEXTAUTH_SECRET
 ARG KEYCLOAK_CLIENT_ID
 ARG KEYCLOAK_CLIENT_SECRET
 ARG KEYCLOAK_ISSUER
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_KEYCLOAK_URL
+ARG NEXT_PUBLIC_KEYCLOAK_REALM
+ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
 
 # Set build-time environment variables
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
@@ -23,29 +43,56 @@ ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 ENV KEYCLOAK_CLIENT_ID=$KEYCLOAK_CLIENT_ID
 ENV KEYCLOAK_CLIENT_SECRET=$KEYCLOAK_CLIENT_SECRET
 ENV KEYCLOAK_ISSUER=$KEYCLOAK_ISSUER
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_KEYCLOAK_URL=$NEXT_PUBLIC_KEYCLOAK_URL
+ENV NEXT_PUBLIC_KEYCLOAK_REALM=$NEXT_PUBLIC_KEYCLOAK_REALM
+ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=$NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
 
 # Build Next.js app
 RUN npm run build
 
-# Stage 2: Run the app
-FROM node:jod-alpine3.21 AS runner
+# ================================================================
+# Stage 3: Runtime
+FROM node:20-alpine AS runner
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
 WORKDIR /app
 
-ENV NODE_ENV=production
+# Set environment
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1
 
-# Set runtime environment variables
+# Runtime environment variables (overridable at container start)
 ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 ENV KEYCLOAK_CLIENT_ID=$KEYCLOAK_CLIENT_ID
 ENV KEYCLOAK_CLIENT_SECRET=$KEYCLOAK_CLIENT_SECRET
 ENV KEYCLOAK_ISSUER=$KEYCLOAK_ISSUER
 
-# Copy the built app from builder
-COPY --from=builder /app ./
+# Copy package.json
+COPY package.json ./
 
-# Expose the port Next.js runs on
+# Copy production dependencies
+COPY --from=dependencies /app/node_modules ./node_modules
+
+# Copy built application
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts* ./
+COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json* ./
+COPY --from=builder --chown=nextjs:nodejs /app/postcss.config.mjs* ./
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
 EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
 
 # Start the app
 CMD ["npm", "run", "start"]

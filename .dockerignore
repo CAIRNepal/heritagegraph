@@ -1,0 +1,104 @@
+# ================================================================
+# Docker Ignore - Backend
+# ================================================================
+# Files to exclude from Docker build context
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+.github
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Documentation
+docs/_build
+site/
+
+# Logs
+*.log
+logs/
+*.pot
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Project specific
+media/
+staticfiles/
+local_settings.py
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Other
+node_modules/
+npm-debug.log
+yarn-error.log
+.env.example
+LICENSE
+README.md
+DEPLOYMENT.md
+contributing.md

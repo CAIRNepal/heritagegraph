@@ -41,12 +41,41 @@ Switch to the working branch (`v1`):
 git switch v1
 ```
 
-### Quick Test with Docker
+### Quick Start with Docker (Recommended)
 
-If you just want to test and see the current progress:
+The fastest way to get everything running:
 
 ```bash
-docker compose up --build
+# 1. Copy the environment template
+cp .env.example .env
+
+# 2. Build and start all services
+make setup
+# Or: docker-compose up --build
+```
+
+Once running, access:
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| Frontend | http://frontend.localhost | Main application UI |
+| Backend API | http://backend.localhost/api | REST API |
+| API Docs | http://backend.localhost/docs | Swagger documentation |
+| Keycloak | http://keycloak.localhost | Identity management |
+| Traefik | http://traefik.localhost:8080 | Reverse proxy dashboard |
+
+> 📖 **Full deployment guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production setup, SSL, backups, and more.
+
+### Useful Commands
+
+```bash
+make help           # Show all available commands
+make up             # Start services
+make down           # Stop services
+make logs           # View logs
+make health         # Check service health
+make backup         # Backup database
+make prod-up        # Start in production mode
 ```
 
 ---
@@ -77,7 +106,7 @@ Access the app at:
 
 ## ⚙️ Backend
 
-The backend is powered by **Django REST Framework** and uses **Clerk.com** for authentication.
+The backend is powered by **Django REST Framework** and uses **Keycloak** for authentication (JWT via OIDC).
 
 > ⚠️ **Note:** Make sure to set up the required `.env` file (see `.env.example`).
 
@@ -116,6 +145,24 @@ Access the backend at:
 
 - Start from the `v1` branch.
 - Open an issue or submit a PR with improvements.
+
+---
+
+## 📚 Documentation for AI Agents & Developers
+
+This project includes comprehensive documentation designed to help both human developers and AI coding assistants work effectively:
+
+| Document | Purpose |
+|----------|---------|
+| [AGENTS.md](AGENTS.md) | 🤖 **Start here** — Master guide for AI agents. Project overview, critical rules, directory structure, API summary |
+| [CLAUDE.md](CLAUDE.md) | 📝 Coding conventions and patterns for both Python/Django and TypeScript/Next.js |
+| [SKILLS.md](SKILLS.md) | 🗺️ Feature capability matrix — maps every feature to exact files with status indicators |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 🏗️ System design with ASCII diagrams — network topology, auth flow, data models, Docker lifecycle |
+| [CONVENTIONS.md](CONVENTIONS.md) | 📏 Naming rules, import ordering, code style patterns for all languages in the project |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | 🔧 Known issues, gotchas, debugging tips, and deployment checklist |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | 🚀 Full deployment guide — Docker setup, production config, SSL, backups, monitoring |
+
+> **AI agents:** Read `AGENTS.md` first, then consult other files as needed for your task.
 
 ---
 

@@ -1,26 +1,55 @@
-# For ignoring the virtual environment
-venv/  
+# ================================================================
+# HeritageGraph .gitignore
+# ================================================================
 
-myenv/  
+# ==================== Python ====================
 venv/
-
-# ignoring the log files
-data/*.log  
-
-# ignoring whole dir for now
-data/
+myenv/
 .myenv/
-# Ignore everything in the docs directory
-/docs/*
-# But do not ignore the docs directory itself
-!/docs/
-
-# Optional: Do not ignore a placeholder file if needed
-!/docs/.gitkeep
-
 .myvenv/
 .myvenv/*
-*.env*
-**/.next/** 
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
 
-node_modules
+# ==================== Node.js ====================
+node_modules/
+**/.next/**
+.turbo/
+*.tsbuildinfo
+
+# ==================== Environment ====================
+*.env*
+!.env.example
+
+# ==================== Logs ====================
+data/*.log
+*.log
+
+# ==================== Data ====================
+data/
+
+# ==================== Docker ====================
+infra/traefik/acme/acme.json
+backups/
+
+# ==================== IDE ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ==================== OS ====================
+.DS_Store
+Thumbs.db
+
+# ==================== Documentation ====================
+/docs/*
+!/docs/
+!/docs/.gitkeep

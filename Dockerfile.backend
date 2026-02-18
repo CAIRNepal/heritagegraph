@@ -1,38 +1,79 @@
-# Use a lightweight Python base
-FROM python:3.13-slim
+# ================================================================
+# Multi-stage build for Django REST Framework backend
+# ================================================================
 
+# Stage 1: Builder
+FROM python:3.13-slim as builder
+
+# Prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY heritage_graph/requirements.txt .
+
+# Create wheels for dependencies (faster installation in runtime image)
+RUN pip install --upgrade pip setuptools wheel && \
+    pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels -r requirements.txt
+
+# ================================================================
+# Stage 2: Runtime
+FROM python:3.13-slim
 
 # Prevent Python from writing .pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1
 
+# Create non-root user for security
+RUN useradd -m -u 1000 django
+
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies — add curl if healthchecks or diagnostics are ever needed
+# Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
+    libpq5 \
     curl \
- && rm -rf /var/lib/apt/lists/*
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy and install dependencies first (better for Docker layer caching)
+# Copy wheels from builder and install
+COPY --from=builder /build/wheels /wheels
 COPY heritage_graph/requirements.txt .
-RUN pip install --upgrade pip 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache /wheels/*
 
-# Copy project files
-COPY ./heritage_graph .
+# Copy application code
+COPY ./heritage_graph /app
+
+# Create necessary directories
+RUN mkdir -p /app/staticfiles /app/media && \
+    chown -R django:django /app
 
 # Ensure entrypoint script is executable
 RUN chmod +x /app/entrypoint.sh
 
-# Optional: pre-create Django static files if this image is for production
-RUN python manage.py collectstatic --noinput || true
+# Switch to non-root user
+USER django
 
-# Expose Django's default port
+# Expose port
 EXPOSE 8000
 
-# Default entrypoint
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+# Entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["gunicorn", "heritage_graph.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--worker-class", "sync", "--max-requests", "1000", "--max-requests-jitter", "100", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-"]

@@ -1,0 +1,52 @@
+# ================================================================
+# Docker Ignore - Landing Page (heritage_graph_landing)
+# ================================================================
+# Files to exclude from Docker build context
+
+# Version Control
+.git
+.gitignore
+.gitattributes
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Next.js
+.next
+out
+*.tsbuildinfo
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage
+
+# Build
+dist
+
+# Logs
+*.log
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+README.md
+LICENSE

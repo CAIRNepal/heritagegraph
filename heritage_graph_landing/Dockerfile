@@ -1,5 +1,5 @@
 # ================================================================
-# Multi-stage build for Next.js Frontend
+# Multi-stage build for Next.js Landing Page
 # ================================================================
 
 # Stage 1: Dependencies
@@ -8,11 +8,10 @@ FROM node:20-alpine AS dependencies
 WORKDIR /app
 
 # Copy package files
-COPY ./heritage_graph_ui/package.json ./heritage_graph_ui/pnpm-lock.yaml* ./heritage_graph_ui/package-lock.json* ./
+COPY package.json pnpm-lock.yaml* package-lock.json* ./
 
-# Install dependencies with npm ci (clean install)
-# Use npm ci instead of npm install for reproducible builds
-RUN npm ci --only=production
+# Install dependencies
+RUN npm ci --only=production 2>/dev/null || npm install --only=production
 
 # ================================================================
 # Stage 2: Builder
@@ -21,13 +20,13 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy package files
-COPY ./heritage_graph_ui/package.json ./heritage_graph_ui/pnpm-lock.yaml* ./heritage_graph_ui/package-lock.json* ./
+COPY package.json pnpm-lock.yaml* package-lock.json* ./
 
 # Install all dependencies (including dev)
-RUN npm ci
+RUN npm ci 2>/dev/null || npm install
 
 # Copy source code
-COPY ./heritage_graph_ui ./
+COPY . .
 
 # Build Next.js app
 RUN npm run build
@@ -36,38 +35,32 @@ RUN npm run build
 # Stage 3: Runtime
 FROM node:20-alpine AS runner
 
-# Create non-root user for security
+# Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
 WORKDIR /app
 
-# Set environment to production
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1
 
-# Copy package.json for reference
-COPY ./heritage_graph_ui/package.json ./
+# Copy package.json
+COPY package.json ./
 
-# Copy production dependencies from dependencies stage
+# Copy production dependencies
 COPY --from=dependencies /app/node_modules ./node_modules
 
-# Copy built application from builder stage
+# Copy built application
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts* ./
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.js* ./
 COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json* ./
-COPY --from=builder --chown=nextjs:nodejs /app/postcss.config.mjs* ./
-COPY --from=builder --chown=nextjs:nodejs /app/tailwind.config.js* ./
 
 # Switch to non-root user
 USER nextjs
 
-# Expose port
 EXPOSE 3000
 
-# Health check endpoint
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
 
-# Start Next.js server
 CMD ["npm", "run", "start"]

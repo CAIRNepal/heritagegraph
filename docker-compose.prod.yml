@@ -1,0 +1,157 @@
+# ================================================================
+# HeritageGraph Docker Compose - Production Override
+# ================================================================
+# This file overrides development settings for production.
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# ================================================================
+
+services:
+  # ---------------------------------------------------------------
+  # PostgreSQL Database (Production)
+  # ---------------------------------------------------------------
+  postgres:
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+
+  # ---------------------------------------------------------------
+  # Traefik (Production - with HTTPS / Let's Encrypt)
+  # ---------------------------------------------------------------
+  traefik:
+    restart: always
+    command:
+      # Disable insecure dashboard
+      - "--api.insecure=false"
+      - "--api.dashboard=true"
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP to HTTPS redirect
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Let's Encrypt TLS
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_ACME_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json"
+      # Logs
+      - "--log.level=WARN"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      # Dashboard NOT exposed in production (comment out 8080)
+      # - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infra/traefik/acme:/etc/traefik/acme
+    labels:
+      - "traefik.enable=true"
+      # Dashboard behind HTTPS with basic auth
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.middlewares=dashboard-auth"
+      - "traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_USER:-admin}:${TRAEFIK_DASHBOARD_PASSWORD}"
+
+  # ---------------------------------------------------------------
+  # Django Backend (Production)
+  # ---------------------------------------------------------------
+  backend:
+    restart: always
+    environment:
+      DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
+      DEBUG: "False"
+    # Remove volume mounts for production (use baked-in image)
+    volumes: []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.${DOMAIN:-example.com}`) || Host(`backend.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health/"
+      - "traefik.http.services.backend.loadbalancer.healthcheck.interval=10s"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+  # ---------------------------------------------------------------
+  # Next.js Frontend (Production)
+  # ---------------------------------------------------------------
+  frontend:
+    restart: always
+    # Remove dev volume mounts
+    volumes: []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN:-example.com}`) || Host(`www.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+  # ---------------------------------------------------------------
+  # Landing Page (Production)
+  # ---------------------------------------------------------------
+  landing:
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.landing.rule=Host(`landing.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.landing.entrypoints=websecure"
+      - "traefik.http.routers.landing.tls.certresolver=letsencrypt"
+      - "traefik.http.services.landing.loadbalancer.server.port=3000"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # ---------------------------------------------------------------
+  # Keycloak (Production)
+  # ---------------------------------------------------------------
+  keycloak:
+    restart: always
+    environment:
+      KC_HOSTNAME: keycloak.${DOMAIN:-example.com}
+      KC_PROXY: edge
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`keycloak.${DOMAIN:-example.com}`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
