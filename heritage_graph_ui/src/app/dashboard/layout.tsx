@@ -65,7 +65,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                   role="banner"
                   aria-label="Site Header"
                 >
-                  <SiteHeader />
+                  <SiteHeader compact />
 
                   <div className="ml-auto flex items-center gap-4">
                     <AuthButtons />
