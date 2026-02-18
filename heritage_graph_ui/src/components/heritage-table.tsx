@@ -264,7 +264,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       const id = row.original.id;
       return (
         <Button variant="ghost" size="sm" asChild>
-           <Link href={`/dashboard/knowledge/viewreport/${id}`}>View</Link>
+           <Link href={`/dashboard/knowledge/entity/view/${id}`}>View</Link>
         </Button>
       );
     },
@@ -662,7 +662,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             className="text-foreground w-fit px-0 text-left hover:underline"
             onClick={() => {
               setOpen(false);
-              window.location.href = `/dashboard/knowledge/viewreport/${item.id}`;
+              window.location.href = `/dashboard/knowledge/entity/view/${item.id}`;
             }}
           >
             {item.title}
@@ -684,7 +684,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </Link>
           </div>
 
-          <Link href={`/dashboard/knowledge/viewreport/${item.id}`}>
+          <Link href={`/dashboard/knowledge/entity/view/${item.id}`}>
             <Button variant="secondary" className="w-full" size="sm">
               View Submission
             </Button>
@@ -791,7 +791,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <DrawerFooter>
             <Button variant="outline">
-              <a href={`/dashboard/knowledge/viewreport/${item.id}`}>
+              <a href={`/dashboard/knowledge/entity/view/${item.id}`}>
                 View Detail
               </a>
             </Button>

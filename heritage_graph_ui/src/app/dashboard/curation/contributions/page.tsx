@@ -203,7 +203,7 @@ export default function ContributionQueuePage() {
 
   // Navigation handlers
   const handleViewReport = (contribution: Contribution) => {
-    router.push(`/dashboard/knowledge/viewreport/${contribution.entity_id}`);
+    router.push(`/dashboard/knowledge/entity/view/${contribution.entity_id}`);
   };
 
   const handleViewUser = (username: string) => {
