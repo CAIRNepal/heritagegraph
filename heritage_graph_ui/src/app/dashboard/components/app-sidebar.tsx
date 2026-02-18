@@ -23,6 +23,13 @@ import {
   IconFileDescription,
   IconUsers,
   IconBuilding,
+  IconMoodSmile,
+  IconHomeCog,
+  IconBuildingArch,
+  IconCandle,
+  IconConfetti,
+  IconPalette,
+  IconPillar,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -204,6 +211,41 @@ const data = {
       title: 'Source',
       url: '/dashboard/knowledge/source',
       icon: IconInvoice,
+    },
+    {
+      title: 'Deity',
+      url: '/dashboard/knowledge/deity',
+      icon: IconMoodSmile,
+    },
+    {
+      title: 'Guthi',
+      url: '/dashboard/knowledge/guthi',
+      icon: IconHomeCog,
+    },
+    {
+      title: 'Structure',
+      url: '/dashboard/knowledge/structure',
+      icon: IconBuildingArch,
+    },
+    {
+      title: 'Ritual',
+      url: '/dashboard/knowledge/ritual',
+      icon: IconCandle,
+    },
+    {
+      title: 'Festival',
+      url: '/dashboard/knowledge/festival',
+      icon: IconConfetti,
+    },
+    {
+      title: 'Iconography',
+      url: '/dashboard/knowledge/iconography',
+      icon: IconPalette,
+    },
+    {
+      title: 'Monument',
+      url: '/dashboard/knowledge/monument',
+      icon: IconPillar,
     },
   ],
 
