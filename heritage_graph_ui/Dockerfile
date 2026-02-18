@@ -37,16 +37,17 @@ ARG NEXT_PUBLIC_KEYCLOAK_URL
 ARG NEXT_PUBLIC_KEYCLOAK_REALM
 ARG NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
 
-# Set build-time environment variables
-ENV NEXTAUTH_URL=$NEXTAUTH_URL
-ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
-ENV KEYCLOAK_CLIENT_ID=$KEYCLOAK_CLIENT_ID
-ENV KEYCLOAK_CLIENT_SECRET=$KEYCLOAK_CLIENT_SECRET
-ENV KEYCLOAK_ISSUER=$KEYCLOAK_ISSUER
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_KEYCLOAK_URL=$NEXT_PUBLIC_KEYCLOAK_URL
-ENV NEXT_PUBLIC_KEYCLOAK_REALM=$NEXT_PUBLIC_KEYCLOAK_REALM
-ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=$NEXT_PUBLIC_KEYCLOAK_CLIENT_ID
+# Set build-time environment variables (placeholders so build doesn't fail;
+# real values are injected at runtime via docker-compose environment)
+ENV NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-build-placeholder}
+ENV KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-heritage-ui}
+ENV KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-build-placeholder}
+ENV KEYCLOAK_ISSUER=${KEYCLOAK_ISSUER:-http://localhost:8080/realms/heritage}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+ENV NEXT_PUBLIC_KEYCLOAK_URL=${NEXT_PUBLIC_KEYCLOAK_URL:-http://localhost:8080}
+ENV NEXT_PUBLIC_KEYCLOAK_REALM=${NEXT_PUBLIC_KEYCLOAK_REALM:-heritage}
+ENV NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID:-heritage-ui}
 
 # Build Next.js app
 RUN npm run build
@@ -74,15 +75,10 @@ ENV KEYCLOAK_ISSUER=$KEYCLOAK_ISSUER
 # Copy package.json
 COPY package.json ./
 
-# Copy production dependencies
-COPY --from=dependencies /app/node_modules ./node_modules
-
-# Copy built application
-COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+# Copy production dependencies from standalone output
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts* ./
-COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json* ./
-COPY --from=builder --chown=nextjs:nodejs /app/postcss.config.mjs* ./
 
 # Switch to non-root user
 USER nextjs
@@ -94,5 +90,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
 
-# Start the app
-CMD ["npm", "run", "start"]
+# Start the standalone server
+CMD ["node", "server.js"]

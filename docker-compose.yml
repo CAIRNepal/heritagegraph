@@ -25,6 +25,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-keycloak}
       POSTGRES_USER: ${POSTGRES_USER:-keycloak}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      HERITAGE_DB_PASSWORD: ${DB_PASSWORD:-changeme}
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./infra/postgres/init-scripts:/docker-entrypoint-initdb.d
@@ -71,7 +72,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./infra/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./infra/traefik/traefik-dynamic.yml:/etc/traefik/traefik-dynamic.yml:ro
       - ./infra/traefik/acme:/etc/traefik/acme
+      - traefik-logs:/var/log/traefik
     networks:
       - proxy
     labels:
@@ -101,7 +104,8 @@ services:
     restart: unless-stopped
     environment:
       # Django settings
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.development}
+      DJANGO_ENV: production
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.production}
       DEBUG: ${DEBUG:-False}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key-change-in-production}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend.localhost}
@@ -164,10 +168,15 @@ services:
       NEXT_PUBLIC_KEYCLOAK_URL: ${NEXT_PUBLIC_KEYCLOAK_URL:-http://keycloak.localhost}
       NEXT_PUBLIC_KEYCLOAK_REALM: ${NEXT_PUBLIC_KEYCLOAK_REALM:-heritage}
       NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID:-heritage-ui}
-    volumes:
-      - ./heritage_graph_ui:/app
-      - /app/node_modules
-      - /app/.next
+      # NextAuth / Keycloak server-side auth
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://frontend.localhost}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-nextauth-secret-change-in-production}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-heritage-ui}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-change-me}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:-http://keycloak:8080/realms/heritage}
+      # Standalone server must listen on all interfaces
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
     networks:
       - proxy
       - backend
@@ -179,7 +188,7 @@ services:
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -212,7 +221,7 @@ services:
       - "traefik.http.routers.landing.entrypoints=web"
       - "traefik.http.services.landing.loadbalancer.server.port=3000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -248,7 +257,7 @@ services:
       KC_METRICS_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
       # Additional settings
-      KC_FEATURES: token_exchange,scripts
+      KC_FEATURES: token-exchange,scripts
     depends_on:
       postgres:
         condition: service_healthy
@@ -267,11 +276,11 @@ services:
       - "traefik.http.routers.keycloak.entrypoints=web"
       - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 60s
+      retries: 5
+      start_period: 90s
     command:
       - "start"
     logging:
@@ -291,6 +300,8 @@ volumes:
   backend-media:
     driver: local
   keycloak-data:
+    driver: local
+  traefik-logs:
     driver: local
 
 # ================================================================
