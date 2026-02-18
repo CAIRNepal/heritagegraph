@@ -282,10 +282,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {/* <NavMain items={data.navMain} /> */}
-        {/* <SidebarGroupLabel>Options</SidebarGroupLabel> */}
-        <NavMain navtitle="Knowledgebase"  items={data.navKnowledgebase} />
-        {/* <NavDocuments items={data.navKnowledgebase} /> */}
+        {/* Quick-access items previously in the top header */}
+        <NavMain navtitle="Navigation" items={[
+          { title: 'Dashboard', url: '/dashboard', icon: IconLayoutDashboard },
+          { title: 'Contribute', url: '/dashboard/contribute', icon: IconPlus },
+          { title: 'Leaderboard', url: '/dashboard/leaderboard', icon: IconTrophy },
+          { title: 'Notifications', url: '/dashboard/notification', icon: IconBell },
+          { title: 'Team', url: '/dashboard/team', icon: IconUsersGroup },
+        ]} />
+
+        <NavMain navtitle="Knowledgebase" items={data.navKnowledgebase} />
         <NavMain navtitle="Curation" items={data.navCuration} />
         <NavMain navtitle="Community" items={data.navCommunity} />
         {/* <NavDocuments items={data.navResources} /> */}

@@ -22,9 +22,6 @@ import {
   AccordionContent,
 } from '@/components/ui/accordion';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-// import { NavigationMenu, NavigationMenuItem } from '@/components/ui/navigation-menu';
-import { SiteHeader } from '@/components/site-header';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import {
   Menu,
   Star,
@@ -37,8 +34,9 @@ import {
   Mail,
   ExternalLink,
   LucideIcon,
-  Link,
+  LayoutDashboard,
 } from 'lucide-react';
+import Link from 'next/link';
 
 // Animation Variants
 const fadeInUp = {
@@ -146,106 +144,72 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100 text-blue-900 font-sans scroll-smooth overflow-x-hidden">
-            
-<header
-  className="flex items-center justify-between px-4 h-16 bg-white border-b border-white"
-  role="banner"
-  aria-label="Site Header"
->
-                  <SiteHeader />
 
-                  <div className="ml-auto flex items-center gap-4">
-                    <AuthButtons />
-                    <ThemeToggle />
-                  </div>
-                </header>
-      
-            {/* <SidebarProvider
-                    style={
-                      {
-                        '--sidebar-width': 'calc(var(--spacing) * 72)',
-                        '--header-height': 'calc(var(--spacing) * 12)',
-                      } as React.CSSProperties
-                    }
-                  />
-              {/* <SiteHeader /> */}
-        {/* <SidebarProvider /> */} 
-
-      {/* <GradientOrbs />
-      <FloatingParticles /> */}
-
-      {/* Header */}
-      {/* <motion.header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'bg-white/80 backdrop-blur-xl border-b border-blue-200' : 'bg-transparent'}`}
-        style={{ opacity: headerOpacity }}
-      > */}
-        {/* <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"> */}
-          {/* <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center gap-3"
-          >
+      {/* Landing Navbar */}
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? 'bg-white/80 backdrop-blur-xl border-b border-blue-200 shadow-sm'
+            : 'bg-white border-b border-blue-100'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-sky-600 rounded-lg flex items-center justify-center">
-              <Link href="/">
-                <BookOpen className="w-4 h-4 text-white" />
-              </Link>
+              <BookOpen className="w-4 h-4 text-white" />
             </div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
-              <Link href="/">HeritageGraph</Link>
-            </h1>
-          </motion.div> */}
+            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
+              HeritageGraph
+            </span>
+          </Link>
 
-          {/* <nav className="hidden md:flex items-center gap-8">
-            {['Explore', 'Dashboard', 'About', 'Contact'].map((item) => {
-              const href =
-                item === 'Dashboard' ? '/dashboard' : `#${item.toLowerCase()}`;
-              return (
-                <a
-                  key={item}
-                  href={href}
-                  className="text-blue-800 hover:text-blue-600 transition-all duration-300"
-                >
-                  {item}
-                </a>
-              );
-            })}
-            {/* <SignedOut>
-                <SignInButton />
-                <SignUpButton />
-              </SignedOut> */}
-          {/* </nav> */} 
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-6">
+            <a href="#explore" className="text-blue-800 hover:text-blue-600 text-sm font-medium transition-colors">Explore</a>
+            <a href="#about" className="text-blue-800 hover:text-blue-600 text-sm font-medium transition-colors">About</a>
+            <a href="#contact" className="text-blue-800 hover:text-blue-600 text-sm font-medium transition-colors">Contact</a>
+          </nav>
 
-          {/* <div className="md:hidden">
+          {/* Right side */}
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              Dashboard
+            </Link>
+            <AuthButtons />
+            <ThemeToggle />
+          </div>
+
+          {/* Mobile menu */}
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="bg-white/90 backdrop-blur-xl border-blue-200 text-blue-900"
-              >
+              <SheetContent side="right" className="bg-white/95 backdrop-blur-xl border-blue-200">
                 <nav className="mt-8 flex flex-col gap-6">
-                  {['Explore', 'Dashboard', 'About', 'Contact'].map((item) => (
-                    <a
-                      key={item}
-                      href={`#${item.toLowerCase()}`}
-                      className="text-lg text-blue-800 hover:text-blue-600"
-                    >
-                      {item}
-                    </a>
-                  ))}
+                  <a href="#explore" className="text-lg text-blue-800 hover:text-blue-600">Explore</a>
+                  <a href="#about" className="text-lg text-blue-800 hover:text-blue-600">About</a>
+                  <a href="#contact" className="text-lg text-blue-800 hover:text-blue-600">Contact</a>
+                  <Link href="/dashboard" className="flex items-center gap-2 text-lg text-blue-800 hover:text-blue-600">
+                    <LayoutDashboard className="w-5 h-5" /> Dashboard
+                  </Link>
+                  <AuthButtons />
                 </nav>
               </SheetContent>
             </Sheet>
           </div>
         </div>
-      </motion.header> */}
+      </header>
 
       {/* Main Content */}
-      <main className="relative">
+      <main className="relative pt-16">
         {/* Hero Section */}
         <motion.section
           style={{ y: heroY }}

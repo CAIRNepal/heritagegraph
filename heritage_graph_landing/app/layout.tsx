@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <SiteHeader />
-        <div className="pt-20">{children}</div>
+        {children}
       </body>
     </html>
   );
