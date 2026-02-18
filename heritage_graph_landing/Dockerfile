@@ -28,6 +28,9 @@ RUN npm ci 2>/dev/null || npm install
 # Copy source code
 COPY . .
 
+# Ensure `public` exists so runtime COPY won't fail when it's absent in repo
+RUN mkdir -p /app/public
+
 # Build Next.js app
 RUN npm run build
 

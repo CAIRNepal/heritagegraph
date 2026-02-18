@@ -170,7 +170,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | Service | Image | Internal Port | Traefik Route |
 |---------|-------|--------------|---------------|
 | `postgres` | postgres:16-alpine | 5432 | — (internal) |
-| `traefik` | traefik:v3.0-alpine | 80, 443, 8080 | `traefik.localhost` |
+| `traefik` | traefik:latest | 80, 443, 8080 | `traefik.localhost` |
 | `backend` | custom (Dockerfile.backend) | 8000 | `backend.localhost` |
 | `frontend` | custom (heritage_graph_ui/Dockerfile) | 3000 | `frontend.localhost` |
 | `landing` | custom (heritage_graph_landing/Dockerfile) | 3000 | `landing.localhost` |

@@ -46,7 +46,7 @@ services:
   # Routes all traffic to appropriate services
   # ---------------------------------------------------------------
   traefik:
-    image: traefik:v3.0-alpine
+    image: traefik:latest
     container_name: heritage-traefik
     restart: unless-stopped
     command:
