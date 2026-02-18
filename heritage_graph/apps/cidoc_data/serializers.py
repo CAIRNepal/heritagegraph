@@ -40,9 +40,44 @@ class SourceSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-#########################################
-## REVISION CLASSES        
-#########################################
+# =====================================================================
+# NEW ONTOLOGY-DRIVEN SERIALIZERS
+# =====================================================================
+
+class DeitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deity
+        fields = '__all__'
+
+class GuthiSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Guthi
+        fields = '__all__'
+
+class ArchitecturalStructureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArchitecturalStructure
+        fields = '__all__'
+
+class RitualEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RitualEvent
+        fields = '__all__'
+
+class FestivalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Festival
+        fields = '__all__'
+
+class IconographicObjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IconographicObject
+        fields = '__all__'
+
+class MonumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Monument
+        fields = '__all__'
 
 class PersonRevisionSerializer(serializers.ModelSerializer):
     class Meta:

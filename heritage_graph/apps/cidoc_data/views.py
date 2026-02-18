@@ -30,6 +30,40 @@ class SourceViewSet(viewsets.ModelViewSet):
     queryset = Source.objects.all()
     serializer_class = SourceSerializer
 
+
+# =====================================================================
+# NEW ONTOLOGY-DRIVEN VIEWSETS
+# =====================================================================
+
+class DeityViewSet(viewsets.ModelViewSet):
+    queryset = Deity.objects.all()
+    serializer_class = DeitySerializer
+
+class GuthiViewSet(viewsets.ModelViewSet):
+    queryset = Guthi.objects.all()
+    serializer_class = GuthiSerializer
+
+class ArchitecturalStructureViewSet(viewsets.ModelViewSet):
+    queryset = ArchitecturalStructure.objects.all()
+    serializer_class = ArchitecturalStructureSerializer
+
+class RitualEventViewSet(viewsets.ModelViewSet):
+    queryset = RitualEvent.objects.all()
+    serializer_class = RitualEventSerializer
+
+class FestivalViewSet(viewsets.ModelViewSet):
+    queryset = Festival.objects.all()
+    serializer_class = FestivalSerializer
+
+class IconographicObjectViewSet(viewsets.ModelViewSet):
+    queryset = IconographicObject.objects.all()
+    serializer_class = IconographicObjectSerializer
+
+class MonumentViewSet(viewsets.ModelViewSet):
+    queryset = Monument.objects.all()
+    serializer_class = MonumentSerializer
+
+
 class PersonRevisionViewSet(viewsets.ModelViewSet):
     queryset = PersonRevision.objects.all()
     serializer_class = PersonRevisionSerializer
@@ -40,9 +74,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
 
-from apps.cidoc_data.models import Person, Location, Event, Tradition
+from apps.cidoc_data.models import (
+    Person, Location, Event, Tradition,
+    Deity, Guthi, ArchitecturalStructure, RitualEvent, Festival, Monument,
+)
 from apps.cidoc_data.serializers import (
-    PersonSerializer, LocationSerializer, EventSerializer, TraditionSerializer
+    PersonSerializer, LocationSerializer, EventSerializer, TraditionSerializer,
+    DeitySerializer, GuthiSerializer, ArchitecturalStructureSerializer,
+    RitualEventSerializer, FestivalSerializer, MonumentSerializer,
 )
 
 
@@ -53,28 +92,57 @@ def universal_search(request):
     if not q:
         return Response({"error": "Query parameter 'q' is required."}, status=400)
 
-    # Define a small config map so this can scale as your models grow
     search_map = {
         "persons": {
             "model": Person,
-            "fields": ["name", "aliases", "occupation"],  # Add more if needed
+            "fields": ["name", "aliases", "occupation"],
             "serializer": PersonSerializer,
         },
-        # "locations": {
-        #     "model": Location,
-        #     "fields": ["name", "description"],
-        #     "serializer": LocationSerializer,
-        # },
-        # "events": {
-        #     "model": Event,
-        #     "fields": ["name", "description"],
-        #     "serializer": EventSerializer,
-        # },
-        # "traditions": {
-        #     "model": Tradition,
-        #     "fields": ["name", "description"],
-        #     "serializer": TraditionSerializer,
-        # },
+        "locations": {
+            "model": Location,
+            "fields": ["name", "description"],
+            "serializer": LocationSerializer,
+        },
+        "events": {
+            "model": Event,
+            "fields": ["name", "description"],
+            "serializer": EventSerializer,
+        },
+        "traditions": {
+            "model": Tradition,
+            "fields": ["name", "description"],
+            "serializer": TraditionSerializer,
+        },
+        "deities": {
+            "model": Deity,
+            "fields": ["name", "alternate_names", "religious_tradition"],
+            "serializer": DeitySerializer,
+        },
+        "guthis": {
+            "model": Guthi,
+            "fields": ["name", "description"],
+            "serializer": GuthiSerializer,
+        },
+        "structures": {
+            "model": ArchitecturalStructure,
+            "fields": ["name", "description", "location_name"],
+            "serializer": ArchitecturalStructureSerializer,
+        },
+        "rituals": {
+            "model": RitualEvent,
+            "fields": ["name", "description"],
+            "serializer": RitualEventSerializer,
+        },
+        "festivals": {
+            "model": Festival,
+            "fields": ["name", "description"],
+            "serializer": FestivalSerializer,
+        },
+        "monuments": {
+            "model": Monument,
+            "fields": ["name", "description"],
+            "serializer": MonumentSerializer,
+        },
     }
 
     results = {}

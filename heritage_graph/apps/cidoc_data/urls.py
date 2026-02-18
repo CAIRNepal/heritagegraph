@@ -16,6 +16,15 @@ router.register(r'events', EventViewSet)
 router.register(r'traditions', TraditionViewSet)
 router.register(r'sources', SourceViewSet)
 
+# New ontology-driven models
+router.register(r'deities', DeityViewSet)
+router.register(r'guthis', GuthiViewSet)
+router.register(r'structures', ArchitecturalStructureViewSet)
+router.register(r'rituals', RitualEventViewSet)
+router.register(r'festivals', FestivalViewSet)
+router.register(r'iconographic_objects', IconographicObjectViewSet)
+router.register(r'monuments', MonumentViewSet)
+
 # router.register(r'artifacts', ArtifactViewSet)
 
 ## Revisions

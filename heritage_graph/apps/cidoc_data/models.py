@@ -254,20 +254,186 @@ class Source(MetaData):
     type = models.CharField(max_length=20, choices=SOURCE_TYPE_CHOICES)
     digital_link = models.URLField(max_length=500, blank=True)
     archive_location = models.CharField(max_length=200, blank=True, help_text="Physical archive location")
-    
-    ## Documentation relationships (reverse relations handled in other models)
-    # documented_persons = models.ManyToManyField(
-    #     Person,
-    #     blank=True,
-    #     related_name='mentioned_in_sources'
-    # )
 
     def __str__(self):
         return self.title
 
 
+# =====================================================================
+# NEW ONTOLOGY-DRIVEN MODELS — from HeritageGraph.yaml
+# =====================================================================
+
+STRUCTURE_TYPE_CHOICES = [
+    ('Temple', 'Temple'),
+    ('Stupa', 'Stupa'),
+    ('Chaitya', 'Chaitya'),
+    ('Pati', 'Pati (Open Pavilion)'),
+    ('Sattal', 'Sattal (Multi-story Rest House)'),
+    ('Dharmashala', 'Dharmashala (Pilgrim Lodge)'),
+    ('DhungeDhara', 'Dhunge Dhara (Stone Spout)'),
+    ('Pokhari', 'Pokhari (Pond/Tank)'),
+    ('Other', 'Other'),
+]
+
+ARCHITECTURAL_STYLE_CHOICES = [
+    ('Pagoda', 'Pagoda'),
+    ('Shikhara', 'Shikhara'),
+    ('Stupa', 'Stupa'),
+    ('Dome', 'Dome'),
+    ('Mughal', 'Mughal'),
+    ('Rana_Neoclassical', 'Rana Neoclassical'),
+    ('Mixed', 'Mixed'),
+    ('Other', 'Other'),
+]
+
+EXISTENCE_STATUS_CHOICES = [
+    ('Extant', 'Extant'),
+    ('Destroyed', 'Destroyed'),
+    ('Damaged', 'Damaged'),
+    ('Restored', 'Restored'),
+    ('Partially_Extant', 'Partially Extant'),
+    ('Relocated', 'Relocated'),
+    ('Unknown', 'Unknown'),
+]
+
+CONDITION_TYPE_CHOICES = [
+    ('Excellent', 'Excellent'),
+    ('Good', 'Good'),
+    ('Fair', 'Fair'),
+    ('Poor', 'Poor'),
+    ('Very_Poor', 'Very Poor'),
+    ('Ruinous', 'Ruinous'),
+]
+
+GUTHI_TYPE_CHOICES = [
+    ('Si_Guthi', 'Si Guthi (Death Ritual)'),
+    ('Devi_Guthi', 'Devi Guthi (Deity Management)'),
+    ('Nani_Guthi', 'Nani Guthi (Musical)'),
+    ('Manka_Guthi', 'Manka Guthi (Agricultural)'),
+    ('Raj_Guthi', 'Raj Guthi (Royal/State Endowed)'),
+    ('Other', 'Other'),
+]
+
+RITUAL_TYPE_CHOICES = [
+    ('Puja', 'Puja'),
+    ('Homa', 'Homa (Fire Ritual)'),
+    ('Diksha', 'Diksha (Initiation)'),
+    ('Jatra', 'Jatra (Procession)'),
+    ('Shraddha', 'Shraddha (Ancestral Rite)'),
+    ('Other', 'Other'),
+]
 
 
+class Deity(MetaData):
+    """Divine conceptual entity — Hindu, Buddhist, or syncretic."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    religious_tradition = models.CharField(max_length=100, blank=True)
+    alternate_names = models.TextField(blank=True, help_text="Comma-separated")
+    note = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Deities"
+
+    def __str__(self):
+        return self.name
+
+
+class Guthi(MetaData):
+    """Endowed trust organization managing temples, rituals, and land."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    guthi_type = models.CharField(max_length=30, choices=GUTHI_TYPE_CHOICES)
+    location = models.CharField(max_length=200, blank=True)
+    managed_structures = models.TextField(blank=True, help_text="Comma-separated")
+    note = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Guthis"
+
+    def __str__(self):
+        return self.name
+
+
+class ArchitecturalStructure(MetaData):
+    """Physical heritage structure — temple, stupa, dhara, etc."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    structure_type = models.CharField(max_length=30, choices=STRUCTURE_TYPE_CHOICES)
+    architectural_style = models.CharField(max_length=30, choices=ARCHITECTURAL_STYLE_CHOICES, blank=True)
+    construction_date = models.CharField(max_length=100, blank=True)
+    location_name = models.CharField(max_length=200, blank=True)
+    coordinates = models.CharField(max_length=50, blank=True, help_text="Lat, Long")
+    existence_status = models.CharField(max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True)
+    condition = models.CharField(max_length=20, choices=CONDITION_TYPE_CHOICES, blank=True)
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class RitualEvent(MetaData):
+    """Intentional ritual activity — puja, homa, jatra, etc."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    ritual_type = models.CharField(max_length=30, choices=RITUAL_TYPE_CHOICES)
+    date = models.CharField(max_length=100, blank=True)
+    recurrence_pattern = models.CharField(max_length=100, blank=True)
+    lunar_date_tithi = models.CharField(max_length=100, blank=True)
+    performed_by = models.CharField(max_length=200, blank=True)
+    location_name = models.CharField(max_length=200, blank=True)
+    route_description = models.TextField(blank=True)
+    start_place = models.CharField(max_length=200, blank=True)
+    end_place = models.CharField(max_length=200, blank=True)
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Festival(MetaData):
+    """Large-scale community ritual — Jatra, chariot festival, masked dance."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    festival_type = models.CharField(max_length=30, blank=True)
+    date = models.CharField(max_length=100, blank=True)
+    duration = models.CharField(max_length=100, blank=True)
+    location_name = models.CharField(max_length=200, blank=True)
+    route_description = models.TextField(blank=True)
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class IconographicObject(MetaData):
+    """Sacred visual art — Paubha, Murti, etc."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    object_type = models.CharField(max_length=30, blank=True)
+    depicts_deity = models.CharField(max_length=200, blank=True)
+    creation_date = models.CharField(max_length=100, blank=True)
+    technique = models.CharField(max_length=200, blank=True)
+    location_name = models.CharField(max_length=200, blank=True)
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Monument(MetaData):
+    """Buddhist sacred structure — Stupa, Chaitya."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    monument_type = models.CharField(max_length=30, blank=True)
+    construction_date = models.CharField(max_length=100, blank=True)
+    location_name = models.CharField(max_length=200, blank=True)
+    coordinates = models.CharField(max_length=50, blank=True, help_text="Lat, Long")
+    existence_status = models.CharField(max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True)
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
 
 
 # class Artifact(models.Model):
