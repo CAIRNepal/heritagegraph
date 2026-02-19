@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole
+from .models import Organization, OrganizationMembership
 from .serializers import *
 from .permissions import (
     IsContributorOrReadOnly, IsEditor, IsReviewerOrAdmin,
@@ -40,6 +41,8 @@ from .models import (
     Comments,
     CulturalHeritage,
     Moderation,
+    Organization,
+    OrganizationMembership,
     Submission,
     SubmissionEditSuggestion,
     SubmissionVersion,
@@ -1442,3 +1445,132 @@ class ReviewerDashboardView(APIView):
 
         serializer = ReviewerDashboardSerializer(data)
         return Response(serializer.data)
+
+
+# =====================================================================
+# ORGANIZATION VIEWS
+# =====================================================================
+
+
+class OrganizationViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for organizations.
+    - List/retrieve: public
+    - Create: authenticated users
+    - Update/delete: org owner or admin
+    """
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['name', 'short_name', 'description']
+    ordering_fields = ['name', 'created_at']
+    ordering = ['name']
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return OrganizationCreateSerializer
+        if self.action in ['retrieve']:
+            return OrganizationDetailSerializer
+        return OrganizationListSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        return Organization.objects.annotate(
+            member_count=Count('members')
+        ).select_related('owner')
+
+    def perform_create(self, serializer):
+        org = serializer.save(owner=self.request.user)
+        # Auto-add creator as admin member
+        OrganizationMembership.objects.create(
+            user=self.request.user,
+            organization=org,
+            role='admin'
+        )
+
+    def perform_update(self, serializer):
+        org = self.get_object()
+        if org.owner != self.request.user and not self.request.user.is_staff:
+            is_admin = OrganizationMembership.objects.filter(
+                user=self.request.user, organization=org, role='admin'
+            ).exists()
+            if not is_admin:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("Only org admins can update this organization.")
+        serializer.save()
+
+    @action(detail=True, methods=['post'])
+    def join(self, request, pk=None):
+        """Join an organization as a member."""
+        org = self.get_object()
+        membership, created = OrganizationMembership.objects.get_or_create(
+            user=request.user,
+            organization=org,
+            defaults={'role': 'member'}
+        )
+        if not created:
+            return Response({'detail': 'Already a member'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(OrganizationMemberSerializer(membership).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['post'])
+    def leave(self, request, pk=None):
+        """Leave an organization."""
+        org = self.get_object()
+        try:
+            membership = OrganizationMembership.objects.get(
+                user=request.user, organization=org
+            )
+            if org.owner == request.user:
+                return Response(
+                    {'detail': 'Organization owner cannot leave. Transfer ownership first.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            membership.delete()
+            return Response({'detail': 'Left organization'}, status=status.HTTP_200_OK)
+        except OrganizationMembership.DoesNotExist:
+            return Response({'detail': 'Not a member'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['get'])
+    def members(self, request, pk=None):
+        """List all members of an organization."""
+        org = self.get_object()
+        memberships = org.members.select_related('user').order_by('-role', 'joined_at')
+        return Response(OrganizationMemberSerializer(memberships, many=True).data)
+
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def my_organizations(self, request):
+        """Get organizations the current user belongs to."""
+        memberships = OrganizationMembership.objects.filter(
+            user=request.user
+        ).select_related('organization')
+        orgs = [m.organization for m in memberships]
+        # Re-query with annotation
+        org_ids = [o.id for o in orgs]
+        queryset = Organization.objects.filter(id__in=org_ids).annotate(
+            member_count=Count('members')
+        )
+        return Response(OrganizationListSerializer(queryset, many=True).data)
+
+
+class UserProfileImageView(APIView):
+    """Upload or remove profile image."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        image = request.FILES.get('profile_image')
+        if not image:
+            return Response({'error': 'No image file provided'}, status=status.HTTP_400_BAD_REQUEST)
+        profile.profile_image = image
+        profile.save()
+        return Response({
+            'profile_image': profile.profile_image.url if profile.profile_image else None
+        })
+
+    def delete(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if profile.profile_image:
+            profile.profile_image.delete()
+        return Response({'detail': 'Profile image removed'})

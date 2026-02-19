@@ -7,6 +7,8 @@ from .models import (
     ActivityLog,
     Comments,
     Moderation,
+    Organization,
+    OrganizationMembership,
     Submission,
     SubmissionEditSuggestion,
     SubmissionVersion,
@@ -336,6 +338,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email", read_only=True)
     member_since = serializers.CharField(read_only=True)  # property from model
+    profile_image = serializers.ImageField(required=False, allow_null=True)
+    organizations = serializers.SerializerMethodField()
 
     class Meta:
         model = UserProfile
@@ -355,6 +359,23 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "website_link",
             "score",
             "member_since",
+            "profile_image",
+            "organizations",
+        ]
+
+    def get_organizations(self, obj):
+        memberships = OrganizationMembership.objects.filter(
+            user=obj.user
+        ).select_related('organization')
+        return [
+            {
+                'id': str(m.organization.id),
+                'name': m.organization.name,
+                'short_name': m.organization.short_name,
+                'role': m.role,
+                'logo': m.organization.logo.url if m.organization.logo else None,
+            }
+            for m in memberships
         ]
 
 class UserSerializer(serializers.ModelSerializer):
@@ -666,3 +687,73 @@ class ReviewerDashboardSerializer(serializers.Serializer):
     reviewer_role = ReviewerRoleSerializer(required=False, allow_null=True)
     recent_domain_activity = serializers.ListField(child=serializers.DictField())
 
+
+# =====================================================================
+# ORGANIZATION SERIALIZERS
+# =====================================================================
+
+class OrganizationMemberSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    last_name = serializers.CharField(source='user.last_name', read_only=True)
+    email = serializers.CharField(source='user.email', read_only=True)
+    profile_image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = OrganizationMembership
+        fields = ['id', 'username', 'first_name', 'last_name', 'email',
+                  'role', 'joined_at', 'profile_image']
+
+    def get_profile_image(self, obj):
+        if hasattr(obj.user, 'profile') and obj.user.profile.profile_image:
+            return obj.user.profile.profile_image.url
+        return None
+
+
+class OrganizationListSerializer(serializers.ModelSerializer):
+    member_count = serializers.IntegerField(read_only=True)
+    owner_username = serializers.CharField(source='owner.username', read_only=True, default=None)
+
+    class Meta:
+        model = Organization
+        fields = ['id', 'name', 'short_name', 'description', 'logo',
+                  'website', 'country', 'focus_areas', 'is_verified',
+                  'member_count', 'owner_username', 'created_at']
+
+
+class OrganizationDetailSerializer(serializers.ModelSerializer):
+    members = serializers.SerializerMethodField()
+    member_count = serializers.IntegerField(read_only=True)
+    owner_username = serializers.CharField(source='owner.username', read_only=True, default=None)
+
+    class Meta:
+        model = Organization
+        fields = ['id', 'name', 'short_name', 'description', 'logo',
+                  'website', 'country', 'focus_areas', 'is_verified',
+                  'member_count', 'owner_username', 'created_at', 'updated_at',
+                  'members']
+
+    def get_members(self, obj):
+        memberships = obj.members.select_related('user').order_by('-role', 'joined_at')
+        return OrganizationMemberSerializer(memberships, many=True).data
+
+
+class OrganizationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ['name', 'short_name', 'description', 'logo',
+                  'website', 'country', 'focus_areas']
+
+
+class ActivityDetailSerializer(serializers.ModelSerializer):
+    """Extended activity serializer with entity context for timeline view."""
+    user = UserSerializer(read_only=True)
+    entity_name = serializers.CharField(source='entity.name', read_only=True)
+    entity_category = serializers.CharField(source='entity.category', read_only=True)
+    entity_status = serializers.CharField(source='entity.status', read_only=True)
+
+    class Meta:
+        model = Activity
+        fields = ['activity_id', 'user', 'activity_type', 'comment',
+                  'created_at', 'entity_name', 'entity_category', 'entity_status']
+        read_only_fields = ['activity_id', 'user', 'created_at']

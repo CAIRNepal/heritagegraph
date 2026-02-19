@@ -726,6 +726,61 @@ class Moderation(models.Model):
         moderator_name = self.moderator.username if self.moderator else "No Moderator"
         return f"Moderation for {self.submission.title} by {moderator_name}"
 
+class Organization(models.Model):
+    """Community organizations that group contributors."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    short_name = models.CharField(max_length=50, blank=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='org_logos/', blank=True, null=True)
+    website = models.URLField(blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True)
+    focus_areas = models.JSONField(
+        default=list, blank=True,
+        help_text="List of heritage focus areas, e.g. ['architecture','epigraphy']"
+    )
+    owner = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='owned_organizations'
+    )
+    is_verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'organizations'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def member_count(self):
+        return self.members.count()
+
+
+class OrganizationMembership(models.Model):
+    """Links users to organizations with a role."""
+    ROLE_CHOICES = [
+        ('member', 'Member'),
+        ('editor', 'Editor'),
+        ('admin', 'Admin'),
+    ]
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='org_memberships')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='members')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='member')
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'organization_memberships'
+        unique_together = ['user', 'organization']
+        ordering = ['-joined_at']
+
+    def __str__(self):
+        return f"{self.user.username} @ {self.organization.name} ({self.role})"
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     clerk_user_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
@@ -734,6 +789,7 @@ class UserProfile(models.Model):
     last_name = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
     birth_date = models.DateField(blank=True, null=True)
+    profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
 
     biography = models.TextField(blank=True)
     area_of_expertise = models.CharField(max_length=255, blank=True)

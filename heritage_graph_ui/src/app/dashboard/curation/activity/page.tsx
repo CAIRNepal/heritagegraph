@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -15,27 +16,29 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  User,
-  Calendar,
-  FileText,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Send,
+  MessageSquare,
+  ArrowUpRight,
+  RotateCcw,
+  Flag,
+  Scale,
   RefreshCw,
   Search,
+  ChevronDown,
+  User as UserIcon,
+  Calendar,
   Filter,
-  Download,
-  Upload
+  Clock,
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
-// --- TYPES ---
-interface User {
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
+interface UserInfo {
   id: number;
   username: string;
   email: string;
@@ -43,473 +46,313 @@ interface User {
   last_name: string;
 }
 
-interface Monument {
-  id: string;
-  name: string;
-  type: string;
-  location: string;
-  description: string;
-  status: 'pending' | 'approved' | 'rejected';
-  created_at: string;
-  updated_at: string;
-}
-
-interface Activity {
+interface ActivityItem {
   activity_id: string;
-  user: User;
+  user: UserInfo;
   activity_type: string;
   comment: string | null;
   created_at: string;
-  entity_id?: string;
   entity_name?: string;
-  monument?: Monument;
+  entity_category?: string;
+  entity_status?: string;
 }
 
-interface ActivitiesResponse {
+interface APIResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: Activity[];
+  results: ActivityItem[];
 }
 
-type ActivityType = 'all' | 'submitted' | 'revised' | 'approved' | 'rejected' | 'commented';
+/* ------------------------------------------------------------------ */
+/*  Constants                                                          */
+/* ------------------------------------------------------------------ */
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export default function ActivitiesPage() {
-  const { data: session } = useSession();
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [selectedActivityType, setSelectedActivityType] = useState<ActivityType>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+const ACTIVITY_TYPES = [
+  { value: 'all', label: 'All Types' },
+  { value: 'submitted', label: 'Submitted' },
+  { value: 'accepted', label: 'Accepted' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'revised', label: 'Revised' },
+  { value: 'commented', label: 'Commented' },
+  { value: 'escalated', label: 'Escalated' },
+  { value: 'changes_requested', label: 'Changes Requested' },
+  { value: 'flagged', label: 'Flagged' },
+  { value: 'conflict_resolved', label: 'Conflict Resolved' },
+];
 
-  const API_BASE = "http://0.0.0.0:8000/data/api/activities";
-  const pageSize = 10;
+const ICON_MAP: Record<string, { icon: typeof CheckCircle; cls: string; bg: string }> = {
+  submitted:         { icon: Send,          cls: 'text-sky-600',    bg: 'bg-sky-100 dark:bg-sky-900/40' },
+  accepted:          { icon: CheckCircle,   cls: 'text-green-600',  bg: 'bg-green-100 dark:bg-green-900/40' },
+  rejected:          { icon: XCircle,       cls: 'text-red-600',    bg: 'bg-red-100 dark:bg-red-900/40' },
+  revised:           { icon: Edit,          cls: 'text-violet-600', bg: 'bg-violet-100 dark:bg-violet-900/40' },
+  commented:         { icon: MessageSquare, cls: 'text-amber-600',  bg: 'bg-amber-100 dark:bg-amber-900/40' },
+  escalated:         { icon: ArrowUpRight,  cls: 'text-orange-600', bg: 'bg-orange-100 dark:bg-orange-900/40' },
+  changes_requested: { icon: RotateCcw,     cls: 'text-indigo-600', bg: 'bg-indigo-100 dark:bg-indigo-900/40' },
+  flagged:           { icon: Flag,          cls: 'text-rose-600',   bg: 'bg-rose-100 dark:bg-rose-900/40' },
+  conflict_resolved: { icon: Scale,         cls: 'text-teal-600',   bg: 'bg-teal-100 dark:bg-teal-900/40' },
+};
 
-  const activityTypeOptions: { value: ActivityType; label: string; color: string }[] = [
-    { value: 'all', label: 'All Activities', color: 'bg-gray-100' },
-    { value: 'submitted', label: 'Submitted', color: 'bg-blue-100 text-blue-800' },
-    { value: 'revised', label: 'Revised', color: 'bg-purple-100 text-purple-800' },
-    { value: 'approved', label: 'Approved', color: 'bg-green-100 text-green-800' },
-    { value: 'rejected', label: 'Rejected', color: 'bg-red-100 text-red-800' },
-    { value: 'commented', label: 'Commented', color: 'bg-yellow-100 text-yellow-800' },
-  ];
+function relativeTime(d: string) {
+  const secs = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
+  if (secs < 60) return 'just now';
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return 'yesterday';
+  if (days < 30) return `${days}d ago`;
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
-  const fetchActivities = async (page: number = 1, activityType: ActivityType = 'all', search: string = '') => {
-    try {
-      setIsLoading(true);
-      setError(null);
+function fullName(u: UserInfo) {
+  return `${u.first_name} ${u.last_name}`.trim() || u.username;
+}
 
-      const token = (session as any)?.accessToken;
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-      };
-
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      let url = `${API_BASE}/?page=${page}&limit=${pageSize}`;
-      
-      if (activityType !== 'all') {
-        url += `&activity_type=${activityType}`;
-      }
-      
-      if (search) {
-        url += `&search=${encodeURIComponent(search)}`;
-      }
-
-      console.log('Fetching activities from:', url);
-
-      const res = await fetch(url, { headers });
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch activities: ${res.status} ${res.statusText}`);
-      }
-
-      const data: ActivitiesResponse = await res.json();
-      
-      console.log('Fetched activities data:', data);
-      setActivities(data.results);
-      setTotalCount(data.count);
-      setTotalPages(Math.ceil(data.count / pageSize));
-      setCurrentPage(page);
-    } catch (err) {
-      console.error('Error fetching activities:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load activities');
-      toast.error('Failed to load activities');
-    } finally {
-      setIsLoading(false);
-    }
+function actionVerb(type: string) {
+  const map: Record<string, string> = {
+    submitted: 'submitted',
+    accepted: 'accepted',
+    rejected: 'rejected',
+    revised: 'suggested revisions to',
+    commented: 'commented on',
+    escalated: 'escalated',
+    changes_requested: 'requested changes to',
+    flagged: 'flagged',
+    conflict_resolved: 'resolved conflicts on',
   };
+  return map[type] || type;
+}
 
-  useEffect(() => {
-    fetchActivities(1, selectedActivityType, searchQuery);
+/* ------------------------------------------------------------------ */
+/*  Page                                                               */
+/* ------------------------------------------------------------------ */
+export default function ActivityLogPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
+  // Filters
+  const [actType, setActType] = useState('all');
+  const [q, setQ] = useState('');
+  const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
+  const [showFilters, setShowFilters] = useState(false);
+
+  const perPage = 50;
+
+  const headers = useCallback(() => {
+    const h: HeadersInit = { 'Content-Type': 'application/json' };
+    const t = (session as any)?.accessToken;
+    if (t) h['Authorization'] = `Bearer ${t}`;
+    return h;
   }, [session]);
 
-  const handleRefresh = () => {
-    fetchActivities(currentPage, selectedActivityType, searchQuery);
-  };
+  const load = useCallback(async (p = 1, append = false) => {
+    if (!append) setLoading(true);
+    setError(null);
+    try {
+      const sp = new URLSearchParams();
+      sp.set('page', String(p));
+      sp.set('page_size', String(perPage));
+      sp.set('ordering', sortDir === 'desc' ? '-created_at' : 'created_at');
+      if (actType !== 'all') sp.set('activity_type', actType);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    fetchActivities(1, selectedActivityType, searchQuery);
-  };
+      const res = await fetch(`${API}/data/api/activities/?${sp}`, { headers: headers() });
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data: APIResponse = await res.json();
 
-  const handleActivityTypeChange = (value: ActivityType) => {
-    setSelectedActivityType(value);
-    setCurrentPage(1);
-    fetchActivities(1, value, searchQuery);
-  };
-
-  const handlePageChange = (page: number) => {
-    fetchActivities(page, selectedActivityType, searchQuery);
-  };
-
-  const getActivityTypeBadge = (activityType: string) => {
-    const option = activityTypeOptions.find(opt => opt.value === activityType);
-    if (option) {
-      return (
-        <Badge variant="secondary" className={option.color}>
-          {option.label}
-        </Badge>
-      );
+      if (append) {
+        setActivities(prev => [...prev, ...data.results]);
+      } else {
+        setActivities(data.results);
+      }
+      setTotal(data.count);
+      setHasMore(!!data.next);
+      setPage(p);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Load failed');
+      toast.error('Failed to load activity');
+    } finally {
+      setLoading(false);
     }
-    return (
-      <Badge variant="secondary">
-        {activityType}
-      </Badge>
-    );
-  };
+  }, [headers, actType, sortDir]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
+  useEffect(() => { load(1); }, [session, actType, sortDir]);
+
+  const loadMore = () => load(page + 1, true);
+
+  // Group activities by date
+  const grouped = activities.reduce<Record<string, ActivityItem[]>>((acc, a) => {
+    const day = new Date(a.created_at).toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric',
     });
-  };
-
-  const formatUserName = (user: User) => {
-    return `${user.first_name} ${user.last_name} (${user.username})`;
-  };
-
-  // Helper function to get monument information if available
-  const getMonumentInfo = (activity: Activity) => {
-    if (activity.monument) {
-      return `${activity.monument.name} - ${activity.monument.location}`;
-    }
-    return activity.entity_name || 'N/A';
-  };
-
-  const Pagination = () => {
-    if (totalPages <= 1) return null;
-
-    const pages = [];
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    return (
-      <div className="flex items-center justify-between mt-6">
-        <div className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} activities
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          
-          <div className="flex items-center space-x-1">
-            {startPage > 1 && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handlePageChange(1)}
-                  className="h-8 w-8 p-0"
-                >
-                  1
-                </Button>
-                {startPage > 2 && <span className="text-muted-foreground">...</span>}
-              </>
-            )}
-            
-            {pages.map(page => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handlePageChange(page)}
-                className="h-8 w-8 p-0"
-              >
-                {page}
-              </Button>
-            ))}
-            
-            {endPage < totalPages && (
-              <>
-                {endPage < totalPages - 1 && <span className="text-muted-foreground">...</span>}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handlePageChange(totalPages)}
-                  className="h-8 w-8 p-0"
-                >
-                  {totalPages}
-                </Button>
-              </>
-            )}
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    );
-  };
+    if (!acc[day]) acc[day] = [];
+    acc[day].push(a);
+    return acc;
+  }, {});
 
   return (
     <>
       <Toaster position="top-right" richColors />
-      <div className="space-y-6">
+      <div className="space-y-5">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Activities</h1>
-            <p className="text-muted-foreground mt-2">
-              Track all user activities and submissions across the platform
-            </p>
-          </div>
-          <Button onClick={handleRefresh} variant="outline" className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
+        <div>
+          <p className="text-sm text-muted-foreground mb-1">Curation / Activity</p>
+          <h1 className="text-3xl font-bold tracking-tight">Curation Event Timeline</h1>
+          <p className="text-muted-foreground mt-1 max-w-2xl">
+            All curation activity is logged and publicly available, establishing provenance
+            of assertions and acknowledging the work of collaborators.
+          </p>
         </div>
 
-        {/* Filters and Search */}
+        {/* Filter panel */}
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1">
-                <form onSubmit={handleSearch} className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      placeholder="Search activities, users, monuments, or comments..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <Button type="submit" variant="default">
-                    Search
-                  </Button>
-                </form>
-              </div>
-
-              {/* Activity Type Filter */}
-              <div className="w-full sm:w-48">
-                <Label htmlFor="activity-type" className="text-sm font-medium">
-                  Activity Type
-                </Label>
-                <Select value={selectedActivityType} onValueChange={handleActivityTypeChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activityTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+          <CardContent className="py-3">
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 items-end">
+                <div className="flex-1 flex gap-2">
+                  <Select value={actType} onValueChange={v => { setActType(v); setPage(1); }}>
+                    <SelectTrigger className="w-52">
+                      <SelectValue placeholder="Activity Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACTIVITY_TYPES.map(t => (
+                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={sortDir} onValueChange={v => setSortDir(v as 'desc' | 'asc')}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="desc">Newest first</SelectItem>
+                      <SelectItem value="asc">Oldest first</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => load(1)}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Activities Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
-            <CardDescription>
-              {selectedActivityType === 'all' 
-                ? 'All user activities across the platform'
-                : `Showing ${selectedActivityType} activities`}
-              {searchQuery && ` matching "${searchQuery}"`}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                <p className="mt-2 text-muted-foreground">Loading activities...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-8">
-                <div className="text-destructive text-lg mb-2">Error</div>
-                <p className="text-muted-foreground mb-4">{error}</p>
-                <Button onClick={handleRefresh}>Try Again</Button>
-              </div>
-            ) : activities.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-semibold text-lg mb-2">No activities found</h3>
-                <p className="text-muted-foreground">
-                  {searchQuery || selectedActivityType !== 'all' 
-                    ? 'No activities match your current filters. Try adjusting your search or filters.'
-                    : 'No activities have been recorded yet.'}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Activity Type</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Comment</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {activities.map((activity) => (
-                        <TableRow key={activity.activity_id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <div className="font-medium">{formatUserName(activity.user)}</div>
-                                {/* <div className="text-sm text-muted-foreground">{activity.user.email}</div> */}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {getActivityTypeBadge(activity.activity_type)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {getMonumentInfo(activity)}
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-md">
-                            {activity.comment ? (
-                              <p className="text-sm line-clamp-2">{activity.comment}</p>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">No comment</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm">{formatDate(activity.created_at)}</span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+        {/* Count */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {activities.length} of {total} loaded
+          </p>
+          <Badge variant="outline" className="gap-1">
+            <Clock className="h-3 w-3" /> Timeline
+          </Badge>
+        </div>
+
+        {/* Timeline */}
+        {loading && activities.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
+            <p className="mt-3 text-muted-foreground">Loading activity…</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20">
+            <p className="text-destructive mb-2">{error}</p>
+            <Button onClick={() => load(1)}>Retry</Button>
+          </div>
+        ) : activities.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-20">
+              <Clock className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+              <h3 className="font-semibold mb-1">No activity yet</h3>
+              <p className="text-sm text-muted-foreground">Activity will appear here as contributions are submitted and reviewed.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {Object.entries(grouped).map(([day, items]) => (
+              <div key={day}>
+                <div className="flex items-center gap-3 mb-3">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="text-sm font-semibold text-muted-foreground">{day}</h3>
+                  <div className="flex-1 h-px bg-border" />
                 </div>
-                
-                <Pagination />
+
+                <div className="relative ml-4 border-l-2 border-muted pl-6 space-y-1">
+                  {items.map((a) => {
+                    const meta = ICON_MAP[a.activity_type] || { icon: Clock, cls: 'text-gray-500', bg: 'bg-gray-100' };
+                    const Icon = meta.icon;
+                    return (
+                      <div key={a.activity_id} className="relative group">
+                        {/* Timeline dot */}
+                        <div className={`absolute -left-[33px] top-2 h-5 w-5 rounded-full ${meta.bg} flex items-center justify-center ring-2 ring-background`}>
+                          <Icon className={`h-3 w-3 ${meta.cls}`} />
+                        </div>
+
+                        {/* Card */}
+                        <div className="py-2 px-3 rounded-lg hover:bg-muted/40 transition-colors">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm">
+                                <button
+                                  onClick={() => router.push(`/dashboard/users/${a.user.username}`)}
+                                  className="font-semibold hover:text-primary hover:underline"
+                                >
+                                  {fullName(a.user)}
+                                </button>
+                                <span className="text-muted-foreground"> {actionVerb(a.activity_type)} </span>
+                                {a.entity_name && (
+                                  <span className="font-medium text-foreground">{a.entity_name}</span>
+                                )}
+                              </p>
+                              {a.comment && (
+                                <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2 italic">
+                                  &ldquo;{a.comment}&rdquo;
+                                </p>
+                              )}
+                              {a.entity_category && (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Badge variant="outline" className="text-[10px]">{a.entity_category}</Badge>
+                                  {a.entity_status && (
+                                    <Badge variant="secondary" className="text-[10px]">{a.entity_status}</Badge>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap mt-0.5">
+                              {relativeTime(a.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            {/* Load more */}
+            {hasMore && (
+              <div className="text-center pt-2">
+                <Button variant="outline" onClick={loadMore} className="gap-2">
+                  <ChevronDown className="h-4 w-4" />
+                  Load more activity
+                </Button>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Activities</p>
-                  <p className="text-2xl font-bold">{totalCount}</p>
-                </div>
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <FileText className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Submissions</p>
-                  <p className="text-2xl font-bold">
-                    {activities.filter(a => a.activity_type === 'submitted').length}
-                  </p>
-                </div>
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Upload className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Revisions</p>
-                  <p className="text-2xl font-bold">
-                    {activities.filter(a => a.activity_type === 'revised').length}
-                  </p>
-                </div>
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <RefreshCw className="h-6 w-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Users</p>
-                  <p className="text-2xl font-bold">
-                    {new Set(activities.map(a => a.user.id)).size}
-                  </p>
-                </div>
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <User className="h-6 w-6 text-orange-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          </div>
+        )}
       </div>
     </>
   );

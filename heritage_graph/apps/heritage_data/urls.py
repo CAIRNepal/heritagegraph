@@ -14,6 +14,9 @@ router.register(r'review-queue', views.ReviewQueueViewSet, basename='reviewqueue
 router.register(r'review-flags', views.ReviewFlagViewSet, basename='reviewflag')
 router.register(r'reviewer-roles', views.ReviewerRoleViewSet, basename='reviewerrole')
 
+# Organizations
+router.register(r'organizations', views.OrganizationViewSet, basename='organization')
+
 # router.register(r'submissions', views.SubmissionViewSet, basename='submission')
 # router.register(r'comments', views.CommentViewSet, basename='comment')
 
@@ -105,5 +108,11 @@ urlpatterns = [
         "api/user/<str:username>/",
         views.UserProfileDetail.as_view(),
         name="user-profile-detail",
+    ),
+    # profile image upload
+    path(
+        "api/user/profile-image/",
+        views.UserProfileImageView.as_view(),
+        name="user-profile-image",
     ),
 ]
