@@ -30,6 +30,10 @@ import {
   IconConfetti,
   IconPalette,
   IconColumns,
+  IconShield,
+  IconScale,
+  IconAlertTriangle,
+  IconDashboard,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -251,11 +255,25 @@ const data = {
 
   navCuration: [
     {
+      title: 'Reviewer Dashboard',
+      url: '/dashboard/curation/dashboard',
+      icon: IconDashboard,
+    },
+    {
+      title: 'Review Queue',
+      url: '/dashboard/curation/review',
+      icon: IconShield,
+    },
+    {
+      title: 'Conflicts',
+      url: '/dashboard/curation/conflicts',
+      icon: IconScale,
+    },
+    {
       title: 'Contributions Queue',
       url: '/dashboard/curation/contributions',
       icon: IconFileDescription,
     },
-    // { name: "Verification Queue", url: "/curation/verification", icon: IconReport },
     {
       title: 'Activity Log',
       url: '/dashboard/curation/activity',
