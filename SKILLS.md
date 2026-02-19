@@ -131,6 +131,75 @@ Each feature is listed with:
 | Backend viewset | `heritage_data/views.py` → `ActivityViewSet` |
 | Frontend page | `heritage_graph_ui/src/app/dashboard/curation/activity/` |
 
+### Epistemic Review System — Working
+
+A three-persona review workflow for expert-reviewed heritage claims with conflict resolution.
+
+#### Reviewer Roles
+
+| Layer | Files |
+|-------|-------|
+| Backend model | `heritage_data/models.py` → `ReviewerRole` (3 personas: community_reviewer, domain_expert, expert_curator) |
+| Backend viewset | `heritage_data/views.py` → `ReviewerRoleViewSet` (my_role, assign actions) |
+| Backend serializer | `heritage_data/serializers.py` → `ReviewerRoleSerializer`, `ReviewerRoleAssignSerializer` |
+| Backend permissions | `heritage_data/permissions.py` → `IsCommunityReviewer`, `IsDomainExpert`, `IsExpertCurator` |
+| Backend URL | `/data/reviewer-roles/`, `/data/reviewer-roles/my_role/`, `/data/reviewer-roles/assign/` |
+
+#### Triaged Review Queue
+
+| Layer | Files |
+|-------|-------|
+| Backend viewset | `heritage_data/views.py` → `ReviewQueueViewSet` (queue types: all, new_claims, conflicts, flagged, expiring) |
+| Backend serializer | `heritage_data/serializers.py` → `ContributionQueueSerializer` (flag_count, has_conflicts, days_in_review) |
+| Backend URL | `/data/review-queue/`, `/data/review-queue/queue_counts/` |
+| Frontend page | `heritage_graph_ui/src/app/dashboard/curation/review/page.tsx` |
+
+#### Three-Panel Review Workspace
+
+| Layer | Files |
+|-------|-------|
+| Backend view | `heritage_data/views.py` → `ReviewWorkspaceView` (retrieves entity + revisions + activities + flags + prior reviews) |
+| Backend serializer | `heritage_data/serializers.py` → `ReviewWorkspaceSerializer` |
+| Backend URL | `GET /data/review-workspace/<uuid:entity_id>/` |
+| Frontend page | `heritage_graph_ui/src/app/dashboard/curation/review/[id]/page.tsx` |
+| Panels | Left: Context (entity state, flags, history) · Middle: Submission (revision data, contributor record) · Right: Decision (verdict, conflict handling, confidence override) |
+
+#### Review Decision Submission
+
+| Layer | Files |
+|-------|-------|
+| Backend view | `heritage_data/views.py` → `SubmitReviewDecisionView` (applies verdict, logs Activity) |
+| Backend model | `heritage_data/models.py` → `ReviewDecision` (verdict: accept/accept_with_edits/request_changes/reject/escalate) |
+| Backend serializer | `heritage_data/serializers.py` → `ReviewDecisionSerializer`, `ReviewDecisionCreateSerializer` |
+| Backend URL | `POST /data/review-workspace/<uuid:entity_id>/decide/` |
+| Conflict handling | `supersedes`, `coexist`, `existing_stands`, `refines`, `disputed` |
+
+#### Review Flags
+
+| Layer | Files |
+|-------|-------|
+| Backend model | `heritage_data/models.py` → `ReviewFlag` (types: questionable_source, suspected_duplicate, sensitive_content, low_confidence, stale_review, contradiction, other) |
+| Backend viewset | `heritage_data/views.py` → `ReviewFlagViewSet` (resolve action) |
+| Backend serializer | `heritage_data/serializers.py` → `ReviewFlagSerializer`, `ReviewFlagCreateSerializer` |
+| Backend URL | `/data/review-flags/`, `/data/review-flags/<id>/resolve/` |
+
+#### Conflict Resolution
+
+| Layer | Files |
+|-------|-------|
+| Frontend page | `heritage_graph_ui/src/app/dashboard/curation/conflicts/page.tsx` |
+| Backend filter | `ReviewQueueViewSet` with `queue_type=conflicts` |
+| Purpose | Dedicated view for entities with competing assertions, links to review workspace |
+
+#### Reviewer Dashboard
+
+| Layer | Files |
+|-------|-------|
+| Backend view | `heritage_data/views.py` → `ReviewerDashboardView` (queue stats, weekly metrics, lifetime impact, domain activity) |
+| Backend serializer | `heritage_data/serializers.py` → `ReviewerDashboardSerializer` |
+| Backend URL | `GET /data/reviewer-dashboard/` |
+| Frontend page | `heritage_graph_ui/src/app/dashboard/curation/dashboard/page.tsx` |
+
 ### Edit Suggestions — Working
 
 | Layer | Files |
@@ -282,6 +351,7 @@ Each feature is listed with:
 | CIDOC revision models for all entities | Planned | Only PersonRevision is active |
 | CIDOC comment models | Planned | Commented out |
 | Notification backend API | Planned | Model exists, no views/serializers |
+| Reviewer notifications | Planned | Review system exists, notifications not yet wired |
 | Frontend route protection | Missing | Middleware is passthrough |
 | CIDOC admin registrations | Planned | Entirely commented out |
 | Frontend test suite | Planned | No testing framework configured |
@@ -289,3 +359,4 @@ Each feature is listed with:
 | Redis caching | Planned | No cache backend configured |
 | WebSocket real-time updates | Planned | ASGI configured but no consumers |
 | Full-text search (Elasticsearch/Meilisearch) | Planned | Currently using Django ORM `icontains` |
+| Review system admin panel | Planned | ReviewerRole assignment via API only, no admin UI yet |

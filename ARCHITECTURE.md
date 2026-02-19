@@ -192,7 +192,11 @@ Django Auth User
   ├──1:N──▶ CulturalEntity (new workflow)
   │              ├──1:N──▶ Revision
   │              ├──1:N──▶ Activity
-  │              └──1:N──▶ Comment
+  │              ├──1:N──▶ Comment
+  │              ├──1:N──▶ ReviewDecision (epistemic review verdicts)
+  │              └──1:N──▶ ReviewFlag (quality/concern flags)
+  │
+  ├──1:1──▶ ReviewerRole (community_reviewer | domain_expert | expert_curator)
   │
   ├──1:N──▶ Submission (legacy workflow)
   │              ├──1:N──▶ MediaAttachment
@@ -249,9 +253,13 @@ src/app/
     │   ├── tradition/
     │   └── source/
     │
-    ├── curation/              ← Moderation tools
-    │   ├── contributions/
-    │   └── activity/
+    ├── curation/              ← Moderation & review tools
+    │   ├── contributions/     ← Contribution queue
+    │   ├── activity/          ← Activity log
+    │   ├── review/            ← Triaged epistemic review queue
+    │   │   └── [id]/          ← Three-panel review workspace
+    │   ├── conflicts/         ← Conflict resolution queue
+    │   └── dashboard/         ← Reviewer dashboard
     │
     ├── community/             ← Community pages
     │   ├── contributors/
@@ -305,6 +313,53 @@ Page Component
       ├── TanStack React Table (sorting, filtering, pagination)
       ├── dnd-kit (row reordering)
       └── Drawer (row detail view)
+```
+
+### Epistemic Review Flow
+
+```
+Contribution submitted (CulturalEntity → pending_review)
+        │
+        ▼
+┌─────────────────────────┐
+│  Review Queue (Triaged)  │
+│  ├── New Claims          │  (no prior reviews)
+│  ├── Conflicts           │  (competing assertions)
+│  ├── Flagged             │  (community-flagged concerns)
+│  └── Expiring            │  (stale reviews > 14 days)
+└────────┬────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────┐
+│  Three-Panel Review Workspace               │
+│  ┌───────────┬──────────────┬─────────────┐ │
+│  │  Context   │  Submission  │  Decision   │ │
+│  │  - entity  │  - revision  │  - verdict  │ │
+│  │  - flags   │  - data      │  - conflict │ │
+│  │  - history │  - contrib   │  - override │ │
+│  │  - reviews │  - record    │  - feedback │ │
+│  └───────────┴──────────────┴─────────────┘ │
+└────────┬────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────┐
+│  Review Decision     │
+│  ├── Accept          │ → entity.status = accepted
+│  ├── Accept w/ Edits │ → entity.status = accepted
+│  ├── Request Changes │ → entity.status = changes_requested
+│  ├── Reject          │ → entity.status = rejected
+│  └── Escalate        │ → escalated_to = expert curator
+└────────┬────────────┘
+         │
+         ▼ (if conflicts)
+┌─────────────────────┐
+│  Conflict Resolution │
+│  ├── Supersedes      │ → old assertion superseded
+│  ├── Coexist         │ → both assertions valid
+│  ├── Existing Stands │ → new assertion dismissed
+│  ├── Refines         │ → adds nuance
+│  └── Disputed        │ → marked for further review
+└─────────────────────┘
 ```
 
 ---
@@ -398,12 +453,14 @@ PostgreSQL (user-level access, connection limits)
 
 ### Permission Model
 
-| Role | Django Group | Capabilities |
-|------|-------------|--------------|
+| Role | Source | Capabilities |
+|------|--------|--------------|
 | Anonymous | — | Read public data, view API docs |
 | Authenticated User | — | Create submissions, view own data, comment |
 | Contributor | "Contributors" | Create/edit own entities, suggest edits |
-| Reviewer | "Reviewers" | Moderate submissions, accept/reject entities |
+| Community Reviewer | `ReviewerRole(role='community_reviewer')` | Review assigned queue, flag submissions, provide feedback |
+| Domain Expert | `ReviewerRole(role='domain_expert')` | All community reviewer permissions + override confidence, manage domain-specific content |
+| Expert Curator | `ReviewerRole(role='expert_curator')` | All domain expert permissions + resolve conflicts, assign reviewer roles, full moderation |
 | Staff | `is_staff=True` | Full admin access, user management |
 | Superuser | `is_superuser=True` | Everything |
 

@@ -88,9 +88,10 @@ Each maps to a **guided multi-step form** with an assertion wrapper.
 - Syncretic relationship forms with theological caveats
 - Living Goddess (Kumari) tenure tracking
 - Calendar conversion (Gregorian ↔ Nepal Sambat ↔ Vikram Sambat)
-- Conflict detection and reconciliation UI
-- Expert verification workflow
+- ~~Conflict detection and reconciliation UI~~ ✅ Implemented (triaged review queue + conflict resolution page)
+- ~~Expert verification workflow~~ ✅ Implemented (3-persona reviewer roles + three-panel review workspace)
 - Mobile-first field survey mode
+- Reviewer notifications (review system backend exists, notification wiring planned)
 
 ---
 

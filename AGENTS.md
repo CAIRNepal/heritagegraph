@@ -46,6 +46,12 @@ heritagegraph/
 │   │   │   │   ├── knowledge/   # Knowledge base CRUD (entity, person, etc.)
 │   │   │   │   ├── contribute/  # Contribution forms
 │   │   │   │   ├── curation/    # Moderation & activity logs
+│   │   │   │   │   ├── contributions/  # Contribution queue
+│   │   │   │   │   ├── activity/       # Activity log
+│   │   │   │   │   ├── review/         # Triaged review queue
+│   │   │   │   │   │   └── [id]/       # Three-panel review workspace
+│   │   │   │   │   ├── conflicts/      # Conflict resolution
+│   │   │   │   │   └── dashboard/      # Reviewer dashboard
 │   │   │   │   ├── community/   # Contributors & organizations
 │   │   │   │   └── graphview/   # Graph visualization (Cytoscape)
 │   │   │   └── api/auth/        # NextAuth API route
@@ -92,6 +98,7 @@ The active auth backend is `GoogleTokenAuthentication` in `heritage_graph/apps/h
 - **Legacy:** `Submission` model with 80+ flat CharField fields for heritage data
 - **New:** `CulturalEntity` → `Revision` (JSONField) → `Activity` workflow
 - Both are active. New features should use the `CulturalEntity` workflow.
+- **Review system:** `ReviewerRole`, `ReviewDecision`, `ReviewFlag` models extend the `CulturalEntity` workflow with three-persona epistemic review (community_reviewer, domain_expert, expert_curator).
 
 ### 5. Frontend API calls use Bearer tokens
 ```tsx
@@ -145,6 +152,15 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/data/contribution-queue/` — pending contributions queue
 - `/data/revisions/` — revision history
 
+**Epistemic Review (prefix: `/data/`):**
+- `/data/review-queue/` — triaged queue (filterable: all, new_claims, conflicts, flagged, expiring)
+- `/data/review-queue/queue_counts/` — count per queue type
+- `GET /data/review-workspace/<uuid>/` — three-panel workspace data
+- `POST /data/review-workspace/<uuid>/decide/` — submit review decision
+- `/data/review-flags/` — CRUD + resolve action
+- `/data/reviewer-roles/` — role management + my_role/assign actions
+- `GET /data/reviewer-dashboard/` — reviewer stats and metrics
+
 **Auth:**
 - `POST /api/token/` — obtain JWT
 - `POST /api/token/refresh/` — refresh JWT
@@ -158,6 +174,10 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/dashboard/contribute/<domain>` — contribution forms
 - `/dashboard/curation/contributions` — moderation queue
 - `/dashboard/curation/activity` — activity log
+- `/dashboard/curation/review` — triaged epistemic review queue
+- `/dashboard/curation/review/<id>` — three-panel review workspace
+- `/dashboard/curation/conflicts` — conflict resolution queue
+- `/dashboard/curation/dashboard` — reviewer dashboard
 - `/dashboard/community/contributors` — contributor list
 - `/dashboard/graphview` — graph visualization
 
