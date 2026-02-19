@@ -75,6 +75,11 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         if not auth_header or not auth_header.startswith("Bearer "):
             return None
 
+        # If GOOGLE_CLIENT_ID is not configured, skip this backend entirely
+        # so the next auth class in the chain can handle the token.
+        if not GOOGLE_CLIENT_ID:
+            return None
+
         token = auth_header.split(" ")[1]
 
         try:
@@ -88,8 +93,10 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
                 google_requests.Request(),
                 GOOGLE_CLIENT_ID,
             )
-        except ValueError as e:
-            raise exceptions.AuthenticationFailed(f"Invalid Google token: {str(e)}")
+        except ValueError:
+            # Token is not a valid Google token — return None so the next
+            # auth class in the chain can try (e.g. JWTAuthentication).
+            return None
 
         # Ensure the token was issued by Google
         issuer = payload.get("iss", "")

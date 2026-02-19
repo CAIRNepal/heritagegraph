@@ -61,7 +61,7 @@ interface DashboardData {
   recent_domain_activity: DomainActivityItem[];
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const ROLE_LABELS: Record<string, string> = {
   community_reviewer: 'Community Reviewer',

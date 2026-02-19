@@ -36,7 +36,7 @@ import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 // CONSTANTS
 // ---------------------------------------------------------------------------
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://backend.localhost";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // ---------------------------------------------------------------------------
 // FIELD RENDERER — maps OntologyField definitions to shadcn inputs

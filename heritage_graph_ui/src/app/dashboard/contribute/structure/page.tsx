@@ -224,7 +224,7 @@ export default function ContributeStructurePage() {
     setIsSubmitting(true);
     try {
       const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "http://backend.localhost";
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
       const payload = {
         name: form.name,

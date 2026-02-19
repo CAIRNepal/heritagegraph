@@ -32,7 +32,7 @@ export interface OntologyField {
   /** Whether the field is required */
   required?: boolean;
   /** For select/multiselect: the enum values */
-  options?: { value: string; label: string; description?: string }[];
+  options?: readonly { readonly value: string; readonly label: string; readonly description?: string }[];
   /** For relation fields: the related ontology class key */
   relationTo?: string;
   /** For relation fields: the API endpoint to search */

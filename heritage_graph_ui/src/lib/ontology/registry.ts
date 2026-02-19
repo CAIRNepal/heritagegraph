@@ -57,7 +57,6 @@ const person: OntologyClass = {
   sections: [
     { key: "basic", label: "Basic Information" },
     { key: "life", label: "Life Details" },
-    { key: "affiliations", label: "Affiliations" },
   ],
   fields: [
     nameField("Full Name"),
@@ -65,9 +64,8 @@ const person: OntologyClass = {
     { key: "birth_date", label: "Birth Date", type: "text", section: "life", order: 1, placeholder: "e.g., 1200 CE or c. 1150 CE", description: "Birth date or approximate period" },
     { key: "death_date", label: "Death Date", type: "text", section: "life", order: 2, placeholder: "e.g., 1280 CE", description: "Death date or approximate period" },
     { key: "occupation", label: "Occupation", type: "text", section: "basic", order: 3, placeholder: "e.g., Sculptor, Priest, King", description: "Comma-separated roles" },
-    { key: "period", label: "Historical Period", type: "text", section: "life", order: 3, placeholder: "e.g., Malla Period", description: "Historical period of activity" },
-    { key: "institutional_affiliation", label: "Institutional Affiliation", type: "text", section: "affiliations", order: 1, description: "e.g., Tribhuvan University" },
-    { key: "expertise_area", label: "Areas of Expertise", type: "text", section: "affiliations", order: 2, placeholder: "Comma-separated", description: "e.g., Lichhavi inscriptions, Sanskrit epigraphy" },
+    { key: "aliases", label: "Alternative Names", type: "text", section: "basic", order: 4, placeholder: "Comma-separated", description: "Alternative names or aliases" },
+    { key: "biography", label: "Biography", type: "textarea", section: "life", order: 3, description: "Detailed biography" },
     noteField(),
   ],
   columns: [
@@ -75,7 +73,7 @@ const person: OntologyClass = {
     { key: "occupation", label: "Occupation", sortable: true, visible: true },
     { key: "birth_date", label: "Born", sortable: true, visible: true, format: "text" },
     { key: "death_date", label: "Died", sortable: true, visible: true, format: "text" },
-    { key: "period", label: "Period", sortable: true, visible: true, format: "badge" },
+    { key: "aliases", label: "Aliases", sortable: false, visible: false },
   ],
 };
 
@@ -96,10 +94,9 @@ const location: OntologyClass = {
   fields: [
     nameField("Place Name"),
     descriptionField(),
-    { key: "location_type", label: "Place Type", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.LocationTypeEnum, description: "Type of place" },
+    { key: "type", label: "Place Type", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.LocationTypeEnum, description: "Type of place" },
     { key: "coordinates", label: "Coordinates", type: "coordinates", section: "geography", order: 1, placeholder: "Lat, Long", description: "GPS coordinates (latitude, longitude)" },
-    { key: "period", label: "Historical Period", type: "text", section: "basic", order: 4, placeholder: "e.g., Lichhavi Period" },
-    { key: "condition_status", label: "Condition Status", type: "select", section: "basic", order: 5, options: [
+    { key: "current_status", label: "Condition Status", type: "select", section: "basic", order: 5, required: true, options: [
       { value: "preserved", label: "Preserved" },
       { value: "partially_ruined", label: "Partially Ruined" },
       { value: "ruined", label: "Ruined" },
@@ -109,10 +106,9 @@ const location: OntologyClass = {
   ],
   columns: [
     { key: "name", label: "Name", sortable: true, visible: true },
-    { key: "location_type", label: "Type", sortable: true, visible: true, format: "badge" },
+    { key: "type", label: "Type", sortable: true, visible: true, format: "badge" },
     { key: "coordinates", label: "Coordinates", visible: true },
-    { key: "condition_status", label: "Status", sortable: true, visible: true, format: "badge" },
-    { key: "period", label: "Period", sortable: true, visible: true },
+    { key: "current_status", label: "Status", sortable: true, visible: true, format: "badge" },
   ],
 };
 
@@ -129,22 +125,19 @@ const event: OntologyClass = {
   sections: [
     { key: "basic", label: "Basic Information" },
     { key: "temporal", label: "Temporal Details" },
-    { key: "participation", label: "Participation" },
   ],
   fields: [
     nameField("Event Name"),
     descriptionField(),
-    { key: "event_type", label: "Event Type", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.EventTypeEnum, description: "Classification of event" },
+    { key: "type", label: "Event Type", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.EventTypeEnum, description: "Classification of event" },
     { key: "start_date", label: "Start Date", type: "text", section: "temporal", order: 1, placeholder: "e.g., 2024-01-15 or c. 1200 CE", description: "Start date or earliest date" },
     { key: "end_date", label: "End Date", type: "text", section: "temporal", order: 2, placeholder: "e.g., 2024-01-20", description: "End date or latest date" },
-    { key: "recurrence", label: "Recurrence", type: "select", section: "temporal", order: 3, options: ontologyEnums.RecurrenceEnum, description: "Frequency of event" },
-    { key: "participants", label: "Participants", type: "text", section: "participation", order: 1, placeholder: "Comma-separated names", description: "Key participants in the event" },
-    { key: "location_name", label: "Location", type: "text", section: "basic", order: 4, description: "Where the event takes place" },
+    { key: "recurrence", label: "Recurrence", type: "select", section: "temporal", order: 3, required: true, options: ontologyEnums.RecurrenceEnum, description: "Frequency of event" },
     noteField(),
   ],
   columns: [
     { key: "name", label: "Name", sortable: true, visible: true },
-    { key: "event_type", label: "Type", sortable: true, visible: true, format: "badge" },
+    { key: "type", label: "Type", sortable: true, visible: true, format: "badge" },
     { key: "start_date", label: "Start", sortable: true, visible: true },
     { key: "end_date", label: "End", sortable: true, visible: true },
     { key: "recurrence", label: "Recurrence", sortable: true, visible: true, format: "badge" },
@@ -199,16 +192,14 @@ const tradition: OntologyClass = {
   fields: [
     nameField("Tradition Name"),
     descriptionField(),
-    { key: "tradition_type", label: "Category", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.TraditionCategoryEnum, description: "Type of tradition" },
-    { key: "region", label: "Region", type: "text", section: "practice", order: 1, placeholder: "e.g., Kathmandu Valley", description: "Geographic region where practiced" },
-    { key: "practitioners", label: "Practitioners", type: "text", section: "practice", order: 2, placeholder: "e.g., Newar community", description: "Communities or groups that practice this tradition" },
+    { key: "type", label: "Category", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.TraditionCategoryEnum, description: "Type of tradition" },
+    { key: "associated_materials", label: "Associated Materials", type: "text", section: "practice", order: 1, placeholder: "e.g., Tools, garments, instruments", description: "Tools, garments, instruments used" },
     noteField(),
   ],
   columns: [
     { key: "name", label: "Name", sortable: true, visible: true },
-    { key: "tradition_type", label: "Type", sortable: true, visible: true, format: "badge" },
-    { key: "region", label: "Region", sortable: true, visible: true },
-    { key: "practitioners", label: "Practitioners", visible: true },
+    { key: "type", label: "Type", sortable: true, visible: true, format: "badge" },
+    { key: "associated_materials", label: "Materials", sortable: true, visible: true },
   ],
 };
 
@@ -229,20 +220,19 @@ const source: OntologyClass = {
   ],
   fields: [
     { key: "title", label: "Title", type: "text", required: true, section: "basic", order: 1, description: "Title of the source" },
-    { key: "author", label: "Author(s)", type: "text", section: "basic", order: 2, placeholder: "Comma-separated", description: "Author name(s)" },
-    { key: "source_type", label: "Source Type", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.SourceTypeEnum, description: "Type of source material" },
-    { key: "year", label: "Publication Year", type: "text", section: "publication", order: 1, placeholder: "e.g., 2020", description: "Year of publication" },
-    { key: "publisher", label: "Publisher", type: "text", section: "publication", order: 2, description: "Publishing entity" },
-    { key: "url", label: "URL", type: "url", section: "access", order: 1, placeholder: "https://...", description: "Digital location of source" },
-    { key: "citation", label: "Citation", type: "textarea", section: "access", order: 2, description: "Formal citation text" },
+    { key: "authors", label: "Author(s)", type: "text", required: true, section: "basic", order: 2, placeholder: "Comma-separated", description: "Author name(s)" },
+    { key: "type", label: "Source Type", type: "select", section: "basic", order: 3, required: true, options: ontologyEnums.SourceTypeEnum, description: "Type of source material" },
+    { key: "publication_year", label: "Publication Year", type: "text", section: "publication", order: 1, placeholder: "e.g., 2020", description: "Year of publication" },
+    { key: "digital_link", label: "URL", type: "url", section: "access", order: 1, placeholder: "https://...", description: "Digital location of source" },
+    { key: "archive_location", label: "Archive Location", type: "text", section: "access", order: 2, placeholder: "e.g., Nepal National Archives", description: "Physical archive location" },
     noteField(),
   ],
   columns: [
     { key: "title", label: "Title", sortable: true, visible: true },
-    { key: "author", label: "Author", sortable: true, visible: true },
-    { key: "source_type", label: "Type", sortable: true, visible: true, format: "badge" },
-    { key: "year", label: "Year", sortable: true, visible: true },
-    { key: "url", label: "URL", visible: false, format: "link" },
+    { key: "authors", label: "Author", sortable: true, visible: true },
+    { key: "type", label: "Type", sortable: true, visible: true, format: "badge" },
+    { key: "publication_year", label: "Year", sortable: true, visible: true },
+    { key: "digital_link", label: "URL", visible: false, format: "link" },
   ],
 };
 

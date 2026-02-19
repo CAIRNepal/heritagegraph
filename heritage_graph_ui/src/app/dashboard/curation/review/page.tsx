@@ -99,7 +99,7 @@ interface QueueCounts {
 type QueueTab = 'all' | 'new_claims' | 'conflicts' | 'flagged' | 'expiring';
 type CategoryType = 'all' | 'monument' | 'artifact' | 'ritual' | 'festival' | 'tradition' | 'document' | 'other';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function ReviewQueuePage() {
   const { data: session } = useSession();

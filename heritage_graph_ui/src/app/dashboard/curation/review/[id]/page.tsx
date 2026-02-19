@@ -113,7 +113,7 @@ type ConflictHandling = 'not_applicable' | 'supersedes' | 'coexist' | 'existing_
 type Confidence = '' | 'certain' | 'likely' | 'uncertain' | 'speculative';
 type VerificationMethod = '' | 'source_crosscheck' | 'expert_knowledge' | 'field_verification' | 'community_consensus';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function ReviewWorkspacePage() {
   const { data: session } = useSession();

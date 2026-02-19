@@ -37,7 +37,7 @@ interface EntitySearchProps {
 export function EntitySearch({
   label,
   endpoint,
-  backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://backend.localhost",
+  backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000",
   value,
   onSelect,
   placeholder = "Search existing records...",

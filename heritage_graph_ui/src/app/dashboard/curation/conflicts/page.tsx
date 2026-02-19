@@ -45,7 +45,7 @@ interface ContributionsResponse {
   results: Contribution[];
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://0.0.0.0:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function ConflictsPage() {
   const { data: session } = useSession();

@@ -44,7 +44,7 @@ import type { OntologyClass, OntologyColumn } from "@/lib/ontology/types";
 // CONSTANTS
 // ---------------------------------------------------------------------------
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://backend.localhost";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const PAGE_SIZE = 10;
 
 // ---------------------------------------------------------------------------
