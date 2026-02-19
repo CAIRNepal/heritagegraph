@@ -17,27 +17,21 @@
                                          │ (rev proxy) │
                                          └──────┬──────┘
                                                 │
-                    ┌───────────────┬───────────┼───────────┬───────────────┐
-                    │               │           │           │               │
-              ┌─────▼─────┐  ┌─────▼─────┐ ┌───▼───┐ ┌────▼────┐  ┌──────▼──────┐
-              │ Frontend   │  │  Landing  │ │Backend│ │Keycloak │  │  Traefik    │
-              │ Next.js 15 │  │ Next.js 14│ │Django │ │  IAM    │  │  Dashboard  │
-              │ :3000      │  │ :3000     │ │:8000  │ │ :8080   │  │  :8080      │
-              └─────┬──────┘  └───────────┘ └───┬───┘ └────┬────┘  └─────────────┘
-                    │                           │          │
-                    │    ┌──────────────────────┘          │
-                    │    │                                  │
-                    │    │         ┌────────────────────────┘
-                    │    │         │
-                    │    ▼         ▼
+                    ┌───────────────┬───────────┼───────────────────────────┐
+                    │               │           │                           │
+              ┌─────▼─────┐  ┌─────▼─────┐ ┌───▼───┐              ┌──────▼──────┐
+              │ Frontend   │  │  Landing  │ │Backend│              │  Traefik    │
+              │ Next.js 15 │  │ Next.js 14│ │Django │              │  Dashboard  │
+              │ :3000      │  │ :3000     │ │:8000  │              │  :8080      │
+              └─────┬──────┘  └───────────┘ └───┬───┘              └─────────────┘
+                    │                           │
+                    │    ┌──────────────────────┘
+                    │    │
+                    │    ▼
                     │  ┌───────────────┐
                     │  │  PostgreSQL   │
                     │  │   :5432       │
                     │  │               │
-                    │  │ ┌───────────┐ │
-                    │  │ │ keycloak  │ │  ← Keycloak's DB
-                    │  │ │ database  │ │
-                    │  │ └───────────┘ │
                     │  │ ┌───────────┐ │
                     │  │ │heritage_db│ │  ← Django's DB
                     │  │ │ database  │ │
@@ -56,8 +50,8 @@
 
 | Network | Purpose | Services |
 |---------|---------|----------|
-| `proxy` | Traefik-routed traffic (external access) | traefik, backend, frontend, landing, keycloak |
-| `backend` | Internal service-to-service communication | postgres, backend, keycloak |
+| `proxy` | Traefik-routed traffic (external access) | traefik, backend, frontend, landing |
+| `backend` | Internal service-to-service communication | postgres, backend |
 
 ### Routing Rules (Traefik Labels)
 
@@ -65,7 +59,6 @@
 |------|---------|------|
 | `localhost` / `frontend.localhost` | frontend | 3000 |
 | `backend.localhost` | backend | 8000 |
-| `keycloak.localhost` | keycloak | 8080 |
 | `landing.localhost` | landing | 3000 |
 | `traefik.localhost` | traefik dashboard | 8080 |
 
@@ -76,19 +69,21 @@ In production, replace `.localhost` with your domain (e.g., `api.example.com`).
 ## 🔄 Authentication Flow
 
 ```
-┌────────┐     ┌──────────┐     ┌──────────┐     ┌────────┐
-│ Browser │────▶│ Frontend │────▶│ Keycloak │────▶│Keycloak│
-│         │     │ Next.js  │     │  Login   │     │  DB    │
-└────┬───┘     └────┬─────┘     └────┬─────┘     └────────┘
+┌────────┐     ┌──────────┐     ┌──────────┐
+│ Browser │────▶│ Frontend │────▶│  Google  │
+│         │     │ Next.js  │     │  OAuth   │
+└────┬───┘     └────┬─────┘     └────┬─────┘
      │              │                │
      │  1. Click    │  2. Redirect   │
-     │  "Sign In"   │  to Keycloak   │
+     │  "Sign In"   │  to Google     │
+     │              │  consent       │
      │              │                │
      │              │  3. User logs  │
-     │              │  in at KC      │
+     │              │  in at Google  │
      │              │                │
-     │              │  4. KC issues  │
-     │              │◀─ JWT token ───┤
+     │              │  4. Google     │
+     │              │◀─ issues ──────┤
+     │              │  id_token      │
      │              │                │
      │  5. NextAuth │                │
      │◀─ stores ────┤                │
@@ -96,38 +91,38 @@ In production, replace `.localhost` with your domain (e.g., `api.example.com`).
      │              │                │
      │  6. API call │                │
      │  with Bearer │                │
-     │  token       │                │
+     │  id_token    │                │
      │              ▼                │
      │         ┌─────────┐          │
      │         │ Backend │          │
      │         │ Django  │          │
      │         └────┬────┘          │
      │              │               │
-     │              │ 7. Validate   │
-     │              │ JWT against   │
-     │              │ KC JWKS ──────┘
-     │              │
-     │              │ 8. Auto-create
-     │              │ User + Profile
-     │              ▼
-     │         ┌─────────┐
-     │         │  Django  │
-     │         │   DB     │
-     │         └─────────┘
+     │              │ 7. Verify     │
+     │              │ Google ID     │
+     │              │ token via     │
+     │              │ google-auth   │
+     │              │               │
+     │              │ 8. Auto-create│
+     │              │ User + Profile│
+     │              ▼               │
+     │         ┌─────────┐          │
+     │         │  Django  │          │
+     │         │   DB     │          │
+     │         └─────────┘          │
 ```
 
 ### Token Flow Details
 
-1. **Frontend** uses NextAuth v4 with Keycloak OIDC provider
+1. **Frontend** uses NextAuth v4 with Google OAuth provider
 2. **NextAuth callbacks:**
-   - `jwt` callback: stores `account.access_token` into JWT
-   - `session` callback: exposes `accessToken` on session object
-   - `signIn` callback: calls Django backend to initialize user (`POST /data/testme/`)
-3. **Backend** `KeycloakJWTAuthentication`:
-   - Fetches JWKS from `{KC_URL}/realms/{realm}/protocol/openid-connect/certs`
-   - Decodes JWT with RS256
-   - Verifies audience (`account`) and issuer
-   - Auto-creates Django `User` + `UserProfile` from Keycloak claims
+   - `jwt` callback: stores Google's `account.id_token` into JWT
+   - `session` callback: exposes `accessToken` (the Google ID token) on session object
+   - `signIn` callback: calls Django backend to initialize user (`GET /data/testme/`)
+3. **Backend** `GoogleTokenAuthentication`:
+   - Verifies Google ID token using `google-auth` library
+   - Checks token signature, expiry, issuer (`accounts.google.com`), and audience
+   - Auto-creates Django `User` + `UserProfile` from Google claims (email, given_name, family_name, sub)
 
 ---
 
@@ -190,7 +185,7 @@ Source ──────┘
 ```
 Django Auth User
   │
-  ├──1:1──▶ UserProfile (extended profile, Keycloak-synced)
+  ├──1:1──▶ UserProfile (extended profile, Google-synced)
   ├──1:1──▶ UserStatistics (auto-calculated via signals)
   ├──1:1──▶ Contributor (metadata)
   │
@@ -328,11 +323,7 @@ docker-compose up --build
   ├── 2. traefik starts (no dependencies)
   │       └── reads docker labels for routing
   │
-  ├── 3. keycloak starts (depends: postgres healthy)
-  │       └── imports realm from /data/import/
-  │       └── healthcheck: /health
-  │
-  ├── 4. backend starts (depends: postgres healthy)
+  ├── 3. backend starts (depends: postgres healthy)
   │       └── entrypoint.sh:
   │           ├── wait for DB connection
   │           ├── run migrations
@@ -341,11 +332,11 @@ docker-compose up --build
   │           └── exec gunicorn (4 workers)
   │       └── healthcheck: /health/
   │
-  ├── 5. frontend starts (no strict dependency)
+  ├── 4. frontend starts (no strict dependency)
   │       └── Next.js production server
   │       └── healthcheck: GET /
   │
-  └── 6. landing starts (no strict dependency)
+  └── 5. landing starts (no strict dependency)
           └── Next.js production server
           └── healthcheck: GET /
 ```
@@ -399,7 +390,7 @@ Service (non-root containers, read-only where possible)
 Django (CORS, CSRF, authentication middleware)
   │
   ▼
-Keycloak (OIDC tokens, RBAC, realm-level policies)
+Google OAuth (ID tokens verified via google-auth library)
   │
   ▼
 PostgreSQL (user-level access, connection limits)
@@ -425,12 +416,10 @@ PostgreSQL (user-level access, connection limits)
 | Browser | Traefik | HTTPS | All external traffic |
 | Traefik | Frontend | HTTP | Proxy Next.js |
 | Traefik | Backend | HTTP | Proxy Django API |
-| Traefik | Keycloak | HTTP | Proxy auth UI |
+| Frontend | Google | HTTPS | OAuth consent flow (via NextAuth) |
 | Frontend | Backend | HTTP (internal) | API calls (via browser, through Traefik) |
-| Frontend | Keycloak | HTTP (direct) | OIDC auth flow |
+| Backend | Google | HTTPS | Verify ID tokens (via google-auth) |
 | Backend | PostgreSQL | TCP | Database queries |
-| Backend | Keycloak | HTTP | JWKS validation |
-| Keycloak | PostgreSQL | TCP | Session/realm storage |
 
 ---
 
@@ -439,10 +428,10 @@ PostgreSQL (user-level access, connection limits)
 | Decision | Why |
 |----------|-----|
 | **Traefik over Nginx** | Native Docker integration, automatic service discovery via labels, built-in Let's Encrypt |
-| **Keycloak over Auth0/Clerk** | Self-hosted, open-source, full control over identity data, supports custom themes |
+| **Google OAuth over Keycloak** | Simpler ops — no self-hosted auth server to maintain, Google handles login UI/security, fewer Docker services |
 | **JSONField for entity data** | Heritage data schemas vary widely; rigid columns don't scale |
 | **Separate landing page app** | Different tech requirements (Three.js, heavy animations), independent deploy cycle |
 | **Django + Next.js** | Django excels at data modeling/API; Next.js excels at interactive UIs |
-| **PostgreSQL shared instance** | Simpler ops for small team; both Keycloak and Django use Postgres natively |
+| **PostgreSQL single database** | Simpler ops for small team; no longer need a separate Keycloak DB |
 | **Multi-stage Docker builds** | Smaller images, faster deploys, no build tools in production |
 | **Non-root containers** | Security best practice — limits blast radius of container escape |

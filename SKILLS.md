@@ -17,19 +17,18 @@ Each feature is listed with:
 
 ## Authentication & Authorization
 
-### Keycloak OIDC Login — Working
+### Google OAuth Login — Working
 
 | Layer | Files |
 |-------|-------|
-| Backend auth class | `heritage_graph/apps/heritage_data/clerk_auth.py` → `KeycloakJWTAuthentication` |
+| Backend auth class | `heritage_graph/apps/heritage_data/authentication.py` → `GoogleTokenAuthentication` |
 | Backend DRF config | `heritage_graph/settings/base.py` → `REST_FRAMEWORK.DEFAULT_AUTHENTICATION_CLASSES` |
-| Frontend NextAuth | `heritage_graph_ui/src/lib/auth.ts` → `authOptions` with Keycloak provider |
+| Frontend NextAuth | `heritage_graph_ui/src/lib/auth.ts` → `authOptions` with Google provider |
 | Frontend API route | `heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts` |
 | Frontend session | `heritage_graph_ui/src/app/SessionProvider.tsx` |
 | Frontend middleware | `heritage_graph_ui/src/middleware.ts` (currently passthrough) |
 | Type definitions | `heritage_graph_ui/types/next-auth.d.ts` |
-| Keycloak realm | `keycloak/realm-export/realm.json` |
-| Env vars needed | `KEYCLOAK_CLIENT_ID`, `KEYCLOAK_CLIENT_SECRET`, `KEYCLOAK_ISSUER`, `NEXTAUTH_SECRET` |
+| Env vars needed | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `NEXTAUTH_SECRET` |
 
 ### User Registration — Working
 
@@ -243,7 +242,7 @@ Each feature is listed with:
 | Feature | Files |
 |---------|-------|
 | Init script | `infra/postgres/init-scripts/01-init-databases.sh` |
-| Creates | `keycloak` and `heritage_db` databases on first boot |
+| Creates | `heritage_db` database on first boot |
 
 ### Health Checks — Working
 

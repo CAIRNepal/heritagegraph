@@ -130,28 +130,3 @@ services:
         limits:
           memory: 256M
           cpus: '0.25'
-
-  # ---------------------------------------------------------------
-  # Keycloak (Production)
-  # ---------------------------------------------------------------
-  keycloak:
-    restart: always
-    environment:
-      KC_HOSTNAME: keycloak.${DOMAIN:-example.com}
-      KC_PROXY: edge
-      KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME_STRICT: "false"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.keycloak.rule=Host(`keycloak.${DOMAIN:-example.com}`)"
-      - "traefik.http.routers.keycloak.entrypoints=websecure"
-      - "traefik.http.routers.keycloak.tls.certresolver=letsencrypt"
-      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '1.0'
-        reservations:
-          memory: 512M
-          cpus: '0.5'

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
+// Keycloak account UI imports removed — auth is now via NextAuth + Google OAuth
 // import {
 //   DeviceActivity,
 //   PersonalInfo,

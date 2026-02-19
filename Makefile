@@ -47,9 +47,6 @@ logs-backend: ## View backend logs
 logs-frontend: ## View frontend logs
 	docker-compose logs -f frontend
 
-logs-keycloak: ## View keycloak logs
-	docker-compose logs -f keycloak
-
 logs-traefik: ## View traefik logs
 	docker-compose logs -f traefik
 
@@ -63,7 +60,7 @@ shell-backend: ## Open Django shell in backend container
 	docker-compose exec backend python manage.py shell
 
 shell-db: ## Open PostgreSQL shell
-	docker-compose exec postgres psql -U keycloak -d keycloak
+	docker-compose exec postgres psql -U heritage_user -d heritage_db
 
 migrate: ## Run Django database migrations
 	docker-compose exec backend python manage.py migrate
@@ -109,12 +106,12 @@ prod-restart: ## Restart production services
 # ================================================================
 backup: ## Backup PostgreSQL database
 	@mkdir -p backups
-	docker-compose exec -T postgres pg_dump -U keycloak keycloak | gzip > backups/db-$$(date +%Y%m%d-%H%M%S).sql.gz
+	docker-compose exec -T postgres pg_dump -U heritage_user heritage_db | gzip > backups/db-$$(date +%Y%m%d-%H%M%S).sql.gz
 	@echo "Backup saved to backups/"
 
 restore: ## Restore database from backup (usage: make restore FILE=backups/db-xxx.sql.gz)
 	@if [ -z "$(FILE)" ]; then echo "Usage: make restore FILE=backups/db-xxx.sql.gz"; exit 1; fi
-	gunzip < $(FILE) | docker-compose exec -T postgres psql -U keycloak -d keycloak
+	gunzip < $(FILE) | docker-compose exec -T postgres psql -U heritage_user -d heritage_db
 	@echo "Database restored from $(FILE)"
 
 # ================================================================
@@ -126,10 +123,8 @@ health: ## Check health of all services
 	@curl -sf http://backend.localhost/health/ 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
 	@echo "Frontend:"
 	@curl -sf http://frontend.localhost 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
-	@echo "Keycloak:"
-	@curl -sf http://keycloak.localhost/health 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
 	@echo "PostgreSQL:"
-	@docker-compose exec -T postgres pg_isready -U keycloak 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
+	@docker-compose exec -T postgres pg_isready -U heritage_user 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
 
 # ================================================================
 # SETUP
@@ -142,7 +137,6 @@ setup: ## Initial setup (copy env, build, start)
 	@echo "=== HeritageGraph is starting! ==="
 	@echo "Frontend:  http://frontend.localhost"
 	@echo "Backend:   http://backend.localhost"
-	@echo "Keycloak:  http://keycloak.localhost"
 	@echo "Dashboard: http://traefik.localhost:8080"
 	@echo ""
 

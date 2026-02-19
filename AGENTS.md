@@ -11,9 +11,9 @@
 - A **Django REST Framework** backend (API, auth, data models)
 - A **Next.js 15** frontend (dashboard, contribution forms, graph visualization)
 - A **Next.js 14** landing page (marketing site)
-- **Keycloak** for identity/access management (OIDC)
+- **NextAuth v4 + Google OAuth** for authentication
 - **Traefik** as reverse proxy (routes traffic, handles TLS)
-- **PostgreSQL** as database (shared between Django & Keycloak)
+- **PostgreSQL** as database (Django backend)
 
 ---
 
@@ -58,8 +58,6 @@ heritagegraph/
 ├── heritage_graph_landing/      # Next.js 14 landing page
 │   └── app/                     # Landing page with 3D hero, features
 │
-├── keycloak/                    # Keycloak realm export & config
-├── keycloak-themes/             # Custom Keycloak login themes
 ├── infra/                       # Infrastructure configs
 │   ├── traefik/                 # Traefik reverse proxy config
 │   ├── postgres/                # Database init scripts
@@ -87,8 +85,8 @@ Settings are loaded via `heritage_graph/settings/__init__.py` which reads `DJANG
 - `DJANGO_ENV=production` → imports `production.py` (PostgreSQL, env-based)
 - Both import `from .base import *`
 
-### 3. Authentication is Keycloak
-The active auth backend is `KeycloakJWTAuthentication` in `heritage_graph/apps/heritage_data/clerk_auth.py`. Despite the filename, the active class is Keycloak-based. Clerk code is commented out. Frontend uses NextAuth v4 with Keycloak OIDC provider.
+### 3. Authentication is Google OAuth via NextAuth
+The active auth backend is `GoogleTokenAuthentication` in `heritage_graph/apps/heritage_data/authentication.py`. Frontend uses NextAuth v4 with Google OAuth provider. Google ID tokens are sent to the Django backend as Bearer tokens, where they are verified using the `google-auth` library.
 
 ### 4. Two data model architectures co-exist
 - **Legacy:** `Submission` model with 80+ flat CharField fields for heritage data
@@ -174,7 +172,6 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | `backend` | custom (Dockerfile.backend) | 8000 | `backend.localhost` |
 | `frontend` | custom (heritage_graph_ui/Dockerfile) | 3000 | `frontend.localhost` |
 | `landing` | custom (heritage_graph_landing/Dockerfile) | 3000 | `landing.localhost` |
-| `keycloak` | keycloak:24.0 | 8080 | `keycloak.localhost` |
 
 ---
 

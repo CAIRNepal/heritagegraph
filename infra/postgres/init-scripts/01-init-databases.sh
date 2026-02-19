@@ -2,7 +2,7 @@
 # ================================================================
 # PostgreSQL Init Script
 # ================================================================
-# Creates additional databases needed by the application.
+# Creates the heritage_db database for the Django backend.
 # This script runs automatically when the PostgreSQL container
 # starts for the first time.
 # ================================================================
@@ -29,7 +29,6 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 
     -- Grant privileges
     GRANT ALL PRIVILEGES ON DATABASE heritage_db TO heritage_user;
-    GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
 
     -- Log completion
     SELECT 'Database initialization completed successfully.' AS status;

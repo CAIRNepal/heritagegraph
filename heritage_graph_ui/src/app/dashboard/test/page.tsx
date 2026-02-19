@@ -34,7 +34,7 @@
 //   return (
 //     <>
 //       {!session ? (
-//         <button onClick={() => signIn("keycloak")}>Login with Keycloak</button>
+//         <button onClick={() => signIn("google")}>Login with Google</button>
 //       ) : (
 //         <>
 //           <button onClick={fetchUsers}>Call Django API</button>

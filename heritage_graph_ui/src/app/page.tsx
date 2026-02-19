@@ -538,8 +538,8 @@ export default function Home() {
                       answer: 'Not at the moment :-)',
                     },
                     {
-                      value: 'funding',
-                      question: 'What license does HeritageGraph has?',
+                      value: 'license',
+                      question: 'What license does HeritageGraph have?',
                       answer:
                         'The license for HeritageGraph has not yet been finalized, but we intend to choose one that balances community benefits with the future interests of CAIR.',
                     },

@@ -1,23 +1,13 @@
 // app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
-import KeycloakProvider from "next-auth/providers/keycloak";
+import GoogleProvider from "next-auth/providers/google";
 
 const handler = NextAuth({
   providers: [
-  KeycloakProvider({
-    clientId: process.env.KEYCLOAK_CLIENT_ID!,
-    clientSecret: process.env.KEYCLOAK_CLIENT_SECRET!,
-    issuer: process.env.KEYCLOAK_ISSUER!,
-    profile(profile) {
-      return {
-        id: profile.sub,
-        name: profile.name ?? profile.preferred_username,
-        email: profile.email,
-        image: profile.picture,
-        username: profile.preferred_username,
-      };
-    },
-})
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
 
   session: {
@@ -28,18 +18,17 @@ const handler = NextAuth({
     // Called on every sign-in
     async signIn({ user, account }) {
       try {
-        // console.log("User info from Keycloak:", user);
-        // console.log("Account info:", account);
+        // Use Google's id_token to initialize user in Django
+        const idToken = account?.id_token;
 
-        const accessToken = account?.access_token;
-
-        if (accessToken) {
-          // Example API call to Django backend
-          const response = await fetch("http://127.0.0.1:8000/data/testme/", {
+        if (idToken) {
+          // Use Docker service name for inter-container communication
+          const backendUrl = process.env.INTERNAL_BACKEND_URL || "http://backend:8000";
+          const response = await fetch(`${backendUrl}/data/testme/`, {
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${accessToken}`,
-              "Accept": "application/json",
+              Authorization: `Bearer ${idToken}`,
+              Accept: "application/json",
             },
           });
 
@@ -62,11 +51,11 @@ const handler = NextAuth({
       if (user) {
         token.email = user.email;
         token.name = user.name;
-        token.username = user.username; // now included
+        token.username = user.email; // Google doesn't have usernames, use email
       }
       if (account) {
-        token.accessToken = account.access_token;
-        token.idToken = account.id_token;
+        // Store Google's id_token — Django will verify this
+        token.accessToken = account.id_token;
       }
       return token;
     },
@@ -78,12 +67,11 @@ const handler = NextAuth({
       session.user.name = token.name;
       session.user.username = token.username;
       session.accessToken = token.accessToken;
-      // session.idToken = token.idToken;
       return session;
     },
   },
 
-  debug: true, 
+  debug: process.env.NODE_ENV === "development",
 });
 
 export { handler as GET, handler as POST };

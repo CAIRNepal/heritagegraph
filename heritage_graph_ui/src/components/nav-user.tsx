@@ -149,9 +149,7 @@ export function NavUser({
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href="http://keycloak.localhost/realms/heritageGraph/account" 
-                target="_blank"
-                rel="noopener noreferrer"
+                <Link href="/dashboard/account" 
                 className="flex items-center gap-2">
                   <IconUserCircle />
                   Account Settings
@@ -164,24 +162,7 @@ export function NavUser({
               variant="ghost"
               className="w-full"
               onClick={() => {
-                const logoutUrl = `http://keycloak.localhost/realms/heritageGraph/protocol/openid-connect/logout?redirect_uri=${encodeURIComponent(
-                  'http://localhost:3000'
-                )}`;
-              
-                // Open Keycloak logout in a small popup window
-                const width = 500;
-                const height = 600;
-                const left = window.screenX + (window.outerWidth - width) / 2;
-                const top = window.screenY + (window.outerHeight - height) / 2;
-              
-                window.open(
-                  logoutUrl,
-                  'KeycloakLogout',
-                  `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars`
-                );
-              
-                signOut({ redirect: false });
-                window.close()
+                signOut({ callbackUrl: '/' });
               }}
             >
               <IconLogout />

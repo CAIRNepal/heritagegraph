@@ -8,7 +8,7 @@
 
 - **Project:** HeritageGraph — Cultural Heritage Linked Open Data platform
 - **Organization:** CAIR-Nepal
-- **Stack:** Django REST Framework + Next.js 15 + Keycloak + Traefik + PostgreSQL
+- **Stack:** Django REST Framework + Next.js 15 + NextAuth v4 + Google OAuth + Traefik + PostgreSQL
 - **Branch strategy:** Work from `v1` branch
 
 ---
@@ -218,9 +218,10 @@ export function MyDataComponent() {
 - Use `useSession()` from `next-auth/react` to get the token.
 
 ### Authentication Pattern
-- Auth is handled by NextAuth v4 with Keycloak OIDC provider.
+- Auth is handled by NextAuth v4 with Google OAuth provider.
 - Config in `src/lib/auth.ts` — **this is the source of truth**.
 - Session includes: `session.accessToken`, `session.user.username`, `session.user.email`.
+- The `accessToken` is a Google ID token, verified by Django via `google-auth`.
 - Type augmentations in `types/next-auth.d.ts`.
 
 ### Routing
@@ -240,7 +241,7 @@ export function MyDataComponent() {
 - Use Alpine base images where possible.
 
 ### Docker Compose
-- Service names: lowercase, single word (`postgres`, `backend`, `frontend`, `keycloak`, `traefik`).
+- Service names: lowercase, single word (`postgres`, `backend`, `frontend`, `traefik`).
 - All env vars use `${VAR:-default}` syntax with fallbacks.
 - Internal services use `expose`, not `ports` (Traefik handles external routing).
 - Networks: `proxy` (Traefik-routed) and `backend` (internal).
@@ -249,7 +250,7 @@ export function MyDataComponent() {
 - **Naming:** `UPPER_SNAKE_CASE`
 - **Frontend public vars:** prefix with `NEXT_PUBLIC_`
 - **Django vars:** prefix with `DJANGO_` for Django-specific, `DB_` for database
-- **Keycloak vars:** prefix with `KC_` or `KEYCLOAK_`
+- **Google OAuth vars:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 
 ---
 

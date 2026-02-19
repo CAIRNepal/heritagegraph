@@ -306,7 +306,6 @@ services:
   backend:      # NOT: api, django, server
   frontend:     # NOT: web, ui, nextjs, app
   landing:      # NOT: landing-page, marketing
-  keycloak:     # NOT: auth, iam, idp
   traefik:      # NOT: proxy, lb, reverse-proxy
 ```
 
@@ -315,8 +314,8 @@ services:
 # Service-specific prefix
 DJANGO_SECRET_KEY:         # Django-specific
 DB_NAME:                   # Database
-KC_HOSTNAME:               # Keycloak (official KC_ prefix)
-KEYCLOAK_ADMIN:            # Keycloak admin
+GOOGLE_CLIENT_ID:          # Google OAuth
+GOOGLE_CLIENT_SECRET:      # Google OAuth
 NEXT_PUBLIC_API_URL:       # Next.js public
 TRAEFIK_ACME_EMAIL:        # Traefik
 
@@ -355,7 +354,7 @@ labels:
 ### Code Comments
 ```python
 # ✅ GOOD — explain WHY, not WHAT
-# Auto-create user profile to match Keycloak claims
+# Auto-create user profile to match Google OAuth claims
 # because backend needs local user record for FK relationships
 
 # ❌ BAD — obvious from code

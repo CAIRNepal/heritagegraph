@@ -1,20 +1,40 @@
-import jwt
+"""
+Google ID Token Authentication for Django REST Framework.
+
+Verifies Google-issued ID tokens (sent by NextAuth frontend as Bearer tokens)
+and auto-creates/syncs Django User + UserProfile records.
+
+Replaces the former KeycloakJWTAuthentication class.
+"""
+
+import logging
+
 from django.contrib.auth.models import User
-from jwt import PyJWKClient
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token as google_id_token
 from rest_framework import authentication, exceptions
 
-from .models import UserProfile  # import your UserProfile model
+from .models import UserProfile
 
-# Keycloak configuration
-KEYCLOAK_ISSUER = "http://keycloak.localhost/realms/HeritageRealm"
-KEYCLOAK_AUDIENCE = "account"
-KEYCLOAK_JWKS_URL = f"{KEYCLOAK_ISSUER}/protocol/openid-connect/certs"
+logger = logging.getLogger(__name__)
+
+# Google OAuth Client ID — must match the one used in the NextAuth frontend.
+# Set via environment variable in production; falls back to empty string.
+import os
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 
-class KeycloakJWTAuthentication(authentication.BaseAuthentication):
+class GoogleTokenAuthentication(authentication.BaseAuthentication):
     """
-    Authenticate requests using Keycloak JWT tokens
-    and sync with Django User + UserProfile.
+    Authenticate requests using Google ID tokens.
+
+    The frontend (NextAuth + GoogleProvider) sends the Google id_token
+    as a Bearer token in the Authorization header. This backend:
+
+    1. Verifies the token signature & claims via Google's public keys
+    2. Maps Google claims → Django User fields
+    3. Auto-creates User + UserProfile on first login (get_or_create)
     """
 
     def authenticate(self, request):
@@ -25,65 +45,53 @@ class KeycloakJWTAuthentication(authentication.BaseAuthentication):
         token = auth_header.split(" ")[1]
 
         try:
-            # Fetch signing key from Keycloak JWKS
-            jwks_client = PyJWKClient(KEYCLOAK_JWKS_URL)
-            signing_key = jwks_client.get_signing_key_from_jwt(token)
-
-            # Decode and verify token
-            payload = jwt.decode(
+            # Verify the Google ID token against Google's public certs.
+            # This checks signature, expiry, issuer, and audience.
+            payload = google_id_token.verify_oauth2_token(
                 token,
-                signing_key.key,
-                algorithms=["RS256"],
-                audience=KEYCLOAK_AUDIENCE,
-                issuer=KEYCLOAK_ISSUER,
+                google_requests.Request(),
+                GOOGLE_CLIENT_ID,
             )
+        except ValueError as e:
+            raise exceptions.AuthenticationFailed(f"Invalid Google token: {str(e)}")
 
-            print("=========================================")
-            print("Payload: ", payload)
-            print("=========================================")
+        # Ensure the token was issued by Google
+        issuer = payload.get("iss", "")
+        if issuer not in ("accounts.google.com", "https://accounts.google.com"):
+            raise exceptions.AuthenticationFailed("Token not issued by Google.")
 
-        except jwt.ExpiredSignatureError:
-            raise exceptions.AuthenticationFailed("Token has expired.")
-        except jwt.InvalidTokenError as e:
-            raise exceptions.AuthenticationFailed(f"Invalid token: {str(e)}")
+        email = payload.get("email")
+        if not email:
+            raise exceptions.AuthenticationFailed("Token missing email claim.")
 
-        # Map Keycloak payload to Django User
-        username = payload.get("preferred_username")
-        if not username:
-            raise exceptions.AuthenticationFailed("Token missing username.")
+        if not payload.get("email_verified", False):
+            raise exceptions.AuthenticationFailed("Google email not verified.")
 
-        user, created = User.objects.get_or_create(username=username)
+        # --- Map Google claims to Django User ---
+        # Use email as username (Google has no separate username concept)
+        username = email
 
-        # Update Django user fields
-        user.email = payload.get("email", user.email)
-        user.first_name = payload.get("given_name", user.first_name)
-        user.last_name = payload.get("family_name", user.last_name)
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={"email": email},
+        )
+
+        # Always sync core fields from Google
+        user.email = email
+        user.first_name = payload.get("given_name", user.first_name) or ""
+        user.last_name = payload.get("family_name", user.last_name) or ""
         user.save()
+
+        if created:
+            logger.info("Created new Django user from Google sign-in: %s", email)
 
         # --- Sync UserProfile ---
         profile, _ = UserProfile.objects.get_or_create(user=user)
-
-        # Populate from Keycloak claims if available
-        profile.first_name = payload.get("given_name", profile.first_name)
-        profile.last_name = payload.get("family_name", profile.last_name)
-        profile.email = payload.get("email", profile.email)
-        profile.clerk_user_id = payload.get(
-            "sub", profile.clerk_user_id
-        )  # Keycloak UUID
-        profile.organization = payload.get("organization", profile.organization)
-        profile.position = payload.get("position", profile.position)
-        profile.university_school = payload.get("university", profile.university_school)
-
-        # map birthdate if Keycloak provides it
-        birthdate = payload.get("birthdate")
-        if birthdate:
-            try:
-                from datetime import datetime
-
-                profile.birth_date = datetime.strptime(birthdate, "%Y-%m-%d").date()
-            except ValueError:
-                pass  # ignore invalid formats
-
+        profile.first_name = payload.get("given_name", profile.first_name) or ""
+        profile.last_name = payload.get("family_name", profile.last_name) or ""
+        profile.email = email
+        # Store Google's unique subject ID for reference
+        profile.clerk_user_id = payload.get("sub", profile.clerk_user_id)
         profile.save()
 
         return (user, None)

@@ -1,21 +1,21 @@
 // src/lib/auth.ts
 import { NextAuthOptions } from 'next-auth';
-import KeycloakProvider from 'next-auth/providers/keycloak';
+import GoogleProvider from 'next-auth/providers/google';
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    KeycloakProvider({
-      clientId: process.env.KEYCLOAK_CLIENT_ID!,
-      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET!,
-      issuer: process.env.KEYCLOAK_ISSUER!,
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   session: { strategy: 'jwt' },
   callbacks: {
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account }) {
       if (account) {
-        token.accessToken = account.access_token;
-        token.username = (profile as any)?.preferred_username || token.name || null;
+        // Store Google's id_token — this is what Django will verify
+        token.accessToken = account.id_token;
+        token.username = token.email || null;
       }
       return token;
     },
@@ -23,6 +23,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.username = token.username as string | null;
       }
+      // Expose the Google id_token as accessToken for backend API calls
       session.accessToken = token.accessToken as string | undefined;
       return session;
     },

@@ -24,8 +24,8 @@ export default function AuthSection() {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3 w-full">
-          <Button className="w-full" onClick={() => signIn('keycloak')}>
-            Sign In
+          <Button className="w-full" onClick={() => signIn('google')}>
+            Sign In with Google
           </Button>
         </div>
       )}

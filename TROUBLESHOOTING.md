@@ -15,7 +15,7 @@
 
 ### 2. Duplicate NextAuth configuration
 - **Where:** `src/lib/auth.ts` AND `src/app/api/auth/[...nextauth]/route.ts`
-- **Problem:** Keycloak provider + callbacks are defined in BOTH files independently, with slightly different callback logic. The API route file doesn't import from `auth.ts`.
+- **Problem:** Google provider + callbacks are defined in BOTH files independently, with slightly different callback logic. The API route file doesn't import from `auth.ts`.
 - **Impact:** Behavior discrepancies between session handling and API route auth.
 - **Fix:** `route.ts` should import `authOptions` from `@/lib/auth` instead of redefining it.
 - **Status:** ⚠️ Known, not yet fixed.
@@ -62,12 +62,12 @@
 - **Fix:** Remove the duplicate.
 - **Status:** ⚠️ Known, not yet fixed.
 
-### 9. Auth file is named `clerk_auth.py` but contains Keycloak code
+### 9. Legacy auth files with outdated names
 - **Where:** `heritage_graph/apps/heritage_data/clerk_auth.py`
-- **Problem:** The file was originally for Clerk authentication. It now contains `KeycloakJWTAuthentication` as the active class, with Clerk code commented out.
-- **Impact:** Confusing for developers. AI agents might look for Keycloak auth in wrong places.
-- **Fix:** Rename to `keycloak_auth.py` and update imports. The file also contains `ClerkJWTAuthentication` (commented out) which could be moved to a separate file.
-- **Status:** ⚠️ Known, not yet fixed.
+- **Problem:** This legacy file contains old Clerk authentication code. The active auth class is `GoogleTokenAuthentication` in `authentication.py`. The `clerk_auth.py` file is no longer used.
+- **Impact:** Confusing for developers. AI agents might look for auth code in the wrong file.
+- **Fix:** Delete `clerk_auth.py` since `authentication.py` now handles all auth via Google OAuth.
+- **Status:** ⚠️ Known, low priority.
 
 ---
 
@@ -100,11 +100,13 @@
 
 ## 🐳 Docker Issues
 
-### 14. Keycloak realm import requires `--import-realm` flag
-- **Where:** `docker-compose.yml` → `keycloak` service
-- **Problem:** The realm JSON is mounted to `/opt/keycloak/data/import/` but Keycloak won't auto-import without the `--import-realm` command flag.
-- **Fix:** Ensure keycloak command includes `start --import-realm` (not just `start`).
-- **Status:** Check current compose config.
+### 14. Google OAuth requires correct redirect URIs
+- **Where:** Google Cloud Console → API Credentials
+- **Problem:** Google OAuth will reject sign-in attempts if the redirect URIs don't match exactly. For development, you need `http://localhost:3000/api/auth/callback/google`.
+- **Fix:** In Google Cloud Console, add all redirect URIs:
+  - Dev: `http://localhost:3000/api/auth/callback/google`
+  - Prod: `https://yourdomain.com/api/auth/callback/google`
+- **Status:** ℹ️ Configuration requirement.
 
 ### 15. Frontend volume mounts override built assets in dev
 - **Where:** `docker-compose.yml` → `frontend` service
@@ -135,9 +137,10 @@ print('DB OK')
 "
 ```
 
-### Check Keycloak JWKS endpoint
+### Verify Google ID token
 ```bash
-curl http://keycloak.localhost/realms/HeritageRealm/protocol/openid-connect/certs
+# Decode a Google ID token (for debugging)
+python3 -c "import jwt; print(jwt.decode('YOUR_TOKEN', options={'verify_signature': False}))"
 ```
 
 ### Check Traefik routing
@@ -172,12 +175,12 @@ docker-compose build --no-cache frontend
 - [ ] `.env` file created from `.env.example` with production values
 - [ ] `DJANGO_SECRET_KEY` is randomly generated (not the default)
 - [ ] `POSTGRES_PASSWORD` is a strong password
-- [ ] `KEYCLOAK_ADMIN_PASSWORD` is a strong password
+- [ ] `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are configured
+- [ ] `NEXTAUTH_SECRET` is randomly generated
 - [ ] `DEBUG=False` in `.env`
 - [ ] `ALLOWED_HOSTS` contains your production domain
-- [ ] `KC_HOSTNAME` matches your Keycloak domain
 - [ ] `NEXT_PUBLIC_API_URL` points to production API URL
-- [ ] Keycloak realm has correct redirect URIs for production
+- [ ] Google OAuth redirect URIs configured for production domain
 - [ ] SSL/TLS is configured (Let's Encrypt or custom certs)
 - [ ] Firewall allows only ports 80 and 443
 - [ ] Database backups are scheduled

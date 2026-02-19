@@ -13,6 +13,7 @@ This guide provides comprehensive instructions for deploying HeritageGraph in de
 - [Monitoring & Logs](#monitoring--logs)
 - [Security Considerations](#security-considerations)
 - [Backup & Recovery](#backup--recovery)
+- [Migration Checklist: Keycloak → Google OAuth](#-migration-checklist-keycloak--google-oauth)
 
 ---
 
@@ -82,16 +83,11 @@ docker-compose logs -f
 
 - **Frontend**: http://localhost or http://frontend.localhost
 - **Backend API**: http://backend.localhost/api
-- **Keycloak**: http://keycloak.localhost
 - **Traefik Dashboard**: http://traefik.localhost:8080
 
 ### Default Credentials (Development Only)
 
 ```
-Keycloak Admin:
-  Username: admin
-  Password: admin123
-
 Django Admin:
   Username: admin
   Password: changeme123!
@@ -146,19 +142,19 @@ DEBUG=False
 # Security - Generate these securely
 DJANGO_SECRET_KEY=$(openssl rand -base64 50)
 POSTGRES_PASSWORD=$(openssl rand -base64 20)
-KEYCLOAK_ADMIN_PASSWORD=$(openssl rand -base64 20)
+NEXTAUTH_SECRET=$(openssl rand -base64 32)
 
 # Network
 ALLOWED_HOSTS=example.com,www.example.com,api.example.com
 DOMAIN=example.com
 PRODUCTION_URL=https://example.com
 
-# Keycloak
-KC_HOSTNAME=keycloak.example.com
+# Google OAuth (get from https://console.cloud.google.com/apis/credentials)
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 
 # API Configuration
 NEXT_PUBLIC_API_URL=https://api.example.com
-NEXT_PUBLIC_KEYCLOAK_URL=https://keycloak.example.com
 ```
 
 ### 4. Create Production Docker Compose Override
@@ -200,14 +196,6 @@ services:
 
   frontend:
     restart: always
-
-  keycloak:
-    restart: always
-    environment:
-      KC_HOSTNAME: ${KC_HOSTNAME:-keycloak.example.com}
-      KC_PROXY: edge
-      KC_PROXY_ADDRESS_FORWARDING: "true"
-      KC_HTTP_ENABLED: "false"
 EOF
 ```
 
@@ -227,7 +215,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 docker-compose ps
 
 # Check logs
-docker-compose logs -f traefik backend keycloak
+docker-compose logs -f traefik backend
 ```
 
 ### 6. Configure Firewall (Example: UFW)
@@ -252,7 +240,7 @@ BACKUP_DIR="/backups/heritage"
 mkdir -p "$BACKUP_DIR"
 
 # Backup database
-docker-compose exec -T postgres pg_dump -U keycloak keycloak | gzip > "$BACKUP_DIR/db-$(date +%Y%m%d-%H%M%S).sql.gz"
+docker-compose exec -T postgres pg_dump -U heritage_user heritage_db | gzip > "$BACKUP_DIR/db-$(date +%Y%m%d-%H%M%S).sql.gz"
 
 # Keep only last 7 days of backups
 find "$BACKUP_DIR" -name "db-*.sql.gz" -mtime +7 -delete
@@ -289,17 +277,16 @@ DB_PASSWORD=your-db-password
 DB_HOST=postgres
 ```
 
-#### Keycloak
+#### Google OAuth
 ```env
-KEYCLOAK_ADMIN=admin
-KEYCLOAK_ADMIN_PASSWORD=your-password
-KC_HOSTNAME=keycloak.example.com
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+NEXTAUTH_SECRET=your-nextauth-secret
 ```
 
 #### Frontend
 ```env
 NEXT_PUBLIC_API_URL=https://api.example.com
-NEXT_PUBLIC_KEYCLOAK_URL=https://keycloak.example.com
 ```
 
 ### Database Migration
@@ -322,7 +309,7 @@ docker-compose exec backend python manage.py collectstatic --noinput
 ## Services Overview
 
 ### 1. **PostgreSQL** (`postgres:16-alpine`)
-- Shared database for Django and Keycloak
+- Database for Django backend
 - Port: 5432 (internal only)
 - Volume: `postgres-data:/var/lib/postgresql/data`
 
@@ -347,12 +334,6 @@ docker-compose exec backend python manage.py collectstatic --noinput
 - Port: 3000 (internal)
 - URL: `http://landing.localhost`
 
-### 6. **Keycloak** (Identity & Access Management)
-- Authentication server
-- Port: 8080 (internal, exposed via Traefik)
-- URL: `http://keycloak.localhost` or `https://keycloak.example.com`
-- Admin console: `/admin`
-
 ---
 
 ## Troubleshooting
@@ -363,7 +344,6 @@ docker-compose exec backend python manage.py collectstatic --noinput
 # Check logs
 docker-compose logs backend
 docker-compose logs postgres
-docker-compose logs keycloak
 
 # Restart services
 docker-compose restart
@@ -380,7 +360,7 @@ docker-compose up --build
 docker-compose ps postgres
 
 # Check database connectivity
-docker-compose exec postgres psql -U keycloak -d keycloak -c "SELECT 1;"
+docker-compose exec postgres psql -U heritage_user -d heritage_db -c "SELECT 1;"
 
 # Reset database (WARNING: deletes all data)
 docker-compose down -v
@@ -410,17 +390,19 @@ docker-compose up frontend
 docker-compose exec frontend rm -rf .next
 ```
 
-### Keycloak Admin Console Not Accessible
+### Google OAuth Not Working
 
 ```bash
-# Check Keycloak logs
-docker-compose logs keycloak
+# Verify GOOGLE_CLIENT_ID is set
+docker-compose exec backend printenv GOOGLE_CLIENT_ID
+docker-compose exec frontend printenv GOOGLE_CLIENT_ID
 
-# Verify Keycloak is running
-docker-compose ps keycloak
+# Check NextAuth logs
+docker-compose logs frontend | grep -i "auth\|oauth\|google"
 
-# Check database connection
-docker-compose exec postgres psql -U keycloak -d keycloak -c "SELECT 1;"
+# Verify redirect URIs match Google Cloud Console config
+# Development: http://localhost:3000/api/auth/callback/google
+# Production: https://example.com/api/auth/callback/google
 ```
 
 ### Static Files Not Serving
@@ -462,14 +444,13 @@ docker-compose ps
 # Manual health check
 curl http://backend.localhost/health/
 curl http://frontend.localhost
-curl http://keycloak.localhost/health
 ```
 
 ### Database Monitoring
 
 ```bash
 # Connect to database
-docker-compose exec postgres psql -U keycloak -d keycloak
+docker-compose exec postgres psql -U heritage_user -d heritage_db
 
 # Inside psql:
 \dt                    # List tables
@@ -494,10 +475,10 @@ docker stats heritage-backend
 ### 1. Change Default Passwords
 
 Always change these in production:
-- Keycloak admin password
 - Database password
 - Django superuser password
 - Traefik dashboard password
+- `NEXTAUTH_SECRET` (generate with `openssl rand -base64 32`)
 
 ### 2. Enable HTTPS
 
@@ -544,7 +525,8 @@ docker-compose build --no-cache
 
 ```bash
 # Check for failed login attempts
-docker-compose logs keycloak | grep -i "error\|failed"
+docker-compose logs frontend | grep -i "auth\|error\|failed"
+docker-compose logs backend | grep -i "auth\|error\|401"
 ```
 
 ---
@@ -555,7 +537,7 @@ docker-compose logs keycloak | grep -i "error\|failed"
 
 ```bash
 # Manual backup
-docker-compose exec postgres pg_dump -U keycloak keycloak | gzip > heritage-db-$(date +%Y%m%d).sql.gz
+docker-compose exec postgres pg_dump -U heritage_user heritage_db | gzip > heritage-db-$(date +%Y%m%d).sql.gz
 
 # Verify backup
 gzip -t heritage-db-*.sql.gz
@@ -577,10 +559,10 @@ docker-compose up -d
 
 ```bash
 # Restore database
-gunzip < heritage-db-backup.sql.gz | docker-compose exec -T postgres psql -U keycloak -d keycloak
+gunzip < heritage-db-backup.sql.gz | docker-compose exec -T postgres psql -U heritage_user -d heritage_db
 
 # Verify
-docker-compose exec postgres psql -U keycloak -d keycloak -c "SELECT COUNT(*) FROM django_migrations;"
+docker-compose exec postgres psql -U heritage_user -d heritage_db -c "SELECT COUNT(*) FROM django_migrations;"
 ```
 
 ---
@@ -642,7 +624,7 @@ docker-compose up -d backend
 
 ```bash
 # Create database backup
-docker-compose exec postgres pg_dump -U keycloak keycloak > backup.sql
+docker-compose exec postgres pg_dump -U heritage_user heritage_db > backup.sql
 
 # Run Django shell
 docker-compose exec backend python manage.py shell
@@ -687,6 +669,69 @@ docker system prune -a
 - **GitHub**: https://github.com/CAIRNepal/heritagegraph
 - **Issues**: https://github.com/CAIRNepal/heritagegraph/issues
 - **Contributing**: See `contributing.md`
+
+---
+
+## 🔄 Migration Checklist: Keycloak → Google OAuth
+
+Follow these steps in order to safely migrate from Keycloak to Google OAuth.
+
+### Pre-Migration
+
+- [ ] **Create Google Cloud project** at [console.cloud.google.com](https://console.cloud.google.com)
+- [ ] **Create OAuth 2.0 credentials** under APIs & Services → Credentials → Create Credentials → OAuth client ID
+  - Application type: **Web application**
+  - Authorized redirect URIs:
+    - Development: `http://localhost:3000/api/auth/callback/google`
+    - Production: `https://yourdomain.com/api/auth/callback/google`
+- [ ] **Copy** the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+- [ ] **Generate** a new `NEXTAUTH_SECRET`: `openssl rand -base64 32`
+
+### Environment Setup
+
+- [ ] **Update `.env`** with new variables:
+  ```env
+  GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+  GOOGLE_CLIENT_SECRET=your-client-secret
+  NEXTAUTH_SECRET=your-generated-secret
+  NEXTAUTH_URL=http://localhost:3000  # or https://yourdomain.com
+  POSTGRES_USER=heritage_user
+  POSTGRES_DB=heritage_db
+  ```
+- [ ] **Remove** old Keycloak variables (`KEYCLOAK_*`, `KC_*`, `NEXT_PUBLIC_KEYCLOAK_*`)
+
+### Deployment
+
+- [ ] **Stop all services**: `docker-compose down`
+- [ ] **Remove Keycloak volume** (if present): `docker volume rm heritagegraph_keycloak-data`
+- [ ] **Install Python dependency**: `google-auth==2.38.0` is now in `requirements.txt`
+- [ ] **Remove Keycloak npm packages**: Run `pnpm install` in `heritage_graph_ui/` to prune removed packages
+- [ ] **Rebuild all images**: `docker-compose build --no-cache`
+- [ ] **Start services**: `docker-compose up -d`
+- [ ] **Run migrations**: `docker-compose exec backend python manage.py migrate`
+
+### Verification
+
+- [ ] **Backend health**: `curl http://backend.localhost/health/`
+- [ ] **Frontend loads**: Open `http://frontend.localhost` in browser
+- [ ] **Sign in with Google**: Click "Sign In with Google" on frontend
+- [ ] **API auth works**: Verify authenticated API calls return data (check browser network tab for 200 responses)
+- [ ] **User profile created**: Check Django admin for new UserProfile linked to Google email
+
+### Post-Migration Cleanup (Optional)
+
+- [ ] **Delete `keycloak/` directory** from repo
+- [ ] **Delete `keycloak-themes/` directory** from repo
+- [ ] **Delete `heritage_graph/apps/heritage_data/clerk_auth.py`** (legacy, unused)
+- [ ] **Delete `Dockerfile.keycloak`** from repo root
+- [ ] **Remove Keycloak database** if it still exists in PostgreSQL
+
+### Important Notes
+
+- ⚠️ **All existing sessions are invalidated** — users must sign in again with Google
+- ⚠️ **Existing Keycloak users are NOT automatically migrated** — new UserProfile records are created on first Google sign-in
+- ✅ `NEXTAUTH_SECRET` rotation is **not** required if you're already using NextAuth
+- ✅ No database schema changes are needed — the `UserProfile` model is unchanged
 
 ---
 
