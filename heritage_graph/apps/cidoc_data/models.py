@@ -1,5 +1,8 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 
 # Choice constants
 ARTIFACT_CONDITION_CHOICES = [
@@ -434,6 +437,199 @@ class Monument(MetaData):
 
     def __str__(self):
         return self.name
+
+
+# =====================================================================
+# PROVENANCE MODELS — HeritageAssertion + DataSource (PROV-O aligned)
+# =====================================================================
+
+CONFIDENCE_CHOICES = [
+    ('certain', 'Certain'),
+    ('likely', 'Likely'),
+    ('uncertain', 'Uncertain'),
+    ('speculative', 'Speculative'),
+]
+
+RECONCILIATION_STATUS_CHOICES = [
+    ('pending', 'Pending Review'),
+    ('accepted', 'Accepted'),
+    ('disputed', 'Disputed'),
+    ('superseded', 'Superseded'),
+]
+
+SOURCE_CATEGORY_CHOICES = [
+    ('archival', 'Archival Record'),
+    ('field_survey', 'Field Survey'),
+    ('oral_history', 'Oral History'),
+    ('published', 'Published Source'),
+    ('inscription', 'Inscription'),
+    ('web', 'Web Resource'),
+]
+
+
+class DataSource(models.Model):
+    """
+    Original source from which heritage information was derived.
+    CIDOC: E73_Information_Object | PROV-O: prov:Entity
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=300, help_text="Title of the source")
+    source_type = models.CharField(
+        max_length=30,
+        choices=SOURCE_CATEGORY_CHOICES,
+        help_text="Category of this source"
+    )
+    citation = models.TextField(
+        blank=True,
+        help_text="Formal citation text"
+    )
+    url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="Digital location of source"
+    )
+    author = models.CharField(
+        max_length=300,
+        blank=True,
+        help_text="Author(s) of the source"
+    )
+    publication_year = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Year of publication"
+    )
+    language = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Language of the source (e.g., Nepali, Newari, English)"
+    )
+    note = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Data Source"
+        verbose_name_plural = "Data Sources"
+
+    def __str__(self):
+        return self.name
+
+
+class HeritageAssertion(models.Model):
+    """
+    A single factual claim about a heritage entity, with explicit
+    source, author, date, and confidence. Every contribution creates
+    one or more assertions.
+
+    CIDOC: crminf:I2_Belief | PROV-O: prov:Entity
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # What entity is this assertion about? (generic FK)
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        help_text="Type of the entity this assertion is about"
+    )
+    object_id = models.PositiveIntegerField(
+        help_text="ID of the entity this assertion is about"
+    )
+    asserts_about = GenericForeignKey('content_type', 'object_id')
+
+    # What property/value is being asserted
+    asserted_property = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="The property being asserted (e.g., 'construction_date')"
+    )
+    asserted_value = models.TextField(
+        blank=True,
+        help_text="The value being asserted"
+    )
+    assertion_content = models.TextField(
+        blank=True,
+        help_text="Free-text description of the assertion"
+    )
+
+    # Provenance
+    source = models.ForeignKey(
+        DataSource,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assertions',
+        help_text="Source supporting this assertion"
+    )
+    source_citation = models.TextField(
+        blank=True,
+        help_text="Inline citation if no separate DataSource record"
+    )
+    contributed_by = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Email or name of the contributor"
+    )
+    confidence = models.CharField(
+        max_length=20,
+        choices=CONFIDENCE_CHOICES,
+        default='likely',
+        help_text="Contributor's confidence in this claim"
+    )
+    data_quality_note = models.TextField(
+        blank=True,
+        help_text="Notes on data quality or limitations"
+    )
+
+    # Moderation
+    reconciliation_status = models.CharField(
+        max_length=20,
+        choices=RECONCILIATION_STATUS_CHOICES,
+        default='pending',
+        help_text="Review status of this assertion"
+    )
+    supersedes = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='superseded_by',
+        help_text="Previous assertion this one replaces"
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Heritage Assertion"
+        verbose_name_plural = "Heritage Assertions"
+        indexes = [
+            models.Index(fields=['content_type', 'object_id']),
+            models.Index(fields=['reconciliation_status']),
+            models.Index(fields=['confidence']),
+        ]
+
+    def __str__(self):
+        return f"Assertion on {self.content_type.model}#{self.object_id}: {self.asserted_property}"
+
+
+# =====================================================================
+# Add GenericRelation to existing models for assertion access
+# =====================================================================
+
+# Patch assertions onto all heritage models
+for _model in [
+    ArchitecturalStructure, RitualEvent, Festival, IconographicObject,
+    Monument, Deity, Guthi, Person, Location, Event, HistoricalPeriod,
+    Tradition, Source,
+]:
+    if not hasattr(_model, 'assertions'):
+        GenericRelation(
+            HeritageAssertion,
+            content_type_field='content_type',
+            object_id_field='object_id',
+        ).contribute_to_class(_model, 'assertions')
 
 
 # class Artifact(models.Model):
