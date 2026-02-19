@@ -5,7 +5,7 @@
 # Run `make help` to see available commands.
 # ================================================================
 
-.PHONY: help build up down restart logs ps shell-backend shell-frontend migrate collectstatic createsuperuser backup restore clean prod-up prod-down lint test
+.PHONY: help build up down restart logs ps shell-backend shell-frontend migrate collectstatic createsuperuser backup restore clean prod-up prod-down lint test dev dev-backend dev-frontend dev-setup dev-migrate dev-superuser
 
 # Default target
 .DEFAULT_GOAL := help
@@ -17,8 +17,72 @@ help: ## Show this help message
 	@echo ""
 	@echo "HeritageGraph - Available Commands"
 	@echo "=================================="
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 	@echo ""
+	@echo "  LOCAL DEVELOPMENT (no Docker needed):"
+	@grep -E '^dev[a-zA-Z_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[32m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+	@echo "  DOCKER (containerized):"
+	@grep -E '^(build|up|down|restart|logs|ps|shell|migrate|makemig|collect|create|prod|backup|restore|clean|prune|setup|health)[a-zA-Z_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo ""
+
+# ================================================================
+# LOCAL DEVELOPMENT (no Docker, SQLite, session auth)
+# ================================================================
+# These commands run Django + Next.js directly on your machine.
+# Uses SQLite and session/JWT auth — no Google OAuth or PostgreSQL needed.
+# ================================================================
+
+dev-setup: ## Initial dev setup: install deps, migrate, create superuser
+	@echo "=== Setting up development environment ==="
+	@echo ""
+	@echo "1. Installing Python dependencies..."
+	cd heritage_graph && pip install -r requirements.txt
+	@echo ""
+	@echo "2. Running migrations (SQLite)..."
+	cd heritage_graph && DJANGO_ENV=development python manage.py migrate
+	@echo ""
+	@echo "3. Installing frontend dependencies..."
+	cd heritage_graph_ui && pnpm install
+	@echo ""
+	@echo "=== Setup complete! ==="
+	@echo ""
+	@echo "Create a superuser:  make dev-superuser"
+	@echo "Start everything:    make dev"
+	@echo ""
+
+dev-migrate: ## Run Django migrations (SQLite dev database)
+	cd heritage_graph && DJANGO_ENV=development python manage.py migrate
+
+dev-makemigrations: ## Create new Django migrations (dev)
+	cd heritage_graph && DJANGO_ENV=development python manage.py makemigrations
+
+dev-superuser: ## Create a Django superuser for local dev
+	cd heritage_graph && DJANGO_ENV=development python manage.py createsuperuser
+
+dev-backend: ## Start Django dev server (port 8000, SQLite, session auth)
+	cd heritage_graph && DJANGO_ENV=development python manage.py runserver 0.0.0.0:8000
+
+dev-frontend: ## Start Next.js dev server (port 3000, Turbopack)
+	cd heritage_graph_ui && NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev
+
+dev: ## Start both backend and frontend for local development
+	@echo "=== Starting HeritageGraph in development mode ==="
+	@echo ""
+	@echo "  Backend:  http://localhost:8000  (Django + SQLite)"
+	@echo "  Admin:    http://localhost:8000/admin/"
+	@echo "  API Docs: http://localhost:8000/docs"
+	@echo "  Frontend: http://localhost:3000  (Next.js + Turbopack)"
+	@echo ""
+	@echo "  Auth: Login at /admin/ or POST /api/token/ {username, password}"
+	@echo "  No Google OAuth needed in dev mode."
+	@echo ""
+	@echo "Starting backend in background..."
+	@cd heritage_graph && DJANGO_ENV=development python manage.py runserver 0.0.0.0:8000 &
+	@echo "Starting frontend..."
+	@cd heritage_graph_ui && NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev
+
+dev-shell: ## Open Django shell (dev)
+	cd heritage_graph && DJANGO_ENV=development python manage.py shell
 
 # ================================================================
 # DEVELOPMENT
