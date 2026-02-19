@@ -43,6 +43,13 @@ for var in ("DB_NAME", "DB_USER", "DB_PASSWORD"):
     if not os.environ.get(var):
         raise ValueError(f"Missing required database environment variable: {var}")
 
+# --------------------------------------------------------------------
+# Production Authentication: Google OAuth (via NextAuth frontend)
+# --------------------------------------------------------------------
+REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
+    "apps.heritage_data.authentication.GoogleTokenAuthentication",
+)
+
 # # --------------------------------------------------------------------
 # # Security Middleware
 # # --------------------------------------------------------------------

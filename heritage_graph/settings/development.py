@@ -18,3 +18,16 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+# --------------------------------------------------------------------
+# Dev Authentication: Session + SimpleJWT (no Google OAuth needed)
+# --------------------------------------------------------------------
+# Login via:
+#   - Django admin (/admin/) for session cookie
+#   - POST /api/token/ with {username, password} for JWT Bearer token
+#   - DRF browsable API login button
+# --------------------------------------------------------------------
+REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
+    "apps.heritage_data.authentication.DevSessionAuthentication",
+    "rest_framework_simplejwt.authentication.JWTAuthentication",
+)
