@@ -28,6 +28,19 @@
 
 ## Architecture Overview
 
+HeritageGraph uses **two authentication modes** depending on the environment:
+
+| | Development | Production |
+|---|---|---|
+| **Backend auth** | `DevSessionAuthentication` + SimpleJWT | `GoogleTokenAuthentication` |
+| **Frontend provider** | `CredentialsProvider` (username/password) | `GoogleProvider` (OAuth) |
+| **Token type** | SimpleJWT access token | Google ID token |
+| **Detection** | `GOOGLE_CLIENT_ID` env var **not set** | `GOOGLE_CLIENT_ID` env var **set** |
+| **Database** | SQLite | PostgreSQL |
+| **Setup effort** | Zero (just `make dev-superuser`) | Google Cloud Console + env vars |
+
+### Production Flow (Google OAuth)
+
 ```
 ┌─────────────┐   Google OAuth   ┌──────────────┐
 │  Browser     │ ◄──────────────► │  Google      │
@@ -45,7 +58,32 @@
 └──────────────┘   JSON response     └──────────────────┘
 ```
 
-**How it works:**
+### Development Flow (Credentials + SimpleJWT)
+
+```
+┌─────────────┐   username/password   ┌──────────────────┐
+│  Browser     │ ────────────────────► │  /auth/login     │
+│  (Next.js)   │                      │  (Credentials    │
+└──────┬───────┘                      │   Provider)      │
+       │                              └────────┬─────────┘
+       │                                       │
+       │  NextAuth calls POST /api/token/      │
+       │  with {username, password}             │
+       │                                       ▼
+       │                              ┌──────────────────┐
+       │                              │  Django (DRF)    │
+       │  SimpleJWT returns           │  SimpleJWT       │
+       │  {access, refresh}           │  (port 8000)     │
+       │◄─────────────────────────────│                  │
+       │                              └──────────────────┘
+       │
+       │  session.accessToken = JWT access token
+       │  All API calls use Bearer <jwt_access_token>
+       ▼
+  Django verifies via JWTAuthentication
+```
+
+**Production — How it works:**
 
 1. User clicks "Sign In with Google" → NextAuth opens Google consent screen.
 2. Google returns an **ID token** (JWT signed by Google).
@@ -53,27 +91,42 @@
 4. Every API call to Django sends `Authorization: Bearer <google_id_token>`.
 5. Django's `GoogleTokenAuthentication` class verifies the token against Google's public keys, then auto-creates/syncs the Django `User` + `UserProfile`.
 
+**Development — How it works:**
+
+1. User visits `/auth/login` → enters Django username/password.
+2. NextAuth's `CredentialsProvider` calls `POST /api/token/` to get a SimpleJWT token.
+3. The JWT access token is stored as `session.accessToken`.
+4. API calls use `Authorization: Bearer <jwt_access_token>` — Django's `JWTAuthentication` verifies it.
+5. No Google Cloud Console setup needed. Just `make dev-superuser` and go.
+
 ---
 
 ## Environment Variables
 
-### Frontend (`heritage_graph_ui/.env.local`)
+### Development (minimal — no Google needed)
 
-| Variable | Purpose | Example |
+| Variable | Required? | Default | Notes |
+|---|---|---|---|
+| `NEXTAUTH_URL` | Yes | — | `http://localhost:3000` |
+| `NEXTAUTH_SECRET` | Yes | — | `openssl rand -base64 32` |
+| `DJANGO_ENV` | No | `development` | Set automatically by `make dev-*` commands |
+| `GOOGLE_CLIENT_ID` | **No** | — | Leave unset → enables Credentials auth |
+| `GOOGLE_CLIENT_SECRET` | **No** | — | Leave unset → enables Credentials auth |
+
+> 💡 In dev mode, just set `NEXTAUTH_URL` and `NEXTAUTH_SECRET`. That's it.
+
+### Production (Google OAuth)
+
+| Variable | Required? | Purpose |
 |---|---|---|
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID | `12345.apps.googleusercontent.com` |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret | `GOCSPX-xxxxx` |
-| `NEXTAUTH_URL` | Canonical URL of the frontend | `http://localhost:3000` |
-| `NEXTAUTH_SECRET` | Secret for signing NextAuth JWTs | `openssl rand -base64 32` |
-| `INTERNAL_BACKEND_URL` | Django backend URL (server-side calls) | `http://localhost:8000` |
+| `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID — must match on frontend and backend |
+| `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret |
+| `NEXTAUTH_URL` | Yes | Canonical URL of the frontend |
+| `NEXTAUTH_SECRET` | Yes | Secret for signing NextAuth JWTs |
+| `INTERNAL_BACKEND_URL` | Yes | Django backend URL for server-side calls (`http://backend:8000`) |
+| `DJANGO_ENV` | Yes | Must be `production` |
 
-### Backend (`heritage_graph/.env` or root `.env`)
-
-| Variable | Purpose |
-|---|---|
-| `GOOGLE_CLIENT_ID` | **Must match** the frontend's value — used to verify token audience |
-
-> ⚠️ The same `GOOGLE_CLIENT_ID` must be set on **both** frontend and backend.
+> ⚠️ The same `GOOGLE_CLIENT_ID` must be set on **both** frontend and backend in production.
 
 ---
 
@@ -81,13 +134,16 @@
 
 | File | What it does |
 |---|---|
-| `heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts` | NextAuth route handler — OAuth flow, JWT & session callbacks |
+| `heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts` | NextAuth route handler — auto-selects Google vs Credentials provider |
 | `heritage_graph_ui/src/lib/auth.ts` | `authOptions` config (importable for server-side `getServerSession`) |
+| `heritage_graph_ui/src/app/auth/login/page.tsx` | Dev-only login page (username/password form) |
 | `heritage_graph_ui/src/app/SessionProvider.tsx` | Client wrapper — provides `SessionProvider` + `ThemeProvider` |
 | `heritage_graph_ui/src/app/layout.tsx` | Root layout — wraps everything in `NextAuthSessionProvider` |
 | `heritage_graph_ui/types/next-auth.d.ts` | TypeScript augmentations for `Session`, `JWT`, and `User` |
-| `heritage_graph/apps/heritage_data/authentication.py` | Django `GoogleTokenAuthentication` class |
-| `heritage_graph/settings/base.py` | DRF config — sets default auth class |
+| `heritage_graph/apps/heritage_data/authentication.py` | Both auth backends: `DevSessionAuthentication` + `GoogleTokenAuthentication` |
+| `heritage_graph/settings/development.py` | Dev: session + SimpleJWT auth classes |
+| `heritage_graph/settings/production.py` | Prod: Google OAuth auth class |
+| `heritage_graph/settings/base.py` | Shared DRF config (auth classes set per-environment) |
 
 ---
 
@@ -274,7 +330,15 @@ export async function GET() {
 
 ## Backend: How Django Verifies the Token
 
-The `GoogleTokenAuthentication` class in `heritage_graph/apps/heritage_data/authentication.py` does the following:
+Two authentication backends are available, selected per-environment via `settings/development.py` and `settings/production.py`.
+
+### Development: `DevSessionAuthentication` + `JWTAuthentication`
+
+1. **Session auth:** Login at `/admin/` sets a session cookie. DRF's SessionAuthentication verifies it.
+2. **JWT auth:** `POST /api/token/` with `{username, password}` returns `{access, refresh}`. Send `Authorization: Bearer <access>` on API calls.
+3. Auto-creates `UserProfile` for authenticated users (mirrors Google auth behavior).
+
+### Production: `GoogleTokenAuthentication`
 
 1. Extracts the Bearer token from the `Authorization` header.
 2. Calls `google.oauth2.id_token.verify_oauth2_token()` to verify signature, expiry, issuer, and audience (`GOOGLE_CLIENT_ID`).
@@ -282,7 +346,9 @@ The `GoogleTokenAuthentication` class in `heritage_graph/apps/heritage_data/auth
 4. Auto-creates a Django `User` (username = email) and `UserProfile` via `get_or_create`.
 5. Returns `(user, None)` — DRF then sets `request.user` for the view.
 
-**What this means for your Django views:**
+### What this means for your Django views
+
+Views don't need to care which auth backend is active. Both set `request.user` the same way:
 
 ```python
 from rest_framework.decorators import api_view, permission_classes
@@ -291,14 +357,14 @@ from rest_framework.permissions import IsAuthenticated
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_protected_view(request):
-    # request.user is a Django User object (auto-created from Google token)
+    # request.user is a Django User object — works in both dev and prod
     return Response({
         'message': f'Hello, {request.user.email}!',
         'user_id': request.user.id,
     })
 ```
 
-All DRF views automatically use `GoogleTokenAuthentication` (configured globally in `settings/base.py`). You do **not** need to add any authentication class per-view unless you want to override.
+Auth classes are configured globally per-environment. You do **not** need to add any authentication class per-view unless you want to override.
 
 ---
 
@@ -325,16 +391,35 @@ If you add new fields to the session, update **both**:
 
 ### Trigger Sign In
 
+**Production (Google OAuth):**
 ```tsx
 import { signIn } from 'next-auth/react';
 
-// Basic
 <Button onClick={() => signIn('google')}>Sign In with Google</Button>
 
-// With redirect
-<Button onClick={() => signIn('google', { callbackUrl: '/dashboard' })}>
-  Sign In
-</Button>
+<Button onClick={() => signIn('google', { callbackUrl: '/dashboard' })}>Sign In</Button>
+```
+
+**Development (Credentials):**
+```tsx
+import { signIn } from 'next-auth/react';
+
+// Redirects to /auth/login page
+<Button onClick={() => signIn()}>Sign In</Button>
+
+// Or programmatically:
+const result = await signIn('credentials', {
+  username: 'admin',
+  password: 'mypassword',
+  redirect: false,
+});
+```
+
+**Universal (auto-detects provider):**
+```tsx
+// signIn() without a provider argument shows the default sign-in page,
+// which will be either Google or the credentials form depending on config.
+<Button onClick={() => signIn()}>Sign In</Button>
 ```
 
 ### Trigger Sign Out
@@ -397,19 +482,22 @@ Client-side `fetch` to `localhost:8000` may fail due to CORS if the Django backe
 ## Quick Reference Cheat Sheet
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  NEED                      │  USE                              │
-├─────────────────────────────────────────────────────────────────┤
-│  Read user in client comp  │  useSession()                     │
-│  Read user in server comp  │  getServerSession(authOptions)    │
-│  Protect a client page     │  useSession() + redirect          │
-│  Protect server routes     │  middleware.ts with withAuth()    │
-│  Call Django from browser  │  Bearer ${session.accessToken}    │
-│  Call Django from server   │  Bearer ${session.accessToken}    │
-│                            │  + INTERNAL_BACKEND_URL           │
-│  Trigger login             │  signIn('google')                 │
-│  Trigger logout            │  signOut({ callbackUrl: '/' })    │
-│  Add new session fields    │  next-auth.d.ts + route.ts cbs   │
-│  Protect Django view       │  @permission_classes([IsAuth…])   │
-└─────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│  NEED                       │  USE                                    │
+├────────────────────────────────────────────────────────────────────────┤
+│  Read user in client comp   │  useSession()                           │
+│  Read user in server comp   │  getServerSession(authOptions)          │
+│  Protect a client page      │  useSession() + redirect                │
+│  Protect server routes      │  middleware.ts with withAuth()          │
+│  Call Django from browser   │  Bearer ${session.accessToken}          │
+│  Call Django from server    │  Bearer + INTERNAL_BACKEND_URL          │
+│  Trigger login (prod)       │  signIn('google')                       │
+│  Trigger login (dev)        │  signIn() → /auth/login form            │
+│  Trigger login (universal)  │  signIn() — auto-detects provider       │
+│  Trigger logout             │  signOut({ callbackUrl: '/' })          │
+│  Add new session fields     │  next-auth.d.ts + route.ts callbacks    │
+│  Protect Django view        │  @permission_classes([IsAuthenticated]) │
+│  Setup dev auth             │  make dev-superuser → make dev          │
+│  Setup prod auth            │  Set GOOGLE_CLIENT_ID + SECRET          │
+└────────────────────────────────────────────────────────────────────────┘
 ```

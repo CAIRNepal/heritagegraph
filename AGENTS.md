@@ -91,8 +91,11 @@ Settings are loaded via `heritage_graph/settings/__init__.py` which reads `DJANG
 - `DJANGO_ENV=production` → imports `production.py` (PostgreSQL, env-based)
 - Both import `from .base import *`
 
-### 3. Authentication is Google OAuth via NextAuth
-The active auth backend is `GoogleTokenAuthentication` in `heritage_graph/apps/heritage_data/authentication.py`. Frontend uses NextAuth v4 with Google OAuth provider. Google ID tokens are sent to the Django backend as Bearer tokens, where they are verified using the `google-auth` library.
+### 3. Authentication varies by environment
+- **Development** (`DJANGO_ENV=development`): Uses `DevSessionAuthentication` + SimpleJWT. Login via Django admin or `POST /api/token/` with username/password. No Google OAuth needed.
+- **Production** (`DJANGO_ENV=production`): Uses `GoogleTokenAuthentication`. Frontend uses NextAuth v4 with Google OAuth provider. Google ID tokens are sent as Bearer tokens.
+- **Detection:** Frontend auto-detects the provider based on whether `GOOGLE_CLIENT_ID` env var is set.
+- **Dev login page:** `/auth/login` — username/password form (only shown when Google OAuth is not configured).
 
 ### 4. Two data model architectures co-exist
 - **Legacy:** `Submission` model with 80+ flat CharField fields for heritage data
