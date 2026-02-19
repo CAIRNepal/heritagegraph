@@ -34,7 +34,17 @@ export function NavUser({
     username: string;
   };
 }) {
-  const { isMobile } = useSidebar();
+  // Safely attempt to read sidebar context. If the component is rendered
+  // outside of a SidebarProvider (e.g., on the landing page), `useSidebar`
+  // throws — catch that and fall back to reasonable defaults.
+  let isMobile = false;
+  try {
+    // keep hook call unconditional to satisfy rules of hooks
+    const _sidebar = useSidebar();
+    isMobile = _sidebar.isMobile;
+  } catch (err) {
+    isMobile = false;
+  }
   const { data: session, status } = useSession();
   console.log("HRRRRRE")
   console.log(session?.accessToken)
