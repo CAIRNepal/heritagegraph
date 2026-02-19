@@ -11,6 +11,16 @@
 .DEFAULT_GOAL := help
 
 # ================================================================
+# PATHS & TOOLS
+# ================================================================
+# Virtual environment — all dev commands use this Python, not the system one.
+VENV_DIR   := .venv
+VENV_PY    := $(VENV_DIR)/bin/python
+VENV_PIP   := $(VENV_PY) -m pip
+BACKEND    := heritage_graph
+FRONTEND   := heritage_graph_ui
+
+# ================================================================
 # HELP
 # ================================================================
 help: ## Show this help message
@@ -29,44 +39,59 @@ help: ## Show this help message
 # LOCAL DEVELOPMENT (no Docker, SQLite, session auth)
 # ================================================================
 # These commands run Django + Next.js directly on your machine.
-# Uses SQLite and session/JWT auth — no Google OAuth or PostgreSQL needed.
+# Uses .venv, SQLite, and session/JWT auth — no Google OAuth or
+# PostgreSQL needed.
+#
+# Quick start:
+#   make dev-setup      (once — creates venv, installs deps, migrates)
+#   make dev-superuser  (once — creates a login)
+#   make dev-backend    (terminal 1)
+#   make dev-frontend   (terminal 2)
 # ================================================================
 
-dev-setup: ## Initial dev setup: install deps, migrate, create superuser
+# Ensure the venv exists (idempotent)
+$(VENV_PY):
+	@echo "Creating virtual environment in $(VENV_DIR)..."
+	uv venv $(VENV_DIR) --python 3.11
+	@echo ""
+
+dev-setup: $(VENV_PY) ## Initial dev setup: create venv, install deps, migrate
 	@echo "=== Setting up development environment ==="
 	@echo ""
-	@echo "1. Installing Python dependencies..."
-	cd heritage_graph && pip install -r requirements.txt
+	@echo "1. Installing Python dependencies into $(VENV_DIR)..."
+	uv pip install -r $(BACKEND)/requirements.txt --python $(VENV_PY)
 	@echo ""
 	@echo "2. Running migrations (SQLite)..."
-	cd heritage_graph && DJANGO_ENV=development python manage.py migrate
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
 	@echo ""
 	@echo "3. Installing frontend dependencies..."
-	cd heritage_graph_ui && pnpm install
+	cd $(FRONTEND) && pnpm install
 	@echo ""
 	@echo "=== Setup complete! ==="
 	@echo ""
-	@echo "Create a superuser:  make dev-superuser"
-	@echo "Start everything:    make dev"
+	@echo "Next steps:"
+	@echo "  make dev-superuser   (create a login)"
+	@echo "  make dev-backend     (start Django in terminal 1)"
+	@echo "  make dev-frontend    (start Next.js in terminal 2)"
 	@echo ""
 
-dev-migrate: ## Run Django migrations (SQLite dev database)
-	cd heritage_graph && DJANGO_ENV=development python manage.py migrate
+dev-migrate: $(VENV_PY) ## Run Django migrations (SQLite dev database)
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
 
-dev-makemigrations: ## Create new Django migrations (dev)
-	cd heritage_graph && DJANGO_ENV=development python manage.py makemigrations
+dev-makemigrations: $(VENV_PY) ## Create new Django migrations (dev)
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py makemigrations
 
-dev-superuser: ## Create a Django superuser for local dev
-	cd heritage_graph && DJANGO_ENV=development python manage.py createsuperuser
+dev-superuser: $(VENV_PY) ## Create a Django superuser for local dev
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py createsuperuser
 
-dev-backend: ## Start Django dev server (port 8000, SQLite, session auth)
-	cd heritage_graph && DJANGO_ENV=development python manage.py runserver 0.0.0.0:8000
+dev-backend: $(VENV_PY) ## Start Django dev server (port 8000, SQLite, session auth)
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py runserver 0.0.0.0:8000
 
 dev-frontend: ## Start Next.js dev server (port 3000, Turbopack)
-	cd heritage_graph_ui && NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev
+	cd $(FRONTEND) && NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev
 
-dev: ## Start both backend and frontend for local development
-	@echo "=== Starting HeritageGraph in development mode ==="
+dev: ## Start backend + frontend (run in separate terminals instead)
+	@echo "=== HeritageGraph — Development Mode ==="
 	@echo ""
 	@echo "  Backend:  http://localhost:8000  (Django + SQLite)"
 	@echo "  Admin:    http://localhost:8000/admin/"
@@ -76,13 +101,13 @@ dev: ## Start both backend and frontend for local development
 	@echo "  Auth: Login at /admin/ or POST /api/token/ {username, password}"
 	@echo "  No Google OAuth needed in dev mode."
 	@echo ""
-	@echo "Starting backend in background..."
-	@cd heritage_graph && DJANGO_ENV=development python manage.py runserver 0.0.0.0:8000 &
-	@echo "Starting frontend..."
-	@cd heritage_graph_ui && NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev
+	@echo "TIP: Run these in two separate terminals for best experience:"
+	@echo "  Terminal 1:  make dev-backend"
+	@echo "  Terminal 2:  make dev-frontend"
+	@echo ""
 
-dev-shell: ## Open Django shell (dev)
-	cd heritage_graph && DJANGO_ENV=development python manage.py shell
+dev-shell: $(VENV_PY) ## Open Django shell (dev)
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py shell
 
 # ================================================================
 # DEVELOPMENT
