@@ -68,6 +68,80 @@ class PersonRevisionViewSet(viewsets.ModelViewSet):
     queryset = PersonRevision.objects.all()
     serializer_class = PersonRevisionSerializer
 
+
+# =====================================================================
+# PROVENANCE VIEWSETS
+# =====================================================================
+
+class DataSourceViewSet(viewsets.ModelViewSet):
+    queryset = DataSource.objects.all()
+    serializer_class = DataSourceSerializer
+
+
+class HeritageAssertionViewSet(viewsets.ModelViewSet):
+    queryset = HeritageAssertion.objects.all()
+    serializer_class = HeritageAssertionSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Filter by entity type and ID
+        entity_type = self.request.query_params.get('entity_type')
+        entity_id = self.request.query_params.get('entity_id')
+        status = self.request.query_params.get('status')
+
+        if entity_type:
+            from django.contrib.contenttypes.models import ContentType
+            try:
+                ct = ContentType.objects.get(model=entity_type)
+                qs = qs.filter(content_type=ct)
+            except ContentType.DoesNotExist:
+                pass
+
+        if entity_id:
+            qs = qs.filter(object_id=entity_id)
+
+        if status:
+            qs = qs.filter(reconciliation_status=status)
+
+        return qs
+
+
+class AssertionAwareStructureViewSet(viewsets.ModelViewSet):
+    """Structure ViewSet that uses assertion-aware serializer for writes."""
+    queryset = ArchitecturalStructure.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return AssertionAwareStructureSerializer
+        # For list/retrieve, also return the assertion-aware serializer
+        # so assertions are included in the response
+        return AssertionAwareStructureSerializer
+
+
+class AssertionAwareRitualViewSet(viewsets.ModelViewSet):
+    """Ritual ViewSet with assertion support."""
+    queryset = RitualEvent.objects.all()
+
+    def get_serializer_class(self):
+        return AssertionAwareRitualSerializer
+
+
+class AssertionAwareDeityViewSet(viewsets.ModelViewSet):
+    """Deity ViewSet with assertion support."""
+    queryset = Deity.objects.all()
+
+    def get_serializer_class(self):
+        return AssertionAwareDeitySerializer
+
+
+class AssertionAwareGuthiViewSet(viewsets.ModelViewSet):
+    """Guthi ViewSet with assertion support."""
+    queryset = Guthi.objects.all()
+
+    def get_serializer_class(self):
+        return AssertionAwareGuthiSerializer
+
+
 #################################################################
 
 from rest_framework.decorators import api_view

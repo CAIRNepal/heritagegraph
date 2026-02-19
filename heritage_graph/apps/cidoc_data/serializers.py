@@ -85,6 +85,243 @@ class PersonRevisionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+# =====================================================================
+# PROVENANCE SERIALIZERS
+# =====================================================================
+
+class DataSourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataSource
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at']
+
+
+class HeritageAssertionSerializer(serializers.ModelSerializer):
+    content_type_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = HeritageAssertion
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def get_content_type_name(self, obj):
+        return obj.content_type.model if obj.content_type else None
+
+
+class InlineAssertionSerializer(serializers.Serializer):
+    """
+    Lightweight serializer for assertion data submitted inline
+    with an entity creation form. Used in the contribution wizard.
+    """
+    source_type = serializers.ChoiceField(
+        choices=[
+            ('archival', 'Archival Record'),
+            ('field_survey', 'Field Survey'),
+            ('oral_history', 'Oral History'),
+            ('published', 'Published Source'),
+            ('inscription', 'Inscription'),
+            ('web', 'Web Resource'),
+        ],
+        required=False,
+    )
+    source_citation = serializers.CharField(required=False, allow_blank=True)
+    source_url = serializers.URLField(required=False, allow_blank=True)
+    confidence = serializers.ChoiceField(
+        choices=[
+            ('certain', 'Certain'),
+            ('likely', 'Likely'),
+            ('uncertain', 'Uncertain'),
+            ('speculative', 'Speculative'),
+        ],
+        default='likely',
+    )
+    data_quality_note = serializers.CharField(required=False, allow_blank=True)
+
+
+class AssertionAwareStructureSerializer(serializers.ModelSerializer):
+    """
+    Structure serializer that accepts inline assertion data on create
+    and returns linked assertions on read.
+    """
+    assertion = InlineAssertionSerializer(write_only=True, required=False)
+    assertions = HeritageAssertionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ArchitecturalStructure
+        fields = '__all__'
+
+    def create(self, validated_data):
+        assertion_data = validated_data.pop('assertion', None)
+        structure = super().create(validated_data)
+
+        if assertion_data:
+            from django.contrib.contenttypes.models import ContentType
+            ct = ContentType.objects.get_for_model(structure)
+
+            # Create a DataSource if citation is provided
+            source = None
+            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+                source = DataSource.objects.create(
+                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
+                    source_type=assertion_data.get('source_type', 'published'),
+                    citation=assertion_data.get('source_citation', ''),
+                    url=assertion_data.get('source_url', ''),
+                )
+
+            # Get contributor from request context
+            request = self.context.get('request')
+            contributed_by = ''
+            if request and hasattr(request, 'user') and request.user.is_authenticated:
+                contributed_by = request.user.email or request.user.username
+
+            HeritageAssertion.objects.create(
+                content_type=ct,
+                object_id=structure.id,
+                assertion_content=f"Created record for {structure.name}",
+                source=source,
+                source_citation=assertion_data.get('source_citation', ''),
+                contributed_by=contributed_by,
+                confidence=assertion_data.get('confidence', 'likely'),
+                data_quality_note=assertion_data.get('data_quality_note', ''),
+            )
+
+        return structure
+
+
+class AssertionAwareRitualSerializer(serializers.ModelSerializer):
+    """Ritual serializer with inline assertion support."""
+    assertion = InlineAssertionSerializer(write_only=True, required=False)
+    assertions = HeritageAssertionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = RitualEvent
+        fields = '__all__'
+
+    def create(self, validated_data):
+        assertion_data = validated_data.pop('assertion', None)
+        ritual = super().create(validated_data)
+
+        if assertion_data:
+            from django.contrib.contenttypes.models import ContentType
+            ct = ContentType.objects.get_for_model(ritual)
+
+            source = None
+            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+                source = DataSource.objects.create(
+                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
+                    source_type=assertion_data.get('source_type', 'published'),
+                    citation=assertion_data.get('source_citation', ''),
+                    url=assertion_data.get('source_url', ''),
+                )
+
+            request = self.context.get('request')
+            contributed_by = ''
+            if request and hasattr(request, 'user') and request.user.is_authenticated:
+                contributed_by = request.user.email or request.user.username
+
+            HeritageAssertion.objects.create(
+                content_type=ct,
+                object_id=ritual.id,
+                assertion_content=f"Created record for {ritual.name}",
+                source=source,
+                source_citation=assertion_data.get('source_citation', ''),
+                contributed_by=contributed_by,
+                confidence=assertion_data.get('confidence', 'likely'),
+                data_quality_note=assertion_data.get('data_quality_note', ''),
+            )
+
+        return ritual
+
+
+class AssertionAwareDeitySerializer(serializers.ModelSerializer):
+    """Deity serializer with inline assertion support."""
+    assertion = InlineAssertionSerializer(write_only=True, required=False)
+    assertions = HeritageAssertionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Deity
+        fields = '__all__'
+
+    def create(self, validated_data):
+        assertion_data = validated_data.pop('assertion', None)
+        deity = super().create(validated_data)
+
+        if assertion_data:
+            from django.contrib.contenttypes.models import ContentType
+            ct = ContentType.objects.get_for_model(deity)
+
+            source = None
+            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+                source = DataSource.objects.create(
+                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
+                    source_type=assertion_data.get('source_type', 'published'),
+                    citation=assertion_data.get('source_citation', ''),
+                    url=assertion_data.get('source_url', ''),
+                )
+
+            request = self.context.get('request')
+            contributed_by = ''
+            if request and hasattr(request, 'user') and request.user.is_authenticated:
+                contributed_by = request.user.email or request.user.username
+
+            HeritageAssertion.objects.create(
+                content_type=ct,
+                object_id=deity.id,
+                assertion_content=f"Created record for {deity.name}",
+                source=source,
+                source_citation=assertion_data.get('source_citation', ''),
+                contributed_by=contributed_by,
+                confidence=assertion_data.get('confidence', 'likely'),
+                data_quality_note=assertion_data.get('data_quality_note', ''),
+            )
+
+        return deity
+
+
+class AssertionAwareGuthiSerializer(serializers.ModelSerializer):
+    """Guthi serializer with inline assertion support."""
+    assertion = InlineAssertionSerializer(write_only=True, required=False)
+    assertions = HeritageAssertionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Guthi
+        fields = '__all__'
+
+    def create(self, validated_data):
+        assertion_data = validated_data.pop('assertion', None)
+        guthi = super().create(validated_data)
+
+        if assertion_data:
+            from django.contrib.contenttypes.models import ContentType
+            ct = ContentType.objects.get_for_model(guthi)
+
+            source = None
+            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+                source = DataSource.objects.create(
+                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
+                    source_type=assertion_data.get('source_type', 'published'),
+                    citation=assertion_data.get('source_citation', ''),
+                    url=assertion_data.get('source_url', ''),
+                )
+
+            request = self.context.get('request')
+            contributed_by = ''
+            if request and hasattr(request, 'user') and request.user.is_authenticated:
+                contributed_by = request.user.email or request.user.username
+
+            HeritageAssertion.objects.create(
+                content_type=ct,
+                object_id=guthi.id,
+                assertion_content=f"Created record for {guthi.name}",
+                source=source,
+                source_citation=assertion_data.get('source_citation', ''),
+                contributed_by=contributed_by,
+                confidence=assertion_data.get('confidence', 'likely'),
+                data_quality_note=assertion_data.get('data_quality_note', ''),
+            )
+
+        return guthi
+
 
 #########################################
 

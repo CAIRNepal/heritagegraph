@@ -25,6 +25,16 @@ router.register(r'festivals', FestivalViewSet)
 router.register(r'iconographic_objects', IconographicObjectViewSet)
 router.register(r'monuments', MonumentViewSet)
 
+# Provenance models
+router.register(r'data_sources', DataSourceViewSet)
+router.register(r'assertions', HeritageAssertionViewSet)
+
+# Assertion-aware endpoints (enhanced versions for contribution wizard)
+router.register(r'contribute/structures', AssertionAwareStructureViewSet, basename='contribute-structures')
+router.register(r'contribute/rituals', AssertionAwareRitualViewSet, basename='contribute-rituals')
+router.register(r'contribute/deities', AssertionAwareDeityViewSet, basename='contribute-deities')
+router.register(r'contribute/guthis', AssertionAwareGuthiViewSet, basename='contribute-guthis')
+
 # router.register(r'artifacts', ArtifactViewSet)
 
 ## Revisions
