@@ -16,9 +16,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import CulturalEntity, Revision, Activity
+from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole
 from .serializers import *
-from .permissions import IsContributorOrReadOnly, IsEditor
+from .permissions import (
+    IsContributorOrReadOnly, IsEditor, IsReviewerOrAdmin,
+    IsCommunityReviewer, IsDomainExpert, IsExpertCurator,
+)
 
 
 # For Swagger documentation
@@ -1033,3 +1036,409 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
         return Activity.objects.filter(
             Q(user=user) | Q(entity__contributor=user)
         ).select_related('user', 'entity')
+
+
+# =====================================================================
+# REVIEWER / CURATION VIEWS
+# =====================================================================
+
+
+class ReviewQueueViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Triaged review queue with tabs: new_claims, conflicts, flagged, expiring.
+    Replaces the flat ContributionQueue with epistemic review categories.
+    """
+    serializer_class = ContributionQueueSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['category', 'status']
+    search_fields = ['name', 'description']
+    ordering_fields = ['created_at', 'updated_at']
+    ordering = ['-created_at']
+
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.IsAuthenticated(), IsCommunityReviewer()]
+        return [permissions.IsAuthenticated(), IsCommunityReviewer()]
+
+    def get_queryset(self):
+        queryset = CulturalEntity.objects.filter(
+            status__in=['pending_review', 'pending_revision']
+        ).select_related(
+            'contributor', 'current_revision'
+        ).prefetch_related(
+            'activities', 'review_flags', 'review_decisions', 'revisions'
+        )
+
+        # Filter by queue tab type
+        queue_type = self.request.query_params.get('queue_type', 'all')
+
+        if queue_type == 'new_claims':
+            # Freshly submitted, no review decisions yet
+            queryset = queryset.filter(
+                status='pending_review',
+                review_decisions__isnull=True
+            )
+        elif queue_type == 'conflicts':
+            # Has unresolved contradiction flags
+            queryset = queryset.filter(
+                review_flags__flag_type='contradiction',
+                review_flags__is_resolved=False
+            ).distinct()
+        elif queue_type == 'flagged':
+            # Has any unresolved flag (not contradiction)
+            queryset = queryset.filter(
+                review_flags__is_resolved=False
+            ).exclude(
+                review_flags__flag_type='contradiction'
+            ).distinct()
+        elif queue_type == 'expiring':
+            # In review for more than 14 days
+            from django.utils import timezone
+            from datetime import timedelta
+            cutoff = timezone.now() - timedelta(days=14)
+            queryset = queryset.filter(
+                status='pending_review',
+                created_at__lt=cutoff
+            )
+
+        # Filter by reviewer's domain expertise
+        if hasattr(self.request.user, 'reviewer_role'):
+            expertise = self.request.query_params.get('my_domain', None)
+            if expertise == 'true':
+                areas = self.request.user.reviewer_role.expertise_areas
+                if areas:
+                    queryset = queryset.filter(category__in=areas)
+
+        return queryset
+
+    @action(detail=False, methods=['get'])
+    def queue_counts(self, request):
+        """Return counts for each queue tab."""
+        base = CulturalEntity.objects.filter(
+            status__in=['pending_review', 'pending_revision']
+        )
+        from django.utils import timezone
+        from datetime import timedelta
+        cutoff = timezone.now() - timedelta(days=14)
+
+        new_claims = base.filter(
+            status='pending_review',
+            review_decisions__isnull=True
+        ).count()
+
+        conflicts = base.filter(
+            review_flags__flag_type='contradiction',
+            review_flags__is_resolved=False
+        ).distinct().count()
+
+        flagged = base.filter(
+            review_flags__is_resolved=False
+        ).exclude(
+            review_flags__flag_type='contradiction'
+        ).distinct().count()
+
+        expiring = base.filter(
+            status='pending_review',
+            created_at__lt=cutoff
+        ).count()
+
+        return Response({
+            'new_claims': new_claims,
+            'conflicts': conflicts,
+            'flagged': flagged,
+            'expiring': expiring,
+            'total': base.count(),
+        })
+
+
+class ReviewWorkspaceView(generics.RetrieveAPIView):
+    """
+    Three-panel review workspace for a single entity.
+    Returns full context: entity state, provenance history, submission detail,
+    contributor stats, and review history.
+    """
+    serializer_class = ReviewWorkspaceSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCommunityReviewer]
+    lookup_field = 'entity_id'
+    queryset = CulturalEntity.objects.select_related(
+        'contributor', 'current_revision'
+    ).prefetch_related(
+        'revisions', 'activities', 'review_decisions', 'review_flags'
+    )
+
+
+class SubmitReviewDecisionView(generics.CreateAPIView):
+    """
+    Submit a review decision on an entity.
+    Applies the verdict (accept/reject/escalate/request_changes) and
+    logs the appropriate activity.
+    """
+    serializer_class = ReviewDecisionCreateSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCommunityReviewer]
+
+    def create(self, request, entity_id=None, *args, **kwargs):
+        try:
+            entity = CulturalEntity.objects.get(entity_id=entity_id)
+        except CulturalEntity.DoesNotExist:
+            return Response(
+                {'error': 'Entity not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = self.get_serializer(
+            data=request.data,
+            context={'request': request, 'entity': entity}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        verdict = serializer.validated_data['verdict']
+        feedback = serializer.validated_data.get('feedback', '')
+
+        # Create the review decision record
+        decision = ReviewDecision.objects.create(
+            entity=entity,
+            reviewer=request.user,
+            revision_reviewed=entity.get_latest_revision(),
+            **serializer.validated_data
+        )
+
+        # Apply the verdict
+        if verdict == 'accept':
+            entity.accept_contribution(request.user, feedback)
+        elif verdict == 'accept_with_edits':
+            entity.accept_contribution(request.user, feedback)
+        elif verdict == 'reject':
+            entity.reject_contribution(request.user, feedback)
+        elif verdict == 'request_changes':
+            entity.status = 'pending_revision'
+            entity.save()
+            Activity.objects.create(
+                entity=entity,
+                user=request.user,
+                activity_type='changes_requested',
+                comment=feedback
+            )
+        elif verdict == 'escalate':
+            Activity.objects.create(
+                entity=entity,
+                user=request.user,
+                activity_type='escalated',
+                comment=feedback
+            )
+
+        # Handle conflict resolution
+        conflict_handling = serializer.validated_data.get('conflict_handling', 'not_applicable')
+        if conflict_handling != 'not_applicable':
+            # Resolve contradiction flags
+            entity.review_flags.filter(
+                flag_type='contradiction', is_resolved=False
+            ).update(
+                is_resolved=True,
+                resolved_by=request.user,
+                resolved_at=timezone.now()
+            )
+            Activity.objects.create(
+                entity=entity,
+                user=request.user,
+                activity_type='conflict_resolved',
+                comment=serializer.validated_data.get('reconciliation_note', '')
+            )
+
+        return Response(
+            ReviewDecisionSerializer(decision).data,
+            status=status.HTTP_201_CREATED
+        )
+
+
+class ReviewFlagViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for review flags — community members can flag entities,
+    reviewers can resolve flags.
+    """
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['flag_type', 'is_resolved', 'entity']
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return ReviewFlagCreateSerializer
+        return ReviewFlagSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsCommunityReviewer()]
+        return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        return ReviewFlag.objects.select_related(
+            'entity', 'flagged_by', 'resolved_by'
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(flagged_by=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def resolve(self, request, pk=None):
+        """Resolve a flag."""
+        flag = self.get_object()
+        flag.is_resolved = True
+        flag.resolved_by = request.user
+        flag.resolved_at = timezone.now()
+        flag.save()
+        return Response(ReviewFlagSerializer(flag).data)
+
+
+class ReviewerRoleViewSet(viewsets.ModelViewSet):
+    """
+    Manage reviewer roles. Only Expert Curators can assign/modify roles.
+    """
+    serializer_class = ReviewerRoleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [permissions.IsAuthenticated(), IsExpertCurator()]
+        return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        return ReviewerRole.objects.select_related('user', 'assigned_by')
+
+    @action(detail=False, methods=['get'])
+    def my_role(self, request):
+        """Get the current user's reviewer role."""
+        try:
+            role = ReviewerRole.objects.get(user=request.user)
+            return Response(ReviewerRoleSerializer(role).data)
+        except ReviewerRole.DoesNotExist:
+            return Response(
+                {'detail': 'No reviewer role assigned'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    @action(detail=False, methods=['post'])
+    def assign(self, request):
+        """Expert Curator assigns a reviewer role to a user."""
+        serializer = ReviewerRoleAssignSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            user = User.objects.get(id=serializer.validated_data['user_id'])
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        role, created = ReviewerRole.objects.update_or_create(
+            user=user,
+            defaults={
+                'role': serializer.validated_data['role'],
+                'expertise_areas': serializer.validated_data.get('expertise_areas', []),
+                'assigned_by': request.user,
+                'is_active': True,
+            }
+        )
+        return Response(
+            ReviewerRoleSerializer(role).data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
+
+
+class ReviewerDashboardView(APIView):
+    """
+    Reviewer's homepage dashboard — queue stats, impact metrics,
+    and recent activity in their domain.
+    """
+    permission_classes = [permissions.IsAuthenticated, IsCommunityReviewer]
+
+    def get(self, request):
+        user = request.user
+        from datetime import timedelta
+
+        now = timezone.now()
+        week_ago = now - timedelta(days=7)
+        expiry_cutoff = now - timedelta(days=14)
+
+        # Queue counts
+        base_queue = CulturalEntity.objects.filter(
+            status__in=['pending_review', 'pending_revision']
+        )
+        queue_count = base_queue.count()
+        conflicts_count = base_queue.filter(
+            review_flags__flag_type='contradiction',
+            review_flags__is_resolved=False
+        ).distinct().count()
+        flagged_count = base_queue.filter(
+            review_flags__is_resolved=False
+        ).exclude(
+            review_flags__flag_type='contradiction'
+        ).distinct().count()
+        expiring_count = base_queue.filter(
+            status='pending_review',
+            created_at__lt=expiry_cutoff
+        ).count()
+
+        # This week's stats
+        decisions_this_week = ReviewDecision.objects.filter(
+            reviewer=user, created_at__gte=week_ago
+        )
+        resolved_this_week = decisions_this_week.count()
+        accepted_this_week = decisions_this_week.filter(
+            verdict__in=['accept', 'accept_with_edits']
+        ).count()
+        rejected_this_week = decisions_this_week.filter(verdict='reject').count()
+
+        # Lifetime stats
+        all_decisions = ReviewDecision.objects.filter(reviewer=user)
+        total_reviewed = all_decisions.count()
+        total_accepted = all_decisions.filter(
+            verdict__in=['accept', 'accept_with_edits']
+        ).count()
+        acceptance_rate = (
+            round(total_accepted / total_reviewed * 100, 1)
+            if total_reviewed > 0 else 0
+        )
+        conflicts_resolved = Activity.objects.filter(
+            user=user, activity_type='conflict_resolved'
+        ).count()
+
+        # Reviewer role
+        reviewer_role = None
+        if hasattr(user, 'reviewer_role'):
+            reviewer_role = ReviewerRoleSerializer(user.reviewer_role).data
+
+        # Recent domain activity
+        recent_activity = Activity.objects.select_related(
+            'entity', 'user'
+        ).order_by('-created_at')[:10]
+
+        recent_domain_activity = [
+            {
+                'entity_name': a.entity.name,
+                'entity_id': str(a.entity.entity_id),
+                'activity_type': a.activity_type,
+                'user': a.user.username,
+                'created_at': a.created_at.isoformat(),
+                'comment': a.comment or '',
+            }
+            for a in recent_activity
+        ]
+
+        data = {
+            'queue_count': queue_count,
+            'conflicts_count': conflicts_count,
+            'flagged_count': flagged_count,
+            'expiring_count': expiring_count,
+            'resolved_this_week': resolved_this_week,
+            'accepted_this_week': accepted_this_week,
+            'rejected_this_week': rejected_this_week,
+            'total_reviewed': total_reviewed,
+            'acceptance_rate': acceptance_rate,
+            'conflicts_resolved': conflicts_resolved,
+            'reviewer_role': reviewer_role,
+            'recent_domain_activity': recent_domain_activity,
+        }
+
+        serializer = ReviewerDashboardSerializer(data)
+        return Response(serializer.data)

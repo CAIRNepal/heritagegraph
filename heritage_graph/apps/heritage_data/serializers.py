@@ -14,7 +14,7 @@ from .models import (
 )
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import CulturalEntity, Revision, Activity
+from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -457,12 +457,16 @@ class ContributionQueueSerializer(serializers.ModelSerializer):
     current_revision = RevisionSerializer(read_only=True)
     latest_revision = serializers.SerializerMethodField()
     activity_count = serializers.SerializerMethodField()
+    flag_count = serializers.SerializerMethodField()
+    has_conflicts = serializers.SerializerMethodField()
+    days_in_review = serializers.SerializerMethodField()
     
     class Meta:
         model = CulturalEntity
         fields = [
-            'entity_id', 'name', 'category', 'status', 'contributor',
-            'created_at', 'current_revision', 'latest_revision', 'activity_count'
+            'entity_id', 'name', 'description', 'category', 'status', 'contributor',
+            'created_at', 'current_revision', 'latest_revision', 'activity_count',
+            'flag_count', 'has_conflicts', 'days_in_review'
         ]
     
     def get_latest_revision(self, obj):
@@ -473,4 +477,192 @@ class ContributionQueueSerializer(serializers.ModelSerializer):
     
     def get_activity_count(self, obj):
         return obj.activities.count()
+
+    def get_flag_count(self, obj):
+        if hasattr(obj, 'review_flags'):
+            return obj.review_flags.filter(is_resolved=False).count()
+        return 0
+
+    def get_has_conflicts(self, obj):
+        """Check if this entity has unresolved conflict flags."""
+        if hasattr(obj, 'review_flags'):
+            return obj.review_flags.filter(
+                flag_type='contradiction', is_resolved=False
+            ).exists()
+        return False
+
+    def get_days_in_review(self, obj):
+        """Days since entity entered pending_review status."""
+        if obj.status == 'pending_review':
+            from django.utils import timezone
+            delta = timezone.now() - obj.created_at
+            return delta.days
+        return 0
+
+
+# =====================================================================
+# REVIEWER / CURATION SERIALIZERS
+# =====================================================================
+
+class ReviewerRoleSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    assigned_by = UserSerializer(read_only=True)
+    can_override_confidence = serializers.BooleanField(read_only=True)
+    can_resolve_conflicts = serializers.BooleanField(read_only=True)
+    can_manage_roles = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = ReviewerRole
+        fields = [
+            'id', 'user', 'role', 'expertise_areas', 'is_active',
+            'assigned_by', 'created_at', 'updated_at',
+            'can_override_confidence', 'can_resolve_conflicts', 'can_manage_roles'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+
+class ReviewerRoleAssignSerializer(serializers.Serializer):
+    """Used by Expert Curators to assign reviewer roles."""
+    user_id = serializers.IntegerField()
+    role = serializers.ChoiceField(choices=ReviewerRole.ROLE_CHOICES)
+    expertise_areas = serializers.ListField(
+        child=serializers.CharField(), required=False, default=list
+    )
+
+
+class ReviewDecisionSerializer(serializers.ModelSerializer):
+    reviewer = UserSerializer(read_only=True)
+    revision_reviewed = RevisionSerializer(read_only=True)
+
+    class Meta:
+        model = ReviewDecision
+        fields = [
+            'id', 'entity', 'reviewer', 'revision_reviewed',
+            'verdict', 'conflict_handling', 'confidence_override',
+            'verification_method', 'feedback', 'reconciliation_note',
+            'internal_note', 'escalated_to', 'created_at'
+        ]
+        read_only_fields = ['id', 'reviewer', 'created_at']
+
+
+class ReviewDecisionCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for submitting a review decision.
+    The three-panel review workspace submits through this.
+    """
+    class Meta:
+        model = ReviewDecision
+        fields = [
+            'verdict', 'conflict_handling', 'confidence_override',
+            'verification_method', 'feedback', 'reconciliation_note',
+            'internal_note', 'escalated_to'
+        ]
+
+    def validate(self, data):
+        verdict = data.get('verdict')
+        request = self.context.get('request')
+
+        # Community reviewers cannot override confidence
+        if data.get('confidence_override') and hasattr(request.user, 'reviewer_role'):
+            role = request.user.reviewer_role
+            if not role.can_override_confidence and not request.user.is_staff:
+                raise serializers.ValidationError(
+                    "Community reviewers cannot override confidence scores."
+                )
+
+        # Reject requires feedback
+        if verdict == 'reject' and not data.get('feedback'):
+            raise serializers.ValidationError(
+                "Feedback is required when rejecting a submission."
+            )
+
+        # Conflict handling required if there are conflicts
+        entity = self.context.get('entity')
+        if entity and hasattr(entity, 'review_flags'):
+            has_conflicts = entity.review_flags.filter(
+                flag_type='contradiction', is_resolved=False
+            ).exists()
+            if has_conflicts and data.get('conflict_handling', 'not_applicable') == 'not_applicable':
+                raise serializers.ValidationError(
+                    "Conflict handling is required when conflicts exist."
+                )
+
+        return data
+
+
+class ReviewFlagSerializer(serializers.ModelSerializer):
+    flagged_by = UserSerializer(read_only=True)
+    resolved_by = UserSerializer(read_only=True)
+
+    class Meta:
+        model = ReviewFlag
+        fields = [
+            'id', 'entity', 'flag_type', 'flagged_by', 'reason',
+            'is_resolved', 'resolved_by', 'resolved_at', 'created_at'
+        ]
+        read_only_fields = ['id', 'flagged_by', 'resolved_by', 'resolved_at', 'created_at']
+
+
+class ReviewFlagCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewFlag
+        fields = ['entity', 'flag_type', 'reason']
+
+
+class ReviewWorkspaceSerializer(serializers.ModelSerializer):
+    """
+    The full three-panel review workspace context:
+    - Entity state + provenance history (left panel)
+    - Current submission detail (middle panel)
+    - Review decisions history (right panel context)
+    """
+    contributor = UserSerializer(read_only=True)
+    current_revision = RevisionSerializer(read_only=True)
+    revisions = RevisionSerializer(many=True, read_only=True)
+    activities = ActivitySerializer(many=True, read_only=True)
+    review_decisions = ReviewDecisionSerializer(many=True, read_only=True)
+    flags = serializers.SerializerMethodField()
+    contributor_stats = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CulturalEntity
+        fields = [
+            'entity_id', 'name', 'description', 'category', 'status',
+            'contributor', 'current_revision', 'created_at', 'updated_at',
+            'revisions', 'activities', 'review_decisions', 'flags',
+            'contributor_stats'
+        ]
+
+    def get_flags(self, obj):
+        flags = obj.review_flags.filter(is_resolved=False)
+        return ReviewFlagSerializer(flags, many=True).data
+
+    def get_contributor_stats(self, obj):
+        """Contributor track record for reviewer context."""
+        user = obj.contributor
+        total = CulturalEntity.objects.filter(contributor=user).count()
+        accepted = CulturalEntity.objects.filter(
+            contributor=user, status='accepted'
+        ).count()
+        return {
+            'total_contributions': total,
+            'accepted_contributions': accepted,
+            'acceptance_rate': round(accepted / total * 100, 1) if total > 0 else 0,
+        }
+
+
+class ReviewerDashboardSerializer(serializers.Serializer):
+    """Stats for the reviewer's dashboard homepage."""
+    queue_count = serializers.IntegerField()
+    conflicts_count = serializers.IntegerField()
+    flagged_count = serializers.IntegerField()
+    expiring_count = serializers.IntegerField()
+    resolved_this_week = serializers.IntegerField()
+    accepted_this_week = serializers.IntegerField()
+    rejected_this_week = serializers.IntegerField()
+    total_reviewed = serializers.IntegerField()
+    acceptance_rate = serializers.FloatField()
+    conflicts_resolved = serializers.IntegerField()
+    reviewer_role = ReviewerRoleSerializer(required=False, allow_null=True)
+    recent_domain_activity = serializers.ListField(child=serializers.DictField())
 

@@ -9,12 +9,34 @@ router.register(r'contribution-queue', views.ContributionQueueViewSet, basename=
 router.register(r'revisions', views.RevisionViewSet, basename='revision')
 router.register(r'activities', views.ActivityViewSet, basename='activity')
 
+# Review system routes
+router.register(r'review-queue', views.ReviewQueueViewSet, basename='reviewqueue')
+router.register(r'review-flags', views.ReviewFlagViewSet, basename='reviewflag')
+router.register(r'reviewer-roles', views.ReviewerRoleViewSet, basename='reviewerrole')
+
 # router.register(r'submissions', views.SubmissionViewSet, basename='submission')
 # router.register(r'comments', views.CommentViewSet, basename='comment')
 
 urlpatterns = [
     # Include all ViewSet URLs under /api/
     path('api/', include(router.urls)),
+
+    # Review workspace and decision endpoints
+    path(
+        'api/review-workspace/<uuid:entity_id>/',
+        views.ReviewWorkspaceView.as_view(),
+        name='review-workspace',
+    ),
+    path(
+        'api/review-workspace/<uuid:entity_id>/decide/',
+        views.SubmitReviewDecisionView.as_view(),
+        name='submit-review-decision',
+    ),
+    path(
+        'api/reviewer-dashboard/',
+        views.ReviewerDashboardView.as_view(),
+        name='reviewer-dashboard',
+    ),
     
     # Legacy API endpoints (consider migrating these to ViewSets over time)
     path("api/submissions/", views.SubmissionListView.as_view(), name="submission-list"),

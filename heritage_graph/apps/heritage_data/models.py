@@ -226,6 +226,10 @@ class Activity(models.Model):
         ('rejected', 'Rejected'),
         ('revised', 'Revised'),
         ('commented', 'Commented'),
+        ('escalated', 'Escalated to Expert'),
+        ('changes_requested', 'Changes Requested'),
+        ('flagged', 'Flagged for Review'),
+        ('conflict_resolved', 'Conflict Resolved'),
     ]
     
     activity_id = models.UUIDField(
@@ -291,6 +295,208 @@ CulturalEntity.submit_for_review = submit_for_review
 CulturalEntity.accept_contribution = accept_contribution
 CulturalEntity.reject_contribution = reject_contribution
 CulturalEntity.create_revision = create_revision
+
+# =====================================================================
+# REVIEWER / CURATION MODELS
+# =====================================================================
+
+class ReviewerRole(models.Model):
+    """
+    Tracks which reviewer persona a user has and their domain expertise.
+    Three personas: community_reviewer, domain_expert, expert_curator.
+    """
+    ROLE_CHOICES = [
+        ('community_reviewer', 'Community Reviewer'),
+        ('domain_expert', 'Domain Expert'),
+        ('expert_curator', 'Expert Curator'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='reviewer_role')
+    role = models.CharField(max_length=30, choices=ROLE_CHOICES, default='community_reviewer')
+    expertise_areas = models.JSONField(
+        default=list, blank=True,
+        help_text="List of domain areas, e.g. ['architecture', 'buddhist_heritage']"
+    )
+    is_active = models.BooleanField(default=True)
+    assigned_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='assigned_reviewer_roles'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'reviewer_roles'
+        verbose_name = 'Reviewer Role'
+        verbose_name_plural = 'Reviewer Roles'
+
+    def __str__(self):
+        return f"{self.user.username} — {self.get_role_display()}"
+
+    @property
+    def can_override_confidence(self):
+        return self.role in ('domain_expert', 'expert_curator')
+
+    @property
+    def can_resolve_conflicts(self):
+        return self.role in ('domain_expert', 'expert_curator')
+
+    @property
+    def can_manage_roles(self):
+        return self.role == 'expert_curator'
+
+
+class ReviewDecision(models.Model):
+    """
+    A single review decision on a CulturalEntity submission.
+    Maps to the epistemic review workspace: verdict, conflict handling,
+    confidence adjustment, and provenance feedback.
+    """
+    VERDICT_CHOICES = [
+        ('accept', 'Accept — publish this assertion'),
+        ('accept_with_edits', 'Accept with edits — modify before publishing'),
+        ('request_changes', 'Request changes — send back to contributor'),
+        ('reject', 'Reject — do not publish'),
+        ('escalate', 'Escalate to expert — beyond my domain'),
+    ]
+
+    CONFLICT_HANDLING_CHOICES = [
+        ('not_applicable', 'No conflict'),
+        ('supersedes', 'New claim supersedes existing'),
+        ('coexist', 'Both claims coexist (conflicting sources)'),
+        ('existing_stands', 'Existing claim stands; reject new one'),
+        ('refines', 'New claim refines existing (more precise)'),
+        ('disputed', 'Genuinely contradictory — requires expert'),
+    ]
+
+    VERIFICATION_METHOD_CHOICES = [
+        ('source_crosscheck', 'Source cross-checked'),
+        ('expert_knowledge', 'Expert knowledge'),
+        ('field_verification', 'Field verification'),
+        ('community_consensus', 'Community consensus'),
+    ]
+
+    CONFIDENCE_CHOICES = [
+        ('certain', 'Certain'),
+        ('likely', 'Likely'),
+        ('uncertain', 'Uncertain'),
+        ('speculative', 'Speculative'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    entity = models.ForeignKey(
+        CulturalEntity, on_delete=models.CASCADE,
+        related_name='review_decisions'
+    )
+    reviewer = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='review_decisions'
+    )
+    revision_reviewed = models.ForeignKey(
+        Revision, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='review_decisions',
+        help_text="The specific revision this decision was made on"
+    )
+
+    # Decision
+    verdict = models.CharField(max_length=30, choices=VERDICT_CHOICES)
+    conflict_handling = models.CharField(
+        max_length=20, choices=CONFLICT_HANDLING_CHOICES,
+        default='not_applicable'
+    )
+    confidence_override = models.CharField(
+        max_length=20, choices=CONFIDENCE_CHOICES,
+        blank=True, null=True,
+        help_text="Override contributor's confidence assessment"
+    )
+    verification_method = models.CharField(
+        max_length=30, choices=VERIFICATION_METHOD_CHOICES,
+        blank=True, null=True
+    )
+
+    # Feedback
+    feedback = models.TextField(
+        blank=True,
+        help_text="Feedback shown to contributor; logged permanently"
+    )
+    reconciliation_note = models.TextField(
+        blank=True,
+        help_text="Public note on conflict reconciliation (part of provenance)"
+    )
+    internal_note = models.TextField(
+        blank=True,
+        help_text="Internal note visible only to reviewers"
+    )
+
+    # Escalation
+    escalated_to = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='escalated_reviews',
+        help_text="Expert this was escalated to"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'review_decisions'
+        verbose_name = 'Review Decision'
+        verbose_name_plural = 'Review Decisions'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['entity', 'created_at']),
+            models.Index(fields=['reviewer']),
+            models.Index(fields=['verdict']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_verdict_display()} by {self.reviewer.username} on {self.entity.name}"
+
+
+class ReviewFlag(models.Model):
+    """
+    Flags raised on entities by community members or automated checks.
+    Types: questionable_source, suspected_duplicate, sensitive_content,
+    low_confidence, stale_review.
+    """
+    FLAG_TYPE_CHOICES = [
+        ('questionable_source', 'Questionable Source'),
+        ('suspected_duplicate', 'Suspected Duplicate'),
+        ('sensitive_content', 'Sensitive Content'),
+        ('low_confidence', 'Low Confidence Score'),
+        ('stale_review', 'Stale — In Review Too Long'),
+        ('contradiction', 'Contradicts Existing Data'),
+        ('other', 'Other'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    entity = models.ForeignKey(
+        CulturalEntity, on_delete=models.CASCADE,
+        related_name='review_flags'
+    )
+    flag_type = models.CharField(max_length=30, choices=FLAG_TYPE_CHOICES)
+    flagged_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name='raised_flags'
+    )
+    reason = models.TextField(blank=True)
+    is_resolved = models.BooleanField(default=False)
+    resolved_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='resolved_flags'
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'review_flags'
+        verbose_name = 'Review Flag'
+        verbose_name_plural = 'Review Flags'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_flag_type_display()} on {self.entity.name}"
+
 
 class CulturalHeritage(models.Model):
     TYPE_CHOICES = [
