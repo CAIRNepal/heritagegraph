@@ -1,26 +1,59 @@
 """
-Google ID Token Authentication for Django REST Framework.
+Authentication backends for Django REST Framework.
 
-Verifies Google-issued ID tokens (sent by NextAuth frontend as Bearer tokens)
-and auto-creates/syncs Django User + UserProfile records.
+Two backends are provided, selected via DJANGO_ENV:
 
-Replaces the former KeycloakJWTAuthentication class.
+- **Development:** `DevSessionAuthentication`
+  Uses Django's built-in session auth + simple JWT (SimpleJWT).
+  No external OAuth setup required — just create a user via
+  `manage.py createsuperuser` and login at /api/token/.
+
+- **Production:** `GoogleTokenAuthentication`
+  Verifies Google-issued ID tokens (sent by NextAuth frontend as
+  Bearer tokens) and auto-creates/syncs Django User + UserProfile.
 """
 
 import logging
+import os
 
 from django.contrib.auth.models import User
-from google.auth.transport import requests as google_requests
-from google.oauth2 import id_token as google_id_token
 from rest_framework import authentication, exceptions
 
 from .models import UserProfile
 
 logger = logging.getLogger(__name__)
 
-# Google OAuth Client ID — must match the one used in the NextAuth frontend.
-# Set via environment variable in production; falls back to empty string.
-import os
+
+# ====================================================================
+# Development Authentication — Session + SimpleJWT (no Google needed)
+# ====================================================================
+
+
+class DevSessionAuthentication(authentication.SessionAuthentication):
+    """
+    Wraps Django's session auth for development use.
+
+    Allows login via:
+      - Django admin (/admin/) — session cookie
+      - SimpleJWT (/api/token/) — Bearer token
+      - DRF browsable API login
+
+    Also auto-creates a UserProfile for newly authenticated users
+    so downstream code that expects profile data doesn't break.
+    """
+
+    def authenticate(self, request):
+        result = super().authenticate(request)
+        if result is not None:
+            user, _ = result
+            # Ensure UserProfile exists (mirrors GoogleTokenAuth behavior)
+            UserProfile.objects.get_or_create(user=user)
+        return result
+
+
+# ====================================================================
+# Production Authentication — Google OAuth ID Token
+# ====================================================================
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
@@ -45,6 +78,9 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         token = auth_header.split(" ")[1]
 
         try:
+            from google.auth.transport import requests as google_requests
+            from google.oauth2 import id_token as google_id_token
+
             # Verify the Google ID token against Google's public certs.
             # This checks signature, expiry, issuer, and audience.
             payload = google_id_token.verify_oauth2_token(
@@ -68,7 +104,6 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed("Google email not verified.")
 
         # --- Map Google claims to Django User ---
-        # Use email as username (Google has no separate username concept)
         username = email
 
         user, created = User.objects.get_or_create(
