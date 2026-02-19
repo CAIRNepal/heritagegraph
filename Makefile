@@ -109,6 +109,16 @@ dev: ## Start backend + frontend (run in separate terminals instead)
 dev-shell: $(VENV_PY) ## Open Django shell (dev)
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py shell
 
+dev-seed: $(VENV_PY) ## Load dummy heritage data from CSV fixtures into the dev DB
+	@echo "=== Seeding database with dummy heritage data ==="
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py seed_db
+	@echo ""
+
+dev-seed-flush: $(VENV_PY) ## Flush and re-seed: delete existing data then reload from CSVs
+	@echo "=== Flushing and re-seeding database ==="
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py seed_db --flush
+	@echo ""
+
 # ================================================================
 # DEVELOPMENT
 # ================================================================
