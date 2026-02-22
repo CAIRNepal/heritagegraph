@@ -2,16 +2,9 @@
 
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
-/**
- * Dev-only login page for CredentialsProvider.
- * In production, NextAuth redirects straight to Google OAuth — this page
- * is never shown.
- *
- * Usage: `make dev-superuser` to create a user, then login here.
- */
-export default function DevLoginPage() {
+function DevLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
@@ -117,5 +110,17 @@ export default function DevLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DevLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-r-transparent" />
+      </div>
+    }>
+      <DevLoginForm />
+    </Suspense>
   );
 }

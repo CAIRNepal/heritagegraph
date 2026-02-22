@@ -34,6 +34,7 @@ import {
   IconScale,
   IconAlertTriangle,
   IconDashboard,
+  IconGraph,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -345,6 +346,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* Quick-access items previously in the top header */}
         <NavMain navtitle="Navigation" items={[
           { title: 'Dashboard', url: '/dashboard', icon: IconLayoutDashboard },
+          { title: 'Graph Visualization', url: '/dashboard/graphview', icon: IconGraph },
           { title: 'Contribute', url: '/dashboard/contribute', icon: IconPlus },
           { title: 'Leaderboard', url: '/dashboard/leaderboard', icon: IconTrophy },
           { title: 'Notifications', url: '/dashboard/notification', icon: IconBell },
