@@ -120,6 +120,93 @@ export const ontologyEnums = {
     { value: "monthly", label: "Monthly" },
     { value: "one_time", label: "One-time" },
   ],
+
+  ReligiousTraditionEnum: [
+    { value: "Hindu", label: "Hindu", description: "Hindu tradition" },
+    { value: "Buddhist", label: "Buddhist", description: "Buddhist tradition" },
+    { value: "Syncretic", label: "Syncretic", description: "Syncretic (blended traditions)" },
+    { value: "Jain", label: "Jain", description: "Jain tradition" },
+    { value: "Animist", label: "Animist", description: "Indigenous animist tradition" },
+    { value: "Other", label: "Other", description: "Other tradition" },
+  ],
+
+  CustodianTypeEnum: [
+    { value: "government", label: "Government", description: "Government institution (e.g., DoA Nepal)" },
+    { value: "academic", label: "Academic", description: "University or research institution" },
+    { value: "community", label: "Community", description: "Community organization or Guthi" },
+    { value: "museum", label: "Museum", description: "Museum or gallery" },
+    { value: "private", label: "Private", description: "Private collector or foundation" },
+    { value: "religious", label: "Religious", description: "Religious institution (Vihar, Math)" },
+  ],
+
+  DataCiteResourceTypeEnum: [
+    { value: "Dataset", label: "Dataset" },
+    { value: "Text", label: "Text" },
+    { value: "Image", label: "Image" },
+    { value: "Audio", label: "Audio" },
+    { value: "Interview", label: "Interview" },
+    { value: "PhysicalObject", label: "Physical Object" },
+    { value: "Collection", label: "Collection" },
+  ],
+
+  IdentifierTypeEnum: [
+    { value: "DOI", label: "DOI" },
+    { value: "ISBN", label: "ISBN" },
+    { value: "Handle", label: "Handle" },
+    { value: "URL", label: "URL" },
+    { value: "LocalArchiveID", label: "Local Archive ID" },
+    { value: "ISSN", label: "ISSN" },
+  ],
+
+  VerificationMethodEnum: [
+    { value: "cross_check", label: "Cross-check", description: "Verified against multiple sources" },
+    { value: "expert_review", label: "Expert Review", description: "Verified by domain expert" },
+    { value: "field_visit", label: "Field Visit", description: "Verified by on-site field visit" },
+    { value: "archival_comparison", label: "Archival Comparison", description: "Compared with archival records" },
+    { value: "oral_testimony", label: "Oral Testimony", description: "Confirmed by community knowledge holders" },
+  ],
+
+  DocumentationMethodEnum: [
+    { value: "photographic_survey", label: "Photographic Survey" },
+    { value: "measured_drawing", label: "Measured Drawing" },
+    { value: "gps_mapping", label: "GPS Mapping" },
+    { value: "oral_history_interview", label: "Oral History Interview" },
+    { value: "archival_research", label: "Archival Research" },
+    { value: "literature_review", label: "Literature Review" },
+    { value: "3d_scanning", label: "3D Scanning" },
+    { value: "drone_survey", label: "Drone Survey" },
+  ],
+
+  FestivalTypeEnum: [
+    { value: "ChariotFestival", label: "Chariot Festival (Rath Jatra)", description: "Festival involving ceremonial chariot procession" },
+    { value: "MaskedDance", label: "Masked Dance Festival", description: "Festival featuring masked dancers embodying deities" },
+    { value: "Jatra", label: "General Jatra", description: "Community procession festival" },
+    { value: "Other", label: "Other", description: "Other festival type" },
+  ],
+
+  StructureTypeEnum: [
+    { value: "Temple", label: "Temple", description: "Sacred architectural structure with deity enshrinement" },
+    { value: "Stupa", label: "Stupa", description: "Buddhist dome-shaped reliquary shrine" },
+    { value: "Chaitya", label: "Chaitya", description: "Buddhist votive shrine or prayer hall" },
+    { value: "Pati", label: "Pati (Open Pavilion)", description: "Open-air pavilion for resting travelers" },
+    { value: "Sattal", label: "Sattal (Multi-story Rest House)", description: "Multi-story rest house with ritual and social functions" },
+    { value: "Dharmashala", label: "Dharmashala (Pilgrim Lodge)", description: "Pilgrim lodge operated by a Guthi organization" },
+    { value: "DhungeDhara", label: "Dhunge Dhara (Stone Spout)", description: "Stone spout with carved imagery for ritual bathing and water supply" },
+    { value: "Pokhari", label: "Pokhari (Pond/Tank)", description: "Pond or tank for water storage and ritual bathing" },
+    { value: "Other", label: "Other", description: "Other structure type" },
+  ],
+
+  IconographicObjectTypeEnum: [
+    { value: "Paubha", label: "Paubha (Scroll Painting)", description: "Traditional Newari scroll painting with mandala and deity iconography" },
+    { value: "Murti", label: "Murti (Consecrated Statue)", description: "Consecrated statue serving as divine presence" },
+    { value: "Other", label: "Other Iconographic Object", description: "Other sacred visual art object" },
+  ],
+
+  MonumentTypeEnum: [
+    { value: "Stupa", label: "Stupa", description: "Buddhist dome-shaped reliquary" },
+    { value: "Chaitya", label: "Chaitya", description: "Buddhist votive shrine" },
+    { value: "Other", label: "Other Buddhist Monument", description: "Other Buddhist sacred structure" },
+  ],
 } as const;
 
 export type EnumKey = keyof typeof ontologyEnums;
