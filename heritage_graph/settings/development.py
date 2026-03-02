@@ -42,3 +42,15 @@ REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
     "apps.heritage_data.authentication.GoogleTokenAuthentication",
     "rest_framework_simplejwt.authentication.JWTAuthentication",
 )
+
+
+# Development-specific SimpleJWT settings: increase token lifetimes for easier local testing
+# These override the base `SIMPLE_JWT` dict imported from base.py
+from datetime import timedelta
+
+SIMPLE_JWT.update({
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
+})
