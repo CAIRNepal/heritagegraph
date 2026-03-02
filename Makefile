@@ -1,188 +1,164 @@
 # ================================================================
 # HeritageGraph Makefile
 # ================================================================
-# Convenience commands for development and deployment.
-# Run `make help` to see available commands.
+# Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: help build up down restart logs ps shell-backend shell-frontend migrate collectstatic createsuperuser backup restore clean prod-up prod-down lint test dev dev-backend dev-frontend dev-setup dev-migrate dev-superuser
+.PHONY: help setup superuser backend frontend kill-ports \
+        migrate migrations shell seed seed-reset \
+        docker-up docker-up-build docker-down docker-build \
+        docker-logs docker-ps docker-shell docker-migrate \
+        prod-up prod-down prod-build prod-logs \
+        backup restore clean prune
 
-# Default target
 .DEFAULT_GOAL := help
 
 # ================================================================
-# PATHS & TOOLS
+# PATHS
 # ================================================================
-# Virtual environment — all dev commands use this Python, not the system one.
-VENV_DIR   := .venv
-VENV_PY    := $(VENV_DIR)/bin/python
-VENV_PIP   := $(VENV_PY) -m pip
-BACKEND    := heritage_graph
-FRONTEND   := heritage_graph_ui
+VENV_DIR  := .venv
+VENV_PY   := $(VENV_DIR)/bin/python
+BACKEND   := heritage_graph
+FRONTEND  := heritage_graph_ui
+
+# Node — resolved from mise or system PATH
+MISE_NODE := $(HOME)/.local/share/mise/installs/node/22.22.0/bin
+NODE_BIN  := $(shell test -f $(MISE_NODE)/node && echo $(MISE_NODE) || dirname $$(which node 2>/dev/null || echo /usr/bin/node))
+PNPM      := $(NODE_BIN)/pnpm
+NODE_PATH := PATH=$(NODE_BIN):$$PATH
 
 # ================================================================
 # HELP
 # ================================================================
-help: ## Show this help message
+help:
 	@echo ""
-	@echo "HeritageGraph - Available Commands"
-	@echo "=================================="
+	@echo "  HeritageGraph — quick reference"
+	@echo "  ================================"
 	@echo ""
-	@echo "  LOCAL DEVELOPMENT (no Docker needed):"
-	@grep -E '^dev[a-zA-Z_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[32m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo "  \033[1mFIRST TIME SETUP\033[0m"
+	@echo "    make setup          Install deps, venv and run migrations (run once)"
+	@echo "    make superuser      Create a Django admin login"
 	@echo ""
-	@echo "  DOCKER (containerized):"
-	@grep -E '^(build|up|down|restart|logs|ps|shell|migrate|makemig|collect|create|prod|backup|restore|clean|prune|setup|health)[a-zA-Z_-]*:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@echo "  \033[1mDAILY USE\033[0m  (open two terminals)"
+	@echo "    make backend        Start Django      →  http://localhost:8000"
+	@echo "    make frontend       Start Next.js     →  http://localhost:3000"
+	@echo "    make kill-ports     Kill processes on ports 8000 & 3000"
+	@echo ""
+	@echo "  \033[1mDJANGO UTILS\033[0m"
+	@echo "    make migrate        Apply pending migrations"
+	@echo "    make migrations     Create new migration files"
+	@echo "    make shell          Open Django interactive shell"
+	@echo "    make seed           Load sample heritage data"
+	@echo "    make seed-reset     Flush DB and re-seed from scratch"
+	@echo ""
+	@echo "  \033[1mDOCKER\033[0m"
+	@echo "    make docker-up      Start all services"
+	@echo "    make docker-down    Stop all services"
+	@echo "    make docker-build   Build Docker images"
+	@echo "    make docker-logs    Tail logs from all containers"
+	@echo "    make docker-ps      List running containers"
+	@echo "    make docker-shell   Django shell inside container"
+	@echo "    make docker-migrate Run migrations inside container"
+	@echo ""
+	@echo "  \033[1mPRODUCTION\033[0m"
+	@echo "    make prod-up        Start production services"
+	@echo "    make prod-down      Stop production services"
+	@echo "    make prod-build     Build production images"
+	@echo "    make prod-logs      View production logs"
+	@echo ""
+	@echo "  \033[1mCLEANUP\033[0m"
+	@echo "    make backup         Backup PostgreSQL (Docker)"
+	@echo "    make restore        Restore PostgreSQL  FILE=backups/xxx.sql.gz"
+	@echo "    make clean          Remove all Docker containers, volumes & images"
+	@echo "    make prune          Free disk space (Docker system prune)"
 	@echo ""
 
 # ================================================================
-# LOCAL DEVELOPMENT (no Docker, SQLite, session auth)
+# FIRST TIME SETUP
 # ================================================================
-# These commands run Django + Next.js directly on your machine.
-# Uses .venv, SQLite, and session/JWT auth — no Google OAuth or
-# PostgreSQL needed.
-#
-# Quick start:
-#   make dev-setup      (once — creates venv, installs deps, migrates)
-#   make dev-superuser  (once — creates a login)
-#   make dev-backend    (terminal 1)
-#   make dev-frontend   (terminal 2)
-# ================================================================
-
-# Ensure the venv exists (idempotent)
 $(VENV_PY):
-	@echo "Creating virtual environment in $(VENV_DIR)..."
+	@echo "==> Creating Python virtual environment..."
 	uv venv $(VENV_DIR) --python 3.11
-	@echo ""
 
-dev-setup: $(VENV_PY) ## Initial dev setup: create venv, install deps, migrate
-	@echo "=== Setting up development environment ==="
-	@echo ""
-	@echo "1. Installing Python dependencies into $(VENV_DIR)..."
+setup: $(VENV_PY) ## Install all deps, create venv, run migrations
+	@echo "==> Installing Python packages..."
 	uv pip install -r $(BACKEND)/requirements.txt --python $(VENV_PY)
-	@echo ""
-	@echo "2. Running migrations (SQLite)..."
+	@echo "==> Running Django migrations..."
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
+	@echo "==> Installing frontend packages..."
+	cd $(FRONTEND) && $(NODE_PATH) $(PNPM) install
 	@echo ""
-	@echo "3. Installing frontend dependencies..."
-	cd $(FRONTEND) && pnpm install
-	@echo ""
-	@echo "=== Setup complete! ==="
-	@echo ""
-	@echo "Next steps:"
-	@echo "  make dev-superuser   (create a login)"
-	@echo "  make dev-backend     (start Django in terminal 1)"
-	@echo "  make dev-frontend    (start Next.js in terminal 2)"
+	@echo "  Done!  Next:"
+	@echo "    make superuser   — create an admin login"
+	@echo "    make backend     — start Django  (terminal 1)"
+	@echo "    make frontend    — start Next.js (terminal 2)"
 	@echo ""
 
-dev-migrate: $(VENV_PY) ## Run Django migrations (SQLite dev database)
-	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
-
-dev-makemigrations: $(VENV_PY) ## Create new Django migrations (dev)
-	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py makemigrations
-
-dev-superuser: $(VENV_PY) ## Create a Django superuser for local dev
+superuser: $(VENV_PY) ## Create a Django admin login
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py createsuperuser
 
-dev-backend: $(VENV_PY) ## Start Django dev server (port 8000, SQLite, session auth)
+# ================================================================
+# DAILY USE
+# ================================================================
+backend: $(VENV_PY) ## Start Django dev server on http://localhost:8000
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py runserver 0.0.0.0:8000
 
-dev-frontend: ## Start Next.js dev server (port 3000, Turbopack)
-	cd $(FRONTEND) && NEXT_PUBLIC_API_URL=http://localhost:8000 pnpm dev
+frontend: ## Start Next.js dev server on http://localhost:3000
+	cd $(FRONTEND) && $(NODE_PATH) NEXT_PUBLIC_API_URL=http://localhost:8000 $(PNPM) dev
 
-dev: ## Start backend + frontend (run in separate terminals instead)
-	@echo "=== HeritageGraph — Development Mode ==="
-	@echo ""
-	@echo "  Backend:  http://localhost:8000  (Django + SQLite)"
-	@echo "  Admin:    http://localhost:8000/admin/"
-	@echo "  API Docs: http://localhost:8000/docs"
-	@echo "  Frontend: http://localhost:3000  (Next.js + Turbopack)"
-	@echo ""
-	@echo "  Auth: Login at /admin/ or POST /api/token/ {username, password}"
-	@echo "  No Google OAuth needed in dev mode."
-	@echo ""
-	@echo "TIP: Run these in two separate terminals for best experience:"
-	@echo "  Terminal 1:  make dev-backend"
-	@echo "  Terminal 2:  make dev-frontend"
-	@echo ""
+kill-ports: ## Kill any process on ports 8000 and 3000
+	@lsof -ti:8000 | xargs kill -9 2>/dev/null && echo "  ✓ port 8000 cleared" || echo "  — port 8000 was free"
+	@lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "  ✓ port 3000 cleared" || echo "  — port 3000 was free"
 
-dev-shell: $(VENV_PY) ## Open Django shell (dev)
+# ================================================================
+# DJANGO UTILS
+# ================================================================
+migrate: $(VENV_PY) ## Apply pending Django migrations
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
+
+migrations: $(VENV_PY) ## Create new Django migration files
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py makemigrations
+
+shell: $(VENV_PY) ## Open Django interactive shell
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py shell
 
-dev-seed: $(VENV_PY) ## Load dummy heritage data from CSV fixtures into the dev DB
-	@echo "=== Seeding database with dummy heritage data ==="
+seed: $(VENV_PY) ## Load sample heritage data from CSV fixtures
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py seed_db
-	@echo ""
 
-dev-seed-flush: $(VENV_PY) ## Flush and re-seed: delete existing data then reload from CSVs
-	@echo "=== Flushing and re-seeding database ==="
+seed-reset: $(VENV_PY) ## Flush DB then re-seed from scratch
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py seed_db --flush
-	@echo ""
 
 # ================================================================
-# DEVELOPMENT
+# DOCKER
 # ================================================================
-build: ## Build all Docker images
+docker-build: ## Build all Docker images
 	docker-compose build
 
-up: ## Start all services (development)
+docker-up: ## Start all services in Docker
 	docker-compose up -d
 
-up-build: ## Build and start all services
+docker-up-build: ## Rebuild images and start all services
 	docker-compose up -d --build
 
-down: ## Stop all services
+docker-down: ## Stop all Docker services
 	docker-compose down
 
-restart: ## Restart all services
-	docker-compose restart
-
-logs: ## View logs for all services (follow mode)
+docker-logs: ## Tail logs from all Docker containers
 	docker-compose logs -f
 
-logs-backend: ## View backend logs
-	docker-compose logs -f backend
-
-logs-frontend: ## View frontend logs
-	docker-compose logs -f frontend
-
-logs-traefik: ## View traefik logs
-	docker-compose logs -f traefik
-
-ps: ## Show running services
+docker-ps: ## List running Docker containers
 	docker-compose ps
 
-# ================================================================
-# BACKEND COMMANDS
-# ================================================================
-shell-backend: ## Open Django shell in backend container
+docker-shell: ## Open Django shell inside backend container
 	docker-compose exec backend python manage.py shell
 
-shell-db: ## Open PostgreSQL shell
-	docker-compose exec postgres psql -U heritage_user -d heritage_db
-
-migrate: ## Run Django database migrations
+docker-migrate: ## Run migrations inside backend container
 	docker-compose exec backend python manage.py migrate
-
-makemigrations: ## Create new Django migrations
-	docker-compose exec backend python manage.py makemigrations
-
-collectstatic: ## Collect Django static files
-	docker-compose exec backend python manage.py collectstatic --noinput
-
-createsuperuser: ## Create Django superuser
-	docker-compose exec backend python manage.py createsuperuser
-
-# ================================================================
-# FRONTEND COMMANDS
-# ================================================================
-shell-frontend: ## Open shell in frontend container
-	docker-compose exec frontend sh
 
 # ================================================================
 # PRODUCTION
 # ================================================================
-prod-up: ## Start all services (production mode)
+prod-up: ## Start production services
 	docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 prod-down: ## Stop production services
@@ -194,63 +170,27 @@ prod-build: ## Build production images
 prod-logs: ## View production logs
 	docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
 
-prod-ps: ## Show production services status
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml ps
-
-prod-restart: ## Restart production services
-	docker-compose -f docker-compose.yml -f docker-compose.prod.yml restart
-
 # ================================================================
-# DATABASE
+# BACKUP / RESTORE (Docker PostgreSQL)
 # ================================================================
 backup: ## Backup PostgreSQL database
 	@mkdir -p backups
 	docker-compose exec -T postgres pg_dump -U heritage_user heritage_db | gzip > backups/db-$$(date +%Y%m%d-%H%M%S).sql.gz
 	@echo "Backup saved to backups/"
 
-restore: ## Restore database from backup (usage: make restore FILE=backups/db-xxx.sql.gz)
+restore: ## Restore database  usage: make restore FILE=backups/db-xxx.sql.gz
 	@if [ -z "$(FILE)" ]; then echo "Usage: make restore FILE=backups/db-xxx.sql.gz"; exit 1; fi
 	gunzip < $(FILE) | docker-compose exec -T postgres psql -U heritage_user -d heritage_db
-	@echo "Database restored from $(FILE)"
-
-# ================================================================
-# HEALTH CHECKS
-# ================================================================
-health: ## Check health of all services
-	@echo "=== Service Health ==="
-	@echo "Backend:"
-	@curl -sf http://backend.localhost/health/ 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
-	@echo "Frontend:"
-	@curl -sf http://frontend.localhost 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
-	@echo "PostgreSQL:"
-	@docker-compose exec -T postgres pg_isready -U heritage_user 2>/dev/null && echo " ✓ Healthy" || echo " ✗ Unhealthy"
-
-# ================================================================
-# SETUP
-# ================================================================
-setup: ## Initial setup (copy env, build, start)
-	@if [ ! -f .env ]; then cp .env.example .env && echo "Created .env from .env.example"; fi
-	@echo "Building and starting services..."
-	docker-compose up -d --build
-	@echo ""
-	@echo "=== HeritageGraph is starting! ==="
-	@echo "Frontend:  http://frontend.localhost"
-	@echo "Backend:   http://backend.localhost"
-	@echo "Dashboard: http://traefik.localhost:8080"
-	@echo ""
+	@echo "Restored from $(FILE)"
 
 # ================================================================
 # CLEANUP
 # ================================================================
-clean: ## Remove all containers, volumes, and images
+clean: ## Remove all Docker containers, volumes and images
 	docker-compose down -v --rmi all
-	@echo "Cleaned up all Docker resources"
+	@echo "All Docker resources removed."
 
-clean-volumes: ## Remove data volumes only (WARNING: deletes data)
-	docker-compose down -v
-	@echo "Volumes removed"
-
-prune: ## Docker system prune (free disk space)
+prune: ## Free disk space with Docker system prune
 	docker system prune -af
 	docker volume prune -f
-	@echo "Docker system pruned"
+	@echo "Docker pruned."
