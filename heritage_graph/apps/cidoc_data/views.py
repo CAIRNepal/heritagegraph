@@ -1,32 +1,149 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions, status as drf_status
+from rest_framework.response import Response
 from django.contrib.auth.models import User
 from .models import *
 from .serializers import *
 
+
+# =====================================================================
+# CONTRIBUTION MIXIN — hooks CIDOC creates into the review workflow
+# =====================================================================
+
+def _get_category_for_model(model_class):
+    """Map a CIDOC model class to a CulturalEntity category."""
+    mapping = {
+        'Person': 'other',
+        'Location': 'other',
+        'Event': 'other',
+        'HistoricalPeriod': 'other',
+        'Tradition': 'tradition',
+        'Source': 'document',
+        'Deity': 'other',
+        'Guthi': 'tradition',
+        'ArchitecturalStructure': 'monument',
+        'RitualEvent': 'ritual',
+        'Festival': 'festival',
+        'IconographicObject': 'artifact',
+        'Monument': 'monument',
+    }
+    return mapping.get(model_class.__name__, 'other')
+
+
+class ContributionFlowMixin:
+    """
+    Mixin for CIDOC ViewSets that hooks every create into the
+    CulturalEntity → Notification → Review queue workflow.
+
+    On POST (create):
+      1. Requires authentication
+      2. Sets contributor = username, status = pending_review
+      3. Creates a CulturalEntity wrapper in heritage_data
+      4. Creates a first Revision with the submitted data as JSON
+      5. Fires notifications to the contributor and all active reviewers
+    """
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def perform_create(self, serializer):
+        # Set contributor info on the CIDOC record
+        instance = serializer.save(
+            contributor=self.request.user.username,
+            status='pending_review',
+        )
+
+        # Create a CulturalEntity wrapper for the review queue
+        try:
+            from apps.heritage_data.models import (
+                CulturalEntity, Revision, Activity, Notification, ReviewerRole,
+            )
+
+            entity_name = getattr(instance, 'name', None) or getattr(instance, 'title', '') or str(instance)
+            entity_description = getattr(instance, 'description', '') or ''
+            category = _get_category_for_model(instance.__class__)
+
+            entity = CulturalEntity.objects.create(
+                name=entity_name,
+                description=entity_description,
+                category=category,
+                status='pending_review',
+                contributor=self.request.user,
+            )
+
+            # Build revision data from the serialized instance
+            revision_data = serializer.data.copy()
+            revision_data['_cidoc_model'] = instance.__class__.__name__
+            revision_data['_cidoc_id'] = instance.pk
+
+            Revision.objects.create(
+                entity=entity,
+                data=revision_data,
+                revision_number=1,
+                created_by=self.request.user,
+            )
+
+            Activity.objects.create(
+                entity=entity,
+                user=self.request.user,
+                activity_type='submitted',
+                comment=f'Submitted via {instance.__class__.__name__} form',
+            )
+
+            # Notify contributor
+            Notification.objects.create(
+                user=self.request.user,
+                notification_type='submission_update',
+                message=f'Your contribution "{entity_name}" has been submitted and is pending review.',
+                entity=entity,
+                link=f'/dashboard/knowledge/entity/{entity.entity_id}',
+            )
+
+            # Notify all active reviewers
+            reviewer_users = User.objects.filter(
+                reviewer_role__is_active=True,
+            ).exclude(id=self.request.user.id)
+            for reviewer in reviewer_users:
+                Notification.objects.create(
+                    user=reviewer,
+                    notification_type='submission_update',
+                    message=f'New contribution "{entity_name}" submitted by {self.request.user.username} — awaiting review.',
+                    entity=entity,
+                    link=f'/dashboard/curation/review/{entity.entity_id}',
+                )
+
+        except Exception as e:
+            # Log but don't fail the CIDOC save — the data is still persisted
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f'Failed to create CulturalEntity wrapper: {e}')
+
+
 #################################################################
-## CIDOC_DATA
+## CIDOC_DATA — all ViewSets now use ContributionFlowMixin
 #################################################################
-class PersonViewSet(viewsets.ModelViewSet):
+class PersonViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
 
-class LocationViewSet(viewsets.ModelViewSet):
+class LocationViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
 
-class EventViewSet(viewsets.ModelViewSet):
+class EventViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
 
-class HistoricalPeriodViewSet(viewsets.ModelViewSet):
+class HistoricalPeriodViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = HistoricalPeriod.objects.all()
     serializer_class = HistoricalPeriodSerializer
 
-class TraditionViewSet(viewsets.ModelViewSet):
+class TraditionViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Tradition.objects.all()
     serializer_class = TraditionSerializer
 
-class SourceViewSet(viewsets.ModelViewSet):
+class SourceViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Source.objects.all()
     serializer_class = SourceSerializer
 
@@ -35,31 +152,31 @@ class SourceViewSet(viewsets.ModelViewSet):
 # NEW ONTOLOGY-DRIVEN VIEWSETS
 # =====================================================================
 
-class DeityViewSet(viewsets.ModelViewSet):
+class DeityViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Deity.objects.all()
     serializer_class = DeitySerializer
 
-class GuthiViewSet(viewsets.ModelViewSet):
+class GuthiViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Guthi.objects.all()
     serializer_class = GuthiSerializer
 
-class ArchitecturalStructureViewSet(viewsets.ModelViewSet):
+class ArchitecturalStructureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = ArchitecturalStructure.objects.all()
     serializer_class = ArchitecturalStructureSerializer
 
-class RitualEventViewSet(viewsets.ModelViewSet):
+class RitualEventViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = RitualEvent.objects.all()
     serializer_class = RitualEventSerializer
 
-class FestivalViewSet(viewsets.ModelViewSet):
+class FestivalViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Festival.objects.all()
     serializer_class = FestivalSerializer
 
-class IconographicObjectViewSet(viewsets.ModelViewSet):
+class IconographicObjectViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = IconographicObject.objects.all()
     serializer_class = IconographicObjectSerializer
 
-class MonumentViewSet(viewsets.ModelViewSet):
+class MonumentViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Monument.objects.all()
     serializer_class = MonumentSerializer
 
@@ -106,7 +223,7 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
         return qs
 
 
-class AssertionAwareStructureViewSet(viewsets.ModelViewSet):
+class AssertionAwareStructureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Structure ViewSet that uses assertion-aware serializer for writes."""
     queryset = ArchitecturalStructure.objects.all()
 
@@ -118,7 +235,7 @@ class AssertionAwareStructureViewSet(viewsets.ModelViewSet):
         return AssertionAwareStructureSerializer
 
 
-class AssertionAwareRitualViewSet(viewsets.ModelViewSet):
+class AssertionAwareRitualViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Ritual ViewSet with assertion support."""
     queryset = RitualEvent.objects.all()
 
@@ -126,7 +243,7 @@ class AssertionAwareRitualViewSet(viewsets.ModelViewSet):
         return AssertionAwareRitualSerializer
 
 
-class AssertionAwareDeityViewSet(viewsets.ModelViewSet):
+class AssertionAwareDeityViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Deity ViewSet with assertion support."""
     queryset = Deity.objects.all()
 
@@ -134,7 +251,7 @@ class AssertionAwareDeityViewSet(viewsets.ModelViewSet):
         return AssertionAwareDeitySerializer
 
 
-class AssertionAwareGuthiViewSet(viewsets.ModelViewSet):
+class AssertionAwareGuthiViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Guthi ViewSet with assertion support."""
     queryset = Guthi.objects.all()
 
