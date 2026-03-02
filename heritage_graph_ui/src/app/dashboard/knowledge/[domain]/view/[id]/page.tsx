@@ -13,6 +13,9 @@ import { getOntologyClass } from "@/lib/ontology";
 import type { OntologyClass, OntologyField } from "@/lib/ontology";
 import { motion } from "framer-motion";
 import { IconSparkles } from "@tabler/icons-react";
+import { ContributionToolbar } from "@/components/contribution-toolbar";
+import { EntityComments } from "@/components/entity-comments";
+import { ForkList } from "@/components/fork-button";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const fadeInUp = { hidden: { opacity: 0, y: 60 }, show: { opacity: 1, y: 0, transition: { duration: 0.8 } } };
@@ -199,6 +202,21 @@ export default function OntologyViewPage() {
               </motion.div>
             );
           })()}
+        </motion.div>
+
+        {/* Contribution Toolbar — Reactions, Fork, Share */}
+        <motion.div variants={fadeInUp} initial="hidden" animate="show" className={`${glassCard} p-5`}>
+          <ContributionToolbar entityId={id} entityName={displayName} />
+        </motion.div>
+
+        {/* Forks */}
+        <motion.div variants={fadeInUp} initial="hidden" animate="show" className={`${glassCard} p-5`}>
+          <ForkList entityId={id} />
+        </motion.div>
+
+        {/* Comments Section */}
+        <motion.div variants={fadeInUp} initial="hidden" animate="show" className={`${glassCard} p-5`}>
+          <EntityComments entityId={id} />
         </motion.div>
       </div>
     </>

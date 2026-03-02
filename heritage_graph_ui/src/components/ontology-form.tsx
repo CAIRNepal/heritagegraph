@@ -330,9 +330,14 @@ export default function OntologyForm({
 
       if (res.ok) {
         toast.success(
-          `"${formData.name || formData.title || "Entry"}" submitted successfully!`
+          `"${formData.name || formData.title || "Entry"}" submitted successfully!`,
+          {
+            description:
+              "Your contribution is now in the review queue. You'll be notified when a reviewer comments or makes a decision.",
+            duration: 5000,
+          }
         );
-        setTimeout(() => router.push(postSubmitPath), 1200);
+        setTimeout(() => router.push(postSubmitPath), 1500);
       } else {
         const errorData = await res.json().catch(() => null);
         console.error("Submission error:", errorData);
