@@ -21,7 +21,7 @@ import {
   FileText,
   ChevronRight,
 } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 import {
   Card,
@@ -340,7 +340,7 @@ export default function StructureRecordPage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="px-4 lg:px-6 space-y-6">
         {/* Back button */}
         <Button

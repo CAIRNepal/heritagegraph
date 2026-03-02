@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { ArrowLeft, Calendar, User, Tag, Edit, ExternalLink, MapPin, ThumbsUp, ThumbsDown, GitFork, Share2, MessageSquare, ChevronDown } from "lucide-react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
@@ -110,7 +110,7 @@ export default function OntologyViewPage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       
       {/* Sticky Action Bar - Always visible */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b py-3 px-4 -mx-4 mb-6">

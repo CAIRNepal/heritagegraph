@@ -8,6 +8,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import AuthButtons from '@/components/AuthButtons';
 import { NotificationBell } from '@/components/notification-bell';
+import { Toaster } from '@/components/ui/sonner';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Github, Mail, ExternalLink } from 'lucide-react';
@@ -73,6 +74,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
         </footer>
       </SidebarInset>
+      
+      {/* Global Toast Notifications */}
+      <Toaster 
+        position="top-center" 
+        richColors 
+        closeButton 
+        expand={true}
+        toastOptions={{
+          duration: 4000,
+        }}
+      />
     </SidebarProvider>
   );
 }

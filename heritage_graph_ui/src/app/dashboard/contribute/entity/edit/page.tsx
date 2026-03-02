@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import {
   Select,
@@ -368,7 +368,7 @@ export default function CulturalEntityContributionPage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="container max-w-2xl mx-auto space-y-6 px-4 lg:px-6">
         {/* Header */}
         <div className="text-center">

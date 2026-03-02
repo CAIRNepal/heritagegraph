@@ -10,7 +10,7 @@ import {
   AlertTriangle, ArrowRight, Calendar, CheckCircle, Clock, FileText,
   Flag, Loader2, RefreshCw, Scale, Shield, ShieldCheck, TrendingUp, User, XCircle,
 } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles, IconArrowRight } from '@tabler/icons-react';
 
@@ -90,7 +90,7 @@ export default function ReviewerDashboardPage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="space-y-6">
         {/* ── Hero Welcome ── */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}>

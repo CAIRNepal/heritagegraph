@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 import {
   Card,
@@ -336,7 +336,7 @@ export default function OntologyDataTable({
   // --- RENDER ---
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="px-4 lg:px-6 space-y-6">
         {/* Header Card */}
         <Card>

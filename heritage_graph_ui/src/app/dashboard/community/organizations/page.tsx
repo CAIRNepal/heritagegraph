@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { Building2, Globe, MapPin, Users, Plus, Search, LogIn, LogOut, CheckCircle2, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
@@ -124,7 +124,7 @@ export default function OrganizationsPage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="space-y-6">
         {/* Hero Header */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>

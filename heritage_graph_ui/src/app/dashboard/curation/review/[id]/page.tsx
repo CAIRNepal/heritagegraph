@@ -15,7 +15,7 @@ import {
   AlertTriangle, ArrowLeft, Calendar, CheckCircle, Clock, Edit, FileText,
   Flag, History, Scale, Shield, ShieldAlert, User, XCircle, ArrowUpRight, Loader2,
 } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 
@@ -131,7 +131,7 @@ export default function ReviewWorkspacePage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="space-y-4">
         {/* Header */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-6`}>

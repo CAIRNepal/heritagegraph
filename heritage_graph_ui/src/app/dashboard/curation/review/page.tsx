@@ -18,7 +18,7 @@ import {
   User, Calendar, FileText, RefreshCw, Search, Eye, CheckCircle,
   XCircle, AlertTriangle, Clock, Flag, Scale,
 } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 
@@ -126,7 +126,7 @@ export default function ReviewQueuePage() {
 
   return (
     <TooltipProvider>
-      <Toaster position="top-right" richColors />
+
       <div className="space-y-6">
         {/* ── Hero Header ── */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>

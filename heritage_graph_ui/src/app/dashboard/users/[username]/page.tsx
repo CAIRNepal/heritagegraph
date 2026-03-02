@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import {
   Mail,
   Edit3,
@@ -290,7 +290,7 @@ export default function UserProfilePage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <input ref={imgRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
 
       <div className="space-y-6">

@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, ArrowLeft, Scale, Eye, RefreshCw, Loader2 } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 
@@ -54,7 +54,7 @@ export default function ConflictsPage() {
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="space-y-6">
         {/* ── Hero Header ── */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>

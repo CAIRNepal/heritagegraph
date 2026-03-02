@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 
 import {
   Card,
@@ -370,7 +370,7 @@ export default function OntologyForm({
 
   return (
     <>
-      <Toaster position="top-right" richColors />
+
       <div className="container max-w-2xl mx-auto space-y-6 px-4 lg:px-6">
         {/* Header */}
         <div className="text-center">
