@@ -82,7 +82,8 @@ urlpatterns = [
         name="moderation-review",
     ),
     path("api/activity-logs/", views.ActivityLogView.as_view(), name="activity-logs"),
-    path("api/leaderboard/", views.LeaderboardView.as_view(), name="leaderboard"),
+    path("api/leaderboard/", views.LeaderboardView.as_view(), name="leaderboard-legacy"),
+    path("leaderboard/", views.LeaderboardView.as_view(), name="leaderboard"),
     path("api/personal-stats/", views.PersonalStatsView.as_view(), name="personal-stats"),
     
     # Comment URLs

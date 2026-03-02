@@ -197,14 +197,29 @@ export default function GraphViewPage() {
       if (!cytoscape || !containerRef.current) return;
       cyRef.current?.destroy();
 
+      const nodeCount = data.nodes.length;
+      // For larger graphs, use lighter layout settings
+      const instanceLayout = nodeCount > 80
+        ? {
+            ...LAYOUTS['cose-bilkent'],
+            animate: false,           // skip animation for speed
+            idealEdgeLength: 100,
+            nodeRepulsion: 12000,     // more spacing
+            gravity: 0.15,
+          }
+        : LAYOUTS['cose-bilkent'];
+
       const cy = cytoscape({
         container: containerRef.current,
         elements: buildInstanceElements(data),
         style: buildInstanceStyles(),
-        layout: LAYOUTS['cose-bilkent'],
+        layout: instanceLayout,
         minZoom: 0.1,
         maxZoom: 5,
         wheelSensitivity: 0.3,
+        textureOnViewport: nodeCount > 100,  // GPU texture caching for larger graphs
+        hideEdgesOnViewport: nodeCount > 150, // hide edges while panning for performance
+        hideLabelsOnViewport: nodeCount > 200, // hide labels while panning
       });
 
       cy.on('tap', 'node', (evt: any) => {
@@ -220,6 +235,15 @@ export default function GraphViewPage() {
           setSelectedInstance(null);
           resetHighlight(cy);
         }
+      });
+
+      // After layout finishes, set degree data for size mapping
+      cy.on('layoutstop', () => {
+        cy.batch(() => {
+          cy.nodes().forEach((n: any) => {
+            n.data('degree', n.degree());
+          });
+        });
       });
 
       cyRef.current = cy;
@@ -443,11 +467,7 @@ export default function GraphViewPage() {
                       ? `${instanceStats.totalEntities} entities and ${instanceStats.totalRelationships} relationships across ${instanceStats.categories} categories`
                       : 'loading...'}
                     {' '}from the HeritageGraph database.
-                    {instanceData?.isDemo && (
-                      <span className="ml-1 px-2 py-0.5 bg-amber-400/30 border border-amber-300/50 rounded-full text-[10px] font-semibold text-amber-100">
-                        DEMO DATA
-                      </span>
-                    )}
+
                   </>
                 )}
               </p>
@@ -962,7 +982,6 @@ export default function GraphViewPage() {
             <>
               Live data from HeritageGraph API{' · '}
               {instanceStats ? `${instanceStats.totalEntities} entities across ${instanceStats.categories} categories` : 'No data loaded'}
-              {instanceData?.isDemo && ' · Using demo dataset (Kathmandu Valley heritage)'}
               {' · '}Visualisation built with Cytoscape.js
             </>
           )}
@@ -1053,11 +1072,16 @@ function buildInstanceStyles(): any[] {
       selector: 'node',
       style: {
         'background-color': 'data(color)', 'border-color': 'data(borderColor)', 'border-width': 2,
-        label: 'data(label)', color: '#1e3a5f', 'font-size': '11px', 'font-weight': 600,
+        label: 'data(label)', color: '#1e3a5f', 'font-size': '10px', 'font-weight': 600,
         'text-valign': 'bottom', 'text-halign': 'center', 'text-margin-y': 6,
-        'text-wrap': 'ellipsis', 'text-max-width': '120px', width: 36, height: 36, shape: 'ellipse',
+        'text-wrap': 'ellipsis', 'text-max-width': '110px',
+        // Degree-based sizing: more connections = larger node
+        width: 'mapData(degree, 0, 15, 28, 56)',
+        height: 'mapData(degree, 0, 15, 28, 56)',
+        shape: 'ellipse',
         'overlay-padding': 4, 'transition-property': 'background-color, border-color, width, height, opacity',
         'transition-duration': '0.25s',
+        'min-zoomed-font-size': 8, // hide labels when zoomed out far
       },
     },
     {
@@ -1065,8 +1089,9 @@ function buildInstanceStyles(): any[] {
       style: {
         'curve-style': 'bezier', 'target-arrow-shape': 'vee', 'arrow-scale': 0.8,
         'line-color': '#3b82f6', 'target-arrow-color': '#3b82f6', width: 1.5, 'line-style': 'solid',
-        opacity: 0.5, label: 'data(label)', 'font-size': '8px', color: '#64748b',
+        opacity: 0.5, label: 'data(label)', 'font-size': '7px', color: '#64748b',
         'text-rotation': 'autorotate', 'text-margin-y': -8,
+        'min-zoomed-font-size': 10,
         'transition-property': 'opacity, line-color', 'transition-duration': '0.25s',
       },
     },
@@ -1077,6 +1102,7 @@ function buildInstanceStyles(): any[] {
         'line-color': '#10b981', 'target-arrow-color': '#10b981', width: 1, 'line-style': 'dashed',
         'line-dash-pattern': [4, 4], opacity: 0.35, label: 'data(label)', 'font-size': '7px',
         color: '#059669', 'text-rotation': 'autorotate', 'text-margin-y': -8,
+        'min-zoomed-font-size': 10,
         'transition-property': 'opacity, line-color', 'transition-duration': '0.25s',
       },
     },

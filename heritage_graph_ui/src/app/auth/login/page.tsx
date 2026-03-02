@@ -12,6 +12,10 @@ function DevLoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [email, setEmail] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,6 +38,49 @@ function DevLoginForm() {
     }
   }
 
+  async function handleSignup(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/register/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, email }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        setError(`Signup failed: ${text}`);
+        setLoading(false);
+        return;
+      }
+
+      // Auto sign-in after successful registration
+      const signInResult = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl,
+      });
+
+      setLoading(false);
+
+      if (signInResult?.error) {
+        setError("Registered but automatic sign-in failed. Please sign in manually.");
+      } else {
+        router.push(callbackUrl);
+      }
+    } catch (err: any) {
+      setError(err?.message || "Signup failed");
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-sm space-y-6 rounded-xl border bg-card p-8 shadow-lg">
@@ -51,7 +98,7 @@ function DevLoginForm() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={showSignup ? handleSignup : handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label
               htmlFor="username"
@@ -93,13 +140,54 @@ function DevLoginForm() {
             <p className="text-sm font-medium text-destructive">{error}</p>
           )}
 
+          {showSignup && (
+            <div className="space-y-2">
+              <label htmlFor="email" className="text-sm font-medium leading-none">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                placeholder="you@example.com"
+              />
+
+              <label htmlFor="confirmPassword" className="text-sm font-medium leading-none">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
             className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           >
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? (showSignup ? "Creating..." : "Signing in...") : showSignup ? "Create account" : "Sign in"}
           </button>
+
+          <div className="flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowSignup(!showSignup)}
+              className="text-sm text-primary underline"
+            >
+              {showSignup ? "Back to sign in" : "Create an account"}
+            </button>
+          </div>
         </form>
 
         <div className="rounded-md bg-muted/50 p-3">

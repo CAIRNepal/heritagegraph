@@ -374,42 +374,110 @@ class UserRegistrationView(APIView):
 
 
 class LeaderboardView(APIView):
+    """
+    Public leaderboard that ranks users by their contributions.
+
+    Scoring:
+      - Each accepted CulturalEntity    = 10 pts
+      - Each submitted CulturalEntity    =  3 pts
+      - Each review decision             =  5 pts
+      - Each revision created            =  2 pts
+      - Each accepted legacy Submission  = 10 pts
+      - Each legacy Submission           =  3 pts
+
+    Supports ?search= query param to filter by username.
+    """
+    permission_classes = [AllowAny]
+
     def get(self, request):
-        leaderboard = User.objects.annotate(
-            total_submissions=Count("submissions", distinct=True),
-            accepted_submissions=Count(
-                "submissions", filter=Q(submissions__status="accepted")
+        search = request.query_params.get("search", "").strip()
+
+        qs = User.objects.select_related("profile").annotate(
+            # New workflow – CulturalEntity
+            entity_count=Count("contributed_entities", distinct=True),
+            accepted_entities=Count(
+                "contributed_entities",
+                filter=Q(contributed_entities__status="accepted"),
+                distinct=True,
             ),
-            score=Count("submissions", filter=Q(submissions__status="accepted")) * 10,
-        ).order_by("-score", "-accepted_submissions", "-total_submissions")
+            # Reviews performed
+            review_count=Count("review_decisions", distinct=True),
+            # Revisions authored
+            revision_count=Count("created_revisions", distinct=True),
+            # Legacy Submission
+            submission_count=Count("submissions", distinct=True),
+            accepted_submissions=Count(
+                "submissions",
+                filter=Q(submissions__status="accepted"),
+                distinct=True,
+            ),
+        )
 
-        ranked_data = []
-        current_rank = 1
+        if search:
+            qs = qs.filter(username__icontains=search)
 
-        for idx, user in enumerate(leaderboard):
-            if idx > 0 and (
-                user.score != leaderboard[idx - 1].score
-                or user.accepted_submissions
-                != leaderboard[idx - 1].accepted_submissions
-                or user.total_submissions != leaderboard[idx - 1].total_submissions
-            ):
-                current_rank = idx + 1
+        # Exclude users with zero activity
+        qs = qs.filter(
+            Q(entity_count__gt=0)
+            | Q(review_count__gt=0)
+            | Q(revision_count__gt=0)
+            | Q(submission_count__gt=0)
+        )
 
-            ranked_data.append(
+        # Annotate a computed score (Django ORM doesn't allow referencing
+        # other annotations in the same annotate() call, so we compute
+        # the score in Python after the query).
+        users = list(qs.order_by("username"))
+
+        # Compute score + gather profile data
+        entries = []
+        for user in users:
+            score = (
+                user.accepted_entities * 10
+                + (user.entity_count - user.accepted_entities) * 3
+                + user.review_count * 5
+                + user.revision_count * 2
+                + user.accepted_submissions * 10
+                + (user.submission_count - user.accepted_submissions) * 3
+            )
+            profile = getattr(user, "profile", None)
+            entries.append(
                 {
-                    "total_submission": user.total_submissions,
-                    "rank": current_rank,
                     "user_id": user.id,
                     "username": user.username,
-                    "institution": (
-                        user.institution if hasattr(user, "institution") else "N/A"
+                    "full_name": (
+                        f"{profile.first_name} {profile.last_name}".strip()
+                        if profile
+                        else ""
                     ),
-                    "country": user.country if hasattr(user, "country") else "N/A",
-                    "score": user.score,
+                    "institution": getattr(profile, "organization", "") or "",
+                    "country": getattr(profile, "country", "") or "",
+                    "profile_image": (
+                        profile.profile_image.url
+                        if profile and profile.profile_image
+                        else ""
+                    ),
+                    "score": score,
+                    "entities": user.entity_count,
+                    "accepted_entities": user.accepted_entities,
+                    "reviews": user.review_count,
+                    "revisions": user.revision_count,
+                    "submissions": user.submission_count,
+                    "accepted_submissions": user.accepted_submissions,
                 }
             )
 
-        return Response(ranked_data)
+        # Sort descending by score, then by accepted entities, then username
+        entries.sort(key=lambda e: (-e["score"], -e["accepted_entities"], e["username"]))
+
+        # Assign ranks (tied scores get the same rank)
+        rank = 1
+        for idx, entry in enumerate(entries):
+            if idx > 0 and entries[idx - 1]["score"] != entry["score"]:
+                rank = idx + 1
+            entry["rank"] = rank
+
+        return Response(entries)
 
 
 class UserDetailView(generics.RetrieveAPIView):
@@ -875,7 +943,7 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
             notification_type='submission_update',
             message=f'Your contribution "{entity.name}" has been created and is in draft status.',
             entity=entity,
-            link=f'/dashboard/knowledge/entity/{entity.entity_id}',
+            link=f'/dashboard/knowledge/entity/view/{entity.entity_id}',
         )
         # Notify all reviewers about new submission
         reviewer_users = User.objects.filter(
@@ -1283,7 +1351,7 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
             message=f'Your contribution "{entity.name}" has been {verdict_label} by {request.user.username}.'
                     + (f' Feedback: {feedback[:200]}' if feedback else ''),
             entity=entity,
-            link=f'/dashboard/knowledge/entity/{entity.entity_id}',
+            link=f'/dashboard/knowledge/entity/view/{entity.entity_id}',
         )
 
         return Response(
@@ -1739,7 +1807,7 @@ class ReactionViewSet(viewsets.ViewSet):
                         notification_type='reaction',
                         message=f'{request.user.username} upvoted your contribution "{entity.name}"',
                         entity=entity,
-                        link=f'/dashboard/knowledge/entity/{entity_id}',
+                        link=f'/dashboard/knowledge/entity/view/{entity_id}',
                     )
 
             return Response({'action': 'created', 'reaction_type': reaction_type},
@@ -1846,7 +1914,7 @@ class ForkViewSet(viewsets.ViewSet):
                 notification_type='fork',
                 message=f'{request.user.username} forked your contribution "{original.name}"',
                 entity=original,
-                link=f'/dashboard/knowledge/entity/{forked_entity.entity_id}',
+                link=f'/dashboard/knowledge/entity/view/{forked_entity.entity_id}',
             )
 
         return Response(
@@ -2006,7 +2074,7 @@ class EntityCommentViewSet(viewsets.ModelViewSet):
                 notification_type='comment',
                 message=f'{self.request.user.username} commented on "{entity.name}": {comment.comment[:100]}',
                 entity=entity,
-                link=f'/dashboard/knowledge/entity/{entity_id}',
+                link=f'/dashboard/knowledge/entity/view/{entity_id}',
             )
 
         # If it's a reply, notify the parent comment's author
@@ -2016,5 +2084,5 @@ class EntityCommentViewSet(viewsets.ModelViewSet):
                 notification_type='comment',
                 message=f'{self.request.user.username} replied to your comment on "{entity.name}"',
                 entity=entity,
-                link=f'/dashboard/knowledge/entity/{entity_id}',
+                link=f'/dashboard/knowledge/entity/view/{entity_id}',
             )

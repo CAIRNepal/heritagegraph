@@ -387,6 +387,53 @@ export default function CulturalEntityContributionPage() {
           )}
         </div>
 
+        {/* Non-editable profile / original contributor info */}
+        <div className="container max-w-2xl mx-auto px-4 lg:px-6">
+          <div className="mb-4">
+            {formMode === 'new' ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Your profile (non-editable)</CardTitle>
+                  <CardDescription className="text-xs">These values will be associated with the submission.</CardDescription>
+                </CardHeader>
+                <CardContent className="text-sm">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <div className="text-muted-foreground text-xs">Name</div>
+                      <div className="font-medium">{(session?.user as any)?.name || (session?.user as any)?.username || 'Not signed in'}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground text-xs">Email</div>
+                      <div className="font-medium">{(session?.user as any)?.email || 'Not provided'}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              originalEntity && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Original contributor (non-editable)</CardTitle>
+                    <CardDescription className="text-xs">The contribution owner and original metadata.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-sm">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <div className="text-muted-foreground text-xs">Name</div>
+                        <div className="font-medium">{originalEntity?.current_revision?.data?.contributor || originalEntity?.contributor || 'Unknown'}</div>
+                      </div>
+                      <div>
+                        <div className="text-muted-foreground text-xs">Status</div>
+                        <div className="font-medium">{originalEntity?.status || 'Unknown'}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            )}
+          </div>
+        </div>
+
         {/* Main Form Card */}
         <Card>
           <CardHeader>

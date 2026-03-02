@@ -7,34 +7,77 @@ from .models import *
 ##########################################
 
 
-class PersonSerializer(serializers.ModelSerializer):
+def _get_cultural_entity_id(instance):
+    """
+    Look up the CulturalEntity UUID for a CIDOC record by searching
+    revisions that have _cidoc_model and _cidoc_id in their data.
+    
+    For PostgreSQL: uses efficient JSON contains lookup
+    For SQLite: falls back to Python-based filtering
+    """
+    from apps.heritage_data.models import Revision
+    from django.db import connection
+    
+    model_name = instance.__class__.__name__
+    cidoc_id = instance.pk
+    
+    try:
+        # Try PostgreSQL-compatible JSON contains lookup first
+        if connection.vendor == 'postgresql':
+            rev = Revision.objects.filter(
+                data__contains={'_cidoc_model': model_name, '_cidoc_id': cidoc_id},
+            ).select_related('entity').first()
+            if rev:
+                return str(rev.entity.entity_id)
+        else:
+            # SQLite fallback: query limited set and filter in Python
+            # Newer revisions are more likely to match, so order by creation
+            revs = Revision.objects.select_related('entity').order_by('-created_at')[:500]
+            for rev in revs:
+                if isinstance(rev.data, dict):
+                    if rev.data.get('_cidoc_model') == model_name and rev.data.get('_cidoc_id') == cidoc_id:
+                        return str(rev.entity.entity_id)
+    except Exception:
+        pass
+    return None
+
+
+class CulturalEntityLinkMixin(serializers.Serializer):
+    """Mixin to add cultural_entity_id to CIDOC serializers."""
+    cultural_entity_id = serializers.SerializerMethodField()
+
+    def get_cultural_entity_id(self, obj):
+        return _get_cultural_entity_id(obj)
+
+
+class PersonSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Person
         fields = '__all__'
 
-class LocationSerializer(serializers.ModelSerializer):
+class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Location
         fields = '__all__'
 
-class EventSerializer(serializers.ModelSerializer):
+class EventSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = '__all__'
 
 
-class HistoricalPeriodSerializer(serializers.ModelSerializer):
+class HistoricalPeriodSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = HistoricalPeriod
         fields = '__all__'
 
 
-class TraditionSerializer(serializers.ModelSerializer):
+class TraditionSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Tradition
         fields = '__all__'
 
-class SourceSerializer(serializers.ModelSerializer):
+class SourceSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Source
         fields = '__all__'
@@ -44,37 +87,37 @@ class SourceSerializer(serializers.ModelSerializer):
 # NEW ONTOLOGY-DRIVEN SERIALIZERS
 # =====================================================================
 
-class DeitySerializer(serializers.ModelSerializer):
+class DeitySerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Deity
         fields = '__all__'
 
-class GuthiSerializer(serializers.ModelSerializer):
+class GuthiSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Guthi
         fields = '__all__'
 
-class ArchitecturalStructureSerializer(serializers.ModelSerializer):
+class ArchitecturalStructureSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = ArchitecturalStructure
         fields = '__all__'
 
-class RitualEventSerializer(serializers.ModelSerializer):
+class RitualEventSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = RitualEvent
         fields = '__all__'
 
-class FestivalSerializer(serializers.ModelSerializer):
+class FestivalSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Festival
         fields = '__all__'
 
-class IconographicObjectSerializer(serializers.ModelSerializer):
+class IconographicObjectSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = IconographicObject
         fields = '__all__'
 
-class MonumentSerializer(serializers.ModelSerializer):
+class MonumentSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Monument
         fields = '__all__'

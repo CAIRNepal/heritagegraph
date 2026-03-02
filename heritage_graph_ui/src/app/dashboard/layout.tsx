@@ -28,13 +28,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <SidebarInset>
         {/* ── Header ── */}
         <header
-          className="sticky top-0 z-40 flex items-center justify-between px-4 md:px-6 h-14 border-b border-blue-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl transition-all duration-300"
+          className="sticky top-0 z-40 flex items-center px-4 md:px-6 h-14 border-b border-blue-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl transition-all duration-300"
           role="banner"
           aria-label="Dashboard Header"
         >
           <SiteHeader />
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-3 flex-shrink-0">
             <NotificationBell />
             <AuthButtons />
             <ThemeToggle />

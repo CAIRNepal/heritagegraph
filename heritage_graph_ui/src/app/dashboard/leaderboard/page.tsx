@@ -4,31 +4,67 @@ import {
   Table, TableHead, TableHeader, TableBody, TableRow, TableCell,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
   Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious,
 } from '@/components/ui/pagination';
 import { cn } from '@/lib/utils';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { IconTrophy, IconSparkles } from '@tabler/icons-react';
+import {
+  IconTrophy, IconMedal, IconStar, IconSearch, IconFileText,
+  IconChecks, IconEye, IconGitBranch, IconUsers,
+} from '@tabler/icons-react';
 
-const fadeInUp = { hidden: { opacity: 0, y: 60 }, show: { opacity: 1, y: 0, transition: { duration: 0.8 } } };
-const staggerContainer = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.3 } } };
-const glassCard = 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+};
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
+};
 
 const ITEMS_PER_PAGE = 20;
 
 interface LeaderboardEntry {
   rank: number;
+  user_id: number;
   username: string;
-  institution?: string;
-  country?: string;
-  total_submission: number;
-  avatar?: string;
+  full_name: string;
+  institution: string;
+  country: string;
+  profile_image: string;
+  score: number;
+  entities: number;
+  accepted_entities: number;
+  reviews: number;
+  revisions: number;
+  submissions: number;
+  accepted_submissions: number;
+}
+
+function rankIcon(rank: number) {
+  if (rank === 1) return <IconTrophy className="w-5 h-5 text-yellow-500" />;
+  if (rank === 2) return <IconMedal className="w-5 h-5 text-gray-400" />;
+  if (rank === 3) return <IconMedal className="w-5 h-5 text-amber-600" />;
+  return null;
+}
+
+function rankBadge(rank: number) {
+  if (rank === 1) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 border-yellow-300';
+  if (rank === 2) return 'bg-gray-100 text-gray-700 dark:bg-gray-800/40 dark:text-gray-300 border-gray-300';
+  if (rank === 3) return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-300';
+  return 'bg-muted text-muted-foreground border-border';
 }
 
 export default function LeaderboardPage() {
@@ -36,41 +72,48 @@ export default function LeaderboardPage() {
   const [query, setQuery] = useState('');
   const [institutionFilter, setInstitutionFilter] = useState('all');
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchLeaderboard = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/data/leaderboard/`, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      const json: LeaderboardEntry[] = await res.json();
+      setData(json);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load leaderboard';
+      setError(message);
+      console.error('Leaderboard fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/data/leaderboard/`, {
-          method: 'GET', headers: { Accept: '*/*' },
-        });
-        if (!res.ok) throw new Error('Failed to fetch leaderboard data');
-        const json: LeaderboardEntry[] = await res.json();
-        setData(
-          json.map((entry, i) => ({
-            rank: entry.rank || i + 1,
-            username: entry.username || 'Unknown',
-            institution: entry.institution && entry.institution !== 'N/A' ? entry.institution : '',
-            country: entry.country && entry.country !== 'N/A' ? entry.country : '',
-            total_submission: entry.total_submission || 0,
-            avatar: `/avatars/${(entry.username || 'user').toLowerCase()}.png`,
-          })),
-        );
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchLeaderboard();
-  }, []);
+  }, [fetchLeaderboard]);
+
+  /* ── Derived data ── */
+  const institutions = useMemo(
+    () => [...new Set(data.map((d) => d.institution).filter(Boolean))].sort(),
+    [data],
+  );
 
   const filteredData = useMemo(() => {
     return data.filter((entry) => {
-      const matchesQuery = entry.username.toLowerCase().includes(query.toLowerCase());
-      const matchesInstitution = institutionFilter === 'all' || institutionFilter === '' ? true : entry.institution === institutionFilter;
-      return matchesQuery && matchesInstitution;
+      const matchName =
+        !query ||
+        entry.username.toLowerCase().includes(query.toLowerCase()) ||
+        entry.full_name.toLowerCase().includes(query.toLowerCase());
+      const matchInst =
+        institutionFilter === 'all' || entry.institution === institutionFilter;
+      return matchName && matchInst;
     });
   }, [data, query, institutionFilter]);
 
@@ -79,129 +122,389 @@ export default function LeaderboardPage() {
     return filteredData.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredData, page]);
 
-  const totalPages = Math.ceil(filteredData.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+
+  /* ── Summary stats ── */
+  const totalContributors = data.length;
+  const totalScore = data.reduce((s, e) => s + e.score, 0);
+  const totalEntities = data.reduce((s, e) => s + e.entities, 0);
+  const totalReviews = data.reduce((s, e) => s + e.reviews, 0);
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      {/* ── Hero Header ── */}
-      <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
-        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        <motion.div variants={fadeInUp} className="relative z-10 flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
-              <IconTrophy className="w-4 h-4" /> Top Contributors
+    <TooltipProvider>
+      <div className="space-y-6 max-w-6xl mx-auto">
+        {/* ── Hero Header ── */}
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={staggerContainer}
+          className="relative overflow-hidden rounded-2xl border bg-card shadow-sm"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95" />
+          <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+          <motion.div
+            variants={fadeInUp}
+            className="relative z-10 flex items-center justify-between p-8 md:p-10"
+          >
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
+                <IconTrophy className="w-4 h-4" /> Top Contributors
+              </div>
+              <h1 className="text-3xl md:text-4xl font-black text-white">
+                Leader
+                <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">
+                  board
+                </span>
+              </h1>
+              <p className="text-blue-100 max-w-lg text-sm">
+                Recognizing the community members who drive heritage preservation
+                forward.
+              </p>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black text-white">
-              Leader<span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">board</span>
-            </h1>
-            <p className="text-blue-100 max-w-lg text-base">
-              Recognizing the community members who drive heritage preservation forward.
-            </p>
-          </div>
-          <div className="hidden md:block">
-            <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30">
-              <IconTrophy className="w-12 h-12 text-yellow-300" />
+            <div className="hidden md:block">
+              <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30">
+                <IconTrophy className="w-12 h-12 text-yellow-300" />
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* ── Summary Cards ── */}
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={staggerContainer}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        >
+          {[
+            { label: 'Contributors', value: totalContributors, icon: IconUsers, color: 'text-blue-600' },
+            { label: 'Total Points', value: totalScore, icon: IconStar, color: 'text-yellow-500' },
+            { label: 'Entities', value: totalEntities, icon: IconFileText, color: 'text-green-600' },
+            { label: 'Reviews', value: totalReviews, icon: IconEye, color: 'text-purple-600' },
+          ].map((stat) => (
+            <motion.div
+              key={stat.label}
+              variants={fadeInUp}
+              className="rounded-xl border bg-card p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn('p-2 rounded-lg bg-muted', stat.color)}>
+                  <stat.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stat.value.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* ── Filters ── */}
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={fadeInUp}
+          className="rounded-xl border bg-card p-4 shadow-sm"
+        >
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="relative w-full sm:max-w-xs">
+              <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name..."
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setPage(1);
+                }}
+                className="pl-9"
+              />
+            </div>
+            <Select
+              value={institutionFilter}
+              onValueChange={(v) => {
+                setInstitutionFilter(v);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-[220px]">
+                <SelectValue placeholder="Filter by Institution" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Institutions</SelectItem>
+                {institutions.map((inst) => (
+                  <SelectItem key={inst} value={inst}>
+                    {inst}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="ml-auto text-sm text-muted-foreground hidden sm:block">
+              {filteredData.length} contributor{filteredData.length !== 1 ? 's' : ''}
             </div>
           </div>
         </motion.div>
-      </motion.div>
 
-      {/* ── Filters ── */}
-      <motion.div initial="hidden" animate="show" variants={fadeInUp} className={`${glassCard} p-4`}>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <Input placeholder="Search by name..." value={query}
-            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-            className="max-w-xs border-blue-200 dark:border-gray-600 focus:border-blue-400" />
-          <Select value={institutionFilter} onValueChange={(value) => { setInstitutionFilter(value); setPage(1); }}>
-            <SelectTrigger className="w-[200px] border-blue-200 dark:border-gray-600">
-              <SelectValue placeholder="Filter by Institution" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Institutions</SelectItem>
-              {[...new Set(data.map((d) => d.institution).filter(Boolean))].map((inst) => (
-                <SelectItem key={inst} value={inst!}>{inst}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </motion.div>
-
-      {/* ── Table ── */}
-      <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeInUp} className={glassCard}>
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-4">
-            Top <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Contributors</span>
-          </h2>
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-r-transparent" />
-              <p className="mt-3 text-blue-700 dark:text-blue-300">Loading leaderboard...</p>
-            </div>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-blue-200 dark:border-gray-700">
-                    <TableHead className="w-[60px] text-blue-800 dark:text-blue-200">Rank</TableHead>
-                    <TableHead className="text-blue-800 dark:text-blue-200">Name</TableHead>
-                    <TableHead className="hidden md:table-cell text-blue-800 dark:text-blue-200">Institution</TableHead>
-                    <TableHead className="hidden sm:table-cell text-center text-blue-800 dark:text-blue-200">Country</TableHead>
-                    <TableHead className="text-right text-blue-800 dark:text-blue-200">Total Submissions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedData.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center p-4 text-blue-700 dark:text-blue-300">No contributors found.</TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedData.map((entry) => (
-                      <TableRow key={entry.rank} className={cn(
-                        'hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors border-blue-100 dark:border-gray-800',
-                        entry.rank === 1 && 'bg-yellow-100/60 dark:bg-yellow-900/20',
-                        entry.rank === 2 && 'bg-gray-100/60 dark:bg-gray-800/20',
-                        entry.rank === 3 && 'bg-amber-50/60 dark:bg-amber-900/20',
-                      )}>
-                        <TableCell className="font-semibold text-blue-600 dark:text-blue-400">#{entry.rank}</TableCell>
-                        <TableCell className="flex items-center gap-3">
-                          <Avatar className="border-2 border-blue-200 dark:border-gray-600">
-                            <AvatarImage src={entry.avatar} alt={entry.username} />
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-sky-500 text-white text-xs">
-                              {entry.username.split(' ').map((w) => w[0]).join('').toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium text-blue-900 dark:text-blue-100">{entry.username}</span>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-blue-700 dark:text-blue-300">{entry.institution || '-'}</TableCell>
-                        <TableCell className="hidden sm:table-cell text-center text-xl">{entry.country || '-'}</TableCell>
-                        <TableCell className="text-right font-semibold text-blue-900 dark:text-blue-100">{entry.total_submission}</TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-
-              <div className="mt-4 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious onClick={() => setPage((prev) => Math.max(prev - 1, 1))} aria-disabled={page === 1} />
-                    </PaginationItem>
-                    <PaginationItem>
-                      <span className="text-sm text-blue-700 dark:text-blue-300 px-3">Page {page} of {totalPages}</span>
-                    </PaginationItem>
-                    <PaginationItem>
-                      <PaginationNext onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))} aria-disabled={page === totalPages} />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
+        {/* ── Table ── */}
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="rounded-xl border bg-card shadow-sm"
+        >
+          <div className="p-6">
+            {loading ? (
+              <div className="text-center py-16">
+                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
+                <p className="mt-3 text-muted-foreground">Loading leaderboard…</p>
               </div>
-            </>
-          )}
-        </div>
-      </motion.div>
-    </div>
+            ) : error ? (
+              <div className="text-center py-16 space-y-3">
+                <p className="text-destructive font-medium">{error}</p>
+                <button
+                  onClick={fetchLeaderboard}
+                  className="text-sm text-primary underline underline-offset-4 hover:text-primary/80"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : (
+              <>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[70px]">Rank</TableHead>
+                      <TableHead>Contributor</TableHead>
+                      <TableHead className="hidden lg:table-cell">Institution</TableHead>
+                      <TableHead className="hidden md:table-cell text-center">Breakdown</TableHead>
+                      <TableHead className="text-right">Score</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedData.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                          No contributors found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      paginatedData.map((entry) => (
+                        <TableRow
+                          key={entry.user_id}
+                          className={cn(
+                            'transition-colors',
+                            entry.rank === 1 &&
+                              'bg-yellow-50/60 dark:bg-yellow-950/10',
+                            entry.rank === 2 &&
+                              'bg-gray-50/60 dark:bg-gray-900/10',
+                            entry.rank === 3 &&
+                              'bg-amber-50/40 dark:bg-amber-950/10',
+                          )}
+                        >
+                          {/* Rank */}
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              {rankIcon(entry.rank)}
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-xs font-bold tabular-nums',
+                                  rankBadge(entry.rank),
+                                )}
+                              >
+                                #{entry.rank}
+                              </Badge>
+                            </div>
+                          </TableCell>
+
+                          {/* Contributor */}
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-9 w-9 border">
+                                {entry.profile_image && (
+                                  <AvatarImage
+                                    src={entry.profile_image}
+                                    alt={entry.username}
+                                  />
+                                )}
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-sky-500 text-white text-xs font-bold">
+                                  {(entry.full_name || entry.username)
+                                    .split(' ')
+                                    .map((w) => w[0])
+                                    .join('')
+                                    .toUpperCase()
+                                    .slice(0, 2)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="min-w-0">
+                                <p className="font-medium truncate">
+                                  {entry.full_name || entry.username}
+                                </p>
+                                {entry.full_name && (
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    @{entry.username}
+                                  </p>
+                                )}
+                                {entry.country && (
+                                  <p className="text-xs text-muted-foreground lg:hidden">
+                                    {entry.country}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          {/* Institution */}
+                          <TableCell className="hidden lg:table-cell">
+                            <div className="min-w-0">
+                              <p className="text-sm truncate">
+                                {entry.institution || '—'}
+                              </p>
+                              {entry.country && (
+                                <p className="text-xs text-muted-foreground">
+                                  {entry.country}
+                                </p>
+                              )}
+                            </div>
+                          </TableCell>
+
+                          {/* Breakdown */}
+                          <TableCell className="hidden md:table-cell">
+                            <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center gap-1">
+                                    <IconFileText className="w-3.5 h-3.5" />
+                                    {entry.entities}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {entry.entities} entities ({entry.accepted_entities} accepted)
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center gap-1">
+                                    <IconEye className="w-3.5 h-3.5" />
+                                    {entry.reviews}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {entry.reviews} reviews
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-flex items-center gap-1">
+                                    <IconGitBranch className="w-3.5 h-3.5" />
+                                    {entry.revisions}
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {entry.revisions} revisions
+                                </TooltipContent>
+                              </Tooltip>
+                              {entry.submissions > 0 && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="inline-flex items-center gap-1">
+                                      <IconChecks className="w-3.5 h-3.5" />
+                                      {entry.submissions}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {entry.submissions} legacy submissions ({entry.accepted_submissions} accepted)
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          </TableCell>
+
+                          {/* Score */}
+                          <TableCell className="text-right">
+                            <span className="text-lg font-bold tabular-nums">
+                              {entry.score}
+                            </span>
+                            <span className="text-xs text-muted-foreground ml-1">pts</span>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-4 flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                            aria-disabled={page === 1}
+                            className={cn(page === 1 && 'pointer-events-none opacity-50')}
+                          />
+                        </PaginationItem>
+                        <PaginationItem>
+                          <span className="text-sm text-muted-foreground px-3">
+                            Page {page} of {totalPages}
+                          </span>
+                        </PaginationItem>
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                            aria-disabled={page === totalPages}
+                            className={cn(page === totalPages && 'pointer-events-none opacity-50')}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </motion.div>
+
+        {/* ── Scoring Legend ── */}
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          variants={fadeInUp}
+          className="rounded-xl border bg-card p-5 shadow-sm"
+        >
+          <h3 className="text-sm font-semibold mb-3">How Scoring Works</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-[10px]">+10</Badge>
+              Accepted entity
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-[10px]">+5</Badge>
+              Review decision
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-[10px]">+3</Badge>
+              Submitted entity
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-[10px]">+2</Badge>
+              Revision authored
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-[10px]">+10</Badge>
+              Accepted submission (legacy)
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-[10px]">+3</Badge>
+              Submitted (legacy)
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </TooltipProvider>
   );
 }

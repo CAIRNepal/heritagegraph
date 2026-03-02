@@ -13,7 +13,7 @@ import { BookOpen } from 'lucide-react';
  */
 export function SiteHeader() {
   return (
-    <div className="flex items-center gap-3 w-full">
+    <div className="flex items-center gap-3 min-w-0">
       {/* Sidebar toggle */}
       <SidebarTrigger />
 
