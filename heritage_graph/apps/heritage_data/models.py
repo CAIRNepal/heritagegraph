@@ -865,7 +865,23 @@ class Comments(models.Model):
         User, on_delete=models.CASCADE, related_name="user_comments"
     )
     comment = models.TextField()
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="replies",
+        help_text="Parent comment for threaded replies",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "comments"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["submission", "created_at"]),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.comment_id:
@@ -942,6 +958,10 @@ class Notification(models.Model):
         ("comment", "Comment"),
         ("moderation", "Moderation"),
         ("suggestion_review", "Edit Suggestion Review"),
+        ("review_decision", "Review Decision"),
+        ("revision", "Revision"),
+        ("reaction", "Reaction"),
+        ("fork", "Fork"),
         ("general", "General"),
     ]
 
@@ -961,9 +981,27 @@ class Notification(models.Model):
         null=True,
         blank=True,
     )
+    entity = models.ForeignKey(
+        CulturalEntity,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
+    )
     message = models.TextField()
     is_read = models.BooleanField(default=False)
+    link = models.CharField(
+        max_length=500, blank=True,
+        help_text="Frontend URL to navigate to when notification is clicked"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "notifications"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "is_read", "created_at"]),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.notification_id:
@@ -983,3 +1021,139 @@ class Notification(models.Model):
     def __str__(self):
         status = "Read" if self.is_read else "Unread"
         return f"Notification for {self.user.username} ({status}): {self.message[:50]}"
+
+
+# =====================================================================
+# REACTION / VOTE MODEL
+# =====================================================================
+
+class Reaction(models.Model):
+    """
+    Upvote/downvote reactions on entities and comments.
+    Each user can have one reaction per target (entity or comment).
+    """
+    REACTION_CHOICES = [
+        ("upvote", "Upvote"),
+        ("downvote", "Downvote"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reactions"
+    )
+    entity = models.ForeignKey(
+        CulturalEntity, on_delete=models.CASCADE,
+        related_name="reactions", null=True, blank=True,
+    )
+    comment = models.ForeignKey(
+        Comments, on_delete=models.CASCADE,
+        related_name="reactions", null=True, blank=True,
+    )
+    reaction_type = models.CharField(max_length=10, choices=REACTION_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "reactions"
+        # One reaction per user per entity or comment
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "entity"],
+                condition=models.Q(entity__isnull=False),
+                name="unique_user_entity_reaction",
+            ),
+            models.UniqueConstraint(
+                fields=["user", "comment"],
+                condition=models.Q(comment__isnull=False),
+                name="unique_user_comment_reaction",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["entity", "reaction_type"]),
+            models.Index(fields=["comment", "reaction_type"]),
+        ]
+
+    def __str__(self):
+        target = self.entity or self.comment
+        return f"{self.user.username} {self.reaction_type}d {target}"
+
+
+# =====================================================================
+# FORK MODEL — forking contributions
+# =====================================================================
+
+class Fork(models.Model):
+    """
+    A fork of an existing CulturalEntity contribution.
+    Creates a new entity that references its parent for provenance.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    original_entity = models.ForeignKey(
+        CulturalEntity, on_delete=models.CASCADE,
+        related_name="forks",
+        help_text="The entity that was forked",
+    )
+    forked_entity = models.ForeignKey(
+        CulturalEntity, on_delete=models.CASCADE,
+        related_name="forked_from",
+        help_text="The new entity created from the fork",
+    )
+    forked_by = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name="forked_entities",
+    )
+    forked_from_revision = models.ForeignKey(
+        Revision, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name="forks",
+        help_text="The specific revision that was forked",
+    )
+    reason = models.TextField(
+        blank=True,
+        help_text="Why the user forked this contribution",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "forks"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["original_entity", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Fork of {self.original_entity.name} by {self.forked_by.username}"
+
+
+# =====================================================================
+# SHARE TRACKING MODEL
+# =====================================================================
+
+class Share(models.Model):
+    """Tracks shares of entities/comments to external platforms."""
+    PLATFORM_CHOICES = [
+        ("twitter", "Twitter/X"),
+        ("facebook", "Facebook"),
+        ("linkedin", "LinkedIn"),
+        ("email", "Email"),
+        ("copy_link", "Copy Link"),
+        ("other", "Other"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE,
+        related_name="shares", null=True, blank=True,
+    )
+    entity = models.ForeignKey(
+        CulturalEntity, on_delete=models.CASCADE,
+        related_name="shares", null=True, blank=True,
+    )
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "shares"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Shared {self.entity} on {self.platform}"

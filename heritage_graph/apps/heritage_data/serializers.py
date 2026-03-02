@@ -16,7 +16,7 @@ from .models import (
 )
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole
+from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole, Notification, Reaction, Fork, Share
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -757,3 +757,167 @@ class ActivityDetailSerializer(serializers.ModelSerializer):
         fields = ['activity_id', 'user', 'activity_type', 'comment',
                   'created_at', 'entity_name', 'entity_category', 'entity_status']
         read_only_fields = ['activity_id', 'user', 'created_at']
+
+
+# =====================================================================
+# NOTIFICATION SERIALIZERS
+# =====================================================================
+
+class NotificationSerializer(serializers.ModelSerializer):
+    entity_name = serializers.CharField(source='entity.name', read_only=True, default=None)
+    entity_id = serializers.UUIDField(source='entity.entity_id', read_only=True, default=None)
+
+    class Meta:
+        model = Notification
+        fields = [
+            'notification_id', 'user', 'notification_type', 'message',
+            'is_read', 'link', 'entity_name', 'entity_id',
+            'submission', 'created_at',
+        ]
+        read_only_fields = ['notification_id', 'user', 'created_at']
+
+
+class NotificationMarkReadSerializer(serializers.Serializer):
+    notification_ids = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        help_text="List of notification_ids to mark as read. If empty, marks all as read.",
+    )
+
+
+# =====================================================================
+# REACTION SERIALIZERS
+# =====================================================================
+
+class ReactionSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Reaction
+        fields = ['id', 'user', 'entity', 'comment', 'reaction_type', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']
+
+
+class ReactionCreateSerializer(serializers.Serializer):
+    entity_id = serializers.UUIDField(required=False)
+    comment_id = serializers.CharField(required=False)
+    reaction_type = serializers.ChoiceField(choices=Reaction.REACTION_CHOICES)
+
+    def validate(self, data):
+        if not data.get('entity_id') and not data.get('comment_id'):
+            raise serializers.ValidationError(
+                "Either entity_id or comment_id is required."
+            )
+        if data.get('entity_id') and data.get('comment_id'):
+            raise serializers.ValidationError(
+                "Provide either entity_id or comment_id, not both."
+            )
+        return data
+
+
+class ReactionSummarySerializer(serializers.Serializer):
+    """Aggregated reaction counts for an entity or comment."""
+    upvotes = serializers.IntegerField()
+    downvotes = serializers.IntegerField()
+    user_reaction = serializers.CharField(allow_null=True)
+
+
+# =====================================================================
+# FORK SERIALIZERS
+# =====================================================================
+
+class ForkSerializer(serializers.ModelSerializer):
+    forked_by = UserSerializer(read_only=True)
+    original_entity_name = serializers.CharField(
+        source='original_entity.name', read_only=True
+    )
+    forked_entity_name = serializers.CharField(
+        source='forked_entity.name', read_only=True
+    )
+    forked_entity_id = serializers.UUIDField(
+        source='forked_entity.entity_id', read_only=True
+    )
+
+    class Meta:
+        model = Fork
+        fields = [
+            'id', 'original_entity', 'forked_entity', 'forked_entity_id',
+            'forked_entity_name', 'original_entity_name',
+            'forked_by', 'forked_from_revision', 'reason', 'created_at',
+        ]
+        read_only_fields = ['id', 'forked_by', 'created_at']
+
+
+class ForkCreateSerializer(serializers.Serializer):
+    reason = serializers.CharField(required=False, allow_blank=True, default="")
+    changes = serializers.JSONField(
+        required=False,
+        help_text="Optional changes to apply to the forked entity's revision data",
+    )
+
+
+# =====================================================================
+# SHARE SERIALIZER
+# =====================================================================
+
+class ShareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Share
+        fields = ['id', 'entity', 'platform', 'created_at']
+        read_only_fields = ['id', 'user', 'created_at']
+
+
+class ShareCreateSerializer(serializers.Serializer):
+    entity_id = serializers.UUIDField()
+    platform = serializers.ChoiceField(choices=Share.PLATFORM_CHOICES)
+
+
+# =====================================================================
+# REVISION DIFF SERIALIZER
+# =====================================================================
+
+class RevisionDiffSerializer(serializers.Serializer):
+    """Shows the diff between two revisions of the same entity."""
+    revision_from = RevisionSerializer()
+    revision_to = RevisionSerializer()
+    diff = serializers.DictField(
+        help_text="Field-by-field diff: { field_key: { old: ..., new: ... } }"
+    )
+
+
+# =====================================================================
+# ENHANCED COMMENT SERIALIZER (with reactions + replies)
+# =====================================================================
+
+class CommentWithReactionsSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    submission = serializers.PrimaryKeyRelatedField(read_only=True)
+    replies = serializers.SerializerMethodField()
+    reaction_summary = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comments
+        fields = [
+            'comment_id', 'id', 'submission', 'user', 'comment',
+            'parent', 'created_at', 'updated_at', 'replies', 'reaction_summary',
+        ]
+        read_only_fields = ['comment_id', 'user', 'created_at', 'updated_at']
+
+    def get_replies(self, obj):
+        replies = obj.replies.select_related('user').order_by('created_at')
+        return CommentWithReactionsSerializer(replies, many=True, context=self.context).data
+
+    def get_reaction_summary(self, obj):
+        upvotes = obj.reactions.filter(reaction_type='upvote').count()
+        downvotes = obj.reactions.filter(reaction_type='downvote').count()
+        request = self.context.get('request')
+        user_reaction = None
+        if request and request.user.is_authenticated:
+            reaction = obj.reactions.filter(user=request.user).first()
+            if reaction:
+                user_reaction = reaction.reaction_type
+        return {
+            'upvotes': upvotes,
+            'downvotes': downvotes,
+            'user_reaction': user_reaction,
+        }

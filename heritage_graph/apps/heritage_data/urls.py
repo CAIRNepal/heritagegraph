@@ -17,6 +17,12 @@ router.register(r'reviewer-roles', views.ReviewerRoleViewSet, basename='reviewer
 # Organizations
 router.register(r'organizations', views.OrganizationViewSet, basename='organization')
 
+# New: Notifications, Reactions, Forks, Shares
+router.register(r'notifications', views.NotificationViewSet, basename='notification')
+router.register(r'reactions', views.ReactionViewSet, basename='reaction')
+router.register(r'forks', views.ForkViewSet, basename='fork')
+router.register(r'shares', views.ShareViewSet, basename='share')
+
 # router.register(r'submissions', views.SubmissionViewSet, basename='submission')
 # router.register(r'comments', views.CommentViewSet, basename='comment')
 
@@ -39,6 +45,25 @@ urlpatterns = [
         'api/reviewer-dashboard/',
         views.ReviewerDashboardView.as_view(),
         name='reviewer-dashboard',
+    ),
+
+    # Revision diff endpoint
+    path(
+        'api/entities/<uuid:entity_id>/diff/',
+        views.RevisionDiffView.as_view(),
+        name='revision-diff',
+    ),
+
+    # Entity comments (threaded, with reactions)
+    path(
+        'api/entities/<uuid:entity_id>/comments/',
+        views.EntityCommentViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='entity-comments',
+    ),
+    path(
+        'api/entities/<uuid:entity_id>/comments/<int:pk>/',
+        views.EntityCommentViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}),
+        name='entity-comment-detail',
     ),
     
     # Legacy API endpoints (consider migrating these to ViewSets over time)

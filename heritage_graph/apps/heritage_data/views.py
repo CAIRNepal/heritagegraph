@@ -18,6 +18,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole
 from .models import Organization, OrganizationMembership
+from .models import Notification, Reaction, Fork, Share
 from .serializers import *
 from .permissions import (
     IsContributorOrReadOnly, IsEditor, IsReviewerOrAdmin,
@@ -867,7 +868,27 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
         return queryset
     
     def perform_create(self, serializer):
-        serializer.save(contributor=self.request.user)
+        entity = serializer.save(contributor=self.request.user)
+        # Create notification for the contributor
+        create_notification(
+            user=self.request.user,
+            notification_type='submission_update',
+            message=f'Your contribution "{entity.name}" has been created and is in draft status.',
+            entity=entity,
+            link=f'/dashboard/knowledge/entity/{entity.entity_id}',
+        )
+        # Notify all reviewers about new submission
+        reviewer_users = User.objects.filter(
+            reviewer_role__is_active=True
+        ).exclude(id=self.request.user.id)
+        for reviewer in reviewer_users:
+            create_notification(
+                user=reviewer,
+                notification_type='submission_update',
+                message=f'New contribution "{entity.name}" submitted by {self.request.user.username} — awaiting review.',
+                entity=entity,
+                link=f'/dashboard/curation/review/{entity.entity_id}',
+            )
     
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def my_contributions(self, request):
@@ -1247,6 +1268,24 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
                 comment=serializer.validated_data.get('reconciliation_note', '')
             )
 
+        # Notify contributor about the review decision
+        verdict_labels = {
+            'accept': 'accepted',
+            'accept_with_edits': 'accepted with edits',
+            'reject': 'rejected',
+            'request_changes': 'sent back for changes',
+            'escalate': 'escalated to an expert',
+        }
+        verdict_label = verdict_labels.get(verdict, verdict)
+        create_notification(
+            user=entity.contributor,
+            notification_type='review_decision',
+            message=f'Your contribution "{entity.name}" has been {verdict_label} by {request.user.username}.'
+                    + (f' Feedback: {feedback[:200]}' if feedback else ''),
+            entity=entity,
+            link=f'/dashboard/knowledge/entity/{entity.entity_id}',
+        )
+
         return Response(
             ReviewDecisionSerializer(decision).data,
             status=status.HTTP_201_CREATED
@@ -1574,3 +1613,408 @@ class UserProfileImageView(APIView):
         if profile.profile_image:
             profile.profile_image.delete()
         return Response({'detail': 'Profile image removed'})
+
+
+# =====================================================================
+# NOTIFICATION VIEWS
+# =====================================================================
+
+class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for user notifications. 
+    - list: All notifications for the authenticated user
+    - unread_count: Count of unread notifications
+    - mark_read: Mark specific or all notifications as read
+    """
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ['notification_type', 'is_read']
+    ordering_fields = ['created_at']
+    ordering = ['-created_at']
+
+    def get_queryset(self):
+        return Notification.objects.filter(
+            user=self.request.user
+        ).select_related('entity', 'submission')
+
+    @action(detail=False, methods=['get'])
+    def unread_count(self, request):
+        count = Notification.objects.filter(
+            user=request.user, is_read=False
+        ).count()
+        return Response({'unread_count': count})
+
+    @action(detail=False, methods=['post'])
+    def mark_read(self, request):
+        serializer = NotificationMarkReadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        notification_ids = serializer.validated_data.get('notification_ids', [])
+        qs = Notification.objects.filter(user=request.user, is_read=False)
+        if notification_ids:
+            qs = qs.filter(notification_id__in=notification_ids)
+
+        updated = qs.update(is_read=True)
+        return Response({'marked_read': updated})
+
+    @action(detail=False, methods=['post'])
+    def mark_all_read(self, request):
+        updated = Notification.objects.filter(
+            user=request.user, is_read=False
+        ).update(is_read=True)
+        return Response({'marked_read': updated})
+
+
+def create_notification(user, notification_type, message, entity=None, submission=None, link=""):
+    """Helper function to create a notification."""
+    return Notification.objects.create(
+        user=user,
+        notification_type=notification_type,
+        message=message,
+        entity=entity,
+        submission=submission,
+        link=link,
+    )
+
+
+# =====================================================================
+# REACTION VIEWS
+# =====================================================================
+
+class ReactionViewSet(viewsets.ViewSet):
+    """
+    ViewSet for reactions (upvotes/downvotes) on entities and comments.
+    - toggle: Create or switch a reaction (idempotent)
+    - summary: Get reaction counts for an entity or comment
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=False, methods=['post'])
+    def toggle(self, request):
+        """Toggle a reaction. If the same type exists, remove it. If different, switch it."""
+        serializer = ReactionCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        entity_id = serializer.validated_data.get('entity_id')
+        comment_id = serializer.validated_data.get('comment_id')
+        reaction_type = serializer.validated_data['reaction_type']
+
+        lookup = {'user': request.user}
+        if entity_id:
+            entity = CulturalEntity.objects.get(entity_id=entity_id)
+            lookup['entity'] = entity
+            lookup['comment'] = None
+        elif comment_id:
+            comment = Comments.objects.get(comment_id=comment_id)
+            lookup['comment'] = comment
+            lookup['entity'] = None
+
+        try:
+            existing = Reaction.objects.get(**lookup)
+            if existing.reaction_type == reaction_type:
+                # Same reaction — remove it (toggle off)
+                existing.delete()
+                return Response({'action': 'removed', 'reaction_type': None})
+            else:
+                # Different reaction — switch it
+                existing.reaction_type = reaction_type
+                existing.save()
+                return Response({'action': 'switched', 'reaction_type': reaction_type})
+        except Reaction.DoesNotExist:
+            # New reaction
+            Reaction.objects.create(
+                user=request.user,
+                entity=lookup.get('entity'),
+                comment=lookup.get('comment'),
+                reaction_type=reaction_type,
+            )
+
+            # Notify entity owner about upvote
+            if entity_id and reaction_type == 'upvote':
+                entity = CulturalEntity.objects.get(entity_id=entity_id)
+                if entity.contributor != request.user:
+                    create_notification(
+                        user=entity.contributor,
+                        notification_type='reaction',
+                        message=f'{request.user.username} upvoted your contribution "{entity.name}"',
+                        entity=entity,
+                        link=f'/dashboard/knowledge/entity/{entity_id}',
+                    )
+
+            return Response({'action': 'created', 'reaction_type': reaction_type},
+                            status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """Get reaction summary for an entity or comment."""
+        entity_id = request.query_params.get('entity_id')
+        comment_id = request.query_params.get('comment_id')
+
+        if not entity_id and not comment_id:
+            return Response(
+                {'error': 'Provide entity_id or comment_id'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if entity_id:
+            qs = Reaction.objects.filter(entity_id=entity_id)
+        else:
+            qs = Reaction.objects.filter(comment__comment_id=comment_id)
+
+        upvotes = qs.filter(reaction_type='upvote').count()
+        downvotes = qs.filter(reaction_type='downvote').count()
+
+        user_reaction = None
+        if request.user.is_authenticated:
+            r = qs.filter(user=request.user).first()
+            if r:
+                user_reaction = r.reaction_type
+
+        return Response({
+            'upvotes': upvotes,
+            'downvotes': downvotes,
+            'user_reaction': user_reaction,
+        })
+
+
+# =====================================================================
+# FORK VIEWS
+# =====================================================================
+
+class ForkViewSet(viewsets.ViewSet):
+    """
+    Fork a contribution to create a new entity based on an existing one.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request):
+        """Fork an entity. POST body: { entity_id, reason, changes }"""
+        entity_id = request.data.get('entity_id')
+        if not entity_id:
+            return Response({'error': 'entity_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            original = CulturalEntity.objects.get(entity_id=entity_id)
+        except CulturalEntity.DoesNotExist:
+            return Response({'error': 'Entity not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get the latest revision data
+        latest_revision = original.get_latest_revision()
+        if not latest_revision:
+            return Response({'error': 'No revision to fork'}, status=status.HTTP_400_BAD_REQUEST)
+
+        reason = request.data.get('reason', '')
+        changes = request.data.get('changes', {})
+
+        # Merge changes into the revision data
+        fork_data = {**latest_revision.data, **changes}
+
+        # Create the new entity
+        forked_entity = CulturalEntity.objects.create(
+            name=f"{original.name} (fork by {request.user.username})",
+            description=original.description,
+            category=original.category,
+            contributor=request.user,
+            status='draft',
+        )
+
+        # Create first revision on forked entity
+        forked_entity.create_revision(request.user, fork_data)
+
+        # Record the fork relationship
+        fork = Fork.objects.create(
+            original_entity=original,
+            forked_entity=forked_entity,
+            forked_by=request.user,
+            forked_from_revision=latest_revision,
+            reason=reason,
+        )
+
+        # Create activity on original
+        Activity.objects.create(
+            entity=original,
+            user=request.user,
+            activity_type='commented',
+            comment=f'Forked by {request.user.username}: {reason}',
+        )
+
+        # Notify original contributor
+        if original.contributor != request.user:
+            create_notification(
+                user=original.contributor,
+                notification_type='fork',
+                message=f'{request.user.username} forked your contribution "{original.name}"',
+                entity=original,
+                link=f'/dashboard/knowledge/entity/{forked_entity.entity_id}',
+            )
+
+        return Response(
+            ForkSerializer(fork).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def list(self, request):
+        """List forks of a specific entity."""
+        entity_id = request.query_params.get('entity_id')
+        if not entity_id:
+            return Response({'error': 'entity_id query param required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        forks = Fork.objects.filter(
+            original_entity_id=entity_id
+        ).select_related('forked_by', 'original_entity', 'forked_entity')
+        return Response(ForkSerializer(forks, many=True).data)
+
+
+# =====================================================================
+# REVISION DIFF VIEWS
+# =====================================================================
+
+class RevisionDiffView(APIView):
+    """
+    Compare two revisions of the same entity.
+    GET /api/revisions/<entity_id>/diff/?from=<rev_num>&to=<rev_num>
+    """
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get(self, request, entity_id):
+        from_num = request.query_params.get('from')
+        to_num = request.query_params.get('to')
+
+        if not from_num or not to_num:
+            return Response(
+                {'error': 'Both "from" and "to" query params are required'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            entity = CulturalEntity.objects.get(entity_id=entity_id)
+        except CulturalEntity.DoesNotExist:
+            return Response({'error': 'Entity not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            rev_from = Revision.objects.get(entity=entity, revision_number=int(from_num))
+            rev_to = Revision.objects.get(entity=entity, revision_number=int(to_num))
+        except Revision.DoesNotExist:
+            return Response({'error': 'Revision not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Compute field-by-field diff
+        diff = {}
+        all_keys = set(list(rev_from.data.keys()) + list(rev_to.data.keys()))
+        for key in sorted(all_keys):
+            old_val = rev_from.data.get(key)
+            new_val = rev_to.data.get(key)
+            if old_val != new_val:
+                diff[key] = {
+                    'old': old_val,
+                    'new': new_val,
+                }
+
+        return Response({
+            'entity_id': str(entity.entity_id),
+            'entity_name': entity.name,
+            'revision_from': RevisionSerializer(rev_from).data,
+            'revision_to': RevisionSerializer(rev_to).data,
+            'diff': diff,
+        })
+
+
+# =====================================================================
+# SHARE VIEWS
+# =====================================================================
+
+class ShareViewSet(viewsets.ViewSet):
+    """Track shares of entities to external platforms."""
+
+    def create(self, request):
+        serializer = ShareCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        entity_id = serializer.validated_data['entity_id']
+        platform = serializer.validated_data['platform']
+
+        try:
+            entity = CulturalEntity.objects.get(entity_id=entity_id)
+        except CulturalEntity.DoesNotExist:
+            return Response({'error': 'Entity not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        share = Share.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            entity=entity,
+            platform=platform,
+        )
+
+        return Response(ShareSerializer(share).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'])
+    def count(self, request):
+        """Get share count for an entity."""
+        entity_id = request.query_params.get('entity_id')
+        if not entity_id:
+            return Response({'error': 'entity_id required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        total = Share.objects.filter(entity_id=entity_id).count()
+        by_platform = {}
+        for choice in Share.PLATFORM_CHOICES:
+            ct = Share.objects.filter(entity_id=entity_id, platform=choice[0]).count()
+            if ct > 0:
+                by_platform[choice[0]] = ct
+
+        return Response({'total': total, 'by_platform': by_platform})
+
+
+# =====================================================================
+# ENHANCED COMMENT VIEWS (with threading + reactions)
+# =====================================================================
+
+class EntityCommentViewSet(viewsets.ModelViewSet):
+    """
+    Comments on CulturalEntity with threaded replies and reactions.
+    URL pattern: /data/api/entities/<entity_id>/comments/
+    """
+    serializer_class = CommentWithReactionsSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        entity_id = self.kwargs.get('entity_id')
+        # Only top-level comments (no parent) — replies are nested
+        return Comments.objects.filter(
+            submission_id=entity_id,
+            parent__isnull=True,
+        ).select_related('user').prefetch_related('replies', 'reactions')
+
+    def perform_create(self, serializer):
+        entity_id = self.kwargs.get('entity_id')
+        entity = CulturalEntity.objects.get(entity_id=entity_id)
+        comment = serializer.save(
+            user=self.request.user,
+            submission=entity,
+        )
+
+        # Create activity
+        Activity.objects.create(
+            entity=entity,
+            user=self.request.user,
+            activity_type='commented',
+            comment=comment.comment[:200],
+        )
+
+        # Notify entity contributor
+        if entity.contributor != self.request.user:
+            create_notification(
+                user=entity.contributor,
+                notification_type='comment',
+                message=f'{self.request.user.username} commented on "{entity.name}": {comment.comment[:100]}',
+                entity=entity,
+                link=f'/dashboard/knowledge/entity/{entity_id}',
+            )
+
+        # If it's a reply, notify the parent comment's author
+        if comment.parent and comment.parent.user != self.request.user:
+            create_notification(
+                user=comment.parent.user,
+                notification_type='comment',
+                message=f'{self.request.user.username} replied to your comment on "{entity.name}"',
+                entity=entity,
+                link=f'/dashboard/knowledge/entity/{entity_id}',
+            )
