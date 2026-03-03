@@ -137,8 +137,9 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-96 p-0"
+        className="w-[min(24rem,calc(100vw-2rem))] p-0 overflow-hidden"
         sideOffset={8}
+        collisionPadding={12}
       >
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="font-semibold text-sm">Notifications</h3>
@@ -164,27 +165,29 @@ export function NotificationBell() {
           </div>
         </div>
 
-        <ScrollArea className="max-h-80">
-          {loading && notifications.length === 0 ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">
-              Loading...
-            </div>
-          ) : notifications.length === 0 ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">
-              No notifications yet
-            </div>
-          ) : (
-            <div className="p-1">
-              {notifications.slice(0, 10).map((n) => (
-                <NotificationItem
-                  key={n.notification_id}
-                  notification={n}
-                  onRead={(id) => markAsRead([id])}
-                />
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+        <div className="overflow-hidden max-h-80">
+          <ScrollArea className="h-full max-h-80">
+            {loading && notifications.length === 0 ? (
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                Loading...
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="p-6 text-center text-sm text-muted-foreground">
+                No notifications yet
+              </div>
+            ) : (
+              <div className="p-1">
+                {notifications.slice(0, 10).map((n) => (
+                  <NotificationItem
+                    key={n.notification_id}
+                    notification={n}
+                    onRead={(id) => markAsRead([id])}
+                  />
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </div>
 
         {notifications.length > 10 && (
           <div className="p-2 border-t text-center">
