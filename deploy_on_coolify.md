@@ -46,7 +46,7 @@ This guide explains how to deploy the full HeritageGraph stack on [Coolify](http
 3. Add a new **Resource** → Select **Docker Compose**
 4. Choose **Git Repository** as the source
 5. Connect your HeritageGraph repository
-6. Set the **Docker Compose file path** to: `docker-compose.coolify.yml`
+6. Set the **Docker Compose file path** to: `docker-compose-coolify.yml`
 
 ---
 
@@ -61,8 +61,8 @@ In Coolify's **Environment Variables** section, add:
 | `POSTGRES_PASSWORD` | `your-secure-password-123` | Database password (generate a strong one) |
 | `DJANGO_SECRET_KEY` | `your-50-char-random-string` | Django secret key |
 | `NEXTAUTH_SECRET` | `your-32-char-random-string` | NextAuth session secret |
-| `NEXTAUTH_URL` | `https://app.heritagegraph.xyz` | Frontend public URL |
-| `NEXT_PUBLIC_API_URL` | `https://api.heritagegraph.xyz` | Backend API URL |
+| `NEXTAUTH_URL` | `http://heritagegraph.xyz` | Frontend public URL |
+| `NEXT_PUBLIC_API_URL` | `http://api.heritagegraph.xyz` | Backend API URL |
 
 ### Optional Variables (for Google OAuth)
 
@@ -78,7 +78,7 @@ In Coolify's **Environment Variables** section, add:
 | `POSTGRES_DB` | `heritage_db` | Database name |
 | `POSTGRES_USER` | `heritage_user` | Database user |
 | `ALLOWED_HOSTS` | `*` | Django allowed hosts (Coolify handles this) |
-| `CORS_ALLOWED_ORIGINS` | `https://app.heritagegraph.xyz` | CORS origins |
+| `CORS_ALLOWED_ORIGINS` | `http://heritagegraph.xyz` | CORS origins |
 
 ### Generate Secrets
 
@@ -102,23 +102,23 @@ Coolify manages domains through its UI, NOT through Docker labels. For each serv
 ### Frontend Service
 1. Click on **frontend** service in Coolify
 2. Go to **Network** → **Domains**
-3. Add: `https://app.heritagegraph.xyz` (or your domain)
+3. Add: `http://heritagegraph.xyz` (or your domain)
 4. Port: `3000`
-5. Enable **HTTPS** (Let's Encrypt auto-provisioned)
+5. Enable **HTTPS** if you have SSL configured
 
 ### Backend Service
 1. Click on **backend** service
 2. Go to **Network** → **Domains**
-3. Add: `https://api.heritagegraph.xyz` (or your domain)
+3. Add: `http://api.heritagegraph.xyz` (or your domain)
 4. Port: `8000`
-5. Enable **HTTPS**
+5. Enable **HTTPS** if you have SSL configured
 
 ### Landing Service (Optional)
 1. Click on **landing** service
 2. Go to **Network** → **Domains**
-3. Add: `https://heritagegraph.xyz` (or root domain)
+3. Add: `http://landing.heritagegraph.xyz` (or your preferred subdomain)
 4. Port: `3000`
-5. Enable **HTTPS**
+5. Enable **HTTPS** if you have SSL configured
 
 ---
 
@@ -166,13 +166,13 @@ docker exec -it <container_id> python manage.py createsuperuser
 
 ```bash
 # Check backend health
-curl https://api.heritagegraph.xyz/health/
+curl http://api.heritagegraph.xyz/health/
 
 # Check frontend
-curl https://app.heritagegraph.xyz
+curl http://heritagegraph.xyz
 
 # Check landing
-curl https://heritagegraph.xyz
+curl http://landing.heritagegraph.xyz
 ```
 
 ---
@@ -184,7 +184,6 @@ Point your domains to your Coolify VM's IP address:
 | Record Type | Name | Value |
 |-------------|------|-------|
 | A | `heritagegraph.xyz` | `<VM_IP>` |
-| A | `app.heritagegraph.xyz` | `<VM_IP>` |
 | A | `api.heritagegraph.xyz` | `<VM_IP>` |
 
 Or use a wildcard:
@@ -225,7 +224,7 @@ Or use a wildcard:
 ### CORS Errors
 
 1. Update `CORS_ALLOWED_ORIGINS` to include your actual frontend domain
-2. Include both `https://app.domain.com` and `https://www.app.domain.com` if needed
+2. Include both `http://heritagegraph.xyz` and `https://heritagegraph.xyz` if needed
 
 ---
 
