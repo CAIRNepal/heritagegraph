@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { IconDotsVertical, IconLogout, IconUserCircle } from '@tabler/icons-react';
+import { IconDotsVertical, IconLogout, IconUserCircle, IconMedal } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { SimpleRankAvatar, tierConfig, TierType } from '@/components/rank-avatar';
 
 /**
  * Standalone auth component — works anywhere (landing page, dashboard header,
@@ -47,6 +48,10 @@ export default function AuthSection() {
     }
   }, [status, session]);
 
+  // Mock user tier - replace with API call to fetch actual tier
+  const [userTier] = useState<TierType>('scholar');
+  const tierInfo = tierConfig[userTier];
+
   if (!session) {
     return (
       <Button size="sm" onClick={() => signIn('google')}>
@@ -67,28 +72,38 @@ export default function AuthSection() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2 px-2">
-          <Avatar className="h-7 w-7 rounded-lg grayscale">
-            <AvatarImage src="/avatars/shadcn.jpg" alt={userName} />
-            <AvatarFallback className="rounded-lg text-xs">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden sm:inline truncate max-w-[120px] text-sm font-medium">
-            {userName}
-          </span>
+          <SimpleRankAvatar
+            src="/avatars/shadcn.jpg"
+            fallback={initials}
+            tier={userTier}
+            size="sm"
+          />
+          <div className="hidden sm:flex flex-col items-start">
+            <span className="truncate max-w-[120px] text-sm font-medium leading-tight">
+              {userName}
+            </span>
+            <span className={`text-[10px] font-medium leading-tight ${tierInfo.ringClass.replace('ring-', 'text-').replace(' dark:ring-', ' dark:text-')}`}>
+              {tierInfo.name}
+            </span>
+          </div>
           <IconDotsVertical className="h-4 w-4 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 rounded-lg" align="end" sideOffset={4}>
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
-            <Avatar className="h-8 w-8 rounded-lg">
-              <AvatarImage src="/avatars/shadcn.jpg" alt={userName} />
-              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
-            </Avatar>
+            <SimpleRankAvatar
+              src="/avatars/shadcn.jpg"
+              fallback={initials}
+              tier={userTier}
+              size="md"
+            />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{userName}</span>
               <span className="text-muted-foreground truncate text-xs">{userEmail}</span>
+              <span className={`text-xs font-medium ${tierInfo.ringClass.replace('ring-', 'text-').replace(' dark:ring-', ' dark:text-')}`}>
+                {tierInfo.name}
+              </span>
             </div>
           </div>
         </DropdownMenuLabel>
@@ -107,6 +122,12 @@ export default function AuthSection() {
             >
               <IconUserCircle className="h-4 w-4" />
               View Profile
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/dashboard/progression" className="flex items-center gap-2">
+              <IconMedal className="h-4 w-4" />
+              Progression
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>

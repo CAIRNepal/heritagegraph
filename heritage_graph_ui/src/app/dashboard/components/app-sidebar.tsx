@@ -36,6 +36,8 @@ import {
   IconDashboard,
   IconGraph,
   IconQrcode,
+  IconMedal,
+  IconInfoCircle,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -354,9 +356,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           { title: 'Dashboard', url: '/dashboard', icon: IconLayoutDashboard },
           { title: 'Graph Visualization', url: '/dashboard/graphview', icon: IconGraph },
           { title: 'Contribute', url: '/dashboard/contribute', icon: IconPlus },
+          { title: 'Progression', url: '/dashboard/progression', icon: IconMedal },
           { title: 'Leaderboard', url: '/dashboard/leaderboard', icon: IconTrophy },
           { title: 'Notifications', url: '/dashboard/notification', icon: IconBell },
           { title: 'Team', url: '/dashboard/team', icon: IconUsersGroup },
+          { title: 'About', url: '/dashboard/about', icon: IconInfoCircle },
         ]} />
 
         <NavMain navtitle="Knowledgebase" items={data.navKnowledgebase} />

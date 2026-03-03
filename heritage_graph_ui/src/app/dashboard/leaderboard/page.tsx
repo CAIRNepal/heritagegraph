@@ -15,6 +15,7 @@ import {
 import {
   Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious,
 } from '@/components/ui/pagination';
+import { SimpleRankAvatar, type TierType } from '@/components/rank-avatar';
 import { cn } from '@/lib/utils';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
@@ -65,6 +66,15 @@ function rankBadge(rank: number) {
   if (rank === 2) return 'bg-gray-100 text-gray-700 dark:bg-gray-800/40 dark:text-gray-300 border-gray-300';
   if (rank === 3) return 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 border-amber-300';
   return 'bg-muted text-muted-foreground border-border';
+}
+
+/* ── Determine tier based on score ── */
+function getTierFromScore(score: number): TierType {
+  if (score >= 4000) return 'grandkeeper';
+  if (score >= 2500) return 'archivist';
+  if (score >= 1000) return 'curator';
+  if (score >= 300) return 'scholar';
+  return 'apprentice';
 }
 
 export default function LeaderboardPage() {
@@ -322,22 +332,12 @@ export default function LeaderboardPage() {
                           {/* Contributor */}
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9 border">
-                                {entry.profile_image && (
-                                  <AvatarImage
-                                    src={entry.profile_image}
-                                    alt={entry.username}
-                                  />
-                                )}
-                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-sky-500 text-white text-xs font-bold">
-                                  {(entry.full_name || entry.username)
-                                    .split(' ')
-                                    .map((w) => w[0])
-                                    .join('')
-                                    .toUpperCase()
-                                    .slice(0, 2)}
-                                </AvatarFallback>
-                              </Avatar>
+                              <SimpleRankAvatar
+                                src={entry.profile_image}
+                                name={entry.full_name || entry.username}
+                                tier={getTierFromScore(entry.score)}
+                                size="sm"
+                              />
                               <div className="min-w-0">
                                 <p className="font-medium truncate">
                                   {entry.full_name || entry.username}

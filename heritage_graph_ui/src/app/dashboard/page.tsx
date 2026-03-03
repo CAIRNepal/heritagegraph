@@ -11,6 +11,11 @@ import {
   personTableConfig,
 } from '@/components/generic-data-table';
 import {
+  ProgressionWidgetFull,
+  LeaderboardPreview,
+  MotivationCard,
+} from '@/components/progression-widgets';
+import {
   IconPlus,
   IconBuildingCommunity,
   IconUser,
@@ -26,6 +31,7 @@ import {
   IconBooks,
   IconUsers,
   IconGraph,
+  IconMedal,
 } from '@tabler/icons-react';
 
 /* ── animation variants (identical to landing page) ── */
@@ -72,11 +78,11 @@ const quickActions = [
     gradient: 'from-blue-600 to-cyan-500',
   },
   {
-    title: 'Review Queue',
-    desc: 'Curate pending submissions.',
-    icon: IconShield,
-    href: '/dashboard/curation/review',
-    gradient: 'from-sky-500 to-blue-500',
+    title: 'Progression',
+    desc: 'Track your ranks, seals & achievements.',
+    icon: IconMedal,
+    href: '/dashboard/progression',
+    gradient: 'from-amber-500 to-yellow-500',
   },
 ];
 
@@ -222,6 +228,33 @@ export default function Page() {
               </Link>
             </motion.div>
           ))}
+        </div>
+      </motion.div>
+
+      {/* ── Your Progress & Leaderboard (side by side on desktop) ── */}
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={staggerContainer}
+      >
+        <motion.h2
+          variants={fadeInUp}
+          className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100"
+        >
+          Your{' '}
+          <span className="text-transparent bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text">
+            Progress
+          </span>
+        </motion.h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <motion.div variants={scaleIn} className="lg:col-span-2">
+            <ProgressionWidgetFull />
+          </motion.div>
+          <motion.div variants={scaleIn} className="space-y-6">
+            <LeaderboardPreview />
+            <MotivationCard />
+          </motion.div>
         </div>
       </motion.div>
 

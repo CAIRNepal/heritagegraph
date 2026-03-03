@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import AuthButtons from '@/components/AuthButtons';
 import { NotificationBell } from '@/components/notification-bell';
 import { Toaster } from '@/components/ui/sonner';
+import { UserProgressBadge } from '@/components/progression-widgets';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Github, Mail, ExternalLink } from 'lucide-react';
@@ -36,6 +37,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <SiteHeader />
 
           <div className="ml-auto flex items-center gap-3 flex-shrink-0">
+            <UserProgressBadge />
             <NotificationBell />
             <AuthButtons />
             <ThemeToggle />
