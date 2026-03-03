@@ -523,6 +523,37 @@ export function GenericDataTable<TData extends { id: number | string }>({
     </div>
   );
 
+  const renderHeader = () => {
+    if (config.showHeader === false || (!config.title && !config.description && !config.addAction)) {
+      return null;
+    }
+
+    return (
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 lg:px-6 pb-4">
+        <div>
+          {config.title && (
+            <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+              {config.title}
+            </h2>
+          )}
+          {config.description && (
+            <p className="text-muted-foreground text-sm mt-1">
+              {config.description}
+            </p>
+          )}
+        </div>
+        {config.addAction && (
+          <Link href={config.addAction.href}>
+            <Button size="sm">
+              <IconPlus className="h-4 w-4 mr-1" />
+              {config.addAction.label}
+            </Button>
+          </Link>
+        )}
+      </div>
+    );
+  };
+
   const renderToolbar = () => (
     <div className="flex items-center justify-between px-4 lg:px-6">
       <div className="flex-1" />
@@ -573,10 +604,12 @@ export function GenericDataTable<TData extends { id: number | string }>({
   // Render with or without tabs
   if (config.showTabs !== false) {
     return (
-      <Tabs
-        defaultValue="all"
-        className="w-full flex-col justify-start gap-6"
-      >
+      <div className="w-full flex flex-col gap-4">
+        {renderHeader()}
+        <Tabs
+          defaultValue="all"
+          className="w-full flex-col justify-start gap-6"
+        >
         <div className="flex items-center justify-between px-4 lg:px-6">
           <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
             <TabsTrigger value="all">All</TabsTrigger>
@@ -668,13 +701,15 @@ export function GenericDataTable<TData extends { id: number | string }>({
           {renderTable()}
           {renderPagination()}
         </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     );
   }
 
   // Simple view without tabs
   return (
     <div className="w-full flex flex-col gap-4">
+      {renderHeader()}
       {renderToolbar()}
       {renderTable()}
       {renderPagination()}

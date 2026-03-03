@@ -840,6 +840,8 @@ export const personTableConfig: DataTableConfig<PersonRecord> = {
   dataKey: 'results',
   viewBasePath: '/dashboard/knowledge/person',
   title: 'Persons',
+  description: 'Browse historical and cultural figures in the knowledge base.',
+  showHeader: true,
   addAction: {
     label: 'Add Person',
     href: '/dashboard/contribute/person',
@@ -852,6 +854,8 @@ export const locationTableConfig: DataTableConfig<LocationRecord> = {
   dataKey: 'results',
   viewBasePath: '/dashboard/knowledge/location',
   title: 'Locations',
+  description: 'Browse heritage sites and cultural locations.',
+  showHeader: true,
   addAction: {
     label: 'Add Location',
     href: '/dashboard/contribute/location',
@@ -864,6 +868,8 @@ export const eventTableConfig: DataTableConfig<EventRecord> = {
   dataKey: 'results',
   viewBasePath: '/dashboard/knowledge/event',
   title: 'Events',
+  description: 'Browse cultural events, festivals, and historical occurrences.',
+  showHeader: true,
   addAction: {
     label: 'Add Event',
     href: '/dashboard/contribute/event',
@@ -876,6 +882,8 @@ export const traditionTableConfig: DataTableConfig<TraditionRecord> = {
   dataKey: 'results',
   viewBasePath: '/dashboard/knowledge/tradition',
   title: 'Traditions',
+  description: 'Browse cultural practices and intangible heritage traditions.',
+  showHeader: true,
   addAction: {
     label: 'Add Tradition',
     href: '/dashboard/contribute/tradition',
@@ -888,6 +896,8 @@ export const culturalEntityTableConfig: DataTableConfig<CulturalEntityRecord> = 
   dataKey: 'results',
   viewBasePath: '/dashboard/knowledge/entity',
   title: 'Cultural Entities',
+  description: 'Browse contributed cultural entities — monuments, festivals, rituals, traditions, and artifacts.',
+  showHeader: true,
   addAction: {
     label: 'Add Entity',
     href: '/dashboard/contribute',
@@ -900,6 +910,8 @@ export const sourceTableConfig: DataTableConfig<SourceRecord> = {
   dataKey: 'results',
   viewBasePath: '/dashboard/knowledge/source',
   title: 'Sources',
+  description: 'Browse documentary sources, manuscripts, and reference materials.',
+  showHeader: true,
   addAction: {
     label: 'Add Source',
     href: '/dashboard/contribute/source',
@@ -912,6 +924,8 @@ export const historicalPeriodTableConfig: DataTableConfig<HistoricalPeriodRecord
   dataKey: 'results',
   viewBasePath: '/dashboard/knowledge/period',
   title: 'Historical Periods',
+  description: 'Browse historical eras and time periods.',
+  showHeader: true,
   addAction: {
     label: 'Add Period',
     href: '/dashboard/contribute/period',

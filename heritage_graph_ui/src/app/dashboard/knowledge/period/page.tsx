@@ -1,10 +1,8 @@
 "use client";
 
-import OntologyDataTable from "@/components/ontology-data-table";
-import { getOntologyClass } from "@/lib/ontology";
+import { GenericDataTable, historicalPeriodTableConfig } from "@/components/generic-data-table";
 
 export default function PeriodKnowledgePage() {
-  const cls = getOntologyClass("period")!;
   return (
     <div className="space-y-0">
       <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">

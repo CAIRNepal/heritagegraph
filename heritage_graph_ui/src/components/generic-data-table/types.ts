@@ -18,6 +18,10 @@ export interface DataTableConfig<TData> {
   idField?: keyof TData;
   /** Title to display in the table header */
   title?: string;
+  /** Description to display below title */
+  description?: string;
+  /** Whether to show the header section (title, description, add button) */
+  showHeader?: boolean;
   /** Whether to show tabs (All, Pending, Approved, etc.) */
   showTabs?: boolean;
   /** Custom empty state message */

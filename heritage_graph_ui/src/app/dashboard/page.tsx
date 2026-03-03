@@ -349,6 +349,7 @@ export default function Page() {
               ...personTableConfig,
               showTabs: false,
               enableDragDrop: false,
+              showHeader: false,
             }}
           />
         </div>
