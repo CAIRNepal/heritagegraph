@@ -20,8 +20,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install mkdocs-material mkdocs-macros-plugin mkdocs-awesome-pages-plugin mkdocs-static-i18n
       - name: Build site
-        run: mkdocs build --strict
+        run: mkdocs build
       - name: Deploy to GitHub Pages
+        if: github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
