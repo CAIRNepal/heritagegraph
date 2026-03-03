@@ -4,10 +4,7 @@ import { GenericDataTable, personTableConfig } from '@/components/generic-data-t
 import { Leaderboard } from '../../components/leaderboard-card';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
-
-const fadeInUp = { hidden: { opacity: 0, y: 60 }, show: { opacity: 1, y: 0, transition: { duration: 0.8 } } };
-const staggerContainer = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.3 } } };
-const glassCard = 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg';
+import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 
 export default function ContributorsPage() {
   return (

@@ -14,10 +14,7 @@ import { toast } from 'sonner';
 import { Building2, Globe, MapPin, Users, Plus, Search, LogIn, LogOut, CheckCircle2, Crown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
-
-const fadeInUp = { hidden: { opacity: 0, y: 60 }, show: { opacity: 1, y: 0, transition: { duration: 0.8 } } };
-const staggerContainer = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.3 } } };
-const glassCard = 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg';
+import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 
 type CustomSession = { accessToken?: string; user?: { username?: string; name?: string | null; email?: string | null } };
 type Organization = {

@@ -5,22 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { IconSparkles, IconArrowRight } from "@tabler/icons-react";
-
-/* ── animation variants (matches landing page & dashboard home) ── */
-const fadeInUp = {
-  hidden: { opacity: 0, y: 60 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.8 } },
-};
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.3 } },
-};
-const scaleIn = {
-  hidden: { scale: 0.8, opacity: 0 },
-  show: { scale: 1, opacity: 1, transition: { duration: 0.6 } },
-};
-const glassCard =
-  "bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg";
+import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 
 interface ContributionIntent {
   key: string;

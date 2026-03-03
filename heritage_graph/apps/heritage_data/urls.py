@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+from .i18n_views import locale_info, convert_date
 
 # Create router
 router = DefaultRouter()
@@ -144,4 +145,8 @@ urlpatterns = [
         views.UserProfileImageView.as_view(),
         name="user-profile-image",
     ),
+
+    # ── i18n / Bikram Sambat endpoints ──────────────────────────────────────
+    path("api/i18n/locale-info/", locale_info, name="locale-info"),
+    path("api/i18n/convert-date/", convert_date, name="convert-date"),
 ]

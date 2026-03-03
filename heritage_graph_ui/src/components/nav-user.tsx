@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { IconDotsVertical, IconLogout, IconUserCircle } from '@tabler/icons-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,6 +47,7 @@ export function NavUser({
     isMobile = false;
   }
   const { data: session, status } = useSession();
+  const t = useTranslations('user');
   console.log("HRRRRRE")
   console.log(session?.accessToken)
 
@@ -79,12 +81,6 @@ export function NavUser({
       initUser();
     }
   }, [status, session, user]);
-  // console.log("==========================")
-  // {console.log(user)}
-  // console.log("==========================")
-
-
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -144,7 +140,7 @@ export function NavUser({
               <DropdownMenuItem asChild>
                 <Link href="/dashboard" className="flex items-center gap-2">
                   <IconUserCircle />
-                  Home
+                  {t('home')}
                 </Link>
               </DropdownMenuItem>
 
@@ -154,7 +150,7 @@ export function NavUser({
                   className="flex items-center gap-2"
                 >
                   <IconUserCircle />
-                  View Profile
+                  {t('viewProfile')}
                 </Link>
               </DropdownMenuItem>
 
@@ -162,7 +158,7 @@ export function NavUser({
                 <Link href="/dashboard/account" 
                 className="flex items-center gap-2">
                   <IconUserCircle />
-                  Account Settings
+                  {t('accountSettings')}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -176,7 +172,7 @@ export function NavUser({
               }}
             >
               <IconLogout />
-              Sign out
+              {t('signOut')}
             </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>

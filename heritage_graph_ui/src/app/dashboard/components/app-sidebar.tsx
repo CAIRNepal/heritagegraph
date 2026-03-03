@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import Image from "next/image";
+import { useTranslations } from 'next-intl';
 
 import {
   IconCamera,
@@ -320,6 +321,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const t = useTranslations('nav');
 
 
   return (
@@ -352,23 +354,45 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         {/* Quick-access items previously in the top header */}
-        <NavMain navtitle="Navigation" items={[
-          { title: 'Dashboard', url: '/dashboard', icon: IconLayoutDashboard },
-          { title: 'Graph Visualization', url: '/dashboard/graphview', icon: IconGraph },
-          { title: 'Contribute', url: '/dashboard/contribute', icon: IconPlus },
-          { title: 'Progression', url: '/dashboard/progression', icon: IconMedal },
-          { title: 'Leaderboard', url: '/dashboard/leaderboard', icon: IconTrophy },
-          { title: 'Notifications', url: '/dashboard/notification', icon: IconBell },
-          { title: 'Team', url: '/dashboard/team', icon: IconUsersGroup },
-          { title: 'About', url: '/dashboard/about', icon: IconInfoCircle },
+        <NavMain navtitle={t('navigation')} items={[
+          { title: t('dashboard'), url: '/dashboard', icon: IconLayoutDashboard },
+          { title: t('graphVisualization'), url: '/dashboard/graphview', icon: IconGraph },
+          { title: t('contribute'), url: '/dashboard/contribute', icon: IconPlus },
+          { title: t('progression'), url: '/dashboard/progression', icon: IconMedal },
+          { title: t('leaderboard'), url: '/dashboard/leaderboard', icon: IconTrophy },
+          { title: t('notifications'), url: '/dashboard/notification', icon: IconBell },
+          { title: t('team'), url: '/dashboard/team', icon: IconUsersGroup },
+          { title: t('about'), url: '/dashboard/about', icon: IconInfoCircle },
         ]} />
 
-        <NavMain navtitle="Knowledgebase" items={data.navKnowledgebase} />
-        <NavMain navtitle="Curation" items={data.navCuration} />
-        <NavMain navtitle="Community" items={data.navCommunity} />
-        {/* <NavDocuments items={data.navResources} /> */}
-        {/* <NavDocuments items={data.navAbout} /> */}
-        {/* <NavMain items={data.navSecondary}/> */}
+        <NavMain navtitle={t('knowledgebase')} items={[
+          { title: t('culturalEntity'), url: '/dashboard/knowledge/entity', icon: IconBuildingCommunity },
+          { title: t('person'), url: '/dashboard/knowledge/person', icon: IconUser },
+          { title: t('location'), url: '/dashboard/knowledge/location', icon: IconMapPin },
+          { title: t('event'), url: '/dashboard/knowledge/event', icon: IconCalendarEvent },
+          { title: t('historicalPeriod'), url: '/dashboard/knowledge/period', icon: IconClock },
+          { title: t('traditionPractice'), url: '/dashboard/knowledge/tradition', icon: IconFlame },
+          { title: t('source'), url: '/dashboard/knowledge/source', icon: IconInvoice },
+          { title: t('deity'), url: '/dashboard/knowledge/deity', icon: IconMoodSmile },
+          { title: t('guthi'), url: '/dashboard/knowledge/guthi', icon: IconHomeCog },
+          { title: t('structure'), url: '/dashboard/knowledge/structure', icon: IconBuildingArch },
+          { title: t('ritual'), url: '/dashboard/knowledge/ritual', icon: IconCandle },
+          { title: t('festival'), url: '/dashboard/knowledge/festival', icon: IconConfetti },
+          { title: t('iconography'), url: '/dashboard/knowledge/iconography', icon: IconPalette },
+          { title: t('monument'), url: '/dashboard/knowledge/monument', icon: IconColumns },
+        ]} />
+        <NavMain navtitle={t('curation')} items={[
+          { title: t('reviewerDashboard'), url: '/dashboard/curation/dashboard', icon: IconDashboard },
+          { title: t('reviewQueue'), url: '/dashboard/curation/review', icon: IconShield },
+          { title: t('conflicts'), url: '/dashboard/curation/conflicts', icon: IconScale },
+          { title: t('contributionsQueue'), url: '/dashboard/curation/contributions', icon: IconFileDescription },
+          { title: t('activityLog'), url: '/dashboard/curation/activity', icon: IconChartBar },
+          { title: t('qrContributions'), url: '/dashboard/curation/qr-contributions', icon: IconQrcode },
+        ]} />
+        <NavMain navtitle={t('community')} items={[
+          { title: t('contributors'), url: '/dashboard/community/contributors', icon: IconUsers },
+          { title: t('organizations'), url: '/dashboard/community/organizations', icon: IconBuilding },
+        ]} />
       </SidebarContent>
       {/* <AuthSection /> */}
     </Sidebar>

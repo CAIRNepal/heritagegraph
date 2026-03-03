@@ -433,27 +433,25 @@ export default function GraphViewPage() {
   }, [selectedInstance, instanceData]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* ── Header ── */}
       <motion.div
         initial="hidden"
         animate="show"
         variants={staggerContainer}
-        className={`relative overflow-hidden ${glassCard} p-6 md:p-8`}
+        className={`relative overflow-hidden ${glassCard} p-4 md:p-5`}
       >
         <div className={`absolute inset-0 ${heroGradient}`} />
-        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        <motion.div variants={fadeInUp} className="relative z-10 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="space-y-2">
-              <h1 className="text-2xl md:text-3xl font-black text-white">
+        <motion.div variants={fadeInUp} className="relative z-10 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="space-y-1">
+              <h1 className="text-xl md:text-2xl font-black text-white">
                 Heritage{' '}
                 <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">
                   Knowledge Graph
                 </span>
               </h1>
-              <p className="text-blue-100 max-w-2xl text-sm md:text-base leading-relaxed">
+              <p className="text-blue-100 max-w-2xl text-xs md:text-sm leading-relaxed">
                 {viewMode === 'ontology' ? (
                   <>
                     Ontology schema — {ontologyStats.classes} classes, {ontologyStats.relationships}{' '}
@@ -509,12 +507,12 @@ export default function GraphViewPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex flex-wrap gap-1.5">
             {viewMode === 'ontology'
               ? (['CIDOC-CRM', 'PROV-O', 'Getty AAT', 'GeoSPARQL', 'LinkML'] as const).map((t) => (
                   <span
                     key={t}
-                    className="px-2.5 py-0.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-xs font-medium text-white"
+                    className="px-2 py-0.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-[11px] font-medium text-white"
                   >
                     {t}
                   </span>
@@ -523,7 +521,7 @@ export default function GraphViewPage() {
                 Object.entries(instanceStats.byCategory).map(([cat, count]) => (
                   <span
                     key={cat}
-                    className="px-2.5 py-0.5 backdrop-blur-sm border border-white/30 rounded-full text-xs font-medium text-white inline-flex items-center gap-1"
+                    className="px-2 py-0.5 backdrop-blur-sm border border-white/30 rounded-full text-[11px] font-medium text-white inline-flex items-center gap-1"
                     style={{
                       backgroundColor: `${INSTANCE_CATEGORY_COLORS[cat as InstanceCategory]?.bg}40`,
                     }}
@@ -652,7 +650,7 @@ export default function GraphViewPage() {
       )}
 
       {/* ── Main Grid: Graph + Detail Panel ── */}
-      <div className="flex gap-4 h-[calc(100vh-360px)] min-h-[500px]">
+      <div className="flex gap-3 h-[calc(100vh-320px)] min-h-[400px]">
         {/* Graph canvas */}
         <div className={`flex-1 relative ${glassCard} overflow-hidden`}>
           {(!ready || instanceLoading) && (
