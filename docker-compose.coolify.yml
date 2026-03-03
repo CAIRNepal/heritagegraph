@@ -1,0 +1,190 @@
+# ================================================================
+# HeritageGraph Docker Compose - Coolify Deployment
+# ================================================================
+# This is a self-contained compose file for deploying to Coolify.
+# 
+# KEY DIFFERENCES FROM LOCAL DOCKER-COMPOSE:
+# - No Traefik service (Coolify provides its own reverse proxy)
+# - No Traefik labels (Coolify handles routing via its UI)
+# - Production-ready settings baked in
+# - Uses Coolify's network injection automatically
+#
+# COOLIFY SETUP:
+# 1. Create a new "Docker Compose" resource in Coolify
+# 2. Paste this file or point to this file in the repo
+# 3. Configure environment variables in Coolify UI
+# 4. Set domains for backend/frontend/landing in Coolify UI
+# ================================================================
+
+services:
+  # ---------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-heritage_db}
+      POSTGRES_USER: ${POSTGRES_USER:-heritage_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-heritage_user} -d ${POSTGRES_DB:-heritage_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Django REST Framework Backend
+  # ---------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    restart: always
+    environment:
+      # Django settings
+      DJANGO_ENV: production
+      DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
+      DEBUG: "False"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      # Database
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB:-heritage_db}
+      DB_USER: ${POSTGRES_USER:-heritage_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      # Google Auth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      # CORS - Set to your frontend domain
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://heritagegraph.org}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - backend-static:/app/staticfiles
+      - backend-media:/app/media
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Next.js Frontend (Main Application)
+  # ---------------------------------------------------------------
+  frontend:
+    build:
+      context: ./heritage_graph_ui
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: production
+      # API URL - must match your backend domain
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}
+      # NextAuth configuration
+      NEXTAUTH_URL: ${NEXTAUTH_URL:?NEXTAUTH_URL is required}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+      # Google OAuth (optional - omit for dev auth mode)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # Server binding
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Landing Page (Marketing Site)
+  # ---------------------------------------------------------------
+  landing:
+    build:
+      context: ./heritage_graph_landing
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      NODE_ENV: production
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# ================================================================
+# VOLUMES
+# ================================================================
+volumes:
+  postgres-data:
+    driver: local
+  backend-static:
+    driver: local
+  backend-media:
+    driver: local
+
+# ================================================================
+# NETWORKS (Coolify auto-injects its proxy network)
+# ================================================================
+# No explicit network needed - Coolify handles this automatically
