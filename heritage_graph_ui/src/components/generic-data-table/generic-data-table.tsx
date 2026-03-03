@@ -54,6 +54,12 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
@@ -529,27 +535,33 @@ export function GenericDataTable<TData extends { id: number | string }>({
     }
 
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 lg:px-6 pb-4">
-        <div>
-          {config.title && (
-            <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-              {config.title}
-            </h2>
-          )}
-          {config.description && (
-            <p className="text-muted-foreground text-sm mt-1">
-              {config.description}
-            </p>
-          )}
-        </div>
-        {config.addAction && (
-          <Link href={config.addAction.href}>
-            <Button size="sm">
-              <IconPlus className="h-4 w-4 mr-1" />
-              {config.addAction.label}
-            </Button>
-          </Link>
-        )}
+      <div className="px-4 lg:px-6 pt-4">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                {config.title && (
+                  <CardTitle className="text-2xl font-bold">
+                    {config.title}
+                  </CardTitle>
+                )}
+                {config.description && (
+                  <CardDescription>
+                    {config.description}
+                  </CardDescription>
+                )}
+              </div>
+              {config.addAction && (
+                <Link href={config.addAction.href}>
+                  <Button size="sm">
+                    <IconPlus className="h-4 w-4 mr-1" />
+                    {config.addAction.label}
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </CardHeader>
+        </Card>
       </div>
     );
   };

@@ -19,6 +19,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole
 from .models import Organization, OrganizationMembership
 from .models import Notification, Reaction, Fork, Share
+from .models import PublicContribution
 from .serializers import *
 from .permissions import (
     IsContributorOrReadOnly, IsEditor, IsReviewerOrAdmin,
@@ -2086,3 +2087,135 @@ class EntityCommentViewSet(viewsets.ModelViewSet):
                 entity=entity,
                 link=f'/dashboard/knowledge/entity/view/{entity_id}',
             )
+
+
+# =====================================================================
+# PUBLIC CONTRIBUTION VIEWS (QR Scan Contributions)
+# =====================================================================
+
+class PublicContributionViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for public contributions submitted via QR code scans.
+    
+    - POST /data/public-contributions/ — Anyone can create (no auth required)
+    - GET /data/public-contributions/ — Authenticated reviewers can list
+    - GET /data/public-contributions/<id>/ — Reviewers can view details
+    - POST /data/public-contributions/<id>/review/ — Reviewers can approve/reject
+    """
+    queryset = PublicContribution.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['status', 'contribution_type', 'submitted_via']
+    search_fields = ['entity_name', 'content', 'contributor_name']
+    ordering_fields = ['created_at', 'status']
+    ordering = ['-created_at']
+    
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return PublicContributionCreateSerializer
+        elif self.action == 'review':
+            return PublicContributionReviewSerializer
+        return PublicContributionListSerializer
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            # Anyone can submit a public contribution (QR scan)
+            return [AllowAny()]
+        elif self.action in ['list', 'retrieve']:
+            # Authenticated users can view
+            return [IsAuthenticated()]
+        else:
+            # Review actions require staff or reviewer
+            return [IsAuthenticated(), IsReviewerOrAdmin()]
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filter by status if provided
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            queryset = queryset.filter(status=status_param)
+        
+        return queryset
+    
+    def create(self, request, *args, **kwargs):
+        """Create a public contribution (no authentication required)."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response(
+            {
+                'message': 'Thank you for your contribution!',
+                'id': str(serializer.instance.id),
+            },
+            status=status.HTTP_201_CREATED
+        )
+    
+    @action(detail=True, methods=['post'])
+    def review(self, request, pk=None):
+        """
+        Review (approve/reject/incorporate) a public contribution.
+        """
+        contribution = self.get_object()
+        
+        if contribution.status not in ['pending']:
+            return Response(
+                {'error': 'This contribution has already been reviewed.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        serializer = PublicContributionReviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        new_status = serializer.validated_data['status']
+        review_notes = serializer.validated_data.get('review_notes', '')
+        link_to_entity_id = serializer.validated_data.get('link_to_entity_id')
+        
+        # Update contribution status
+        contribution.status = new_status
+        contribution.reviewed_by = request.user
+        contribution.reviewed_at = timezone.now()
+        contribution.review_notes = review_notes
+        
+        # Optionally link to an entity
+        if link_to_entity_id and not contribution.entity:
+            try:
+                entity = CulturalEntity.objects.get(entity_id=link_to_entity_id)
+                contribution.entity = entity
+            except CulturalEntity.DoesNotExist:
+                pass
+        
+        contribution.save()
+        
+        return Response({
+            'message': f'Contribution has been {new_status}.',
+            'id': str(contribution.id),
+            'status': new_status,
+        })
+    
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
+        """Get statistics about public contributions."""
+        total = PublicContribution.objects.count()
+        pending = PublicContribution.objects.filter(status='pending').count()
+        approved = PublicContribution.objects.filter(status='approved').count()
+        rejected = PublicContribution.objects.filter(status='rejected').count()
+        incorporated = PublicContribution.objects.filter(status='incorporated').count()
+        
+        by_type = PublicContribution.objects.values('contribution_type').annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        by_source = PublicContribution.objects.values('submitted_via').annotate(
+            count=Count('id')
+        ).order_by('-count')
+        
+        return Response({
+            'total': total,
+            'pending': pending,
+            'approved': approved,
+            'rejected': rejected,
+            'incorporated': incorporated,
+            'by_type': list(by_type),
+            'by_source': list(by_source),
+        })

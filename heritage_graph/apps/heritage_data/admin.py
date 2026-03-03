@@ -14,6 +14,7 @@ from .models import (
     Notification,
     Organization,
     OrganizationMembership,
+    PublicContribution,
     Reaction,
     ReviewDecision,
     ReviewerRole,
@@ -635,6 +636,57 @@ class ActivityLogAdmin(admin.ModelAdmin):
     def description_short(self, obj):
         return (obj.description[:60] + "...") if len(obj.description) > 60 else obj.description
     description_short.short_description = "Description"
+
+
+# =====================================================================
+# PUBLIC CONTRIBUTION (QR SCAN)
+# =====================================================================
+
+@admin.register(PublicContribution)
+class PublicContributionAdmin(admin.ModelAdmin):
+    list_display = (
+        "id", "entity_name", "contribution_type", "contributor_name",
+        "status", "submitted_via", "created_at"
+    )
+    list_filter = ("status", "contribution_type", "submitted_via", "created_at")
+    search_fields = ("entity_name", "content", "contributor_name", "contributor_email")
+    readonly_fields = ("id", "created_at", "updated_at")
+    ordering = ("-created_at",)
+    date_hierarchy = "created_at"
+    
+    fieldsets = (
+        ("Entity Info", {
+            "fields": ("entity", "entity_reference_id", "entity_name"),
+        }),
+        ("Contribution", {
+            "fields": ("contribution_type", "content", "source_description"),
+        }),
+        ("Contributor", {
+            "fields": ("contributor_name", "contributor_email", "contributor_phone"),
+        }),
+        ("Submission Context", {
+            "fields": ("submitted_via", "latitude", "longitude"),
+        }),
+        ("Review", {
+            "fields": ("status", "reviewed_by", "reviewed_at", "review_notes"),
+        }),
+        ("Metadata", {
+            "fields": ("id", "created_at", "updated_at"),
+            "classes": ("collapse",),
+        }),
+    )
+    
+    actions = ["mark_approved", "mark_rejected"]
+    
+    @admin.action(description="Mark selected as approved")
+    def mark_approved(self, request, queryset):
+        from django.utils import timezone
+        queryset.update(status='approved', reviewed_by=request.user, reviewed_at=timezone.now())
+    
+    @admin.action(description="Mark selected as rejected")
+    def mark_rejected(self, request, queryset):
+        from django.utils import timezone
+        queryset.update(status='rejected', reviewed_by=request.user, reviewed_at=timezone.now())
 
 
 # =====================================================================

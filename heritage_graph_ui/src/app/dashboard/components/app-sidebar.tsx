@@ -35,6 +35,7 @@ import {
   IconAlertTriangle,
   IconDashboard,
   IconGraph,
+  IconQrcode,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -279,6 +280,11 @@ const data = {
       title: 'Activity Log',
       url: '/dashboard/curation/activity',
       icon: IconChartBar,
+    },
+    {
+      title: 'QR Contributions',
+      url: '/dashboard/curation/qr-contributions',
+      icon: IconQrcode,
     },
   ],
 

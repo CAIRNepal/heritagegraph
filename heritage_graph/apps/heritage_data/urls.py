@@ -23,6 +23,9 @@ router.register(r'reactions', views.ReactionViewSet, basename='reaction')
 router.register(r'forks', views.ForkViewSet, basename='fork')
 router.register(r'shares', views.ShareViewSet, basename='share')
 
+# Public contributions (QR code scans)
+router.register(r'public-contributions', views.PublicContributionViewSet, basename='publiccontribution')
+
 # router.register(r'submissions', views.SubmissionViewSet, basename='submission')
 # router.register(r'comments', views.CommentViewSet, basename='comment')
 

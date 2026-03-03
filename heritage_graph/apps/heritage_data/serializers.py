@@ -13,6 +13,7 @@ from .models import (
     SubmissionEditSuggestion,
     SubmissionVersion,
     UserProfile,
+    PublicContribution,
 )
 from rest_framework import serializers
 from django.contrib.auth.models import User
@@ -921,3 +922,121 @@ class CommentWithReactionsSerializer(serializers.ModelSerializer):
             'downvotes': downvotes,
             'user_reaction': user_reaction,
         }
+
+
+# =====================================================================
+# PUBLIC CONTRIBUTION SERIALIZERS (QR Scan Contributions)
+# =====================================================================
+
+class PublicContributionCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating public contributions via QR code scan.
+    Does not require authentication.
+    """
+    entity_id = serializers.CharField(
+        required=False, 
+        allow_blank=True,
+        help_text="UUID of linked entity (if exists)"
+    )
+    
+    class Meta:
+        model = PublicContribution
+        fields = [
+            'entity_id',
+            'entity_name',
+            'contribution_type',
+            'content',
+            'contributor_name',
+            'contributor_email',
+            'contributor_phone',
+            'source_description',
+            'submitted_via',
+            'latitude',
+            'longitude',
+        ]
+    
+    def validate_entity_id(self, value):
+        """Try to link to an existing entity if provided."""
+        if value:
+            try:
+                # Store for use in create()
+                return value
+            except Exception:
+                pass
+        return value
+    
+    def create(self, validated_data):
+        entity_id = validated_data.pop('entity_id', None)
+        
+        # Try to link to existing entity
+        if entity_id:
+            try:
+                entity = CulturalEntity.objects.get(entity_id=entity_id)
+                validated_data['entity'] = entity
+            except CulturalEntity.DoesNotExist:
+                # Store the reference ID for manual linking later
+                validated_data['entity_reference_id'] = entity_id
+        
+        return super().create(validated_data)
+
+
+class PublicContributionListSerializer(serializers.ModelSerializer):
+    """Serializer for listing/viewing public contributions (for reviewers)."""
+    entity_name_display = serializers.SerializerMethodField()
+    contribution_type_display = serializers.CharField(
+        source='get_contribution_type_display', 
+        read_only=True
+    )
+    status_display = serializers.CharField(
+        source='get_status_display', 
+        read_only=True
+    )
+    reviewed_by_username = serializers.CharField(
+        source='reviewed_by.username', 
+        read_only=True, 
+        allow_null=True
+    )
+    
+    class Meta:
+        model = PublicContribution
+        fields = [
+            'id',
+            'entity',
+            'entity_reference_id',
+            'entity_name',
+            'entity_name_display',
+            'contribution_type',
+            'contribution_type_display',
+            'content',
+            'contributor_name',
+            'contributor_email',
+            'source_description',
+            'submitted_via',
+            'latitude',
+            'longitude',
+            'status',
+            'status_display',
+            'reviewed_by',
+            'reviewed_by_username',
+            'reviewed_at',
+            'review_notes',
+            'created_at',
+            'updated_at',
+        ]
+    
+    def get_entity_name_display(self, obj):
+        if obj.entity:
+            return obj.entity.name
+        return obj.entity_name
+
+
+class PublicContributionReviewSerializer(serializers.Serializer):
+    """Serializer for reviewing (approving/rejecting) a public contribution."""
+    status = serializers.ChoiceField(
+        choices=[('approved', 'Approved'), ('rejected', 'Rejected'), ('incorporated', 'Incorporated')]
+    )
+    review_notes = serializers.CharField(required=False, allow_blank=True)
+    link_to_entity_id = serializers.UUIDField(
+        required=False,
+        help_text="Optionally link to an existing entity when incorporating"
+    )

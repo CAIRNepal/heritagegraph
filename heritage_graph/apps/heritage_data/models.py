@@ -1128,6 +1128,136 @@ class Fork(models.Model):
 # SHARE TRACKING MODEL
 # =====================================================================
 
+# =====================================================================
+# PUBLIC CONTRIBUTION MODEL (QR SCAN CONTRIBUTIONS)
+# =====================================================================
+
+class PublicContribution(models.Model):
+    """
+    Stores anonymous contributions from visitors who scan QR codes at heritage sites.
+    These go into a review queue where curators can verify and incorporate them
+    into the knowledge base.
+    """
+    STATUS_CHOICES = [
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('incorporated', 'Incorporated'),  # Added to an entity
+    ]
+    
+    CONTRIBUTION_TYPE_CHOICES = [
+        ('history', 'Historical Information'),
+        ('story', 'Story or Legend'),
+        ('tradition', 'Cultural Practice/Tradition'),
+        ('memory', 'Personal Memory'),
+        ('photo', 'Photo Description'),
+        ('correction', 'Correction/Update'),
+        ('other', 'Other Information'),
+    ]
+    
+    SUBMISSION_SOURCE_CHOICES = [
+        ('qr_scan', 'QR Code Scan'),
+        ('web_form', 'Web Form'),
+        ('mobile_app', 'Mobile App'),
+        ('field_survey', 'Field Survey'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Link to existing entity (optional - may be for a new untracked site)
+    entity = models.ForeignKey(
+        CulturalEntity, 
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='public_contributions',
+        help_text="The entity this contribution is about (if exists in system)"
+    )
+    
+    # Entity identification (for cases where entity doesn't exist yet)
+    entity_reference_id = models.CharField(
+        max_length=255, blank=True,
+        help_text="External ID reference (from QR code) if entity not in system"
+    )
+    entity_name = models.CharField(
+        max_length=255,
+        help_text="Name/label of the heritage site from QR code"
+    )
+    
+    # Contribution content
+    contribution_type = models.CharField(
+        max_length=20, 
+        choices=CONTRIBUTION_TYPE_CHOICES,
+        default='other'
+    )
+    content = models.TextField(
+        help_text="The actual contribution content"
+    )
+    
+    # Contributor info (optional - for follow-up if needed)
+    contributor_name = models.CharField(max_length=255, blank=True, default='Anonymous')
+    contributor_email = models.EmailField(blank=True, null=True)
+    contributor_phone = models.CharField(max_length=20, blank=True, null=True)
+    
+    # Source/provenance
+    source_description = models.TextField(
+        blank=True,
+        help_text="How the contributor knows this information"
+    )
+    submitted_via = models.CharField(
+        max_length=20,
+        choices=SUBMISSION_SOURCE_CHOICES,
+        default='qr_scan'
+    )
+    
+    # Location context
+    latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, 
+        null=True, blank=True,
+        help_text="GPS latitude where contribution was made"
+    )
+    longitude = models.DecimalField(
+        max_digits=9, decimal_places=6,
+        null=True, blank=True,
+        help_text="GPS longitude where contribution was made"
+    )
+    
+    # Review workflow
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='reviewed_public_contributions'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_notes = models.TextField(
+        blank=True,
+        help_text="Notes from reviewer"
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'public_contributions'
+        verbose_name = 'Public Contribution'
+        verbose_name_plural = 'Public Contributions'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['entity', 'created_at']),
+            models.Index(fields=['contribution_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.contribution_type}: {self.entity_name} by {self.contributor_name}"
+
+
 class Share(models.Model):
     """Tracks shares of entities/comments to external platforms."""
     PLATFORM_CHOICES = [

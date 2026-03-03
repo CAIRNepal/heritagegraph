@@ -156,7 +156,7 @@ export default function ScanContributePage() {
     
     try {
       // Submit to the public contributions endpoint
-      const res = await fetch(`${API_BASE_URL}/data/public-contributions/`, {
+      const res = await fetch(`${API_BASE_URL}/data/api/public-contributions/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
