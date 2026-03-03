@@ -61,7 +61,7 @@ Once running, access:
 | Frontend | http://frontend.localhost | Main application UI |
 | Backend API | http://backend.localhost/api | REST API |
 | API Docs | http://backend.localhost/docs | Swagger documentation |
-| Keycloak | http://keycloak.localhost | Identity management |
+| Authentication | NextAuth (Google OAuth in production) | Authentication provider used by the frontend and backend |
 | Traefik | http://traefik.localhost:8080 | Reverse proxy dashboard |
 
 > 📖 **Full deployment guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production setup, SSL, backups, and more.
@@ -134,10 +134,10 @@ Run the backend:
 python manage.py runserver
 ```
 
-Access the backend at:
+Access the backend at (development):
 
-- API → [http://37.27.182.103:8000](http://37.27.182.103:8000)
-- Admin dashboard → [http://37.27.182.103:8000/admin](http://37.27.182.103:8000/admin) (use superuser credentials)
+- API → `http://backend.localhost/api` or `http://localhost:8000`
+- Admin dashboard → `http://backend.localhost/admin` or `http://localhost:8000/admin` (use superuser credentials)
 
 ---
 
