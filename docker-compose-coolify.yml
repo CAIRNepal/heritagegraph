@@ -63,6 +63,7 @@ services:
     restart: always
     environment:
       # Django settings
+      PYTHONPATH: /
       DJANGO_ENV: production
       DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
       DEBUG: "False"

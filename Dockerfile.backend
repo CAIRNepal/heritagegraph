@@ -41,6 +41,10 @@ RUN useradd -m -u 1000 django
 # Set working directory
 WORKDIR /app
 
+# Add parent directory to PYTHONPATH so 'heritage_graph.settings' resolves
+# (WORKDIR /app IS the heritage_graph package; Python needs '/' to find it)
+ENV PYTHONPATH=/
+
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
