@@ -152,7 +152,7 @@ Access the backend at:
 
 This project includes comprehensive documentation designed to help both human developers and AI coding assistants work effectively:
 
-**Documentation site (planned):** A consolidated MkDocs site lives in the `docs/` folder and will be published to GitHub Pages. See `docs/` for source content.
+**Documentation site:** A consolidated MkDocs site lives in the `docs/` folder and is configured to publish to GitHub Pages via CI. Visit the published site at: https://cairnepal.github.io/heritagegraph/ (update if your org URL differs).
 
 | Document | Purpose |
 |----------|---------|
