@@ -44,6 +44,11 @@ help:
 	@echo "    make frontend       Start Next.js     →  http://localhost:3000"
 	@echo "    make kill-ports     Kill processes on ports 8000 & 3000"
 	@echo ""
+	@echo "  \033[1mDOCS\033[0m"
+	@echo "    make docs-build     Build MkDocs site  →  ./site/"
+	@echo "    make docs-serve     Serve MkDocs (live) →  http://localhost:8001"
+	@echo "    make docs-clean     Remove generated ./site/"
+	@echo ""
 	@echo "  \033[1mDJANGO UTILS\033[0m"
 	@echo "    make migrate        Apply pending migrations"
 	@echo "    make migrations     Create new migration files"
@@ -105,6 +110,21 @@ backend: $(VENV_PY) ## Start Django dev server on http://localhost:8000
 
 frontend: ## Start Next.js dev server on http://localhost:3000
 	cd $(FRONTEND) && $(NODE_PATH) NEXT_PUBLIC_API_URL=http://localhost:8000 $(PNPM) dev
+
+# ================================================================
+# DOCS
+# ================================================================
+docs-build: $(VENV_PY) ## Build MkDocs site locally (output -> site/)
+	@echo "==> Building MkDocs site to ./site"
+	$(VENV_PY) -m mkdocs build
+
+docs-serve: $(VENV_PY) ## Serve MkDocs locally for live dev (http://localhost:8001)
+	@echo "==> Serving MkDocs (live) on http://localhost:8001"
+	$(VENV_PY) -m mkdocs serve -a 0.0.0.0:8001
+
+docs-clean: ## Remove generated site/ directory
+	@echo "==> Removing ./site directory"
+	rm -rf site/
 
 kill-ports: ## Kill any process on ports 8000 and 3000
 	@lsof -ti:8000 | xargs kill -9 2>/dev/null && echo "  ✓ port 8000 cleared" || echo "  — port 8000 was free"

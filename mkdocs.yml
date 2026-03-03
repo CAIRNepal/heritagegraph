@@ -8,32 +8,63 @@ theme:
   language: en
   logo: images/logo.png
   favicon: images/favicon.ico
+  custom_dir: overrides
 plugins:
   - search
-  - mkdocs_static_i18n:
-      default_language: en
+  - i18n:
       languages:
-        en: English
-        ne: नेपाली
+        - locale: en
+          name: English
+          default: true
+          build: true
+        - locale: ne
+          name: नेपाली
+          build: true
   - awesome-pages
 nav:
-  - Home: index.md
+  - Home: en/index.md
   - Getting Started:
-      - Overview: getting-started/index.md
-      - Quickstart: getting-started/quickstart.md
-      - Architecture: getting-started/architecture.md
+    - Overview: en/getting-started/index.md
+    - Quickstart: en/getting-started/quickstart.md
+    - Project overview: en/getting-started/project-overview.md
+    - Architecture (summary): en/getting-started/architecture.md
+    - Architecture (full): en/getting-started/architecture-full.md
   - Guides:
-      - Contributors: guides/contributors/index.md
-      - Reviewers: guides/reviewers/index.md
-      - Developers: guides/developers/index.md
-      - Institutional Partners: guides/institutional/index.md
+    - Contributors: en/guides/contributors/index.md
+    - Reviewers: en/guides/reviewers/index.md
+    - Developers:
+      - Overview: en/guides/developers/index.md
+      - Authentication: en/guides/developers/authentication.md
+      - Contributing: en/guides/developers/contributing.md
+      - Conventions: en/guides/developers/conventions.md
+      - Forms system: en/guides/developers/forms-system.md
+    - Institutional Partners: en/guides/institutional/index.md
   - API:
-      - Overview: api/index.md
-      - Reference: api/reference.md
-  - AI Integrations: ai-integrations/index.md
+    - Overview: en/api/index.md
+    - Reference: en/api/reference.md
+    - Static schema: api/reference.md
+  - AI Integrations:
+    - Overview: en/ai-integrations/index.md
+    - Agent guide: en/ai-integrations/agent-guide.md
+  - Deployment:
+    - Production: en/deployment/production.md
   - Reference:
-      - Conventions: reference/conventions.md
-      - Troubleshooting: reference/troubleshooting.md
+      - Conventions: en/reference/conventions.md
+      - Forms system: en/reference/forms-system.md
+      - Ontology: en/reference/ontology.md
+      - Skills matrix: en/reference/skills-matrix.md
+      - Translation workflow: en/reference/translation-workflow.md
+      - Troubleshooting: en/reference/troubleshooting.md
   - About:
-      - Roadmap: about/roadmap.md
-      - License: about/license.md
+    - Roadmap: en/about/roadmap.md
+    - License: en/about/license.md
+  - नेपाली:
+    - होम: ne/index.md
+    - सुरु गर्ने तरिका:
+      - परियोजना अवलोकन: ne/getting-started/project-overview.md
+    - योगदानकर्ताहरू:
+      - मार्गदर्शन: ne/guides/contributors/index.md
+      - डाटा पठाउने: ne/guides/contributors/submitting-data.md
+      - फर्महरू प्रयोग गर्ने: ne/guides/contributors/using-forms.md
+      - समीक्षा बुझ्ने: ne/guides/contributors/understanding-review.md
+  - Translation status: translation-status.md
