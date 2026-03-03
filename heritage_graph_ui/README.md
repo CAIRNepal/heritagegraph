@@ -34,3 +34,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Project Documentation
+
+This frontend is part of the HeritageGraph project. Full project documentation (developer guides, contributor docs, API reference, and translations) are available in the repository `docs/` folder and published to GitHub Pages:
+
+- Local source: `docs/en/` and `docs/ne/`
+- Published site (placeholder): https://cairnepal.github.io/heritagegraph/
+
+Please contribute docs edits under `docs/en/` and add Nepali translations under `docs/ne/`.
