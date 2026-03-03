@@ -1,0 +1,39 @@
+site_name: HeritageGraph Documentation
+site_description: Documentation for contributors, developers, API users, partners, and AI integrations
+site_author: CAIR-Nepal
+repo_name: heritagegraph
+repo_url: https://github.com/CAIRNepal/heritagegraph
+theme:
+  name: material
+  language: en
+  logo: images/logo.png
+  favicon: images/favicon.ico
+plugins:
+  - search
+  - mkdocs_static_i18n:
+      default_language: en
+      languages:
+        en: English
+        ne: नेपाली
+  - awesome-pages
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Overview: getting-started/index.md
+      - Quickstart: getting-started/quickstart.md
+      - Architecture: getting-started/architecture.md
+  - Guides:
+      - Contributors: guides/contributors/index.md
+      - Reviewers: guides/reviewers/index.md
+      - Developers: guides/developers/index.md
+      - Institutional Partners: guides/institutional/index.md
+  - API:
+      - Overview: api/index.md
+      - Reference: api/reference.md
+  - AI Integrations: ai-integrations/index.md
+  - Reference:
+      - Conventions: reference/conventions.md
+      - Troubleshooting: reference/troubleshooting.md
+  - About:
+      - Roadmap: about/roadmap.md
+      - License: about/license.md

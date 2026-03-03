@@ -152,6 +152,8 @@ Access the backend at:
 
 This project includes comprehensive documentation designed to help both human developers and AI coding assistants work effectively:
 
+**Documentation site (planned):** A consolidated MkDocs site lives in the `docs/` folder and will be published to GitHub Pages. See `docs/` for source content.
+
 | Document | Purpose |
 |----------|---------|
 | [AGENTS.md](AGENTS.md) | 🤖 **Start here** — Master guide for AI agents. Project overview, critical rules, directory structure, API summary |
