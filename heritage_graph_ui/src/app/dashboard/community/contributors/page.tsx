@@ -1,7 +1,6 @@
 'use client';
 
-import { DataTable } from '@/components/heritage-table';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { GenericDataTable, personTableConfig } from '@/components/generic-data-table';
 import { Leaderboard } from '../../components/leaderboard-card';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
@@ -47,7 +46,13 @@ export default function ContributorsPage() {
             </h2>
           </div>
           <div className="p-6">
-            <DataTable />
+            <GenericDataTable
+              config={{
+                ...personTableConfig,
+                showTabs: false,
+                enableDragDrop: false,
+              }}
+            />
           </div>
         </div>
       </motion.div>

@@ -14,9 +14,19 @@ import { motion } from 'framer-motion';
 import { useNotifications, type Notification } from '@/hooks/use-notifications';
 import { formatDistanceToNow } from 'date-fns';
 
-const fadeInUp = { hidden: { opacity: 0, y: 60 }, show: { opacity: 1, y: 0, transition: { duration: 0.8 } } };
-const staggerContainer = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.3 } } };
-const scaleIn = { hidden: { scale: 0.8, opacity: 0 }, show: { scale: 1, opacity: 1, transition: { duration: 0.6 } } };
+// Animation variants - use transforms only to avoid visibility issues
+const fadeInUp = { 
+  initial: { opacity: 1, y: 10 }, 
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3 } } 
+};
+const staggerContainer = { 
+  initial: { opacity: 1 }, 
+  animate: { opacity: 1, transition: { staggerChildren: 0.05 } } 
+};
+const scaleIn = { 
+  initial: { scale: 0.98, opacity: 1 }, 
+  animate: { scale: 1, opacity: 1, transition: { duration: 0.2 } } 
+};
 const glassCard = 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg';
 
 const PAGE_SIZE = 10;
@@ -81,7 +91,7 @@ export default function NotificationPage() {
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
       {/* ── Hero Header ── */}
-      <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}>
+      <motion.div initial="initial" animate="animate" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}>
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
@@ -126,7 +136,7 @@ export default function NotificationPage() {
       </div>
 
       {/* ── Notifications List ── */}
-      <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer} className={`${glassCard} p-6`}>
+      <motion.div initial="initial" animate="animate" variants={staggerContainer} className={`${glassCard} p-6`}>
         <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-4">
           Recent <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Notifications</span>
           <span className="text-sm font-normal text-muted-foreground ml-2">

@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, Calendar, User, Tag, Edit, ExternalLink, MapPin, ThumbsUp, ThumbsDown, GitFork, Share2, MessageSquare, ChevronDown } from "lucide-react";
+import { ArrowLeft, Calendar, User, Tag, Edit, ExternalLink, MapPin, ThumbsUp, ThumbsDown, GitFork, Share2, MessageSquare, ChevronDown, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { ReactionButtons } from "@/components/reaction-buttons";
 import { ShareButton } from "@/components/share-button";
 import { ForkButton, ForkList } from "@/components/fork-button";
 import { EntityComments } from "@/components/entity-comments";
+import { EntityQRCode } from "@/components/entity-qr-code";
 import { Separator } from "@/components/ui/separator";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -136,10 +137,14 @@ export default function OntologyViewPage() {
                 <Separator orientation="vertical" className="h-6" />
                 <ForkButton entityId={culturalEntityId!} entityName={displayName} size="sm" variant="ghost" />
                 <ShareButton entityId={culturalEntityId!} entityName={displayName} size="sm" variant="ghost" />
+                <EntityQRCode entityId={culturalEntityId!} entityName={displayName} size="sm" />
                 <Separator orientation="vertical" className="h-6" />
               </>
             ) : (
-              <ShareButton entityId={id} entityName={displayName} size="sm" variant="ghost" />
+              <>
+                <ShareButton entityId={id} entityName={displayName} size="sm" variant="ghost" />
+                <EntityQRCode entityId={id} entityName={displayName} size="sm" />
+              </>
             )}
             <Button size="sm" onClick={() => router.push(`/dashboard/contribute/${ontologyClass.key}`)}>
               <Edit className="h-3.5 w-3.5 mr-1" /> Edit

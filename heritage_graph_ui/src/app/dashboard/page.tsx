@@ -6,7 +6,10 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/heritage-table';
+import {
+  GenericDataTable,
+  personTableConfig,
+} from '@/components/generic-data-table';
 import {
   IconPlus,
   IconBuildingCommunity,
@@ -24,7 +27,6 @@ import {
   IconUsers,
   IconGraph,
 } from '@tabler/icons-react';
-import { BookOpen, Globe, Users as UsersLucide } from 'lucide-react';
 
 /* ── animation variants (identical to landing page) ── */
 const fadeInUp = {
@@ -342,7 +344,13 @@ export default function Page() {
           </span>
         </h2>
         <div className={`${glassCard} p-6`}>
-          <DataTable />
+          <GenericDataTable
+            config={{
+              ...personTableConfig,
+              showTabs: false,
+              enableDragDrop: false,
+            }}
+          />
         </div>
       </motion.div>
     </div>
