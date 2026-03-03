@@ -1,666 +1,794 @@
 # 🚀 HeritageGraph Deployment Guide
 
-This guide provides comprehensive instructions for deploying HeritageGraph in development and production environments using Docker and Docker Compose.
+> **Domain:** `heritagegraph.xyz` — Ubuntu cloud VM with Docker Compose + Traefik + Let's Encrypt
+
+---
 
 ## 📋 Table of Contents
 
+- [Architecture Overview](#architecture-overview)
 - [Prerequisites](#prerequisites)
 - [Quick Start (Development)](#quick-start-development)
-- [Production Deployment](#production-deployment)
-- [Configuration](#configuration)
-- [Services Overview](#services-overview)
-- [Troubleshooting](#troubleshooting)
-- [Monitoring & Logs](#monitoring--logs)
-- [Security Considerations](#security-considerations)
+- [Production Deployment on heritagegraph.xyz](#production-deployment-on-heritagegraphxyz)
+  - [Step 1: Prepare the Ubuntu VM](#step-1-prepare-the-ubuntu-vm)
+  - [Step 2: Configure DNS](#step-2-configure-dns)
+  - [Step 3: Clone & Configure](#step-3-clone--configure)
+  - [Step 4: Build & Launch](#step-4-build--launch)
+  - [Step 5: Verify Deployment](#step-5-verify-deployment)
+  - [Step 6: Google OAuth Setup](#step-6-google-oauth-setup)
+- [Post-Deployment](#post-deployment)
+- [Updating the Application](#updating-the-application)
 - [Backup & Recovery](#backup--recovery)
-- [Migration Checklist: Keycloak → Google OAuth](#-migration-checklist-keycloak--google-oauth)
+- [Monitoring & Logs](#monitoring--logs)
+- [Troubleshooting](#troubleshooting)
+- [Security Hardening](#security-hardening)
+- [Quick Reference](#quick-reference)
+
+---
+
+## Architecture Overview
+
+```
+                    Internet
+                       │
+                       ▼
+              ┌─────────────────┐
+              │   heritagegraph │
+              │       .xyz      │
+              │   (Ubuntu VM)   │
+              └────────┬────────┘
+                       │ :80 / :443
+              ┌────────▼────────┐
+              │     Traefik     │  ← Reverse proxy + auto HTTPS (Let's Encrypt)
+              │  (entry point)  │
+              └────────┬────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+   ┌─────────┐   ┌─────────┐   ┌─────────┐
+   │Frontend │   │ Backend │   │ Landing │
+   │Next.js  │   │ Django  │   │Next.js  │
+   │  :3000  │   │  :8000  │   │  :3000  │
+   └─────────┘   └────┬────┘   └─────────┘
+                       │
+                  ┌────▼────┐
+                  │PostgreSQL│
+                  │  :5432   │
+                  └──────────┘
+```
+
+### Domain Routing
+
+| URL | Service | Purpose |
+|-----|---------|---------|
+| `https://heritagegraph.xyz` | Frontend | Main dashboard & app |
+| `https://www.heritagegraph.xyz` | Frontend | Alias for root domain |
+| `https://api.heritagegraph.xyz` | Backend | Django REST API |
+| `https://landing.heritagegraph.xyz` | Landing | Marketing / landing page |
 
 ---
 
 ## Prerequisites
 
-### System Requirements
+### System Requirements (Ubuntu VM)
 
-- **Docker**: 20.10+
-- **Docker Compose**: 2.0+
-- **RAM**: 4GB minimum (8GB+ recommended)
-- **Disk Space**: 20GB minimum
-- **OS**: Linux (Ubuntu 20.04+), macOS, or Windows with WSL2
+| Resource | Minimum | Recommended |
+|----------|---------|-------------|
+| **OS** | Ubuntu 22.04 LTS | Ubuntu 24.04 LTS |
+| **RAM** | 4 GB | 8 GB+ |
+| **CPU** | 2 vCPUs | 4 vCPUs |
+| **Disk** | 20 GB | 40 GB+ SSD |
+| **Ports** | 22, 80, 443 open | — |
 
-### Check Installation
+### What You Need Before Starting
 
-```bash
-docker --version
-docker-compose --version
-```
+- [ ] Ubuntu VM with root/sudo access (cloud provider: AWS, DigitalOcean, Hetzner, etc.)
+- [ ] Domain `heritagegraph.xyz` with DNS access
+- [ ] Google OAuth credentials (Client ID + Secret) from [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+- [ ] SSH access to the VM
 
 ---
 
 ## Quick Start (Development)
 
-### 1. Clone the Repository
+For local development (no domain or SSL needed):
 
 ```bash
+# 1. Clone
 git clone https://github.com/CAIRNepal/heritagegraph.git
 cd heritagegraph
-```
 
-### 2. Create Environment Configuration
-
-```bash
-# Copy the example environment file
+# 2. Configure
 cp .env.example .env
+# Edit .env — defaults are fine for dev, just change POSTGRES_PASSWORD and DJANGO_SECRET_KEY
 
-# Edit with your values (defaults are fine for development)
-nano .env
+# 3. Run
+docker compose up -d --build
+
+# 4. Access
+# Frontend:  http://frontend.localhost
+# Backend:   http://backend.localhost
+# Dashboard: http://traefik.localhost:8080
 ```
 
-**Minimum required changes for development:**
-- Leave most defaults as-is
-- Change `POSTGRES_PASSWORD` and `DJANGO_SECRET_KEY` to something unique
-
-### 3. Build and Start Services
+**Default dev credentials:** `admin` / `changeme123!`
 
 ```bash
-# Build and start all services
-docker-compose up -d --build
+# Stop
+docker compose down
 
-# Or use the background flag to run in the background
-docker-compose up --build
-```
-
-### 4. Verify Services
-
-```bash
-# Check all services are running
-docker-compose ps
-
-# View logs
-docker-compose logs -f
-```
-
-### 5. Access the Application
-
-- **Frontend**: http://localhost or http://frontend.localhost
-- **Backend API**: http://backend.localhost/api
-- **Traefik Dashboard**: http://traefik.localhost:8080
-
-### Default Credentials (Development Only)
-
-```
-Django Admin:
-  Username: admin
-  Password: changeme123!
-  Email: admin@example.com
-```
-
-### 6. Stop Services
-
-```bash
-# Stop all services
-docker-compose down
-
-# Stop and remove volumes (clean slate)
-docker-compose down -v
+# Stop + wipe data
+docker compose down -v
 ```
 
 ---
 
-## Production Deployment
+## Production Deployment on heritagegraph.xyz
 
-### 1. Prerequisites
+### Step 1: Prepare the Ubuntu VM
 
-- A server with Docker and Docker Compose installed
-- A domain name (e.g., `example.com`)
-- SSL certificate (Let's Encrypt recommended)
-- Firewall configured to allow ports 80, 443
-
-### 2. Prepare Environment
+SSH into your VM and run these commands:
 
 ```bash
-# SSH into your production server
-ssh user@your-server.com
+ssh root@<YOUR_VM_IP>
+```
 
-# Clone repository
+#### 1a. System updates & essentials
+
+```bash
+apt update && apt upgrade -y
+apt install -y curl git ufw apt-transport-https ca-certificates gnupg lsb-release
+```
+
+#### 1b. Install Docker Engine
+
+```bash
+# Add Docker's official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+# Add Docker repository
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
+  tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker
+apt update
+apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Verify
+docker --version
+docker compose version
+```
+
+#### 1c. Create a deploy user (recommended — don't run as root)
+
+```bash
+adduser deploy
+usermod -aG docker deploy
+usermod -aG sudo deploy
+
+# Switch to deploy user for the rest
+su - deploy
+```
+
+#### 1d. Configure firewall
+
+```bash
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp    # SSH
+sudo ufw allow 80/tcp    # HTTP (for Let's Encrypt challenge + redirect)
+sudo ufw allow 443/tcp   # HTTPS
+sudo ufw enable
+sudo ufw status
+```
+
+---
+
+### Step 2: Configure DNS
+
+Go to your domain registrar's DNS management panel for `heritagegraph.xyz` and create these **A records**:
+
+| Type | Host/Name | Value | TTL |
+|------|-----------|-------|-----|
+| A | `@` | `<YOUR_VM_IP>` | 300 |
+| A | `www` | `<YOUR_VM_IP>` | 300 |
+| A | `api` | `<YOUR_VM_IP>` | 300 |
+| A | `landing` | `<YOUR_VM_IP>` | 300 |
+
+> **Tip:** Set TTL to 300 (5 min) initially for fast propagation. Increase later.
+
+#### Verify DNS propagation
+
+```bash
+# Run from your local machine or the VM
+dig +short heritagegraph.xyz
+dig +short api.heritagegraph.xyz
+dig +short www.heritagegraph.xyz
+dig +short landing.heritagegraph.xyz
+```
+
+All should return your VM's IP address. DNS can take 5–30 minutes to propagate.
+
+---
+
+### Step 3: Clone & Configure
+
+```bash
+# As the deploy user on the VM
+cd /home/deploy
 git clone https://github.com/CAIRNepal/heritagegraph.git
 cd heritagegraph
+git checkout v1
+```
 
-# Copy and customize environment
+#### 3a. Create the `.env` file
+
+```bash
 cp .env.example .env
 nano .env
 ```
 
-### 3. Essential Production Configuration
-
-**Edit `.env` with production values:**
+**Set these values** (replace placeholders):
 
 ```bash
-# Environment
+# ================================================================
+# ENVIRONMENT
+# ================================================================
 ENVIRONMENT=production
 DEBUG=False
 
-# Security - Generate these securely
-DJANGO_SECRET_KEY=$(openssl rand -base64 50)
-POSTGRES_PASSWORD=$(openssl rand -base64 20)
-NEXTAUTH_SECRET=$(openssl rand -base64 32)
+# ================================================================
+# DOMAIN — This drives all Traefik routing
+# ================================================================
+DOMAIN=heritagegraph.xyz
 
-# Network
-ALLOWED_HOSTS=example.com,www.example.com,api.example.com
-DOMAIN=example.com
-PRODUCTION_URL=https://example.com
+# ================================================================
+# DJANGO
+# ================================================================
+DJANGO_SECRET_KEY=<generate-with: openssl rand -base64 50>
+DJANGO_SETTINGS_MODULE=heritage_graph.settings.production
+ALLOWED_HOSTS=heritagegraph.xyz,www.heritagegraph.xyz,api.heritagegraph.xyz
 
-# Google OAuth (get from https://console.cloud.google.com/apis/credentials)
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
+# Django superuser (created on first boot)
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@heritagegraph.xyz
+DJANGO_SUPERUSER_PASSWORD=<strong-password-here>
 
-# API Configuration
-NEXT_PUBLIC_API_URL=https://api.example.com
-```
-
-### 4. Create Production Docker Compose Override
-
-Create `docker-compose.prod.yml`:
-
-```bash
-# This file will override development settings
-cat > docker-compose.prod.yml << 'EOF'
-version: "3.9"
-
-services:
-  traefik:
-    restart: always
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=proxy"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.letsencrypt.acme.storage=/etc/traefik/acme/acme.json"
-    labels:
-      - "traefik.http.routers.dashboard.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:${TRAEFIK_DASHBOARD_PASSWORD}"
-    ports:
-      - "443:443"
-    volumes:
-      - ./infra/traefik/acme:/etc/traefik/acme
-
-  backend:
-    environment:
-      DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
-      DEBUG: "False"
-    restart: always
-
-  frontend:
-    restart: always
-EOF
-```
-
-### 5. Deploy to Production
-
-```bash
-# Ensure .env is properly configured
-cat .env | grep -E "ENVIRONMENT|DEBUG|DOMAIN"
-
-# Build images (optional, can use pre-built images)
-docker-compose build
-
-# Start services with production override
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-
-# Verify services
-docker-compose ps
-
-# Check logs
-docker-compose logs -f traefik backend
-```
-
-### 6. Configure Firewall (Example: UFW)
-
-```bash
-# Allow HTTP and HTTPS
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 22/tcp
-
-# Enable firewall
-sudo ufw enable
-```
-
-### 7. Setup Automatic Backups
-
-Create a backup script at `/home/user/backup-heritage.sh`:
-
-```bash
-#!/bin/bash
-BACKUP_DIR="/backups/heritage"
-mkdir -p "$BACKUP_DIR"
-
-# Backup database
-docker-compose exec -T postgres pg_dump -U heritage_user heritage_db | gzip > "$BACKUP_DIR/db-$(date +%Y%m%d-%H%M%S).sql.gz"
-
-# Keep only last 7 days of backups
-find "$BACKUP_DIR" -name "db-*.sql.gz" -mtime +7 -delete
-
-echo "Backup completed"
-```
-
-Add to crontab:
-```bash
-# Daily backup at 2 AM
-0 2 * * * /home/user/backup-heritage.sh >> /var/log/heritage-backup.log 2>&1
-```
-
----
-
-## Configuration
-
-### Environment Variables
-
-See `.env.example` for all available variables. Key sections:
-
-#### Django Configuration
-```env
-DJANGO_SECRET_KEY=your-secret-key
-DEBUG=False
-ALLOWED_HOSTS=example.com,www.example.com
-```
-
-#### Database
-```env
+# ================================================================
+# DATABASE
+# ================================================================
+DB_ENGINE=django.db.backends.postgresql
 DB_NAME=heritage_db
 DB_USER=heritage_user
-DB_PASSWORD=your-db-password
+DB_PASSWORD=<generate-with: openssl rand -base64 20>
 DB_HOST=postgres
+DB_PORT=5432
+
+POSTGRES_DB=heritage_db
+POSTGRES_USER=heritage_user
+POSTGRES_PASSWORD=<same-as-DB_PASSWORD>
+
+# ================================================================
+# GOOGLE OAUTH
+# ================================================================
+GOOGLE_CLIENT_ID=<your-google-client-id>.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=<your-google-client-secret>
+
+# ================================================================
+# FRONTEND (Next.js)
+# ================================================================
+NEXT_PUBLIC_API_URL=https://api.heritagegraph.xyz
+NEXTAUTH_URL=https://heritagegraph.xyz
+NEXTAUTH_SECRET=<generate-with: openssl rand -base64 32>
+
+# ================================================================
+# CORS
+# ================================================================
+CORS_ALLOWED_ORIGINS=https://heritagegraph.xyz,https://www.heritagegraph.xyz
+
+# ================================================================
+# TRAEFIK
+# ================================================================
+TRAEFIK_ACME_EMAIL=admin@heritagegraph.xyz
+TRAEFIK_DASHBOARD_USER=admin
+TRAEFIK_DASHBOARD_PASSWORD=<generate-with: htpasswd -nb admin yourpassword>
 ```
 
-#### Google OAuth
-```env
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-NEXTAUTH_SECRET=your-nextauth-secret
-```
+> **Generate secrets** (run these one by one and paste into `.env`):
+> ```bash
+> openssl rand -base64 50   # DJANGO_SECRET_KEY
+> openssl rand -base64 20   # DB_PASSWORD / POSTGRES_PASSWORD
+> openssl rand -base64 32   # NEXTAUTH_SECRET
+> htpasswd -nb admin your-dashboard-password  # TRAEFIK_DASHBOARD_PASSWORD
+> ```
 
-#### Frontend
-```env
-NEXT_PUBLIC_API_URL=https://api.example.com
-```
-
-### Database Migration
-
-To run migrations manually:
+#### 3b. Prepare Let's Encrypt directory
 
 ```bash
-# Apply migrations
-docker-compose exec backend python manage.py migrate
-
-# Create superuser
-docker-compose exec backend python manage.py createsuperuser
-
-# Collect static files
-docker-compose exec backend python manage.py collectstatic --noinput
+mkdir -p infra/traefik/acme
+touch infra/traefik/acme/acme.json
+chmod 600 infra/traefik/acme/acme.json
 ```
 
 ---
 
-## Services Overview
+### Step 4: Build & Launch
 
-### 1. **PostgreSQL** (`postgres:16-alpine`)
-- Database for Django backend
-- Port: 5432 (internal only)
-- Volume: `postgres-data:/var/lib/postgresql/data`
+```bash
+# Build all images
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build
 
-### 2. **Traefik** (Reverse Proxy)
-- Routes all HTTP/HTTPS traffic
-- Dashboard: `http://traefik.localhost:8080`
-- Ports: 80 (HTTP), 443 (HTTPS), 8080 (Dashboard)
+# Start all services
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
-### 3. **Backend** (Django REST Framework)
-- API server
-- Port: 8000 (internal, exposed via Traefik)
-- URL: `http://backend.localhost` or `https://api.example.com`
-- Health check: `GET /health/`
+# Watch the logs (wait for "ready" messages)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
+```
 
-### 4. **Frontend** (Next.js UI)
-- Main application
-- Port: 3000 (internal, exposed via Traefik)
-- URL: `http://localhost` or `https://example.com`
-
-### 5. **Landing Page** (Next.js)
-- Marketing/landing page
-- Port: 3000 (internal)
-- URL: `http://landing.localhost`
+> **First boot takes 2–5 minutes** as it:
+> 1. Starts PostgreSQL and waits for it to be healthy
+> 2. Runs Django migrations
+> 3. Creates superuser
+> 4. Collects static files
+> 5. Traefik requests Let's Encrypt certificates
 
 ---
 
-## Troubleshooting
-
-### Services Won't Start
+### Step 5: Verify Deployment
 
 ```bash
+# Check all containers are running
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+
+# Expected: all services show "Up (healthy)"
+```
+
+#### Test each service
+
+```bash
+# Backend health
+curl -s https://api.heritagegraph.xyz/health/ | head
+# Expected: {"status": "ok", ...}
+
+# Frontend
+curl -s -o /dev/null -w "%{http_code}" https://heritagegraph.xyz
+# Expected: 200
+
+# Landing page
+curl -s -o /dev/null -w "%{http_code}" https://landing.heritagegraph.xyz
+# Expected: 200
+
+# HTTPS certificate check
+echo | openssl s_client -connect heritagegraph.xyz:443 -servername heritagegraph.xyz 2>/dev/null | openssl x509 -noout -dates
+# Should show valid Let's Encrypt dates
+```
+
+#### Test in browser
+
+1. Open `https://heritagegraph.xyz` — should load the dashboard
+2. Open `https://api.heritagegraph.xyz/docs` — should load Swagger UI
+3. Open `https://landing.heritagegraph.xyz` — should load the landing page
+4. Check the padlock icon — HTTPS should be valid
+
+---
+
+### Step 6: Google OAuth Setup
+
+1. Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/apis/credentials)
+2. Edit your OAuth 2.0 Client ID
+3. Add these **Authorized redirect URIs**:
+   - `https://heritagegraph.xyz/api/auth/callback/google`
+4. Add these **Authorized JavaScript origins**:
+   - `https://heritagegraph.xyz`
+5. Save and test sign-in at `https://heritagegraph.xyz`
+
+---
+
+## Post-Deployment
+
+### Create a convenience alias
+
+Add to `/home/deploy/.bashrc`:
+
+```bash
+alias hg-up="cd /home/deploy/heritagegraph && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
+alias hg-down="cd /home/deploy/heritagegraph && docker compose -f docker-compose.yml -f docker-compose.prod.yml down"
+alias hg-logs="cd /home/deploy/heritagegraph && docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f"
+alias hg-ps="cd /home/deploy/heritagegraph && docker compose -f docker-compose.yml -f docker-compose.prod.yml ps"
+alias hg-restart="cd /home/deploy/heritagegraph && docker compose -f docker-compose.yml -f docker-compose.prod.yml restart"
+```
+
+### Set up automatic database backups
+
+```bash
+# Create backup directory
+sudo mkdir -p /backups/heritage
+sudo chown deploy:deploy /backups/heritage
+
+# Create backup script
+cat > /home/deploy/backup-heritage.sh << 'SCRIPT'
+#!/bin/bash
+set -e
+BACKUP_DIR="/backups/heritage"
+COMPOSE_DIR="/home/deploy/heritagegraph"
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+cd "$COMPOSE_DIR"
+docker compose exec -T postgres pg_dump -U heritage_user heritage_db | gzip > "$BACKUP_DIR/db-$TIMESTAMP.sql.gz"
+
+# Keep only last 14 days
+find "$BACKUP_DIR" -name "db-*.sql.gz" -mtime +14 -delete
+
+echo "[$(date)] Backup completed: db-$TIMESTAMP.sql.gz"
+SCRIPT
+
+chmod +x /home/deploy/backup-heritage.sh
+
+# Add to crontab — daily at 3 AM
+(crontab -l 2>/dev/null; echo "0 3 * * * /home/deploy/backup-heritage.sh >> /var/log/heritage-backup.log 2>&1") | crontab -
+```
+
+### Set up automatic Docker log rotation
+
+Docker JSON logs are already limited to 10MB × 3 files per container (configured in `docker-compose.yml`). No extra config needed.
+
+### Set up automatic security updates
+
+```bash
+sudo apt install -y unattended-upgrades
+sudo dpkg-reconfigure -plow unattended-upgrades
+```
+
+---
+
+## Updating the Application
+
+### Standard update (pull latest code + rebuild)
+
+```bash
+cd /home/deploy/heritagegraph
+
+# Pull latest changes
+git pull origin v1
+
+# Rebuild and restart (zero-downtime for stateless services)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Run migrations if needed
+docker compose exec backend python manage.py migrate
+
 # Check logs
-docker-compose logs backend
-docker-compose logs postgres
-
-# Restart services
-docker-compose restart
-
-# Rebuild images
-docker-compose down
-docker-compose up --build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=50
 ```
 
-### Database Connection Errors
+### Update a single service (e.g., backend only)
 
 ```bash
-# Check if PostgreSQL is healthy
-docker-compose ps postgres
-
-# Check database connectivity
-docker-compose exec postgres psql -U heritage_user -d heritage_db -c "SELECT 1;"
-
-# Reset database (WARNING: deletes all data)
-docker-compose down -v
-docker-compose up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build backend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d backend
 ```
 
-### Port Already in Use
+### Rollback
 
 ```bash
-# Find what's using port 80
-lsof -i :80
+# Revert to previous commit
+git log --oneline -5   # find the commit to revert to
+git checkout <commit-hash>
 
-# Kill process or change Traefik port in docker-compose.yml
-```
-
-### Frontend Not Loading
-
-```bash
-# Check frontend logs
-docker-compose logs frontend
-
-# Rebuild frontend
-docker-compose build frontend
-docker-compose up frontend
-
-# Clear Next.js cache
-docker-compose exec frontend rm -rf .next
-```
-
-### Google OAuth Not Working
-
-```bash
-# Verify GOOGLE_CLIENT_ID is set
-docker-compose exec backend printenv GOOGLE_CLIENT_ID
-docker-compose exec frontend printenv GOOGLE_CLIENT_ID
-
-# Check NextAuth logs
-docker-compose logs frontend | grep -i "auth\|oauth\|google"
-
-# Verify redirect URIs match Google Cloud Console config
-# Development: http://localhost:3000/api/auth/callback/google
-# Production: https://example.com/api/auth/callback/google
-```
-
-### Static Files Not Serving
-
-```bash
-# Collect static files
-docker-compose exec backend python manage.py collectstatic --noinput
-
-# Check static volume
-docker volume inspect heritage_backend-static
-```
-
----
-
-## Monitoring & Logs
-
-### View Logs
-
-```bash
-# All services
-docker-compose logs -f
-
-# Specific service
-docker-compose logs -f backend
-
-# Last 100 lines
-docker-compose logs --tail=100 backend
-
-# With timestamps
-docker-compose logs -f --timestamps backend
-```
-
-### Health Checks
-
-```bash
-# Check all services
-docker-compose ps
-
-# Manual health check
-curl http://backend.localhost/health/
-curl http://frontend.localhost
-```
-
-### Database Monitoring
-
-```bash
-# Connect to database
-docker-compose exec postgres psql -U heritage_user -d heritage_db
-
-# Inside psql:
-\dt                    # List tables
-SELECT COUNT(*) FROM django_migrations;  # Check migrations
-\q                     # Quit
-```
-
-### Container Resource Usage
-
-```bash
-# Monitor CPU and memory
-docker stats
-
-# View specific container
-docker stats heritage-backend
-```
-
----
-
-## Security Considerations
-
-### 1. Change Default Passwords
-
-Always change these in production:
-- Database password
-- Django superuser password
-- Traefik dashboard password
-- `NEXTAUTH_SECRET` (generate with `openssl rand -base64 32`)
-
-### 2. Enable HTTPS
-
-In `.env`:
-```env
-ACME_ENABLED=true
-ACME_EMAIL=admin@example.com
-```
-
-### 3. Set Strong Secret Key
-
-```bash
-# Generate secure key
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-```
-
-### 4. Configure CORS Properly
-
-Update `CORS_ALLOWED_ORIGINS` to only include your domain:
-```env
-CORS_ALLOWED_ORIGINS=https://example.com,https://www.example.com
-```
-
-### 5. Use Environment Variables for Secrets
-
-Never commit `.env` to version control. Use `.gitignore`:
-```bash
-echo ".env" >> .gitignore
-git add .gitignore
-git commit -m "Add .env to gitignore"
-```
-
-### 6. Regular Updates
-
-```bash
-# Update base images
-docker-compose pull
-
-# Rebuild with latest
-docker-compose build --no-cache
-```
-
-### 7. Monitor Logs for Security Issues
-
-```bash
-# Check for failed login attempts
-docker-compose logs frontend | grep -i "auth\|error\|failed"
-docker-compose logs backend | grep -i "auth\|error\|401"
+# Rebuild and restart
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ---
 
 ## Backup & Recovery
 
-### Backup Database
+### Manual database backup
 
 ```bash
-# Manual backup
-docker-compose exec postgres pg_dump -U heritage_user heritage_db | gzip > heritage-db-$(date +%Y%m%d).sql.gz
+cd /home/deploy/heritagegraph
 
-# Verify backup
-gzip -t heritage-db-*.sql.gz
-```
-
-### Backup Volumes
-
-```bash
-# Backup all volumes
-docker-compose down
-tar -czf heritage-backup-$(date +%Y%m%d).tar.gz .
-
-# Restore
-tar -xzf heritage-backup-*.tar.gz
-docker-compose up -d
-```
-
-### Restore from Backup
-
-```bash
-# Restore database
-gunzip < heritage-db-backup.sql.gz | docker-compose exec -T postgres psql -U heritage_user -d heritage_db
+# Backup
+docker compose exec -T postgres pg_dump -U heritage_user heritage_db \
+  | gzip > /backups/heritage/db-manual-$(date +%Y%m%d-%H%M%S).sql.gz
 
 # Verify
-docker-compose exec postgres psql -U heritage_user -d heritage_db -c "SELECT COUNT(*) FROM django_migrations;"
+ls -lh /backups/heritage/
+gzip -t /backups/heritage/db-manual-*.sql.gz && echo "Backup OK"
+```
+
+### Restore database from backup
+
+```bash
+cd /home/deploy/heritagegraph
+
+# Stop backend to prevent writes
+docker compose -f docker-compose.yml -f docker-compose.prod.yml stop backend
+
+# Restore (replace filename with your backup)
+gunzip < /backups/heritage/db-20260303-030000.sql.gz \
+  | docker compose exec -T postgres psql -U heritage_user -d heritage_db
+
+# Restart backend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml start backend
+
+# Verify
+docker compose exec backend python manage.py check
+```
+
+### Backup & restore volumes (full system)
+
+```bash
+# Backup everything (stop first for consistency)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+sudo tar -czf /backups/heritage/full-$(date +%Y%m%d).tar.gz \
+  -C /var/lib/docker/volumes .
+
+# Restore
+sudo tar -xzf /backups/heritage/full-20260303.tar.gz \
+  -C /var/lib/docker/volumes
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ---
 
-## Performance Optimization
+## Monitoring & Logs
 
-### 1. Gunicorn Worker Configuration
-
-In `docker-compose.yml`, backend service:
-```yaml
-CMD ["gunicorn", "heritage_graph.wsgi:application", 
-     "--workers", "4",  # Adjust based on CPU cores
-     "--worker-class", "sync",
-     "--max-requests", "1000"]
-```
-
-### 2. Database Connection Pooling
-
-In `heritage_graph/settings/production.py`:
-```python
-DATABASES = {
-    "default": {
-        "CONN_MAX_AGE": 300,
-        "ATOMIC_REQUESTS": True,
-    }
-}
-```
-
-### 3. Caching
-
-Enable Redis or Memcached for session/query caching (optional).
-
-### 4. Enable Compression
-
-Traefik compression middleware is configured for responses > 1KB.
-
----
-
-## Useful Commands
-
-### General
+### View logs
 
 ```bash
-# Start services
-docker-compose up -d
+# All services (follow mode)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
 
-# Stop services
-docker-compose down
+# Specific service
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f backend
 
-# View running services
-docker-compose ps
+# Last N lines
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=100 backend
 
-# Rebuild specific service
-docker-compose build backend
-docker-compose up -d backend
+# Filter errors
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs backend 2>&1 | grep -i "error\|exception\|traceback"
 ```
 
-### Database
+### Health checks
 
 ```bash
-# Create database backup
-docker-compose exec postgres pg_dump -U heritage_user heritage_db > backup.sql
+# Service status
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
 
-# Run Django shell
-docker-compose exec backend python manage.py shell
-
-# Create Django superuser
-docker-compose exec backend python manage.py createsuperuser
+# API health endpoints
+curl -s https://api.heritagegraph.xyz/health/           # basic
+curl -s https://api.heritagegraph.xyz/health/detailed/   # includes DB
+curl -s https://api.heritagegraph.xyz/health/ready/      # readiness
+curl -s https://api.heritagegraph.xyz/health/live/       # liveness
 ```
 
-### Logs & Debugging
+### Resource monitoring
 
 ```bash
-# View all logs
-docker-compose logs -f
-
-# View logs for specific service
-docker-compose logs -f backend
-
-# Real-time stats
+# Real-time container stats
 docker stats
+
+# Disk usage
+docker system df
+df -h /
+
+# Check if any container is restarting
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | sort
 ```
 
-### Cleanup
+### Database monitoring
 
 ```bash
-# Remove stopped containers
-docker container prune
+# Connect to psql
+docker compose exec postgres psql -U heritage_user -d heritage_db
 
-# Remove unused volumes
-docker volume prune
-
-# Remove unused networks
-docker network prune
-
-# Full cleanup (WARNING: removes images too)
-docker system prune -a
+# Inside psql:
+\dt                                        # List all tables
+SELECT COUNT(*) FROM django_migrations;    # Check migrations ran
+SELECT pg_database_size('heritage_db');    # Database size
+\q                                         # Quit
 ```
+
+---
+
+## Troubleshooting
+
+### Traefik not issuing certificates
+
+```bash
+# Check Traefik logs for ACME errors
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs traefik | grep -i "acme\|certificate\|error"
+
+# Common causes:
+# 1. DNS not propagated yet — wait and retry
+# 2. Port 80 blocked — check firewall: sudo ufw status
+# 3. acme.json permissions — must be 600:
+chmod 600 infra/traefik/acme/acme.json
+
+# 4. Rate limit hit — use Let's Encrypt staging first:
+#    Change caServer in traefik command to staging URL for testing
+```
+
+### Container won't start
+
+```bash
+# Check specific container logs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs <service>
+
+# Check if it's a resource issue
+free -h
+df -h /
+
+# Restart a specific service
+docker compose -f docker-compose.yml -f docker-compose.prod.yml restart <service>
+
+# Nuclear option: full rebuild
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+### Database connection errors
+
+```bash
+# Check PostgreSQL is running and healthy
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps postgres
+
+# Test connectivity from backend
+docker compose exec backend python -c "
+import django; django.setup()
+from django.db import connection
+cursor = connection.cursor()
+cursor.execute('SELECT 1')
+print('DB OK:', cursor.fetchone())
+"
+
+# Reset database (WARNING: destroys all data)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down -v
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+### Frontend shows 502 Bad Gateway
+
+```bash
+# Check if frontend container is running
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps frontend
+
+# Check frontend logs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs frontend
+
+# Common cause: NEXT_PUBLIC_API_URL was wrong at build time
+# Fix: rebuild with correct env
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build frontend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d frontend
+```
+
+### Google OAuth not working
+
+```bash
+# Verify env vars are set
+docker compose exec backend printenv GOOGLE_CLIENT_ID
+docker compose exec frontend printenv GOOGLE_CLIENT_ID
+
+# Check NextAuth logs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs frontend | grep -i "auth\|oauth\|google"
+
+# Verify redirect URI in Google Console matches exactly:
+# https://heritagegraph.xyz/api/auth/callback/google
+```
+
+### Out of disk space
+
+```bash
+# Check disk usage
+df -h /
+docker system df
+
+# Clean up unused Docker resources
+docker system prune -f          # Remove stopped containers, dangling images
+docker image prune -a -f        # Remove all unused images
+docker volume prune -f          # Remove unused volumes (careful!)
+```
+
+---
+
+## Security Hardening
+
+### 1. SSH hardening
+
+```bash
+# Disable root login and password auth
+sudo nano /etc/ssh/sshd_config
+# Set: PermitRootLogin no
+# Set: PasswordAuthentication no
+sudo systemctl restart sshd
+```
+
+### 2. Fail2ban (block brute-force attempts)
+
+```bash
+sudo apt install -y fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+```
+
+### 3. Secret management
+
+- **Never commit `.env`** to git — it's in `.gitignore`
+- Rotate `DJANGO_SECRET_KEY` and `NEXTAUTH_SECRET` periodically
+- Use unique, generated passwords for all services
+
+### 4. CORS configuration
+
+Only allow your domain:
+```env
+CORS_ALLOWED_ORIGINS=https://heritagegraph.xyz,https://www.heritagegraph.xyz
+```
+
+### 5. Regular updates
+
+```bash
+# Update OS packages
+sudo apt update && sudo apt upgrade -y
+
+# Update Docker images
+docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+### 6. Monitor for issues
+
+```bash
+# Check for auth failures
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs backend | grep -i "401\|403\|forbidden"
+
+# Check container restarts
+docker ps --format "{{.Names}} {{.Status}}" | grep -i "restarting"
+```
+
+---
+
+## Quick Reference
+
+### Commands cheat sheet
+
+| Action | Command |
+|--------|---------|
+| Start production | `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d` |
+| Stop production | `docker compose -f docker-compose.yml -f docker-compose.prod.yml down` |
+| View logs | `docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f` |
+| Rebuild & restart | `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` |
+| Run migrations | `docker compose exec backend python manage.py migrate` |
+| Create superuser | `docker compose exec backend python manage.py createsuperuser` |
+| Django shell | `docker compose exec backend python manage.py shell` |
+| Database shell | `docker compose exec postgres psql -U heritage_user -d heritage_db` |
+| Backup database | `docker compose exec -T postgres pg_dump -U heritage_user heritage_db \| gzip > backup.sql.gz` |
+| Container stats | `docker stats` |
+| Disk usage | `docker system df` |
+
+### Service URLs (Production)
+
+| Service | URL |
+|---------|-----|
+| Frontend (Dashboard) | `https://heritagegraph.xyz` |
+| Backend API | `https://api.heritagegraph.xyz` |
+| API Docs (Swagger) | `https://api.heritagegraph.xyz/docs` |
+| API Docs (ReDoc) | `https://api.heritagegraph.xyz/redoc/` |
+| Landing Page | `https://landing.heritagegraph.xyz` |
+| Health Check | `https://api.heritagegraph.xyz/health/` |
+
+### Service URLs (Development)
+
+| Service | URL |
+|---------|-----|
+| Frontend | `http://frontend.localhost` |
+| Backend API | `http://backend.localhost` |
+| Traefik Dashboard | `http://traefik.localhost:8080` |
+| Landing Page | `http://landing.localhost` |
 
 ---
 
@@ -672,73 +800,4 @@ docker system prune -a
 
 ---
 
-## 🔄 Migration Checklist: Keycloak → Google OAuth
-
-Follow these steps in order to safely migrate from Keycloak to Google OAuth.
-
-### Pre-Migration
-
-- [ ] **Create Google Cloud project** at [console.cloud.google.com](https://console.cloud.google.com)
-- [ ] **Create OAuth 2.0 credentials** under APIs & Services → Credentials → Create Credentials → OAuth client ID
-  - Application type: **Web application**
-  - Authorized redirect URIs:
-    - Development: `http://localhost:3000/api/auth/callback/google`
-    - Production: `https://yourdomain.com/api/auth/callback/google`
-- [ ] **Copy** the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
-- [ ] **Generate** a new `NEXTAUTH_SECRET`: `openssl rand -base64 32`
-
-### Environment Setup
-
-- [ ] **Update `.env`** with new variables:
-  ```env
-  GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-  GOOGLE_CLIENT_SECRET=your-client-secret
-  NEXTAUTH_SECRET=your-generated-secret
-  NEXTAUTH_URL=http://localhost:3000  # or https://yourdomain.com
-  POSTGRES_USER=heritage_user
-  POSTGRES_DB=heritage_db
-  ```
-- [ ] **Remove** old Keycloak variables (`KEYCLOAK_*`, `KC_*`, `NEXT_PUBLIC_KEYCLOAK_*`)
-
-### Deployment
-
-- [ ] **Stop all services**: `docker-compose down`
-- [ ] **Remove Keycloak volume** (if present): `docker volume rm heritagegraph_keycloak-data`
-- [ ] **Install Python dependency**: `google-auth==2.38.0` is now in `requirements.txt`
-- [ ] **Remove Keycloak npm packages**: Run `pnpm install` in `heritage_graph_ui/` to prune removed packages
-- [ ] **Rebuild all images**: `docker-compose build --no-cache`
-- [ ] **Start services**: `docker-compose up -d`
-- [ ] **Run migrations**: `docker-compose exec backend python manage.py migrate`
-
-### Verification
-
-- [ ] **Backend health**: `curl http://backend.localhost/health/`
-- [ ] **Frontend loads**: Open `http://frontend.localhost` in browser
-- [ ] **Sign in with Google**: Click "Sign In with Google" on frontend
-- [ ] **API auth works**: Verify authenticated API calls return data (check browser network tab for 200 responses)
-- [ ] **User profile created**: Check Django admin for new UserProfile linked to Google email
-
-### Post-Migration Cleanup (Optional)
-
-- [ ] **Delete `keycloak/` directory** from repo
-- [ ] **Delete `keycloak-themes/` directory** from repo
-- [ ] **Delete `heritage_graph/apps/heritage_data/clerk_auth.py`** (legacy, unused)
-- [ ] **Delete `Dockerfile.keycloak`** from repo root
-- [ ] **Remove Keycloak database** if it still exists in PostgreSQL
-
-### Important Notes
-
-- ⚠️ **All existing sessions are invalidated** — users must sign in again with Google
-- ⚠️ **Existing Keycloak users are NOT automatically migrated** — new UserProfile records are created on first Google sign-in
-- ✅ `NEXTAUTH_SECRET` rotation is **not** required if you're already using NextAuth
-- ✅ No database schema changes are needed — the `UserProfile` model is unchanged
-
----
-
-## License
-
-See LICENSE file for details.
-
----
-
-**Last Updated**: February 2026
+**Last Updated**: March 2026

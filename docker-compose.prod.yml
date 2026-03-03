@@ -73,6 +73,8 @@ services:
     environment:
       DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
       DEBUG: "False"
+      ALLOWED_HOSTS: ${DOMAIN:-example.com},www.${DOMAIN:-example.com},api.${DOMAIN:-example.com}
+      CORS_ALLOWED_ORIGINS: https://${DOMAIN:-example.com},https://www.${DOMAIN:-example.com}
     # Remove volume mounts for production (use baked-in image)
     volumes: []
     labels:
@@ -97,6 +99,9 @@ services:
   # ---------------------------------------------------------------
   frontend:
     restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: https://api.${DOMAIN:-example.com}
+      NEXTAUTH_URL: https://${DOMAIN:-example.com}
     # Remove dev volume mounts
     volumes: []
     labels:
