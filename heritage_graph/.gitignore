@@ -17,5 +17,7 @@ pip-delete-this-arg.txt
 .tox/
 
 
-**/migrations/*.py
-!**/migrations/__init__.py
+# NOTE: Migration files MUST be committed to version control.
+# Do NOT ignore them — they are required for deployments.
+# **/migrations/*.py
+# !**/migrations/__init__.py
