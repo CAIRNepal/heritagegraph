@@ -38,12 +38,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Create non-root user for security
 RUN useradd -m -u 1000 django
 
-# Set working directory
-WORKDIR /app
+# Set working directory — /app/heritage_graph/ so manage.py is in CWD
+# and 'heritage_graph' is a proper Python package under /app/
+WORKDIR /app/heritage_graph
 
-# Add parent directory to PYTHONPATH so 'heritage_graph.settings' resolves
-# (WORKDIR /app IS the heritage_graph package; Python needs '/' to find it)
-ENV PYTHONPATH=/
+# PYTHONPATH=/app so 'import heritage_graph.wsgi' resolves to /app/heritage_graph/wsgi.py
+ENV PYTHONPATH=/app
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -54,19 +54,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy wheels from builder and install
 COPY --from=builder /build/wheels /wheels
-COPY heritage_graph/requirements.txt .
+COPY heritage_graph/requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache /wheels/*
 
-# Copy application code
-COPY ./heritage_graph /app
+# Copy application code into /app/heritage_graph/ (creates a proper Python package)
+COPY ./heritage_graph /app/heritage_graph
 
 # Create necessary directories
-RUN mkdir -p /app/staticfiles /app/media && \
+RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media && \
     chown -R django:django /app
 
 # Ensure entrypoint script is executable
-RUN chmod +x /app/entrypoint.sh
+RUN chmod +x /app/heritage_graph/entrypoint.sh
 
 # Switch to non-root user
 USER django
@@ -79,5 +79,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
 # Entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/heritage_graph/entrypoint.sh"]
 CMD ["gunicorn", "heritage_graph.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--worker-class", "sync", "--max-requests", "1000", "--max-requests-jitter", "100", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-"]
