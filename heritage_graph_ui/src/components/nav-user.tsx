@@ -56,7 +56,7 @@ export function NavUser({
     if (status === 'authenticated' && session?.accessToken) {
       const initUser = async () => {
         try {
-          const res = await fetch('http://localhost:8000/data/testthelogin', {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/testthelogin`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

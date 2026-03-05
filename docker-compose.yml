@@ -172,6 +172,8 @@ services:
       # Standalone server must listen on all interfaces
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
+      # Internal backend URL for server-side calls (NextAuth)
+      INTERNAL_BACKEND_URL: http://backend:8000
     networks:
       - proxy
       - backend

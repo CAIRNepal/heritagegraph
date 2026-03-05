@@ -11,7 +11,12 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname),
   },
   images: {
-    domains: ['i.imgur.com'], // Add your image domains here
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+      },
+    ],
   },
   eslint: {
     ignoreDuringBuilds: true, // disables ESLint errors breaking production build

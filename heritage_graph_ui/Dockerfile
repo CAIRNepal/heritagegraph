@@ -62,6 +62,9 @@ ENV NEXTAUTH_URL=$NEXTAUTH_URL
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
 ENV GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
 ENV GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+# Internal backend URL for server-side calls (NextAuth callbacks)
+# Uses Docker service name so SSR doesn't go through public DNS
+ENV INTERNAL_BACKEND_URL=http://backend:8000
 
 # Copy package.json
 COPY package.json ./

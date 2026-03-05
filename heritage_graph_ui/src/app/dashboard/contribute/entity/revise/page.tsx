@@ -159,7 +159,7 @@ export default function CulturalEntityContributionPage() {
     try {
       const token = (session as any)?.accessToken;
 
-      const res = await fetch(`http://0.0.0.0:8000/data/api/cultural-entities/${originalEntity.entity_id}/create_revision/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/cultural-entities/${originalEntity.entity_id}/create_revision/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,7 +207,7 @@ export default function CulturalEntityContributionPage() {
     try {
       const token = (session as any)?.accessToken;
 
-      const res = await fetch(`http://0.0.0.0:8000/data/api/cultural-entities/${originalEntity.entity_id}/`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/cultural-entities/${originalEntity.entity_id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -251,7 +251,7 @@ export default function CulturalEntityContributionPage() {
     try {
       const token = (session as any)?.accessToken;
 
-      const res = await fetch('http://0.0.0.0:8000/data/api/cultural-entities/', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/cultural-entities/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

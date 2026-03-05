@@ -29,7 +29,7 @@ export default function AuthSection() {
     if (status === 'authenticated' && session?.accessToken) {
       const initUser = async () => {
         try {
-          await fetch('http://localhost:8000/data/testthelogin', {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/testthelogin`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

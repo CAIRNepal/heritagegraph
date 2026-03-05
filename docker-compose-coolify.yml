@@ -86,6 +86,7 @@ services:
       - backend-static:/app/heritage_graph/staticfiles
       - backend-media:/app/heritage_graph/media
     networks:
+      - internal
     expose:
       - "8000"
     healthcheck:
@@ -129,6 +130,8 @@ services:
       # Server binding
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
+      # Internal backend URL for server-side calls (NextAuth)
+      INTERNAL_BACKEND_URL: http://backend:8000
     networks:
       - internal
     expose:

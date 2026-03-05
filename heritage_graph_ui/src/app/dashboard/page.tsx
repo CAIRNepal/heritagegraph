@@ -93,7 +93,7 @@ export default function Page() {
 
     const fetchBackend = async () => {
       try {
-        const res = await fetch('http://localhost:8000/data/testthelogin/', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/testthelogin/`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${session.accessToken}`,
