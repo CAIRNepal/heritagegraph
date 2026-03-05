@@ -100,3 +100,12 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_ROOT = BASE_DIR / "media"
 STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
+
+# --------------------------------------------------------------------
+# CORS Configuration
+# --------------------------------------------------------------------
+_cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins.split(",") if origin.strip()]
+
+CORS_ALLOW_CREDENTIALS = True

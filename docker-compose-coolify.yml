@@ -77,8 +77,8 @@ services:
       DB_PORT: 5432
       # Google Auth
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      # CORS - Set to your frontend domain
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://heritagegraph.xyz}
+      # CORS - Set to your frontend domain(s), comma-separated
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://heritagegraph.xyz,https://heritagegraph.xyz}
     depends_on:
       postgres:
         condition: service_healthy
