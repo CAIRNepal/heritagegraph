@@ -71,7 +71,7 @@ services:
   backend:
     restart: always
     environment:
-      DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
+      DJANGO_SETTINGS_MODULE: settings.production
       DEBUG: "False"
       ALLOWED_HOSTS: ${DOMAIN:-example.com},www.${DOMAIN:-example.com},api.${DOMAIN:-example.com}
       CORS_ALLOWED_ORIGINS: https://${DOMAIN:-example.com},https://www.${DOMAIN:-example.com}

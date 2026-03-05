@@ -35,8 +35,15 @@ fi
 # Wait for database to be ready
 # ================================================================
 log_info "Waiting for database to be available..."
-while ! python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection()" 2>/dev/null; do
-    log_warn "Database connection failed. Retrying in 5 seconds..."
+max_retries=30
+retry_count=0
+while ! python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection()" 2>&1; do
+    retry_count=$((retry_count + 1))
+    if [ $retry_count -ge $max_retries ]; then
+        log_error "Failed to connect to database after $max_retries attempts. Exiting."
+        exit 1
+    fi
+    log_warn "Database connection failed (attempt $retry_count/$max_retries). Retrying in 5 seconds..."
     sleep 5
 done
 log_info "Database is ready!"

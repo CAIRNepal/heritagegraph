@@ -105,7 +105,7 @@ services:
     environment:
       # Django settings
       DJANGO_ENV: production
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.production}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-settings.production}
       DEBUG: ${DEBUG:-False}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key-change-in-production}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend.localhost}

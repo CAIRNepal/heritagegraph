@@ -65,7 +65,7 @@ services:
       # Django settings
       PYTHONPATH: /
       DJANGO_ENV: production
-      DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
+      DJANGO_SETTINGS_MODULE: settings.production
       DEBUG: "False"
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-api.heritagegraph.xyz,localhost}
