@@ -128,3 +128,83 @@ export interface HistoricalPeriodRecord extends BaseRecord {
   end_year?: string;
   cultural_entity_id?: string;
 }
+
+/**
+ * Deity record type
+ */
+export interface DeityRecord extends BaseRecord {
+  religious_tradition?: string;
+  alternate_names?: string;
+  note?: string;
+}
+
+/**
+ * Guthi record type
+ */
+export interface GuthiRecord extends BaseRecord {
+  guthi_type?: string;
+  location?: string;
+  managed_structures?: string;
+  note?: string;
+}
+
+/**
+ * Architectural Structure record type
+ */
+export interface StructureRecord extends BaseRecord {
+  structure_type?: string;
+  architectural_style?: string;
+  construction_date?: string;
+  location_name?: string;
+  coordinates?: string;
+  existence_status?: string;
+  condition?: string;
+  note?: string;
+}
+
+/**
+ * Ritual Event record type
+ */
+export interface RitualRecord extends BaseRecord {
+  ritual_type?: string;
+  date?: string;
+  recurrence_pattern?: string;
+  performed_by?: string;
+  location_name?: string;
+  note?: string;
+}
+
+/**
+ * Festival record type
+ */
+export interface FestivalRecord extends BaseRecord {
+  festival_type?: string;
+  date?: string;
+  duration?: string;
+  location_name?: string;
+  note?: string;
+}
+
+/**
+ * Iconographic Object record type
+ */
+export interface IconographyRecord extends BaseRecord {
+  object_type?: string;
+  depicts_deity?: string;
+  creation_date?: string;
+  technique?: string;
+  location_name?: string;
+  note?: string;
+}
+
+/**
+ * Monument record type
+ */
+export interface MonumentRecord extends BaseRecord {
+  monument_type?: string;
+  construction_date?: string;
+  location_name?: string;
+  coordinates?: string;
+  existence_status?: string;
+  note?: string;
+}

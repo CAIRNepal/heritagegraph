@@ -19,6 +19,13 @@ import type {
   CulturalEntityRecord,
   SourceRecord,
   HistoricalPeriodRecord,
+  DeityRecord,
+  GuthiRecord,
+  StructureRecord,
+  RitualRecord,
+  FestivalRecord,
+  IconographyRecord,
+  MonumentRecord,
   DataTableConfig,
 } from './types';
 
@@ -831,6 +838,766 @@ export const historicalPeriodColumns: ColumnDef<HistoricalPeriodRecord>[] = [
 ];
 
 // ============================================
+// DEITY COLUMNS
+// ============================================
+
+export const deityColumns: ColumnDef<DeityRecord>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const item = row.original;
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Link
+              href={`/dashboard/knowledge/deity/view/${item.id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {item.name || item.title || '-'}
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-3">
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.religious_tradition && (
+                <Badge variant="outline">{item.religious_tradition}</Badge>
+              )}
+              {item.note && (
+                <p className="text-sm line-clamp-3">{item.note}</p>
+              )}
+              <div className="pt-2">
+                <Link href={`/dashboard/knowledge/deity/view/${item.id}`}>
+                  <Button variant="default" size="sm" className="w-full text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> View Details
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    enableHiding: false,
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'religious_tradition',
+    header: 'Tradition',
+    cell: ({ row }) => {
+      const tradition = row.original.religious_tradition;
+      if (!tradition) return '-';
+      return <Badge variant="secondary">{tradition}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'alternate_names',
+    header: 'Alternate Names',
+    cell: ({ row }) => (
+      <span className="text-sm line-clamp-1 max-w-xs">
+        {row.original.alternate_names || '-'}
+      </span>
+    ),
+  },
+  {
+    accessorKey: 'contributor',
+    header: 'Contributor',
+    cell: ({ row }) => {
+      const contributor = row.original.contributor;
+      if (!contributor) return '-';
+      return (
+        <Link href={`/dashboard/users/${contributor}`}>
+          <Badge variant="secondary" className="cursor-pointer">
+            @{contributor}
+          </Badge>
+        </Link>
+      );
+    },
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return '-';
+      return (
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={`/dashboard/knowledge/deity/view/${row.original.id}`}>
+          View
+        </Link>
+      </Button>
+    ),
+    enableColumnFilter: false,
+  },
+];
+
+// ============================================
+// GUTHI COLUMNS
+// ============================================
+
+export const guthiColumns: ColumnDef<GuthiRecord>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const item = row.original;
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Link
+              href={`/dashboard/knowledge/guthi/view/${item.id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {item.name || item.title || '-'}
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-3">
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.guthi_type && (
+                <Badge variant="outline">{item.guthi_type.replace('_', ' ')}</Badge>
+              )}
+              {item.location && (
+                <p className="text-xs text-muted-foreground">📍 {item.location}</p>
+              )}
+              {item.note && (
+                <p className="text-sm line-clamp-3">{item.note}</p>
+              )}
+              <div className="pt-2">
+                <Link href={`/dashboard/knowledge/guthi/view/${item.id}`}>
+                  <Button variant="default" size="sm" className="w-full text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> View Details
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    enableHiding: false,
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'guthi_type',
+    header: 'Type',
+    cell: ({ row }) => {
+      const type = row.original.guthi_type;
+      if (!type) return '-';
+      return <Badge variant="secondary">{type.replace('_', ' ')}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'location',
+    header: 'Location',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.location || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'contributor',
+    header: 'Contributor',
+    cell: ({ row }) => {
+      const contributor = row.original.contributor;
+      if (!contributor) return '-';
+      return (
+        <Link href={`/dashboard/users/${contributor}`}>
+          <Badge variant="secondary" className="cursor-pointer">
+            @{contributor}
+          </Badge>
+        </Link>
+      );
+    },
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return '-';
+      return (
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={`/dashboard/knowledge/guthi/view/${row.original.id}`}>
+          View
+        </Link>
+      </Button>
+    ),
+    enableColumnFilter: false,
+  },
+];
+
+// ============================================
+// STRUCTURE COLUMNS
+// ============================================
+
+export const structureColumns: ColumnDef<StructureRecord>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const item = row.original;
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Link
+              href={`/dashboard/knowledge/structure/view/${item.id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {item.name || item.title || '-'}
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-3">
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.structure_type && (
+                <Badge variant="outline">{item.structure_type.replace('_', ' ')}</Badge>
+              )}
+              {item.architectural_style && (
+                <Badge variant="secondary">{item.architectural_style.replace('_', ' ')}</Badge>
+              )}
+              {item.location_name && (
+                <p className="text-xs text-muted-foreground">📍 {item.location_name}</p>
+              )}
+              <div className="pt-2">
+                <Link href={`/dashboard/knowledge/structure/view/${item.id}`}>
+                  <Button variant="default" size="sm" className="w-full text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> View Details
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    enableHiding: false,
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'structure_type',
+    header: 'Type',
+    cell: ({ row }) => {
+      const type = row.original.structure_type;
+      if (!type) return '-';
+      return <Badge variant="secondary">{type.replace('_', ' ')}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'architectural_style',
+    header: 'Style',
+    cell: ({ row }) => {
+      const style = row.original.architectural_style;
+      if (!style) return '-';
+      return <Badge variant="outline">{style.replace('_', ' ')}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'location_name',
+    header: 'Location',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.location_name || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'existence_status',
+    header: 'Condition',
+    cell: ({ row }) => {
+      const es = row.original.existence_status;
+      if (!es) return '-';
+      return <span className="text-sm">{es.replace('_', ' ')}</span>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return '-';
+      return (
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={`/dashboard/knowledge/structure/view/${row.original.id}`}>
+          View
+        </Link>
+      </Button>
+    ),
+    enableColumnFilter: false,
+  },
+];
+
+// ============================================
+// RITUAL COLUMNS
+// ============================================
+
+export const ritualColumns: ColumnDef<RitualRecord>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const item = row.original;
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Link
+              href={`/dashboard/knowledge/ritual/view/${item.id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {item.name || item.title || '-'}
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-3">
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.ritual_type && (
+                <Badge variant="outline">{item.ritual_type}</Badge>
+              )}
+              {item.location_name && (
+                <p className="text-xs text-muted-foreground">📍 {item.location_name}</p>
+              )}
+              {item.note && (
+                <p className="text-sm line-clamp-3">{item.note}</p>
+              )}
+              <div className="pt-2">
+                <Link href={`/dashboard/knowledge/ritual/view/${item.id}`}>
+                  <Button variant="default" size="sm" className="w-full text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> View Details
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    enableHiding: false,
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'ritual_type',
+    header: 'Type',
+    cell: ({ row }) => {
+      const type = row.original.ritual_type;
+      if (!type) return '-';
+      return <Badge variant="secondary">{type}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'date',
+    header: 'Date',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.date || '-'}</span>
+    ),
+  },
+  {
+    accessorKey: 'performed_by',
+    header: 'Performed By',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.performed_by || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'location_name',
+    header: 'Location',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.location_name || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return '-';
+      return (
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={`/dashboard/knowledge/ritual/view/${row.original.id}`}>
+          View
+        </Link>
+      </Button>
+    ),
+    enableColumnFilter: false,
+  },
+];
+
+// ============================================
+// FESTIVAL COLUMNS
+// ============================================
+
+export const festivalColumns: ColumnDef<FestivalRecord>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const item = row.original;
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Link
+              href={`/dashboard/knowledge/festival/view/${item.id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {item.name || item.title || '-'}
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-3">
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.festival_type && (
+                <Badge variant="outline">{item.festival_type}</Badge>
+              )}
+              {item.location_name && (
+                <p className="text-xs text-muted-foreground">📍 {item.location_name}</p>
+              )}
+              {item.note && (
+                <p className="text-sm line-clamp-3">{item.note}</p>
+              )}
+              <div className="pt-2">
+                <Link href={`/dashboard/knowledge/festival/view/${item.id}`}>
+                  <Button variant="default" size="sm" className="w-full text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> View Details
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    enableHiding: false,
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'festival_type',
+    header: 'Type',
+    cell: ({ row }) => {
+      const type = row.original.festival_type;
+      if (!type) return '-';
+      return <Badge variant="secondary">{type}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'date',
+    header: 'Date',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.date || '-'}</span>
+    ),
+  },
+  {
+    accessorKey: 'duration',
+    header: 'Duration',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.duration || '-'}</span>
+    ),
+  },
+  {
+    accessorKey: 'location_name',
+    header: 'Location',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.location_name || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return '-';
+      return (
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={`/dashboard/knowledge/festival/view/${row.original.id}`}>
+          View
+        </Link>
+      </Button>
+    ),
+    enableColumnFilter: false,
+  },
+];
+
+// ============================================
+// ICONOGRAPHY COLUMNS
+// ============================================
+
+export const iconographyColumns: ColumnDef<IconographyRecord>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const item = row.original;
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Link
+              href={`/dashboard/knowledge/iconography/view/${item.id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {item.name || item.title || '-'}
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-3">
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.object_type && (
+                <Badge variant="outline">{item.object_type}</Badge>
+              )}
+              {item.depicts_deity && (
+                <p className="text-sm text-muted-foreground">Depicts: {item.depicts_deity}</p>
+              )}
+              {item.note && (
+                <p className="text-sm line-clamp-3">{item.note}</p>
+              )}
+              <div className="pt-2">
+                <Link href={`/dashboard/knowledge/iconography/view/${item.id}`}>
+                  <Button variant="default" size="sm" className="w-full text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> View Details
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    enableHiding: false,
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'object_type',
+    header: 'Type',
+    cell: ({ row }) => {
+      const type = row.original.object_type;
+      if (!type) return '-';
+      return <Badge variant="secondary">{type}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'depicts_deity',
+    header: 'Depicts',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.depicts_deity || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'technique',
+    header: 'Technique',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.technique || '-'}</span>
+    ),
+  },
+  {
+    accessorKey: 'location_name',
+    header: 'Location',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.location_name || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return '-';
+      return (
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={`/dashboard/knowledge/iconography/view/${row.original.id}`}>
+          View
+        </Link>
+      </Button>
+    ),
+    enableColumnFilter: false,
+  },
+];
+
+// ============================================
+// MONUMENT COLUMNS
+// ============================================
+
+export const monumentColumns: ColumnDef<MonumentRecord>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Name',
+    cell: ({ row }) => {
+      const item = row.original;
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Link
+              href={`/dashboard/knowledge/monument/view/${item.id}`}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {item.name || item.title || '-'}
+            </Link>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div className="space-y-3">
+              <h4 className="font-semibold">{item.name}</h4>
+              {item.monument_type && (
+                <Badge variant="outline">{item.monument_type}</Badge>
+              )}
+              {item.location_name && (
+                <p className="text-xs text-muted-foreground">📍 {item.location_name}</p>
+              )}
+              {item.note && (
+                <p className="text-sm line-clamp-3">{item.note}</p>
+              )}
+              <div className="pt-2">
+                <Link href={`/dashboard/knowledge/monument/view/${item.id}`}>
+                  <Button variant="default" size="sm" className="w-full text-xs">
+                    <Eye className="h-3 w-3 mr-1" /> View Details
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+    },
+    enableHiding: false,
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'monument_type',
+    header: 'Type',
+    cell: ({ row }) => {
+      const type = row.original.monument_type;
+      if (!type) return '-';
+      return <Badge variant="secondary">{type}</Badge>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'construction_date',
+    header: 'Built',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.construction_date || '-'}</span>
+    ),
+  },
+  {
+    accessorKey: 'location_name',
+    header: 'Location',
+    cell: ({ row }) => (
+      <span className="text-sm">{row.original.location_name || '-'}</span>
+    ),
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'existence_status',
+    header: 'Condition',
+    cell: ({ row }) => {
+      const es = row.original.existence_status;
+      if (!es) return '-';
+      return <span className="text-sm">{es.replace('_', ' ')}</span>;
+    },
+    enableColumnFilter: true,
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.original.status;
+      if (!status) return '-';
+      return (
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    cell: ({ row }) => (
+      <Button variant="ghost" size="sm" asChild>
+        <Link href={`/dashboard/knowledge/monument/view/${row.original.id}`}>
+          View
+        </Link>
+      </Button>
+    ),
+    enableColumnFilter: false,
+  },
+];
+
+// ============================================
 // PRE-CONFIGURED TABLE CONFIGS
 // ============================================
 
@@ -929,5 +1696,103 @@ export const historicalPeriodTableConfig: DataTableConfig<HistoricalPeriodRecord
   addAction: {
     label: 'Add Period',
     href: '/dashboard/contribute/period',
+  },
+};
+
+export const deityTableConfig: DataTableConfig<DeityRecord> = {
+  endpoint: '/cidoc/deities/',
+  columns: deityColumns,
+  dataKey: 'results',
+  viewBasePath: '/dashboard/knowledge/deity',
+  title: 'Deities',
+  description: 'Browse deities and divine figures in the knowledge base.',
+  showHeader: true,
+  addAction: {
+    label: 'Add Deity',
+    href: '/dashboard/contribute/deity',
+  },
+};
+
+export const guthiTableConfig: DataTableConfig<GuthiRecord> = {
+  endpoint: '/cidoc/guthis/',
+  columns: guthiColumns,
+  dataKey: 'results',
+  viewBasePath: '/dashboard/knowledge/guthi',
+  title: 'Guthis',
+  description: 'Browse Guthi organizations and community institutions.',
+  showHeader: true,
+  addAction: {
+    label: 'Add Guthi',
+    href: '/dashboard/contribute/guthi',
+  },
+};
+
+export const structureTableConfig: DataTableConfig<StructureRecord> = {
+  endpoint: '/cidoc/structures/',
+  columns: structureColumns,
+  dataKey: 'results',
+  viewBasePath: '/dashboard/knowledge/structure',
+  title: 'Architectural Structures',
+  description: 'Browse temples, stupas, and other heritage structures.',
+  showHeader: true,
+  addAction: {
+    label: 'Add Structure',
+    href: '/dashboard/contribute/structure',
+  },
+};
+
+export const ritualTableConfig: DataTableConfig<RitualRecord> = {
+  endpoint: '/cidoc/rituals/',
+  columns: ritualColumns,
+  dataKey: 'results',
+  viewBasePath: '/dashboard/knowledge/ritual',
+  title: 'Rituals',
+  description: 'Browse ritual events, pujas, and ceremonial practices.',
+  showHeader: true,
+  addAction: {
+    label: 'Add Ritual',
+    href: '/dashboard/contribute/ritual',
+  },
+};
+
+export const festivalTableConfig: DataTableConfig<FestivalRecord> = {
+  endpoint: '/cidoc/festivals/',
+  columns: festivalColumns,
+  dataKey: 'results',
+  viewBasePath: '/dashboard/knowledge/festival',
+  title: 'Festivals',
+  description: 'Browse cultural festivals and celebrations.',
+  showHeader: true,
+  addAction: {
+    label: 'Add Festival',
+    href: '/dashboard/contribute/festival',
+  },
+};
+
+export const iconographyTableConfig: DataTableConfig<IconographyRecord> = {
+  endpoint: '/cidoc/iconographic_objects/',
+  columns: iconographyColumns,
+  dataKey: 'results',
+  viewBasePath: '/dashboard/knowledge/iconography',
+  title: 'Iconographic Objects',
+  description: 'Browse sculptures, paintings, and iconographic artifacts.',
+  showHeader: true,
+  addAction: {
+    label: 'Add Iconography',
+    href: '/dashboard/contribute/iconography',
+  },
+};
+
+export const monumentTableConfig: DataTableConfig<MonumentRecord> = {
+  endpoint: '/cidoc/monuments/',
+  columns: monumentColumns,
+  dataKey: 'results',
+  viewBasePath: '/dashboard/knowledge/monument',
+  title: 'Monuments',
+  description: 'Browse heritage monuments and historical landmarks.',
+  showHeader: true,
+  addAction: {
+    label: 'Add Monument',
+    href: '/dashboard/contribute/monument',
   },
 };
