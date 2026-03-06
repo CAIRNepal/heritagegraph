@@ -1,18 +1,26 @@
 // app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 // -------------------------------------------------------------------
-// Provider selection: Google OAuth (prod) vs Credentials (dev)
+// Provider selection:
+//   - Dev:  Credentials (username/password → SimpleJWT)
+//   - Prod: Google OAuth + GitHub OAuth (auto-detected via env vars)
 // -------------------------------------------------------------------
-// In dev mode, we use Django's username/password auth via /api/token/.
-// In prod mode, we use Google OAuth — the id_token is sent to Django.
-// Detection: if GOOGLE_CLIENT_ID is set, use Google; otherwise Credentials.
+// If GOOGLE_CLIENT_ID is set, Google provider is enabled.
+// If GITHUB_ID is set, GitHub provider is enabled.
+// If neither is set, Credentials (dev) provider is used.
 // -------------------------------------------------------------------
 
 const isGoogleAuthEnabled =
   !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+
+const isGitHubAuthEnabled =
+  !!process.env.GITHUB_ID && !!process.env.GITHUB_SECRET;
+
+const hasOAuthProvider = isGoogleAuthEnabled || isGitHubAuthEnabled;
 
 const providers = [];
 
@@ -23,7 +31,18 @@ if (isGoogleAuthEnabled) {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     })
   );
-} else {
+}
+
+if (isGitHubAuthEnabled) {
+  providers.push(
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!,
+    })
+  );
+}
+
+if (!hasOAuthProvider) {
   providers.push(
     CredentialsProvider({
       name: "Django Login",
@@ -74,28 +93,34 @@ const handler = NextAuth({
     strategy: "jwt",
   },
 
-  // Custom login page path (optional — only used in dev/credentials mode)
-  ...(isGoogleAuthEnabled ? {} : { pages: { signIn: "/auth/login" } }),
+  // Custom login page path — only used in dev/credentials mode
+  ...(!hasOAuthProvider ? { pages: { signIn: "/auth/login" } } : {}),
 
   callbacks: {
     // Called on every sign-in
     async signIn({ user, account }) {
-      // Only run Django init for Google OAuth (prod)
-      if (account?.provider === "google") {
+      // For OAuth providers, ping the backend to auto-create the Django user
+      if (account?.provider === "google" || account?.provider === "github") {
         try {
-          const idToken = account.id_token;
-          if (idToken) {
+          const token =
+            account.provider === "google"
+              ? account.id_token
+              : account.access_token;
+          if (token) {
             const backendUrl =
               process.env.INTERNAL_BACKEND_URL || "http://backend:8000";
             const response = await fetch(`${backendUrl}/data/testme/`, {
               method: "GET",
               headers: {
-                Authorization: `Bearer ${idToken}`,
+                Authorization: `Bearer ${token}`,
                 Accept: "application/json",
               },
             });
             if (!response.ok) {
-              console.error("Django API call failed:", await response.text());
+              console.error(
+                `Django sync call failed for ${account.provider}:`,
+                await response.text()
+              );
             }
           }
         } catch (err) {
@@ -113,11 +138,17 @@ const handler = NextAuth({
         token.username = user.email;
       }
       if (account?.provider === "google") {
-        // Store Google's id_token — Django verifies this in prod
+        // Store Google's id_token — Django verifies via google-auth library
         token.accessToken = account.id_token;
+        token.authProvider = "google";
+      } else if (account?.provider === "github") {
+        // Store GitHub's access_token — Django verifies by calling GitHub API
+        token.accessToken = account.access_token;
+        token.authProvider = "github";
       } else if (user && "accessToken" in user) {
         // Store SimpleJWT access token from credentials auth (dev)
         token.accessToken = (user as any).accessToken;
+        token.authProvider = "credentials";
       }
       return token;
     },

@@ -212,6 +212,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 |------|---------|
 | `FORMS.md` | **How forms work** — add fields/enums/sections/entities, registry-driven form system |
 | `AUTH.md` | Authentication system — NextAuth + Google OAuth + Django token verification |
+| `AUTH_GUIDE.md` | **How to add new auth providers** — step-by-step guide with templates |
 | `CLAUDE.md` | Coding conventions and style guide for AI agents |
 | `SKILLS.md` | Feature capabilities matrix and implementation guide |
 | `ARCHITECTURE.md` | System design, data flow, and component relationships |

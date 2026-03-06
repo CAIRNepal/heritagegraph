@@ -1,7 +1,7 @@
 """
 Authentication backends for Django REST Framework.
 
-Two backends are provided, selected via DJANGO_ENV:
+Three backends are provided, selected via DJANGO_ENV:
 
 - **Development:** `DevSessionAuthentication`
   Uses Django's built-in session auth + simple JWT (SimpleJWT).
@@ -11,11 +11,16 @@ Two backends are provided, selected via DJANGO_ENV:
 - **Production:** `GoogleTokenAuthentication`
   Verifies Google-issued ID tokens (sent by NextAuth frontend as
   Bearer tokens) and auto-creates/syncs Django User + UserProfile.
+
+- **Production:** `GitHubTokenAuthentication`
+  Verifies GitHub OAuth access tokens (sent by NextAuth frontend as
+  Bearer tokens) and auto-creates/syncs Django User + UserProfile.
 """
 
 import logging
 import os
 
+import requests as http_requests
 from django.contrib.auth.models import User
 from rest_framework import authentication, exceptions
 
@@ -134,6 +139,136 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         profile.email = email
         # Store Google's unique subject ID for reference
         profile.clerk_user_id = payload.get("sub", profile.clerk_user_id)
+        profile.save()
+
+        return (user, None)
+
+
+# ====================================================================
+# Production Authentication — GitHub OAuth Access Token
+# ====================================================================
+
+GITHUB_CLIENT_ID = os.environ.get("GITHUB_CLIENT_ID", "")
+GITHUB_CLIENT_SECRET = os.environ.get("GITHUB_CLIENT_SECRET", "")
+
+
+class GitHubTokenAuthentication(authentication.BaseAuthentication):
+    """
+    Authenticate requests using GitHub OAuth access tokens.
+
+    The frontend (NextAuth + GitHubProvider) sends the GitHub access_token
+    as a Bearer token in the Authorization header. This backend:
+
+    1. Calls GitHub's /user API to verify the token and get user info
+    2. Maps GitHub claims → Django User fields
+    3. Auto-creates User + UserProfile on first login (get_or_create)
+
+    This backend returns None (instead of raising) for tokens that aren't
+    GitHub tokens, so the next auth class in the DRF chain can try.
+    """
+
+    GITHUB_USER_API = "https://api.github.com/user"
+    GITHUB_EMAILS_API = "https://api.github.com/user/emails"
+
+    def authenticate(self, request):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return None
+
+        # If GitHub auth is not configured, skip entirely
+        if not GITHUB_CLIENT_ID:
+            return None
+
+        token = auth_header.split(" ")[1]
+
+        # Try to get user info from GitHub API
+        try:
+            resp = http_requests.get(
+                self.GITHUB_USER_API,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/json",
+                },
+                timeout=10,
+            )
+        except http_requests.RequestException:
+            return None
+
+        # If GitHub rejects the token, let the next auth class try
+        if resp.status_code != 200:
+            return None
+
+        gh_user = resp.json()
+
+        # Verify this is a real GitHub response (has expected fields)
+        github_id = gh_user.get("id")
+        github_login = gh_user.get("login")
+        if not github_id or not github_login:
+            return None
+
+        # Get primary verified email
+        email = gh_user.get("email")
+        if not email:
+            # Some GitHub users have private emails — fetch from /user/emails
+            try:
+                email_resp = http_requests.get(
+                    self.GITHUB_EMAILS_API,
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Accept": "application/json",
+                    },
+                    timeout=10,
+                )
+                if email_resp.status_code == 200:
+                    emails = email_resp.json()
+                    for em in emails:
+                        if em.get("primary") and em.get("verified"):
+                            email = em["email"]
+                            break
+                    if not email and emails:
+                        email = emails[0].get("email")
+            except http_requests.RequestException:
+                pass
+
+        if not email:
+            raise exceptions.AuthenticationFailed(
+                "Could not retrieve email from GitHub. "
+                "Please make sure your GitHub account has a verified email."
+            )
+
+        # Parse name
+        full_name = gh_user.get("name") or github_login
+        name_parts = full_name.split(" ", 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ""
+
+        # --- Map GitHub user → Django User ---
+        username = email  # consistent with Google auth
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={"email": email},
+        )
+
+        # Always sync core fields from GitHub
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+
+        if created:
+            logger.info("Created new Django user from GitHub sign-in: %s (gh: %s)", email, github_login)
+
+        # --- Sync UserProfile ---
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.first_name = first_name
+        profile.last_name = last_name
+        profile.email = email
+        # Store GitHub's unique ID for reference
+        profile.clerk_user_id = str(github_id)
+        if gh_user.get("avatar_url") and not profile.profile_image:
+            # Don't overwrite existing profile images
+            pass
         profile.save()
 
         return (user, None)

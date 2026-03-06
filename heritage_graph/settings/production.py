@@ -48,6 +48,8 @@ for var in ("DB_NAME", "DB_USER", "DB_PASSWORD"):
 # --------------------------------------------------------------------
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
     "apps.heritage_data.authentication.GoogleTokenAuthentication",
+    "apps.heritage_data.authentication.GitHubTokenAuthentication",
+    "rest_framework_simplejwt.authentication.JWTAuthentication",
 )
 
 # # --------------------------------------------------------------------

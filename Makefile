@@ -9,7 +9,8 @@
         docker-up docker-up-build docker-down docker-build \
         docker-logs docker-ps docker-shell docker-migrate \
         prod-up prod-down prod-build prod-logs \
-        backup restore clean prune
+        backup restore clean prune \
+        auth-dev auth-google auth-github auth-all auth-status
 
 .DEFAULT_GOAL := help
 
@@ -70,6 +71,13 @@ help:
 	@echo "    make prod-down      Stop production services"
 	@echo "    make prod-build     Build production images"
 	@echo "    make prod-logs      View production logs"
+	@echo ""
+	@echo "  \033[1mAUTHENTICATION\033[0m  (set up login providers)"
+	@echo "    make auth-dev       JWT only  — no OAuth (default for dev)"
+	@echo "    make auth-google    Enable Google OAuth  (needs client ID/secret)"
+	@echo "    make auth-github    Enable GitHub OAuth  (needs client ID/secret)"
+	@echo "    make auth-all       Enable Google + GitHub OAuth together"
+	@echo "    make auth-status    Show which auth providers are active"
 	@echo ""
 	@echo "  \033[1mCLEANUP\033[0m"
 	@echo "    make backup         Backup PostgreSQL (Docker)"
@@ -189,6 +197,144 @@ prod-build: ## Build production images
 
 prod-logs: ## View production logs
 	docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
+
+# ================================================================
+# AUTHENTICATION — Provider Management
+# ================================================================
+# Creates / updates .env files in heritage_graph_ui/ to enable or
+# disable OAuth providers. The frontend auto-detects which provider
+# to show based on which env vars are set.
+#
+# Dev mode (default):  username/password → SimpleJWT
+# Google mode:         Google OAuth → Google ID token
+# GitHub mode:         GitHub OAuth → GitHub access token
+# All mode:            Both Google and GitHub, user picks on sign-in page
+# ================================================================
+
+FRONTEND_ENV := $(FRONTEND)/.env.local
+
+# Helper: ensure NEXTAUTH basics exist
+define ensure_nextauth_base
+	@grep -q '^NEXTAUTH_URL=' $(FRONTEND_ENV) 2>/dev/null || echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
+	@grep -q '^NEXTAUTH_SECRET=' $(FRONTEND_ENV) 2>/dev/null || echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
+	@grep -q '^NEXT_PUBLIC_API_URL=' $(FRONTEND_ENV) 2>/dev/null || echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+endef
+
+auth-dev: ## JWT-only auth (default dev mode — no OAuth)
+	@echo "==> Configuring JWT-only authentication (dev mode)..."
+	@rm -f $(FRONTEND_ENV)
+	@touch $(FRONTEND_ENV)
+	@echo '# Auth mode: Development (Credentials + SimpleJWT)' > $(FRONTEND_ENV)
+	@echo '# No OAuth providers — uses username/password login' >> $(FRONTEND_ENV)
+	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
+	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
+	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@echo ""
+	@echo "  ✓ Auth mode: JWT (dev)"
+	@echo "  Login at: http://localhost:3000/auth/login"
+	@echo "  Create a user: make superuser"
+	@echo ""
+
+auth-google: ## Enable Google OAuth
+	@echo "==> Configuring Google OAuth..."
+	@if [ -z "$(GOOGLE_CLIENT_ID)" ] || [ -z "$(GOOGLE_CLIENT_SECRET)" ]; then \
+		echo ""; \
+		echo "  Usage: make auth-google GOOGLE_CLIENT_ID=xxx GOOGLE_CLIENT_SECRET=yyy"; \
+		echo ""; \
+		echo "  Get credentials from: https://console.cloud.google.com/apis/credentials"; \
+		echo "  Set callback URL to:  http://localhost:3000/api/auth/callback/google"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@rm -f $(FRONTEND_ENV)
+	@echo '# Auth mode: Google OAuth' > $(FRONTEND_ENV)
+	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
+	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
+	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@echo "GOOGLE_CLIENT_ID=$(GOOGLE_CLIENT_ID)" >> $(FRONTEND_ENV)
+	@echo "GOOGLE_CLIENT_SECRET=$(GOOGLE_CLIENT_SECRET)" >> $(FRONTEND_ENV)
+	@echo ""
+	@echo "  ✓ Auth mode: Google OAuth"
+	@echo "  Also set GOOGLE_CLIENT_ID in heritage_graph/.env for backend verification"
+	@echo ""
+
+auth-github: ## Enable GitHub OAuth
+	@echo "==> Configuring GitHub OAuth..."
+	@if [ -z "$(GITHUB_ID)" ] || [ -z "$(GITHUB_SECRET)" ]; then \
+		echo ""; \
+		echo "  Usage: make auth-github GITHUB_ID=xxx GITHUB_SECRET=yyy"; \
+		echo ""; \
+		echo "  Get credentials from: https://github.com/settings/developers → OAuth Apps"; \
+		echo "  Set callback URL to:  http://localhost:3000/api/auth/callback/github"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@rm -f $(FRONTEND_ENV)
+	@echo '# Auth mode: GitHub OAuth' > $(FRONTEND_ENV)
+	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
+	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
+	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@echo "GITHUB_ID=$(GITHUB_ID)" >> $(FRONTEND_ENV)
+	@echo "GITHUB_SECRET=$(GITHUB_SECRET)" >> $(FRONTEND_ENV)
+	@echo ""
+	@echo "  ✓ Auth mode: GitHub OAuth"
+	@echo "  Also set GITHUB_CLIENT_ID in heritage_graph/.env for backend verification"
+	@echo ""
+
+auth-all: ## Enable both Google + GitHub OAuth
+	@echo "==> Configuring Google + GitHub OAuth..."
+	@if [ -z "$(GOOGLE_CLIENT_ID)" ] || [ -z "$(GOOGLE_CLIENT_SECRET)" ] || \
+	    [ -z "$(GITHUB_ID)" ] || [ -z "$(GITHUB_SECRET)" ]; then \
+		echo ""; \
+		echo "  Usage:"; \
+		echo "    make auth-all \\"; \
+		echo "      GOOGLE_CLIENT_ID=xxx GOOGLE_CLIENT_SECRET=yyy \\"; \
+		echo "      GITHUB_ID=aaa GITHUB_SECRET=bbb"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@rm -f $(FRONTEND_ENV)
+	@echo '# Auth mode: Google + GitHub OAuth' > $(FRONTEND_ENV)
+	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
+	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
+	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@echo "GOOGLE_CLIENT_ID=$(GOOGLE_CLIENT_ID)" >> $(FRONTEND_ENV)
+	@echo "GOOGLE_CLIENT_SECRET=$(GOOGLE_CLIENT_SECRET)" >> $(FRONTEND_ENV)
+	@echo "GITHUB_ID=$(GITHUB_ID)" >> $(FRONTEND_ENV)
+	@echo "GITHUB_SECRET=$(GITHUB_SECRET)" >> $(FRONTEND_ENV)
+	@echo ""
+	@echo "  ✓ Auth mode: Google + GitHub OAuth"
+	@echo "  Users will see both sign-in buttons on the login page"
+	@echo ""
+
+auth-status: ## Show which auth providers are currently configured
+	@echo ""
+	@echo "  Auth Provider Status"
+	@echo "  ===================="
+	@if [ -f $(FRONTEND_ENV) ]; then \
+		echo "  Frontend env: $(FRONTEND_ENV)"; \
+		if grep -q '^GOOGLE_CLIENT_ID=' $(FRONTEND_ENV) 2>/dev/null; then \
+			echo "  ✓ Google OAuth:  ENABLED"; \
+		else \
+			echo "  ✗ Google OAuth:  disabled"; \
+		fi; \
+		if grep -q '^GITHUB_ID=' $(FRONTEND_ENV) 2>/dev/null; then \
+			echo "  ✓ GitHub OAuth:  ENABLED"; \
+		else \
+			echo "  ✗ GitHub OAuth:  disabled"; \
+		fi; \
+		if ! grep -q '^GOOGLE_CLIENT_ID=\|^GITHUB_ID=' $(FRONTEND_ENV) 2>/dev/null; then \
+			echo "  ✓ Credentials:   ENABLED (JWT dev mode)"; \
+		else \
+			echo "  ✗ Credentials:   disabled (OAuth active)"; \
+		fi; \
+	else \
+		echo "  No .env.local found — defaulting to JWT (dev) auth"; \
+		echo "  ✓ Credentials: ENABLED (JWT dev mode)"; \
+		echo "  ✗ Google OAuth: disabled"; \
+		echo "  ✗ GitHub OAuth: disabled"; \
+	fi
+	@echo ""
 
 # ================================================================
 # BACKUP / RESTORE (Docker PostgreSQL)

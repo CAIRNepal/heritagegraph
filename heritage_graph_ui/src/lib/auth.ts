@@ -1,13 +1,21 @@
 // src/lib/auth.ts
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import GitHubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
 // -------------------------------------------------------------------
-// Provider selection: Google OAuth (prod) vs Credentials (dev)
+// Provider selection:
+//   - Dev:  Credentials (username/password → SimpleJWT)
+//   - Prod: Google OAuth + GitHub OAuth (auto-detected via env vars)
 // -------------------------------------------------------------------
 const isGoogleAuthEnabled =
   !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+
+const isGitHubAuthEnabled =
+  !!process.env.GITHUB_ID && !!process.env.GITHUB_SECRET;
+
+const hasOAuthProvider = isGoogleAuthEnabled || isGitHubAuthEnabled;
 
 const providers: NextAuthOptions['providers'] = [];
 
@@ -18,7 +26,18 @@ if (isGoogleAuthEnabled) {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     })
   );
-} else {
+}
+
+if (isGitHubAuthEnabled) {
+  providers.push(
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID!,
+      clientSecret: process.env.GITHUB_SECRET!,
+    })
+  );
+}
+
+if (!hasOAuthProvider) {
   providers.push(
     CredentialsProvider({
       name: 'Django Login',
@@ -62,7 +81,7 @@ if (isGoogleAuthEnabled) {
 export const authOptions: NextAuthOptions = {
   providers,
   session: { strategy: 'jwt' },
-  ...(isGoogleAuthEnabled ? {} : { pages: { signIn: '/auth/login' } }),
+  ...(!hasOAuthProvider ? { pages: { signIn: '/auth/login' } } : {}),
   callbacks: {
     async jwt({ token, account, user }) {
       if (user) {
@@ -70,6 +89,8 @@ export const authOptions: NextAuthOptions = {
       }
       if (account?.provider === 'google') {
         token.accessToken = account.id_token;
+      } else if (account?.provider === 'github') {
+        token.accessToken = account.access_token;
       } else if (user && 'accessToken' in user) {
         token.accessToken = (user as any).accessToken;
       }
