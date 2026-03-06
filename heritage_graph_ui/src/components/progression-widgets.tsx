@@ -26,6 +26,8 @@ import {
   IconTarget,
 } from '@tabler/icons-react';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 /* ── Track data (matches progression page) ── */
 const trackInfo = {
   curation: { name: 'Curation', icon: IconArchive, gradient: 'from-amber-500 to-orange-600', color: 'text-amber-600' },
@@ -35,7 +37,7 @@ const trackInfo = {
 };
 
 /* ── Tier display info ── */
-const tierDisplay = {
+const tierDisplay: Record<string, { name: string; icon: string; next: string | null; gradient: string }> = {
   apprentice: { name: 'Apprentice', icon: '🕯️', next: 'Scholar', gradient: 'from-gray-400 to-gray-500' },
   scholar: { name: 'Scholar', icon: '📚', next: 'Curator', gradient: 'from-emerald-500 to-green-600' },
   curator: { name: 'Curator', icon: '🏛️', next: 'Archivist', gradient: 'from-amber-500 to-yellow-600' },
@@ -54,43 +56,74 @@ interface UserProgressData {
   streak?: number;
 }
 
-/* ── Mock user progress (would come from API) ── */
-function useUserProgress(): UserProgressData | null {
+interface LeaderboardUser {
+  user_id: number;
+  username: string;
+  full_name: string;
+  score: number;
+  tier_id: string;
+  tier_icon: string;
+}
+
+/* ── Hook that fetches user progress from the backend ── */
+function useUserProgress(): { progress: UserProgressData | null; leaderboard: LeaderboardUser[]; loading: boolean } {
   const { data: session } = useSession();
   const [progress, setProgress] = useState<UserProgressData | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session) {
-      // Mock data - replace with actual API call
-      setProgress({
-        tier: 'scholar',
-        rank: 6,
-        totalPoints: 1420,
-        pointsToNextTier: 580,
-        progressPercent: 71,
-        medals: { gold: 0, silver: 2, bronze: 4 },
-        recentActivity: [
-          { type: 'submission', points: 15, label: 'Heritage entry submitted' },
-          { type: 'review', points: 10, label: 'Peer review completed' },
-          { type: 'annotation', points: 5, label: 'Added provenance note' },
-        ],
-        streak: 7,
-      });
-    }
-  }, [session]);
+    async function fetchData() {
+      try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (session?.accessToken) {
+          headers['Authorization'] = `Bearer ${session.accessToken}`;
+        }
 
-  return progress;
+        const res = await fetch(`${API_BASE_URL}/data/api/progression/`, { headers });
+        if (!res.ok) {
+          setLoading(false);
+          return;
+        }
+
+        const data = await res.json();
+        setLeaderboard(data.leaderboard || []);
+
+        if (data.user_progress) {
+          const up = data.user_progress;
+          setProgress({
+            tier: (up.tierId || 'apprentice') as TierType,
+            rank: up.rank,
+            totalPoints: up.totalPoints,
+            pointsToNextTier: up.pointsToNextTier,
+            progressPercent: up.progressPercent,
+            medals: up.medals,
+            recentActivity: up.recentActivity?.slice(0, 3) || [],
+            streak: up.streak,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch progression data for widget:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [session?.accessToken]);
+
+  return { progress, leaderboard, loading };
 }
 
 /* ── Compact Progress Badge (for headers/nav) ── */
 export function UserProgressBadge({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const progress = useUserProgress();
+  const { progress } = useUserProgress();
 
   if (!session || !progress) return null;
 
-  const tierInfo = tierDisplay[progress.tier];
-  const config = tierConfig[progress.tier];
+  const tierInfo = tierDisplay[progress.tier] || tierDisplay.apprentice;
+  const config = tierConfig[progress.tier] || tierConfig.apprentice;
 
   return (
     <TooltipProvider>
@@ -129,11 +162,11 @@ export function UserProgressBadge({ className }: { className?: string }) {
 /* ── Minimal Widget (for sidebar or small spaces) ── */
 export function ProgressionWidgetMini({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const progress = useUserProgress();
+  const { progress } = useUserProgress();
 
   if (!session || !progress) return null;
 
-  const tierInfo = tierDisplay[progress.tier];
+  const tierInfo = tierDisplay[progress.tier] || tierDisplay.apprentice;
 
   return (
     <Link href="/dashboard/progression">
@@ -166,9 +199,9 @@ export function ProgressionWidgetMini({ className }: { className?: string }) {
 /* ── Full Dashboard Widget ── */
 export function ProgressionWidgetFull({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const progress = useUserProgress();
+  const { progress, loading } = useUserProgress();
 
-  if (!session || !progress) {
+  if (!session || (!progress && !loading)) {
     return (
       <Card className={cn('overflow-hidden', className)}>
         <div className="bg-gradient-to-br from-amber-100 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/20 p-6">
@@ -187,7 +220,19 @@ export function ProgressionWidgetFull({ className }: { className?: string }) {
     );
   }
 
-  const tierInfo = tierDisplay[progress.tier];
+  if (loading || !progress) {
+    return (
+      <Card className={cn('overflow-hidden', className)}>
+        <div className="p-6 space-y-4">
+          <div className="h-20 bg-muted/30 rounded-lg animate-pulse" />
+          <div className="h-4 bg-muted/30 rounded animate-pulse w-2/3" />
+          <div className="h-3 bg-muted/30 rounded animate-pulse" />
+        </div>
+      </Card>
+    );
+  }
+
+  const tierInfo = tierDisplay[progress.tier] || tierDisplay.apprentice;
 
   return (
     <Card className={cn('overflow-hidden', className)}>
@@ -323,13 +368,9 @@ export function ProgressionWidgetFull({ className }: { className?: string }) {
 /* ── Leaderboard Preview Widget ── */
 export function LeaderboardPreview({ className }: { className?: string }) {
   const { data: session } = useSession();
-  const progress = useUserProgress();
+  const { progress, leaderboard, loading } = useUserProgress();
 
-  const topContributors = [
-    { name: 'Dr. Elif Şahin', tier: 'grandkeeper', points: 4820 },
-    { name: 'James Okafor', tier: 'archivist', points: 4105 },
-    { name: 'María Castellanos', tier: 'archivist', points: 3760 },
-  ];
+  const topContributors = leaderboard.slice(0, 3);
 
   return (
     <Card className={cn('overflow-hidden', className)}>
@@ -339,16 +380,26 @@ export function LeaderboardPreview({ className }: { className?: string }) {
             <IconTrophy className="w-5 h-5 text-yellow-500" />
             Hall of Record
           </CardTitle>
-          <Link href="/dashboard/leaderboard" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+          <Link href="/dashboard/progression" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
             See all <IconChevronRight className="w-3 h-3" />
           </Link>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {topContributors.map((user, i) => {
-          const tierInfo = tierDisplay[user.tier as TierType];
+        {loading && (
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-8 bg-muted/30 rounded animate-pulse" />
+            ))}
+          </div>
+        )}
+        {!loading && topContributors.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-4">No contributors yet</p>
+        )}
+        {!loading && topContributors.map((user, i) => {
+          const tierInfo = tierDisplay[user.tier_id] || tierDisplay.apprentice;
           return (
-            <div key={i} className="flex items-center gap-3">
+            <div key={user.user_id} className="flex items-center gap-3">
               <span className={cn(
                 'w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold',
                 i === 0 && 'bg-yellow-100 text-yellow-700',
@@ -358,8 +409,8 @@ export function LeaderboardPreview({ className }: { className?: string }) {
                 {i + 1}
               </span>
               <span className="text-lg">{tierInfo.icon}</span>
-              <span className="flex-1 font-medium truncate text-sm">{user.name}</span>
-              <span className="text-sm text-amber-600 font-semibold">{user.points.toLocaleString()}</span>
+              <span className="flex-1 font-medium truncate text-sm">{user.full_name || user.username}</span>
+              <span className="text-sm text-amber-600 font-semibold">{user.score.toLocaleString()}</span>
             </div>
           );
         })}
@@ -371,7 +422,7 @@ export function LeaderboardPreview({ className }: { className?: string }) {
                 <span className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
                   {progress.rank}
                 </span>
-                <span className="text-lg">{tierDisplay[progress.tier].icon}</span>
+                <span className="text-lg">{(tierDisplay[progress.tier] || tierDisplay.apprentice).icon}</span>
                 <span className="flex-1 font-medium truncate text-sm">You</span>
                 <span className="text-sm text-amber-600 font-semibold">{progress.totalPoints.toLocaleString()}</span>
               </div>
@@ -384,14 +435,14 @@ export function LeaderboardPreview({ className }: { className?: string }) {
 }
 
 /* ── Achievement Celebration Toast ── */
-export function AchievementToast({ 
-  title, 
-  description, 
+export function AchievementToast({
+  title,
+  description,
   icon = '🎉',
-  points 
-}: { 
-  title: string; 
-  description: string; 
+  points
+}: {
+  title: string;
+  description: string;
   icon?: string;
   points?: number;
 }) {
@@ -424,10 +475,10 @@ export function MotivationCard({ className }: { className?: string }) {
     { text: "One entry may seem small, but together we're building an infinite library of human memory.", icon: "📚" },
     { text: "The best time to preserve heritage was 100 years ago. The second best time is now.", icon: "⏳" },
   ];
-  
+
   // Use first quote for SSR, then randomize on client mount to prevent hydration mismatch
   const [quote, setQuote] = useState(quotes[0]);
-  
+
   useEffect(() => {
     setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
   }, []);

@@ -29,7 +29,10 @@ import {
   IconAlertCircle,
   IconCheck,
   IconClockHour4,
+  IconLoader2,
 } from '@tabler/icons-react';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /* ── Animation variants ── */
 const fadeInUp = {
@@ -136,23 +139,64 @@ const tierData = [
   },
 ];
 
-/* ── Sample leaderboard data (would come from API) ── */
-const leaderboardData = [
-  { rank: 1, name: 'Dr. Elif Şahin', subtitle: 'Istanbul Heritage Institute', pts: 4820, tier: '👑', image: null, medals: { gold: 6, silver: 4, bronze: 2 } },
-  { rank: 2, name: 'James Okafor', subtitle: 'National Museum of Lagos', pts: 4105, tier: '📦', image: null, medals: { gold: 5, silver: 2, bronze: 3 } },
-  { rank: 3, name: 'María Castellanos', subtitle: 'Archivo General, Sevilla', pts: 3760, tier: '📦', image: null, medals: { gold: 5, silver: 5, bronze: 1 } },
-  { rank: 4, name: 'Yuki Tanaka', subtitle: 'Kyoto Digital Preservation Lab', pts: 2980, tier: '🏛️', image: null, medals: { gold: 2, silver: 4, bronze: 6 } },
-  { rank: 5, name: 'Priya Nair', subtitle: 'INTACH, Kochi Chapter', pts: 2744, tier: '🏛️', image: null, medals: { gold: 1, silver: 3, bronze: 5 } },
-];
+/* ── Types ── */
+interface TrackProgress {
+  id: string;
+  tier: string;
+  points: number;
+  nextTierPoints: number;
+  percentage: number;
+}
+
+interface RecentActivityItem {
+  type: string;
+  points: number;
+  label: string;
+  created_at: string;
+}
+
+interface UserProgress {
+  tier: string;
+  tierIcon: string;
+  tierId: string;
+  rank: number;
+  totalPoints: number;
+  tracks: TrackProgress[];
+  medals: { gold: number; silver: number; bronze: number };
+  nextMilestone: string;
+  nextTierPoints: number;
+  pointsToNextTier: number;
+  progressPercent: number;
+  streak: number;
+  recentActivity: RecentActivityItem[];
+  breakdown: {
+    entities: number;
+    acceptedEntities: number;
+    revisions: number;
+    reviews: number;
+    submissions: number;
+  };
+  fullName: string;
+  institution: string;
+  profileImage: string;
+}
+
+interface LeaderboardEntry {
+  user_id: number;
+  username: string;
+  full_name: string;
+  institution: string;
+  profile_image: string;
+  score: number;
+  tier_name: string;
+  tier_icon: string;
+  tier_id: string;
+  rank: number;
+  medals: { gold: number; silver: number; bronze: number };
+}
 
 /* ── Seal badge component ── */
 function SealBadge({ type, count }: { type: 'gold' | 'silver' | 'bronze'; count?: number }) {
-  const colorClasses = {
-    gold: 'bg-gradient-to-br from-yellow-400 to-amber-500 shadow-amber-200 dark:shadow-amber-900/50',
-    silver: 'bg-gradient-to-br from-gray-300 to-gray-400 shadow-gray-200 dark:shadow-gray-700/50',
-    bronze: 'bg-gradient-to-br from-orange-400 to-amber-600 shadow-orange-200 dark:shadow-orange-900/50',
-  };
-  
   return (
     <span className={cn(
       'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold shadow-sm',
@@ -160,7 +204,12 @@ function SealBadge({ type, count }: { type: 'gold' | 'silver' | 'bronze'; count?
       type === 'silver' && 'bg-gray-100 text-gray-700 dark:bg-gray-800/50 dark:text-gray-300 border border-gray-300 dark:border-gray-600',
       type === 'bronze' && 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-300 dark:border-orange-700',
     )}>
-      <span className={cn('w-2.5 h-2.5 rounded-full', colorClasses[type])} />
+      <span className={cn(
+        'w-2.5 h-2.5 rounded-full',
+        type === 'gold' && 'bg-gradient-to-br from-yellow-400 to-amber-500 shadow-amber-200 dark:shadow-amber-900/50',
+        type === 'silver' && 'bg-gradient-to-br from-gray-300 to-gray-400 shadow-gray-200 dark:shadow-gray-700/50',
+        type === 'bronze' && 'bg-gradient-to-br from-orange-400 to-amber-600 shadow-orange-200 dark:shadow-orange-900/50',
+      )} />
       {count !== undefined ? `×${count}` : type.charAt(0).toUpperCase() + type.slice(1)}
     </span>
   );
@@ -171,7 +220,7 @@ function ProgressBar({ value, max, gradient }: { value: number; max: number; gra
   const percentage = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-      <motion.div 
+      <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${percentage}%` }}
         transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -189,27 +238,100 @@ function RankIcon({ rank }: { rank: number }) {
   return <span className="text-sm font-mono text-muted-foreground">{rank}</span>;
 }
 
+/* ── Loading skeleton ── */
+function LoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="h-40 bg-muted/30 rounded-2xl animate-pulse" />
+      <div className="h-12 bg-muted/30 rounded-xl animate-pulse" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="h-36 bg-muted/30 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function ProgressionPage() {
   const { data: session } = useSession();
   const [selectedTrack, setSelectedTrack] = useState('curation');
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // User's mock progress data (would come from API)
-  const userProgress = {
-    tier: 'Scholar',
-    tierIcon: '📚',
-    rank: 6,
-    totalPoints: 1420,
-    tracks: [
-      { id: 'curation', tier: 'Scholar', points: 580, nextTierPoints: 940, percentage: 62 },
-      { id: 'annotation', tier: 'Apprentice', points: 210, nextTierPoints: 600, percentage: 35 },
-      { id: 'verification', tier: 'Scholar', points: 780, nextTierPoints: 1000, percentage: 78 },
-      { id: 'exhibition', tier: 'Apprentice', points: 90, nextTierPoints: 500, percentage: 18 },
-    ],
-    medals: { gold: 0, silver: 2, bronze: 4 },
-  };
+  const fetchProgression = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (session?.accessToken) {
+        headers['Authorization'] = `Bearer ${session.accessToken}`;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/data/api/progression/`, { headers });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch progression data (${res.status})`);
+      }
+
+      const data = await res.json();
+      setUserProgress(data.user_progress);
+      setLeaderboard(data.leaderboard || []);
+    } catch (err) {
+      console.error('Failed to fetch progression:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load progression data');
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.accessToken]);
+
+  useEffect(() => {
+    fetchProgression();
+  }, [fetchProgression]);
 
   const selectedTrackData = tracks.find(t => t.id === selectedTrack);
-  const userName = session?.user?.name?.split(' ')[0] || 'Contributor';
+
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <IconAlertCircle className="w-12 h-12 text-destructive" />
+        <p className="text-destructive font-medium">{error}</p>
+        <button onClick={fetchProgression} className="text-sm text-blue-600 hover:underline">
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // Fallback for unauthenticated users (userProgress will be null)
+  const displayProgress: UserProgress = userProgress || {
+    tier: 'Apprentice',
+    tierIcon: '🕯️',
+    tierId: 'apprentice',
+    rank: 0,
+    totalPoints: 0,
+    tracks: tracks.map(t => ({ id: t.id, tier: 'Apprentice', points: 0, nextTierPoints: 15, percentage: 0 })),
+    medals: { gold: 0, silver: 0, bronze: 0 },
+    nextMilestone: 'Start contributing to begin your journey.',
+    nextTierPoints: 100,
+    pointsToNextTier: 100,
+    progressPercent: 0,
+    streak: 0,
+    recentActivity: [],
+    breakdown: { entities: 0, acceptedEntities: 0, revisions: 0, reviews: 0, submissions: 0 },
+    fullName: '',
+    institution: '',
+    profileImage: '',
+  };
 
   return (
     <TooltipProvider>
@@ -242,11 +364,13 @@ export default function ProgressionPage() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="text-4xl">{userProgress.tierIcon}</div>
+              <div className="text-4xl">{displayProgress.tierIcon}</div>
               <div className="text-right">
                 <div className="text-sm text-muted-foreground">Current Rank</div>
-                <div className="text-xl font-bold text-gray-900 dark:text-white">{userProgress.tier}</div>
-                <div className="text-xs text-muted-foreground">#{userProgress.rank} overall</div>
+                <div className="text-xl font-bold text-gray-900 dark:text-white">{displayProgress.tier}</div>
+                {displayProgress.rank > 0 && (
+                  <div className="text-xs text-muted-foreground">#{displayProgress.rank} overall</div>
+                )}
               </div>
             </div>
           </motion.div>
@@ -292,6 +416,7 @@ export default function ProgressionPage() {
                 {tracks.map((track) => {
                   const Icon = track.icon;
                   const isSelected = selectedTrack === track.id;
+                  const trackProg = displayProgress.tracks.find(t => t.id === track.id);
                   return (
                     <motion.div key={track.id} variants={fadeInUp}>
                       <Card
@@ -310,6 +435,12 @@ export default function ProgressionPage() {
                         <CardContent>
                           <CardTitle className={cn('text-lg mb-1', track.textColor)}>{track.name}</CardTitle>
                           <CardDescription className="text-sm">{track.tagline}</CardDescription>
+                          {trackProg && trackProg.points > 0 && (
+                            <div className="mt-2">
+                              <ProgressBar value={trackProg.points} max={trackProg.nextTierPoints} gradient={track.gradient} />
+                              <span className="text-xs text-muted-foreground font-mono mt-1">{trackProg.points} pts</span>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </motion.div>
@@ -444,9 +575,12 @@ export default function ProgressionPage() {
               </motion.div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                {tierData.map((tier, index) => (
+                {tierData.map((tier) => (
                   <motion.div key={tier.id} variants={fadeInUp}>
-                    <Card className="text-center hover:shadow-lg transition-shadow h-full">
+                    <Card className={cn(
+                      'text-center hover:shadow-lg transition-shadow h-full',
+                      displayProgress.tierId === tier.id && 'ring-2 ring-amber-400 ring-offset-2'
+                    )}>
                       <CardContent className="pt-6 flex flex-col items-center h-full">
                         <span className="text-4xl mb-3">{tier.icon}</span>
                         <h3 className={cn(
@@ -460,6 +594,11 @@ export default function ProgressionPage() {
                             <p key={i}>{req}</p>
                           ))}
                         </div>
+                        {displayProgress.tierId === tier.id && (
+                          <Badge className="mt-2 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+                            Your Rank
+                          </Badge>
+                        )}
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -479,7 +618,7 @@ export default function ProgressionPage() {
                     <p className="text-gray-400 text-xs mt-3">
                       where <span className="text-yellow-400">t</span> = days since contribution,{' '}
                       <span className="text-yellow-400">λ</span> = 0.004 (decay constant),{' '}
-                      <span className="text-yellow-400">ContributionWeight</span> = adjusted for campaign size & solo/collaborative status
+                      <span className="text-yellow-400">ContributionWeight</span> = adjusted for campaign size &amp; solo/collaborative status
                     </p>
                     <p className="text-gray-400 text-xs mt-2">
                       Rankings are ordered by current live point totals (decay applied). Top 2,500 contributors appear in the public register.
@@ -498,21 +637,25 @@ export default function ProgressionPage() {
                 <Card className="bg-gradient-to-r from-gray-800 to-gray-900 text-white overflow-hidden">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-5">
-                      <RankAvatar 
-                        src={session?.user?.image} 
+                      <RankAvatar
+                        src={session?.user?.image}
                         name={session?.user?.name || 'User'}
-                        tier={getTierFromName(userProgress.tier)}
+                        tier={getTierFromName(displayProgress.tier)}
                         size="xl"
                         showGlow={true}
                       />
                       <div>
-                        <h2 className="text-xl font-bold">{session?.user?.name || 'Independent Contributor'}</h2>
+                        <h2 className="text-xl font-bold">{session?.user?.name || displayProgress.fullName || 'Independent Contributor'}</h2>
                         <Badge variant="outline" className="bg-yellow-500/20 text-yellow-300 border-yellow-500 mt-1">
-                          {userProgress.tierIcon} {userProgress.tier} — Rank #{userProgress.rank} overall
+                          {displayProgress.tierIcon} {displayProgress.tier}
+                          {displayProgress.rank > 0 && ` — Rank #${displayProgress.rank} overall`}
                         </Badge>
+                        {displayProgress.institution && (
+                          <p className="text-sm text-gray-400 mt-1">{displayProgress.institution}</p>
+                        )}
                       </div>
                       <div className="ml-auto text-right">
-                        <div className="text-3xl font-bold text-yellow-400">{userProgress.totalPoints.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-yellow-400">{displayProgress.totalPoints.toLocaleString()}</div>
                         <div className="text-sm text-gray-400">Total Points</div>
                       </div>
                     </div>
@@ -520,11 +663,33 @@ export default function ProgressionPage() {
                 </Card>
               </motion.div>
 
+              {/* Contribution Breakdown */}
+              <motion.div variants={fadeInUp}>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contribution Breakdown</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {[
+                    { label: 'Entities', value: displayProgress.breakdown.entities, icon: IconArchive },
+                    { label: 'Accepted', value: displayProgress.breakdown.acceptedEntities, icon: IconCheck },
+                    { label: 'Revisions', value: displayProgress.breakdown.revisions, icon: IconPencil },
+                    { label: 'Reviews', value: displayProgress.breakdown.reviews, icon: IconSearch },
+                    { label: 'Submissions', value: displayProgress.breakdown.submissions, icon: IconBooks },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <Card key={label}>
+                      <CardContent className="p-4 text-center">
+                        <Icon className="w-5 h-5 mx-auto text-muted-foreground mb-1" />
+                        <div className="text-2xl font-bold">{value}</div>
+                        <div className="text-xs text-muted-foreground">{label}</div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </motion.div>
+
               {/* Track Progress */}
               <motion.div variants={fadeInUp}>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Track Progress</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userProgress.tracks.map((progress) => {
+                  {displayProgress.tracks.map((progress) => {
                     const track = tracks.find(t => t.id === progress.id)!;
                     const Icon = track.icon;
                     return (
@@ -551,17 +716,47 @@ export default function ProgressionPage() {
               <motion.div variants={fadeInUp}>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Seals</h3>
                 <div className="flex flex-wrap gap-3">
-                  <SealBadge type="bronze" count={userProgress.medals.bronze} />
-                  <SealBadge type="silver" count={userProgress.medals.silver} />
-                  <span className={cn(
-                    'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold',
-                    'bg-yellow-100/50 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-500 border border-yellow-300/50 dark:border-yellow-700/50 opacity-50'
-                  )}>
-                    <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-yellow-300 to-amber-400" />
-                    ×{userProgress.medals.gold}
-                  </span>
+                  <SealBadge type="gold" count={displayProgress.medals.gold} />
+                  <SealBadge type="silver" count={displayProgress.medals.silver} />
+                  <SealBadge type="bronze" count={displayProgress.medals.bronze} />
                 </div>
               </motion.div>
+
+              {/* Streak */}
+              {displayProgress.streak > 0 && (
+                <motion.div variants={fadeInUp}>
+                  <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full">
+                      <IconFlame className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <span className="font-semibold text-orange-700 dark:text-orange-300">{displayProgress.streak} day streak!</span>
+                      <p className="text-xs text-muted-foreground">Keep contributing to maintain it</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Recent Activity */}
+              {displayProgress.recentActivity.length > 0 && (
+                <motion.div variants={fadeInUp}>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+                  <Card>
+                    <CardContent className="p-0">
+                      <div className="divide-y divide-border">
+                        {displayProgress.recentActivity.map((activity, i) => (
+                          <div key={i} className="flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors">
+                            <span className="text-sm text-muted-foreground">{activity.label}</span>
+                            {activity.points > 0 && (
+                              <span className="font-semibold text-emerald-600 text-sm">+{activity.points} pts</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
 
               {/* Next Milestone */}
               <motion.div variants={fadeInUp}>
@@ -574,8 +769,7 @@ export default function ProgressionPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground text-sm">
-                      You need <strong>1 Gold seal</strong> and <strong>0 more Silver seals</strong> to reach Curator rank.
-                      Consider participating in upcoming contribution campaigns to earn your first Gold seal.
+                      {displayProgress.nextMilestone}
                     </p>
                   </CardContent>
                 </Card>
@@ -590,7 +784,7 @@ export default function ProgressionPage() {
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Hall of Record</h2>
                 <p className="text-muted-foreground mb-6">
                   The living register of the archive&apos;s most distinguished contributors.
-                  Rankings reflect current points after temporal weathering. Updated daily.
+                  Rankings reflect current points after temporal weathering. Updated in real-time.
                 </p>
               </motion.div>
 
@@ -602,64 +796,86 @@ export default function ProgressionPage() {
                   </div>
                   <CardContent className="p-0">
                     <div className="divide-y divide-border">
-                      {leaderboardData.map((row) => (
-                        <div
-                          key={row.rank}
-                          className={cn(
-                            'grid grid-cols-[3rem_auto_1fr_auto_auto] items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors'
-                          )}
-                        >
+                      {leaderboard.length === 0 && (
+                        <div className="px-5 py-8 text-center text-muted-foreground">
+                          No contributors yet. Be the first to earn points!
+                        </div>
+                      )}
+                      {leaderboard.map((row) => {
+                        const isCurrentUser = session?.user && (
+                          row.username === session.user.name ||
+                          row.username === (session.user as Record<string, unknown>).username
+                        );
+                        return (
+                          <div
+                            key={row.user_id}
+                            className={cn(
+                              'grid grid-cols-[3rem_auto_1fr_auto_auto] items-center gap-4 px-5 py-4 hover:bg-muted/30 transition-colors',
+                              isCurrentUser && 'bg-amber-50/50 dark:bg-amber-950/20'
+                            )}
+                          >
+                            <div className="flex items-center justify-center">
+                              <RankIcon rank={row.rank} />
+                            </div>
+                            <RankAvatar
+                              src={row.profile_image || null}
+                              name={row.full_name || row.username}
+                              tier={row.tier_id as TierType}
+                              size="md"
+                            />
+                            <div>
+                              <div className="font-semibold text-gray-900 dark:text-white">
+                                {row.full_name || row.username}
+                                {isCurrentUser && <span className="text-amber-600 ml-2">← you</span>}
+                              </div>
+                              {row.institution && (
+                                <div className="text-sm text-muted-foreground">{row.institution}</div>
+                              )}
+                              <div className="flex gap-2 mt-1.5">
+                                {row.medals.gold > 0 && <SealBadge type="gold" count={row.medals.gold} />}
+                                {row.medals.silver > 0 && <SealBadge type="silver" count={row.medals.silver} />}
+                                {row.medals.bronze > 0 && <SealBadge type="bronze" count={row.medals.bronze} />}
+                              </div>
+                            </div>
+                            <div className="font-mono font-bold text-amber-600 dark:text-amber-400 text-right">
+                              {row.score.toLocaleString()} pts
+                            </div>
+                            <div className="text-2xl">{row.tier_icon}</div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Show current user if not in leaderboard */}
+                      {userProgress && userProgress.rank > leaderboard.length && (
+                        <div className="grid grid-cols-[3rem_auto_1fr_auto_auto] items-center gap-4 px-5 py-4 bg-amber-50/50 dark:bg-amber-950/20">
                           <div className="flex items-center justify-center">
-                            <RankIcon rank={row.rank} />
+                            <span className="text-sm font-mono text-muted-foreground">{userProgress.rank}</span>
                           </div>
                           <RankAvatar
-                            src={row.image}
-                            name={row.name}
-                            tier={getTierFromIcon(row.tier)}
+                            src={session?.user?.image}
+                            name={session?.user?.name || 'User'}
+                            tier={getTierFromName(userProgress.tier)}
                             size="md"
                           />
                           <div>
-                            <div className="font-semibold text-gray-900 dark:text-white">{row.name}</div>
-                            <div className="text-sm text-muted-foreground">{row.subtitle}</div>
+                            <div className="font-semibold text-gray-900 dark:text-white">
+                              {session?.user?.name || 'You'} <span className="text-amber-600">← you</span>
+                            </div>
+                            {userProgress.institution && (
+                              <div className="text-sm text-muted-foreground">{userProgress.institution}</div>
+                            )}
                             <div className="flex gap-2 mt-1.5">
-                              {row.medals.gold > 0 && <SealBadge type="gold" count={row.medals.gold} />}
-                              {row.medals.silver > 0 && <SealBadge type="silver" count={row.medals.silver} />}
-                              {row.medals.bronze > 0 && <SealBadge type="bronze" count={row.medals.bronze} />}
+                              {userProgress.medals.bronze > 0 && <SealBadge type="bronze" count={userProgress.medals.bronze} />}
+                              {userProgress.medals.silver > 0 && <SealBadge type="silver" count={userProgress.medals.silver} />}
+                              {userProgress.medals.gold > 0 && <SealBadge type="gold" count={userProgress.medals.gold} />}
                             </div>
                           </div>
                           <div className="font-mono font-bold text-amber-600 dark:text-amber-400 text-right">
-                            {row.pts.toLocaleString()} pts
+                            {userProgress.totalPoints.toLocaleString()} pts
                           </div>
-                          <div className="text-2xl">{row.tier}</div>
+                          <div className="text-2xl">{userProgress.tierIcon}</div>
                         </div>
-                      ))}
-
-                      {/* Current user row */}
-                      <div className="grid grid-cols-[3rem_auto_1fr_auto_auto] items-center gap-4 px-5 py-4 bg-amber-50/50 dark:bg-amber-950/20">
-                        <div className="flex items-center justify-center">
-                          <span className="text-sm font-mono text-muted-foreground">{userProgress.rank}</span>
-                        </div>
-                        <RankAvatar
-                          src={session?.user?.image}
-                          name={session?.user?.name || 'User'}
-                          tier={getTierFromName(userProgress.tier)}
-                          size="md"
-                        />
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-white">
-                            {session?.user?.name || 'You'} <span className="text-amber-600">← you</span>
-                          </div>
-                          <div className="text-sm text-muted-foreground">Independent Contributor</div>
-                          <div className="flex gap-2 mt-1.5">
-                            {userProgress.medals.bronze > 0 && <SealBadge type="bronze" count={userProgress.medals.bronze} />}
-                            {userProgress.medals.silver > 0 && <SealBadge type="silver" count={userProgress.medals.silver} />}
-                          </div>
-                        </div>
-                        <div className="font-mono font-bold text-amber-600 dark:text-amber-400 text-right">
-                          {userProgress.totalPoints.toLocaleString()} pts
-                        </div>
-                        <div className="text-2xl">{userProgress.tierIcon}</div>
-                      </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -676,7 +892,7 @@ export default function ProgressionPage() {
                   <CardContent>
                     <p className="text-muted-foreground text-sm">
                       The public Hall of Record lists the top 2,500 contributors globally.
-                      Rankings are computed daily using live-decayed point totals.
+                      Rankings are computed using live-decayed point totals.
                       Points awarded for solo contributions carry a <strong>1.25× weight multiplier</strong>.
                     </p>
                   </CardContent>

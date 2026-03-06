@@ -2219,3 +2219,312 @@ class PublicContributionViewSet(viewsets.ModelViewSet):
             'by_type': list(by_type),
             'by_source': list(by_source),
         })
+
+
+# =====================================================================
+# PROGRESSION SYSTEM
+# =====================================================================
+
+import math
+from datetime import timedelta as _td
+from django.utils import timezone as _tz
+
+
+def _compute_score_with_decay(user):
+    """
+    Compute per-track and total points for a user, applying temporal decay.
+    P(t) = BaseScore × e^(−λt)   where t = days since created_at, λ = 0.004
+    Contributions < 180 days old get full weight (no decay).
+    """
+    DECAY_LAMBDA = 0.004
+    DECAY_THRESHOLD_DAYS = 180
+    now = _tz.now()
+
+    def _decayed(base_score, created_at):
+        age_days = (now - created_at).days
+        if age_days <= DECAY_THRESHOLD_DAYS:
+            return base_score
+        return base_score * math.exp(-DECAY_LAMBDA * (age_days - DECAY_THRESHOLD_DAYS))
+
+    # --- Curation: entities submitted / accepted ---
+    curation_pts = 0
+    for e in CulturalEntity.objects.filter(contributor=user).only('status', 'created_at'):
+        base = 10 if e.status == 'accepted' else 3
+        curation_pts += _decayed(base, e.created_at)
+    # Also count legacy submissions
+    for s in Submission.objects.filter(contributor=user).only('status', 'created_at'):
+        base = 10 if s.status == 'accepted' else 3
+        curation_pts += _decayed(base, s.created_at)
+
+    # --- Annotation: revisions authored ---
+    annotation_pts = 0
+    for r in Revision.objects.filter(created_by=user).only('created_at'):
+        annotation_pts += _decayed(2, r.created_at)
+
+    # --- Verification: review decisions ---
+    verification_pts = 0
+    for rd in ReviewDecision.objects.filter(reviewer=user).only('created_at'):
+        verification_pts += _decayed(5, rd.created_at)
+
+    # --- Exhibition: accepted entities that are published (treated as exhibition) ---
+    exhibition_pts = 0
+    for e in CulturalEntity.objects.filter(contributor=user, status='accepted').only('created_at'):
+        exhibition_pts += _decayed(3, e.created_at)
+
+    curation_pts = round(curation_pts)
+    annotation_pts = round(annotation_pts)
+    verification_pts = round(verification_pts)
+    exhibition_pts = round(exhibition_pts)
+    total = curation_pts + annotation_pts + verification_pts + exhibition_pts
+
+    return {
+        'curation': curation_pts,
+        'annotation': annotation_pts,
+        'verification': verification_pts,
+        'exhibition': exhibition_pts,
+        'total': total,
+    }
+
+
+# Tier thresholds (total points)
+_TIER_THRESHOLDS = [
+    (5000, 'Grand Keeper', '👑', 'grandkeeper'),
+    (1500, 'Archivist', '📦', 'archivist'),
+    (500, 'Curator', '🏛️', 'curator'),
+    (100, 'Scholar', '📚', 'scholar'),
+    (0, 'Apprentice', '🕯️', 'apprentice'),
+]
+
+# Per-track tier thresholds
+_TRACK_TIER_THRESHOLDS = [
+    (200, 'Grand Keeper'),
+    (100, 'Archivist'),
+    (40, 'Curator'),
+    (15, 'Scholar'),
+    (0, 'Apprentice'),
+]
+
+
+def _get_tier(total_points):
+    for threshold, name, icon, tier_id in _TIER_THRESHOLDS:
+        if total_points >= threshold:
+            return {'name': name, 'icon': icon, 'id': tier_id}
+    return {'name': 'Apprentice', 'icon': '🕯️', 'id': 'apprentice'}
+
+
+def _get_track_tier(points):
+    for threshold, name in _TRACK_TIER_THRESHOLDS:
+        if points >= threshold:
+            return name
+    return 'Apprentice'
+
+
+def _next_tier_points(current_points, thresholds):
+    """Return the point threshold for the next tier above current_points."""
+    for threshold, *_ in reversed(thresholds):
+        if threshold > current_points:
+            return threshold
+    return current_points  # already max
+
+
+def _compute_medals_from_rank(rank, total_users):
+    """Simplified medal computation based on overall ranking percentile."""
+    if total_users == 0:
+        return {'gold': 0, 'silver': 0, 'bronze': 0}
+    percentile = rank / total_users
+    gold = 1 if percentile <= 0.10 else 0
+    silver = 1 if percentile <= 0.20 else 0
+    bronze = 1 if percentile <= 0.40 else 0
+    return {'gold': gold, 'silver': silver, 'bronze': bronze}
+
+
+def _build_leaderboard():
+    """Build the full leaderboard, computing scores per user."""
+    users = User.objects.select_related('profile').filter(is_active=True)
+    entries = []
+    for user in users:
+        scores = _compute_score_with_decay(user)
+        if scores['total'] == 0:
+            continue
+        tier = _get_tier(scores['total'])
+        profile = getattr(user, 'profile', None)
+        entries.append({
+            'user_id': user.id,
+            'username': user.username,
+            'full_name': (
+                f"{profile.first_name} {profile.last_name}".strip()
+                if profile else user.get_full_name() or user.username
+            ),
+            'institution': getattr(profile, 'organization', '') or '',
+            'profile_image': (
+                profile.profile_image.url
+                if profile and profile.profile_image else ''
+            ),
+            'score': scores['total'],
+            'tier_name': tier['name'],
+            'tier_icon': tier['icon'],
+            'tier_id': tier['id'],
+            'tracks': scores,
+        })
+    entries.sort(key=lambda e: -e['score'])
+    # Assign ranks
+    for idx, entry in enumerate(entries):
+        if idx > 0 and entries[idx - 1]['score'] != entry['score']:
+            entry['rank'] = idx + 1
+        else:
+            entry['rank'] = (entries[idx - 1]['rank'] if idx > 0 else 1)
+    # Compute medals based on rank
+    total_users = len(entries)
+    for entry in entries:
+        entry['medals'] = _compute_medals_from_rank(entry['rank'], total_users)
+    return entries
+
+
+class ProgressionView(APIView):
+    """
+    Comprehensive progression data for the current user:
+    - Overall tier, rank, total points
+    - Per-track progress with tier and next-tier thresholds
+    - Medals/seals based on ranking percentile
+    - Recent activity (last 10 activities)
+    - Contribution streak (consecutive days with contributions)
+    - Next milestone description
+
+    Also includes the leaderboard (top 50).
+    Unauthenticated users get only the leaderboard.
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # Build leaderboard
+        leaderboard = _build_leaderboard()
+
+        # If not authenticated, return leaderboard only
+        if not request.user or not request.user.is_authenticated:
+            return Response({
+                'user_progress': None,
+                'leaderboard': leaderboard[:50],
+            })
+
+        user = request.user
+        scores = _compute_score_with_decay(user)
+        tier = _get_tier(scores['total'])
+
+        # Find user rank in leaderboard
+        user_rank = None
+        for entry in leaderboard:
+            if entry['user_id'] == user.id:
+                user_rank = entry['rank']
+                break
+        if user_rank is None:
+            user_rank = len(leaderboard) + 1
+
+        # Per-track progress
+        track_progress = []
+        for track_id in ['curation', 'annotation', 'verification', 'exhibition']:
+            pts = scores[track_id]
+            track_tier = _get_track_tier(pts)
+            next_pts = _next_tier_points(pts, _TRACK_TIER_THRESHOLDS)
+            percentage = min(round((pts / next_pts) * 100), 100) if next_pts > 0 else 100
+            track_progress.append({
+                'id': track_id,
+                'tier': track_tier,
+                'points': pts,
+                'nextTierPoints': next_pts,
+                'percentage': percentage,
+            })
+
+        # Medals
+        total_users = len(leaderboard)
+        medals = _compute_medals_from_rank(user_rank, total_users)
+
+        # Next milestone computation
+        next_tier_pts = _next_tier_points(scores['total'], _TIER_THRESHOLDS)
+        points_needed = max(0, next_tier_pts - scores['total'])
+        next_tier_info = _get_tier(next_tier_pts)
+        if points_needed > 0:
+            next_milestone = f"You need {points_needed} more points to reach {next_tier_info['name']} rank."
+        else:
+            next_milestone = "You have reached the highest rank! Keep contributing to maintain your standing."
+
+        # Recent activity (last 10)
+        recent_activities = []
+        for a in Activity.objects.filter(user=user).order_by('-created_at')[:10]:
+            pts_map = {
+                'submitted': 3, 'accepted': 10, 'rejected': 0,
+                'revised': 2, 'commented': 1, 'escalated': 5,
+                'changes_requested': 2, 'flagged': 2, 'conflict_resolved': 5,
+            }
+            recent_activities.append({
+                'type': a.activity_type,
+                'points': pts_map.get(a.activity_type, 0),
+                'label': f"{a.get_activity_type_display()} — {a.entity.name[:40]}",
+                'created_at': a.created_at.isoformat(),
+            })
+
+        # Contribution streak (consecutive days with any activity)
+        streak = 0
+        today = _tz.now().date()
+        day = today
+        while True:
+            has_activity = Activity.objects.filter(
+                user=user,
+                created_at__date=day,
+            ).exists()
+            if not has_activity:
+                # Also check legacy submissions
+                has_activity = Submission.objects.filter(
+                    contributor=user,
+                    created_at__date=day,
+                ).exists()
+            if has_activity:
+                streak += 1
+                day -= _td(days=1)
+            else:
+                break
+
+        # Breakdown counts (raw)
+        entity_count = CulturalEntity.objects.filter(contributor=user).count()
+        accepted_entities = CulturalEntity.objects.filter(contributor=user, status='accepted').count()
+        revision_count = Revision.objects.filter(created_by=user).count()
+        review_count = ReviewDecision.objects.filter(reviewer=user).count()
+        submission_count = Submission.objects.filter(contributor=user).count()
+
+        profile = getattr(user, 'profile', None)
+
+        user_progress = {
+            'tier': tier['name'],
+            'tierIcon': tier['icon'],
+            'tierId': tier['id'],
+            'rank': user_rank,
+            'totalPoints': scores['total'],
+            'tracks': track_progress,
+            'medals': medals,
+            'nextMilestone': next_milestone,
+            'nextTierPoints': next_tier_pts,
+            'pointsToNextTier': points_needed,
+            'progressPercent': min(round((scores['total'] / next_tier_pts) * 100), 100) if next_tier_pts > 0 else 100,
+            'streak': streak,
+            'recentActivity': recent_activities,
+            'breakdown': {
+                'entities': entity_count,
+                'acceptedEntities': accepted_entities,
+                'revisions': revision_count,
+                'reviews': review_count,
+                'submissions': submission_count,
+            },
+            'fullName': (
+                f"{profile.first_name} {profile.last_name}".strip()
+                if profile else user.get_full_name() or user.username
+            ),
+            'institution': getattr(profile, 'organization', '') or '',
+            'profileImage': (
+                profile.profile_image.url
+                if profile and profile.profile_image else ''
+            ),
+        }
+
+        return Response({
+            'user_progress': user_progress,
+            'leaderboard': leaderboard[:50],
+        })
