@@ -6,16 +6,16 @@ import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 
 export function ThemeToggle() {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || !resolvedTheme) return null;
 
-  const isDark = theme === 'dark';
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <label className="relative inline-flex items-center cursor-pointer">
@@ -23,8 +23,12 @@ export function ThemeToggle() {
         type="checkbox"
         className="sr-only peer"
         checked={isDark}
-        onChange={() => setTheme(isDark ? 'light' : 'dark')}
+        onChange={() => {
+          if (!resolvedTheme) return;
+          setTheme(isDark ? 'light' : 'dark');
+        }}
         aria-label="Toggle Dark Mode"
+        disabled={!mounted || !resolvedTheme}
       />
       <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary transition-colors"></div>
       <div
