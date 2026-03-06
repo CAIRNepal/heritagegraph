@@ -218,5 +218,6 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | `CONVENTIONS.md` | Code style, naming, and file organization rules |
 | `PLATFORM_PLAN.md` | Contributing platform vision and phased roadmap |
 | `TROUBLESHOOTING.md` | Known issues, gotchas, and their fixes |
+| `TRANSLATION.md` | **i18n guide** — how to translate pages to Nepali or add new languages |
 | `DEPLOYMENT.md` | Production deployment guide |
 | `contributing.md` | Contributor instructions |
