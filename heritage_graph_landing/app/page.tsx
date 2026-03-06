@@ -17,6 +17,8 @@ import SearchBar from "./components/SearchBar";
 import FeatureCard from "./components/FeatureCard";
 import NetworkVisualization from "./components/NetworkVisualization";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://frontend.localhost";
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -114,12 +116,12 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <button className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 rounded-full text-white font-semibold hover:bg-white/30 transition-all duration-300 hover:scale-105">
+            <a href={`${APP_URL}/dashboard/graphview`} className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 rounded-full text-white font-semibold hover:bg-white/30 transition-all duration-300 hover:scale-105">
               Explore Knowledge Graph
-            </button>
-            <button className="px-8 py-4 heritage-gradient rounded-full text-white font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105">
+            </a>
+            <a href={`${APP_URL}/dashboard/contribute`} className="px-8 py-4 heritage-gradient rounded-full text-white font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105">
               Start Your Journey
-            </button>
+            </a>
           </motion.div>
         </div>
 
@@ -225,9 +227,9 @@ export default function Home() {
               enthusiasts in discovering the hidden connections that shape our
               world.
             </p>
-            <button className="px-10 py-5 heritage-gradient rounded-full text-white font-semibold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <a href={`${APP_URL}/dashboard`} className="inline-block px-10 py-5 heritage-gradient rounded-full text-white font-semibold text-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               Get Started Today
-            </button>
+            </a>
           </motion.div>
         </div>
       </section>
