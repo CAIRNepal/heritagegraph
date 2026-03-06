@@ -255,15 +255,19 @@ export default function Home() {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
-                Start Exploring
-              </Button>
-              <Button
-                variant="outline"
-                className="border-blue-300 text-blue-700 hover:bg-blue-100/50 px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300"
-              >
-                Learn More
-              </Button>
+              <Link href="/dashboard/graphview">
+                <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                  Start Exploring
+                </Button>
+              </Link>
+              <Link href="#about">
+                <Button
+                  variant="outline"
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100/50 px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300"
+                >
+                  Learn More
+                </Button>
+              </Link>
             </motion.div>
           </motion.div>
 
@@ -385,17 +389,21 @@ export default function Home() {
                 variants={fadeInUp}
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8"
               >
-                <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
-                  <Github className="w-5 h-5 mr-2" />
-                  View on GitHub
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-100/50 px-8 py-3 rounded-full font-semibold transition-all duration-300"
-                >
-                  <Mail className="w-5 h-5 mr-2" />
-                  Contact Us
-                </Button>
+                <a href="https://github.com/CAIRNepal/heritagegraph" target="_blank" rel="noopener noreferrer">
+                  <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+                    <Github className="w-5 h-5 mr-2" />
+                    View on GitHub
+                  </Button>
+                </a>
+                <a href="mailto:info@cair-nepal.org">
+                  <Button
+                    variant="outline"
+                    className="border-blue-300 text-blue-700 hover:bg-blue-100/50 px-8 py-3 rounded-full font-semibold transition-all duration-300"
+                  >
+                    <Mail className="w-5 h-5 mr-2" />
+                    Contact Us
+                  </Button>
+                </a>
               </motion.div>
             </motion.div>
           </div>
@@ -477,9 +485,11 @@ export default function Home() {
                 collaboratively.
               </motion.p>
               <motion.div variants={fadeInUp}>
-                <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white px-12 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl">
-                  Get Involved
-                </Button>
+                <a href="https://github.com/CAIRNepal/heritagegraph" target="_blank" rel="noopener noreferrer">
+                  <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white px-12 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl">
+                    Get Involved
+                  </Button>
+                </a>
               </motion.div>
             </motion.div>
           </div>
@@ -578,27 +588,33 @@ export default function Home() {
               © {new Date().getFullYear()} HeritageGraph. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-blue-700 hover:text-blue-600 hover:bg-blue-100/50"
-              >
-                <Github className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-blue-700 hover:text-blue-600 hover:bg-blue-100/50"
-              >
-                <Mail className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-blue-700 hover:text-blue-600 hover:bg-blue-100/50"
-              >
-                <ExternalLink className="w-5 h-5" />
-              </Button>
+              <a href="https://github.com/CAIRNepal/heritagegraph" target="_blank" rel="noopener noreferrer">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-blue-700 hover:text-blue-600 hover:bg-blue-100/50"
+                >
+                  <Github className="w-5 h-5" />
+                </Button>
+              </a>
+              <a href="mailto:info@cair-nepal.org">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-blue-700 hover:text-blue-600 hover:bg-blue-100/50"
+                >
+                  <Mail className="w-5 h-5" />
+                </Button>
+              </a>
+              <a href="https://www.cair-nepal.org/" target="_blank" rel="noopener noreferrer">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-blue-700 hover:text-blue-600 hover:bg-blue-100/50"
+                >
+                  <ExternalLink className="w-5 h-5" />
+                </Button>
+              </a>
             </div>
           </div>
         </div>
