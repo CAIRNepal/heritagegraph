@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -118,6 +119,7 @@ const tierSummary = [
 ];
 
 export default function AboutPage() {
+  const t = useTranslations('about');
   return (
     <div className="space-y-8">
       {/* ── Hero Section ── */}
@@ -137,30 +139,28 @@ export default function AboutPage() {
             <div className="flex-1 space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
                 <IconSparkles className="w-4 h-4" />
-                About HeritageGraph
+                {t('hero.badge')}
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight text-white">
-                Preserving Cultural Heritage Through{' '}
+                {t('hero.titlePrefix')}{' '}
                 <span className="bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 bg-clip-text text-transparent">
-                  Knowledge Graphs
+                  {t('hero.titleHighlight')}
                 </span>
               </h1>
               <p className="text-blue-100 text-lg md:text-xl leading-relaxed max-w-2xl">
-                HeritageGraph is a platform by CAIR-Nepal for digitally preserving and publishing 
-                cultural heritage data as Linked Open Data, connecting communities, scholars, 
-                and institutions worldwide.
+                {t('hero.description')}
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
                 <Link href="/dashboard/contribute">
                   <Button size="lg" className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold shadow-lg">
                     <IconPlus className="w-4 h-4 mr-2" />
-                    Start Contributing
+                    {t('hero.startContributing')}
                   </Button>
                 </Link>
                 <Link href="/dashboard/graphview">
                   <Button variant="outline" size="lg" className="bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white rounded-full font-semibold">
                     <IconGraph className="w-4 h-4 mr-2" />
-                    Explore the Graph
+                    {t('hero.exploreGraph')}
                     <IconArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
@@ -192,20 +192,15 @@ export default function AboutPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-amber-700 dark:text-amber-300">
                 <IconHeart className="w-6 h-6" />
-                Our Mission
+                {t('mission.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
-                Cultural heritage is the living memory of humanity—traditions, artifacts, stories, and practices 
-                that connect us to our past and guide our future. Yet much of this heritage remains undocumented, 
-                fragmented across institutions, or at risk of being lost.
+                {t('mission.paragraph1')}
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                <strong>HeritageGraph</strong> aims to create a comprehensive, interconnected digital archive 
-                of cultural heritage using modern knowledge graph technologies. By publishing heritage data as 
-                Linked Open Data following CIDOC-CRM standards, we enable researchers, communities, and institutions 
-                to discover connections, share knowledge, and preserve cultural memory for future generations.
+                <strong>{t('mission.appName')}</strong> {t('mission.paragraph2')}
               </p>
             </CardContent>
           </Card>
@@ -219,9 +214,9 @@ export default function AboutPage() {
         variants={staggerContainer}
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Core{' '}
+          {t('sections.coreFeatures.prefix')}{' '}
           <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
-            Features
+            {t('sections.coreFeatures.highlight')}
           </span>
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -260,9 +255,9 @@ export default function AboutPage() {
         variants={staggerContainer}
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Knowledge{' '}
+          {t('sections.knowledgeDomains.prefix')}{' '}
           <span className="text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text">
-            Domains
+            {t('sections.knowledgeDomains.highlight')}
           </span>
         </motion.h2>
         <motion.div variants={fadeInUp}>
@@ -302,9 +297,9 @@ export default function AboutPage() {
         variants={staggerContainer}
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Progression{' '}
+          {t('sections.progression.prefix')}{' '}
           <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
-            System
+            {t('sections.progression.highlight')}
           </span>
         </motion.h2>
         <motion.div variants={fadeInUp}>
@@ -373,9 +368,9 @@ export default function AboutPage() {
         variants={staggerContainer}
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Technology{' '}
+          {t('sections.techStack.prefix')}{' '}
           <span className="text-transparent bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text">
-            Stack
+            {t('sections.techStack.highlight')}
           </span>
         </motion.h2>
         <motion.div variants={fadeInUp}>
@@ -420,25 +415,22 @@ export default function AboutPage() {
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/3 bg-gradient-to-br from-blue-600 to-sky-600 p-8 flex items-center justify-center">
                 <div className="text-center">
-                  <Image
+                  <img
                     src="/cair-logo/fulllogo_nobuffer.png"
                     alt="CAIR-Nepal"
                     width={200}
                     height={80}
-                    className="w-40 h-auto mx-auto filter brightness-0 invert"
+                    className="w-40 h-auto mx-auto brightness-0 invert"
                   />
                   <p className="text-blue-100 mt-4 text-sm">
-                    Center for Artificial Intelligence Research Nepal
+                    {t('cair.subtitle')}
                   </p>
                 </div>
               </div>
               <div className="md:w-2/3 p-8">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">About CAIR-Nepal</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{t('cair.title')}</h3>
                 <p className="text-muted-foreground mb-4">
-                  CAIR-Nepal is a non-profit research organization dedicated to advancing artificial intelligence 
-                  research and its applications for social good in Nepal and the broader region. HeritageGraph 
-                  is one of our flagship projects, combining AI, knowledge graphs, and community engagement to 
-                  preserve cultural heritage.
+                  {t('cair.description')}
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <Button variant="outline" size="sm" asChild>
@@ -475,22 +467,21 @@ export default function AboutPage() {
         <motion.div variants={fadeInUp}>
           <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white overflow-hidden">
             <CardContent className="p-8 text-center">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Preserve Heritage?</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">{t('cta.title')}</h2>
               <p className="text-emerald-100 mb-6 max-w-2xl mx-auto">
-                Join thousands of contributors worldwide in documenting, curating, and preserving 
-                cultural heritage for future generations. Every contribution matters.
+                {t('cta.description')}
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link href="/dashboard/contribute">
                   <Button size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50 rounded-full font-semibold shadow-lg">
                     <IconPlus className="w-4 h-4 mr-2" />
-                    Make Your First Contribution
+                    {t('cta.contribute')}
                   </Button>
                 </Link>
                 <Link href="/dashboard/knowledge/entity">
                   <Button variant="outline" size="lg" className="border-white/40 text-white hover:bg-white/20 rounded-full font-semibold">
                     <IconSearch className="w-4 h-4 mr-2" />
-                    Browse the Archive
+                    {t('cta.browse')}
                   </Button>
                 </Link>
               </div>
@@ -511,9 +502,9 @@ export default function AboutPage() {
               <div className="flex items-center gap-4">
                 <IconBrandGithub className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Open Source</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">{t('openSource.title')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    HeritageGraph is open source. Contributions are welcome!
+                    {t('openSource.description')}
                   </p>
                 </div>
               </div>
