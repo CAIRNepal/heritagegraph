@@ -30,7 +30,9 @@ import {
   IconCheck,
   IconClockHour4,
   IconLoader2,
+  IconLogin,
 } from '@tabler/icons-react';
+import { signIn } from 'next-auth/react';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -312,26 +314,7 @@ export default function ProgressionPage() {
     );
   }
 
-  // Fallback for unauthenticated users (userProgress will be null)
-  const displayProgress: UserProgress = userProgress || {
-    tier: 'Apprentice',
-    tierIcon: '🕯️',
-    tierId: 'apprentice',
-    rank: 0,
-    totalPoints: 0,
-    tracks: tracks.map(t => ({ id: t.id, tier: 'Apprentice', points: 0, nextTierPoints: 15, percentage: 0 })),
-    medals: { gold: 0, silver: 0, bronze: 0 },
-    nextMilestone: 'Start contributing to begin your journey.',
-    nextTierPoints: 100,
-    pointsToNextTier: 100,
-    progressPercent: 0,
-    streak: 0,
-    recentActivity: [],
-    breakdown: { entities: 0, acceptedEntities: 0, revisions: 0, reviews: 0, submissions: 0 },
-    fullName: '',
-    institution: '',
-    profileImage: '',
-  };
+  const isAuthenticated = !!session?.accessToken;
 
   return (
     <TooltipProvider>
@@ -354,25 +337,46 @@ export default function ProgressionPage() {
                 Heritage Progression System
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                Track Your Scholarly{' '}
-                <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
-                  Contributions
-                </span>
+                {isAuthenticated ? (
+                  <>Track Your Scholarly{' '}
+                    <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
+                      Contributions
+                    </span>
+                  </>
+                ) : (
+                  <>Heritage{' '}
+                    <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
+                      Progression System
+                    </span>
+                  </>
+                )}
               </h1>
               <p className="text-muted-foreground mt-2 max-w-xl">
-                Grow your standing in the living archive through curation, annotation, verification, and exhibition of cultural heritage.
+                {isAuthenticated
+                  ? 'Grow your standing in the living archive through curation, annotation, verification, and exhibition of cultural heritage.'
+                  : 'Explore how contributors grow their standing through curation, annotation, verification, and exhibition of cultural heritage.'}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="text-4xl">{displayProgress.tierIcon}</div>
-              <div className="text-right">
-                <div className="text-sm text-muted-foreground">Current Rank</div>
-                <div className="text-xl font-bold text-gray-900 dark:text-white">{displayProgress.tier}</div>
-                {displayProgress.rank > 0 && (
-                  <div className="text-xs text-muted-foreground">#{displayProgress.rank} overall</div>
-                )}
+            {isAuthenticated && userProgress ? (
+              <div className="flex items-center gap-3">
+                <div className="text-4xl">{userProgress.tierIcon}</div>
+                <div className="text-right">
+                  <div className="text-sm text-muted-foreground">Current Rank</div>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">{userProgress.tier}</div>
+                  {userProgress.rank > 0 && (
+                    <div className="text-xs text-muted-foreground">#{userProgress.rank} overall</div>
+                  )}
+                </div>
               </div>
-            </div>
+            ) : !isAuthenticated ? (
+              <button
+                onClick={() => signIn()}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg font-medium text-sm hover:from-amber-600 hover:to-yellow-600 transition-all shadow-md"
+              >
+                <IconLogin className="w-4 h-4" />
+                Sign in to track progress
+              </button>
+            ) : null}
           </motion.div>
         </motion.div>
 
@@ -391,10 +395,12 @@ export default function ProgressionPage() {
               <IconCrown className="w-4 h-4 mr-2" />
               Ranks
             </TabsTrigger>
-            <TabsTrigger value="progress" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
-              <IconChartBar className="w-4 h-4 mr-2" />
-              Your Progress
-            </TabsTrigger>
+            {isAuthenticated && (
+              <TabsTrigger value="progress" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
+                <IconChartBar className="w-4 h-4 mr-2" />
+                Your Progress
+              </TabsTrigger>
+            )}
             <TabsTrigger value="leaderboard" className="rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-500 data-[state=active]:text-white">
               <IconTrophy className="w-4 h-4 mr-2" />
               Hall of Record
@@ -416,7 +422,7 @@ export default function ProgressionPage() {
                 {tracks.map((track) => {
                   const Icon = track.icon;
                   const isSelected = selectedTrack === track.id;
-                  const trackProg = displayProgress.tracks.find(t => t.id === track.id);
+                  const trackProg = userProgress?.tracks.find(t => t.id === track.id);
                   return (
                     <motion.div key={track.id} variants={fadeInUp}>
                       <Card
@@ -579,7 +585,7 @@ export default function ProgressionPage() {
                   <motion.div key={tier.id} variants={fadeInUp}>
                     <Card className={cn(
                       'text-center hover:shadow-lg transition-shadow h-full',
-                      displayProgress.tierId === tier.id && 'ring-2 ring-amber-400 ring-offset-2'
+                      userProgress?.tierId === tier.id && 'ring-2 ring-amber-400 ring-offset-2'
                     )}>
                       <CardContent className="pt-6 flex flex-col items-center h-full">
                         <span className="text-4xl mb-3">{tier.icon}</span>
@@ -594,7 +600,7 @@ export default function ProgressionPage() {
                             <p key={i}>{req}</p>
                           ))}
                         </div>
-                        {displayProgress.tierId === tier.id && (
+                        {userProgress?.tierId === tier.id && (
                           <Badge className="mt-2 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
                             Your Rank
                           </Badge>
@@ -629,8 +635,28 @@ export default function ProgressionPage() {
             </motion.div>
           </TabsContent>
 
-          {/* ── Progress Tab ── */}
+          {/* ── Progress Tab (only rendered for authenticated users) ── */}
           <TabsContent value="progress" className="mt-6">
+            {!isAuthenticated || !userProgress ? (
+              <motion.div initial="hidden" animate="show" variants={fadeInUp}>
+                <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 border border-amber-200 dark:border-amber-800">
+                  <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
+                    <IconLogin className="w-12 h-12 text-amber-500" />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sign in to view your progress</h3>
+                    <p className="text-muted-foreground text-sm text-center max-w-md">
+                      Track your contributions, earn seals, and rise through the ranks of the living archive.
+                    </p>
+                    <button
+                      onClick={() => signIn()}
+                      className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg font-medium text-sm hover:from-amber-600 hover:to-yellow-600 transition-all shadow-md"
+                    >
+                      <IconLogin className="w-4 h-4" />
+                      Sign In
+                    </button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ) : (
             <motion.div initial="hidden" animate="show" variants={staggerContainer} className="space-y-6">
               {/* Profile Header */}
               <motion.div variants={fadeInUp}>
@@ -640,22 +666,22 @@ export default function ProgressionPage() {
                       <RankAvatar
                         src={session?.user?.image}
                         name={session?.user?.name || 'User'}
-                        tier={getTierFromName(displayProgress.tier)}
+                        tier={getTierFromName(userProgress.tier)}
                         size="xl"
                         showGlow={true}
                       />
                       <div>
-                        <h2 className="text-xl font-bold">{session?.user?.name || displayProgress.fullName || 'Independent Contributor'}</h2>
+                        <h2 className="text-xl font-bold">{session?.user?.name || userProgress.fullName || 'Independent Contributor'}</h2>
                         <Badge variant="outline" className="bg-yellow-500/20 text-yellow-300 border-yellow-500 mt-1">
-                          {displayProgress.tierIcon} {displayProgress.tier}
-                          {displayProgress.rank > 0 && ` — Rank #${displayProgress.rank} overall`}
+                          {userProgress.tierIcon} {userProgress.tier}
+                          {userProgress.rank > 0 && ` — Rank #${userProgress.rank} overall`}
                         </Badge>
-                        {displayProgress.institution && (
-                          <p className="text-sm text-gray-400 mt-1">{displayProgress.institution}</p>
+                        {userProgress.institution && (
+                          <p className="text-sm text-gray-400 mt-1">{userProgress.institution}</p>
                         )}
                       </div>
                       <div className="ml-auto text-right">
-                        <div className="text-3xl font-bold text-yellow-400">{displayProgress.totalPoints.toLocaleString()}</div>
+                        <div className="text-3xl font-bold text-yellow-400">{userProgress.totalPoints.toLocaleString()}</div>
                         <div className="text-sm text-gray-400">Total Points</div>
                       </div>
                     </div>
@@ -668,11 +694,11 @@ export default function ProgressionPage() {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Contribution Breakdown</h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {[
-                    { label: 'Entities', value: displayProgress.breakdown.entities, icon: IconArchive },
-                    { label: 'Accepted', value: displayProgress.breakdown.acceptedEntities, icon: IconCheck },
-                    { label: 'Revisions', value: displayProgress.breakdown.revisions, icon: IconPencil },
-                    { label: 'Reviews', value: displayProgress.breakdown.reviews, icon: IconSearch },
-                    { label: 'Submissions', value: displayProgress.breakdown.submissions, icon: IconBooks },
+                    { label: 'Entities', value: userProgress.breakdown.entities, icon: IconArchive },
+                    { label: 'Accepted', value: userProgress.breakdown.acceptedEntities, icon: IconCheck },
+                    { label: 'Revisions', value: userProgress.breakdown.revisions, icon: IconPencil },
+                    { label: 'Reviews', value: userProgress.breakdown.reviews, icon: IconSearch },
+                    { label: 'Submissions', value: userProgress.breakdown.submissions, icon: IconBooks },
                   ].map(({ label, value, icon: Icon }) => (
                     <Card key={label}>
                       <CardContent className="p-4 text-center">
@@ -689,7 +715,7 @@ export default function ProgressionPage() {
               <motion.div variants={fadeInUp}>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Track Progress</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {displayProgress.tracks.map((progress) => {
+                  {userProgress.tracks.map((progress) => {
                     const track = tracks.find(t => t.id === progress.id)!;
                     const Icon = track.icon;
                     return (
@@ -716,21 +742,21 @@ export default function ProgressionPage() {
               <motion.div variants={fadeInUp}>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Seals</h3>
                 <div className="flex flex-wrap gap-3">
-                  <SealBadge type="gold" count={displayProgress.medals.gold} />
-                  <SealBadge type="silver" count={displayProgress.medals.silver} />
-                  <SealBadge type="bronze" count={displayProgress.medals.bronze} />
+                  <SealBadge type="gold" count={userProgress.medals.gold} />
+                  <SealBadge type="silver" count={userProgress.medals.silver} />
+                  <SealBadge type="bronze" count={userProgress.medals.bronze} />
                 </div>
               </motion.div>
 
               {/* Streak */}
-              {displayProgress.streak > 0 && (
+              {userProgress.streak > 0 && (
                 <motion.div variants={fadeInUp}>
                   <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
                     <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full">
                       <IconFlame className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <span className="font-semibold text-orange-700 dark:text-orange-300">{displayProgress.streak} day streak!</span>
+                      <span className="font-semibold text-orange-700 dark:text-orange-300">{userProgress.streak} day streak!</span>
                       <p className="text-xs text-muted-foreground">Keep contributing to maintain it</p>
                     </div>
                   </div>
@@ -738,13 +764,13 @@ export default function ProgressionPage() {
               )}
 
               {/* Recent Activity */}
-              {displayProgress.recentActivity.length > 0 && (
+              {userProgress.recentActivity.length > 0 && (
                 <motion.div variants={fadeInUp}>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
                   <Card>
                     <CardContent className="p-0">
                       <div className="divide-y divide-border">
-                        {displayProgress.recentActivity.map((activity, i) => (
+                        {userProgress.recentActivity.map((activity, i) => (
                           <div key={i} className="flex items-center justify-between px-5 py-3 hover:bg-muted/30 transition-colors">
                             <span className="text-sm text-muted-foreground">{activity.label}</span>
                             {activity.points > 0 && (
@@ -769,12 +795,13 @@ export default function ProgressionPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground text-sm">
-                      {displayProgress.nextMilestone}
+                      {userProgress.nextMilestone}
                     </p>
                   </CardContent>
                 </Card>
               </motion.div>
             </motion.div>
+            )}
           </TabsContent>
 
           {/* ── Leaderboard Tab ── */}
