@@ -328,9 +328,9 @@ export default function Home() {
                 <motion.div
                   key={item.title}
                   variants={scaleIn}
-                  className="group relative"
+                  className="group relative h-full"
                 >
-                  <div className="relative p-8 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-2xl hover:bg-white transition-all duration-500 transform hover:scale-[1.02] overflow-hidden shadow-lg hover:shadow-xl">
+                  <div className="relative p-8 bg-white/80 backdrop-blur-sm border border-blue-200 rounded-2xl hover:bg-white transition-all duration-500 transform hover:scale-[1.02] overflow-hidden shadow-lg hover:shadow-xl h-full flex flex-col">
                     <div
                       className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
                     />
@@ -342,7 +342,7 @@ export default function Home() {
                     <h3 className="text-2xl font-bold mb-4 text-blue-900 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">
                       {item.title}
                     </h3>
-                    <p className="text-blue-700 leading-relaxed">{item.description}</p>
+                    <p className="text-blue-700 leading-relaxed flex-1">{item.description}</p>
                   </div>
                 </motion.div>
               ))}
