@@ -160,7 +160,7 @@ export default function Page() {
               <Button
                 variant="outline"
                 size="lg"
-                className="border-white/40 text-white hover:bg-white/20 rounded-full font-semibold transition-all duration-300"
+                className="bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white rounded-full font-semibold transition-all duration-300"
               >
                 <IconGraph className="w-4 h-4 mr-2" />
                 Explore Knowledge Graph

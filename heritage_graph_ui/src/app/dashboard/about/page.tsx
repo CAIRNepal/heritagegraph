@@ -158,7 +158,7 @@ export default function AboutPage() {
                   </Button>
                 </Link>
                 <Link href="/dashboard/graphview">
-                  <Button variant="outline" size="lg" className="border-white/40 text-white hover:bg-white/20 rounded-full font-semibold">
+                  <Button variant="outline" size="lg" className="bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white rounded-full font-semibold">
                     <IconGraph className="w-4 h-4 mr-2" />
                     Explore the Graph
                     <IconArrowRight className="w-4 h-4 ml-2" />

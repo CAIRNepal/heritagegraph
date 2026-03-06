@@ -114,7 +114,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
-            <button className="px-8 py-4 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-white font-semibold hover:bg-white/30 transition-all duration-300 hover:scale-105">
+            <button className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/30 rounded-full text-white font-semibold hover:bg-white/30 transition-all duration-300 hover:scale-105">
               Explore Knowledge Graph
             </button>
             <button className="px-8 py-4 heritage-gradient rounded-full text-white font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105">
