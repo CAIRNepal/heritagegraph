@@ -2,8 +2,10 @@ import NextAuth, { DefaultSession } from 'next-auth';
 
 declare module 'next-auth' {
   interface Session extends DefaultSession {
-    /** Google ID token, sent as Bearer token to Django backend */
+    /** OAuth access token sent as Bearer token to Django backend */
     accessToken?: string;
+    /** Set to 'RefreshAccessTokenError' if token refresh failed */
+    error?: string;
     user?: {
       username?: string | null;
     } & DefaultSession['user'];
@@ -16,8 +18,16 @@ declare module 'next-auth' {
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    /** Google ID token, sent as Bearer token to Django backend */
+    /** OAuth access token sent as Bearer token to Django backend */
     accessToken?: string;
+    /** OAuth refresh token for auto-renewal */
+    refreshToken?: string;
+    /** Timestamp (ms) when the access token expires */
+    accessTokenExpires?: number;
+    /** Which OAuth provider was used: 'google' | 'github' */
+    authProvider?: string;
     username?: string | null;
+    /** Set to 'RefreshAccessTokenError' if token refresh failed */
+    error?: string;
   }
 }

@@ -44,7 +44,11 @@ for var in ("DB_NAME", "DB_USER", "DB_PASSWORD"):
         raise ValueError(f"Missing required database environment variable: {var}")
 
 # --------------------------------------------------------------------
-# Production Authentication: Google OAuth (via NextAuth frontend)
+# Authentication: Google OAuth (primary) + GitHub (placeholder)
+# --------------------------------------------------------------------
+# Google is the primary auth provider. GitHub is ready for future use.
+# Both backends return None for unrecognized tokens, allowing the
+# chain to fall through gracefully.
 # --------------------------------------------------------------------
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
     "apps.heritage_data.authentication.GoogleTokenAuthentication",

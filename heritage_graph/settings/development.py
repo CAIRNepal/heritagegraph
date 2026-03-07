@@ -20,27 +20,22 @@ DATABASES = {
 }
 
 # --------------------------------------------------------------------
-# Dev Authentication: Session + SimpleJWT + Google fallback
+# Authentication: Google OAuth (primary) + GitHub (placeholder)
 # --------------------------------------------------------------------
-# Login via:
-#   - Django admin (/admin/) for session cookie
-#   - POST /api/token/ with {username, password} for JWT Bearer token
-#   - DRF browsable API login button
-#   - Google OAuth (if GOOGLE_CLIENT_ID is set in env)
-#
 # Order matters: DRF tries each class in sequence and STOPS if one
-# raises AuthenticationFailed (SimpleJWT does this for bad tokens).
-# GoogleTokenAuthentication must come BEFORE JWTAuthentication because
-# it returns None (not raises) for non-Google tokens, allowing the
-# chain to continue.
-#   1. DevSessionAuthentication — handles session cookies from /admin/
-#   2. GoogleTokenAuthentication — handles Google id_tokens (returns None if not a Google token)
-#   3. JWTAuthentication — handles SimpleJWT access tokens from /api/token/
+# raises AuthenticationFailed.
+# GoogleTokenAuthentication returns None (not raises) for non-Google
+# tokens, allowing the chain to continue.
+#
+#   1. GoogleTokenAuthentication — primary: verifies Google id_tokens
+#   2. GitHubTokenAuthentication — secondary: verifies GitHub access_tokens
+#   3. DevSessionAuthentication  — allows Django admin session access
+#   4. JWTAuthentication          — fallback for SimpleJWT tokens
 # --------------------------------------------------------------------
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
-    "apps.heritage_data.authentication.DevSessionAuthentication",
     "apps.heritage_data.authentication.GoogleTokenAuthentication",
     "apps.heritage_data.authentication.GitHubTokenAuthentication",
+    "apps.heritage_data.authentication.DevSessionAuthentication",
     "rest_framework_simplejwt.authentication.JWTAuthentication",
 )
 

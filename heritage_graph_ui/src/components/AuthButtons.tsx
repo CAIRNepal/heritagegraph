@@ -62,6 +62,7 @@ export default function AuthSection() {
 
   const userName = session.user?.name || 'User';
   const userEmail = session.user?.email || '';
+  const userImage = session.user?.image || '';
   const initials = userName
     .split(' ')
     .map((n) => n[0])
@@ -73,7 +74,7 @@ export default function AuthSection() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2 px-2">
           <SimpleRankAvatar
-            src="/avatars/shadcn.jpg"
+            src={userImage}
             fallback={initials}
             tier={userTier}
             size="sm"
@@ -93,7 +94,7 @@ export default function AuthSection() {
         <DropdownMenuLabel className="p-0 font-normal">
           <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
             <SimpleRankAvatar
-              src="/avatars/shadcn.jpg"
+              src={userImage}
               fallback={initials}
               tier={userTier}
               size="md"

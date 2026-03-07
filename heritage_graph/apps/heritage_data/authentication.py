@@ -1,20 +1,21 @@
 """
 Authentication backends for Django REST Framework.
 
-Three backends are provided, selected via DJANGO_ENV:
+Three backends are provided:
 
-- **Development:** `DevSessionAuthentication`
-  Uses Django's built-in session auth + simple JWT (SimpleJWT).
-  No external OAuth setup required — just create a user via
-  `manage.py createsuperuser` and login at /api/token/.
-
-- **Production:** `GoogleTokenAuthentication`
+- **Primary:** `GoogleTokenAuthentication`
   Verifies Google-issued ID tokens (sent by NextAuth frontend as
   Bearer tokens) and auto-creates/syncs Django User + UserProfile.
+  This is the main auth method for all environments.
 
-- **Production:** `GitHubTokenAuthentication`
+- **Secondary (placeholder):** `GitHubTokenAuthentication`
   Verifies GitHub OAuth access tokens (sent by NextAuth frontend as
   Bearer tokens) and auto-creates/syncs Django User + UserProfile.
+  Ready for use — enable by setting GITHUB_ID / GITHUB_SECRET env vars.
+
+- **Dev helper:** `DevSessionAuthentication`
+  Uses Django's built-in session auth for admin panel access.
+  Included in the dev auth chain for convenience.
 """
 
 import logging
@@ -57,22 +58,26 @@ class DevSessionAuthentication(authentication.SessionAuthentication):
 
 
 # ====================================================================
-# Production Authentication — Google OAuth ID Token
+# Production Authentication — Google OAuth Access Token
 # ====================================================================
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 
 class GoogleTokenAuthentication(authentication.BaseAuthentication):
     """
-    Authenticate requests using Google ID tokens.
+    Authenticate requests using Google OAuth access tokens.
 
-    The frontend (NextAuth + GoogleProvider) sends the Google id_token
+    The frontend (NextAuth + GoogleProvider) sends the Google access_token
     as a Bearer token in the Authorization header. This backend:
 
-    1. Verifies the token signature & claims via Google's public keys
+    1. Calls Google's userinfo API to verify the token and get user info
     2. Maps Google claims → Django User fields
     3. Auto-creates User + UserProfile on first login (get_or_create)
+
+    Access tokens (unlike ID tokens) can be refreshed by NextAuth,
+    avoiding the 1-hour expiry problem that ID tokens have.
     """
 
     def authenticate(self, request):
@@ -87,26 +92,24 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
 
         token = auth_header.split(" ")[1]
 
+        # Verify the access token by calling Google's userinfo endpoint.
+        # This returns user profile data if the token is valid.
         try:
-            from google.auth.transport import requests as google_requests
-            from google.oauth2 import id_token as google_id_token
-
-            # Verify the Google ID token against Google's public certs.
-            # This checks signature, expiry, issuer, and audience.
-            payload = google_id_token.verify_oauth2_token(
-                token,
-                google_requests.Request(),
-                GOOGLE_CLIENT_ID,
+            resp = http_requests.get(
+                GOOGLE_USERINFO_URL,
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10,
             )
-        except ValueError:
-            # Token is not a valid Google token — return None so the next
-            # auth class in the chain can try (e.g. JWTAuthentication).
+        except http_requests.RequestException:
+            # Network error — let the next auth class try
             return None
 
-        # Ensure the token was issued by Google
-        issuer = payload.get("iss", "")
-        if issuer not in ("accounts.google.com", "https://accounts.google.com"):
-            raise exceptions.AuthenticationFailed("Token not issued by Google.")
+        if resp.status_code != 200:
+            # Not a valid Google access token — return None so the next
+            # auth class in the chain can try (e.g. GitHubTokenAuthentication).
+            return None
+
+        payload = resp.json()
 
         email = payload.get("email")
         if not email:
