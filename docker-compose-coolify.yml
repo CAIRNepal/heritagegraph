@@ -116,6 +116,8 @@ services:
     build:
       context: ./heritage_graph_ui
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     restart: always
     environment:
       NODE_ENV: production
