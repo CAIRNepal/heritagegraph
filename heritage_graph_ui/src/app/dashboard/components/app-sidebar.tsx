@@ -211,10 +211,10 @@ const data = {
       url: '/dashboard/knowledge/period',
       icon: IconClock,
     },
-    { 
-      title: 'Tradition / Practice', 
-      url: '/dashboard/knowledge/tradition', 
-      icon: IconFlame 
+    {
+      title: 'Tradition / Practice',
+      url: '/dashboard/knowledge/tradition',
+      icon: IconFlame
     },
     {
       title: 'Source',
@@ -329,7 +329,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            
+
 <SidebarMenuButton
   asChild
   className="data-[slot=sidebar-menu-button]:!p-1.5"
@@ -366,7 +366,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ]} />
 
         <NavMain navtitle={t('knowledgebase')} items={[
-          { title: t('culturalEntity'), url: '/dashboard/knowledge/entity', icon: IconBuildingCommunity },
+          // { title: t('culturalEntity'), url: '/dashboard/knowledge/entity', icon: IconBuildingCommunity },
           { title: t('person'), url: '/dashboard/knowledge/person', icon: IconUser },
           { title: t('location'), url: '/dashboard/knowledge/location', icon: IconMapPin },
           { title: t('event'), url: '/dashboard/knowledge/event', icon: IconCalendarEvent },

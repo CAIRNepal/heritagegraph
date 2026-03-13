@@ -345,7 +345,7 @@ export default function Page() {
       </motion.div>
 
       {/* ── Heritage Data Table (glassmorphic container) ── */}
-      <motion.div
+      {/* <motion.div
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, amount: 0.1 }}
@@ -367,7 +367,7 @@ export default function Page() {
             }}
           />
         </div>
-      </motion.div>
+      </motion.div> */}
     </div>
   );
 }
