@@ -143,7 +143,7 @@ export default function Page() {
             </span>
           </h1>
           <p className="text-blue-100 max-w-xl text-base md:text-lg leading-relaxed">
-            Preserving cultural heritage through AI and Knowledge Graphs — contribute,
+            Preserving cultural heritage through AI and Knowledge Graphs. Contribute,
             curate, and explore Nepal&apos;s rich heritage.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">

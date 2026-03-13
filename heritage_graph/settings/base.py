@@ -47,6 +47,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "urls"
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://heritagegraph.xyz',
+    'https://api.heritagegraph.xyz',
+    'https://www.heritagegraph.xyz',
+]
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
