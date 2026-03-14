@@ -134,9 +134,15 @@ urlpatterns = [
     # test endpoints
     path("api/testme/", views.TestView.as_view(), name="Test this for auth health"),
     
-    # user details
+    # user details — current user's own profile (must come before slug pattern)
     path(
-        "api/user/<str:username>/",
+        "api/user/me/",
+        views.UserProfileMeView.as_view(),
+        name="user-profile-me",
+    ),
+    # user details — public profile by slug (UUID)
+    path(
+        "api/user/<uuid:slug>/",
         views.UserProfileDetail.as_view(),
         name="user-profile-detail",
     ),

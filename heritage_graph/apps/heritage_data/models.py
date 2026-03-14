@@ -783,6 +783,8 @@ class OrganizationMembership(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    slug = models.UUIDField(default=uuid.uuid4, unique=True, editable=False,
+                            help_text="Public URL-safe identifier for profile pages")
     clerk_user_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
     first_name = models.CharField(max_length=50, blank=True)
     middle_name = models.CharField(max_length=50, blank=True)

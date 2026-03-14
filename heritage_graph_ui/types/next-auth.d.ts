@@ -8,11 +8,13 @@ declare module 'next-auth' {
     error?: string;
     user?: {
       username?: string | null;
+      slug?: string | null;
     } & DefaultSession['user'];
   }
 
   interface User {
     username?: string | null;
+    slug?: string | null;
   }
 }
 
@@ -27,6 +29,7 @@ declare module 'next-auth/jwt' {
     /** Which OAuth provider was used: 'google' | 'github' */
     authProvider?: string;
     username?: string | null;
+    slug?: string | null;
     /** Set to 'RefreshAccessTokenError' if token refresh failed */
     error?: string;
   }

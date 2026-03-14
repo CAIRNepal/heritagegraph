@@ -57,7 +57,7 @@ import {
 /* ------------------------------------------------------------------ */
 type CustomSession = {
   accessToken?: string;
-  user?: { username?: string; name?: string | null; email?: string | null; image?: string | null };
+  user?: { username?: string; slug?: string | null; name?: string | null; email?: string | null; image?: string | null };
 };
 
 type OrgMembership = {
@@ -121,10 +121,10 @@ function relTime(d: string) {
 export default function UserProfilePage() {
   const params = useParams();
   const router = useRouter();
-  const username = params.username as string;
+  const slug = params.slug as string;
   const { data: sessionData } = useSession();
   const session = sessionData as CustomSession | null;
-  const isOwn = session?.user?.username === username;
+  const isOwn = session?.user?.slug === slug;
 
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -146,7 +146,7 @@ export default function UserProfilePage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API}/data/api/user/${username}/`);
+        const res = await fetch(`${API}/data/api/user/${slug}/`);
         if (!res.ok) throw new Error('User not found');
         const data = await res.json();
         setUser(data);
@@ -173,7 +173,7 @@ export default function UserProfilePage() {
         setLoading(false);
       }
     })();
-  }, [username]);
+  }, [slug]);
 
   // Fetch user activities
   useEffect(() => {
@@ -184,11 +184,11 @@ export default function UserProfilePage() {
         const data = await res.json();
         // Filter to this user's activities
         setActivities(
-          data.results?.filter((a: ActivityItem) => a.user?.username === username) || []
+          data.results?.filter((a: ActivityItem) => a.user?.username === user?.username) || []
         );
       } catch { /* non-critical */ }
     })();
-  }, [username]);
+  }, [slug, user?.username]);
 
   const copyEmail = () => {
     if (user?.email) {
@@ -227,7 +227,7 @@ export default function UserProfilePage() {
           ...(form.instagram && { instagram: form.instagram }),
         },
       };
-      const res = await fetch(`${API}/data/api/user/${username}/`, {
+      const res = await fetch(`${API}/data/api/user/${slug}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -280,7 +280,7 @@ export default function UserProfilePage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
         <User className="h-16 w-16 text-muted-foreground" />
         <h2 className="text-xl font-semibold">User not found</h2>
-        <p className="text-muted-foreground">The profile for @{username} could not be loaded.</p>
+        <p className="text-muted-foreground">The profile for this user could not be loaded.</p>
       </div>
     );
   }

@@ -118,7 +118,7 @@ export default function AuthSection() {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link
-              href={`/dashboard/users/${session.user?.username || 'me'}`}
+              href={`/dashboard/users/${session.user?.slug || ''}`}
               className="flex items-center gap-2"
             >
               <IconUserCircle className="h-4 w-4" />

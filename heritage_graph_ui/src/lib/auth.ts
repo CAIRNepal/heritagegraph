@@ -82,13 +82,14 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     // Ping the backend on first OAuth sign-in to auto-create the Django user
-    async signIn({ account }) {
+    async signIn({ account, user }) {
       if (account?.provider === 'google' || account?.provider === 'github') {
         try {
           const token = account.access_token;
           if (token) {
             const backendUrl =
               process.env.INTERNAL_BACKEND_URL || 'http://backend:8000';
+            // Ping backend to auto-create Django user
             const response = await fetch(`${backendUrl}/data/testme/`, {
               method: 'GET',
               headers: {
@@ -101,6 +102,26 @@ export const authOptions: NextAuthOptions = {
                 `Django sync call failed for ${account.provider}:`,
                 await response.text()
               );
+            }
+
+            // Fetch the user's profile slug for URL-safe profile links
+            try {
+              const meResp = await fetch(`${backendUrl}/data/api/user/me/`, {
+                method: 'GET',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  Accept: 'application/json',
+                },
+              });
+              if (meResp.ok) {
+                const meData = await meResp.json();
+                // Store slug on the user object so the jwt callback can pick it up
+                if (meData.slug) {
+                  (user as any).slug = meData.slug;
+                }
+              }
+            } catch (err) {
+              console.error('Error fetching user profile slug:', err);
             }
           }
         } catch (err) {
@@ -117,6 +138,7 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.picture = user.image;
         token.username = user.email || null;
+        token.slug = (user as any).slug || null;
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.accessTokenExpires = account.expires_at
@@ -146,6 +168,7 @@ export const authOptions: NextAuthOptions = {
       session.user.name = token.name as string;
       session.user.image = token.picture as string | undefined;
       session.user.username = token.username as string | null;
+      session.user.slug = token.slug as string | null;
       session.accessToken = token.accessToken as string | undefined;
 
       // Expose token error so the frontend can force re-login if needed

@@ -827,32 +827,27 @@ class TestView(APIView):
 
 class UserProfileDetail(APIView):
     """
-    GET: Public endpoint to fetch a user's profile.
-    POST: Protected endpoint to update user's own profile
-           (requires authentication via Keycloak JWT).
+    GET: Public endpoint to fetch a user's profile by slug (UUID).
+    POST: Protected endpoint to update user's own profile.
     """
 
     permission_classes = [AllowAny]  # default, overridden per method
 
     def get_permissions(self):
-        """
-        Assign permissions per HTTP method.
-        """
         if self.request.method == "POST":
-            return [IsAuthenticated()]  # instantiate, protects POST
-        return [AllowAny()]  # GET is public
+            return [IsAuthenticated()]
+        return [AllowAny()]
 
     def get(self, request, *args, **kwargs):
-        username = kwargs.get("username")
-        if not username:
+        slug = kwargs.get("slug")
+        if not slug:
             return Response(
-                {"error": "username is required"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "slug is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
         try:
-            user = User.objects.get(username=username)
-            profile = UserProfile.objects.get(user=user)
-        except (User.DoesNotExist, UserProfile.DoesNotExist):
+            profile = UserProfile.objects.select_related("user").get(slug=slug)
+        except UserProfile.DoesNotExist:
             return Response(
                 {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
             )
@@ -862,28 +857,26 @@ class UserProfileDetail(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        username = kwargs.get("username")
-        email = data.get("email")
+        slug = kwargs.get("slug")
 
-        if not username:
+        if not slug:
             return Response(
-                {"error": "username is required"}, status=status.HTTP_400_BAD_REQUEST
+                {"error": "slug is required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Get or create User
-        user, _ = User.objects.get_or_create(
-            username=username, defaults={"email": email}
-        )
+        try:
+            profile = UserProfile.objects.select_related("user").get(slug=slug)
+        except UserProfile.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # Only allow the authenticated user to update their own profile
-        if request.user != user:
+        if request.user != profile.user:
             return Response(
                 {"error": "You do not have permission to update this profile."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-
-        # Get or create UserProfile
-        profile, _ = UserProfile.objects.get_or_create(user=user)
 
         # Update fields with serializer
         serializer = UserProfileSerializer(profile, data=data, partial=True)
@@ -892,6 +885,21 @@ class UserProfileDetail(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserProfileMeView(APIView):
+    """
+    GET: Returns the authenticated user's own profile (including slug).
+    Used by the frontend to get the current user's slug for navigation
+    and isOwn detection.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CulturalEntityViewSet(viewsets.ModelViewSet):

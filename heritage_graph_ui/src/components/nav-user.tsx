@@ -146,7 +146,7 @@ export function NavUser({
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/dashboard/users/${session?.user?.username}`}
+                  href={`/dashboard/users/${session?.user?.slug || ''}`}
                   className="flex items-center gap-2"
                 >
                   <IconUserCircle />
