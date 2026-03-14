@@ -146,6 +146,12 @@ urlpatterns = [
         views.UserProfileDetail.as_view(),
         name="user-profile-detail",
     ),
+    # user details — public profile by username string
+    path(
+        "api/user/by-username/<str:username>/",
+        views.UserProfileByUsernameView.as_view(),
+        name="user-profile-by-username",
+    ),
     # profile image upload
     path(
         "api/user/profile-image/",

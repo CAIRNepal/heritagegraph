@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+
 import Link from 'next/link';
 import { IconDotsVertical, IconLogout, IconUserCircle } from '@tabler/icons-react';
 import { useTranslations } from 'next-intl';
@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/sidebar';
 
 import { signOut, useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 export function NavUser({
   user,
@@ -48,8 +49,35 @@ export function NavUser({
   }
   const { data: session, status } = useSession();
   const t = useTranslations('user');
-  console.log("HRRRRRE")
-  console.log(session?.accessToken)
+  const [userSlug, setUserSlug] = useState<string | null>(null);
+
+  // Eagerly fetch slug if it's not in the session (e.g., first login before JWT refresh)
+  useEffect(() => {
+    if (status === 'authenticated' && session?.accessToken && !session?.user?.slug) {
+      const fetchSlug = async () => {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/user/me/`,
+            {
+              headers: {
+                Authorization: `Bearer ${session.accessToken}`,
+                Accept: 'application/json',
+              },
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data.slug) setUserSlug(data.slug);
+          }
+        } catch (err) {
+          console.error('Error fetching user slug:', err);
+        }
+      };
+      fetchSlug();
+    } else if (session?.user?.slug) {
+      setUserSlug(session.user.slug);
+    }
+  }, [status, session]);
 
   // 🔥 Initialize user in backend when logged in
   useEffect(() => {
@@ -146,7 +174,7 @@ export function NavUser({
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={`/dashboard/users/${session?.user?.slug || ''}`}
+                  href={userSlug ? `/dashboard/users/${userSlug}` : '#'}
                   className="flex items-center gap-2"
                 >
                   <IconUserCircle />

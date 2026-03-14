@@ -902,6 +902,27 @@ class UserProfileMeView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class UserProfileByUsernameView(APIView):
+    """
+    GET: Public endpoint to fetch a user's profile by username string.
+    Used by heritage tables and contributor links that only know the username.
+    """
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CulturalEntityViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing Cultural Entities

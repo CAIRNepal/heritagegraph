@@ -124,7 +124,7 @@ export default function UserProfilePage() {
   const slug = params.slug as string;
   const { data: sessionData } = useSession();
   const session = sessionData as CustomSession | null;
-  const isOwn = session?.user?.slug === slug;
+  const isOwn = session?.user?.slug === slug || session?.user?.username === slug;
 
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -133,6 +133,8 @@ export default function UserProfilePage() {
   const [emailCopied, setEmailCopied] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [tab, setTab] = useState('activity');
+  // Store the resolved UUID slug for API calls (profile update, image upload)
+  const [resolvedSlug, setResolvedSlug] = useState<string>(slug);
   const imgRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -142,14 +144,28 @@ export default function UserProfilePage() {
     website_link: '', twitter: '', linkedin: '', github: '', facebook: '', instagram: '',
   });
 
-  // Fetch user profile
+  // Fetch user profile — try UUID slug first, fall back to username lookup
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API}/data/api/user/${slug}/`);
+        // Check if slug looks like a UUID
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+        
+        let res: Response;
+        if (isUUID) {
+          res = await fetch(`${API}/data/api/user/${slug}/`);
+        } else {
+          // Fall back to username-based lookup
+          res = await fetch(`${API}/data/api/user/by-username/${slug}/`);
+        }
+        
         if (!res.ok) throw new Error('User not found');
         const data = await res.json();
         setUser(data);
+        // Store the actual UUID slug for subsequent API calls
+        if (data.slug) {
+          setResolvedSlug(data.slug);
+        }
         setForm({
           first_name: data.first_name || '',
           middle_name: data.middle_name || '',
@@ -227,7 +243,7 @@ export default function UserProfilePage() {
           ...(form.instagram && { instagram: form.instagram }),
         },
       };
-      const res = await fetch(`${API}/data/api/user/${slug}/`, {
+      const res = await fetch(`${API}/data/api/user/${resolvedSlug}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -23,6 +23,7 @@ import { SimpleRankAvatar, tierConfig, TierType } from '@/components/rank-avatar
  */
 export default function AuthSection() {
   const { data: session, status } = useSession();
+  const [userSlug, setUserSlug] = useState<string | null>(null);
 
   // Initialize user in backend when logged in
   useEffect(() => {
@@ -45,6 +46,34 @@ export default function AuthSection() {
         }
       };
       initUser();
+    }
+  }, [status, session]);
+
+  // Eagerly fetch slug if it's not in the session
+  useEffect(() => {
+    if (status === 'authenticated' && session?.accessToken && !session?.user?.slug) {
+      const fetchSlug = async () => {
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/user/me/`,
+            {
+              headers: {
+                Authorization: `Bearer ${session.accessToken}`,
+                Accept: 'application/json',
+              },
+            }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (data.slug) setUserSlug(data.slug);
+          }
+        } catch (err) {
+          console.error('Error fetching user slug:', err);
+        }
+      };
+      fetchSlug();
+    } else if (session?.user?.slug) {
+      setUserSlug(session.user.slug);
     }
   }, [status, session]);
 
@@ -75,7 +104,6 @@ export default function AuthSection() {
         <Button variant="ghost" size="sm" className="gap-2 px-2">
           <SimpleRankAvatar
             src={userImage}
-            fallback={initials}
             tier={userTier}
             size="sm"
           />
@@ -95,7 +123,6 @@ export default function AuthSection() {
           <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
             <SimpleRankAvatar
               src={userImage}
-              fallback={initials}
               tier={userTier}
               size="md"
             />
@@ -118,7 +145,7 @@ export default function AuthSection() {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link
-              href={`/dashboard/users/${session.user?.slug || ''}`}
+              href={userSlug ? `/dashboard/users/${userSlug}` : '#'}
               className="flex items-center gap-2"
             >
               <IconUserCircle className="h-4 w-4" />
