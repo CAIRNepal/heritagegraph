@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
             <UserProgressBadge />
             <NotificationBell />
-            <LanguageSwitcher />
+            {/* <LanguageSwitcher /> */}
             <AuthButtons />
             <ThemeToggle />
           </div>
