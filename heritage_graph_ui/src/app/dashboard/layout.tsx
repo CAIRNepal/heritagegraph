@@ -2,13 +2,18 @@
 
 import React from 'react';
 import { ReactNode } from 'react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { AppSidebar } from '@/app/dashboard/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import AuthButtons from '@/components/AuthButtons';
-import { NotificationBell } from '@/components/notification-bell';
+
+const NotificationBell = dynamic(
+  () => import('@/components/notification-bell').then((mod) => mod.NotificationBell),
+  { ssr: false }
+);
 import { Toaster } from '@/components/ui/sonner';
 import { UserProgressBadge } from '@/components/progression-widgets';
 import { LanguageSwitcher } from '@/components/language-switcher';
