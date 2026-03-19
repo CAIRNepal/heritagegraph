@@ -66,7 +66,7 @@ export default function EntityViewPage() {
       <div className="py-12 text-center space-y-4">
         <h2 className="text-2xl font-bold">Unknown domain</h2>
         <p className="text-muted-foreground">The domain &ldquo;{domain}&rdquo; is not recognized.</p>
-        <Button variant="outline" onClick={() => router.push("/dashboard")}><ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard</Button>
+        <Button variant="outline" onClick={() => router.push("/")}><ArrowLeft className="h-4 w-4 mr-2" /> Back to Dashboard</Button>
       </div>
     );
   }

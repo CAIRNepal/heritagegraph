@@ -2,7 +2,6 @@ import secrets
 import string
 import uuid
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -792,6 +791,7 @@ class UserProfile(models.Model):
     email = models.EmailField(blank=True)
     birth_date = models.DateField(blank=True, null=True)
     profile_image = models.ImageField(upload_to='profile_images/', blank=True, null=True)
+    avatar_url = models.URLField(blank=True, null=True)
 
     biography = models.TextField(blank=True)
     area_of_expertise = models.CharField(max_length=255, blank=True)

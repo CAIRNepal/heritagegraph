@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from rest_framework.serializers import ModelSerializer, ValidationError
@@ -15,8 +15,7 @@ from .models import (
     UserProfile,
     PublicContribution,
 )
-from rest_framework import serializers
-from django.contrib.auth.models import User
+User = get_user_model()
 from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole, Notification, Reaction, Fork, Share
 
 
@@ -336,6 +335,7 @@ class UserStatsSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    user_id = serializers.UUIDField(source="user.id", read_only=True)
     username = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email", read_only=True)
     member_since = serializers.CharField(read_only=True)  # property from model
@@ -345,6 +345,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = [
+            "user_id",
             "slug",
             "username",
             "email",
@@ -362,6 +363,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "score",
             "member_since",
             "profile_image",
+            "avatar_url",
             "organizations",
         ]
 
@@ -546,7 +548,7 @@ class ReviewerRoleSerializer(serializers.ModelSerializer):
 
 class ReviewerRoleAssignSerializer(serializers.Serializer):
     """Used by Expert Curators to assign reviewer roles."""
-    user_id = serializers.IntegerField()
+    user_id = serializers.UUIDField()
     role = serializers.ChoiceField(choices=ReviewerRole.ROLE_CHOICES)
     expertise_areas = serializers.ListField(
         child=serializers.CharField(), required=False, default=list

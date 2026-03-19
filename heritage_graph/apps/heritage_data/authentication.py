@@ -22,12 +22,13 @@ import logging
 import os
 
 import requests as http_requests
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
 
 from .models import UserProfile
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
 
 # ====================================================================
@@ -118,18 +119,16 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         if not payload.get("email_verified", False):
             raise exceptions.AuthenticationFailed("Google email not verified.")
 
-        # --- Map Google claims to Django User ---
-        username = email
-
         user, created = User.objects.get_or_create(
-            username=username,
-            defaults={"email": email},
+            email=email,
         )
 
         # Always sync core fields from Google
         user.email = email
-        user.first_name = payload.get("given_name", user.first_name) or ""
-        user.last_name = payload.get("family_name", user.last_name) or ""
+        if hasattr(user, "first_name"):
+            user.first_name = payload.get("given_name", getattr(user, "first_name", "")) or ""
+        if hasattr(user, "last_name"):
+            user.last_name = payload.get("family_name", getattr(user, "last_name", "")) or ""
         user.save()
 
         if created:
@@ -140,6 +139,7 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         profile.first_name = payload.get("given_name", profile.first_name) or ""
         profile.last_name = payload.get("family_name", profile.last_name) or ""
         profile.email = email
+        profile.avatar_url = payload.get("picture", profile.avatar_url)
         # Store Google's unique subject ID for reference
         profile.clerk_user_id = payload.get("sub", profile.clerk_user_id)
         profile.save()
@@ -245,18 +245,16 @@ class GitHubTokenAuthentication(authentication.BaseAuthentication):
         first_name = name_parts[0]
         last_name = name_parts[1] if len(name_parts) > 1 else ""
 
-        # --- Map GitHub user → Django User ---
-        username = email  # consistent with Google auth
-
         user, created = User.objects.get_or_create(
-            username=username,
-            defaults={"email": email},
+            email=email,
         )
 
         # Always sync core fields from GitHub
         user.email = email
-        user.first_name = first_name
-        user.last_name = last_name
+        if hasattr(user, "first_name"):
+            user.first_name = first_name
+        if hasattr(user, "last_name"):
+            user.last_name = last_name
         user.save()
 
         if created:
@@ -267,11 +265,9 @@ class GitHubTokenAuthentication(authentication.BaseAuthentication):
         profile.first_name = first_name
         profile.last_name = last_name
         profile.email = email
+        profile.avatar_url = gh_user.get("avatar_url", profile.avatar_url)
         # Store GitHub's unique ID for reference
         profile.clerk_user_id = str(github_id)
-        if gh_user.get("avatar_url") and not profile.profile_image:
-            # Don't overwrite existing profile images
-            pass
         profile.save()
 
         return (user, None)

@@ -6,28 +6,51 @@ import GitHubProvider from 'next-auth/providers/github';
 
 // -------------------------------------------------------------------
 // OAuth Providers:
-//   - Google:  Primary auth provider (always enabled)
+//   - Google:  Primary auth provider (production by default; opt-in in dev)
 //   - GitHub:  Secondary provider (enabled when GITHUB_ID is set)
 // -------------------------------------------------------------------
+
+const isGoogleAuthEnabled = (() => {
+  const hasCreds =
+    !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
+
+  // In development, make Google explicit opt-in so a stale/invalid client
+  // doesn't break local startup (dev auth uses username/password instead).
+  if (process.env.NODE_ENV !== 'production') {
+    return (
+      hasCreds &&
+      (process.env.ENABLE_GOOGLE_AUTH === 'true' ||
+        process.env.HG_AUTH_PROVIDER === 'google')
+    );
+  }
+
+  // In production, if creds exist, enable Google.
+  return hasCreds;
+})();
 
 const isGitHubAuthEnabled =
   !!process.env.GITHUB_ID && !!process.env.GITHUB_SECRET;
 
 const providers: NextAuthOptions['providers'] = [
-  // Google OAuth — primary provider (always enabled)
-  // Request offline access to get a refresh_token for auto-renewal
-  GoogleProvider({
-    clientId: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    authorization: {
-      params: {
-        access_type: 'offline',
-        prompt: 'consent',
-        scope: 'openid email profile',
-      },
-    },
-  }),
 ];
+
+if (isGoogleAuthEnabled) {
+  // Google OAuth — primary provider
+  // Request offline access to get a refresh_token for auto-renewal
+  providers.push(
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          access_type: 'offline',
+          prompt: 'consent',
+          scope: 'openid email profile',
+        },
+      },
+    })
+  );
+}
 
 // GitHub OAuth — secondary provider (enabled when env vars are set)
 if (isGitHubAuthEnabled) {
@@ -115,7 +138,13 @@ export const authOptions: NextAuthOptions = {
               });
               if (meResp.ok) {
                 const meData = await meResp.json();
-                // Store slug on the user object so the jwt callback can pick it up
+                // Store backend identity on the user object so the jwt callback can pick it up
+                if (meData.user_id) {
+                  (user as any).id = meData.user_id;
+                }
+                if (meData.username) {
+                  (user as any).username = meData.username;
+                }
                 if (meData.slug) {
                   (user as any).slug = meData.slug;
                 }
@@ -137,7 +166,8 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.name = user.name;
         token.picture = user.image;
-        token.username = user.email || null;
+        token.id = (user as any).id || token.id || null;
+        token.username = (user as any).username || user.email || null;
         token.slug = (user as any).slug || null;
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
@@ -164,6 +194,7 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       session.user = session.user || {};
+      session.user.id = token.id as string | undefined;
       session.user.email = token.email as string;
       session.user.name = token.name as string;
       session.user.image = token.picture as string | undefined;
@@ -180,5 +211,5 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  debug: process.env.NODE_ENV === 'development',
+  debug: process.env.NEXTAUTH_DEBUG === 'true',
 };

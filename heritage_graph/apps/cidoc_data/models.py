@@ -1,8 +1,10 @@
 import uuid
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+
+User = get_user_model()
 
 # Choice constants
 ARTIFACT_CONDITION_CHOICES = [

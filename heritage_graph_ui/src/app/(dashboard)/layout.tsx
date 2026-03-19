@@ -4,7 +4,7 @@ import React from 'react';
 import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
-import { AppSidebar } from '@/app/dashboard/components/app-sidebar';
+import { AppSidebar } from '@/app/(dashboard)/dashboard/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';

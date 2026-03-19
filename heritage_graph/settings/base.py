@@ -11,6 +11,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 INSTALLED_APPS = [
     "rest_framework",
+    "apps.users",
     "apps.heritage_data",
     "apps.cidoc_data",
 
@@ -101,6 +102,8 @@ LOCALE_PATHS = [
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "users.User"
 
 REST_FRAMEWORK = {
     # Auth classes are set per-environment in development.py / production.py

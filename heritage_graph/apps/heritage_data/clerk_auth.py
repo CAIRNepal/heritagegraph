@@ -5,7 +5,8 @@ from datetime import datetime
 import jwt
 import pytz
 import requests
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.core.cache import cache
 from dotenv import load_dotenv
 from jwt.algorithms import RSAAlgorithm

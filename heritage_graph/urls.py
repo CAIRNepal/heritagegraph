@@ -61,4 +61,5 @@ urlpatterns = [
     ),  # Refresh JWT Token
     path("api/register/", RegisterView.as_view(), name="register"),
     path("api/user/info", CurrentUserView.as_view(), name="current-user"),
+    path("user/", include("apps.users.urls")),
 ]

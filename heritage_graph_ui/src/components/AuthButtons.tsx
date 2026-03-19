@@ -138,7 +138,7 @@ export default function AuthSection() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <IconUserCircle className="h-4 w-4" />
               Dashboard
             </Link>

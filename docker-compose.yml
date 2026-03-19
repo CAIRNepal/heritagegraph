@@ -125,6 +125,7 @@ services:
         condition: service_healthy
     volumes:
       - ./heritage_graph:/app/heritage_graph
+      - ./.cursor:/home/nabin/projects/heritagegraph/.cursor
       - backend-static:/app/heritage_graph/staticfiles
       - backend-media:/app/heritage_graph/media
     networks:

@@ -1,6 +1,8 @@
-from rest_framework import viewsets, permissions, status as drf_status
+from django.contrib.auth import get_user_model
+from rest_framework import permissions, status as drf_status, viewsets
 from rest_framework.response import Response
-from django.contrib.auth.models import User
+
+User = get_user_model()
 from .models import *
 from .serializers import *
 

@@ -100,11 +100,19 @@ export default function Page() {
             Accept: 'application/json',
           },
         });
+        const contentType = res.headers.get('content-type') || '';
+        const isJson = contentType.includes('application/json');
+
         if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || 'Failed to fetch data');
+          const errorPayload = isJson ? await res.json() : await res.text();
+          const errorMessage =
+            typeof errorPayload === 'string'
+              ? errorPayload.slice(0, 200) || `Request failed with status ${res.status}`
+              : errorPayload?.detail || `Request failed with status ${res.status}`;
+          throw new Error(errorMessage);
         }
-        const data = await res.json();
+
+        const data = isJson ? await res.json() : await res.text();
         console.log('Data: ', data);
       } catch (_err: any) {
         console.error('Error fetching backend data:', _err.message);

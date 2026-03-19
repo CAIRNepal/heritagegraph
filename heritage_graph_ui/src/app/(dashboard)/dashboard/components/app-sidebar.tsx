@@ -39,6 +39,7 @@ import {
   IconQrcode,
   IconMedal,
   IconInfoCircle,
+  IconChevronUp,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -322,7 +323,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const t = useTranslations('nav');
+  const [showScrollTop, setShowScrollTop] = React.useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
+  React.useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const onScroll = () => setShowScrollTop(el.scrollTop > 80);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -335,7 +349,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   className="data-[slot=sidebar-menu-button]:!p-1.5"
 >
   <div className="flex items-center justify-between w-full h-full">
-    <Link href="/dashboard" className="flex items-center">
+    <Link href="/" className="flex items-center">
           <Image
             src={isCollapsed ? "/logo1.svg" : "/logo.svg"}
             alt="logo"
@@ -352,10 +366,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        {/* Quick-access items previously in the top header */}
+      <SidebarContent ref={contentRef} className="relative pb-6">
+        {showScrollTop && (
+          <>
+            <div className="pointer-events-none sticky top-0 z-10 h-8 -mb-8 bg-gradient-to-b from-sidebar to-transparent" />
+            <button
+              onClick={scrollToTop}
+              className="sticky top-1 z-20 mx-auto flex items-center gap-1 rounded-full bg-blue-500/90 dark:bg-blue-600/90 px-3 py-1 text-[11px] font-medium text-white shadow-md backdrop-blur-sm transition-all hover:bg-blue-600 dark:hover:bg-blue-500 hover:shadow-lg"
+            >
+              <IconChevronUp className="size-3.5" />
+              {!isCollapsed && <span>Scroll to top</span>}
+            </button>
+          </>
+        )}
+
         <NavMain navtitle={t('navigation')} items={[
-          { title: t('dashboard'), url: '/dashboard', icon: IconLayoutDashboard },
+          { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
           { title: t('graphVisualization'), url: '/dashboard/graphview', icon: IconGraph },
           { title: t('contribute'), url: '/dashboard/contribute', icon: IconPlus },
           { title: t('progression'), url: '/dashboard/progression', icon: IconMedal },
@@ -366,7 +392,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ]} />
 
         <NavMain navtitle={t('knowledgebase')} items={[
-          // { title: t('culturalEntity'), url: '/dashboard/knowledge/entity', icon: IconBuildingCommunity },
           { title: t('person'), url: '/dashboard/knowledge/person', icon: IconUser },
           { title: t('location'), url: '/dashboard/knowledge/location', icon: IconMapPin },
           { title: t('event'), url: '/dashboard/knowledge/event', icon: IconCalendarEvent },

@@ -50,6 +50,10 @@ import {
   ClipboardList,
   ExternalLink,
   Plus,
+  Pencil,
+  Check,
+  X,
+  Loader2,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -85,6 +89,7 @@ type UserData = {
   score?: number;
   member_since?: string;
   profile_image?: string | null;
+  avatar_url?: string | null;
   organizations?: OrgMembership[];
 };
 
@@ -133,9 +138,14 @@ export default function UserProfilePage() {
   const [emailCopied, setEmailCopied] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [tab, setTab] = useState('activity');
-  // Store the resolved UUID slug for API calls (profile update, image upload)
   const [resolvedSlug, setResolvedSlug] = useState<string>(slug);
   const imgRef = useRef<HTMLInputElement>(null);
+
+  const [editingHandle, setEditingHandle] = useState(false);
+  const [handleDraft, setHandleDraft] = useState('');
+  const [handleSaving, setHandleSaving] = useState(false);
+  const [handleError, setHandleError] = useState('');
+  const handleInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     first_name: '', middle_name: '', last_name: '',
@@ -283,6 +293,49 @@ export default function UserProfilePage() {
     }
   };
 
+  const startEditingHandle = () => {
+    setHandleDraft(user?.username || '');
+    setHandleError('');
+    setEditingHandle(true);
+    setTimeout(() => handleInputRef.current?.focus(), 0);
+  };
+
+  const cancelEditingHandle = () => {
+    setEditingHandle(false);
+    setHandleError('');
+  };
+
+  const saveHandle = async () => {
+    const val = handleDraft.trim().toLowerCase();
+    if (!val || val === user?.username) {
+      setEditingHandle(false);
+      return;
+    }
+    setHandleSaving(true);
+    setHandleError('');
+    try {
+      const res = await fetch(`${API}/user/username/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken ?? ''}`,
+        },
+        body: JSON.stringify({ username: val }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.username?.[0] || 'Failed to update username');
+      }
+      setUser(u => u ? { ...u, username: val } : u);
+      setEditingHandle(false);
+      toast.success('Username updated');
+    } catch (e: any) {
+      setHandleError(e.message || 'Failed to update username');
+    } finally {
+      setHandleSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -303,6 +356,7 @@ export default function UserProfilePage() {
 
   const expertise = user.area_of_expertise?.split(',').map(s => s.trim()).filter(Boolean) || [];
   const socials = Object.entries(user.social_links || {}).filter(([, v]) => v);
+  const resolvedAvatar = user.profile_image || user.avatar_url || session?.user?.image || null;
 
   return (
     <>
@@ -319,8 +373,8 @@ export default function UserProfilePage() {
                 <div className="flex items-start gap-4">
                   <div className="relative group">
                     <div className="h-20 w-20 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
-                      {user.profile_image ? (
-                        <img src={user.profile_image} alt="" className="h-full w-full object-cover" />
+                      {resolvedAvatar ? (
+                        <img src={resolvedAvatar} alt="" className="h-full w-full object-cover" />
                       ) : (
                         <User className="h-10 w-10 text-muted-foreground" />
                       )}
@@ -338,7 +392,44 @@ export default function UserProfilePage() {
                     <h2 className="text-xl font-bold truncate">
                       {user.first_name} {user.middle_name && `${user.middle_name} `}{user.last_name}
                     </h2>
-                    <p className="text-sm text-muted-foreground">@{user.username}</p>
+
+                    {editingHandle ? (
+                      <div className="mt-0.5 space-y-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm text-muted-foreground select-none">@</span>
+                          <input
+                            ref={handleInputRef}
+                            value={handleDraft}
+                            onChange={e => setHandleDraft(e.target.value.replace(/\s/g, ''))}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') saveHandle();
+                              if (e.key === 'Escape') cancelEditingHandle();
+                            }}
+                            maxLength={30}
+                            className="h-6 w-full max-w-[180px] rounded border border-input bg-transparent px-1.5 text-sm outline-none focus:ring-1 focus:ring-ring"
+                            disabled={handleSaving}
+                          />
+                          <button onClick={saveHandle} disabled={handleSaving} className="p-0.5 rounded hover:bg-muted text-green-600 disabled:opacity-50">
+                            {handleSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                          </button>
+                          <button onClick={cancelEditingHandle} disabled={handleSaving} className="p-0.5 rounded hover:bg-muted text-muted-foreground disabled:opacity-50">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                        {handleError && <p className="text-xs text-destructive">{handleError}</p>}
+                        <p className="text-[11px] text-muted-foreground">Letters, numbers, underscores, dashes. 3-30 chars.</p>
+                      </div>
+                    ) : (
+                      <div className="group/handle flex items-center gap-1">
+                        <p className="text-sm text-muted-foreground">@{user.username}</p>
+                        {isOwn && (
+                          <button onClick={startEditingHandle} className="p-0.5 rounded opacity-0 group-hover/handle:opacity-100 hover:bg-muted transition-opacity">
+                            <Pencil className="h-3 w-3 text-muted-foreground" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-2 mt-1">
                       <Award className="h-4 w-4 text-amber-500" />
                       <span className="text-sm font-medium">Score: {user.score || 0}</span>
