@@ -311,20 +311,37 @@ CONDITION_TYPE_CHOICES = [
 ]
 
 GUTHI_TYPE_CHOICES = [
-    ('Si_Guthi', 'Si Guthi (Death Ritual)'),
-    ('Devi_Guthi', 'Devi Guthi (Deity Management)'),
-    ('Nani_Guthi', 'Nani Guthi (Musical)'),
-    ('Manka_Guthi', 'Manka Guthi (Agricultural)'),
-    ('Raj_Guthi', 'Raj Guthi (Royal/State Endowed)'),
+    ('SiGuthi', 'Si Guthi (Funeral Trust)'),
+    ('JatraGuthi', 'Jatra Guthi (Festival Organization)'),
+    ('PujaGuthi', 'Puja Guthi (Daily Worship)'),
+    ('TempleGuthi', 'Temple Guthi (Temple Maintenance)'),
+    ('NashaGuthi', 'Nasha Guthi (Music and Dance)'),
+    ('SanaGuthi', 'Sana Guthi (Agricultural Cooperative)'),
+    ('SanGuthi', 'San Guthi (Life-cycle Ritual)'),
+    ('RajGuthi', 'Raj Guthi (Royal Endowment)'),
     ('Other', 'Other'),
 ]
 
 RITUAL_TYPE_CHOICES = [
-    ('Puja', 'Puja'),
+    ('NityaPuja', 'Nitya Puja (Daily Worship)'),
+    ('NaimittikaPuja', 'Naimittika Puja (Festival Worship)'),
+    ('KamyaPuja', 'Kamya Puja (Desire-based Worship)'),
+    ('Abhisheka', 'Abhisheka (Ritual Bathing)'),
     ('Homa', 'Homa (Fire Ritual)'),
-    ('Diksha', 'Diksha (Initiation)'),
-    ('Jatra', 'Jatra (Procession)'),
-    ('Shraddha', 'Shraddha (Ancestral Rite)'),
+    ('Bhajan', 'Bhajan (Devotional Singing)'),
+    ('Yagna', 'Yagna (Vedic Sacrifice)'),
+    ('Vrata', 'Vrata (Vow Observance)'),
+    ('Jatra', 'Jatra (Festival Procession)'),
+    ('ChariotProcession', 'Chariot Procession'),
+    ('MaskedPerformance', 'Masked Performance'),
+    ('RitualConsecration', 'Ritual Consecration'),
+    ('ProcessionRitual', 'Procession Ritual'),
+    ('InstallationRitual', 'Installation Ritual'),
+    ('DeinstallationRitual', 'Deinstallation Ritual'),
+    ('ReturningRitual', 'Returning Ritual'),
+    ('Circumambulation', 'Circumambulation'),
+    ('RelicTour', 'Relic Tour'),
+    ('ProcessionalMovement', 'Processional Movement'),
     ('Other', 'Other'),
 ]
 
@@ -442,6 +459,122 @@ class Monument(MetaData):
 
 
 # =====================================================================
+# ADDITIONAL ONTOLOGY-DRIVEN MODELS
+# =====================================================================
+
+SYNCRETIC_TYPE_CHOICES = [
+    ('Equivalence', 'Equivalence'),
+    ('Appropriation', 'Appropriation'),
+    ('Fusion', 'Fusion'),
+    ('Historical', 'Historical'),
+]
+
+
+class KumariTenure(MetaData):
+    """Time-bounded role where a person embodies a deity as Living Goddess."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    had_participant = models.CharField(max_length=200, blank=True)
+    embodied_deity = models.CharField(max_length=200, blank=True)
+    residence_structure = models.CharField(max_length=200, blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True)
+    date_latest = models.CharField(max_length=100, blank=True)
+    supported_by_institution = models.TextField(blank=True)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Kumari Tenures"
+        db_table = "kumari_tenure"
+
+    def __str__(self):
+        return self.name
+
+
+class KumariSelection(MetaData):
+    """Tantric ritual process of selecting a new Living Goddess."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    selected_person = models.CharField(max_length=200, blank=True)
+    initiated_tenure = models.CharField(max_length=200, blank=True)
+    selection_criteria_met = models.TextField(blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True)
+    took_place_at = models.CharField(max_length=200, blank=True)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "kumari_selection"
+
+    def __str__(self):
+        return self.name
+
+
+class KumariRetirement(MetaData):
+    """Ritual event that formally ends a Living Goddess tenure."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    ended_tenure_of = models.CharField(max_length=200, blank=True)
+    carried_out_by = models.CharField(max_length=200, blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True)
+    took_place_at = models.CharField(max_length=200, blank=True)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "kumari_retirement"
+
+    def __str__(self):
+        return self.name
+
+
+class SyncreticRelationship(MetaData):
+    """Syncretic equivalence between divine entities across traditions."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    assigned_to_deity = models.CharField(max_length=200, blank=True)
+    assigned_equivalent = models.TextField(blank=True)
+    syncretic_type = models.CharField(max_length=30, choices=SYNCRETIC_TYPE_CHOICES, blank=True)
+    documented_in_source = models.CharField(max_length=200, blank=True)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        db_table = "syncretic_relationship"
+
+    def __str__(self):
+        return self.name
+
+
+class CasteGroup(MetaData):
+    """Hereditary social group (Jati) with specific ritual roles."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    traditional_role = models.CharField(max_length=200, blank=True)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Caste Groups"
+        db_table = "caste_group"
+
+    def __str__(self):
+        return self.name
+
+
+class CalendarSystem(MetaData):
+    """Calendar reckoning system with conversion rules."""
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    epoch_date_gregorian = models.CharField(max_length=100, blank=True)
+    year_offset_from_gregorian = models.IntegerField(null=True, blank=True)
+    is_primary_for_tradition = models.CharField(max_length=50, blank=True)
+    note = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name_plural = "Calendar Systems"
+        db_table = "calendar_system"
+
+    def __str__(self):
+        return self.name
+
+
+# =====================================================================
 # PROVENANCE MODELS — HeritageAssertion + DataSource (PROV-O aligned)
 # =====================================================================
 
@@ -527,13 +660,17 @@ class HeritageAssertion(models.Model):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
-    # What entity is this assertion about? (generic FK)
+    # What entity is this assertion about? (generic FK, nullable for standalone assertions)
     content_type = models.ForeignKey(
         ContentType,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         help_text="Type of the entity this assertion is about"
     )
     object_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
         help_text="ID of the entity this assertion is about"
     )
     asserts_about = GenericForeignKey('content_type', 'object_id')
@@ -624,7 +761,8 @@ class HeritageAssertion(models.Model):
 for _model in [
     ArchitecturalStructure, RitualEvent, Festival, IconographicObject,
     Monument, Deity, Guthi, Person, Location, Event, HistoricalPeriod,
-    Tradition, Source,
+    Tradition, Source, KumariTenure, KumariSelection, KumariRetirement,
+    SyncreticRelationship, CasteGroup, CalendarSystem,
 ]:
     if not hasattr(_model, 'assertions'):
         GenericRelation(

@@ -3,6 +3,8 @@ from django.utils.html import format_html
 
 from .models import (
     ArchitecturalStructure,
+    CalendarSystem,
+    CasteGroup,
     DataSource,
     Deity,
     Event,
@@ -11,12 +13,16 @@ from .models import (
     HeritageAssertion,
     HistoricalPeriod,
     IconographicObject,
+    KumariRetirement,
+    KumariSelection,
+    KumariTenure,
     Location,
     Monument,
     Person,
     PersonRevision,
     RitualEvent,
     Source,
+    SyncreticRelationship,
     Tradition,
 )
 
@@ -180,6 +186,59 @@ class MonumentAdmin(MetaDataMixin, admin.ModelAdmin):
     list_filter = ("monument_type", "existence_status", "status", "created_at")
     search_fields = ("name", "location_name", "note")
     ordering = ("-created_at",)
+    list_per_page = 25
+
+
+# =====================================================================
+# ADDITIONAL ONTOLOGY MODELS
+# =====================================================================
+
+@admin.register(KumariTenure)
+class KumariTenureAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "had_participant", "date_earliest", "date_latest", "status_colored", "created_at")
+    search_fields = ("name", "had_participant", "note")
+    ordering = ("-created_at",)
+    list_per_page = 25
+
+
+@admin.register(KumariSelection)
+class KumariSelectionAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "selected_person", "date_earliest", "status_colored", "created_at")
+    search_fields = ("name", "selected_person", "note")
+    ordering = ("-created_at",)
+    list_per_page = 25
+
+
+@admin.register(KumariRetirement)
+class KumariRetirementAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "ended_tenure_of", "date_earliest", "status_colored", "created_at")
+    search_fields = ("name", "ended_tenure_of", "note")
+    ordering = ("-created_at",)
+    list_per_page = 25
+
+
+@admin.register(SyncreticRelationship)
+class SyncreticRelationshipAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "syncretic_type", "status_colored", "created_at")
+    list_filter = ("syncretic_type", "status", "created_at")
+    search_fields = ("name", "assigned_to_deity", "assigned_equivalent", "note")
+    ordering = ("-created_at",)
+    list_per_page = 25
+
+
+@admin.register(CasteGroup)
+class CasteGroupAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "traditional_role", "status_colored", "created_at")
+    search_fields = ("name", "traditional_role", "note")
+    ordering = ("name",)
+    list_per_page = 25
+
+
+@admin.register(CalendarSystem)
+class CalendarSystemAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "year_offset_from_gregorian", "is_primary_for_tradition", "status_colored", "created_at")
+    search_fields = ("name", "note")
+    ordering = ("name",)
     list_per_page = 25
 
 

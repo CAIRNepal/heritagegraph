@@ -25,6 +25,14 @@ router.register(r'festivals', FestivalViewSet)
 router.register(r'iconographic_objects', IconographicObjectViewSet)
 router.register(r'monuments', MonumentViewSet)
 
+# Kumari / Syncretic / Social / Temporal models
+router.register(r'kumari_tenures', KumariTenureViewSet)
+router.register(r'kumari_selections', KumariSelectionViewSet)
+router.register(r'kumari_retirements', KumariRetirementViewSet)
+router.register(r'syncretic_relationships', SyncreticRelationshipViewSet)
+router.register(r'caste_groups', CasteGroupViewSet)
+router.register(r'calendar_systems', CalendarSystemViewSet)
+
 # Provenance models
 router.register(r'data_sources', DataSourceViewSet)
 router.register(r'assertions', HeritageAssertionViewSet)

@@ -27,6 +27,12 @@ def _get_category_for_model(model_class):
         'Festival': 'festival',
         'IconographicObject': 'artifact',
         'Monument': 'monument',
+        'KumariTenure': 'ritual',
+        'KumariSelection': 'ritual',
+        'KumariRetirement': 'ritual',
+        'SyncreticRelationship': 'other',
+        'CasteGroup': 'other',
+        'CalendarSystem': 'other',
     }
     return mapping.get(model_class.__name__, 'other')
 
@@ -189,6 +195,30 @@ class MonumentViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Monument.objects.all()
     serializer_class = MonumentSerializer
 
+class KumariTenureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = KumariTenure.objects.all()
+    serializer_class = KumariTenureSerializer
+
+class KumariSelectionViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = KumariSelection.objects.all()
+    serializer_class = KumariSelectionSerializer
+
+class KumariRetirementViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = KumariRetirement.objects.all()
+    serializer_class = KumariRetirementSerializer
+
+class SyncreticRelationshipViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = SyncreticRelationship.objects.all()
+    serializer_class = SyncreticRelationshipSerializer
+
+class CasteGroupViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = CasteGroup.objects.all()
+    serializer_class = CasteGroupSerializer
+
+class CalendarSystemViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = CalendarSystem.objects.all()
+    serializer_class = CalendarSystemSerializer
+
 
 class PersonRevisionViewSet(viewsets.ModelViewSet):
     queryset = PersonRevision.objects.all()
@@ -207,6 +237,17 @@ class DataSourceViewSet(viewsets.ModelViewSet):
 class HeritageAssertionViewSet(viewsets.ModelViewSet):
     queryset = HeritageAssertion.objects.all()
     serializer_class = HeritageAssertionSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    def perform_create(self, serializer):
+        extra = {}
+        if self.request.user.is_authenticated:
+            extra['contributed_by'] = self.request.user.email or self.request.user.username
+        serializer.save(**extra)
 
     def get_queryset(self):
         qs = super().get_queryset()

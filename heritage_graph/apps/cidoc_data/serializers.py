@@ -124,6 +124,36 @@ class MonumentSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
         model = Monument
         fields = '__all__'
 
+class KumariTenureSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    class Meta:
+        model = KumariTenure
+        fields = '__all__'
+
+class KumariSelectionSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    class Meta:
+        model = KumariSelection
+        fields = '__all__'
+
+class KumariRetirementSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    class Meta:
+        model = KumariRetirement
+        fields = '__all__'
+
+class SyncreticRelationshipSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    class Meta:
+        model = SyncreticRelationship
+        fields = '__all__'
+
+class CasteGroupSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    class Meta:
+        model = CasteGroup
+        fields = '__all__'
+
+class CalendarSystemSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    class Meta:
+        model = CalendarSystem
+        fields = '__all__'
+
 class PersonRevisionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonRevision
