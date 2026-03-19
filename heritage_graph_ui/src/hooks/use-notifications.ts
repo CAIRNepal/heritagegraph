@@ -23,26 +23,49 @@ export interface Notification {
   created_at: string;
 }
 
+interface UseNotificationsOptions {
+  pageSize?: number;
+  autoFetch?: boolean;
+}
+
 interface UseNotificationsReturn {
   notifications: Notification[];
   unreadCount: number;
+  totalCount: number;
+  hasMore: boolean;
   loading: boolean;
+  loadingMore: boolean;
   error: string | null;
-  fetchNotifications: () => Promise<void>;
+  fetchNotifications: (params?: {
+    limit?: number;
+    offset?: number;
+    filters?: Record<string, string>;
+    append?: boolean;
+  }) => Promise<void>;
+  fetchPage: (page: number, filters?: Record<string, string>) => Promise<void>;
+  loadMore: () => Promise<void>;
   fetchUnreadCount: () => Promise<void>;
   markAsRead: (notificationIds?: string[]) => Promise<void>;
   markAllAsRead: () => Promise<void>;
 }
 
-export function useNotifications(): UseNotificationsReturn {
+export function useNotifications(
+  options?: UseNotificationsOptions,
+): UseNotificationsReturn {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sessionRef = useRef(session);
   sessionRef.current = session;
+
+  const pageSize = options?.pageSize ?? 20;
+  const autoFetch = options?.autoFetch ?? true;
 
   const getHeaders = useCallback(() => {
     const token = (sessionRef.current as any)?.accessToken;
@@ -52,31 +75,86 @@ export function useNotifications(): UseNotificationsReturn {
     };
   }, []);
 
-  const fetchNotifications = useCallback(async () => {
-    if (!sessionRef.current) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/data/api/notifications/`,
-        { headers: getHeaders() }
-      );
-      if (!res.ok) throw new Error("Failed to fetch notifications");
-      const data = await res.json();
-      setNotifications(data.results || data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [getHeaders]);
+  const fetchNotifications = useCallback(
+    async (params?: {
+      limit?: number;
+      offset?: number;
+      filters?: Record<string, string>;
+      append?: boolean;
+    }) => {
+      if (!sessionRef.current) return;
+      const isAppend = params?.append ?? false;
+      if (isAppend) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+      try {
+        const limit = params?.limit ?? pageSize;
+        const offset = params?.offset ?? 0;
+        const searchParams = new URLSearchParams({
+          limit: String(limit),
+          offset: String(offset),
+        });
+        if (params?.filters) {
+          for (const [key, value] of Object.entries(params.filters)) {
+            if (value) searchParams.set(key, value);
+          }
+        }
+        const res = await fetch(
+          `${API_BASE_URL}/data/api/notifications/?${searchParams}`,
+          { headers: getHeaders() },
+        );
+        if (!res.ok) throw new Error("Failed to fetch notifications");
+        const data = await res.json();
+        const results: Notification[] =
+          data.results ?? (Array.isArray(data) ? data : []);
+        const count = data.count ?? results.length;
+
+        if (isAppend) {
+          setNotifications((prev) => [...prev, ...results]);
+        } else {
+          setNotifications(results);
+        }
+        setTotalCount(count);
+        setHasMore(offset + results.length < count);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [getHeaders, pageSize],
+  );
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loadingMore) return;
+    await fetchNotifications({
+      limit: pageSize,
+      offset: notifications.length,
+      append: true,
+    });
+  }, [hasMore, loadingMore, notifications.length, fetchNotifications, pageSize]);
+
+  const fetchPage = useCallback(
+    async (page: number, filters?: Record<string, string>) => {
+      await fetchNotifications({
+        limit: pageSize,
+        offset: (page - 1) * pageSize,
+        filters,
+      });
+    },
+    [fetchNotifications, pageSize],
+  );
 
   const fetchUnreadCount = useCallback(async () => {
     if (!sessionRef.current) return;
     try {
       const res = await fetch(
         `${API_BASE_URL}/data/api/notifications/unread_count/`,
-        { headers: getHeaders() }
+        { headers: getHeaders() },
       );
       if (res.ok) {
         const data = await res.json();
@@ -99,7 +177,7 @@ export function useNotifications(): UseNotificationsReturn {
             body: JSON.stringify({
               notification_ids: notificationIds || [],
             }),
-          }
+          },
         );
         if (res.ok) {
           if (notificationIds) {
@@ -107,12 +185,16 @@ export function useNotifications(): UseNotificationsReturn {
               prev.map((n) =>
                 notificationIds.includes(n.notification_id)
                   ? { ...n, is_read: true }
-                  : n
-              )
+                  : n,
+              ),
             );
-            setUnreadCount((prev) => Math.max(0, prev - notificationIds.length));
+            setUnreadCount((prev) =>
+              Math.max(0, prev - notificationIds.length),
+            );
           } else {
-            setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+            setNotifications((prev) =>
+              prev.map((n) => ({ ...n, is_read: true })),
+            );
             setUnreadCount(0);
           }
         }
@@ -120,7 +202,7 @@ export function useNotifications(): UseNotificationsReturn {
         // ignore
       }
     },
-    [getHeaders]
+    [getHeaders],
   );
 
   const markAllAsRead = useCallback(async () => {
@@ -128,10 +210,12 @@ export function useNotifications(): UseNotificationsReturn {
     try {
       const res = await fetch(
         `${API_BASE_URL}/data/api/notifications/mark_all_read/`,
-        { method: "POST", headers: getHeaders() }
+        { method: "POST", headers: getHeaders() },
       );
       if (res.ok) {
-        setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+        setNotifications((prev) =>
+          prev.map((n) => ({ ...n, is_read: true })),
+        );
         setUnreadCount(0);
       }
     } catch {
@@ -139,23 +223,18 @@ export function useNotifications(): UseNotificationsReturn {
     }
   }, [getHeaders]);
 
-  // Initial fetch when session becomes available
   useEffect(() => {
-    if (session) {
-      fetchNotifications();
-      fetchUnreadCount();
-    }
+    if (!session) return;
+    fetchUnreadCount();
+    if (autoFetch) fetchNotifications();
   }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Refetch on every route change so new notifications appear immediately
   useEffect(() => {
-    if (session && pathname) {
-      fetchUnreadCount();
-      fetchNotifications();
-    }
+    if (!session || !pathname) return;
+    fetchUnreadCount();
+    if (autoFetch) fetchNotifications();
   }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Poll for unread count every 30 seconds
   useEffect(() => {
     if (!session) return;
     const interval = setInterval(() => {
@@ -167,9 +246,14 @@ export function useNotifications(): UseNotificationsReturn {
   return {
     notifications,
     unreadCount,
+    totalCount,
+    hasMore,
     loading,
+    loadingMore,
     error,
     fetchNotifications,
+    fetchPage,
+    loadMore,
     fetchUnreadCount,
     markAsRead,
     markAllAsRead,

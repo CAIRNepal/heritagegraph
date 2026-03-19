@@ -377,7 +377,7 @@ class UserRegistrationView(APIView):
 
 class LeaderboardView(APIView):
     """
-    Public leaderboard that ranks users by their contributions.
+    Public leaderboard with server-side pagination, search, and filtering.
 
     Scoring:
       - Each accepted CulturalEntity    = 10 pts
@@ -387,52 +387,58 @@ class LeaderboardView(APIView):
       - Each accepted legacy Submission  = 10 pts
       - Each legacy Submission           =  3 pts
 
-    Supports ?search= query param to filter by username.
+    Query params:
+      - search: filter by username or full name
+      - institution: filter by institution name
+      - page: page number (default 1)
+      - page_size: items per page (default 20, max 100)
+
+    Ranks are always global (assigned before any filtering).
     """
     permission_classes = [AllowAny]
 
     def get(self, request):
-        search = request.query_params.get("search", "").strip()
+        search = request.query_params.get("search", "").strip().lower()
+        institution = request.query_params.get("institution", "").strip()
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            page_size = min(100, max(1, int(request.query_params.get("page_size", 20))))
+        except (TypeError, ValueError):
+            page_size = 20
 
         qs = User.objects.select_related("profile").annotate(
-            # New workflow – CulturalEntity
             entity_count=Count("contributed_entities", distinct=True),
             accepted_entities=Count(
                 "contributed_entities",
                 filter=Q(contributed_entities__status="accepted"),
                 distinct=True,
             ),
-            # Reviews performed
             review_count=Count("review_decisions", distinct=True),
-            # Revisions authored
             revision_count=Count("created_revisions", distinct=True),
-            # Legacy Submission
             submission_count=Count("submissions", distinct=True),
             accepted_submissions=Count(
                 "submissions",
                 filter=Q(submissions__status="accepted"),
                 distinct=True,
             ),
-        )
-
-        if search:
-            qs = qs.filter(username__icontains=search)
-
-        # Exclude users with zero activity
-        qs = qs.filter(
+        ).filter(
             Q(entity_count__gt=0)
             | Q(review_count__gt=0)
             | Q(revision_count__gt=0)
             | Q(submission_count__gt=0)
         )
 
-        # Annotate a computed score (Django ORM doesn't allow referencing
-        # other annotations in the same annotate() call, so we compute
-        # the score in Python after the query).
         users = list(qs.order_by("username"))
 
-        # Compute score + gather profile data
         entries = []
+        all_institutions = set()
+        total_score = 0
+        total_entities = 0
+        total_reviews = 0
+
         for user in users:
             score = (
                 user.accepted_entities * 10
@@ -443,6 +449,12 @@ class LeaderboardView(APIView):
                 + (user.submission_count - user.accepted_submissions) * 3
             )
             profile = getattr(user, "profile", None)
+            inst = getattr(profile, "organization", "") or ""
+            if inst:
+                all_institutions.add(inst)
+            total_score += score
+            total_entities += user.entity_count
+            total_reviews += user.review_count
             entries.append(
                 {
                     "user_id": user.id,
@@ -452,7 +464,7 @@ class LeaderboardView(APIView):
                         if profile
                         else ""
                     ),
-                    "institution": getattr(profile, "organization", "") or "",
+                    "institution": inst,
                     "country": getattr(profile, "country", "") or "",
                     "profile_image": (
                         profile.profile_image.url
@@ -469,17 +481,44 @@ class LeaderboardView(APIView):
                 }
             )
 
-        # Sort descending by score, then by accepted entities, then username
         entries.sort(key=lambda e: (-e["score"], -e["accepted_entities"], e["username"]))
 
-        # Assign ranks (tied scores get the same rank)
         rank = 1
         for idx, entry in enumerate(entries):
             if idx > 0 and entries[idx - 1]["score"] != entry["score"]:
                 rank = idx + 1
             entry["rank"] = rank
 
-        return Response(entries)
+        stats = {
+            "total_contributors": len(entries),
+            "total_score": total_score,
+            "total_entities": total_entities,
+            "total_reviews": total_reviews,
+        }
+
+        if search:
+            entries = [
+                e for e in entries
+                if search in e["username"].lower() or search in e["full_name"].lower()
+            ]
+        if institution:
+            entries = [e for e in entries if e["institution"] == institution]
+
+        total = len(entries)
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = min(page, total_pages)
+        start = (page - 1) * page_size
+        paginated = entries[start:start + page_size]
+
+        return Response({
+            "count": total,
+            "page": page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "institutions": sorted(all_institutions),
+            "stats": stats,
+            "results": paginated,
+        })
 
 
 class UserDetailView(generics.RetrieveAPIView):

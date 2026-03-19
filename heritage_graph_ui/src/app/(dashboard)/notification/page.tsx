@@ -1,18 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { BellIcon, CheckCheck, User2 } from 'lucide-react';
+import { BellIcon, CheckCheck } from 'lucide-react';
 import {
   Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious,
 } from '@/components/ui/pagination';
 import { motion } from 'framer-motion';
 import { useNotifications, type Notification } from '@/hooks/use-notifications';
 import { formatDistanceToNow } from 'date-fns';
+import { cn } from '@/lib/utils';
+
+const PAGE_SIZE = 10;
 
 const fadeInUp = {
   initial: { opacity: 1, y: 10 },
@@ -27,8 +29,6 @@ const scaleIn = {
   animate: { scale: 1, opacity: 1, transition: { duration: 0.2 } }
 };
 const glassCard = 'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg';
-
-const PAGE_SIZE = 10;
 
 const typeBadgeColors: Record<string, string> = {
   submission_update: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
@@ -67,12 +67,8 @@ const actorGradients: Record<string, string> = {
 };
 
 function resolveNotificationLink(n: Notification): string {
-  if (n.link && n.link.startsWith('/')) {
-    return n.link;
-  }
-  if (n.entity_id) {
-    return `/knowledge/entity/view/${n.entity_id}`;
-  }
+  if (n.link && n.link.startsWith('/')) return n.link;
+  if (n.entity_id) return `/knowledge/entity/view/${n.entity_id}`;
   return '';
 }
 
@@ -86,28 +82,37 @@ function getActorInitials(n: Notification): string {
   return '?';
 }
 
+function getApiFilters(filter: string): Record<string, string> {
+  if (filter === 'unread') return { is_read: 'false' };
+  if (filter !== 'all') return { notification_type: filter };
+  return {};
+}
+
 export default function NotificationPage() {
   const router = useRouter();
   const {
     notifications,
     unreadCount,
+    totalCount,
     loading,
+    fetchPage,
     markAsRead,
     markAllAsRead,
-  } = useNotifications();
+  } = useNotifications({ pageSize: PAGE_SIZE, autoFetch: false });
 
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState<string>('all');
 
-  const filtered = filter === 'all'
-    ? notifications
-    : filter === 'unread'
-      ? notifications.filter((n) => !n.is_read)
-      : notifications.filter((n) => n.notification_type === filter);
+  const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  const pageCount = Math.ceil(filtered.length / PAGE_SIZE);
-  const start = (page - 1) * PAGE_SIZE;
-  const currentPageItems = filtered.slice(start, start + PAGE_SIZE);
+  useEffect(() => {
+    fetchPage(page, getApiFilters(filter));
+  }, [page, filter]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleFilterChange = (f: string) => {
+    setFilter(f);
+    setPage(1);
+  };
 
   const handleNotificationClick = (n: Notification) => {
     if (!n.is_read) markAsRead([n.notification_id]);
@@ -117,10 +122,16 @@ export default function NotificationPage() {
 
   const handleActorClick = (e: React.MouseEvent, n: Notification) => {
     e.stopPropagation();
-    if (n.actor_username) {
-      router.push(`/users/${n.actor_username}`);
-    }
+    if (n.actor_username) router.push(`/users/${n.actor_username}`);
   };
+
+  const handleMarkAllRead = async () => {
+    await markAllAsRead();
+    fetchPage(page, getApiFilters(filter));
+  };
+
+  const start = (page - 1) * PAGE_SIZE + 1;
+  const end = Math.min(page * PAGE_SIZE, totalCount);
 
   return (
     <div className="space-y-8 max-w-3xl mx-auto">
@@ -155,7 +166,7 @@ export default function NotificationPage() {
               key={f}
               variant={filter === f ? 'default' : 'outline'}
               size="sm"
-              onClick={() => { setFilter(f); setPage(1); }}
+              onClick={() => handleFilterChange(f)}
               className="capitalize text-xs"
             >
               {f === 'all' ? 'All' : f === 'unread' ? 'Unread' : typeLabels[f] || f}
@@ -163,7 +174,7 @@ export default function NotificationPage() {
           ))}
         </div>
         {unreadCount > 0 && (
-          <Button variant="outline" size="sm" onClick={() => markAllAsRead()} className="gap-1.5">
+          <Button variant="outline" size="sm" onClick={handleMarkAllRead} className="gap-1.5">
             <CheckCheck className="w-3.5 h-3.5" /> Mark all read
           </Button>
         )}
@@ -171,106 +182,110 @@ export default function NotificationPage() {
 
       {/* Notifications List */}
       <motion.div initial="initial" animate="animate" variants={staggerContainer} className={`${glassCard} p-6`}>
-        <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100 mb-4">
-          Recent <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Notifications</span>
-          <span className="text-sm font-normal text-muted-foreground ml-2">
-            ({filtered.length} total{filter !== 'all' ? `, filtered by ${filter === 'unread' ? 'unread' : typeLabels[filter] || filter}` : ''})
+        <div className="flex items-baseline justify-between mb-4">
+          <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100">
+            Recent <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Notifications</span>
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            {totalCount > 0 ? `${start}–${end} of ${totalCount}` : `${totalCount} total`}
+            {filter !== 'all' && `, filtered by ${filter === 'unread' ? 'unread' : typeLabels[filter] || filter}`}
           </span>
-        </h2>
+        </div>
 
-        {loading && notifications.length === 0 ? (
+        {loading ? (
           <div className="py-12 text-center text-muted-foreground">Loading notifications...</div>
-        ) : filtered.length === 0 ? (
+        ) : notifications.length === 0 ? (
           <div className="py-12 text-center text-muted-foreground">
             <BellIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p>No notifications yet</p>
+            <p>No notifications found</p>
           </div>
         ) : (
-          <ScrollArea className="max-h-[600px]">
-            <ul className="space-y-1">
-              {currentPageItems.map((n) => {
-                const badgeClass = typeBadgeColors[n.notification_type] || typeBadgeColors.general;
-                const label = typeLabels[n.notification_type] || n.notification_type;
-                const timeAgo = formatDistanceToNow(new Date(n.created_at), { addSuffix: true });
-                const gradient = actorGradients[n.notification_type] || actorGradients.general;
-                const hasActor = !!n.actor_username;
+          <ul className="space-y-1">
+            {notifications.map((n) => {
+              const badgeClass = typeBadgeColors[n.notification_type] || typeBadgeColors.general;
+              const label = typeLabels[n.notification_type] || n.notification_type;
+              const timeAgo = formatDistanceToNow(new Date(n.created_at), { addSuffix: true });
+              const gradient = actorGradients[n.notification_type] || actorGradients.general;
+              const hasActor = !!n.actor_username;
 
-                return (
-                  <motion.li key={n.notification_id} variants={scaleIn}
-                    onClick={() => handleNotificationClick(n)}
-                    className={`flex gap-4 items-start border-b last:border-0 border-blue-100 dark:border-gray-700 pb-4 group rounded-xl p-3 -m-1 transition-all duration-300 cursor-pointer ${
-                      n.is_read ? 'opacity-60 hover:opacity-80' : 'bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30'
-                    }`}
+              return (
+                <motion.li key={n.notification_id} variants={scaleIn}
+                  onClick={() => handleNotificationClick(n)}
+                  className={cn(
+                    'flex gap-4 items-start border-b last:border-0 border-blue-100 dark:border-gray-700 pb-4 group rounded-xl p-3 -m-1 transition-all duration-300 cursor-pointer',
+                    n.is_read ? 'opacity-60 hover:opacity-80' : 'bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30',
+                  )}
+                >
+                  <button
+                    onClick={(e) => handleActorClick(e, n)}
+                    className={cn('mt-0.5 flex-shrink-0', hasActor && 'hover:ring-2 hover:ring-blue-400 rounded-full transition-all')}
+                    disabled={!hasActor}
+                    title={hasActor ? `View ${n.actor_display_name || n.actor_username}'s profile` : undefined}
                   >
-                    {/* Actor avatar */}
-                    <button
-                      onClick={(e) => handleActorClick(e, n)}
-                      className={`mt-0.5 flex-shrink-0 ${hasActor ? 'hover:ring-2 hover:ring-blue-400 rounded-full transition-all' : ''}`}
-                      disabled={!hasActor}
-                      title={hasActor ? `View ${n.actor_display_name || n.actor_username}'s profile` : undefined}
-                    >
-                      <Avatar className="border-2 border-blue-200 dark:border-gray-600 h-10 w-10">
-                        <AvatarFallback className={`bg-gradient-to-br ${gradient} text-white text-xs font-bold`}>
-                          {hasActor ? getActorInitials(n) : <BellIcon className="w-4 h-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                    </button>
+                    <Avatar className="border-2 border-blue-200 dark:border-gray-600 h-10 w-10">
+                      <AvatarFallback className={`bg-gradient-to-br ${gradient} text-white text-xs font-bold`}>
+                        {hasActor ? getActorInitials(n) : <BellIcon className="w-4 h-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
 
-                    <div className="flex-1 min-w-0">
-                      {/* Actor name + timestamp row */}
-                      <div className="flex items-center gap-2 mb-0.5">
-                        {hasActor && (
-                          <button
-                            onClick={(e) => handleActorClick(e, n)}
-                            className="text-sm font-semibold text-blue-700 dark:text-blue-300 hover:underline truncate"
-                          >
-                            {n.actor_display_name || n.actor_username}
-                          </button>
-                        )}
-                        <span className="text-xs text-muted-foreground whitespace-nowrap ml-auto flex-shrink-0">{timeAgo}</span>
-                        {!n.is_read && (
-                          <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
-                        )}
-                      </div>
-
-                      {/* Message */}
-                      <p className="text-sm font-medium leading-snug text-blue-900 dark:text-blue-100 line-clamp-2">
-                        {n.message}
-                      </p>
-
-                      {/* Entity info + badges */}
-                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                        <Badge variant="secondary" className={`text-[10px] ${badgeClass}`}>{label}</Badge>
-                        {n.entity_name && (
-                          <span className="text-xs text-muted-foreground truncate max-w-[200px]" title={n.entity_name}>
-                            {n.entity_name}
-                          </span>
-                        )}
-                        {n.entity_category && (
-                          <Badge variant="outline" className="text-[10px] capitalize">
-                            {n.entity_category}
-                          </Badge>
-                        )}
-                      </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      {hasActor && (
+                        <button
+                          onClick={(e) => handleActorClick(e, n)}
+                          className="text-sm font-semibold text-blue-700 dark:text-blue-300 hover:underline truncate"
+                        >
+                          {n.actor_display_name || n.actor_username}
+                        </button>
+                      )}
+                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-auto flex-shrink-0">{timeAgo}</span>
+                      {!n.is_read && <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />}
                     </div>
-                  </motion.li>
-                );
-              })}
-            </ul>
-          </ScrollArea>
+
+                    <p className="text-sm font-medium leading-snug text-blue-900 dark:text-blue-100 line-clamp-2">
+                      {n.message}
+                    </p>
+
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <Badge variant="secondary" className={`text-[10px] ${badgeClass}`}>{label}</Badge>
+                      {n.entity_name && (
+                        <span className="text-xs text-muted-foreground truncate max-w-[200px]" title={n.entity_name}>
+                          {n.entity_name}
+                        </span>
+                      )}
+                      {n.entity_category && (
+                        <Badge variant="outline" className="text-[10px] capitalize">
+                          {n.entity_category}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </motion.li>
+              );
+            })}
+          </ul>
         )}
 
         {pageCount > 1 && (
-          <Pagination className="mt-4">
+          <Pagination className="mt-6">
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious onClick={() => setPage((p) => Math.max(1, p - 1))} aria-disabled={page === 1} />
+                <PaginationPrevious
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  aria-disabled={page === 1}
+                  className={cn(page === 1 && 'pointer-events-none opacity-50')}
+                />
               </PaginationItem>
               <PaginationItem>
-                <span className="text-sm px-2 text-blue-700 dark:text-blue-300">Page {page} of {pageCount}</span>
+                <span className="text-sm px-3 text-blue-700 dark:text-blue-300">Page {page} of {pageCount}</span>
               </PaginationItem>
               <PaginationItem>
-                <PaginationNext onClick={() => setPage((p) => Math.min(pageCount, p + 1))} aria-disabled={page === pageCount} />
+                <PaginationNext
+                  onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                  aria-disabled={page === pageCount}
+                  className={cn(page === pageCount && 'pointer-events-none opacity-50')}
+                />
               </PaginationItem>
             </PaginationContent>
           </Pagination>

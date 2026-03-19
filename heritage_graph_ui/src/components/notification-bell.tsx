@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell } from "lucide-react";
+import { Bell, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import {
   useNotifications,
@@ -135,11 +134,14 @@ export function NotificationBell() {
   const {
     notifications,
     unreadCount,
+    totalCount,
+    hasMore,
     loading,
-    fetchNotifications,
+    loadingMore,
+    loadMore,
     markAsRead,
     markAllAsRead,
-  } = useNotifications();
+  } = useNotifications({ pageSize: 5 });
 
   const router = useRouter();
 
@@ -197,7 +199,7 @@ export function NotificationBell() {
               </div>
             ) : (
               <div className="p-1">
-                {notifications.slice(0, 10).map((n) => (
+                {notifications.map((n) => (
                   <NotificationItem
                     key={n.notification_id}
                     notification={n}
@@ -209,18 +211,40 @@ export function NotificationBell() {
           </ScrollArea>
         </div>
 
-        {notifications.length > 10 && (
-          <div className="p-2 border-t text-center">
-            <Button
-              variant="link"
-              size="sm"
-              className="text-xs"
-              onClick={() => router.push("/notification")}
-            >
-              See all {notifications.length} notifications
-            </Button>
-          </div>
-        )}
+        <div className="border-t">
+          {hasMore && (
+            <div className="px-2 pt-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs w-full h-7"
+                onClick={loadMore}
+                disabled={loadingMore}
+              >
+                {loadingMore ? (
+                  <>
+                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  "Load more"
+                )}
+              </Button>
+            </div>
+          )}
+          {totalCount > 0 && (
+            <div className="px-2 pb-2 pt-1 text-center">
+              <Button
+                variant="link"
+                size="sm"
+                className="text-xs h-7"
+                onClick={() => router.push("/notification")}
+              >
+                See all {totalCount} notification{totalCount !== 1 ? "s" : ""}
+              </Button>
+            </div>
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );

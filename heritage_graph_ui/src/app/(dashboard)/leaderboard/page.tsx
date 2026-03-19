@@ -3,7 +3,6 @@
 import {
   Table, TableHead, TableHeader, TableBody, TableRow, TableCell,
 } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -17,7 +16,7 @@ import {
 } from '@/components/ui/pagination';
 import { SimpleRankAvatar, type TierType } from '@/components/rank-avatar';
 import { cn } from '@/lib/utils';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   IconTrophy, IconMedal, IconStar, IconSearch, IconFileText,
@@ -54,6 +53,13 @@ interface LeaderboardEntry {
   accepted_submissions: number;
 }
 
+interface LeaderboardStats {
+  total_contributors: number;
+  total_score: number;
+  total_entities: number;
+  total_reviews: number;
+}
+
 function rankIcon(rank: number) {
   if (rank === 1) return <IconTrophy className="w-5 h-5 text-yellow-500" />;
   if (rank === 2) return <IconMedal className="w-5 h-5 text-gray-400" />;
@@ -68,7 +74,6 @@ function rankBadge(rank: number) {
   return 'bg-muted text-muted-foreground border-border';
 }
 
-/* ── Determine tier based on score ── */
 function getTierFromScore(score: number): TierType {
   if (score >= 4000) return 'grandkeeper';
   if (score >= 2500) return 'archivist';
@@ -79,23 +84,54 @@ function getTierFromScore(score: number): TierType {
 
 export default function LeaderboardPage() {
   const [data, setData] = useState<LeaderboardEntry[]>([]);
-  const [query, setQuery] = useState('');
-  const [institutionFilter, setInstitutionFilter] = useState('all');
   const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filteredCount, setFilteredCount] = useState(0);
+  const [institutions, setInstitutions] = useState<string[]>([]);
+  const [stats, setStats] = useState<LeaderboardStats>({
+    total_contributors: 0, total_score: 0, total_entities: 0, total_reviews: 0,
+  });
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [institutionFilter, setInstitutionFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchLeaderboard = useCallback(async () => {
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
+  const fetchLeaderboard = useCallback(async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    institution?: string;
+  }) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/data/leaderboard/`, {
+      const sp = new URLSearchParams();
+      sp.set('page', String(params?.page ?? 1));
+      sp.set('page_size', String(params?.pageSize ?? ITEMS_PER_PAGE));
+      if (params?.search) sp.set('search', params.search);
+      if (params?.institution && params.institution !== 'all') sp.set('institution', params.institution);
+
+      const res = await fetch(`${API_BASE_URL}/data/leaderboard/?${sp}`, {
         method: 'GET',
         headers: { Accept: 'application/json' },
       });
       if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      const json: LeaderboardEntry[] = await res.json();
-      setData(json);
+      const json = await res.json();
+      setData(json.results ?? []);
+      setTotalPages(json.total_pages ?? 1);
+      setFilteredCount(json.count ?? 0);
+      setInstitutions(json.institutions ?? []);
+      setStats(json.stats ?? { total_contributors: 0, total_score: 0, total_entities: 0, total_reviews: 0 });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load leaderboard';
       setError(message);
@@ -106,44 +142,18 @@ export default function LeaderboardPage() {
   }, []);
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, [fetchLeaderboard]);
-
-  /* ── Derived data ── */
-  const institutions = useMemo(
-    () => [...new Set(data.map((d) => d.institution).filter(Boolean))].sort(),
-    [data],
-  );
-
-  const filteredData = useMemo(() => {
-    return data.filter((entry) => {
-      const matchName =
-        !query ||
-        entry.username.toLowerCase().includes(query.toLowerCase()) ||
-        entry.full_name.toLowerCase().includes(query.toLowerCase());
-      const matchInst =
-        institutionFilter === 'all' || entry.institution === institutionFilter;
-      return matchName && matchInst;
+    fetchLeaderboard({
+      page,
+      pageSize: ITEMS_PER_PAGE,
+      search,
+      institution: institutionFilter,
     });
-  }, [data, query, institutionFilter]);
-
-  const paginatedData = useMemo(() => {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    return filteredData.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredData, page]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
-
-  /* ── Summary stats ── */
-  const totalContributors = data.length;
-  const totalScore = data.reduce((s, e) => s + e.score, 0);
-  const totalEntities = data.reduce((s, e) => s + e.entities, 0);
-  const totalReviews = data.reduce((s, e) => s + e.reviews, 0);
+  }, [page, search, institutionFilter, fetchLeaderboard]);
 
   return (
     <TooltipProvider>
       <div className="space-y-6 max-w-6xl mx-auto">
-        {/* ── Hero Header ── */}
+        {/* Hero Header */}
         <motion.div
           initial="hidden"
           animate="show"
@@ -168,8 +178,7 @@ export default function LeaderboardPage() {
                 </span>
               </h1>
               <p className="text-blue-100 max-w-lg text-sm">
-                Recognizing the community members who drive heritage preservation
-                forward.
+                Recognizing the community members who drive heritage preservation forward.
               </p>
             </div>
             <div className="hidden md:block">
@@ -180,7 +189,7 @@ export default function LeaderboardPage() {
           </motion.div>
         </motion.div>
 
-        {/* ── Summary Cards ── */}
+        {/* Summary Cards */}
         <motion.div
           initial="hidden"
           animate="show"
@@ -188,10 +197,10 @@ export default function LeaderboardPage() {
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           {[
-            { label: 'Contributors', value: totalContributors, icon: IconUsers, color: 'text-blue-600' },
-            { label: 'Total Points', value: totalScore, icon: IconStar, color: 'text-yellow-500' },
-            { label: 'Entities', value: totalEntities, icon: IconFileText, color: 'text-green-600' },
-            { label: 'Reviews', value: totalReviews, icon: IconEye, color: 'text-purple-600' },
+            { label: 'Contributors', value: stats.total_contributors, icon: IconUsers, color: 'text-blue-600' },
+            { label: 'Total Points', value: stats.total_score, icon: IconStar, color: 'text-yellow-500' },
+            { label: 'Entities', value: stats.total_entities, icon: IconFileText, color: 'text-green-600' },
+            { label: 'Reviews', value: stats.total_reviews, icon: IconEye, color: 'text-purple-600' },
           ].map((stat) => (
             <motion.div
               key={stat.label}
@@ -211,7 +220,7 @@ export default function LeaderboardPage() {
           ))}
         </motion.div>
 
-        {/* ── Filters ── */}
+        {/* Filters */}
         <motion.div
           initial="hidden"
           animate="show"
@@ -223,11 +232,8 @@ export default function LeaderboardPage() {
               <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name..."
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setPage(1);
-                }}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 className="pl-9"
               />
             </div>
@@ -251,12 +257,12 @@ export default function LeaderboardPage() {
               </SelectContent>
             </Select>
             <div className="ml-auto text-sm text-muted-foreground hidden sm:block">
-              {filteredData.length} contributor{filteredData.length !== 1 ? 's' : ''}
+              {filteredCount} contributor{filteredCount !== 1 ? 's' : ''}
             </div>
           </div>
         </motion.div>
 
-        {/* ── Table ── */}
+        {/* Table */}
         <motion.div
           initial="hidden"
           whileInView="show"
@@ -268,13 +274,13 @@ export default function LeaderboardPage() {
             {loading ? (
               <div className="text-center py-16">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
-                <p className="mt-3 text-muted-foreground">Loading leaderboard…</p>
+                <p className="mt-3 text-muted-foreground">Loading leaderboard...</p>
               </div>
             ) : error ? (
               <div className="text-center py-16 space-y-3">
                 <p className="text-destructive font-medium">{error}</p>
                 <button
-                  onClick={fetchLeaderboard}
+                  onClick={() => fetchLeaderboard({ page, pageSize: ITEMS_PER_PAGE, search, institution: institutionFilter })}
                   className="text-sm text-primary underline underline-offset-4 hover:text-primary/80"
                 >
                   Try again
@@ -293,43 +299,35 @@ export default function LeaderboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {paginatedData.length === 0 ? (
+                    {data.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
                           No contributors found.
                         </TableCell>
                       </TableRow>
                     ) : (
-                      paginatedData.map((entry) => (
+                      data.map((entry) => (
                         <TableRow
                           key={entry.user_id}
                           className={cn(
                             'transition-colors',
-                            entry.rank === 1 &&
-                              'bg-yellow-50/60 dark:bg-yellow-950/10',
-                            entry.rank === 2 &&
-                              'bg-gray-50/60 dark:bg-gray-900/10',
-                            entry.rank === 3 &&
-                              'bg-amber-50/40 dark:bg-amber-950/10',
+                            entry.rank === 1 && 'bg-yellow-50/60 dark:bg-yellow-950/10',
+                            entry.rank === 2 && 'bg-gray-50/60 dark:bg-gray-900/10',
+                            entry.rank === 3 && 'bg-amber-50/40 dark:bg-amber-950/10',
                           )}
                         >
-                          {/* Rank */}
                           <TableCell>
                             <div className="flex items-center gap-1.5">
                               {rankIcon(entry.rank)}
                               <Badge
                                 variant="outline"
-                                className={cn(
-                                  'text-xs font-bold tabular-nums',
-                                  rankBadge(entry.rank),
-                                )}
+                                className={cn('text-xs font-bold tabular-nums', rankBadge(entry.rank))}
                               >
                                 #{entry.rank}
                               </Badge>
                             </div>
                           </TableCell>
 
-                          {/* Contributor */}
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <SimpleRankAvatar
@@ -356,21 +354,15 @@ export default function LeaderboardPage() {
                             </div>
                           </TableCell>
 
-                          {/* Institution */}
                           <TableCell className="hidden lg:table-cell">
                             <div className="min-w-0">
-                              <p className="text-sm truncate">
-                                {entry.institution || '—'}
-                              </p>
+                              <p className="text-sm truncate">{entry.institution || '\u2014'}</p>
                               {entry.country && (
-                                <p className="text-xs text-muted-foreground">
-                                  {entry.country}
-                                </p>
+                                <p className="text-xs text-muted-foreground">{entry.country}</p>
                               )}
                             </div>
                           </TableCell>
 
-                          {/* Breakdown */}
                           <TableCell className="hidden md:table-cell">
                             <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
                               <Tooltip>
@@ -391,9 +383,7 @@ export default function LeaderboardPage() {
                                     {entry.reviews}
                                   </span>
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                  {entry.reviews} reviews
-                                </TooltipContent>
+                                <TooltipContent>{entry.reviews} reviews</TooltipContent>
                               </Tooltip>
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -402,9 +392,7 @@ export default function LeaderboardPage() {
                                     {entry.revisions}
                                   </span>
                                 </TooltipTrigger>
-                                <TooltipContent>
-                                  {entry.revisions} revisions
-                                </TooltipContent>
+                                <TooltipContent>{entry.revisions} revisions</TooltipContent>
                               </Tooltip>
                               {entry.submissions > 0 && (
                                 <Tooltip>
@@ -422,11 +410,8 @@ export default function LeaderboardPage() {
                             </div>
                           </TableCell>
 
-                          {/* Score */}
                           <TableCell className="text-right">
-                            <span className="text-lg font-bold tabular-nums">
-                              {entry.score}
-                            </span>
+                            <span className="text-lg font-bold tabular-nums">{entry.score}</span>
                             <span className="text-xs text-muted-foreground ml-1">pts</span>
                           </TableCell>
                         </TableRow>
@@ -435,7 +420,6 @@ export default function LeaderboardPage() {
                   </TableBody>
                 </Table>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="mt-4 flex justify-center">
                     <Pagination>
@@ -468,7 +452,7 @@ export default function LeaderboardPage() {
           </div>
         </motion.div>
 
-        {/* ── Scoring Legend ── */}
+        {/* Scoring Legend */}
         <motion.div
           initial="hidden"
           whileInView="show"
