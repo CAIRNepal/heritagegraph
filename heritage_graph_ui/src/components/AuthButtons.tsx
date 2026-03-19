@@ -145,7 +145,7 @@ export default function AuthSection() {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link
-              href={userSlug ? `/dashboard/users/${userSlug}` : '#'}
+              href={userSlug ? `/users/${userSlug}` : '#'}
               className="flex items-center gap-2"
             >
               <IconUserCircle className="h-4 w-4" />
@@ -153,7 +153,7 @@ export default function AuthSection() {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard/progression" className="flex items-center gap-2">
+            <Link href="/progression" className="flex items-center gap-2">
               <IconMedal className="h-4 w-4" />
               Progression
             </Link>

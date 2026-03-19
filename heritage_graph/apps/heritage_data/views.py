@@ -968,25 +968,25 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         entity = serializer.save(contributor=self.request.user)
-        # Create notification for the contributor
         create_notification(
             user=self.request.user,
+            actor=self.request.user,
             notification_type='submission_update',
             message=f'Your contribution "{entity.name}" has been created and is in draft status.',
             entity=entity,
-            link=f'/dashboard/knowledge/entity/view/{entity.entity_id}',
+            link=f'/knowledge/entity/view/{entity.entity_id}',
         )
-        # Notify all reviewers about new submission
         reviewer_users = User.objects.filter(
             reviewer_role__is_active=True
         ).exclude(id=self.request.user.id)
         for reviewer in reviewer_users:
             create_notification(
                 user=reviewer,
+                actor=self.request.user,
                 notification_type='submission_update',
                 message=f'New contribution "{entity.name}" submitted by {self.request.user.username} — awaiting review.',
                 entity=entity,
-                link=f'/dashboard/curation/review/{entity.entity_id}',
+                link=f'/curation/review/{entity.entity_id}',
             )
     
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
@@ -1378,11 +1378,12 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
         verdict_label = verdict_labels.get(verdict, verdict)
         create_notification(
             user=entity.contributor,
+            actor=request.user,
             notification_type='review_decision',
             message=f'Your contribution "{entity.name}" has been {verdict_label} by {request.user.username}.'
                     + (f' Feedback: {feedback[:200]}' if feedback else ''),
             entity=entity,
-            link=f'/dashboard/knowledge/entity/view/{entity.entity_id}',
+            link=f'/knowledge/entity/view/{entity.entity_id}',
         )
 
         return Response(
@@ -1735,7 +1736,7 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         return Notification.objects.filter(
             user=self.request.user
-        ).select_related('entity', 'submission')
+        ).select_related('entity', 'submission', 'actor')
 
     @action(detail=False, methods=['get'])
     def unread_count(self, request):
@@ -1765,10 +1766,11 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({'marked_read': updated})
 
 
-def create_notification(user, notification_type, message, entity=None, submission=None, link=""):
+def create_notification(user, notification_type, message, entity=None, submission=None, link="", actor=None):
     """Helper function to create a notification."""
     return Notification.objects.create(
         user=user,
+        actor=actor,
         notification_type=notification_type,
         message=message,
         entity=entity,
@@ -1835,10 +1837,11 @@ class ReactionViewSet(viewsets.ViewSet):
                 if entity.contributor != request.user:
                     create_notification(
                         user=entity.contributor,
+                        actor=request.user,
                         notification_type='reaction',
                         message=f'{request.user.username} upvoted your contribution "{entity.name}"',
                         entity=entity,
-                        link=f'/dashboard/knowledge/entity/view/{entity_id}',
+                        link=f'/knowledge/entity/view/{entity_id}',
                     )
 
             return Response({'action': 'created', 'reaction_type': reaction_type},
@@ -1942,10 +1945,11 @@ class ForkViewSet(viewsets.ViewSet):
         if original.contributor != request.user:
             create_notification(
                 user=original.contributor,
+                actor=request.user,
                 notification_type='fork',
                 message=f'{request.user.username} forked your contribution "{original.name}"',
                 entity=original,
-                link=f'/dashboard/knowledge/entity/view/{forked_entity.entity_id}',
+                link=f'/knowledge/entity/view/{forked_entity.entity_id}',
             )
 
         return Response(
@@ -2102,20 +2106,22 @@ class EntityCommentViewSet(viewsets.ModelViewSet):
         if entity.contributor != self.request.user:
             create_notification(
                 user=entity.contributor,
+                actor=self.request.user,
                 notification_type='comment',
                 message=f'{self.request.user.username} commented on "{entity.name}": {comment.comment[:100]}',
                 entity=entity,
-                link=f'/dashboard/knowledge/entity/view/{entity_id}',
+                link=f'/knowledge/entity/view/{entity_id}',
             )
 
         # If it's a reply, notify the parent comment's author
         if comment.parent and comment.parent.user != self.request.user:
             create_notification(
                 user=comment.parent.user,
+                actor=self.request.user,
                 notification_type='comment',
                 message=f'{self.request.user.username} replied to your comment on "{entity.name}"',
                 entity=entity,
-                link=f'/dashboard/knowledge/entity/view/{entity_id}',
+                link=f'/knowledge/entity/view/{entity_id}',
             )
 
 

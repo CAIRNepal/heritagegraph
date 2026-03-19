@@ -93,26 +93,33 @@ class ContributionFlowMixin:
                 comment=f'Submitted via {instance.__class__.__name__} form',
             )
 
-            # Notify contributor
+            # Determine where the user should land when clicking this notification.
+            # For CIDOC "Source", we route directly to the source details page rather than
+            # the generic CulturalEntity wrapper page.
+            contributor_link = f'/knowledge/entity/view/{entity.entity_id}'
+            if instance.__class__.__name__ == "Source":
+                contributor_link = f'/knowledge/source/view/{instance.pk}'
+
             Notification.objects.create(
                 user=self.request.user,
+                actor=self.request.user,
                 notification_type='submission_update',
                 message=f'Your contribution "{entity_name}" has been submitted and is pending review.',
                 entity=entity,
-                link=f'/dashboard/knowledge/entity/{entity.entity_id}',
+                link=contributor_link,
             )
 
-            # Notify all active reviewers
             reviewer_users = User.objects.filter(
                 reviewer_role__is_active=True,
             ).exclude(id=self.request.user.id)
             for reviewer in reviewer_users:
                 Notification.objects.create(
                     user=reviewer,
+                    actor=self.request.user,
                     notification_type='submission_update',
                     message=f'New contribution "{entity_name}" submitted by {self.request.user.username} — awaiting review.',
                     entity=entity,
-                    link=f'/dashboard/curation/review/{entity.entity_id}',
+                    link=f'/curation/review/{entity.entity_id}',
                 )
 
         except Exception as e:

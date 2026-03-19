@@ -228,7 +228,7 @@ function RowHoverCard({
                 e.preventDefault();
                 e.stopPropagation();
                 router.push(
-                  `/dashboard/knowledge/${ontologyClass.key}/view/${record.id}`
+                  `/knowledge/${ontologyClass.key}/view/${record.id}`
                 );
               }}
             >
@@ -270,7 +270,7 @@ export default function OntologyDataTable({
   const baseUrl = apiBaseUrl || API_BASE_URL;
   const endpoint = `${baseUrl}${ontologyClass.apiEndpoint}`;
   const newPath =
-    contributePath || `/dashboard/contribute/${ontologyClass.key}`;
+    contributePath || `/contribute/${ontologyClass.key}`;
 
   const visibleColumns = ontologyClass.columns.filter(
     (c) => c.visible !== false
@@ -439,7 +439,7 @@ export default function OntologyDataTable({
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   router.push(
-                                    `/dashboard/knowledge/${ontologyClass.key}/view/${record.id}`
+                                    `/knowledge/${ontologyClass.key}/view/${record.id}`
                                   );
                                 }}
                               >

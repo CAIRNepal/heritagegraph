@@ -1,7 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -15,6 +16,9 @@ export interface Notification {
   link: string;
   entity_name: string | null;
   entity_id: string | null;
+  entity_category: string | null;
+  actor_username: string | null;
+  actor_display_name: string | null;
   submission: string | null;
   created_at: string;
 }
@@ -32,21 +36,24 @@ interface UseNotificationsReturn {
 
 export function useNotifications(): UseNotificationsReturn {
   const { data: session } = useSession();
+  const pathname = usePathname();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
 
   const getHeaders = useCallback(() => {
-    const token = (session as any)?.accessToken;
+    const token = (sessionRef.current as any)?.accessToken;
     return {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
-  }, [session]);
+  }, []);
 
   const fetchNotifications = useCallback(async () => {
-    if (!session) return;
+    if (!sessionRef.current) return;
     setLoading(true);
     setError(null);
     try {
@@ -62,10 +69,10 @@ export function useNotifications(): UseNotificationsReturn {
     } finally {
       setLoading(false);
     }
-  }, [session, getHeaders]);
+  }, [getHeaders]);
 
   const fetchUnreadCount = useCallback(async () => {
-    if (!session) return;
+    if (!sessionRef.current) return;
     try {
       const res = await fetch(
         `${API_BASE_URL}/data/api/notifications/unread_count/`,
@@ -78,11 +85,11 @@ export function useNotifications(): UseNotificationsReturn {
     } catch {
       // silently fail for count
     }
-  }, [session, getHeaders]);
+  }, [getHeaders]);
 
   const markAsRead = useCallback(
     async (notificationIds?: string[]) => {
-      if (!session) return;
+      if (!sessionRef.current) return;
       try {
         const res = await fetch(
           `${API_BASE_URL}/data/api/notifications/mark_read/`,
@@ -95,7 +102,6 @@ export function useNotifications(): UseNotificationsReturn {
           }
         );
         if (res.ok) {
-          // Update local state
           if (notificationIds) {
             setNotifications((prev) =>
               prev.map((n) =>
@@ -114,11 +120,11 @@ export function useNotifications(): UseNotificationsReturn {
         // ignore
       }
     },
-    [session, getHeaders]
+    [getHeaders]
   );
 
   const markAllAsRead = useCallback(async () => {
-    if (!session) return;
+    if (!sessionRef.current) return;
     try {
       const res = await fetch(
         `${API_BASE_URL}/data/api/notifications/mark_all_read/`,
@@ -131,22 +137,32 @@ export function useNotifications(): UseNotificationsReturn {
     } catch {
       // ignore
     }
-  }, [session, getHeaders]);
+  }, [getHeaders]);
 
-  // Auto-fetch on session change
+  // Initial fetch when session becomes available
   useEffect(() => {
     if (session) {
       fetchNotifications();
       fetchUnreadCount();
     }
-  }, [session, fetchNotifications, fetchUnreadCount]);
+  }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Refetch on every route change so new notifications appear immediately
+  useEffect(() => {
+    if (session && pathname) {
+      fetchUnreadCount();
+      fetchNotifications();
+    }
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Poll for unread count every 30 seconds
   useEffect(() => {
     if (!session) return;
-    const interval = setInterval(fetchUnreadCount, 30000);
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 30_000);
     return () => clearInterval(interval);
-  }, [session, fetchUnreadCount]);
+  }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     notifications,

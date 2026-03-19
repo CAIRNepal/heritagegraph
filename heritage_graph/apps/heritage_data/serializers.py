@@ -770,15 +770,25 @@ class ActivityDetailSerializer(serializers.ModelSerializer):
 class NotificationSerializer(serializers.ModelSerializer):
     entity_name = serializers.CharField(source='entity.name', read_only=True, default=None)
     entity_id = serializers.UUIDField(source='entity.entity_id', read_only=True, default=None)
+    entity_category = serializers.CharField(source='entity.category', read_only=True, default=None)
+    actor_username = serializers.CharField(source='actor.username', read_only=True, default=None)
+    actor_display_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
         fields = [
             'notification_id', 'user', 'notification_type', 'message',
-            'is_read', 'link', 'entity_name', 'entity_id',
+            'is_read', 'link', 'entity_name', 'entity_id', 'entity_category',
+            'actor_username', 'actor_display_name',
             'submission', 'created_at',
         ]
         read_only_fields = ['notification_id', 'user', 'created_at']
+
+    def get_actor_display_name(self, obj):
+        if obj.actor:
+            full = f"{obj.actor.first_name} {obj.actor.last_name}".strip()
+            return full or obj.actor.username
+        return None
 
 
 class NotificationMarkReadSerializer(serializers.Serializer):

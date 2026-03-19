@@ -71,7 +71,7 @@ export const personColumns: ColumnDef<PersonRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/person/view/${item.id}`}
+              href={`/knowledge/person/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -94,7 +94,7 @@ export const personColumns: ColumnDef<PersonRecord>[] = [
                 </p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/person/view/${item.id}`}>
+                <Link href={`/knowledge/person/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -141,7 +141,7 @@ export const personColumns: ColumnDef<PersonRecord>[] = [
       const contributor = row.original.contributor;
       if (!contributor) return '-';
       return (
-        <Link href={`/dashboard/users/${contributor}`}>
+        <Link href={`/users/${contributor}`}>
           <Badge variant="secondary" className="cursor-pointer">
             @{contributor}
           </Badge>
@@ -178,7 +178,7 @@ export const personColumns: ColumnDef<PersonRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/person/view/${row.original.id}`}>
+        <Link href={`/knowledge/person/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -201,7 +201,7 @@ export const locationColumns: ColumnDef<LocationRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/location/view/${item.id}`}
+              href={`/knowledge/location/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -222,7 +222,7 @@ export const locationColumns: ColumnDef<LocationRecord>[] = [
                 </p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/location/view/${item.id}`}>
+                <Link href={`/knowledge/location/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -277,7 +277,7 @@ export const locationColumns: ColumnDef<LocationRecord>[] = [
       const contributor = row.original.contributor;
       if (!contributor) return '-';
       return (
-        <Link href={`/dashboard/users/${contributor}`}>
+        <Link href={`/users/${contributor}`}>
           <Badge variant="secondary" className="cursor-pointer">
             @{contributor}
           </Badge>
@@ -305,7 +305,7 @@ export const locationColumns: ColumnDef<LocationRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/location/view/${row.original.id}`}>
+        <Link href={`/knowledge/location/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -328,7 +328,7 @@ export const eventColumns: ColumnDef<EventRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/event/view/${item.id}`}
+              href={`/knowledge/event/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -349,7 +349,7 @@ export const eventColumns: ColumnDef<EventRecord>[] = [
                 </p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/event/view/${item.id}`}>
+                <Link href={`/knowledge/event/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -414,7 +414,7 @@ export const eventColumns: ColumnDef<EventRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/event/view/${row.original.id}`}>
+        <Link href={`/knowledge/event/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -437,7 +437,7 @@ export const traditionColumns: ColumnDef<TraditionRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/tradition/view/${item.id}`}
+              href={`/knowledge/tradition/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -453,7 +453,7 @@ export const traditionColumns: ColumnDef<TraditionRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.description}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/tradition/view/${item.id}`}>
+                <Link href={`/knowledge/tradition/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -493,7 +493,7 @@ export const traditionColumns: ColumnDef<TraditionRecord>[] = [
       const contributor = row.original.contributor;
       if (!contributor) return '-';
       return (
-        <Link href={`/dashboard/users/${contributor}`}>
+        <Link href={`/users/${contributor}`}>
           <Badge variant="secondary" className="cursor-pointer">
             @{contributor}
           </Badge>
@@ -519,7 +519,7 @@ export const traditionColumns: ColumnDef<TraditionRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/tradition/view/${row.original.id}`}>
+        <Link href={`/knowledge/tradition/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -542,7 +542,7 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/entity/view/${item.entity_id}`}
+              href={`/knowledge/entity/view/${item.entity_id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.label}
@@ -556,7 +556,7 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
                 {item.status}
               </Badge>
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/entity/view/${item.entity_id}`}>
+                <Link href={`/knowledge/entity/view/${item.entity_id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -600,7 +600,7 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
       const creator = row.original.created_by;
       if (!creator) return '-';
       return (
-        <Link href={`/dashboard/users/${creator}`}>
+        <Link href={`/users/${creator}`}>
           <Badge variant="secondary" className="cursor-pointer">
             @{creator}
           </Badge>
@@ -631,7 +631,7 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/entity/view/${row.original.entity_id}`}>
+        <Link href={`/knowledge/entity/view/${row.original.entity_id}`}>
           View
         </Link>
       </Button>
@@ -654,7 +654,7 @@ export const sourceColumns: ColumnDef<SourceRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/source/view/${item.id}`}
+              href={`/knowledge/source/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.title || item.name || '-'}
@@ -673,7 +673,7 @@ export const sourceColumns: ColumnDef<SourceRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.description}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/source/view/${item.id}`}>
+                <Link href={`/knowledge/source/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -732,7 +732,7 @@ export const sourceColumns: ColumnDef<SourceRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/source/view/${row.original.id}`}>
+        <Link href={`/knowledge/source/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -755,7 +755,7 @@ export const historicalPeriodColumns: ColumnDef<HistoricalPeriodRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/period/view/${item.id}`}
+              href={`/knowledge/period/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -773,7 +773,7 @@ export const historicalPeriodColumns: ColumnDef<HistoricalPeriodRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.description}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/period/view/${item.id}`}>
+                <Link href={`/knowledge/period/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -828,7 +828,7 @@ export const historicalPeriodColumns: ColumnDef<HistoricalPeriodRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/period/view/${row.original.id}`}>
+        <Link href={`/knowledge/period/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -851,7 +851,7 @@ export const deityColumns: ColumnDef<DeityRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/deity/view/${item.id}`}
+              href={`/knowledge/deity/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -867,7 +867,7 @@ export const deityColumns: ColumnDef<DeityRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.note}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/deity/view/${item.id}`}>
+                <Link href={`/knowledge/deity/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -907,7 +907,7 @@ export const deityColumns: ColumnDef<DeityRecord>[] = [
       const contributor = row.original.contributor;
       if (!contributor) return '-';
       return (
-        <Link href={`/dashboard/users/${contributor}`}>
+        <Link href={`/users/${contributor}`}>
           <Badge variant="secondary" className="cursor-pointer">
             @{contributor}
           </Badge>
@@ -934,7 +934,7 @@ export const deityColumns: ColumnDef<DeityRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/deity/view/${row.original.id}`}>
+        <Link href={`/knowledge/deity/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -957,7 +957,7 @@ export const guthiColumns: ColumnDef<GuthiRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/guthi/view/${item.id}`}
+              href={`/knowledge/guthi/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -976,7 +976,7 @@ export const guthiColumns: ColumnDef<GuthiRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.note}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/guthi/view/${item.id}`}>
+                <Link href={`/knowledge/guthi/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -1015,7 +1015,7 @@ export const guthiColumns: ColumnDef<GuthiRecord>[] = [
       const contributor = row.original.contributor;
       if (!contributor) return '-';
       return (
-        <Link href={`/dashboard/users/${contributor}`}>
+        <Link href={`/users/${contributor}`}>
           <Badge variant="secondary" className="cursor-pointer">
             @{contributor}
           </Badge>
@@ -1042,7 +1042,7 @@ export const guthiColumns: ColumnDef<GuthiRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/guthi/view/${row.original.id}`}>
+        <Link href={`/knowledge/guthi/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -1065,7 +1065,7 @@ export const structureColumns: ColumnDef<StructureRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/structure/view/${item.id}`}
+              href={`/knowledge/structure/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -1084,7 +1084,7 @@ export const structureColumns: ColumnDef<StructureRecord>[] = [
                 <p className="text-xs text-muted-foreground">📍 {item.location_name}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/structure/view/${item.id}`}>
+                <Link href={`/knowledge/structure/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -1155,7 +1155,7 @@ export const structureColumns: ColumnDef<StructureRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/structure/view/${row.original.id}`}>
+        <Link href={`/knowledge/structure/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -1178,7 +1178,7 @@ export const ritualColumns: ColumnDef<RitualRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/ritual/view/${item.id}`}
+              href={`/knowledge/ritual/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -1197,7 +1197,7 @@ export const ritualColumns: ColumnDef<RitualRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.note}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/ritual/view/${item.id}`}>
+                <Link href={`/knowledge/ritual/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -1263,7 +1263,7 @@ export const ritualColumns: ColumnDef<RitualRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/ritual/view/${row.original.id}`}>
+        <Link href={`/knowledge/ritual/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -1286,7 +1286,7 @@ export const festivalColumns: ColumnDef<FestivalRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/festival/view/${item.id}`}
+              href={`/knowledge/festival/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -1305,7 +1305,7 @@ export const festivalColumns: ColumnDef<FestivalRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.note}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/festival/view/${item.id}`}>
+                <Link href={`/knowledge/festival/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -1370,7 +1370,7 @@ export const festivalColumns: ColumnDef<FestivalRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/festival/view/${row.original.id}`}>
+        <Link href={`/knowledge/festival/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -1393,7 +1393,7 @@ export const iconographyColumns: ColumnDef<IconographyRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/iconography/view/${item.id}`}
+              href={`/knowledge/iconography/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -1412,7 +1412,7 @@ export const iconographyColumns: ColumnDef<IconographyRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.note}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/iconography/view/${item.id}`}>
+                <Link href={`/knowledge/iconography/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -1478,7 +1478,7 @@ export const iconographyColumns: ColumnDef<IconographyRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/iconography/view/${row.original.id}`}>
+        <Link href={`/knowledge/iconography/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -1501,7 +1501,7 @@ export const monumentColumns: ColumnDef<MonumentRecord>[] = [
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/dashboard/knowledge/monument/view/${item.id}`}
+              href={`/knowledge/monument/view/${item.id}`}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name || item.title || '-'}
@@ -1520,7 +1520,7 @@ export const monumentColumns: ColumnDef<MonumentRecord>[] = [
                 <p className="text-sm line-clamp-3">{item.note}</p>
               )}
               <div className="pt-2">
-                <Link href={`/dashboard/knowledge/monument/view/${item.id}`}>
+                <Link href={`/knowledge/monument/view/${item.id}`}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -1588,7 +1588,7 @@ export const monumentColumns: ColumnDef<MonumentRecord>[] = [
     header: 'Actions',
     cell: ({ row }) => (
       <Button variant="ghost" size="sm" asChild>
-        <Link href={`/dashboard/knowledge/monument/view/${row.original.id}`}>
+        <Link href={`/knowledge/monument/view/${row.original.id}`}>
           View
         </Link>
       </Button>
@@ -1605,13 +1605,13 @@ export const personTableConfig: DataTableConfig<PersonRecord> = {
   endpoint: '/cidoc/persons/',
   columns: personColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/person',
+  viewBasePath: '/knowledge/person',
   title: 'Persons',
   description: 'Browse historical and cultural figures in the knowledge base.',
   showHeader: true,
   addAction: {
     label: 'Add Person',
-    href: '/dashboard/contribute/person',
+    href: '/contribute/person',
   },
 };
 
@@ -1619,13 +1619,13 @@ export const locationTableConfig: DataTableConfig<LocationRecord> = {
   endpoint: '/cidoc/locations/',
   columns: locationColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/location',
+  viewBasePath: '/knowledge/location',
   title: 'Locations',
   description: 'Browse heritage sites and cultural locations.',
   showHeader: true,
   addAction: {
     label: 'Add Location',
-    href: '/dashboard/contribute/location',
+    href: '/contribute/location',
   },
 };
 
@@ -1633,13 +1633,13 @@ export const eventTableConfig: DataTableConfig<EventRecord> = {
   endpoint: '/cidoc/events/',
   columns: eventColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/event',
+  viewBasePath: '/knowledge/event',
   title: 'Events',
   description: 'Browse cultural events, festivals, and historical occurrences.',
   showHeader: true,
   addAction: {
     label: 'Add Event',
-    href: '/dashboard/contribute/event',
+    href: '/contribute/event',
   },
 };
 
@@ -1647,13 +1647,13 @@ export const traditionTableConfig: DataTableConfig<TraditionRecord> = {
   endpoint: '/cidoc/traditions/',
   columns: traditionColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/tradition',
+  viewBasePath: '/knowledge/tradition',
   title: 'Traditions',
   description: 'Browse cultural practices and intangible heritage traditions.',
   showHeader: true,
   addAction: {
     label: 'Add Tradition',
-    href: '/dashboard/contribute/tradition',
+    href: '/contribute/tradition',
   },
 };
 
@@ -1661,13 +1661,13 @@ export const culturalEntityTableConfig: DataTableConfig<CulturalEntityRecord> = 
   endpoint: '/data/cultural-entities/',
   columns: culturalEntityColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/entity',
+  viewBasePath: '/knowledge/entity',
   title: 'Cultural Entities',
   description: 'Browse contributed cultural entities — monuments, festivals, rituals, traditions, and artifacts.',
   showHeader: true,
   addAction: {
     label: 'Add Entity',
-    href: '/dashboard/contribute',
+    href: '/contribute',
   },
 };
 
@@ -1675,13 +1675,13 @@ export const sourceTableConfig: DataTableConfig<SourceRecord> = {
   endpoint: '/cidoc/sources/',
   columns: sourceColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/source',
+  viewBasePath: '/knowledge/source',
   title: 'Sources',
   description: 'Browse documentary sources, manuscripts, and reference materials.',
   showHeader: true,
   addAction: {
     label: 'Add Source',
-    href: '/dashboard/contribute/source',
+    href: '/contribute/source',
   },
 };
 
@@ -1689,13 +1689,13 @@ export const historicalPeriodTableConfig: DataTableConfig<HistoricalPeriodRecord
   endpoint: '/cidoc/historical_periods/',
   columns: historicalPeriodColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/period',
+  viewBasePath: '/knowledge/period',
   title: 'Historical Periods',
   description: 'Browse historical eras and time periods.',
   showHeader: true,
   addAction: {
     label: 'Add Period',
-    href: '/dashboard/contribute/period',
+    href: '/contribute/period',
   },
 };
 
@@ -1703,13 +1703,13 @@ export const deityTableConfig: DataTableConfig<DeityRecord> = {
   endpoint: '/cidoc/deities/',
   columns: deityColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/deity',
+  viewBasePath: '/knowledge/deity',
   title: 'Deities',
   description: 'Browse deities and divine figures in the knowledge base.',
   showHeader: true,
   addAction: {
     label: 'Add Deity',
-    href: '/dashboard/contribute/deity',
+    href: '/contribute/deity',
   },
 };
 
@@ -1717,13 +1717,13 @@ export const guthiTableConfig: DataTableConfig<GuthiRecord> = {
   endpoint: '/cidoc/guthis/',
   columns: guthiColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/guthi',
+  viewBasePath: '/knowledge/guthi',
   title: 'Guthis',
   description: 'Browse Guthi organizations and community institutions.',
   showHeader: true,
   addAction: {
     label: 'Add Guthi',
-    href: '/dashboard/contribute/guthi',
+    href: '/contribute/guthi',
   },
 };
 
@@ -1731,13 +1731,13 @@ export const structureTableConfig: DataTableConfig<StructureRecord> = {
   endpoint: '/cidoc/structures/',
   columns: structureColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/structure',
+  viewBasePath: '/knowledge/structure',
   title: 'Architectural Structures',
   description: 'Browse temples, stupas, and other heritage structures.',
   showHeader: true,
   addAction: {
     label: 'Add Structure',
-    href: '/dashboard/contribute/structure',
+    href: '/contribute/structure',
   },
 };
 
@@ -1745,13 +1745,13 @@ export const ritualTableConfig: DataTableConfig<RitualRecord> = {
   endpoint: '/cidoc/rituals/',
   columns: ritualColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/ritual',
+  viewBasePath: '/knowledge/ritual',
   title: 'Rituals',
   description: 'Browse ritual events, pujas, and ceremonial practices.',
   showHeader: true,
   addAction: {
     label: 'Add Ritual',
-    href: '/dashboard/contribute/ritual',
+    href: '/contribute/ritual',
   },
 };
 
@@ -1759,13 +1759,13 @@ export const festivalTableConfig: DataTableConfig<FestivalRecord> = {
   endpoint: '/cidoc/festivals/',
   columns: festivalColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/festival',
+  viewBasePath: '/knowledge/festival',
   title: 'Festivals',
   description: 'Browse cultural festivals and celebrations.',
   showHeader: true,
   addAction: {
     label: 'Add Festival',
-    href: '/dashboard/contribute/festival',
+    href: '/contribute/festival',
   },
 };
 
@@ -1773,13 +1773,13 @@ export const iconographyTableConfig: DataTableConfig<IconographyRecord> = {
   endpoint: '/cidoc/iconographic_objects/',
   columns: iconographyColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/iconography',
+  viewBasePath: '/knowledge/iconography',
   title: 'Iconographic Objects',
   description: 'Browse sculptures, paintings, and iconographic artifacts.',
   showHeader: true,
   addAction: {
     label: 'Add Iconography',
-    href: '/dashboard/contribute/iconography',
+    href: '/contribute/iconography',
   },
 };
 
@@ -1787,12 +1787,12 @@ export const monumentTableConfig: DataTableConfig<MonumentRecord> = {
   endpoint: '/cidoc/monuments/',
   columns: monumentColumns,
   dataKey: 'results',
-  viewBasePath: '/dashboard/knowledge/monument',
+  viewBasePath: '/knowledge/monument',
   title: 'Monuments',
   description: 'Browse heritage monuments and historical landmarks.',
   showHeader: true,
   addAction: {
     label: 'Add Monument',
-    href: '/dashboard/contribute/monument',
+    href: '/contribute/monument',
   },
 };

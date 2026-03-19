@@ -207,7 +207,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     cell: ({ row }) => {
       const contributor = row.original.contributor;
       return (
-        <Link href={`/dashboard/users/${contributor}`}>
+        <Link href={`/users/${contributor}`}>
           <Badge variant="secondary" className="cursor-pointer">
             @{contributor}
           </Badge>
@@ -264,7 +264,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       const id = row.original.id;
       return (
         <Button variant="ghost" size="sm" asChild>
-           <Link href={`/dashboard/knowledge/entity/view/${id}`}>View</Link>
+           <Link href={`/knowledge/entity/view/${id}`}>View</Link>
         </Button>
       );
     },
@@ -662,7 +662,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             className="text-foreground w-fit px-0 text-left hover:underline"
             onClick={() => {
               setOpen(false);
-              window.location.href = `/dashboard/knowledge/entity/view/${item.id}`;
+              window.location.href = `/knowledge/entity/view/${item.id}`;
             }}
           >
             {item.title}
@@ -675,7 +675,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               @{item.contributor}
             </p>
             <Link
-              href={`/dashboard/users/${item.contributor}`}
+              href={`/users/${item.contributor}`}
               className="flex items-center gap-2"
             >
               <Button variant="default" size="sm">
@@ -684,7 +684,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
             </Link>
           </div>
 
-          <Link href={`/dashboard/knowledge/entity/view/${item.id}`}>
+          <Link href={`/knowledge/entity/view/${item.id}`}>
             <Button variant="secondary" className="w-full" size="sm">
               View Submission
             </Button>
@@ -791,7 +791,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </div>
           <DrawerFooter>
             <Button variant="outline">
-              <a href={`/dashboard/knowledge/entity/view/${item.id}`}>
+              <a href={`/knowledge/entity/view/${item.id}`}>
                 View Detail
               </a>
             </Button>

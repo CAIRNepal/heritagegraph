@@ -41,40 +41,40 @@ const quickActions = [
     title: 'Knowledge Graph',
     desc: 'Explore the ontology graph visualization.',
     icon: IconGraph,
-    href: '/dashboard/graphview',
+    href: '/graphview',
     gradient: 'from-violet-500 to-blue-500',
   },
   {
     title: 'New Contribution',
     desc: 'Submit a cultural heritage entry.',
     icon: IconPlus,
-    href: '/dashboard/contribute',
+    href: '/contribute',
     gradient: 'from-blue-500 to-sky-500',
   },
   {
     title: 'Knowledge Base',
     desc: 'Browse cultural entities & records.',
     icon: IconBooks,
-    href: '/dashboard/knowledge/entity',
+    href: '/knowledge/entity',
     gradient: 'from-blue-600 to-cyan-500',
   },
   {
     title: 'Progression',
     desc: 'Track your ranks, seals & achievements.',
     icon: IconMedal,
-    href: '/dashboard/progression',
+    href: '/progression',
     gradient: 'from-amber-500 to-yellow-500',
   },
 ];
 
 /* ── knowledgebase shortcuts ── */
 const kbShortcuts = [
-  { title: 'Cultural Entity', icon: IconBuildingCommunity, href: '/dashboard/knowledge/entity', gradient: 'from-blue-400 to-sky-500' },
-  { title: 'Person', icon: IconUser, href: '/dashboard/knowledge/person', gradient: 'from-blue-500 to-cyan-500' },
-  { title: 'Location', icon: IconMapPin, href: '/dashboard/knowledge/location', gradient: 'from-sky-400 to-blue-500' },
-  { title: 'Event', icon: IconCalendarEvent, href: '/dashboard/knowledge/event', gradient: 'from-blue-600 to-sky-600' },
-  { title: 'Tradition', icon: IconFlame, href: '/dashboard/knowledge/tradition', gradient: 'from-blue-400 to-cyan-500' },
-  { title: 'Contributors', icon: IconUsers, href: '/dashboard/community/contributors', gradient: 'from-sky-500 to-blue-600' },
+  { title: 'Cultural Entity', icon: IconBuildingCommunity, href: '/knowledge/entity', gradient: 'from-blue-400 to-sky-500' },
+  { title: 'Person', icon: IconUser, href: '/knowledge/person', gradient: 'from-blue-500 to-cyan-500' },
+  { title: 'Location', icon: IconMapPin, href: '/knowledge/location', gradient: 'from-sky-400 to-blue-500' },
+  { title: 'Event', icon: IconCalendarEvent, href: '/knowledge/event', gradient: 'from-blue-600 to-sky-600' },
+  { title: 'Tradition', icon: IconFlame, href: '/knowledge/tradition', gradient: 'from-blue-400 to-cyan-500' },
+  { title: 'Contributors', icon: IconUsers, href: '/community/contributors', gradient: 'from-sky-500 to-blue-600' },
 ];
 
 export default function Page() {
@@ -155,7 +155,7 @@ export default function Page() {
             curate, and explore Nepal&apos;s rich heritage.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
-            <Link href="/dashboard/contribute">
+            <Link href="/contribute">
               <Button
                 size="lg"
                 className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105"
@@ -164,7 +164,7 @@ export default function Page() {
                 New Contribution
               </Button>
             </Link>
-            <Link href="/dashboard/graphview">
+            <Link href="/graphview">
               <Button
                 variant="outline"
                 size="lg"
@@ -308,21 +308,21 @@ export default function Page() {
               title: 'Contributions Queue',
               desc: 'Pending community submissions awaiting review.',
               icon: IconFileDescription,
-              href: '/dashboard/curation/contributions',
+              href: '/curation/contributions',
               gradient: 'from-blue-400 to-sky-500',
             },
             {
               title: 'Activity Log',
               desc: 'Track recent changes and platform activity.',
               icon: IconChartBar,
-              href: '/dashboard/curation/activity',
+              href: '/curation/activity',
               gradient: 'from-blue-500 to-cyan-500',
             },
             {
               title: 'Reviewer Dashboard',
               desc: 'Your review stats, decisions, and metrics.',
               icon: IconShield,
-              href: '/dashboard/curation/dashboard',
+              href: '/curation/dashboard',
               gradient: 'from-sky-500 to-blue-600',
             },
           ].map((item) => (

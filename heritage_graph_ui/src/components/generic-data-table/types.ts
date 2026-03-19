@@ -12,7 +12,7 @@ export interface DataTableConfig<TData> {
   columns: ColumnDef<TData>[];
   /** Key to extract data array from API response (e.g., "persons", "results") */
   dataKey?: string;
-  /** Base path for viewing individual items (e.g., "/dashboard/knowledge/person") */
+  /** Base path for viewing individual items (e.g., "/knowledge/person") */
   viewBasePath?: string;
   /** Field to use as the unique row ID (default: "id") */
   idField?: keyof TData;

@@ -11,7 +11,7 @@ import { useEffect } from "react";
 export default function LoginRedirectPage() {
   useEffect(() => {
     // Redirect to the NextAuth sign-in page (Google OAuth)
-    signIn("google", { callbackUrl: "/dashboard" });
+    signIn("google", { callbackUrl: "/" });
   }, []);
 
   return (

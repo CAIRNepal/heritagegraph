@@ -273,7 +273,7 @@ export function useSharing() {
   );
 
   const shareToTwitter = (entityName: string, entityId: string) => {
-    const url = `${window.location.origin}/dashboard/knowledge/entity/${entityId}`;
+    const url = `${window.location.origin}/knowledge/entity/${entityId}`;
     const text = `Check out "${entityName}" on HeritageGraph`;
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
@@ -283,7 +283,7 @@ export function useSharing() {
   };
 
   const shareToFacebook = (entityId: string) => {
-    const url = `${window.location.origin}/dashboard/knowledge/entity/${entityId}`;
+    const url = `${window.location.origin}/knowledge/entity/${entityId}`;
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       "_blank"
@@ -292,7 +292,7 @@ export function useSharing() {
   };
 
   const shareToLinkedIn = (entityId: string) => {
-    const url = `${window.location.origin}/dashboard/knowledge/entity/${entityId}`;
+    const url = `${window.location.origin}/knowledge/entity/${entityId}`;
     window.open(
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
       "_blank"
@@ -301,7 +301,7 @@ export function useSharing() {
   };
 
   const shareViaEmail = (entityName: string, entityId: string) => {
-    const url = `${window.location.origin}/dashboard/knowledge/entity/${entityId}`;
+    const url = `${window.location.origin}/knowledge/entity/${entityId}`;
     const subject = `HeritageGraph: ${entityName}`;
     const body = `Check out "${entityName}" on HeritageGraph:\n${url}`;
     window.open(
@@ -311,7 +311,7 @@ export function useSharing() {
   };
 
   const copyLink = async (entityId: string) => {
-    const url = `${window.location.origin}/dashboard/knowledge/entity/${entityId}`;
+    const url = `${window.location.origin}/knowledge/entity/${entityId}`;
     await navigator.clipboard.writeText(url);
     trackShare(entityId, "copy_link");
   };

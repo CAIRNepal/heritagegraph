@@ -174,7 +174,7 @@ export function NavUser({
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={userSlug ? `/dashboard/users/${userSlug}` : '#'}
+                  href={userSlug ? `/users/${userSlug}` : '#'}
                   className="flex items-center gap-2"
                 >
                   <IconUserCircle />
@@ -183,7 +183,7 @@ export function NavUser({
               </DropdownMenuItem>
 
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/account" 
+                <Link href="/account" 
                 className="flex items-center gap-2">
                   <IconUserCircle />
                   {t('accountSettings')}

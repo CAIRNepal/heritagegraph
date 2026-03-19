@@ -53,6 +53,16 @@ const typeBadgeMap: Record<string, { label: string; className: string }> = {
   },
 };
 
+function resolveNotificationLink(notification: Notification): string {
+  if (notification.link && notification.link.startsWith("/")) {
+    return notification.link;
+  }
+  if (notification.entity_id) {
+    return `/knowledge/entity/view/${notification.entity_id}`;
+  }
+  return "/notification";
+}
+
 function NotificationItem({
   notification,
   onRead,
@@ -66,15 +76,15 @@ function NotificationItem({
     if (!notification.is_read) {
       onRead(notification.notification_id);
     }
-    if (notification.link) {
-      router.push(notification.link);
-    }
+    router.push(resolveNotificationLink(notification));
   };
 
   const badge = typeBadgeMap[notification.notification_type] || typeBadgeMap.general;
   const timeAgo = formatDistanceToNow(new Date(notification.created_at), {
     addSuffix: true,
   });
+
+  const actorLabel = notification.actor_display_name || notification.actor_username;
 
   return (
     <button
@@ -88,11 +98,16 @@ function NotificationItem({
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
+          {actorLabel && (
+            <p className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 mb-0.5 truncate">
+              {actorLabel}
+            </p>
+          )}
           <p className="text-sm font-medium text-foreground truncate">
             {notification.message}
           </p>
           {notification.entity_name && (
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
               {notification.entity_name}
             </p>
           )}
@@ -100,6 +115,11 @@ function NotificationItem({
             <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", badge.className)}>
               {badge.label}
             </Badge>
+            {notification.entity_category && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
+                {notification.entity_category}
+              </Badge>
+            )}
             <span className="text-[10px] text-muted-foreground">{timeAgo}</span>
           </div>
         </div>
@@ -126,10 +146,10 @@ export function NotificationBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative overflow-visible">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-900 pointer-events-none">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
@@ -158,7 +178,7 @@ export function NotificationBell() {
               variant="ghost"
               size="sm"
               className="text-xs h-7"
-              onClick={() => router.push("/dashboard/notification")}
+              onClick={() => router.push("/notification")}
             >
               View all
             </Button>
@@ -195,7 +215,7 @@ export function NotificationBell() {
               variant="link"
               size="sm"
               className="text-xs"
-              onClick={() => router.push("/dashboard/notification")}
+              onClick={() => router.push("/notification")}
             >
               See all {notifications.length} notifications
             </Button>

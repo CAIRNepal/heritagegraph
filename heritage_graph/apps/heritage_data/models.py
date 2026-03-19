@@ -973,6 +973,14 @@ class Notification(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="notifications"
     )
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="triggered_notifications",
+        null=True,
+        blank=True,
+        help_text="The user who triggered this notification",
+    )
     notification_type = models.CharField(
         max_length=50, choices=NOTIFICATION_TYPE_CHOICES
     )

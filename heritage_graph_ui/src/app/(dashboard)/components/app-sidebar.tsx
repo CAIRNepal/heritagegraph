@@ -1,0 +1,425 @@
+'use client';
+
+import * as React from 'react';
+import Link from 'next/link';
+import Image from "next/image";
+import { useTranslations } from 'next-intl';
+
+import {
+  IconCamera,
+  IconChartBar,
+  IconLayoutDashboard,
+  IconTrophy,
+  IconPlus,
+  IconBell,
+  IconUsersGroup,
+  IconBuildingCommunity,
+  IconUser,
+  IconMapPin,
+  IconCalendarEvent,
+  IconClock,
+  IconFlame,
+  IconFileAi,
+  IconInvoice,
+  IconFileDescription,
+  IconUsers,
+  IconBuilding,
+  IconMoodSmile,
+  IconHomeCog,
+  IconBuildingArch,
+  IconCandle,
+  IconConfetti,
+  IconPalette,
+  IconColumns,
+  IconShield,
+  IconScale,
+  IconAlertTriangle,
+  IconDashboard,
+  IconGraph,
+  IconQrcode,
+  IconMedal,
+  IconInfoCircle,
+  IconChevronUp,
+} from '@tabler/icons-react';
+
+// import { useSidebar } from '@/components/ui/sidebar';
+// import { NavDocuments } from '@/components/nav-documents';
+import { NavMain } from '@/components/nav-main';
+// import { NavSecondary } from '@/components/nav-secondary';
+// import { NavUser } from '@/components/nav-user';
+import {
+  Sidebar,
+  SidebarContent,
+  // SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
+  useSidebar,
+  SidebarGroupLabel,
+} from '@/components/ui/sidebar';
+
+const data = {
+  user: {
+    name: 'nabin2004',
+    email: 'nabin.oli@cair-nepal.org',
+    avatar: '/avatars/shadcn.jpg',
+  },
+  // navMain: [
+  //   {
+  //     title: 'Dashboard',
+  //     url: '/dashboard',
+  //     icon: IconLayoutDashboard,
+  //   },
+  //   {
+  //     title: 'Leaderboard',
+  //     url: '/leaderboard',
+  //     icon: IconTrophy,
+  //   },
+  //   {
+  //     title: 'Contribute',
+  //     url: '/contribute',
+  //     icon: IconPlus,
+  //   },
+  //   {
+  //     title: 'Notification',
+  //     url: '/notification',
+  //     icon: IconBell,
+  //   },
+  //   {
+  //     title: 'team',
+  //     url: '/team',
+  //     icon: IconUsersGroup,
+  //   },
+  //   // {
+  //   //   title: "Team",
+  //   //   url: "#",
+  //   //   icon: IconUsers,
+  //   // },
+  // ],
+  navClouds: [
+    {
+      title: 'Capture',
+      icon: IconCamera,
+      isActive: true,
+      url: '#',
+      items: [
+        {
+          title: 'Active Proposals',
+          url: '#',
+        },
+        {
+          title: 'Archived',
+          url: '#',
+        },
+      ],
+    },
+    {
+      title: 'Proposal',
+      icon: IconFileDescription,
+      url: '#',
+      items: [
+        {
+          title: 'Active Proposals',
+          url: '#',
+        },
+        {
+          title: 'Archived',
+          url: '#',
+        },
+      ],
+    },
+    {
+      title: 'Prompts',
+      icon: IconFileAi,
+      url: '#',
+      items: [
+        {
+          title: 'Active Proposals',
+          url: '#',
+        },
+        {
+          title: 'Archived',
+          url: '#',
+        },
+      ],
+    },
+  ],
+  navSecondary: [
+    // {
+    //   title: "Settings",
+    //   url: "#",
+    //   icon: IconSettings,
+    // },
+    // {
+    //   title: "Get Help",
+    //   url: "#",
+    //   icon: IconHelp,
+    // },
+    // {
+    //   title: "Search",
+    //   url: "#",
+    //   icon: IconSearch,
+    // },
+  ],
+  // data: [
+  //   {
+  //     name: "Graph Library",
+  //     url: "#",
+  //     icon: IconDatabase,
+  //   },
+  //   {
+  //     name: "Graph Explore",
+  //     url: "#",
+  //     icon: IconReport,
+  //   },
+  //   {
+  //     name: "SPARQL",
+  //     url: "#",
+  //     icon: IconFileWord,
+  //   },
+  // ],
+
+  navKnowledgebase: [
+    {
+      title: 'Cultural Entity',
+      url: '/knowledge/entity',
+      icon: IconBuildingCommunity,
+    },
+    {
+      title: 'Person',
+      url: '/knowledge/person',
+      icon: IconUser,
+    },
+    {
+      title: 'Location',
+      url: '/knowledge/location',
+      icon: IconMapPin,
+    },
+    // {
+    //   title: 'Object Attributes',
+    //   url: '/knowledge/performing-arts',
+    //   icon: IconMusic,
+    // },
+    {
+      title: 'Event',
+      url: '/knowledge/event',
+      icon: IconCalendarEvent,
+    },
+    {
+      title: 'Historical Period',
+      url: '/knowledge/period',
+      icon: IconClock,
+    },
+    {
+      title: 'Tradition / Practice',
+      url: '/knowledge/tradition',
+      icon: IconFlame
+    },
+    {
+      title: 'Source',
+      url: '/knowledge/source',
+      icon: IconInvoice,
+    },
+    {
+      title: 'Deity',
+      url: '/knowledge/deity',
+      icon: IconMoodSmile,
+    },
+    {
+      title: 'Guthi',
+      url: '/knowledge/guthi',
+      icon: IconHomeCog,
+    },
+    {
+      title: 'Structure',
+      url: '/knowledge/structure',
+      icon: IconBuildingArch,
+    },
+    {
+      title: 'Ritual',
+      url: '/knowledge/ritual',
+      icon: IconCandle,
+    },
+    {
+      title: 'Festival',
+      url: '/knowledge/festival',
+      icon: IconConfetti,
+    },
+    {
+      title: 'Iconography',
+      url: '/knowledge/iconography',
+      icon: IconPalette,
+    },
+    {
+      title: 'Monument',
+      url: '/knowledge/monument',
+      icon: IconColumns,
+    },
+  ],
+
+  navCuration: [
+    {
+      title: 'Reviewer Dashboard',
+      url: '/curation/dashboard',
+      icon: IconDashboard,
+    },
+    {
+      title: 'Review Queue',
+      url: '/curation/review',
+      icon: IconShield,
+    },
+    {
+      title: 'Conflicts',
+      url: '/curation/conflicts',
+      icon: IconScale,
+    },
+    {
+      title: 'Contributions Queue',
+      url: '/curation/contributions',
+      icon: IconFileDescription,
+    },
+    {
+      title: 'Activity Log',
+      url: '/curation/activity',
+      icon: IconChartBar,
+    },
+    {
+      title: 'QR Contributions',
+      url: '/curation/qr-contributions',
+      icon: IconQrcode,
+    },
+  ],
+
+  navCommunity: [
+    {
+      title: 'Contributors',
+      url: '/community/contributors',
+      icon: IconUsers,
+    },
+    {
+      title: 'Organizations',
+      url: '/community/organizations',
+      icon: IconBuilding,
+    },
+    // { name: "Leaderboard", url: "/community/leaderboard", icon: IconListDetails },
+  ],
+
+  navResources: [
+    // { name: 'Data Releases', url: '/resources/releases', icon: IconDatabase },
+    // { name: 'Data Licensing', url: '/resources/licensing', icon: IconFileWord },
+    // { name: 'APIs & Tools', url: '/resources/apis', icon: IconFileAi },
+  ],
+
+  navAbout: [
+    // { name: 'About', url: '/about', icon: IconHelp },
+    // { name: 'Documentation', url: '/docs', icon: IconFileDescription },
+    // { name: 'Contact', url: '/contact', icon: IconSearch },
+  ],
+};
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
+  const t = useTranslations('nav');
+  const [showScrollTop, setShowScrollTop] = React.useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    const onScroll = () => setShowScrollTop(el.scrollTop > 80);
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    contentRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+
+<SidebarMenuButton
+  asChild
+  className="data-[slot=sidebar-menu-button]:!p-1.5"
+>
+  <div className="flex items-center justify-between w-full h-full">
+    <Link href="/" className="flex items-center">
+          <Image
+            src={isCollapsed ? "/logo1.svg" : "/logo.svg"}
+            alt="logo"
+            width={isCollapsed? 40: 150}
+            height={isCollapsed? 40: 150}
+          />
+      {/* <span className="">HeritageGraph</span> */}
+    </Link>
+  </div>
+
+</SidebarMenuButton>
+
+
+      </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent ref={contentRef} className="relative pb-6">
+        {showScrollTop && (
+          <>
+            <div className="pointer-events-none sticky top-0 z-10 h-8 -mb-8 bg-gradient-to-b from-sidebar to-transparent" />
+            <button
+              onClick={scrollToTop}
+              className="sticky top-1 z-20 mx-auto flex items-center gap-1 rounded-full bg-blue-500/90 dark:bg-blue-600/90 px-3 py-1 text-[11px] font-medium text-white shadow-md backdrop-blur-sm transition-all hover:bg-blue-600 dark:hover:bg-blue-500 hover:shadow-lg"
+            >
+              <IconChevronUp className="size-3.5" />
+              {!isCollapsed && <span>Scroll to top</span>}
+            </button>
+          </>
+        )}
+
+        <NavMain navtitle={t('navigation')} items={[
+          { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
+          { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
+          { title: t('contribute'), url: '/contribute', icon: IconPlus },
+          { title: t('progression'), url: '/progression', icon: IconMedal },
+          { title: t('leaderboard'), url: '/leaderboard', icon: IconTrophy },
+          { title: t('notifications'), url: '/notification', icon: IconBell },
+          { title: t('team'), url: '/team', icon: IconUsersGroup },
+          { title: t('about'), url: '/about', icon: IconInfoCircle },
+        ]} />
+
+        <NavMain navtitle={t('knowledgebase')} items={[
+          { title: t('person'), url: '/knowledge/person', icon: IconUser },
+          { title: t('location'), url: '/knowledge/location', icon: IconMapPin },
+          { title: t('event'), url: '/knowledge/event', icon: IconCalendarEvent },
+          { title: t('historicalPeriod'), url: '/knowledge/period', icon: IconClock },
+          { title: t('traditionPractice'), url: '/knowledge/tradition', icon: IconFlame },
+          { title: t('source'), url: '/knowledge/source', icon: IconInvoice },
+          { title: t('deity'), url: '/knowledge/deity', icon: IconMoodSmile },
+          { title: t('guthi'), url: '/knowledge/guthi', icon: IconHomeCog },
+          { title: t('structure'), url: '/knowledge/structure', icon: IconBuildingArch },
+          { title: t('ritual'), url: '/knowledge/ritual', icon: IconCandle },
+          { title: t('festival'), url: '/knowledge/festival', icon: IconConfetti },
+          { title: t('iconography'), url: '/knowledge/iconography', icon: IconPalette },
+          { title: t('monument'), url: '/knowledge/monument', icon: IconColumns },
+        ]} />
+        <NavMain navtitle={t('curation')} items={[
+          { title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard },
+          { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
+          { title: t('conflicts'), url: '/curation/conflicts', icon: IconScale },
+          { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
+          { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
+          { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },
+        ]} />
+        <NavMain navtitle={t('community')} items={[
+          { title: t('contributors'), url: '/community/contributors', icon: IconUsers },
+          { title: t('organizations'), url: '/community/organizations', icon: IconBuilding },
+        ]} />
+      </SidebarContent>
+      {/* <AuthSection /> */}
+    </Sidebar>
+  );
+}

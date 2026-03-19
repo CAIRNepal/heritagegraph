@@ -129,7 +129,7 @@ export function UserProgressBadge({ className }: { className?: string }) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link href="/dashboard/progression">
+          <Link href="/progression">
             <div className={cn(
               'flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:scale-105',
               'bg-gradient-to-r bg-opacity-10 cursor-pointer',
@@ -169,7 +169,7 @@ export function ProgressionWidgetMini({ className }: { className?: string }) {
   const tierInfo = tierDisplay[progress.tier] || tierDisplay.apprentice;
 
   return (
-    <Link href="/dashboard/progression">
+    <Link href="/progression">
       <Card className={cn('hover:shadow-md transition-shadow cursor-pointer', className)}>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -348,13 +348,13 @@ export function ProgressionWidgetFull({ className }: { className?: string }) {
         {/* CTA */}
         <div className="flex gap-2 pt-2">
           <Button asChild variant="outline" className="flex-1">
-            <Link href="/dashboard/progression">
+            <Link href="/progression">
               View Details
               <IconArrowRight className="w-4 h-4 ml-1" />
             </Link>
           </Button>
           <Button asChild className="flex-1 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600">
-            <Link href="/dashboard/contribute">
+            <Link href="/contribute">
               <IconSparkles className="w-4 h-4 mr-1" />
               Earn Points
             </Link>
@@ -380,7 +380,7 @@ export function LeaderboardPreview({ className }: { className?: string }) {
             <IconTrophy className="w-5 h-5 text-yellow-500" />
             Hall of Record
           </CardTitle>
-          <Link href="/dashboard/progression" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+          <Link href="/progression" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
             See all <IconChevronRight className="w-3 h-3" />
           </Link>
         </div>

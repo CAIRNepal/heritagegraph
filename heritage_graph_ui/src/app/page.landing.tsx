@@ -173,7 +173,7 @@ export default function Home() {
           {/* Right side */}
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/dashboard"
+              href="/"
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             >
               <LayoutDashboard className="w-4 h-4" />
@@ -197,7 +197,7 @@ export default function Home() {
                   <a href="#explore" className="text-lg text-blue-800 hover:text-blue-600">Explore</a>
                   <a href="#about" className="text-lg text-blue-800 hover:text-blue-600">About</a>
                   <a href="#contact" className="text-lg text-blue-800 hover:text-blue-600">Contact</a>
-                  <Link href="/dashboard" className="flex items-center gap-2 text-lg text-blue-800 hover:text-blue-600">
+                  <Link href="/" className="flex items-center gap-2 text-lg text-blue-800 hover:text-blue-600">
                     <LayoutDashboard className="w-5 h-5" /> Dashboard
                   </Link>
                   <AuthButtons />
@@ -255,7 +255,7 @@ export default function Home() {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <Link href="/dashboard/graphview">
+              <Link href="/graphview">
                 <Button className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                   Start Exploring
                 </Button>
