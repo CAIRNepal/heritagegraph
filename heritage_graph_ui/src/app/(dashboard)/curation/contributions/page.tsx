@@ -17,6 +17,7 @@ import {
 import {
   Calendar, FileText, RefreshCw, Search, Eye, CheckCircle,
   XCircle, ExternalLink, Flag, AlertTriangle, Inbox, Timer, ArrowUpDown,
+  GitFork,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -25,14 +26,21 @@ import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
+interface ForkInfoInline {
+  fork_id: string; original_entity_id: string; original_entity_name: string;
+  fork_reason_tag: string; fork_reason_tag_display: string;
+  fork_status: string; diff_field_count: number; reason: string; forked_by: string;
+}
 interface Contribution {
   entity_id: string; name: string; description: string; category: string; status: string;
   contributor: UserInfo; created_at: string; current_revision: Revision | null;
   latest_revision: Revision | null; activity_count: number; flag_count: number;
   has_conflicts: boolean; days_in_review: number;
+  is_fork?: boolean; fork_info?: ForkInfoInline | null;
+  root_entity?: string | null; parent_entity?: string | null; fork_depth?: number;
 }
 interface APIResponse { count: number; next: string | null; previous: string | null; results: Contribution[]; }
-type QueueTab = 'all' | 'new_claims' | 'conflicts' | 'flagged' | 'expiring';
+type QueueTab = 'all' | 'new_claims' | 'conflicts' | 'flagged' | 'expiring' | 'forks';
 type CategoryType = 'all' | 'monument' | 'artifact' | 'ritual' | 'festival' | 'tradition' | 'document' | 'other';
 type SortField = 'created_at' | 'name';
 
@@ -74,7 +82,7 @@ export default function ContributionQueuePage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [counts, setCounts] = useState({ all: 0, new_claims: 0, conflicts: 0, flagged: 0, expiring: 0 });
+  const [counts, setCounts] = useState({ all: 0, new_claims: 0, conflicts: 0, flagged: 0, expiring: 0, forks: 0 });
   const [tab, setTab] = useState<QueueTab>('all');
   const [cat, setCat] = useState<CategoryType>('all');
   const [q, setQ] = useState('');
@@ -106,11 +114,13 @@ export default function ContributionQueuePage() {
       const co = all.filter(c => c.has_conflicts).length;
       const fl = all.filter(c => c.flag_count > 0 && !c.has_conflicts).length;
       const ex = all.filter(c => c.days_in_review > 14).length;
-      setCounts({ all: data.count, new_claims: nc, conflicts: co, flagged: fl, expiring: ex });
+      const fk = all.filter(c => c.is_fork).length;
+      setCounts({ all: data.count, new_claims: nc, conflicts: co, flagged: fl, expiring: ex, forks: fk });
       if (tab === 'new_claims') all = all.filter(c => c.status === 'pending_review' && c.activity_count <= 1);
       else if (tab === 'conflicts') all = all.filter(c => c.has_conflicts);
       else if (tab === 'flagged') all = all.filter(c => c.flag_count > 0 && !c.has_conflicts);
       else if (tab === 'expiring') all = all.filter(c => c.days_in_review > 14);
+      else if (tab === 'forks') all = all.filter(c => c.is_fork);
       setItems(all); setTotal(tab === 'all' ? data.count : all.length); setPage(p);
     } catch (e) { setError(e instanceof Error ? e.message : 'Load failed'); toast.error('Failed to load queue'); }
     finally { setLoading(false); }
@@ -170,6 +180,9 @@ export default function ContributionQueuePage() {
               </TabsTrigger>
               <TabsTrigger value="expiring" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-500 data-[state=active]:text-white rounded-lg">
                 <Timer className="h-4 w-4" /> Expiring <Badge variant="secondary" className="ml-1 text-xs">{counts.expiring}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="forks" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-500 data-[state=active]:text-white rounded-lg">
+                <GitFork className="h-4 w-4" /> Forks <Badge variant="secondary" className="ml-1 text-xs">{counts.forks}</Badge>
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -258,9 +271,18 @@ export default function ContributionQueuePage() {
                             <TableCell><Badge variant="secondary" className={`text-[11px] px-2 ${s.cls}`}>{s.label}</Badge></TableCell>
                             <TableCell>
                               <p className="font-medium truncate max-w-[260px] text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text flex items-center gap-1 transition-all duration-300">
+                                {c.is_fork && <GitFork className="h-3 w-3 shrink-0 text-violet-500" />}
                                 {c.name} <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                               </p>
-                              <p className="text-xs text-blue-500 dark:text-blue-400 font-mono">{c.entity_id.slice(0, 8)}…</p>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-blue-500 dark:text-blue-400 font-mono">{c.entity_id.slice(0, 8)}…</span>
+                                {c.fork_info && (
+                                  <span className="text-[10px] text-muted-foreground">
+                                    fork of {c.fork_info.original_entity_name}
+                                    {c.fork_info.fork_reason_tag !== 'other' && ` (${c.fork_info.fork_reason_tag_display})`}
+                                  </span>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <button onClick={e => { e.stopPropagation(); router.push(`/users/${c.contributor.username}`); }}

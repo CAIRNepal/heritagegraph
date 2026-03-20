@@ -41,6 +41,7 @@ import {
   IconMedal,
   IconInfoCircle,
   IconChevronUp,
+  IconGitFork,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -275,6 +276,11 @@ const data = {
       title: 'Conflicts',
       url: '/curation/conflicts',
       icon: IconScale,
+    },
+    {
+      title: 'Fork Viewer',
+      url: '/curation/forks',
+      icon: IconGitFork,
     },
     {
       title: 'Contributions Queue',

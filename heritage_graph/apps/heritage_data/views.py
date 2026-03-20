@@ -521,6 +521,108 @@ class LeaderboardView(APIView):
         })
 
 
+class ContributorsListView(APIView):
+    """
+    List platform contributors with contribution, fork, and review stats.
+    GET /data/api/contributors/?search=&page=&page_size=
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        search = request.query_params.get('search', '').strip().lower()
+        try:
+            page = max(1, int(request.query_params.get('page', 1)))
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            page_size = min(100, max(1, int(request.query_params.get('page_size', 20))))
+        except (TypeError, ValueError):
+            page_size = 20
+
+        qs = User.objects.select_related('profile').annotate(
+            contributions_count=Count('contributed_entities', distinct=True),
+            accepted_count=Count(
+                'contributed_entities',
+                filter=Q(contributed_entities__status='accepted'),
+                distinct=True,
+            ),
+            forks_count=Count('forked_entities', distinct=True),
+            merged_forks_count=Count(
+                'forked_entities',
+                filter=Q(forked_entities__fork_status__in=['merged', 'promoted']),
+                distinct=True,
+            ),
+            reviews_count=Count('review_decisions', distinct=True),
+            revisions_count=Count('created_revisions', distinct=True),
+        ).filter(
+            Q(contributions_count__gt=0)
+            | Q(forks_count__gt=0)
+            | Q(reviews_count__gt=0)
+            | Q(revisions_count__gt=0)
+        )
+
+        users = list(qs.order_by('username'))
+        entries = []
+        for user in users:
+            profile = getattr(user, 'profile', None)
+            score = (
+                user.accepted_count * 10
+                + (user.contributions_count - user.accepted_count) * 3
+                + user.reviews_count * 5
+                + user.revisions_count * 2
+                + user.merged_forks_count * 20
+            )
+            entries.append({
+                'user_id': user.id,
+                'username': user.username,
+                'full_name': (
+                    f'{profile.first_name} {profile.last_name}'.strip()
+                    if profile else ''
+                ),
+                'profile_image': (
+                    profile.profile_image.url
+                    if profile and profile.profile_image else ''
+                ),
+                'avatar_url': getattr(profile, 'avatar_url', '') or '',
+                'contributions_count': user.contributions_count,
+                'accepted_count': user.accepted_count,
+                'forks_count': user.forks_count,
+                'merged_forks_count': user.merged_forks_count,
+                'reviews_count': user.reviews_count,
+                'revisions_count': user.revisions_count,
+                'score': score,
+                'date_joined': user.date_joined.isoformat(),
+            })
+
+        entries.sort(key=lambda e: (-e['score'], e['username']))
+
+        rank = 1
+        for idx, entry in enumerate(entries):
+            if idx > 0 and entries[idx - 1]['score'] != entry['score']:
+                rank = idx + 1
+            entry['rank'] = rank
+
+        if search:
+            entries = [
+                e for e in entries
+                if search in e['username'].lower() or search in e['full_name'].lower()
+            ]
+
+        total = len(entries)
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = min(page, total_pages)
+        start = (page - 1) * page_size
+        paginated = entries[start:start + page_size]
+
+        return Response({
+            'count': total,
+            'page': page,
+            'page_size': page_size,
+            'total_pages': total_pages,
+            'results': paginated,
+        })
+
+
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -1005,6 +1107,8 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.IsAuthenticated]
         elif self.action in ['update', 'partial_update', 'destroy']:
             permission_classes = [permissions.IsAuthenticated, IsContributorOrReadOnly]
+        elif self.action in ['lineage', 'child_forks', 'fork_diff']:
+            permission_classes = [permissions.IsAuthenticatedOrReadOnly]
         else:
             permission_classes = [permissions.IsAuthenticatedOrReadOnly]
         return [permission() for permission in permission_classes]
@@ -1111,6 +1215,69 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
             {'message': 'Entity submitted for review successfully'},
             status=status.HTTP_200_OK
         )
+
+    @action(detail=True, methods=['get'], url_path='lineage')
+    def lineage(self, request, pk=None):
+        """Return the full fork tree rooted at this entity's root."""
+        entity = self.get_object()
+        root = entity.root_entity if entity.root_entity_id else entity
+        serializer = ForkLineageNodeSerializer(root)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'], url_path='child-forks')
+    def child_forks(self, request, pk=None):
+        """Return direct child forks of this entity."""
+        entity = self.get_object()
+        children = CulturalEntity.objects.filter(
+            parent_entity=entity
+        ).select_related('contributor')
+        forks = Fork.objects.filter(
+            original_entity=entity
+        ).select_related('forked_by', 'original_entity', 'forked_entity')
+        return Response({
+            'entity_id': str(entity.entity_id),
+            'entity_name': entity.name,
+            'forks': ForkSerializer(forks, many=True).data,
+        })
+
+    @action(detail=True, methods=['get'], url_path='fork-diff/(?P<fork_entity_id>[^/.]+)')
+    def fork_diff(self, request, pk=None, fork_entity_id=None):
+        """Cross-entity diff: compare current revision of this entity vs a fork."""
+        entity = self.get_object()
+        try:
+            fork_entity = CulturalEntity.objects.get(entity_id=fork_entity_id)
+        except CulturalEntity.DoesNotExist:
+            return Response({'error': 'Fork entity not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        entity_rev = entity.revisions.order_by('-revision_number').first()
+        fork_rev = fork_entity.revisions.order_by('-revision_number').first()
+
+        if not entity_rev or not fork_rev:
+            return Response(
+                {'error': 'One or both entities have no revisions'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        entity_data = entity_rev.data if isinstance(entity_rev.data, dict) else {}
+        fork_data = fork_rev.data if isinstance(fork_rev.data, dict) else {}
+
+        diff = {}
+        all_keys = set(entity_data.keys()) | set(fork_data.keys())
+        for key in sorted(all_keys):
+            old_val = entity_data.get(key)
+            new_val = fork_data.get(key)
+            if old_val != new_val:
+                diff[key] = {'old': old_val, 'new': new_val}
+
+        return Response({
+            'entity_id': str(entity.entity_id),
+            'entity_name': entity.name,
+            'fork_entity_id': str(fork_entity.entity_id),
+            'fork_entity_name': fork_entity.name,
+            'entity_revision': RevisionSerializer(entity_rev).data,
+            'fork_revision': RevisionSerializer(fork_rev).data,
+            'diff': diff,
+        })
 
 class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -1947,7 +2114,7 @@ class ForkViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request):
-        """Fork an entity. POST body: { entity_id, reason, changes }"""
+        """Fork an entity. POST body: { entity_id, reason, fork_reason_tag, changes }"""
         entity_id = request.data.get('entity_id')
         if not entity_id:
             return Response({'error': 'entity_id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -1957,47 +2124,63 @@ class ForkViewSet(viewsets.ViewSet):
         except CulturalEntity.DoesNotExist:
             return Response({'error': 'Entity not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Get the latest revision data
         latest_revision = original.get_latest_revision()
         if not latest_revision:
             return Response({'error': 'No revision to fork'}, status=status.HTTP_400_BAD_REQUEST)
 
         reason = request.data.get('reason', '')
+        fork_reason_tag = request.data.get('fork_reason_tag', 'other')
+        valid_tags = [c[0] for c in Fork.FORK_REASON_CHOICES]
+        if fork_reason_tag not in valid_tags:
+            fork_reason_tag = 'other'
+
         changes = request.data.get('changes', {})
 
-        # Merge changes into the revision data
-        fork_data = {**latest_revision.data, **changes}
+        original_data = latest_revision.data if isinstance(latest_revision.data, dict) else {}
+        fork_data = {**original_data, **changes}
 
-        # Create the new entity
+        # Compute diff_summary
+        diff_summary = {}
+        all_keys = set(original_data.keys()) | set(fork_data.keys())
+        for key in all_keys:
+            old_val = original_data.get(key)
+            new_val = fork_data.get(key)
+            if old_val != new_val:
+                diff_summary[key] = {'old': old_val, 'new': new_val}
+
+        # Determine lineage
+        root = original.root_entity if original.root_entity_id else original
+
         forked_entity = CulturalEntity.objects.create(
             name=f"{original.name} (fork by {request.user.username})",
             description=original.description,
             category=original.category,
             contributor=request.user,
             status='draft',
+            root_entity=root,
+            parent_entity=original,
+            fork_depth=original.fork_depth + 1,
         )
 
-        # Create first revision on forked entity
         forked_entity.create_revision(request.user, fork_data)
 
-        # Record the fork relationship
         fork = Fork.objects.create(
             original_entity=original,
             forked_entity=forked_entity,
             forked_by=request.user,
             forked_from_revision=latest_revision,
             reason=reason,
+            fork_reason_tag=fork_reason_tag,
+            diff_summary=diff_summary,
         )
 
-        # Create activity on original
         Activity.objects.create(
             entity=original,
             user=request.user,
             activity_type='commented',
-            comment=f'Forked by {request.user.username}: {reason}',
+            comment=f'Forked by {request.user.username} ({fork.get_fork_reason_tag_display()}): {reason}',
         )
 
-        # Notify original contributor
         if original.contributor != request.user:
             create_notification(
                 user=original.contributor,
@@ -2023,6 +2206,163 @@ class ForkViewSet(viewsets.ViewSet):
             original_entity_id=entity_id
         ).select_related('forked_by', 'original_entity', 'forked_entity')
         return Response(ForkSerializer(forks, many=True).data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsReviewerOrAdmin])
+    def merge(self, request, pk=None):
+        """Merge fork changes into parent entity, creating a new revision on parent."""
+        try:
+            fork = Fork.objects.select_related(
+                'original_entity', 'forked_entity'
+            ).get(pk=pk)
+        except Fork.DoesNotExist:
+            return Response({'error': 'Fork not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if fork.fork_status != 'active':
+            return Response(
+                {'error': f'Fork is already {fork.fork_status}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        parent = fork.original_entity
+        forked = fork.forked_entity
+
+        forked_rev = forked.revisions.order_by('-revision_number').first()
+        parent_rev = parent.revisions.order_by('-revision_number').first()
+
+        if not forked_rev:
+            return Response({'error': 'Fork has no revisions'}, status=status.HTTP_400_BAD_REQUEST)
+
+        parent_data = parent_rev.data if parent_rev and isinstance(parent_rev.data, dict) else {}
+        forked_data = forked_rev.data if isinstance(forked_rev.data, dict) else {}
+
+        merged_data = {**parent_data, **forked_data}
+        parent.create_revision(request.user, merged_data)
+
+        fork.fork_status = 'merged'
+        fork.merged_at = timezone.now()
+        fork.merged_by = request.user
+        fork.save(update_fields=['fork_status', 'merged_at', 'merged_by'])
+
+        forked.status = 'merged'
+        forked.save(update_fields=['status'])
+
+        Activity.objects.create(
+            entity=parent,
+            user=request.user,
+            activity_type='revised',
+            comment=f'Merged fork by {forked.contributor.username}: {fork.reason}',
+        )
+
+        if forked.contributor != request.user:
+            create_notification(
+                user=forked.contributor,
+                actor=request.user,
+                notification_type='submission_update',
+                message=f'Your fork of "{parent.name}" has been merged!',
+                entity=parent,
+                link=f'/knowledge/entity/view/{parent.entity_id}',
+            )
+
+        return Response(ForkSerializer(fork).data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsReviewerOrAdmin])
+    def promote(self, request, pk=None):
+        """Fork becomes the canonical entity; original is superseded."""
+        try:
+            fork = Fork.objects.select_related(
+                'original_entity', 'forked_entity'
+            ).get(pk=pk)
+        except Fork.DoesNotExist:
+            return Response({'error': 'Fork not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if fork.fork_status != 'active':
+            return Response(
+                {'error': f'Fork is already {fork.fork_status}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        parent = fork.original_entity
+        forked = fork.forked_entity
+
+        parent.status = 'superseded'
+        parent.save(update_fields=['status'])
+
+        forked.status = 'accepted'
+        forked.save(update_fields=['status'])
+
+        fork.fork_status = 'promoted'
+        fork.merged_at = timezone.now()
+        fork.merged_by = request.user
+        fork.save(update_fields=['fork_status', 'merged_at', 'merged_by'])
+
+        Activity.objects.create(
+            entity=forked,
+            user=request.user,
+            activity_type='accepted',
+            comment=f'Promoted to canonical entity, superseding "{parent.name}"',
+        )
+
+        if forked.contributor != request.user:
+            create_notification(
+                user=forked.contributor,
+                actor=request.user,
+                notification_type='submission_update',
+                message=f'Your fork has been promoted as the canonical version of "{parent.name}"!',
+                entity=forked,
+                link=f'/knowledge/entity/view/{forked.entity_id}',
+            )
+
+        return Response(ForkSerializer(fork).data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsReviewerOrAdmin])
+    def reject(self, request, pk=None):
+        """Reject a fork with required reason."""
+        try:
+            fork = Fork.objects.select_related(
+                'original_entity', 'forked_entity'
+            ).get(pk=pk)
+        except Fork.DoesNotExist:
+            return Response({'error': 'Fork not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if fork.fork_status != 'active':
+            return Response(
+                {'error': f'Fork is already {fork.fork_status}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        rejection_reason = request.data.get('reason', '')
+        if not rejection_reason:
+            return Response(
+                {'error': 'Reason is required when rejecting a fork'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        forked = fork.forked_entity
+
+        fork.fork_status = 'rejected'
+        fork.save(update_fields=['fork_status'])
+
+        forked.status = 'rejected'
+        forked.save(update_fields=['status'])
+
+        Activity.objects.create(
+            entity=forked,
+            user=request.user,
+            activity_type='rejected',
+            comment=f'Fork rejected: {rejection_reason}',
+        )
+
+        if forked.contributor != request.user:
+            create_notification(
+                user=forked.contributor,
+                actor=request.user,
+                notification_type='submission_update',
+                message=f'Your fork of "{fork.original_entity.name}" was rejected: {rejection_reason}',
+                entity=forked,
+                link=f'/knowledge/entity/view/{forked.entity_id}',
+            )
+
+        return Response(ForkSerializer(fork).data)
 
 
 # =====================================================================
@@ -2363,17 +2703,35 @@ def _compute_score_with_decay(user):
     for e in CulturalEntity.objects.filter(contributor=user, status='accepted').only('created_at'):
         exhibition_pts += _decayed(3, e.created_at)
 
+    # --- Fork scoring: points for approved/merged forks based on reason tag ---
+    FORK_SCORE_MAP = {
+        'correction': 15,
+        'expansion': 20,
+        'translation': 25,
+        'source_addition': 20,
+        'dispute': 10,
+        'other': 15,
+    }
+    fork_pts = 0
+    for f in Fork.objects.filter(
+        forked_by=user, fork_status__in=['merged', 'promoted']
+    ).only('fork_reason_tag', 'created_at'):
+        base = FORK_SCORE_MAP.get(f.fork_reason_tag, 15)
+        fork_pts += _decayed(base, f.created_at)
+
     curation_pts = round(curation_pts)
     annotation_pts = round(annotation_pts)
     verification_pts = round(verification_pts)
     exhibition_pts = round(exhibition_pts)
-    total = curation_pts + annotation_pts + verification_pts + exhibition_pts
+    fork_pts = round(fork_pts)
+    total = curation_pts + annotation_pts + verification_pts + exhibition_pts + fork_pts
 
     return {
         'curation': curation_pts,
         'annotation': annotation_pts,
         'verification': verification_pts,
         'exhibition': exhibition_pts,
+        'fork_contributions': fork_pts,
         'total': total,
     }
 

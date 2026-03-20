@@ -88,6 +88,7 @@ urlpatterns = [
     path("api/activity-logs/", views.ActivityLogView.as_view(), name="activity-logs"),
     path("api/leaderboard/", views.LeaderboardView.as_view(), name="leaderboard-legacy"),
     path("leaderboard/", views.LeaderboardView.as_view(), name="leaderboard"),
+    path("api/contributors/", views.ContributorsListView.as_view(), name="contributors-list"),
     path("api/personal-stats/", views.PersonalStatsView.as_view(), name="personal-stats"),
     path("api/progression/", views.ProgressionView.as_view(), name="progression"),
     

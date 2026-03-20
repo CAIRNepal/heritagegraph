@@ -32,6 +32,8 @@ import {
 } from '@/lib/ontology-graph';
 import {
   fetchInstanceGraphData,
+  fetchForkEdges,
+  mergeForkData,
   getInstanceStats,
   INSTANCE_CATEGORY_COLORS,
   type InstanceNode,
@@ -118,6 +120,7 @@ export default function GraphViewPage() {
   const [instanceData, setInstanceData] = useState<InstanceGraphData | null>(null);
   const [instanceLoading, setInstanceLoading] = useState(false);
   const [instanceError, setInstanceError] = useState<string | null>(null);
+  const [showForkEdges, setShowForkEdges] = useState(true);
   const [selectedInstance, setSelectedInstance] = useState<InstanceNode | null>(null);
   const [activeInstanceCategories, setActiveInstanceCategories] = useState<Set<InstanceCategory>>(
     new Set(Object.keys(INSTANCE_CATEGORY_COLORS) as InstanceCategory[]),
@@ -258,7 +261,13 @@ export default function GraphViewPage() {
     setInstanceError(null);
     try {
       const token = (session as any)?.accessToken;
-      const data = await fetchInstanceGraphData(API_BASE_URL, token);
+      const [baseData, forkData] = await Promise.all([
+        fetchInstanceGraphData(API_BASE_URL, token),
+        fetchForkEdges(API_BASE_URL, token),
+      ]);
+      const data = showForkEdges
+        ? mergeForkData(baseData, forkData)
+        : baseData;
       setInstanceData(data);
       return data;
     } catch (err: any) {
@@ -267,7 +276,7 @@ export default function GraphViewPage() {
     } finally {
       setInstanceLoading(false);
     }
-  }, [session]);
+  }, [session, showForkEdges]);
 
   /* ── Initial load: ontology graph ── */
   useEffect(() => {
@@ -323,6 +332,13 @@ export default function GraphViewPage() {
       setReady(true);
     }
   }, [loadInstanceData, mountInstanceGraph]);
+
+  /* ── Refresh when fork toggle changes ── */
+  useEffect(() => {
+    if (viewMode === 'instance' && cyRef.current) {
+      refreshInstanceData();
+    }
+  }, [showForkEdges]);
 
   /* ── Filter by category ── */
   useEffect(() => {
@@ -562,6 +578,7 @@ export default function GraphViewPage() {
         </Button>
 
         {viewMode === 'instance' && (
+          <>
           <Button
             variant="outline"
             size="sm"
@@ -576,6 +593,16 @@ export default function GraphViewPage() {
             )}
             Refresh
           </Button>
+          <Button
+            variant={showForkEdges ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setShowForkEdges(prev => !prev); }}
+            className="text-xs gap-1"
+          >
+            <IconSchema className="w-3.5 h-3.5" />
+            {showForkEdges ? 'Forks On' : 'Forks Off'}
+          </Button>
+          </>
         )}
 
         <div className="flex items-center gap-1 ml-auto">
@@ -743,6 +770,12 @@ export default function GraphViewPage() {
                     <span className="w-5 border-b-2 border-dashed border-emerald-500" />
                     <span className="text-gray-500">co-located</span>
                   </div>
+                  {showForkEdges && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-5 border-b-2 border-dashed border-purple-500" />
+                      <span className="text-gray-500">fork</span>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -1100,6 +1133,18 @@ function buildInstanceStyles(): any[] {
         'line-color': '#10b981', 'target-arrow-color': '#10b981', width: 1, 'line-style': 'dashed',
         'line-dash-pattern': [4, 4], opacity: 0.35, label: 'data(label)', 'font-size': '7px',
         color: '#059669', 'text-rotation': 'autorotate', 'text-margin-y': -8,
+        'min-zoomed-font-size': 10,
+        'transition-property': 'opacity, line-color', 'transition-duration': '0.25s',
+      },
+    },
+    {
+      selector: 'edge[edgeType="fork"]',
+      style: {
+        'curve-style': 'bezier', 'target-arrow-shape': 'triangle', 'arrow-scale': 0.7,
+        'line-color': '#a855f7', 'target-arrow-color': '#a855f7', width: 1.5,
+        'line-style': 'dashed', 'line-dash-pattern': [6, 3],
+        opacity: 0.6, label: 'fork', 'font-size': '7px',
+        color: '#9333ea', 'text-rotation': 'autorotate', 'text-margin-y': -8,
         'min-zoomed-font-size': 10,
         'transition-property': 'opacity, line-color', 'transition-duration': '0.25s',
       },

@@ -406,28 +406,45 @@ class ActivitySerializer(serializers.ModelSerializer):
 class CulturalEntityListSerializer(serializers.ModelSerializer):
     contributor = UserSerializer(read_only=True)
     current_revision = RevisionSerializer(read_only=True)
-    
+    is_fork = serializers.SerializerMethodField()
+
     class Meta:
         model = CulturalEntity
         fields = [
-            'entity_id', 'name', 'category', 'status', 
-            'contributor', 'created_at', 'current_revision'
+            'entity_id', 'name', 'category', 'status',
+            'contributor', 'created_at', 'current_revision',
+            'root_entity', 'parent_entity', 'fork_depth', 'is_fork',
         ]
+
+    def get_is_fork(self, obj):
+        return obj.parent_entity_id is not None
 
 class CulturalEntityDetailSerializer(serializers.ModelSerializer):
     contributor = UserSerializer(read_only=True)
     current_revision = RevisionSerializer(read_only=True)
     revisions = RevisionSerializer(many=True, read_only=True)
     activities = ActivitySerializer(many=True, read_only=True)
-    
+    is_fork = serializers.SerializerMethodField()
+    parent_entity_name = serializers.CharField(
+        source='parent_entity.name', read_only=True, default=None
+    )
+    root_entity_name = serializers.CharField(
+        source='root_entity.name', read_only=True, default=None
+    )
+
     class Meta:
         model = CulturalEntity
         fields = [
             'entity_id', 'name', 'description', 'category', 'status',
             'contributor', 'current_revision', 'created_at', 'updated_at',
-            'revisions', 'activities'
+            'revisions', 'activities',
+            'root_entity', 'parent_entity', 'fork_depth',
+            'is_fork', 'parent_entity_name', 'root_entity_name',
         ]
         read_only_fields = ['entity_id', 'created_at', 'updated_at', 'contributor']
+
+    def get_is_fork(self, obj):
+        return obj.parent_entity_id is not None
 
 class CulturalEntityCreateSerializer(serializers.ModelSerializer):
     form_data = serializers.JSONField(write_only=True)
@@ -485,13 +502,16 @@ class ContributionQueueSerializer(serializers.ModelSerializer):
     flag_count = serializers.SerializerMethodField()
     has_conflicts = serializers.SerializerMethodField()
     days_in_review = serializers.SerializerMethodField()
-    
+    is_fork = serializers.SerializerMethodField()
+    fork_info = serializers.SerializerMethodField()
+
     class Meta:
         model = CulturalEntity
         fields = [
             'entity_id', 'name', 'description', 'category', 'status', 'contributor',
             'created_at', 'current_revision', 'latest_revision', 'activity_count',
-            'flag_count', 'has_conflicts', 'days_in_review'
+            'flag_count', 'has_conflicts', 'days_in_review',
+            'is_fork', 'fork_info', 'root_entity', 'parent_entity', 'fork_depth',
         ]
     
     def get_latest_revision(self, obj):
@@ -523,6 +543,29 @@ class ContributionQueueSerializer(serializers.ModelSerializer):
             delta = timezone.now() - obj.created_at
             return delta.days
         return 0
+
+    def get_is_fork(self, obj):
+        return obj.parent_entity_id is not None
+
+    def get_fork_info(self, obj):
+        if not obj.parent_entity_id:
+            return None
+        fork = Fork.objects.filter(forked_entity=obj).select_related(
+            'original_entity', 'forked_by'
+        ).first()
+        if not fork:
+            return None
+        return {
+            'fork_id': str(fork.id),
+            'original_entity_id': str(fork.original_entity.entity_id),
+            'original_entity_name': fork.original_entity.name,
+            'fork_reason_tag': fork.fork_reason_tag,
+            'fork_reason_tag_display': fork.get_fork_reason_tag_display(),
+            'fork_status': fork.fork_status,
+            'diff_field_count': len(fork.diff_summary) if fork.diff_summary else 0,
+            'reason': fork.reason,
+            'forked_by': fork.forked_by.username,
+        }
 
 
 # =====================================================================
@@ -640,6 +683,7 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
     - Entity state + provenance history (left panel)
     - Current submission detail (middle panel)
     - Review decisions history (right panel context)
+    - Fork context (when entity is a fork)
     """
     contributor = UserSerializer(read_only=True)
     current_revision = RevisionSerializer(read_only=True)
@@ -648,6 +692,8 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
     review_decisions = ReviewDecisionSerializer(many=True, read_only=True)
     flags = serializers.SerializerMethodField()
     contributor_stats = serializers.SerializerMethodField()
+    is_fork = serializers.SerializerMethodField()
+    fork_context = serializers.SerializerMethodField()
 
     class Meta:
         model = CulturalEntity
@@ -655,7 +701,8 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
             'entity_id', 'name', 'description', 'category', 'status',
             'contributor', 'current_revision', 'created_at', 'updated_at',
             'revisions', 'activities', 'review_decisions', 'flags',
-            'contributor_stats'
+            'contributor_stats', 'is_fork', 'fork_context',
+            'root_entity', 'parent_entity', 'fork_depth',
         ]
 
     def get_flags(self, obj):
@@ -673,6 +720,50 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
             'total_contributions': total,
             'accepted_contributions': accepted,
             'acceptance_rate': round(accepted / total * 100, 1) if total > 0 else 0,
+        }
+
+    def get_is_fork(self, obj):
+        return obj.parent_entity_id is not None
+
+    def get_fork_context(self, obj):
+        if not obj.parent_entity_id:
+            return None
+        fork = Fork.objects.filter(forked_entity=obj).select_related(
+            'original_entity', 'forked_by', 'forked_from_revision'
+        ).first()
+        if not fork:
+            return None
+        parent = fork.original_entity
+        parent_rev = parent.revisions.order_by('-revision_number').first()
+
+        parent_comments = Comments.objects.filter(
+            submission_id=str(parent.entity_id),
+            parent__isnull=True,
+        ).select_related('user').prefetch_related('replies').order_by('-created_at')[:10]
+        parent_comments_data = CommentSerializer(parent_comments, many=True).data
+
+        return {
+            'fork_id': str(fork.id),
+            'parent_entity_id': str(parent.entity_id),
+            'parent_entity_name': parent.name,
+            'parent_entity_status': parent.status,
+            'fork_reason_tag': fork.fork_reason_tag,
+            'fork_reason_tag_display': fork.get_fork_reason_tag_display(),
+            'fork_status': fork.fork_status,
+            'fork_status_display': fork.get_fork_status_display(),
+            'reason': fork.reason,
+            'diff_summary': fork.diff_summary,
+            'diff_field_count': len(fork.diff_summary) if fork.diff_summary else 0,
+            'forked_by': fork.forked_by.username,
+            'forked_from_revision_number': (
+                fork.forked_from_revision.revision_number
+                if fork.forked_from_revision else None
+            ),
+            'parent_current_revision': (
+                RevisionSerializer(parent_rev).data if parent_rev else None
+            ),
+            'parent_comments': parent_comments_data,
+            'created_at': fork.created_at.isoformat(),
         }
 
 
@@ -851,23 +942,89 @@ class ForkSerializer(serializers.ModelSerializer):
     forked_entity_id = serializers.UUIDField(
         source='forked_entity.entity_id', read_only=True
     )
+    forked_entity_status = serializers.CharField(
+        source='forked_entity.status', read_only=True
+    )
+    fork_reason_tag_display = serializers.CharField(
+        source='get_fork_reason_tag_display', read_only=True
+    )
+    fork_status_display = serializers.CharField(
+        source='get_fork_status_display', read_only=True
+    )
+    merged_by_username = serializers.CharField(
+        source='merged_by.username', read_only=True, default=None
+    )
+    diff_field_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Fork
         fields = [
             'id', 'original_entity', 'forked_entity', 'forked_entity_id',
-            'forked_entity_name', 'original_entity_name',
-            'forked_by', 'forked_from_revision', 'reason', 'created_at',
+            'forked_entity_name', 'forked_entity_status', 'original_entity_name',
+            'forked_by', 'forked_from_revision', 'reason',
+            'fork_reason_tag', 'fork_reason_tag_display',
+            'fork_status', 'fork_status_display',
+            'diff_summary', 'diff_field_count',
+            'merged_at', 'merged_by', 'merged_by_username',
+            'created_at',
         ]
         read_only_fields = ['id', 'forked_by', 'created_at']
+
+    def get_diff_field_count(self, obj):
+        if obj.diff_summary and isinstance(obj.diff_summary, dict):
+            return len(obj.diff_summary)
+        return 0
 
 
 class ForkCreateSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True, default="")
+    fork_reason_tag = serializers.ChoiceField(
+        choices=Fork.FORK_REASON_CHOICES, default='other',
+    )
     changes = serializers.JSONField(
         required=False,
         help_text="Optional changes to apply to the forked entity's revision data",
     )
+
+
+class ForkLineageNodeSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for lineage tree nodes."""
+    contributor_username = serializers.CharField(source='contributor.username', read_only=True)
+    is_fork = serializers.SerializerMethodField()
+    fork_info = serializers.SerializerMethodField()
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CulturalEntity
+        fields = [
+            'entity_id', 'name', 'status', 'category',
+            'contributor_username', 'fork_depth', 'is_fork',
+            'fork_info', 'children', 'created_at',
+        ]
+
+    def get_is_fork(self, obj):
+        return obj.parent_entity_id is not None
+
+    def get_fork_info(self, obj):
+        fork = Fork.objects.filter(forked_entity=obj).select_related('forked_by').first()
+        if not fork:
+            return None
+        return {
+            'fork_id': str(fork.id),
+            'reason': fork.reason,
+            'fork_reason_tag': fork.fork_reason_tag,
+            'fork_status': fork.fork_status,
+            'diff_field_count': len(fork.diff_summary) if fork.diff_summary else 0,
+            'diff_fields': list(fork.diff_summary.keys()) if fork.diff_summary else [],
+            'forked_by': fork.forked_by.username,
+            'created_at': fork.created_at.isoformat(),
+        }
+
+    def get_children(self, obj):
+        children = CulturalEntity.objects.filter(
+            parent_entity=obj
+        ).select_related('contributor').order_by('-created_at')
+        return ForkLineageNodeSerializer(children, many=True).data
 
 
 # =====================================================================

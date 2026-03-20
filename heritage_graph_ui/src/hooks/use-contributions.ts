@@ -39,10 +39,52 @@ export interface ForkInfo {
   forked_entity: string;
   forked_entity_id: string;
   forked_entity_name: string;
+  forked_entity_status: string;
   original_entity_name: string;
   forked_by: { id: number; username: string };
   reason: string;
+  fork_reason_tag: string;
+  fork_reason_tag_display: string;
+  fork_status: string;
+  fork_status_display: string;
+  diff_summary: Record<string, { old: any; new: any }>;
+  diff_field_count: number;
+  merged_at: string | null;
+  merged_by: number | null;
+  merged_by_username: string | null;
   created_at: string;
+}
+
+export interface ForkLineageNode {
+  entity_id: string;
+  name: string;
+  status: string;
+  category: string;
+  contributor_username: string;
+  fork_depth: number;
+  is_fork: boolean;
+  fork_info: {
+    fork_id: string;
+    reason: string;
+    fork_reason_tag: string;
+    fork_status: string;
+    diff_field_count: number;
+    diff_fields: string[];
+    forked_by: string;
+    created_at: string;
+  } | null;
+  children: ForkLineageNode[];
+  created_at: string;
+}
+
+export interface CrossEntityDiff {
+  entity_id: string;
+  entity_name: string;
+  fork_entity_id: string;
+  fork_entity_name: string;
+  entity_revision: any;
+  fork_revision: any;
+  diff: Record<string, { old: any; new: any }>;
 }
 
 export interface RevisionDiff {
@@ -189,11 +231,21 @@ export function useForks() {
   }, [session]);
 
   const forkEntity = useCallback(
-    async (entityId: string, reason: string = "", changes: Record<string, any> = {}) => {
+    async (
+      entityId: string,
+      reason: string = "",
+      forkReasonTag: string = "other",
+      changes: Record<string, any> = {},
+    ) => {
       const res = await fetch(`${API_BASE_URL}/data/api/forks/`, {
         method: "POST",
         headers: getHeaders(),
-        body: JSON.stringify({ entity_id: entityId, reason, changes }),
+        body: JSON.stringify({
+          entity_id: entityId,
+          reason,
+          fork_reason_tag: forkReasonTag,
+          changes,
+        }),
       });
       if (!res.ok) throw new Error("Failed to fork entity");
       return res.json();
@@ -213,7 +265,76 @@ export function useForks() {
     [getHeaders]
   );
 
-  return { forkEntity, listForks };
+  const getLineage = useCallback(
+    async (entityId: string): Promise<ForkLineageNode> => {
+      const res = await fetch(
+        `${API_BASE_URL}/data/api/cultural-entities/${entityId}/lineage/`,
+        { headers: getHeaders() }
+      );
+      if (!res.ok) throw new Error("Failed to get lineage");
+      return res.json();
+    },
+    [getHeaders]
+  );
+
+  const getForkDiff = useCallback(
+    async (entityId: string, forkEntityId: string): Promise<CrossEntityDiff> => {
+      const res = await fetch(
+        `${API_BASE_URL}/data/api/cultural-entities/${entityId}/fork-diff/${forkEntityId}/`,
+        { headers: getHeaders() }
+      );
+      if (!res.ok) throw new Error("Failed to get fork diff");
+      return res.json();
+    },
+    [getHeaders]
+  );
+
+  const mergeFork = useCallback(
+    async (forkId: string) => {
+      const res = await fetch(`${API_BASE_URL}/data/api/forks/${forkId}/merge/`, {
+        method: "POST",
+        headers: getHeaders(),
+      });
+      if (!res.ok) throw new Error("Failed to merge fork");
+      return res.json();
+    },
+    [getHeaders]
+  );
+
+  const promoteFork = useCallback(
+    async (forkId: string) => {
+      const res = await fetch(`${API_BASE_URL}/data/api/forks/${forkId}/promote/`, {
+        method: "POST",
+        headers: getHeaders(),
+      });
+      if (!res.ok) throw new Error("Failed to promote fork");
+      return res.json();
+    },
+    [getHeaders]
+  );
+
+  const rejectFork = useCallback(
+    async (forkId: string, reason: string) => {
+      const res = await fetch(`${API_BASE_URL}/data/api/forks/${forkId}/reject/`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ reason }),
+      });
+      if (!res.ok) throw new Error("Failed to reject fork");
+      return res.json();
+    },
+    [getHeaders]
+  );
+
+  return {
+    forkEntity,
+    listForks,
+    getLineage,
+    getForkDiff,
+    mergeFork,
+    promoteFork,
+    rejectFork,
+  };
 }
 
 // ─── useRevisionDiff ──────────────────────────────────────────────────

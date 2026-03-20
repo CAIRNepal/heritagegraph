@@ -16,6 +16,7 @@ import { IconSparkles } from "@tabler/icons-react";
 import { ReactionButtons } from "@/components/reaction-buttons";
 import { ShareButton } from "@/components/share-button";
 import { ForkButton, ForkList } from "@/components/fork-button";
+import { ForkTreeView } from "@/components/fork-tree-view";
 import { EntityComments } from "@/components/entity-comments";
 import { Separator } from "@/components/ui/separator";
 
@@ -155,7 +156,7 @@ export default function EntityViewPage() {
           </TabsContent>
 
           <TabsContent value="forks">
-            <ForkList entityType="cultural_entity" entityId={entityId} />
+            <ForkTreeView entityId={entityId} />
           </TabsContent>
         </Tabs>
       </motion.div>

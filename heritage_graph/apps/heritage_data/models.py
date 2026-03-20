@@ -121,6 +121,8 @@ class CulturalEntity(models.Model):
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
         ('pending_revision', 'Pending Revision'),
+        ('merged', 'Merged'),
+        ('superseded', 'Superseded'),
     ]
     
     CATEGORY_CHOICES = [
@@ -161,6 +163,21 @@ class CulturalEntity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
+    root_entity = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='all_forks',
+        help_text="Root of the fork tree; null if this IS the root",
+    )
+    parent_entity = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='child_forks',
+        help_text="Immediate parent in the fork tree",
+    )
+    fork_depth = models.PositiveIntegerField(
+        default=0,
+        help_text="0 = root, 1 = direct fork, etc.",
+    )
+
     class Meta:
         db_table = 'cultural_entities'
         verbose_name = "Cultural Entity"
@@ -169,6 +186,8 @@ class CulturalEntity(models.Model):
             models.Index(fields=['status']),
             models.Index(fields=['category']),
             models.Index(fields=['created_at']),
+            models.Index(fields=['root_entity']),
+            models.Index(fields=['parent_entity']),
         ]
         ordering = ['-created_at']
 
@@ -1096,6 +1115,21 @@ class Fork(models.Model):
     A fork of an existing CulturalEntity contribution.
     Creates a new entity that references its parent for provenance.
     """
+    FORK_REASON_CHOICES = [
+        ('correction', 'Factual Correction'),
+        ('translation', 'Language / Translation Variant'),
+        ('expansion', 'Add Missing Information'),
+        ('source_addition', 'Source Citation'),
+        ('dispute', 'Dispute Existing Claim'),
+        ('other', 'Other'),
+    ]
+    FORK_STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('merged', 'Merged'),
+        ('promoted', 'Promoted'),
+        ('rejected', 'Rejected'),
+    ]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     original_entity = models.ForeignKey(
         CulturalEntity, on_delete=models.CASCADE,
@@ -1121,6 +1155,27 @@ class Fork(models.Model):
         blank=True,
         help_text="Why the user forked this contribution",
     )
+    fork_reason_tag = models.CharField(
+        max_length=30,
+        choices=FORK_REASON_CHOICES,
+        default='other',
+        help_text="Structured reason category for the fork",
+    )
+    fork_status = models.CharField(
+        max_length=20,
+        choices=FORK_STATUS_CHOICES,
+        default='active',
+    )
+    diff_summary = models.JSONField(
+        default=dict, blank=True,
+        help_text="Field-level diff vs parent at fork time",
+    )
+    merged_at = models.DateTimeField(null=True, blank=True)
+    merged_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='merged_forks',
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1128,6 +1183,8 @@ class Fork(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["original_entity", "created_at"]),
+            models.Index(fields=["fork_status"]),
+            models.Index(fields=["fork_reason_tag"]),
         ]
 
     def __str__(self):

@@ -13,8 +13,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 type LeaderboardProps = {
-  type: 'Curation' | 'Revisions' | 'Moderation'; // extend if more types
+  type: 'Curation' | 'Revisions' | 'Moderation' | 'Forks';
 };
 
 export function Leaderboard({ type }: LeaderboardProps) {
@@ -25,15 +27,16 @@ export function Leaderboard({ type }: LeaderboardProps) {
     const fetchLeaderboard = async () => {
       setLoading(true);
       try {
-        // 🔥 If your backend supports filtering by type, pass it here
-        const res = await fetch(`http://127.0.0.1:8000/data/leaderboard/?type=${type}`);
+        const res = await fetch(`${API_BASE}/data/leaderboard/?type=${type}`);
         if (!res.ok) throw new Error('Failed to fetch leaderboard data');
         const json = await res.json();
+        const results = json.results || json;
         setData(
-          json.map((entry: any, i: number) => ({
+          (Array.isArray(results) ? results : []).map((entry: any, i: number) => ({
             rank: entry.rank || i + 1,
             name: entry.username || 'Unknown',
-            avatar: `/avatars/${(entry.username || 'user').toLowerCase()}.png`,
+            score: entry.score || 0,
+            avatar: entry.profile_image || entry.avatar_url || '',
           })),
         );
       } catch (error) {
@@ -59,12 +62,13 @@ export function Leaderboard({ type }: LeaderboardProps) {
               <TableRow>
                 <TableHead className="w-[60px]">Rank</TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead className="text-right w-[80px]">Score</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center p-4">
+                  <TableCell colSpan={3} className="text-center p-4">
                     No data available.
                   </TableCell>
                 </TableRow>
@@ -83,9 +87,9 @@ export function Leaderboard({ type }: LeaderboardProps) {
                       #{entry.rank}
                     </TableCell>
                     <TableCell className="flex items-center gap-3">
-                      <Avatar>
+                      <Avatar className="h-7 w-7">
                         <AvatarImage src={entry.avatar} alt={entry.name} />
-                        <AvatarFallback>
+                        <AvatarFallback className="text-xs">
                           {entry.name
                             .split(' ')
                             .map((w: string) => w[0])
@@ -94,6 +98,9 @@ export function Leaderboard({ type }: LeaderboardProps) {
                         </AvatarFallback>
                       </Avatar>
                       <span className="font-medium">{entry.name}</span>
+                    </TableCell>
+                    <TableCell className="text-right font-mono text-sm text-muted-foreground">
+                      {entry.score}
                     </TableCell>
                   </TableRow>
                 ))

@@ -16,6 +16,7 @@ import { IconSparkles } from "@tabler/icons-react";
 import { ReactionButtons } from "@/components/reaction-buttons";
 import { ShareButton } from "@/components/share-button";
 import { ForkButton, ForkList } from "@/components/fork-button";
+import { ForkTreeView } from "@/components/fork-tree-view";
 import { EntityComments } from "@/components/entity-comments";
 import { EntityQRCode } from "@/components/entity-qr-code";
 import { Separator } from "@/components/ui/separator";
@@ -288,7 +289,7 @@ export default function OntologyViewPage() {
             <TabsContent value="forks" className="mt-4">
               <div className="rounded-lg border bg-card p-4">
                 {hasEntityFeatures ? (
-                  <ForkList entityId={culturalEntityId!} />
+                  <ForkTreeView entityId={culturalEntityId!} />
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <GitFork className="h-8 w-8 mx-auto mb-2 opacity-50" />

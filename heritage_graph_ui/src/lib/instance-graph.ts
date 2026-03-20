@@ -46,7 +46,7 @@ export interface InstanceEdge {
   source: string;
   target: string;
   label: string;
-  edgeType: 'relation' | 'location' | 'type_hierarchy';
+  edgeType: 'relation' | 'location' | 'type_hierarchy' | 'fork';
 }
 
 export interface InstanceGraphData {
@@ -480,6 +480,83 @@ export async function fetchInstanceGraphData(
   }
 
   return { nodes, edges, isDemo: false };
+}
+
+/* ══════════════════════════════════════════════════════
+ *  Fork edges: fetch CulturalEntity fork relationships
+ * ══════════════════════════════════════════════════════ */
+
+const FORK_STATUS_COLORS: Record<string, string> = {
+  active: '#eab308',
+  merged: '#22c55e',
+  promoted: '#3b82f6',
+  rejected: '#ef4444',
+};
+
+export async function fetchForkEdges(
+  apiBaseUrl: string,
+  token?: string,
+): Promise<{ nodes: InstanceNode[]; edges: InstanceEdge[] }> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+
+  const nodes: InstanceNode[] = [];
+  const edges: InstanceEdge[] = [];
+  const nodeIdSet = new Set<string>();
+
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/data/api/cultural-entities/?page_size=200`,
+      { headers }
+    );
+    if (!res.ok) return { nodes, edges };
+    const data = await res.json();
+    const entities = data.results || data || [];
+
+    let eid = 0;
+    for (const entity of entities) {
+      const nodeId = `ce_${entity.entity_id}`;
+      if (!nodeIdSet.has(nodeId)) {
+        nodeIdSet.add(nodeId);
+        nodes.push({
+          id: nodeId,
+          label: entity.name,
+          category: 'tradition' as InstanceCategory,
+          entityType: 'cultural_entity',
+          description: entity.description || '',
+          apiEndpoint: `/data/api/cultural-entities/${entity.entity_id}/`,
+          rawData: entity,
+        });
+      }
+      if (entity.parent_entity) {
+        const parentId = `ce_${entity.parent_entity}`;
+        edges.push({
+          id: `fork_e_${eid++}`,
+          source: parentId,
+          target: nodeId,
+          label: 'fork',
+          edgeType: 'fork',
+        });
+      }
+    }
+  } catch {
+    // silently fail
+  }
+
+  return { nodes, edges };
+}
+
+export function mergeForkData(
+  base: InstanceGraphData,
+  forkData: { nodes: InstanceNode[]; edges: InstanceEdge[] },
+): InstanceGraphData {
+  const existingNodeIds = new Set(base.nodes.map((n) => n.id));
+  const newNodes = forkData.nodes.filter((n) => !existingNodeIds.has(n.id));
+  return {
+    ...base,
+    nodes: [...base.nodes, ...newNodes],
+    edges: [...base.edges, ...forkData.edges],
+  };
 }
 
 /* ══════════════════════════════════════════════════════

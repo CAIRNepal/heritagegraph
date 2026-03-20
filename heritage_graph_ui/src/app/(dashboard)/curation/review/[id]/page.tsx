@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import {
   AlertTriangle, ArrowLeft, Calendar, CheckCircle, Clock, Edit, FileText,
   Flag, History, Scale, Shield, ShieldAlert, User, XCircle, ArrowUpRight, Loader2,
+  GitFork, GitMerge, ArrowUpFromLine,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -32,11 +33,26 @@ interface ReviewDecisionItem {
 }
 interface ReviewFlagItem { id: string; flag_type: string; flagged_by: UserInfo; reason: string; is_resolved: boolean; created_at: string; }
 interface ContributorStats { total_contributions: number; accepted_contributions: number; acceptance_rate: number; }
+interface ParentComment {
+  id: number; comment: string; user: UserInfo; created_at: string;
+  replies?: ParentComment[];
+}
+interface ForkContext {
+  fork_id: string; parent_entity_id: string; parent_entity_name: string;
+  parent_entity_status: string; fork_reason_tag: string; fork_reason_tag_display: string;
+  fork_status: string; fork_status_display: string; reason: string;
+  diff_summary: Record<string, { old: any; new: any }>; diff_field_count: number;
+  forked_by: string; forked_from_revision_number: number | null;
+  parent_current_revision: Revision | null; parent_comments?: ParentComment[];
+  created_at: string;
+}
 interface ReviewWorkspaceData {
   entity_id: string; name: string; description: string; category: string; status: string;
   contributor: UserInfo; current_revision: Revision | null; created_at: string; updated_at: string;
   revisions: Revision[]; activities: ActivityItem[]; review_decisions: ReviewDecisionItem[];
   flags: ReviewFlagItem[]; contributor_stats: ContributorStats;
+  is_fork?: boolean; fork_context?: ForkContext | null;
+  root_entity?: string | null; parent_entity?: string | null; fork_depth?: number;
 }
 
 type Verdict = 'accept' | 'accept_with_edits' | 'request_changes' | 'reject' | 'escalate';
@@ -156,6 +172,11 @@ export default function ReviewWorkspacePage() {
                   {workspace.status.replace(/_/g, ' ')}
                 </Badge>
                 {hasConflicts && <Badge className="bg-red-500/50 text-white border-red-300/30"><AlertTriangle className="h-3 w-3 mr-1" /> Conflicts</Badge>}
+                {workspace.is_fork && workspace.fork_context && (
+                  <Badge className="bg-violet-500/50 text-white border-violet-300/30">
+                    <GitFork className="h-3 w-3 mr-1" /> Fork — {workspace.fork_context.fork_reason_tag_display}
+                  </Badge>
+                )}
               </div>
             </div>
           </motion.div>
@@ -200,6 +221,91 @@ function ContextPanel({ workspace }: { workspace: ReviewWorkspaceData }) {
             {workspace.current_revision && <div><span className="font-medium text-blue-900 dark:text-blue-100">Current Rev:</span> #{workspace.current_revision.revision_number}</div>}
           </div>
         </div>
+
+        {workspace.is_fork && workspace.fork_context && (
+          <div className={`${glassCard} border-violet-300 dark:border-violet-700`}>
+            <div className="p-4 border-b border-violet-200 dark:border-violet-700">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-violet-700 dark:text-violet-300">
+                <GitFork className="h-4 w-4" /> Fork Context
+              </h3>
+            </div>
+            <div className="p-4 space-y-2 text-sm">
+              <div>
+                <span className="font-medium text-violet-900 dark:text-violet-100">Parent Entity:</span>{' '}
+                <a href={`/knowledge/entity/view/${workspace.fork_context.parent_entity_id}`}
+                  className="text-violet-600 hover:underline inline-flex items-center gap-1">
+                  {workspace.fork_context.parent_entity_name}
+                  <ArrowUpRight className="h-3 w-3" />
+                </a>
+              </div>
+              <div>
+                <span className="font-medium text-violet-900 dark:text-violet-100">Reason:</span>{' '}
+                <Badge variant="outline" className="text-[10px] border-violet-300">
+                  {workspace.fork_context.fork_reason_tag_display}
+                </Badge>
+              </div>
+              {workspace.fork_context.reason && (
+                <div className="text-violet-700 dark:text-violet-300 text-xs italic">
+                  &ldquo;{workspace.fork_context.reason}&rdquo;
+                </div>
+              )}
+              <div>
+                <span className="font-medium text-violet-900 dark:text-violet-100">Changes:</span>{' '}
+                <span className="text-violet-700 dark:text-violet-300">
+                  {workspace.fork_context.diff_field_count} field(s) modified
+                </span>
+              </div>
+              {workspace.fork_context.diff_summary && Object.keys(workspace.fork_context.diff_summary).length > 0 && (
+                <div className="text-xs text-violet-600 dark:text-violet-400">
+                  Fields: {Object.keys(workspace.fork_context.diff_summary).join(', ')}
+                </div>
+              )}
+              <div className="text-xs text-violet-600 dark:text-violet-400">
+                Forked from revision #{workspace.fork_context.forked_from_revision_number || '?'}
+                {' · '}{new Date(workspace.fork_context.created_at).toLocaleDateString()}
+              </div>
+              <div className="pt-1">
+                <a href={`/curation/forks?entity=${workspace.entity_id}`}
+                  className="text-xs text-violet-600 hover:underline inline-flex items-center gap-1">
+                  View full lineage tree <ArrowUpRight className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {workspace.is_fork && workspace.fork_context?.parent_comments && workspace.fork_context.parent_comments.length > 0 && (
+          <div className={`${glassCard} border-violet-200 dark:border-violet-800`}>
+            <div className="p-4 border-b border-violet-200 dark:border-violet-700">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-violet-700 dark:text-violet-300">
+                <History className="h-4 w-4" /> Parent Discussion ({workspace.fork_context.parent_comments.length})
+              </h3>
+              <p className="text-[11px] text-violet-600 dark:text-violet-400">
+                Comments from &ldquo;{workspace.fork_context.parent_entity_name}&rdquo;
+              </p>
+            </div>
+            <div className="p-4 space-y-2">
+              {workspace.fork_context.parent_comments.slice(0, 5).map((c) => (
+                <div key={c.id} className="text-xs border-l-2 border-l-violet-300 dark:border-l-violet-600 pl-2 py-1">
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium text-violet-900 dark:text-violet-100">@{c.user.username}</span>
+                    <span className="text-violet-600 dark:text-violet-400">{new Date(c.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-violet-700 dark:text-violet-300 mt-0.5 line-clamp-3">{c.comment}</p>
+                  {c.replies && c.replies.length > 0 && (
+                    <p className="text-[10px] text-violet-500 mt-0.5">{c.replies.length} repl{c.replies.length === 1 ? 'y' : 'ies'}</p>
+                  )}
+                </div>
+              ))}
+              {workspace.fork_context.parent_comments.length > 5 && (
+                <a href={`/knowledge/entity/view/${workspace.fork_context.parent_entity_id}`}
+                  className="text-xs text-violet-600 hover:underline">
+                  View all comments on parent entity...
+                </a>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className={glassCard}>
           <div className="p-4 border-b border-blue-200 dark:border-gray-700">
@@ -461,8 +567,114 @@ function DecisionPanel({ workspace, hasConflicts, verdict, setVerdict, conflictH
             </Button>
           </div>
         </div>
+
+        {workspace.is_fork && workspace.fork_context && workspace.fork_context.fork_status === 'active' && (
+          <ForkActionsCard workspace={workspace} />
+        )}
       </div>
     </ScrollArea>
+  );
+}
+
+function ForkActionsCard({ workspace }: { workspace: ReviewWorkspaceData }) {
+  const { data: session } = useSession();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const router = useRouter();
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+  const getHeaders = useCallback(() => {
+    const token = (session as any)?.accessToken;
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  }, [session]);
+
+  const handleForkAction = async (action: 'merge' | 'promote' | 'reject') => {
+    const forkId = workspace.fork_context?.fork_id;
+    if (!forkId) return;
+
+    if (action === 'reject' && !rejectReason.trim()) {
+      toast.error('Please provide a reason for rejection');
+      return;
+    }
+
+    setLoading(action);
+    try {
+      const body = action === 'reject' ? JSON.stringify({ reason: rejectReason }) : undefined;
+      const res = await fetch(`${API_BASE}/data/api/forks/${forkId}/${action}/`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Failed to ${action} fork`);
+      }
+      toast.success(`Fork ${action}d successfully`);
+      router.refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : `Failed to ${action} fork`);
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  return (
+    <div className={`${glassCard} border-violet-300 dark:border-violet-700`}>
+      <div className="p-5 border-b border-violet-200 dark:border-violet-700">
+        <h3 className="font-bold flex items-center gap-2 text-violet-700 dark:text-violet-300">
+          <GitFork className="h-5 w-5" /> Fork Actions
+        </h3>
+        <p className="text-xs text-violet-600 dark:text-violet-400 mt-1">
+          Curate this fork: merge changes into parent, promote as canonical, or reject.
+        </p>
+      </div>
+      <div className="p-5 space-y-3">
+        <Button
+          onClick={() => handleForkAction('merge')}
+          disabled={loading !== null}
+          className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white hover:from-green-700 hover:to-emerald-600"
+        >
+          {loading === 'merge' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <GitMerge className="h-4 w-4 mr-2" />}
+          Merge into Parent
+        </Button>
+        <p className="text-[11px] text-muted-foreground">Creates a new revision on the parent entity with this fork&apos;s changes.</p>
+
+        <Button
+          onClick={() => handleForkAction('promote')}
+          disabled={loading !== null}
+          variant="outline"
+          className="w-full border-violet-300 text-violet-700 hover:bg-violet-50 dark:border-violet-600 dark:text-violet-300 dark:hover:bg-violet-900/30"
+        >
+          {loading === 'promote' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ArrowUpFromLine className="h-4 w-4 mr-2" />}
+          Promote as Canonical
+        </Button>
+        <p className="text-[11px] text-muted-foreground">This fork becomes the canonical entity. The original will be marked as superseded.</p>
+
+        <Separator />
+
+        <div className="space-y-2">
+          <Textarea
+            placeholder="Reason for rejection (required)..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            className="min-h-[60px] resize-none text-sm"
+          />
+          <Button
+            onClick={() => handleForkAction('reject')}
+            disabled={loading !== null || !rejectReason.trim()}
+            variant="destructive"
+            className="w-full"
+          >
+            {loading === 'reject' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <XCircle className="h-4 w-4 mr-2" />}
+            Reject Fork
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
