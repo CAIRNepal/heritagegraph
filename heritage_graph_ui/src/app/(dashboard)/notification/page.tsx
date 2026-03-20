@@ -1,20 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BellIcon, CheckCheck } from 'lucide-react';
 import {
-  Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious,
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from '@/components/ui/pagination';
 import { motion } from 'framer-motion';
 import { useNotifications, type Notification } from '@/hooks/use-notifications';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 
+/** Max notifications per page (must match `limit` sent in `useNotifications.fetchPage`). */
 const PAGE_SIZE = 10;
+
+/** Page numbers (and ellipses) for compact numbered pagination controls. */
+function visiblePageItems(current: number, total: number): (number | 'ellipsis')[] {
+  if (total <= 1) return [];
+  const range: number[] = [];
+  const delta = 1;
+  let last: number | undefined;
+  const items: (number | 'ellipsis')[] = [];
+
+  for (let i = 1; i <= total; i++) {
+    if (
+      i === 1 ||
+      i === total ||
+      (i >= current - delta && i <= current + delta)
+    ) {
+      range.push(i);
+    }
+  }
+
+  for (const i of range) {
+    if (last !== undefined) {
+      if (i - last === 2) {
+        items.push(last + 1);
+      } else if (i - last > 1) {
+        items.push('ellipsis');
+      }
+    }
+    items.push(i);
+    last = i;
+  }
+  return items;
+}
 
 const fadeInUp = {
   initial: { opacity: 1, y: 10 },
@@ -90,6 +130,7 @@ function getApiFilters(filter: string): Record<string, string> {
 
 export default function NotificationPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const {
     notifications,
     unreadCount,
@@ -104,10 +145,19 @@ export default function NotificationPage() {
   const [filter, setFilter] = useState<string>('all');
 
   const pageCount = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const pageItems = useMemo(
+    () => visiblePageItems(page, pageCount),
+    [page, pageCount],
+  );
 
   useEffect(() => {
-    fetchPage(page, getApiFilters(filter));
-  }, [page, filter]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!session) return;
+    void fetchPage(page, getApiFilters(filter));
+  }, [session, page, filter, fetchPage]);
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
 
   const handleFilterChange = (f: string) => {
     setFilter(f);
@@ -268,21 +318,47 @@ export default function NotificationPage() {
         )}
 
         {pageCount > 1 && (
-          <Pagination className="mt-6">
-            <PaginationContent>
+          <Pagination className="mt-6 flex flex-wrap justify-center gap-y-2">
+            <PaginationContent className="flex-wrap justify-center">
               <PaginationItem>
                 <PaginationPrevious
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage((p) => Math.max(1, p - 1));
+                  }}
                   aria-disabled={page === 1}
                   className={cn(page === 1 && 'pointer-events-none opacity-50')}
                 />
               </PaginationItem>
-              <PaginationItem>
-                <span className="text-sm px-3 text-blue-700 dark:text-blue-300">Page {page} of {pageCount}</span>
-              </PaginationItem>
+              {pageItems.map((item, idx) =>
+                item === 'ellipsis' ? (
+                  <PaginationItem key={`e-${idx}`}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={item}>
+                    <PaginationLink
+                      href="#"
+                      size="icon"
+                      isActive={page === item}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(item);
+                      }}
+                    >
+                      {item}
+                    </PaginationLink>
+                  </PaginationItem>
+                ),
+              )}
               <PaginationItem>
                 <PaginationNext
-                  onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage((p) => Math.min(pageCount, p + 1));
+                  }}
                   aria-disabled={page === pageCount}
                   className={cn(page === pageCount && 'pointer-events-none opacity-50')}
                 />

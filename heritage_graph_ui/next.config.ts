@@ -10,6 +10,29 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  /**
+   * Work around sporadic dev/webpack failures:
+   * `TypeError: Cannot read properties of undefined (reading 'createFilename')`
+   * from Next's forked `EvalSourceMapDevToolPlugin` when `ModuleFilenameHelpers`
+   * is not yet bound on the compiled webpack singleton (e.g. duplicate Next
+   * resolution, env quirks). Dropping that plugin in development only disables
+   * eval-source-map style maps; production is unchanged.
+   */
+  webpack: (config, { dev }) => {
+    if (!dev || !config.plugins?.length) return config;
+    config.plugins = config.plugins.filter((plugin) => {
+      const name =
+        plugin &&
+        typeof plugin === 'object' &&
+        'constructor' in plugin &&
+        plugin.constructor != null &&
+        typeof plugin.constructor === 'function'
+          ? plugin.constructor.name
+          : '';
+      return name !== 'EvalSourceMapDevToolPlugin';
+    });
+    return config;
+  },
   images: {
     remotePatterns: [
       {

@@ -141,26 +141,32 @@ class ContributionFlowMixin:
 class PersonViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Person.objects.all()
     serializer_class = PersonSerializer
+    search_fields = ["name", "aliases", "occupation"]
 
 class LocationViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
+    search_fields = ["name", "description"]
 
 class EventViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
+    search_fields = ["name", "description"]
 
 class HistoricalPeriodViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = HistoricalPeriod.objects.all()
     serializer_class = HistoricalPeriodSerializer
+    search_fields = ["name", "description"]
 
 class TraditionViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Tradition.objects.all()
     serializer_class = TraditionSerializer
+    search_fields = ["name", "description"]
 
 class SourceViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Source.objects.all()
     serializer_class = SourceSerializer
+    search_fields = ["title", "authors"]
 
 
 # =====================================================================
@@ -170,54 +176,67 @@ class SourceViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
 class DeityViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Deity.objects.all()
     serializer_class = DeitySerializer
+    search_fields = ["name", "alternate_names", "religious_tradition"]
 
 class GuthiViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Guthi.objects.all()
     serializer_class = GuthiSerializer
+    search_fields = ["name", "location"]
 
 class ArchitecturalStructureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = ArchitecturalStructure.objects.all()
     serializer_class = ArchitecturalStructureSerializer
+    search_fields = ["name", "location_name"]
 
 class RitualEventViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = RitualEvent.objects.all()
     serializer_class = RitualEventSerializer
+    search_fields = ["name", "location_name", "performed_by"]
 
 class FestivalViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Festival.objects.all()
     serializer_class = FestivalSerializer
+    search_fields = ["name", "location_name"]
 
 class IconographicObjectViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = IconographicObject.objects.all()
     serializer_class = IconographicObjectSerializer
+    search_fields = ["name", "depicts_deity"]
 
 class MonumentViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Monument.objects.all()
     serializer_class = MonumentSerializer
+    search_fields = ["name", "location_name"]
 
 class KumariTenureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = KumariTenure.objects.all()
     serializer_class = KumariTenureSerializer
+    search_fields = ["name", "had_participant"]
 
 class KumariSelectionViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = KumariSelection.objects.all()
     serializer_class = KumariSelectionSerializer
+    search_fields = ["name", "selected_person"]
 
 class KumariRetirementViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = KumariRetirement.objects.all()
     serializer_class = KumariRetirementSerializer
+    search_fields = ["name"]
 
 class SyncreticRelationshipViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = SyncreticRelationship.objects.all()
     serializer_class = SyncreticRelationshipSerializer
+    search_fields = ["name", "assigned_to_deity"]
 
 class CasteGroupViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = CasteGroup.objects.all()
     serializer_class = CasteGroupSerializer
+    search_fields = ["name", "traditional_role"]
 
 class CalendarSystemViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = CalendarSystem.objects.all()
     serializer_class = CalendarSystemSerializer
+    search_fields = ["name"]
 
 
 class PersonRevisionViewSet(viewsets.ModelViewSet):
@@ -232,6 +251,7 @@ class PersonRevisionViewSet(viewsets.ModelViewSet):
 class DataSourceViewSet(viewsets.ModelViewSet):
     queryset = DataSource.objects.all()
     serializer_class = DataSourceSerializer
+    search_fields = ["name", "author", "citation"]
 
 
 class HeritageAssertionViewSet(viewsets.ModelViewSet):

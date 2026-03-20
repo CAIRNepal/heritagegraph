@@ -22,6 +22,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
+import { useUserRoles } from '@/hooks/use-user-roles';
+import { AccessDenied } from '@/components/access-denied';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
@@ -41,10 +43,15 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function ReviewQueuePage() {
   const { data: session } = useSession();
+  const { isReviewer } = useUserRoles();
   const router = useRouter();
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  if (!isReviewer) {
+    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
+  }
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);

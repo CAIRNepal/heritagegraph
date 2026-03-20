@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
+import { EntitySearch, type SearchResult } from "@/components/contribute/entity-search";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -178,6 +179,85 @@ function FieldRenderer({
           </div>
         </div>
       );
+
+    case "relation": {
+      if (field.multivalued) {
+        const items: string[] = value
+          ? (typeof value === "string" ? value.split(", ").filter(Boolean) : Array.isArray(value) ? value : [])
+          : [];
+
+        const handleAdd = (entity: SearchResult | null) => {
+          if (!entity) return;
+          const updated = [...items];
+          if (!updated.includes(entity.name)) updated.push(entity.name);
+          onChange(field.key, updated.join(", "));
+        };
+
+        const handleRemove = (name: string) => {
+          const updated = items.filter((n) => n !== name);
+          onChange(field.key, updated.length > 0 ? updated.join(", ") : "");
+        };
+
+        return (
+          <div className="space-y-1">
+            {labelEl}
+            {descEl}
+            {items.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {items.map((name) => (
+                  <span
+                    key={name}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-sm"
+                  >
+                    {name}
+                    {!disabled && (
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:text-foreground text-xs ml-0.5"
+                        onClick={() => handleRemove(name)}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+            )}
+            <EntitySearch
+              label=""
+              endpoint={field.relationEndpoint || ""}
+              value={null}
+              onSelect={handleAdd}
+              placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
+              allowCreate
+              disabled={disabled}
+              hasError={hasError}
+            />
+          </div>
+        );
+      }
+
+      const selectedEntity: SearchResult | null = value
+        ? { id: 0, name: typeof value === "string" ? value : String(value) }
+        : null;
+
+      return (
+        <div className="space-y-1">
+          {labelEl}
+          {descEl}
+          <EntitySearch
+            label=""
+            endpoint={field.relationEndpoint || ""}
+            value={selectedEntity}
+            onSelect={(entity) => onChange(field.key, entity?.name || "")}
+            placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
+            allowCreate
+            disabled={disabled}
+            hasError={hasError}
+          />
+        </div>
+      );
+    }
 
     default:
       return (

@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import Image from "next/image";
 import { useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
 
 import {
   IconCamera,
@@ -319,12 +320,51 @@ const data = {
   ],
 };
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+interface SidebarRoles {
+  isModerator: boolean;
+  isReviewer: boolean;
+}
+
+function useSidebarRoles(): SidebarRoles {
+  const { data: session, status } = useSession();
+  const [roles, setRoles] = React.useState<SidebarRoles>({ isModerator: false, isReviewer: false });
+
+  React.useEffect(() => {
+    if (status !== 'authenticated' || !session?.accessToken) return;
+
+    fetch(`${API_BASE}/api/user/info`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.accessToken}`,
+      },
+    })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        const groups: string[] = data.groups || [];
+        const isStaff = data.is_staff || false;
+        const hasActiveReviewerRole = data.reviewer_role?.is_active ?? false;
+        const isMod = isStaff || groups.includes('Moderators');
+        setRoles({
+          isModerator: isMod,
+          isReviewer: isMod || groups.includes('Reviewers') || hasActiveReviewerRole,
+        });
+      })
+      .catch(() => {});
+  }, [session, status]);
+
+  return roles;
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const t = useTranslations('nav');
   const [showScrollTop, setShowScrollTop] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const { isModerator, isReviewer } = useSidebarRoles();
 
   React.useEffect(() => {
     const el = contentRef.current;
@@ -407,9 +447,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           { title: t('monument'), url: '/knowledge/monument', icon: IconColumns },
         ]} />
         <NavMain navtitle={t('curation')} items={[
-          { title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard },
-          { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
-          { title: t('conflicts'), url: '/curation/conflicts', icon: IconScale },
+          ...(isModerator ? [{ title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard }] : []),
+          ...(isReviewer ? [
+            { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
+            { title: t('conflicts'), url: '/curation/conflicts', icon: IconScale },
+          ] : []),
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
           { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },

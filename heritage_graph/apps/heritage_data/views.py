@@ -569,19 +569,36 @@ class RegisterView(APIView):
 class CurrentUserView(APIView):
     """
     get:
-    Return the currently authenticated user's username and email.
+    Return the currently authenticated user's info including platform roles.
 
     This endpoint requires a valid JWT token in the Authorization header.
+    Returns username, email, Django groups, staff status, and reviewer role.
     """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
+        groups = list(user.groups.values_list("name", flat=True))
+
+        reviewer_role_data = None
+        if hasattr(user, "reviewer_role"):
+            rr = user.reviewer_role
+            reviewer_role_data = {
+                "role": rr.role,
+                "is_active": rr.is_active,
+                "can_override_confidence": rr.can_override_confidence,
+                "can_resolve_conflicts": rr.can_resolve_conflicts,
+                "can_manage_roles": rr.can_manage_roles,
+            }
+
         return Response(
             {
                 "username": user.username,
                 "email": user.email,
+                "groups": groups,
+                "is_staff": user.is_staff,
+                "reviewer_role": reviewer_role_data,
             }
         )
 

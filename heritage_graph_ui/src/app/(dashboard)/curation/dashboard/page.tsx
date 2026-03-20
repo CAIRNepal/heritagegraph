@@ -14,6 +14,8 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles, IconArrowRight } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
+import { useUserRoles } from '@/hooks/use-user-roles';
+import { AccessDenied } from '@/components/access-denied';
 
 interface ReviewerRoleData {
   id: string;
@@ -34,10 +36,15 @@ const ROLE_LABELS: Record<string, string> = { community_reviewer: 'Community Rev
 
 export default function ReviewerDashboardPage() {
   const { data: session } = useSession();
+  const { isModerator } = useUserRoles();
   const router = useRouter();
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  if (!isModerator) {
+    return <AccessDenied requiredRole="moderator" userEmail={session?.user?.email} />;
+  }
 
   const getHeaders = useCallback(() => {
     const token = (session as Record<string, unknown>)?.accessToken as string | undefined;
