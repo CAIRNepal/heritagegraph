@@ -331,7 +331,8 @@ class AssertionAwareGuthiViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
 
 #################################################################
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.db.models import Q
 
@@ -343,6 +344,7 @@ from apps.cidoc_data.serializers import (
     PersonSerializer, LocationSerializer, EventSerializer, TraditionSerializer,
     DeitySerializer, GuthiSerializer, ArchitecturalStructureSerializer,
     RitualEventSerializer, FestivalSerializer, MonumentSerializer,
+    _get_cultural_entity_id,
 )
 
 
@@ -424,7 +426,133 @@ def universal_search(request):
     return Response(results)
 
 
+def _discovery_record_name(instance):
+    name = getattr(instance, "name", None)
+    if name and str(name).strip():
+        return str(name).strip()
+    title = getattr(instance, "title", None)
+    if title and str(title).strip():
+        return str(title).strip()
+    return str(instance.pk)
 
+
+def _discovery_summary(instance):
+    for attr in ("description", "biography", "note", "route_description"):
+        val = getattr(instance, attr, None)
+        if val and str(val).strip():
+            s = str(val).strip()
+            return f"{s[:277]}…" if len(s) > 280 else s
+    return ""
+
+
+def _discovery_location_hint(instance):
+    for attr in ("location_name", "location", "start_place"):
+        val = getattr(instance, attr, None)
+        if val and str(val).strip():
+            return str(val).strip()[:200]
+    return ""
+
+
+def _discovery_is_published(instance):
+    raw = (getattr(instance, "status", None) or "").strip().lower()
+    if not raw:
+        return True
+    return raw not in ("pending_review", "draft", "rejected")
+
+
+def _discovery_row(instance, resource_key):
+    return {
+        "id": str(instance.pk),
+        "resource": resource_key,
+        "type": instance.__class__.__name__,
+        "name": _discovery_record_name(instance),
+        "summary": _discovery_summary(instance),
+        "location_hint": _discovery_location_hint(instance),
+        "cultural_entity_id": _get_cultural_entity_id(instance),
+        "status": (getattr(instance, "status", None) or "").strip(),
+        "is_published": _discovery_is_published(instance),
+        "has_media": False,
+    }
+
+
+# Maps public landing tabs → model + searchable fields (icontains).
+_DISCOVERY_TYPE_MAP = {
+    "monuments": (Monument, ["name", "description", "note", "location_name"]),
+    "festivals": (
+        Festival,
+        ["name", "description", "note", "location_name", "route_description"],
+    ),
+    "deities": (
+        Deity,
+        ["name", "description", "note", "alternate_names", "religious_tradition"],
+    ),
+    "persons": (
+        Person,
+        ["name", "description", "aliases", "occupation", "biography"],
+    ),
+    "guthis": (
+        Guthi,
+        ["name", "description", "note", "location", "managed_structures"],
+    ),
+    "rituals": (
+        RitualEvent,
+        [
+            "name",
+            "description",
+            "note",
+            "location_name",
+            "performed_by",
+            "route_description",
+        ],
+    ),
+}
+
+
+def _filtered_discovery_queryset(model, fields, q):
+    qs = model.objects.all().order_by("-id")
+    q = (q or "").strip()
+    if not q:
+        return qs
+    q_filter = Q()
+    for field in fields:
+        q_filter |= Q(**{f"{field}__icontains": q})
+    return qs.filter(q_filter).distinct()
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def public_discovery(request):
+    """
+    Public faceted discovery for the marketing site.
+    Query params:
+      - type: monuments | festivals | deities | persons | guthis | rituals (default persons)
+      - q: optional search string (empty = recent records)
+    """
+    type_key = (request.GET.get("type") or "persons").strip()
+    q = request.GET.get("q", "")
+
+    if type_key not in _DISCOVERY_TYPE_MAP:
+        return Response(
+            {"error": f"Unknown type '{type_key}'."},
+            status=400,
+        )
+
+    counts = {}
+    for key, (model, fields) in _DISCOVERY_TYPE_MAP.items():
+        counts[key] = _filtered_discovery_queryset(model, fields, q).count()
+
+    model, fields = _DISCOVERY_TYPE_MAP[type_key]
+    qs = _filtered_discovery_queryset(model, fields, q)[:100]
+    results = [_discovery_row(obj, type_key) for obj in qs]
+
+    return Response(
+        {
+            "q": q.strip(),
+            "type": type_key,
+            "counts": counts,
+            "results": results,
+        }
+    )
 
 
 ###############################################################

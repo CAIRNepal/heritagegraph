@@ -78,4 +78,5 @@ router.register(r'person_revisions', PersonRevisionViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path("search/", universal_search, name="universal-search"),
+    path("discovery/", public_discovery, name="public-discovery"),
 ]
