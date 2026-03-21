@@ -9,8 +9,8 @@
 **HeritageGraph** is a full-stack platform by CAIR-Nepal for digitally preserving and publishing cultural heritage data as linked open data. It has:
 
 - A **Django REST Framework** backend (API, auth, data models)
-- A **Next.js 15** frontend (dashboard, contribution forms, graph visualization)
-- A **Next.js 14** landing page (marketing site)
+- A **Next.js 15** main app (`heritage_graph_ui`) — dashboard, contribution forms, graph visualization
+- A **Next.js 15** marketing landing (`heritage_graph_landing`) — public site; same brand colors as the dashboard
 - **NextAuth v4 + Google OAuth** for authentication
 - **Traefik** as reverse proxy (routes traffic, handles TLS)
 - **PostgreSQL** as database (Django backend)
@@ -37,12 +37,12 @@ heritagegraph/
 │   ├── manage.py                # Django management
 │   └── requirements.txt         # Python dependencies
 │
-├── heritage_graph_ui/           # Next.js 15 frontend (main app)
+├── heritage_graph_ui/           # Next.js 15 main app (authenticated product UI)
 │   ├── src/
 │   │   ├── app/                 # App Router pages
-│   │   │   ├── page.tsx         # Landing/home page
 │   │   │   ├── layout.tsx       # Root layout (SessionProvider, ThemeProvider)
-│   │   │   ├── dashboard/       # Dashboard pages (nested layout)
+│   │   │   ├── (dashboard)/     # Dashboard route group (sidebar layout)
+│   │   │   │   ├── page.tsx     # Dashboard home (/)
 │   │   │   │   ├── knowledge/   # Knowledge base CRUD (entity, person, etc.)
 │   │   │   │   ├── contribute/  # Contribution forms
 │   │   │   │   ├── curation/    # Moderation & activity logs
@@ -55,14 +55,16 @@ heritagegraph/
 │   │   │   │   ├── community/   # Contributors & organizations
 │   │   │   │   └── graphview/   # Graph visualization (Cytoscape)
 │   │   │   └── api/auth/        # NextAuth API route
-│   │   ├── components/          # Shared components (shadcn/ui, data tables)
+│   │   ├── components/          # Shared components (shadcn/ui, data tables, chat)
+│   │   ├── providers/           # Context providers (ChatContext)
 │   │   ├── hooks/               # Custom hooks (use-mobile)
-│   │   └── lib/                 # Utilities (auth.ts, utils.ts)
+│   │   └── lib/                 # Utilities (auth.ts, utils.ts, chat/)
 │   ├── types/                   # TypeScript type augmentations
 │   └── public/                  # Static assets
 │
-├── heritage_graph_landing/      # Next.js 14 landing page
-│   └── app/                     # Landing page with 3D hero, features
+├── heritage_graph_landing/      # Next.js 15 marketing site (port 3001 locally)
+│   ├── src/app/                 # Public landing + chat widget (dummy)
+│   └── README.md                # Env: NEXT_PUBLIC_APP_URL → main app origin
 │
 ├── infra/                       # Infrastructure configs
 │   ├── traefik/                 # Traefik reverse proxy config
@@ -149,6 +151,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/cidoc/traditions/` — cultural traditions CRUD
 - `/cidoc/sources/` — documentary sources CRUD
 - `/cidoc/search/?q=<query>` — cross-model search
+- `/cidoc/discovery/?type=<persons|monuments|...>&q=<optional>` — public faceted browse + counts (landing)
 
 **Cultural Entities (prefix: `/data/`):**
 - `/data/cultural-entities/` — CRUD + submit/review actions
@@ -169,20 +172,19 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `POST /api/token/refresh/` — refresh JWT
 - `POST /api/register/` — user registration
 
-### Frontend Routes — Port 3000
+### Frontend Routes — Main app (`heritage_graph_ui`, port 3000)
 
-- `/` — landing page
-- `/dashboard` — main dashboard
-- `/dashboard/knowledge/<domain>` — knowledge base (entity, person, location, event, period, tradition, source)
-- `/dashboard/contribute/<domain>` — contribution forms
-- `/dashboard/curation/contributions` — moderation queue
-- `/dashboard/curation/activity` — activity log
-- `/dashboard/curation/review` — triaged epistemic review queue
-- `/dashboard/curation/review/<id>` — three-panel review workspace
-- `/dashboard/curation/conflicts` — conflict resolution queue
-- `/dashboard/curation/dashboard` — reviewer dashboard
-- `/dashboard/community/contributors` — contributor list
-- `/dashboard/graphview` — graph visualization
+- `/` — dashboard home (authenticated shell)
+- `/knowledge/<domain>` — knowledge base (entity, person, location, event, period, tradition, source)
+- `/contribute/<domain>` — contribution forms
+- `/curation/contributions` — moderation queue
+- `/curation/activity` — activity log
+- `/curation/review` — triaged epistemic review queue
+- `/curation/review/<id>` — three-panel review workspace
+- `/curation/conflicts` — conflict resolution queue
+- `/curation/dashboard` — reviewer dashboard
+- `/community/contributors` — contributor list
+- `/graphview` — graph visualization
 
 ---
 

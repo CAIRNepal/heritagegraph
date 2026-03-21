@@ -17,6 +17,7 @@ const NotificationBell = dynamic(
 import { Toaster } from '@/components/ui/sonner';
 import { UserProgressBadge } from '@/components/progression-widgets';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { ChatContextWrapper } from '@/providers/ChatContextWrapper';
 
 import Image from 'next/image';
 import { Github, Mail, ExternalLink } from 'lucide-react';
@@ -93,6 +94,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           duration: 4000,
         }}
       />
+
+      {/* Chat Widget */}
+      <ChatContextWrapper surface="dashboard">
+        <></>
+      </ChatContextWrapper>
     </SidebarProvider>
   );
 }

@@ -198,17 +198,23 @@ services:
         max-file: "3"
 
   # ---------------------------------------------------------------
-  # Landing Page (Next.js)
-  # Marketing/landing page
+  # Marketing landing (Next.js) — same design tokens as dashboard
   # ---------------------------------------------------------------
   landing:
     build:
       context: ./heritage_graph_landing
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost}
     container_name: heritage-landing
     restart: unless-stopped
     environment:
       NODE_ENV: production
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost}
     networks:
       - proxy
     expose:
@@ -219,10 +225,11 @@ services:
       - "traefik.http.routers.landing.entrypoints=web"
       - "traefik.http.services.landing.loadbalancer.server.port=3000"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
     logging:
       driver: "json-file"
       options:

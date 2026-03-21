@@ -4,7 +4,7 @@
 # Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: help setup superuser backend frontend kill-ports \
+.PHONY: help setup superuser backend frontend landing landing-install dev-local kill-ports \
         migrate migrations shell seed seed-reset \
         docker-up docker-up-build docker-down docker-build \
         docker-logs docker-ps docker-shell docker-migrate \
@@ -21,6 +21,7 @@ VENV_DIR  := .venv
 VENV_PY   := $(VENV_DIR)/bin/python
 BACKEND   := heritage_graph
 FRONTEND  := heritage_graph_ui
+LANDING   := heritage_graph_landing
 
 # Node — resolved from mise or system PATH
 MISE_NODE := $(HOME)/.local/share/mise/installs/node/22.22.0/bin
@@ -40,10 +41,12 @@ help:
 	@echo "    make setup          Install deps, venv and run migrations (run once)"
 	@echo "    make superuser      Create a Django admin login"
 	@echo ""
-	@echo "  \033[1mDAILY USE\033[0m  (open two terminals)"
-	@echo "    make backend        Start Django      →  http://localhost:8000"
-	@echo "    make frontend       Start Next.js     →  http://localhost:3000"
-	@echo "    make kill-ports     Kill processes on ports 8000 & 3000"
+	@echo "  \033[1mDAILY USE\033[0m  (local dev — open one terminal per service)"
+	@echo "    make backend        Django API        →  http://localhost:8000"
+	@echo "    make frontend       Main app (UI)     →  http://localhost:3000"
+	@echo "    make landing        Marketing site    →  http://localhost:3001"
+	@echo "    make dev-local      Print URLs + env reminder for all three"
+	@echo "    make kill-ports     Free ports 8000, 3000, 3001"
 	@echo ""
 	@echo "  \033[1mDOCS\033[0m"
 	@echo "    make docs-build     Build MkDocs site  →  ./site/"
@@ -100,11 +103,15 @@ setup: $(VENV_PY) ## Install all deps, create venv, run migrations
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
 	@echo "==> Installing frontend packages..."
 	cd $(FRONTEND) && $(NODE_PATH) $(PNPM) install
+	@echo "==> Installing landing page packages..."
+	cd $(LANDING) && $(NODE_PATH) npm install
 	@echo ""
 	@echo "  Done!  Next:"
 	@echo "    make superuser   — create an admin login"
-	@echo "    make backend     — start Django  (terminal 1)"
-	@echo "    make frontend    — start Next.js (terminal 2)"
+	@echo "    make dev-local   — see URLs for backend + app + landing"
+	@echo "    make backend     — Django (terminal 1)"
+	@echo "    make frontend    — main UI (terminal 2)"
+	@echo "    make landing     — marketing site (terminal 3, optional)"
 	@echo ""
 
 superuser: $(VENV_PY) ## Create a Django admin login
@@ -116,8 +123,27 @@ superuser: $(VENV_PY) ## Create a Django admin login
 backend: $(VENV_PY) ## Start Django dev server on http://localhost:8000
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py runserver 0.0.0.0:8000
 
-frontend: ## Start Next.js dev server on http://localhost:3000
+frontend: ## Start main Next.js app on http://localhost:3000
 	cd $(FRONTEND) && $(NODE_PATH) NEXT_PUBLIC_API_URL=http://localhost:8000 $(PNPM) dev
+
+landing: ## Start marketing landing on http://localhost:3001 (links to app on :3000)
+	cd $(LANDING) && $(NODE_PATH) NEXT_PUBLIC_APP_URL=http://localhost:3000 npm run dev
+
+landing-install: ## npm install inside heritage_graph_landing only
+	cd $(LANDING) && $(NODE_PATH) npm install
+
+dev-local: ## Show local dev URLs and env hints
+	@echo ""
+	@echo "  HeritageGraph — local development"
+	@echo "  =================================="
+	@echo "    Backend (Django):     http://localhost:8000     make backend"
+	@echo "    Main app (dashboard): http://localhost:3000     make frontend"
+	@echo "    Landing (marketing): http://localhost:3001    make landing"
+	@echo ""
+	@echo "  Landing needs NEXT_PUBLIC_APP_URL (default in \`make landing\` is http://localhost:3000)."
+	@echo "  Copy $(LANDING)/.env.example → $(LANDING)/.env.local if you override ports or hosts."
+	@echo "  With Docker + Traefik: landing → http://landing.localhost , app → http://frontend.localhost"
+	@echo ""
 
 # ================================================================
 # DOCS
@@ -134,9 +160,10 @@ docs-clean: ## Remove generated site/ directory
 	@echo "==> Removing ./site directory"
 	rm -rf site/
 
-kill-ports: ## Kill any process on ports 8000 and 3000
+kill-ports: ## Kill any process on ports 8000, 3000, and 3001
 	@lsof -ti:8000 | xargs kill -9 2>/dev/null && echo "  ✓ port 8000 cleared" || echo "  — port 8000 was free"
 	@lsof -ti:3000 | xargs kill -9 2>/dev/null && echo "  ✓ port 3000 cleared" || echo "  — port 3000 was free"
+	@lsof -ti:3001 | xargs kill -9 2>/dev/null && echo "  ✓ port 3001 cleared" || echo "  — port 3001 was free"
 
 # ================================================================
 # DJANGO UTILS

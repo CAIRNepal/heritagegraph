@@ -273,13 +273,15 @@ A three-persona review workflow for expert-reviewed heritage claims with conflic
 | Alt component | `heritage_graph_ui/src/components/data-table-alt.tsx` |
 | Features | Sorting, filtering, pagination, column visibility, drag-and-drop rows, drawer detail |
 
-### Landing Page 3D Hero — Working
+### Marketing landing — Working
 
 | Layer | Files |
 |-------|-------|
-| Page | `heritage_graph_landing/app/page.tsx` |
-| Components | `heritage_graph_landing/app/components/ThreeCanvas.tsx`, `HeroBackground.tsx`, `NetworkVisualization.tsx` |
-| Libraries | React Three Fiber, drei, three.js |
+| App | `heritage_graph_landing/` (Next.js 15, port **3001** locally via `make landing`) |
+| Page | `heritage_graph_landing/src/app/page.tsx` |
+| Design tokens | Same as dashboard — `heritage_graph_landing/src/app/globals.css` (aligned with `heritage_graph_ui`) |
+| Chat (dummy) | `heritage_graph_landing/src/components/chat/*`, `src/lib/chat/*` |
+| Env | `NEXT_PUBLIC_APP_URL` → main app origin (`http://localhost:3000` local, `http://frontend.localhost` Docker) |
 
 ---
 
