@@ -42,6 +42,7 @@ import {
   IconInfoCircle,
   IconChevronUp,
   IconGitFork,
+  IconSettings,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -331,11 +332,16 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 interface SidebarRoles {
   isModerator: boolean;
   isReviewer: boolean;
+  isPlatformAdmin: boolean;
 }
 
 function useSidebarRoles(): SidebarRoles {
   const { data: session, status } = useSession();
-  const [roles, setRoles] = React.useState<SidebarRoles>({ isModerator: false, isReviewer: false });
+  const [roles, setRoles] = React.useState<SidebarRoles>({
+    isModerator: false,
+    isReviewer: false,
+    isPlatformAdmin: false,
+  });
 
   React.useEffect(() => {
     if (status !== 'authenticated' || !session?.accessToken) return;
@@ -352,10 +358,12 @@ function useSidebarRoles(): SidebarRoles {
         const groups: string[] = data.groups || [];
         const isStaff = data.is_staff || false;
         const hasActiveReviewerRole = data.reviewer_role?.is_active ?? false;
+        const canManageRoles = data.reviewer_role?.can_manage_roles ?? false;
         const isMod = isStaff || groups.includes('Moderators');
         setRoles({
           isModerator: isMod,
           isReviewer: isMod || groups.includes('Reviewers') || hasActiveReviewerRole,
+          isPlatformAdmin: isStaff || (hasActiveReviewerRole && canManageRoles),
         });
       })
       .catch(() => {});
@@ -370,7 +378,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const t = useTranslations('nav');
   const [showScrollTop, setShowScrollTop] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
-  const { isModerator, isReviewer } = useSidebarRoles();
+  const { isModerator, isReviewer, isPlatformAdmin } = useSidebarRoles();
 
   React.useEffect(() => {
     const el = contentRef.current;
@@ -467,6 +475,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           { title: t('contributors'), url: '/community/contributors', icon: IconUsers },
           { title: t('organizations'), url: '/community/organizations', icon: IconBuilding },
         ]} />
+        {isPlatformAdmin ? (
+          <NavMain
+            navtitle={t('platformAdmin')}
+            items={[
+              {
+                title: t('platformAdminUsers'),
+                url: '/platform-admin/users',
+                icon: IconSettings,
+              },
+            ]}
+          />
+        ) : null}
       </SidebarContent>
       {/* <AuthSection /> */}
     </Sidebar>

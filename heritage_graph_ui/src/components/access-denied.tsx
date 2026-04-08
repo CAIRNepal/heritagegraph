@@ -8,11 +8,23 @@ import { motion } from 'framer-motion';
 import { fadeInUp } from '@/lib/design';
 
 interface AccessDeniedProps {
-  requiredRole: 'moderator' | 'reviewer';
+  requiredRole: 'moderator' | 'reviewer' | 'staff';
   userEmail?: string | null;
 }
 
 const roleConfig = {
+  staff: {
+    title: 'Platform Admin Access Required',
+    description:
+      'This area is limited to platform staff and expert curators who manage accounts and reviewer access.',
+    howTo: [
+      'Staff accounts are granted by a superuser in Django',
+      'Expert curators may also access user management for reviewer assignment',
+      'Contact CAIR-Nepal if you believe you need this access',
+    ],
+    icon: Shield,
+    accentColor: 'purple',
+  },
   moderator: {
     title: 'Moderator Access Required',
     description:
