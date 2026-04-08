@@ -6,11 +6,12 @@
 
 .PHONY: help setup superuser backend frontend landing landing-install dev-local kill-ports \
         migrate migrations shell seed seed-reset \
+        docs-build docs-serve docs-clean \
         docker-up docker-up-build docker-down docker-build \
         docker-logs docker-ps docker-shell docker-migrate \
         prod-up prod-down prod-build prod-logs \
         backup restore clean prune \
-        auth-dev auth-google auth-github auth-all auth-status
+        auth-dev auth-google auth-github auth-all auth-status auth-setup auth-add-github
 
 .DEFAULT_GOAL := help
 
@@ -23,10 +24,9 @@ BACKEND   := heritage_graph
 FRONTEND  := heritage_graph_ui
 LANDING   := heritage_graph_landing
 
-# Node — resolved from mise or system PATH
+# Node — prefer mise install if present, else directory of `node` on PATH
 MISE_NODE := $(HOME)/.local/share/mise/installs/node/22.22.0/bin
-NODE_BIN  := $(shell test -f $(MISE_NODE)/node && echo $(MISE_NODE) || dirname $$(which node 2>/dev/null || echo /usr/bin/node))
-PNPM      := $(NODE_BIN)/pnpm
+NODE_BIN  := $(shell test -f $(MISE_NODE)/node && echo $(MISE_NODE) || dirname $$(command -v node 2>/dev/null || echo /usr/bin/node))
 NODE_PATH := PATH=$(NODE_BIN):$$PATH
 
 # ================================================================
@@ -102,7 +102,7 @@ setup: $(VENV_PY) ## Install all deps, create venv, run migrations
 	@echo "==> Running Django migrations..."
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
 	@echo "==> Installing frontend packages..."
-	cd $(FRONTEND) && $(NODE_PATH) $(PNPM) install
+	cd $(FRONTEND) && $(NODE_PATH) npm ci
 	@echo "==> Installing landing page packages..."
 	cd $(LANDING) && $(NODE_PATH) npm install
 	@echo ""
@@ -124,7 +124,7 @@ backend: $(VENV_PY) ## Start Django dev server on http://localhost:8000
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py runserver 0.0.0.0:8000
 
 frontend: ## Start main Next.js app on http://localhost:3000
-	cd $(FRONTEND) && $(NODE_PATH) NEXT_PUBLIC_API_URL=http://localhost:8000 $(PNPM) dev
+	cd $(FRONTEND) && $(NODE_PATH) NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
 
 landing: ## Start marketing landing on http://localhost:3001 (links to app on :3000)
 	cd $(LANDING) && $(NODE_PATH) NEXT_PUBLIC_APP_URL=http://localhost:3000 npm run dev
@@ -244,6 +244,33 @@ define ensure_nextauth_base
 	@grep -q '^NEXTAUTH_SECRET=' $(FRONTEND_ENV) 2>/dev/null || echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
 	@grep -q '^NEXT_PUBLIC_API_URL=' $(FRONTEND_ENV) 2>/dev/null || echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
 endef
+
+auth-dev: ## Dev login only — no OAuth (credentials at /auth/login)
+	@echo "==> Configuring dev auth (no OAuth providers)..."
+	@rm -f $(FRONTEND_ENV)
+	@echo '# Dev: JWT/credentials only — leave Google/GitHub vars unset' > $(FRONTEND_ENV)
+	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
+	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
+	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@echo ""
+	@echo "  ✓ Dev auth: use Django username/password at http://localhost:3000/auth/login"
+	@echo ""
+
+auth-google: auth-setup ## Alias for auth-setup (Google OAuth)
+
+auth-github: auth-add-github ## Alias for auth-add-github
+
+auth-all: ## Google + GitHub OAuth (needs all four credentials)
+	@if [ -z "$(GOOGLE_CLIENT_ID)" ] || [ -z "$(GOOGLE_CLIENT_SECRET)" ] || [ -z "$(GITHUB_ID)" ] || [ -z "$(GITHUB_SECRET)" ]; then \
+		echo ""; \
+		echo "  Usage: make auth-all GOOGLE_CLIENT_ID=xxx GOOGLE_CLIENT_SECRET=yyy GITHUB_ID=aaa GITHUB_SECRET=bbb"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@$(MAKE) auth-setup GOOGLE_CLIENT_ID=$(GOOGLE_CLIENT_ID) GOOGLE_CLIENT_SECRET=$(GOOGLE_CLIENT_SECRET)
+	@$(MAKE) auth-add-github GITHUB_ID=$(GITHUB_ID) GITHUB_SECRET=$(GITHUB_SECRET)
+	@echo "  ✓ Google + GitHub OAuth configured in $(FRONTEND_ENV)"
+	@echo ""
 
 auth-setup: ## Configure Google OAuth (primary auth — REQUIRED)
 	@echo "==> Configuring Google OAuth (primary auth)..."

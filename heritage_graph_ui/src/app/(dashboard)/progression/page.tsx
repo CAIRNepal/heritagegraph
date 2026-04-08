@@ -422,7 +422,7 @@ export default function ProgressionPage() {
                 {tracks.map((track) => {
                   const Icon = track.icon;
                   const isSelected = selectedTrack === track.id;
-                  const trackProg = userProgress?.tracks.find(t => t.id === track.id);
+                  const trackProg = userProgress?.tracks?.find((t) => t.id === track.id);
                   return (
                     <motion.div key={track.id} variants={fadeInUp}>
                       <Card
