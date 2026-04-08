@@ -245,9 +245,9 @@ export default withAuth({
   pages: { signIn: '/' },  // redirect here if not authenticated
 });
 
-// Protect specific routes
+// Protect authenticated app routes (no /dashboard URL prefix)
 export const config = {
-  matcher: ['/dashboard/:path*'],
+  matcher: ['/((?!api|_next|auth).*)'],
 };
 ```
 
@@ -397,7 +397,7 @@ import { signIn } from 'next-auth/react';
 
 <Button onClick={() => signIn('google')}>Sign In with Google</Button>
 
-<Button onClick={() => signIn('google', { callbackUrl: '/dashboard' })}>Sign In</Button>
+<Button onClick={() => signIn('google', { callbackUrl: '/' })}>Sign In</Button>
 ```
 
 **Development (Credentials):**

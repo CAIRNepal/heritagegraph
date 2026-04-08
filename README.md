@@ -99,8 +99,8 @@ npm run dev
 
 Access the app at:
 
-- Landing page → [http://localhost:3000](http://localhost:3000)
-- Dashboard → [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
+- Main app (authenticated UI) → [http://localhost:3000/](http://localhost:3000/)
+- Marketing landing (Docker + Traefik) → [http://landing.localhost](http://landing.localhost)
 
 ---
 
