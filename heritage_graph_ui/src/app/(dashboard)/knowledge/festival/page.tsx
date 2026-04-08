@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, festivalTableConfig } from "@/components/generic-data-table";
 
 export default function FestivalKnowledgePage() {

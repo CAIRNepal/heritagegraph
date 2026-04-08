@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, guthiTableConfig } from "@/components/generic-data-table";
 
 export default function GuthiKnowledgePage() {

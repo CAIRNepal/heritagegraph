@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, eventTableConfig } from "@/components/generic-data-table";
 
 export default function EventKnowledgePage() {

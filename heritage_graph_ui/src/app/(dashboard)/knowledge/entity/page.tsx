@@ -1,6 +1,3 @@
-
-"use client";
-
 import { GenericDataTable, culturalEntityTableConfig } from "@/components/generic-data-table";
 
 export default function EntityKnowledgePage() {
@@ -12,4 +9,3 @@ export default function EntityKnowledgePage() {
     </div>
   );
 }
-

@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, iconographyTableConfig } from "@/components/generic-data-table";
 
 export default function IconographyKnowledgePage() {

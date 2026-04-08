@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, sourceTableConfig } from "@/components/generic-data-table";
 
 export default function SourceKnowledgePage() {

@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, structureTableConfig } from "@/components/generic-data-table";
 
 export default function StructureKnowledgePage() {

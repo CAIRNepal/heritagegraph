@@ -1,5 +1,3 @@
-"use client";
-
 import OntologyForm from "@/components/ontology-form";
 import type { OntologyClass } from "@/lib/ontology/types";
 import { ontologyEnums } from "@/lib/ontology/enums";

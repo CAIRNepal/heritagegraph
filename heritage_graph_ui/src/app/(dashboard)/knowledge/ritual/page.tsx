@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, ritualTableConfig } from "@/components/generic-data-table";
 
 export default function RitualKnowledgePage() {

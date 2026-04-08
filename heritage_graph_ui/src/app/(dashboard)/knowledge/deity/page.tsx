@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, deityTableConfig } from "@/components/generic-data-table";
 
 export default function DeityKnowledgePage() {

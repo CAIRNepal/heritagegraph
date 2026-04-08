@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, locationTableConfig } from "@/components/generic-data-table";
 
 export default function LocationKnowledgePage() {

@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, personTableConfig } from "@/components/generic-data-table";
 
 export default function PersonKnowledgePage() {

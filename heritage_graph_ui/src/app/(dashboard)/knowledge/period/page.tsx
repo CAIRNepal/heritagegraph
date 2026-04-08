@@ -1,5 +1,3 @@
-"use client";
-
 import { GenericDataTable, historicalPeriodTableConfig } from "@/components/generic-data-table";
 
 export default function PeriodKnowledgePage() {
