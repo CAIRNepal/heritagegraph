@@ -80,3 +80,17 @@ class IsExpertCurator(permissions.BasePermission):
             request.user.reviewer_role.is_active
             and request.user.reviewer_role.role == 'expert_curator'
         )
+
+
+class IsStaffOrExpertCurator(permissions.BasePermission):
+    """
+    Staff or active expert curator — can enumerate reviewer roles (admin UI).
+    """
+
+    def has_permission(self, request, view):
+        if request.user.is_staff:
+            return True
+        if not hasattr(request.user, 'reviewer_role'):
+            return False
+        rr = request.user.reviewer_role
+        return rr.is_active and rr.role == 'expert_curator'

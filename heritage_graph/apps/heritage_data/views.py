@@ -1,6 +1,7 @@
 import json
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q
@@ -23,6 +24,7 @@ from .serializers import *
 from .permissions import (
     IsContributorOrReadOnly, IsEditor, IsReviewerOrAdmin,
     IsCommunityReviewer, IsDomainExpert, IsExpertCurator,
+    IsStaffOrExpertCurator,
 )
 
 
@@ -707,10 +709,11 @@ class CurrentUserView(APIView):
 
 class PlatformAdminUserViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Staff-only list/detail of Django users for the in-app platform admin UI.
+    List/detail of Django users for the in-app platform admin UI.
+    Staff or expert curators (read-only).
     """
 
-    permission_classes = [IsAuthenticated, IsAdminUser]
+    permission_classes = [IsAuthenticated, IsStaffOrExpertCurator]
     serializer_class = PlatformAdminUserSerializer
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['email', 'username', 'first_name', 'last_name']
@@ -1682,9 +1685,15 @@ class ReviewerRoleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
+        if self.action == 'my_role':
+            return [permissions.IsAuthenticated()]
+        if self.action == 'assign':
+            return [permissions.IsAuthenticated(), IsExpertCurator()]
         if self.action in ['create', 'update', 'partial_update', 'destroy']:
             return [permissions.IsAuthenticated(), IsExpertCurator()]
-        return [permissions.IsAuthenticated()]
+        if self.action in ['list', 'retrieve']:
+            return [permissions.IsAuthenticated(), IsStaffOrExpertCurator()]
+        return [permissions.IsAuthenticated(), IsStaffOrExpertCurator()]
 
     def get_queryset(self):
         return ReviewerRole.objects.select_related('user', 'assigned_by')
@@ -1724,6 +1733,19 @@ class ReviewerRoleViewSet(viewsets.ModelViewSet):
                 'is_active': True,
             }
         )
+
+        role_slug = serializer.validated_data['role']
+        try:
+            reviewers_g = Group.objects.get(name='Reviewers')
+            moderators_g = Group.objects.get(name='Moderators')
+            user.groups.add(reviewers_g)
+            if role_slug in ('domain_expert', 'expert_curator'):
+                user.groups.add(moderators_g)
+            else:
+                user.groups.remove(moderators_g)
+        except Group.DoesNotExist:
+            pass
+
         return Response(
             ReviewerRoleSerializer(role).data,
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
