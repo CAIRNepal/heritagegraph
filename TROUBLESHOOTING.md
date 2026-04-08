@@ -52,22 +52,23 @@
 
 ### 7. WSGI/ASGI `DJANGO_SETTINGS_MODULE` mismatch
 - **Where:** `heritage_graph/wsgi.py` and `heritage_graph/asgi.py`
-- **Problem:** Both set `DJANGO_SETTINGS_MODULE = "heritage_graph.settings"` — but `manage.py` may set it differently (`settings.settings`).
-- **Fix:** Ensure Docker and env vars consistently set `DJANGO_SETTINGS_MODULE=heritage_graph.settings` (which triggers `__init__.py` dispatch).
+- **Problem:** Historically `manage.py` forced `settings.development` while WSGI used `heritage_graph.settings`, skipping `__init__.py` dispatch.
+- **Fix:** `manage.py` now defaults to `DJANGO_SETTINGS_MODULE=settings` (loads `settings/__init__.py` + `DJANGO_ENV`). Gunicorn still uses `heritage_graph.settings` with `PYTHONPATH=/app`; both resolve to the same dispatch package.
+- **Status:** Fixed for CLI (`manage.py`); WSGI/ASGI unchanged and aligned in intent.
 
 ### 8. Duplicate `CommonMiddleware` in MIDDLEWARE
 - **Where:** `heritage_graph/settings/base.py`
 - **Problem:** `django.middleware.common.CommonMiddleware` appears twice in the MIDDLEWARE list.
 - **Impact:** Minor — Django handles it, but it processes requests/responses twice through CommonMiddleware.
 - **Fix:** Remove the duplicate.
-- **Status:** ⚠️ Known, not yet fixed.
+- **Status:** Fixed (duplicate removed from `MIDDLEWARE`).
 
 ### 9. Legacy auth files with outdated names
-- **Where:** `heritage_graph/apps/heritage_data/clerk_auth.py`
-- **Problem:** This legacy file contains old Clerk authentication code. The active auth class is `GoogleTokenAuthentication` in `authentication.py`. The `clerk_auth.py` file is no longer used.
+- **Where:** ~~`heritage_graph/apps/heritage_data/clerk_auth.py`~~ (removed)
+- **Problem:** This legacy file contained old Clerk authentication code. The active auth class is `GoogleTokenAuthentication` in `authentication.py`.
 - **Impact:** Confusing for developers. AI agents might look for auth code in the wrong file.
 - **Fix:** Delete `clerk_auth.py` since `authentication.py` now handles all auth via Google OAuth.
-- **Status:** ⚠️ Known, low priority.
+- **Status:** Fixed (file removed).
 
 ---
 
@@ -78,7 +79,7 @@
 - **Problem:** The `post_save` signal on `Submission` recalculates `UserStatistics`, but there's no signal for `CulturalEntity` saves.
 - **Impact:** If using the new `CulturalEntity` workflow, `UserStatistics` won't update.
 - **Fix:** Add a `post_save` signal for `CulturalEntity` that also recalculates statistics.
-- **Status:** ⚠️ Known, not yet fixed.
+- **Status:** Fixed — `refresh_user_stats()` aggregates submissions + cultural entities; both models trigger it.
 
 ### 11. PersonRevision auto-creation fires on every save
 - **Where:** `cidoc_data/signals.py`
