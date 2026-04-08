@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import React from 'react';
-// import { useAuth } from '@clerk/nextjs';
+import { useSession } from 'next-auth/react';
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
+import { getPublicApiUrl } from '@/lib/api-base';
 
 interface Stats {
   total_submissions: number;
@@ -26,7 +27,7 @@ interface CardData {
 }
 
 export function SectionCards() {
-  // const { getToken } = useAuth();
+  const { data: session } = useSession();
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,11 +35,14 @@ export function SectionCards() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // const token = await getToken();
-        // const res = await fetch('http://127.0.0.1:8000/data/user-stats/', {
-        //   headers: { Authorization: `Bearer ${token}` },
-        // });
-        const res = await fetch('http://127.0.0.1:8000/data/user-stats/');
+        const headers: HeadersInit = { Accept: 'application/json' };
+        if (session?.accessToken) {
+          (headers as Record<string, string>).Authorization =
+            `Bearer ${session.accessToken}`;
+        }
+        const res = await fetch(`${getPublicApiUrl()}/data/api/user-stats/`, {
+          headers,
+        });
 
         if (!res.ok) throw new Error(`API error: ${res.status}`);
         const data: Stats = await res.json();
@@ -57,7 +61,7 @@ export function SectionCards() {
     };
 
     fetchStats();
-  }, []);
+  }, [session?.accessToken]);
 
   const UpOrDown: React.FC<{ value: number }> = ({ value }) =>
     value >= 0 ? (

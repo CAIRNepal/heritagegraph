@@ -51,6 +51,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getPublicApiUrl } from '@/lib/api-base';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -305,7 +306,7 @@ export function DataTable() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const url = `http://127.0.0.1:8000/data/submissions/?page=${pagination.pageIndex + 1}&page_size=${pagination.pageSize}`;
+        const url = `${getPublicApiUrl()}/data/submissions/?page=${pagination.pageIndex + 1}&page_size=${pagination.pageSize}`;
         const response = await fetch(url);
         const result = await response.json();
         setData(result.results || []);

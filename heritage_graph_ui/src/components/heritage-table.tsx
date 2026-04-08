@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { getPublicApiUrl } from '@/lib/api-base';
 import {
   closestCenter,
   DndContext,
@@ -359,7 +360,7 @@ export function DataTable() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const url = "http://127.0.0.1:8000/cidoc/search/?q=mahadev";
+        const url = `${getPublicApiUrl()}/cidoc/search/?q=mahadev`;
         const response = await fetch(url);
         const result = await response.json();
 
