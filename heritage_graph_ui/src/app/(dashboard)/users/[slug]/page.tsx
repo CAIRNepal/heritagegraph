@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { resolveMediaSrc } from '@/lib/resolve-media-src';
 import {
   Card,
   CardContent,
@@ -357,6 +359,8 @@ export default function UserProfilePage() {
   const expertise = user.area_of_expertise?.split(',').map(s => s.trim()).filter(Boolean) || [];
   const socials = Object.entries(user.social_links || {}).filter(([, v]) => v);
   const resolvedAvatar = user.profile_image || user.avatar_url || session?.user?.image || null;
+  const avatarAlt =
+    [user.first_name, user.last_name].filter(Boolean).join(' ').trim() || 'Profile photo';
 
   return (
     <>
@@ -374,7 +378,14 @@ export default function UserProfilePage() {
                   <div className="relative group">
                     <div className="h-20 w-20 rounded-xl bg-muted flex items-center justify-center overflow-hidden">
                       {resolvedAvatar ? (
-                        <img src={resolvedAvatar} alt="" className="h-full w-full object-cover" />
+                        <Image
+                          src={resolveMediaSrc(resolvedAvatar) ?? resolvedAvatar}
+                          alt={avatarAlt}
+                          width={80}
+                          height={80}
+                          className="h-full w-full object-cover"
+                          sizes="80px"
+                        />
                       ) : (
                         <User className="h-10 w-10 text-muted-foreground" />
                       )}

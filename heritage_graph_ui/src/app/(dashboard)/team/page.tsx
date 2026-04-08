@@ -152,8 +152,14 @@ export default function OurTeam() {
                   <div className="flex gap-4 items-center">
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-full blur-sm opacity-50" />
-                      <Image src={member.image} alt={member.name} width={72} height={72}
-                        className="relative rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-lg" />
+                      <Image
+                        src={member.image}
+                        alt={member.name}
+                        width={72}
+                        height={72}
+                        className="relative rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-lg"
+                        sizes="72px"
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">
@@ -214,13 +220,13 @@ export default function OurTeam() {
                   <div className="flex items-center gap-4">
                     <div className="relative flex-shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-full blur-sm opacity-40" />
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={contributor.avatar_url}
                         alt={contributor.login}
                         width={56}
                         height={56}
                         className="relative rounded-full object-cover border-2 border-white dark:border-gray-600 shadow-md"
+                        sizes="56px"
                       />
                     </div>
                     <div className="min-w-0">

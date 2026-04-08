@@ -256,6 +256,7 @@ Banana plants are the world's largest herbaceous flowering plants...
               alt={data.imageCaption}
               fill
               className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 320px"
               priority
             />
           </div>

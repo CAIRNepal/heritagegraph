@@ -401,6 +401,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             alt="logo"
             width={isCollapsed? 40: 150}
             height={isCollapsed? 40: 150}
+            sizes={isCollapsed ? "40px" : "150px"}
           />
       {/* <span className="">HeritageGraph</span> */}
     </Link>

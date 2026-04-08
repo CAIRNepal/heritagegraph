@@ -66,7 +66,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <footer className="px-4 md:px-6 py-2 border-t border-blue-200/60 dark:border-gray-700/60 bg-white/40 dark:bg-gray-900/40 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4 text-xs text-blue-600/70 dark:text-blue-400/60">
             <div className="flex items-center gap-3">
-              <Image src="/cair-logo/fulllogo_nobuffer.png" alt="CAIR-Nepal" width={80} height={28} className="h-5 w-auto opacity-70" />
+              <Image
+                src="/cair-logo/fulllogo_nobuffer.png"
+                alt="CAIR-Nepal"
+                width={80}
+                height={28}
+                className="h-5 w-auto opacity-70"
+                sizes="80px"
+              />
               <span className="hidden sm:inline">{t('copyright', { year: new Date().getFullYear() })}</span>
             </div>
             <div className="flex items-center gap-1">

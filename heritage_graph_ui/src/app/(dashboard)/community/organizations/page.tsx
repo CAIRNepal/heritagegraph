@@ -12,9 +12,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Building2, Globe, MapPin, Users, Plus, Search, LogIn, LogOut, CheckCircle2, Crown } from 'lucide-react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
+import { resolveMediaSrc } from '@/lib/resolve-media-src';
 
 type CustomSession = { accessToken?: string; user?: { username?: string; name?: string | null; email?: string | null } };
 type Organization = {
@@ -212,7 +214,14 @@ export default function OrganizationsPage() {
                       <div className="flex items-start gap-3">
                         <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-400 flex items-center justify-center shrink-0 shadow-lg">
                           {org.logo ? (
-                            <img src={org.logo} alt="" className="h-full w-full object-cover rounded-2xl" />
+                            <Image
+                              src={resolveMediaSrc(org.logo) ?? org.logo}
+                              alt=""
+                              width={48}
+                              height={48}
+                              className="h-full w-full object-cover rounded-2xl"
+                              sizes="48px"
+                            />
                           ) : (
                             <span className="text-lg font-bold text-white">{org.short_name?.[0] || org.name[0]}</span>
                           )}

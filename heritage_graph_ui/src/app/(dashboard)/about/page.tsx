@@ -415,12 +415,13 @@ export default function AboutPage() {
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/3 bg-gradient-to-br from-blue-600 to-sky-600 p-8 flex items-center justify-center">
                 <div className="text-center">
-                  <img
+                  <Image
                     src="/cair-logo/fulllogo_nobuffer.png"
                     alt="CAIR-Nepal"
                     width={200}
                     height={80}
                     className="w-40 h-auto mx-auto brightness-0 invert"
+                    sizes="160px"
                   />
                   <p className="text-blue-100 mt-4 text-sm">
                     {t('cair.subtitle')}
