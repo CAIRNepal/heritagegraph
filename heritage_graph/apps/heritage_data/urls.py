@@ -14,6 +14,11 @@ router.register(r'activities', views.ActivityViewSet, basename='activity')
 router.register(r'review-queue', views.ReviewQueueViewSet, basename='reviewqueue')
 router.register(r'review-flags', views.ReviewFlagViewSet, basename='reviewflag')
 router.register(r'reviewer-roles', views.ReviewerRoleViewSet, basename='reviewerrole')
+router.register(
+    r'platform-admin/users',
+    views.PlatformAdminUserViewSet,
+    basename='platform-admin-user',
+)
 
 # Organizations
 router.register(r'organizations', views.OrganizationViewSet, basename='organization')

@@ -598,6 +598,43 @@ class ReviewerRoleAssignSerializer(serializers.Serializer):
     )
 
 
+class PlatformAdminUserSerializer(serializers.ModelSerializer):
+    """Staff-only user directory rows for the in-app platform admin UI."""
+
+    groups = serializers.SerializerMethodField()
+    reviewer_role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'is_staff',
+            'is_superuser',
+            'date_joined',
+            'groups',
+            'reviewer_role',
+        ]
+        read_only_fields = fields
+
+    def get_groups(self, obj):
+        return list(obj.groups.values_list('name', flat=True))
+
+    def get_reviewer_role(self, obj):
+        rr = getattr(obj, 'reviewer_role', None)
+        if rr is None:
+            return None
+        return {
+            'id': str(rr.id),
+            'role': rr.role,
+            'is_active': rr.is_active,
+        }
+
+
 class ReviewDecisionSerializer(serializers.ModelSerializer):
     reviewer = UserSerializer(read_only=True)
     revision_reviewed = RevisionSerializer(read_only=True)

@@ -705,6 +705,26 @@ class CurrentUserView(APIView):
         )
 
 
+class PlatformAdminUserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Staff-only list/detail of Django users for the in-app platform admin UI.
+    """
+
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = PlatformAdminUserSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['email', 'username', 'first_name', 'last_name']
+    ordering_fields = ['date_joined', 'email', 'username']
+    ordering = ['-date_joined']
+
+    def get_queryset(self):
+        return (
+            User.objects.all()
+            .select_related('reviewer_role')
+            .prefetch_related('groups')
+        )
+
+
 @csrf_exempt
 @login_required
 def create_submission(request):
