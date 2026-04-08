@@ -599,7 +599,7 @@ class ReviewerRoleAssignSerializer(serializers.Serializer):
 
 
 class PlatformAdminUserSerializer(serializers.ModelSerializer):
-    """Staff-only user directory rows for the in-app platform admin UI."""
+    """User directory rows for the in-app platform admin UI (staff or expert curators)."""
 
     groups = serializers.SerializerMethodField()
     reviewer_role = serializers.SerializerMethodField()
