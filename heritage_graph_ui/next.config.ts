@@ -24,6 +24,8 @@ function apiMediaRemotePattern(): {
   }
 }
 
+const apiMediaPattern = apiMediaRemotePattern();
+
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'standalone',
@@ -84,7 +86,7 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
-      ...(apiMediaRemotePattern() ? [apiMediaRemotePattern()!] : []),
+      ...(apiMediaPattern ? [apiMediaPattern] : []),
     ],
   },
   eslint: {
