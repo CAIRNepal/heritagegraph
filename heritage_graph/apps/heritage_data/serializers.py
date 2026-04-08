@@ -625,8 +625,9 @@ class PlatformAdminUserSerializer(serializers.ModelSerializer):
         return list(obj.groups.values_list('name', flat=True))
 
     def get_reviewer_role(self, obj):
-        rr = getattr(obj, 'reviewer_role', None)
-        if rr is None:
+        try:
+            rr = obj.reviewer_role
+        except ReviewerRole.DoesNotExist:
             return None
         return {
             'id': str(rr.id),
