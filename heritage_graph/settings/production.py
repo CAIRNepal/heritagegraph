@@ -3,6 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from .base import *  # noqa: F403
+from .caching import build_caches_config
 
 # --------------------------------------------------------------------
 # Load environment variables
@@ -42,6 +43,8 @@ DATABASES = {
 for var in ("DB_NAME", "DB_USER", "DB_PASSWORD"):
     if not os.environ.get(var):
         raise ValueError(f"Missing required database environment variable: {var}")
+
+CACHES = build_caches_config()
 
 # --------------------------------------------------------------------
 # Authentication: Google OAuth (primary) + GitHub (placeholder)

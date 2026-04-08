@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from .base import *  # noqa: F403
+from .caching import build_caches_config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -18,6 +19,8 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+
+CACHES = build_caches_config()
 
 # --------------------------------------------------------------------
 # Authentication: Google OAuth (primary) + GitHub (placeholder)
