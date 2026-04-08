@@ -93,6 +93,18 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true, // allow build even if there are TS errors
   },
+
+  /**
+   * Legacy URLs: the app previously exposed some routes under `/dashboard`.
+   * Authenticated UI now lives at the site root (e.g. `/` not `/dashboard`).
+   */
+  async redirects() {
+    return [
+      { source: '/dashboard', destination: '/', permanent: true },
+      { source: '/dashboard/', destination: '/', permanent: true },
+      { source: '/dashboard/:path*', destination: '/:path*', permanent: true },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);
