@@ -101,6 +101,22 @@ Access the app at:
 
 - Main app (authenticated UI) → [http://localhost:3000/](http://localhost:3000/)
 - Marketing landing (Docker + Traefik) → [http://landing.localhost](http://landing.localhost)
+- **Platform admin** (staff or expert curators only) → `/platform-admin/users` — see [Platform admin](#platform-admin-in-app) below
+
+---
+
+## Platform admin (in-app)
+
+The dashboard includes a **platform admin** area for day-to-day user and reviewer access management. It complements the Django admin (`/admin/`): use Django admin for full model access and superuser setup; use the in-app UI for searchable user directory and **reviewer role assignment**.
+
+| | |
+|--|--|
+| **UI routes** | `/platform-admin` (redirects to `/platform-admin/users`), `/platform-admin/users/[id]` for detail and role assignment |
+| **Who can access** | Django **`is_staff`** users, or users with an active **expert curator** reviewer role (`can_manage_roles` in `/api/user/info`) |
+| **User directory API** | `GET /data/api/platform-admin/users/` — list & retrieve; supports `search`, `ordering`, and limit/offset pagination |
+| **Assign reviewer role** | `POST /data/api/reviewer-roles/assign/` — updates `ReviewerRole` and syncs **`Reviewers`** / **`Moderators`** Django groups |
+
+Ensure role groups exist (e.g. `python manage.py setup_roles`). See [AUTH_ROLES_DEVELOPER_GUIDE.md](AUTH_ROLES_DEVELOPER_GUIDE.md) for how contributor, reviewer, staff, and `ReviewerRole` map to permissions.
 
 ---
 
@@ -138,6 +154,7 @@ Access the backend at (development):
 
 - API → `http://backend.localhost/api` or `http://localhost:8000`
 - Admin dashboard → `http://backend.localhost/admin` or `http://localhost:8000/admin` (use superuser credentials)
+- Platform admin APIs → under `/data/api/platform-admin/` and `/data/api/reviewer-roles/` (Bearer token; staff or expert curator as documented above)
 
 ---
 
@@ -159,6 +176,7 @@ This project includes comprehensive documentation designed to help both human de
 | [AGENTS.md](AGENTS.md) | 🤖 **Start here** — Master guide for AI agents. Project overview, critical rules, directory structure, API summary |
 | [FORMS.md](FORMS.md) | 📋 **How forms work** — Add fields, enums, sections, and new entity types. Registry-driven form system guide |
 | [AUTH.md](AUTH.md) | 🔐 Authentication system — NextAuth + Google OAuth + Django token verification |
+| [AUTH_ROLES_DEVELOPER_GUIDE.md](AUTH_ROLES_DEVELOPER_GUIDE.md) | 👥 Roles & permissions — contributor / reviewer / staff, DRF permissions, frontend guards, platform admin access |
 | [CLAUDE.md](CLAUDE.md) | 📝 Coding conventions and patterns for both Python/Django and TypeScript/Next.js |
 | [SKILLS.md](SKILLS.md) | 🗺️ Feature capability matrix — maps every feature to exact files with status indicators |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 🏗️ System design with ASCII diagrams — network topology, auth flow, data models, Docker lifecycle |
