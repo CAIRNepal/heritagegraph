@@ -4,14 +4,14 @@ import { signIn } from "next-auth/react";
 import { useEffect } from "react";
 
 /**
- * Legacy dev login page — now redirects to OAuth sign-in.
- * Google Auth is the primary authentication method.
- * This page exists only to catch old bookmarks / redirects.
+ * Redirects to OAuth sign-in. Optional `callbackUrl` query param is honored
+ * (e.g. from middleware when redirecting unauthenticated users).
  */
 export default function LoginRedirectPage() {
   useEffect(() => {
-    // Redirect to the NextAuth sign-in page (Google OAuth)
-    signIn("google", { callbackUrl: "/" });
+    const params = new URLSearchParams(window.location.search);
+    const callbackUrl = params.get("callbackUrl") || "/";
+    signIn("google", { callbackUrl });
   }, []);
 
   return (
