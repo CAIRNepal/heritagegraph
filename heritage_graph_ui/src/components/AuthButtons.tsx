@@ -57,8 +57,36 @@ export default function AuthSection() {
     }
   }, [status, session]);
 
-  // Mock user tier - replace with API call to fetch actual tier
-  const [userTier] = useState<TierType>('scholar');
+  const [userTier, setUserTier] = useState<TierType>('apprentice');
+
+  useEffect(() => {
+    if (status !== 'authenticated' || !session?.accessToken || !API_BASE) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await apiFetchJson<{ user_progress?: { tierId?: string } }>(
+          `${API_BASE}/data/api/progression/`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+        if (cancelled) return;
+        const id = data.user_progress?.tierId as TierType | undefined;
+        if (id && id in tierConfig) {
+          setUserTier(id);
+        }
+      } catch {
+        /* keep default apprentice */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, session?.accessToken]);
+
   const tierInfo = tierConfig[userTier];
 
   if (!session) {

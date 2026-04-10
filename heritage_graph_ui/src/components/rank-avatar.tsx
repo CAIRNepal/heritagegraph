@@ -17,9 +17,9 @@ export const tierConfig: Record<TierType, {
   apprentice: {
     name: 'Apprentice',
     icon: '🕯️',
-    ringClass: 'ring-gray-400 dark:ring-gray-500',
-    gradientFrom: 'from-gray-400',
-    gradientTo: 'to-gray-500',
+    ringClass: 'ring-blue-500 dark:ring-blue-400',
+    gradientFrom: 'from-blue-500',
+    gradientTo: 'to-blue-700',
     glowClass: '',
   },
   scholar: {

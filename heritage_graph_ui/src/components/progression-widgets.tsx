@@ -41,7 +41,7 @@ const trackInfo = {
 
 /* ── Tier display info ── */
 const tierDisplay: Record<string, { name: string; icon: string; next: string | null; gradient: string }> = {
-  apprentice: { name: 'Apprentice', icon: '🕯️', next: 'Scholar', gradient: 'from-gray-400 to-gray-500' },
+  apprentice: { name: 'Apprentice', icon: '🕯️', next: 'Scholar', gradient: 'from-blue-500 to-blue-700' },
   scholar: { name: 'Scholar', icon: '📚', next: 'Curator', gradient: 'from-emerald-500 to-green-600' },
   curator: { name: 'Curator', icon: '🏛️', next: 'Archivist', gradient: 'from-amber-500 to-yellow-600' },
   archivist: { name: 'Archivist', icon: '📦', next: 'Grand Keeper', gradient: 'from-violet-500 to-purple-600' },
@@ -139,28 +139,32 @@ export function UserProgressBadge({ className }: { className?: string }) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Link href="/progression">
-            <div className={cn(
-              'flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all hover:scale-105',
-              'bg-gradient-to-r bg-opacity-10 cursor-pointer',
-              config.ringClass.replace('ring-', 'border-'),
-              className
-            )}>
+            <div
+              className={cn(
+                'flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 transition-all hover:scale-105',
+                'bg-muted/60 dark:bg-muted/50',
+                config.ringClass.replace('ring-', 'border-'),
+                className,
+              )}
+            >
               <span className="text-lg">{tierInfo.icon}</span>
               <div className="hidden sm:block">
-                <span className={cn('font-semibold text-sm', config.ringClass.replace('ring-', 'text-').replace('dark:ring-', 'dark:text-'))}>
+                <span className="text-sm font-semibold text-foreground">
                   {progress.totalPoints.toLocaleString()}
                 </span>
-                <span className="text-xs text-muted-foreground ml-1">pts</span>
+                <span className="ml-1 text-xs text-muted-foreground">pts</span>
               </div>
-              <IconChevronRight className="w-3 h-3 text-muted-foreground" />
+              <IconChevronRight className="h-3 w-3 text-muted-foreground" />
             </div>
           </Link>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className="p-3">
+        <TooltipContent side="bottom" className="p-3 text-popover-foreground">
           <div className="text-center">
             <div className="font-semibold">{tierInfo.name}</div>
             <div className="text-xs text-muted-foreground">Rank #{progress.rank} • {progress.totalPoints} pts</div>
-            <div className="text-xs text-emerald-600 mt-1">{progress.pointsToNextTier} pts to {tierInfo.next || 'max'}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              {progress.pointsToNextTier} pts to {tierInfo.next || 'max'}
+            </div>
           </div>
         </TooltipContent>
       </Tooltip>
