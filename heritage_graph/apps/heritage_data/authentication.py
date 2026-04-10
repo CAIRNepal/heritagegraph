@@ -62,39 +62,23 @@ class DevSessionAuthentication(authentication.SessionAuthentication):
 # Production Authentication — Google OAuth Access Token
 # ====================================================================
 
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 
 class GoogleTokenAuthentication(authentication.BaseAuthentication):
     """
-    Authenticate requests using Google OAuth access tokens.
+    Authenticate Bearer tokens from NextAuth + Google.
 
-    The frontend (NextAuth + GoogleProvider) sends the Google access_token
-    as a Bearer token in the Authorization header. This backend:
+    Accepts either:
+    - **OAuth access token** — verified via Google's userinfo endpoint, or
+    - **OIDC ID token (JWT)** — verified with `google-auth` against `GOOGLE_CLIENT_ID`.
 
-    1. Calls Google's userinfo API to verify the token and get user info
-    2. Maps Google claims → Django User fields
-    3. Auto-creates User + UserProfile on first login (get_or_create)
-
-    Access tokens (unlike ID tokens) can be refreshed by NextAuth,
-    avoiding the 1-hour expiry problem that ID tokens have.
+    NextAuth may send either during sign-in; userinfo rejects ID tokens, so both paths
+    are required for reliable Django verification.
     """
 
-    def authenticate(self, request):
-        auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            return None
-
-        # If GOOGLE_CLIENT_ID is not configured, skip this backend entirely
-        # so the next auth class in the chain can handle the token.
-        if not GOOGLE_CLIENT_ID:
-            return None
-
-        token = auth_header.split(" ")[1]
-
-        # Verify the access token by calling Google's userinfo endpoint.
-        # This returns user profile data if the token is valid.
+    @staticmethod
+    def _claims_from_bearer_token(token: str, google_client_id: str) -> dict | None:
         try:
             resp = http_requests.get(
                 GOOGLE_USERINFO_URL,
@@ -102,16 +86,28 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
                 timeout=10,
             )
         except http_requests.RequestException:
-            # Network error — let the next auth class try
             return None
 
-        if resp.status_code != 200:
-            # Not a valid Google access token — return None so the next
-            # auth class in the chain can try (e.g. GitHubTokenAuthentication).
-            return None
+        if resp.status_code == 200:
+            return resp.json()
 
-        payload = resp.json()
+        # ID token (JWT): userinfo returns 401; verify audience with google-auth
+        if token.count(".") == 2 and google_client_id:
+            try:
+                from google.auth.transport import requests as google_requests
+                from google.oauth2 import id_token as google_id_token
 
+                return google_id_token.verify_oauth2_token(
+                    token, google_requests.Request(), google_client_id
+                )
+            except ValueError:
+                logger.debug("Google Bearer token is not a valid access or ID token")
+                return None
+
+        return None
+
+    @staticmethod
+    def _user_from_google_claims(payload: dict):
         email = payload.get("email")
         if not email:
             raise exceptions.AuthenticationFailed("Token missing email claim.")
@@ -123,7 +119,6 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
             email=email,
         )
 
-        # Always sync core fields from Google
         user.email = email
         if hasattr(user, "first_name"):
             user.first_name = payload.get("given_name", getattr(user, "first_name", "")) or ""
@@ -134,17 +129,34 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         if created:
             logger.info("Created new Django user from Google sign-in: %s", email)
 
-        # --- Sync UserProfile ---
         profile, _ = UserProfile.objects.get_or_create(user=user)
         profile.first_name = payload.get("given_name", profile.first_name) or ""
         profile.last_name = payload.get("family_name", profile.last_name) or ""
         profile.email = email
         profile.avatar_url = payload.get("picture", profile.avatar_url)
-        # Store Google's unique subject ID for reference
         profile.clerk_user_id = payload.get("sub", profile.clerk_user_id)
         profile.save()
 
         return (user, None)
+
+    def authenticate(self, request):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return None
+
+        google_client_id = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+        if not google_client_id:
+            return None
+
+        token = auth_header.split(" ", 1)[1].strip()
+        if not token:
+            return None
+
+        payload = self._claims_from_bearer_token(token, google_client_id)
+        if payload is None:
+            return None
+
+        return self._user_from_google_claims(payload)
 
 
 # ====================================================================
