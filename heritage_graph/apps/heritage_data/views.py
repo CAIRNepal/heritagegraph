@@ -3,6 +3,7 @@ import json
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q
 from django.http import JsonResponse
@@ -2911,8 +2912,17 @@ def _compute_medals_from_rank(rank, total_users):
     return {'gold': gold, 'silver': silver, 'bronze': bronze}
 
 
+PROGRESSION_LEADERBOARD_CACHE_KEY = "progression:leaderboard_entries_v1"
+# Short TTL: leaderboard is expensive (full-user scan + per-user scoring) but need not be real-time.
+PROGRESSION_LEADERBOARD_CACHE_TTL = 300
+
+
 def _build_leaderboard():
     """Build the full leaderboard, computing scores per user."""
+    cached = cache.get(PROGRESSION_LEADERBOARD_CACHE_KEY)
+    if cached is not None:
+        return cached
+
     users = User.objects.select_related('profile').filter(is_active=True)
     entries = []
     for user in users:
@@ -2950,6 +2960,7 @@ def _build_leaderboard():
     total_users = len(entries)
     for entry in entries:
         entry['medals'] = _compute_medals_from_rank(entry['rank'], total_users)
+    cache.set(PROGRESSION_LEADERBOARD_CACHE_KEY, entries, PROGRESSION_LEADERBOARD_CACHE_TTL)
     return entries
 
 

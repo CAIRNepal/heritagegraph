@@ -6,10 +6,9 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { RankAvatar, getTierFromIcon, getTierFromName, type TierType } from '@/components/rank-avatar';
+import { RankAvatar, getTierFromName, type TierType } from '@/components/rank-avatar';
 import { cn } from '@/lib/utils';
 import {
   IconTrophy,
@@ -29,7 +28,6 @@ import {
   IconAlertCircle,
   IconCheck,
   IconClockHour4,
-  IconLoader2,
   IconLogin,
 } from '@tabler/icons-react';
 import { signIn } from 'next-auth/react';
@@ -258,16 +256,16 @@ function LoadingSkeleton() {
 }
 
 export default function ProgressionPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [selectedTrack, setSelectedTrack] = useState('curation');
   const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [apiLoading, setApiLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProgression = useCallback(async () => {
     try {
-      setLoading(true);
+      setApiLoading(true);
       setError(null);
 
       const headers: Record<string, string> = {
@@ -288,37 +286,41 @@ export default function ProgressionPage() {
         getApiErrorMessage(err, 'Could not load progression data. Please try again.')
       );
     } finally {
-      setLoading(false);
+      setApiLoading(false);
     }
   }, [session?.accessToken]);
 
   useEffect(() => {
-    fetchProgression();
-  }, [fetchProgression]);
+    if (status === 'loading') return;
+    void fetchProgression();
+  }, [status, fetchProgression]);
 
   const selectedTrackData = tracks.find(t => t.id === selectedTrack);
 
-  if (loading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <IconAlertCircle className="w-12 h-12 text-destructive" />
-        <p className="text-destructive font-medium">{error}</p>
-        <button onClick={fetchProgression} className="text-sm text-blue-600 hover:underline">
-          Try again
-        </button>
-      </div>
-    );
-  }
-
+  const sessionPending = status === 'loading';
   const isAuthenticated = !!session?.accessToken;
 
   return (
     <TooltipProvider>
       <div className="space-y-6">
+        {error && (
+          <div
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm"
+            role="alert"
+          >
+            <div className="flex items-center gap-2 text-destructive font-medium">
+              <IconAlertCircle className="w-5 h-5 shrink-0" />
+              {error}
+            </div>
+            <button
+              type="button"
+              onClick={() => void fetchProgression()}
+              className="text-sm text-blue-600 hover:underline self-start sm:self-auto"
+            >
+              Try again
+            </button>
+          </div>
+        )}
         {/* ── Page Header ── */}
         <motion.div
           initial="hidden"
@@ -337,7 +339,7 @@ export default function ProgressionPage() {
                 Heritage Progression System
               </div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                {isAuthenticated ? (
+                {!sessionPending && isAuthenticated ? (
                   <>Track Your Scholarly{' '}
                     <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
                       Contributions
@@ -352,12 +354,20 @@ export default function ProgressionPage() {
                 )}
               </h1>
               <p className="text-muted-foreground mt-2 max-w-xl">
-                {isAuthenticated
+                {!sessionPending && isAuthenticated
                   ? 'Grow your standing in the living archive through curation, annotation, verification, and exhibition of cultural heritage.'
                   : 'Explore how contributors grow their standing through curation, annotation, verification, and exhibition of cultural heritage.'}
               </p>
             </div>
-            {isAuthenticated && userProgress ? (
+            {sessionPending ? (
+              <div className="flex items-center gap-3 min-h-[4.5rem]">
+                <div className="h-14 w-14 rounded-xl bg-muted/40 animate-pulse shrink-0" />
+                <div className="space-y-2 text-right min-w-[8rem]">
+                  <div className="h-3 w-24 bg-muted/40 rounded animate-pulse ml-auto" />
+                  <div className="h-6 w-32 bg-muted/40 rounded animate-pulse ml-auto" />
+                </div>
+              </div>
+            ) : isAuthenticated && userProgress ? (
               <div className="flex items-center gap-3">
                 <div className="text-4xl">{userProgress.tierIcon}</div>
                 <div className="text-right">
@@ -366,6 +376,14 @@ export default function ProgressionPage() {
                   {userProgress.rank > 0 && (
                     <div className="text-xs text-muted-foreground">#{userProgress.rank} overall</div>
                   )}
+                </div>
+              </div>
+            ) : isAuthenticated && apiLoading ? (
+              <div className="flex items-center gap-3 min-h-[4.5rem]">
+                <div className="h-14 w-14 rounded-xl bg-muted/40 animate-pulse shrink-0" />
+                <div className="space-y-2 text-right min-w-[8rem]">
+                  <div className="h-3 w-24 bg-muted/40 rounded animate-pulse ml-auto" />
+                  <div className="h-6 w-32 bg-muted/40 rounded animate-pulse ml-auto" />
                 </div>
               </div>
             ) : !isAuthenticated ? (
@@ -637,7 +655,7 @@ export default function ProgressionPage() {
 
           {/* ── Progress Tab (only rendered for authenticated users) ── */}
           <TabsContent value="progress" className="mt-6">
-            {!isAuthenticated || !userProgress ? (
+            {!isAuthenticated ? (
               <motion.div initial="hidden" animate="show" variants={fadeInUp}>
                 <Card className="bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 border border-amber-200 dark:border-amber-800">
                   <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
@@ -652,6 +670,23 @@ export default function ProgressionPage() {
                     >
                       <IconLogin className="w-4 h-4" />
                       Sign In
+                    </button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ) : apiLoading && !userProgress ? (
+              <LoadingSkeleton />
+            ) : !userProgress ? (
+              <motion.div initial="hidden" animate="show" variants={fadeInUp}>
+                <Card className="border-muted">
+                  <CardContent className="flex flex-col items-center justify-center py-12 gap-2 text-center text-muted-foreground text-sm">
+                    <p>Progress data is not available.</p>
+                    <button
+                      type="button"
+                      onClick={() => void fetchProgression()}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Refresh
                     </button>
                   </CardContent>
                 </Card>
@@ -823,11 +858,26 @@ export default function ProgressionPage() {
                   </div>
                   <CardContent className="p-0">
                     <div className="divide-y divide-border">
-                      {leaderboard.length === 0 && (
+                      {apiLoading && leaderboard.length === 0 ? (
+                        <div className="px-5 py-4 space-y-3">
+                          {Array.from({ length: 8 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className="h-14 rounded-lg bg-muted/30 animate-pulse"
+                            />
+                          ))}
+                        </div>
+                      ) : null}
+                      {!apiLoading && error && leaderboard.length === 0 ? (
+                        <div className="px-5 py-8 text-center text-muted-foreground">
+                          Leaderboard could not be loaded. Use &quot;Try again&quot; above.
+                        </div>
+                      ) : null}
+                      {!apiLoading && !error && leaderboard.length === 0 ? (
                         <div className="px-5 py-8 text-center text-muted-foreground">
                           No contributors yet. Be the first to earn points!
                         </div>
-                      )}
+                      ) : null}
                       {leaderboard.map((row) => {
                         const isCurrentUser = session?.user && (
                           row.username === session.user.name ||

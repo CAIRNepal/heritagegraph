@@ -132,14 +132,16 @@ export interface CulturalEntityRecord {
 }
 
 /**
- * Source record type
+ * Source record type — aligns with `cidoc_data.Source` + CulturalEntityLinkMixin
  */
 export interface SourceRecord extends BaseRecord {
-  source_type?: string;
-  author?: string;
-  publication_date?: string;
-  url?: string;
-  cultural_entity_id?: string;
+  authors?: string;
+  publication_year?: string;
+  /** Material type: book, journal, archive, thesis, web, field_note */
+  type?: string;
+  digital_link?: string;
+  archive_location?: string;
+  cultural_entity_id?: string | null;
 }
 
 /**

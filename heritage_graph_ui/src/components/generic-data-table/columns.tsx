@@ -11,6 +11,11 @@ import {
 } from '@/components/ui/hover-card';
 import { Eye } from 'lucide-react';
 
+import {
+  formatSourceTypeLabel,
+  SourceRecordHoverCard,
+} from './source-hover-preview';
+
 import type {
   PersonRecord,
   LocationRecord,
@@ -657,67 +662,50 @@ export const sourceColumns: ColumnDef<SourceRecord>[] = [
     header: 'Title',
     cell: ({ row }) => {
       const item = row.original;
+      const headline = item.title || item.name || '—';
       return (
-        <HoverCard>
-          <HoverCardTrigger asChild>
-            <Link
-              href={`/knowledge/source/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
-            >
-              {item.title || item.name || '-'}
-            </Link>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-80">
-            <div className="space-y-3">
-              <h4 className="font-semibold">{item.title || item.name}</h4>
-              {item.source_type && (
-                <Badge variant="outline">{item.source_type}</Badge>
-              )}
-              {item.author && (
-                <p className="text-sm text-muted-foreground">By: {item.author}</p>
-              )}
-              {item.description && (
-                <p className="text-sm line-clamp-3">{item.description}</p>
-              )}
-              <div className="pt-2">
-                <Link href={`/knowledge/source/view/${item.id}`}>
-                  <Button variant="default" size="sm" className="w-full text-xs">
-                    <Eye className="h-3 w-3 mr-1" /> View Details
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
+        <SourceRecordHoverCard item={item}>
+          <Link
+            href={`/knowledge/source/view/${item.id}`}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            {headline}
+          </Link>
+        </SourceRecordHoverCard>
       );
     },
     enableHiding: false,
     enableColumnFilter: true,
   },
   {
-    accessorKey: 'source_type',
+    accessorKey: 'type',
+    id: 'source_material_type',
     header: 'Type',
     cell: ({ row }) => {
-      const type = row.original.source_type;
-      if (!type) return '-';
-      return <Badge variant="secondary">{type}</Badge>;
+      const t = row.original.type;
+      if (!t) return '-';
+      return (
+        <Badge variant="secondary">{formatSourceTypeLabel(t)}</Badge>
+      );
     },
     enableColumnFilter: true,
   },
   {
-    accessorKey: 'author',
-    header: 'Author',
+    accessorKey: 'authors',
+    header: 'Author(s)',
     cell: ({ row }) => (
-      <span className="text-sm">{row.original.author || '-'}</span>
+      <span className="text-sm line-clamp-2 max-w-[14rem]">
+        {row.original.authors || '-'}
+      </span>
     ),
     enableColumnFilter: true,
   },
   {
-    accessorKey: 'publication_date',
+    accessorKey: 'publication_year',
     header: 'Published',
     cell: ({ row }) => (
       <span className="text-sm text-muted-foreground">
-        {row.original.publication_date || '-'}
+        {row.original.publication_year || '-'}
       </span>
     ),
   },
@@ -729,7 +717,7 @@ export const sourceColumns: ColumnDef<SourceRecord>[] = [
       if (!status) return '-';
       return (
         <Badge variant="outline" className={getStatusColor(status)}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {status.replace(/_/g, ' ')}
         </Badge>
       );
     },
