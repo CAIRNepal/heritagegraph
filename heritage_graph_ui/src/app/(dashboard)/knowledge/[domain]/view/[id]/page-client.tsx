@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, Calendar, User, Tag, Edit, ExternalLink, MapPin, ThumbsUp, ThumbsDown, GitFork, Share2, MessageSquare, ChevronDown, QrCode } from "lucide-react";
+import { ArrowLeft, Calendar, User, Users, Tag, Edit, ExternalLink, MapPin, ThumbsUp, ThumbsDown, GitFork, Share2, MessageSquare, ChevronDown, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,63 @@ function formatFieldValue(value: unknown, field?: OntologyField): string {
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "object") return JSON.stringify(value, null, 2);
   return String(value);
+}
+
+/** CIDOC and legacy APIs sometimes send `contributor` as a plain string (e.g. username), not a nested user object. */
+interface ContributorPresentation {
+  label: string;
+  email?: string;
+  initials: string;
+}
+
+function contributorFromRecord(record: Record<string, unknown>): ContributorPresentation | null {
+  const c = record.contributor;
+  if (c === null || c === undefined) return null;
+  if (typeof c === "string") {
+    const label = c.trim();
+    if (!label) return null;
+    const parts = label.split(/\s+/).filter(Boolean);
+    let initials: string;
+    if (parts.length >= 2) {
+      initials = `${parts[0][0] ?? ""}${parts[parts.length - 1]?.[0] ?? ""}`.toUpperCase();
+    } else if (label.length >= 2) {
+      initials = label.slice(0, 2).toUpperCase();
+    } else {
+      initials = (label[0] ?? "?").toUpperCase();
+    }
+    return { label, initials: initials || "?" };
+  }
+  if (typeof c === "object") {
+    const o = c as { username?: string; first_name?: string; last_name?: string; email?: string };
+    const label =
+      [o.first_name, o.last_name].filter(Boolean).join(" ").trim() ||
+      (typeof o.username === "string" ? o.username.trim() : "") ||
+      "";
+    const email = typeof o.email === "string" ? o.email.trim() : undefined;
+    if (!label && !email) return null;
+    const initials = (
+      o.first_name?.[0] ||
+      o.username?.[0] ||
+      label[0] ||
+      "?"
+    ).toUpperCase();
+    return {
+      label: label || o.username || "Unknown",
+      email: email || undefined,
+      initials,
+    };
+  }
+  return null;
+}
+
+/** Comma-separated author string from bibliographic `Source.authors`. */
+function authorNamesFromRecord(record: Record<string, unknown>): string[] {
+  const a = record.authors;
+  if (typeof a !== "string" || !a.trim()) return [];
+  return a
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 export default function OntologyViewPage() {
@@ -112,7 +169,8 @@ export default function OntologyViewPage() {
   const displayName = (record.name as string) || (record.title as string) || `${ontologyClass.label} #${id}`;
   const status = record.status as string | undefined;
   const category = record.category as string | undefined;
-  const contributor = record.contributor as { username?: string; first_name?: string; last_name?: string; email?: string } | undefined;
+  const contributorInfo = contributorFromRecord(record);
+  const authorNames = authorNamesFromRecord(record);
   const createdAt = record.created_at as string | undefined;
   const updatedAt = record.updated_at as string | undefined;
   
@@ -182,12 +240,19 @@ export default function OntologyViewPage() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-3 text-sm opacity-90">
-                {contributor && (
-                  <span className="flex items-center gap-1.5">
-                    <User className="h-3.5 w-3.5" />
-                    {[contributor.first_name, contributor.last_name].filter(Boolean).join(" ") || contributor.username || "Unknown"}
+                {authorNames.length > 0 ? (
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    <Users className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">
+                      {authorNames.length === 1 ? "Author" : "Authors"}: {authorNames.join(", ")}
+                    </span>
                   </span>
-                )}
+                ) : contributorInfo ? (
+                  <span className="flex items-center gap-1.5 min-w-0">
+                    <User className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{contributorInfo.label}</span>
+                  </span>
+                ) : null}
                 {category && (
                   <span className="flex items-center gap-1.5">
                     <Tag className="h-3.5 w-3.5" />
@@ -388,19 +453,51 @@ export default function OntologyViewPage() {
             </dl>
           </motion.div>
 
-          {/* Contributor Card */}
-          {contributor && (
+          {/* People involved (e.g. source authors) + platform contributor */}
+          {(authorNames.length > 0 || contributorInfo) && (
             <motion.div initial="hidden" animate="show" variants={fadeInUp} className="rounded-lg border bg-card p-4">
-              <h3 className="font-semibold mb-3">Contributor</h3>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                  {(contributor.first_name?.[0] || contributor.username?.[0] || "?").toUpperCase()}
+              <h3 className="font-semibold mb-3">
+                {authorNames.length > 0 ? "People involved" : "Contributor"}
+              </h3>
+              {authorNames.length > 0 ? (
+                <div className="mb-1">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" aria-hidden />
+                    {authorNames.length === 1 ? "Author" : "Authors"}
+                  </p>
+                  <ul className="space-y-2">
+                    {authorNames.map((name) => (
+                      <li key={name} className="flex items-start gap-2 text-sm">
+                        <User className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" aria-hidden />
+                        <span className="font-medium leading-snug">{name}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+              ) : null}
+              {contributorInfo && authorNames.length > 0 ? (
+                <Separator className="my-3" />
+              ) : null}
+              {contributorInfo ? (
                 <div>
-                  <p className="font-medium">{[contributor.first_name, contributor.last_name].filter(Boolean).join(" ") || contributor.username}</p>
-                  {contributor.email && <p className="text-xs text-muted-foreground">{contributor.email}</p>}
+                  {authorNames.length > 0 ? (
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-2">
+                      Platform contributor
+                    </p>
+                  ) : null}
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                      {contributorInfo.initials}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium leading-snug break-words">{contributorInfo.label}</p>
+                      {contributorInfo.email ? (
+                        <p className="text-xs text-muted-foreground truncate">{contributorInfo.email}</p>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </motion.div>
           )}
         </div>
