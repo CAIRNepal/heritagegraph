@@ -385,6 +385,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const t = useTranslations('nav');
+  const { status } = useSession();
+  const showAuthedNav = status === 'authenticated';
   const [showScrollTop, setShowScrollTop] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const { isModerator, isReviewer, isPlatformAdmin } = useSidebarRoles();
@@ -444,16 +446,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </>
         )}
 
-        <NavMain navtitle={t('navigation')} items={[
-          { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
-          { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
-          { title: t('contribute'), url: '/contribute', icon: IconPlus },
-          { title: t('progression'), url: '/progression', icon: IconMedal },
-          { title: t('leaderboard'), url: '/leaderboard', icon: IconTrophy },
-          { title: t('notifications'), url: '/notification', icon: IconBell },
-          { title: t('team'), url: '/team', icon: IconUsersGroup },
-          { title: t('about'), url: '/about', icon: IconInfoCircle },
-        ]} />
+        <NavMain
+          navtitle={t('navigation')}
+          items={[
+            { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
+            { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
+            { title: t('contribute'), url: '/contribute', icon: IconPlus },
+            ...(showAuthedNav
+              ? [{ title: t('progression'), url: '/progression', icon: IconMedal }]
+              : []),
+            { title: t('leaderboard'), url: '/leaderboard', icon: IconTrophy },
+            ...(showAuthedNav
+              ? [{ title: t('notifications'), url: '/notification', icon: IconBell }]
+              : []),
+            { title: t('team'), url: '/team', icon: IconUsersGroup },
+            { title: t('about'), url: '/about', icon: IconInfoCircle },
+          ]}
+        />
 
         <NavMain navtitle={t('knowledgebase')} items={[
           { title: t('person'), url: '/knowledge/person', icon: IconUser },

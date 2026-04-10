@@ -3,6 +3,7 @@
 import React from 'react';
 import { ReactNode } from 'react';
 import dynamic from 'next/dynamic';
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { AppSidebar } from '@/app/(dashboard)/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
@@ -25,6 +26,9 @@ import { Github, Mail, ExternalLink } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const t = useTranslations('common');
+  const { status } = useSession();
+  const showAuthedHeader = status === 'authenticated';
+
   return (
     <SidebarProvider
       style={
@@ -48,8 +52,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           <div className="ml-auto flex items-center gap-3 flex-shrink-0">
 
-            <UserProgressBadge />
-            <NotificationBell />
+            {showAuthedHeader ? <UserProgressBadge /> : null}
+            {showAuthedHeader ? <NotificationBell /> : null}
             {/* <LanguageSwitcher /> */}
             <AuthButtons />
             <ThemeToggle />

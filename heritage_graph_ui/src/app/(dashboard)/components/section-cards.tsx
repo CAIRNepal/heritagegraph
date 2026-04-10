@@ -29,34 +29,62 @@ interface CardData {
 }
 
 export function SectionCards() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status === 'loading') {
+      return;
+    }
+    if (status !== 'authenticated') {
+      setLoading(false);
+      setStats(null);
+      setError(null);
+      return;
+    }
+    if (!session?.accessToken) {
+      setLoading(false);
+      setError(
+        'Your session has no API token. Sign out and sign in again with Google.'
+      );
+      return;
+    }
+
+    let cancelled = false;
+
     const fetchStats = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const headers: HeadersInit = { Accept: 'application/json' };
-        if (session?.accessToken) {
-          (headers as Record<string, string>).Authorization =
-            `Bearer ${session.accessToken}`;
-        }
         const data = await apiFetchJson<Stats>(`${getPublicApiUrl()}/data/api/user-stats/`, {
-          headers,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${session.accessToken}`,
+          },
         });
-        setStats(data);
+        if (!cancelled) {
+          setStats(data);
+        }
       } catch (err: unknown) {
-        setError(
-          getApiErrorMessage(err, 'Could not load your dashboard statistics.')
-        );
+        if (!cancelled) {
+          setError(
+            getApiErrorMessage(err, 'Could not load your dashboard statistics.')
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchStats();
-  }, [session?.accessToken]);
+    void fetchStats();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, session?.accessToken]);
 
   const UpOrDown: React.FC<{ value: number }> = ({ value }) =>
     value >= 0 ? (
