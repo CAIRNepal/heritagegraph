@@ -128,7 +128,13 @@ export interface CulturalEntityRecord {
   created_at: string;
   updated_at?: string;
   contributor?: { username?: string; id?: number };
-  current_revision?: Record<string, unknown>;
+  /** Present on list/detail from API; `data` may contain `_cidoc_model` / `_cidoc_id` for CIDOC-backed rows. */
+  current_revision?: {
+    revision_id?: string;
+    revision_number?: number;
+    data?: Record<string, unknown>;
+    created_at?: string;
+  } | null;
 }
 
 /**

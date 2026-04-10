@@ -33,6 +33,7 @@ import type {
   MonumentRecord,
   DataTableConfig,
 } from './types';
+import { culturalEntityViewHref } from '@/lib/knowledge/cultural-entity-view-href';
 
 // ============================================
 // HELPER FUNCTIONS
@@ -548,11 +549,12 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
     header: 'Name',
     cell: ({ row }) => {
       const item = row.original;
+      const viewHref = culturalEntityViewHref(item.entity_id, item.current_revision, item.category);
       return (
         <HoverCard>
           <HoverCardTrigger asChild>
             <Link
-              href={`/knowledge/entity/view/${item.entity_id}`}
+              href={viewHref}
               className="text-blue-600 hover:underline font-medium"
             >
               {item.name}
@@ -566,7 +568,7 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
                 {item.status ? item.status.replace(/_/g, ' ') : '—'}
               </Badge>
               <div className="pt-2">
-                <Link href={`/knowledge/entity/view/${item.entity_id}`}>
+                <Link href={viewHref}>
                   <Button variant="default" size="sm" className="w-full text-xs">
                     <Eye className="h-3 w-3 mr-1" /> View Details
                   </Button>
@@ -641,13 +643,15 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
   {
     id: 'actions',
     header: 'Actions',
-    cell: ({ row }) => (
-      <Button variant="ghost" size="sm" asChild>
-        <Link href={`/knowledge/entity/view/${row.original.entity_id}`}>
-          View
-        </Link>
-      </Button>
-    ),
+    cell: ({ row }) => {
+      const item = row.original;
+      const viewHref = culturalEntityViewHref(item.entity_id, item.current_revision, item.category);
+      return (
+        <Button variant="ghost" size="sm" asChild>
+          <Link href={viewHref}>View</Link>
+        </Button>
+      );
+    },
     enableColumnFilter: false,
   },
 ];
