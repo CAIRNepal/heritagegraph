@@ -3,11 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function MonumentKnowledgePage() {
   return (
-    <KnowledgeListPage
-      title="Monuments"
-      description="Standalone monuments and commemorative structures with cultural significance."
-      contributeHref="/contribute/monument"
-    >
+    <KnowledgeListPage>
       <GenericDataTable config={monumentTableConfig} />
     </KnowledgeListPage>
   );

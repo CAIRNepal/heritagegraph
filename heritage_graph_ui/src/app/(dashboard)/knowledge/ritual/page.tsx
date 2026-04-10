@@ -3,11 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function RitualKnowledgePage() {
   return (
-    <KnowledgeListPage
-      title="Rituals"
-      description="Ceremonial acts, worship sequences, and ritual programs tied to time, place, or community."
-      contributeHref="/contribute/ritual"
-    >
+    <KnowledgeListPage>
       <GenericDataTable config={ritualTableConfig} />
     </KnowledgeListPage>
   );

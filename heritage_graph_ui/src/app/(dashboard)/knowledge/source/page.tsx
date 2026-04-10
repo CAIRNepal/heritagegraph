@@ -3,11 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function SourceKnowledgePage() {
   return (
-    <KnowledgeListPage
-      title="Sources"
-      description="Bibliographic and documentary references that support claims in the knowledge base."
-      contributeHref="/contribute/source"
-    >
+    <KnowledgeListPage>
       <GenericDataTable config={sourceTableConfig} />
     </KnowledgeListPage>
   );

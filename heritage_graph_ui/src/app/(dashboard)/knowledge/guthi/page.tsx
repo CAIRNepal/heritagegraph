@@ -3,11 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function GuthiKnowledgePage() {
   return (
-    <KnowledgeListPage
-      title="Guthi"
-      description="Endowments and traditional institutions that steward cultural and religious assets."
-      contributeHref="/contribute/guthi"
-    >
+    <KnowledgeListPage>
       <GenericDataTable config={guthiTableConfig} />
     </KnowledgeListPage>
   );

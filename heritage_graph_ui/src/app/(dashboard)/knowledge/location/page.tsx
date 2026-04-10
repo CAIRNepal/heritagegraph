@@ -3,11 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function LocationKnowledgePage() {
   return (
-    <KnowledgeListPage
-      title="Locations"
-      description="Heritage places, sites, and spatial anchors used across the knowledge graph."
-      contributeHref="/contribute/location"
-    >
+    <KnowledgeListPage>
       <GenericDataTable config={locationTableConfig} />
     </KnowledgeListPage>
   );

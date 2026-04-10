@@ -3,11 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function StructureKnowledgePage() {
   return (
-    <KnowledgeListPage
-      title="Structures"
-      description="Built heritage: temples, monuments, palaces, and other physical structures."
-      contributeHref="/contribute/structure"
-    >
+    <KnowledgeListPage>
       <GenericDataTable config={structureTableConfig} />
     </KnowledgeListPage>
   );
