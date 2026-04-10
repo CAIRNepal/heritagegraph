@@ -3,11 +3,29 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { locales, defaultLocale, LOCALE_COOKIE, type Locale } from '@/i18n/routing';
 
-function isPublicPath(pathname: string): boolean {
-  if (pathname.startsWith('/auth')) return true;
-  if (pathname.startsWith('/contribute/scan')) return true;
-  if (pathname === '/services' || pathname.startsWith('/services/')) return true;
-  return false;
+/**
+ * Routes that must have a NextAuth session (admin, personal account, reviewer tools).
+ * Everything else is browsable without login; APIs still enforce permissions.
+ */
+function pathRequiresLogin(pathname: string): boolean {
+  if (pathname.startsWith('/auth')) return false;
+
+  const protectedPrefixes = [
+    '/curation',
+    '/platform-admin',
+    '/moderate',
+    '/account',
+    '/notification',
+    '/progression',
+    '/team',
+    '/community/reviewer-request',
+    '/contribute/entity/edit',
+    '/contribute/entity/revise',
+  ];
+
+  return protectedPrefixes.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 /**
@@ -16,7 +34,7 @@ function isPublicPath(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (!isPublicPath(pathname)) {
+  if (pathRequiresLogin(pathname)) {
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
