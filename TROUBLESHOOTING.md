@@ -72,19 +72,62 @@
 
 ### 10. `InconsistentMigrationHistory` during `make setup` / `migrate`
 - **Error:** `django.db.migrations.exceptions.InconsistentMigrationHistory: Migration admin.0001_initial is applied before its dependency users.0001_initial`
-- **Cause:** A stale local dev SQLite database (`heritage_graph/db.sqlite3`) created under an older auth/user-model configuration.
-- **Fix (recommended):** Reset the local dev DB (it will be backed up with a timestamp) and re-run migrations:
+- **Cause:** Django’s `django_migrations` table says `admin.0001_initial` ran, but `users.0001_initial` (required for the custom `AUTH_USER_MODEL`) is not recorded as applied. Typical cases:
+  - Stale **SQLite** dev DB from before the custom user model.
+  - **PostgreSQL** volume reused after a failed or partial migrate, or a DB restored from another environment.
+
+#### Fix — local SQLite (development)
 
 ```bash
 make reset-dev-db
 ```
 
-- **Fix (manual):**
+Or manual:
 
 ```bash
 mv heritage_graph/db.sqlite3 heritage_graph/db.sqlite3.bak-$(date +%Y%m%d-%H%M%S)
 make migrate
 ```
+
+#### Fix — PostgreSQL / Docker / Coolify (production or shared DB)
+
+**A. No data to keep (empty or disposable DB)** — simplest:
+
+1. In Coolify (or `docker compose`), remove the Postgres **volume** for this stack, or run:
+
+```bash
+docker exec -it <postgres_container> psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+```
+
+2. Redeploy the **backend** so `migrate` runs on a clean schema.
+
+**B. You need to keep data** — repair history, then migrate (get a backup first):
+
+1. Open a shell on the Postgres container and run SQL (adjust user/db names):
+
+```sql
+-- Remove the bogus admin row so Django can apply users.* then admin.* in order
+DELETE FROM django_migrations WHERE app = 'admin';
+```
+
+2. From the **backend** container:
+
+```bash
+python manage.py migrate --noinput
+```
+
+3. If `migrate` errors with **“relation users_user already exists”** (table present but migration row missing), align with fakes (only if the schema matches `users.0001_initial`):
+
+```bash
+python manage.py migrate users 0001 --fake-initial
+python manage.py migrate --noinput
+```
+
+If problems persist, compare `django_migrations` rows for `users` and `admin` with a known-good fresh migrate on a throwaway database.
+
+#### Automated repair (Docker / Dokploy)
+
+For **Dokploy**, `docker-compose-dokploy.yml` sets `MIGRATION_AUTO_REPAIR=1` on the backend so the entrypoint runs `python manage.py repair_migration_history` before `migrate`. The command is defined in `apps/heritage_data/management/commands/repair_migration_history.py`. You can run it manually or set the same env on other compose stacks. Set `MIGRATION_AUTO_REPAIR=0` once the DB is healthy if you want to skip the check.
 
 ---
 

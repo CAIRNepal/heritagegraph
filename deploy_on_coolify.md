@@ -240,6 +240,15 @@ Or use a wildcard:
 2. Ensure postgres health check passes
 3. Backend should wait for postgres via `depends_on`
 
+### `InconsistentMigrationHistory: admin.0001_initial … users.0001_initial`
+
+The backend entrypoint runs `migrate` on every start. If Postgres was initialized with a bad migration order (or a restored dump), migrations loop forever.
+
+1. **Disposable data:** drop and recreate the public schema or delete the Postgres volume, then redeploy (see **TROUBLESHOOTING.md §10** — PostgreSQL / Coolify).
+2. **Keep data:** `DELETE FROM django_migrations WHERE app = 'admin';` then `migrate` from the backend container; use `--fake-initial` for `users` only if tables already exist and match.
+
+Full steps: [TROUBLESHOOTING.md](TROUBLESHOOTING.md) → section **10**.
+
 ### CORS Errors
 
 1. Update `CORS_ALLOWED_ORIGINS` to include your actual frontend domain

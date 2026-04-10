@@ -72,6 +72,9 @@ heritagegraph/
 │   └── docker/                  # Legacy docker-compose files (reference only)
 │
 ├── docker-compose.yml           # Main compose: all services (dev)
+├── docker-compose-coolify.yml   # Coolify (platform proxy; no in-repo Traefik)
+├── docker-compose-dokploy.yml   # Dokploy (same + MIGRATION_AUTO_REPAIR, landing build args)
+├── DOKPLOY.md                   # Dokploy checklist and env notes
 ├── docker-compose.prod.yml      # Production override (HTTPS, Let's Encrypt)
 ├── Dockerfile.backend           # Backend multi-stage build
 ├── Dockerfile.frontend          # Frontend multi-stage build (root-level, legacy)

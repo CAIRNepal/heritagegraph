@@ -51,6 +51,10 @@ log_info "Database is ready!"
 # ================================================================
 # Run database migrations
 # ================================================================
+if [ "${MIGRATION_AUTO_REPAIR:-0}" = "1" ] || [ "${MIGRATION_AUTO_REPAIR:-}" = "true" ]; then
+    log_info "MIGRATION_AUTO_REPAIR enabled: checking for admin/users migration order issues..."
+    python manage.py repair_migration_history || log_warn "repair_migration_history failed; migrate may still error."
+fi
 log_info "Running database migrations..."
 python manage.py migrate --noinput
 if [ $? -eq 0 ]; then
