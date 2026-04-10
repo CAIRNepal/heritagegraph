@@ -93,11 +93,11 @@ Settings are loaded via `heritage_graph/settings/__init__.py` which reads `DJANG
 - `DJANGO_ENV=production` → imports `production.py` (PostgreSQL, env-based)
 - Both import `from .base import *`
 
-### 3. Authentication varies by environment
-- **Development** (`DJANGO_ENV=development`): Uses `DevSessionAuthentication` + SimpleJWT. Login via Django admin or `POST /api/token/` with username/password. No Google OAuth needed.
-- **Production** (`DJANGO_ENV=production`): Uses `GoogleTokenAuthentication`. Frontend uses NextAuth v4 with Google OAuth provider. Google ID tokens are sent as Bearer tokens.
-- **Detection:** Frontend auto-detects the provider based on whether `GOOGLE_CLIENT_ID` env var is set.
-- **Dev login page:** `/auth/login` — username/password form (only shown when Google OAuth is not configured).
+### 3. Authentication varies by layer
+- **Next.js app (`heritage_graph_ui`):** **Google sign-in only** (NextAuth v4 + `GoogleProvider`). There is no username/password or GitHub login in the UI. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in the frontend environment; the same `GOOGLE_CLIENT_ID` must be set on Django for token verification.
+- **Django API** (`DJANGO_ENV=development`): Tries `GoogleTokenAuthentication` first, then `GitHubTokenAuthentication`, then session and `JWTAuthentication`. Use `POST /api/token/` or Django admin when you need a JWT without the browser UI.
+- **Django API** (`DJANGO_ENV=production`): Expects Google-issued tokens from the app (`GoogleTokenAuthentication`).
+- **Login UI:** `/auth/login` — Google OAuth only; if env vars are missing, shows configuration guidance instead of a password form.
 
 ### 4. Two data model architectures co-exist
 - **Legacy:** `Submission` model with 80+ flat CharField fields for heritage data

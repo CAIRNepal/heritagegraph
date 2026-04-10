@@ -3,24 +3,29 @@
 import { signIn, useSession } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { describeAuthUrlError } from '@/lib/auth-errors';
+import {
+  describeAuthUrlError,
+  missingGoogleOAuthConfigMessage,
+} from '@/lib/auth-errors';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+
+interface LoginRedirectPageClientProps {
+  googleOAuthConfigured: boolean;
+}
 
 /**
- * OAuth sign-in entry. Preserves `callbackUrl`. When `?error=` is present (NextAuth
- * or our HeritageGraph codes), shows a clear message instead of failing silently.
+ * Google-only sign-in. Preserves `callbackUrl`. Surfaces ?error= from NextAuth or
+ * HeritageGraph backend handshake without silent failures.
  */
-export default function LoginRedirectPageClient() {
+export default function LoginRedirectPageClient({
+  googleOAuthConfigured,
+}: LoginRedirectPageClientProps) {
   const { status } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [localError, setLocalError] = useState<string | null>(null);
   const autoSignInStarted = useRef(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const callbackUrlRaw = searchParams.get('callbackUrl') || '/';
   const callbackUrl = callbackUrlRaw.startsWith('/') ? callbackUrlRaw : '/';
@@ -33,6 +38,7 @@ export default function LoginRedirectPageClient() {
   }, [status, router, callbackUrl]);
 
   useEffect(() => {
+    if (!googleOAuthConfigured) return;
     if (status !== 'unauthenticated') return;
     if (errorParam) return;
     if (autoSignInStarted.current) return;
@@ -42,14 +48,13 @@ export default function LoginRedirectPageClient() {
 
     (async () => {
       try {
-        // Do not force Google here — in dev we often use Credentials auth.
-        // If Google is configured, the user can still click the button below.
-        const res = await signIn(undefined, { callbackUrl, redirect: false });
+        const res = await signIn('google', { callbackUrl, redirect: false });
         if (cancelled) return;
 
         if (!res?.ok && res?.error) {
           setLocalError(
-            describeAuthUrlError(res.error) ?? 'Sign-in could not start. Use the button below.',
+            describeAuthUrlError(res.error) ??
+              'Sign-in could not start. Use the button below.',
           );
           return;
         }
@@ -59,11 +64,15 @@ export default function LoginRedirectPageClient() {
           return;
         }
 
-        setLocalError('Sign-in did not return a redirect URL. Check NextAuth and OAuth configuration.');
+        setLocalError(
+          'Sign-in did not return a redirect URL. Check NextAuth and Google OAuth configuration.',
+        );
       } catch (e) {
         if (!cancelled) {
           setLocalError(
-            e instanceof Error ? e.message : 'Sign-in failed to start. Check your network connection.',
+            e instanceof Error
+              ? e.message
+              : 'Sign-in failed to start. Check your network connection.',
           );
         }
       }
@@ -72,7 +81,7 @@ export default function LoginRedirectPageClient() {
     return () => {
       cancelled = true;
     };
-  }, [status, callbackUrl, errorParam]);
+  }, [status, callbackUrl, errorParam, googleOAuthConfigured]);
 
   if (status === 'loading' || status === 'authenticated') {
     return (
@@ -87,8 +96,15 @@ export default function LoginRedirectPageClient() {
     );
   }
 
-  const displayError = urlMessage || localError;
-  const showManualRetry = Boolean(displayError || errorParam);
+  const configMessage = !googleOAuthConfigured ? missingGoogleOAuthConfigMessage : null;
+  const displayError = configMessage || urlMessage || localError;
+  const showBusySpinner =
+    googleOAuthConfigured && !displayError && !errorParam;
+
+  function tryGoogleAgain() {
+    setLocalError(null);
+    signIn('google', { callbackUrl });
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -100,77 +116,29 @@ export default function LoginRedirectPageClient() {
           </Alert>
         )}
 
-        {!displayError && !errorParam && (
+        {showBusySpinner && (
           <div className="space-y-4">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
-            <p className="text-sm text-muted-foreground">Preparing sign-in…</p>
+            <p className="text-sm text-muted-foreground">Redirecting to Google…</p>
           </div>
         )}
 
-        <div className="space-y-4">
-          <div className="rounded-lg border bg-card p-4 text-left">
-            <p className="mb-3 text-sm font-medium">Sign in with username/password (dev)</p>
-            <form
-              className="space-y-3"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                setLocalError(null);
-                try {
-                  const res = await signIn('credentials', {
-                    username,
-                    password,
-                    callbackUrl,
-                    redirect: false,
-                  });
-
-                  if (res?.error) {
-                    setLocalError(describeAuthUrlError(res.error) ?? 'Invalid username or password.');
-                    return;
-                  }
-
-                  if (res?.url) {
-                    window.location.href = res.url;
-                    return;
-                  }
-
-                  // If NextAuth decides to redirect internally, the session effect will handle it.
-                } finally {
-                  setIsSubmitting(false);
-                }
-              }}
-            >
-              <Input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
-                autoComplete="username"
-              />
-              <Input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                type="password"
-                autoComplete="current-password"
-              />
-              <Button className="w-full" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Signing in…' : 'Sign in'}
+        <div className="space-y-3">
+          {googleOAuthConfigured && !showBusySpinner ? (
+            <>
+              <Button className="w-full" type="button" onClick={tryGoogleAgain}>
+                {displayError ? 'Try again with Google' : 'Continue with Google'}
               </Button>
-            </form>
-          </div>
-
-          {showManualRetry && (
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={() => {
-                setLocalError(null);
-                signIn('google', { callbackUrl });
-              }}
-            >
-              Try Google sign-in
+              <p className="text-xs text-muted-foreground text-center">
+                Use the same Google account you intend to contribute with. You can retry if something
+                went wrong.
+              </p>
+            </>
+          ) : !googleOAuthConfigured ? (
+            <Button className="w-full" type="button" variant="outline" asChild>
+              <a href="/">Back to home</a>
             </Button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

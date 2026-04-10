@@ -284,7 +284,6 @@ export default function ProgressionPage() {
       setUserProgress(data.user_progress);
       setLeaderboard(data.leaderboard || []);
     } catch (err) {
-      console.error('Failed to fetch progression:', err);
       setError(
         getApiErrorMessage(err, 'Could not load progression data. Please try again.')
       );
@@ -371,7 +370,7 @@ export default function ProgressionPage() {
               </div>
             ) : !isAuthenticated ? (
               <button
-                onClick={() => signIn()}
+                onClick={() => signIn('google', { callbackUrl: '/progression' })}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg font-medium text-sm hover:from-amber-600 hover:to-yellow-600 transition-all shadow-md"
               >
                 <IconLogin className="w-4 h-4" />
@@ -648,7 +647,7 @@ export default function ProgressionPage() {
                       Track your contributions, earn seals, and rise through the ranks of the living archive.
                     </p>
                     <button
-                      onClick={() => signIn()}
+                      onClick={() => signIn('google', { callbackUrl: '/progression' })}
                       className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 text-white rounded-lg font-medium text-sm hover:from-amber-600 hover:to-yellow-600 transition-all shadow-md"
                     >
                       <IconLogin className="w-4 h-4" />

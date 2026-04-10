@@ -76,12 +76,10 @@ help:
 	@echo "    make prod-build     Build production images"
 	@echo "    make prod-logs      View production logs"
 	@echo ""
-	@echo "  \033[1mAUTHENTICATION\033[0m  (set up login providers)"
-	@echo "    make auth-dev       JWT only  — no OAuth (default for dev)"
-	@echo "    make auth-google    Enable Google OAuth  (needs client ID/secret)"
-	@echo "    make auth-github    Enable GitHub OAuth  (needs client ID/secret)"
-	@echo "    make auth-all       Enable Google + GitHub OAuth together"
-	@echo "    make auth-status    Show which auth providers are active"
+	@echo "  \033[1mAUTHENTICATION\033[0m  (Next.js uses Google sign-in only)"
+	@echo "    make auth-setup     Write .env.local with Google OAuth (+ NextAuth)"
+	@echo "    make auth-google    Alias for auth-setup"
+	@echo "    make auth-status    Show whether Google OAuth vars are present"
 	@echo ""
 	@echo "  \033[1mCLEANUP\033[0m"
 	@echo "    make backup         Backup PostgreSQL (Docker)"
@@ -267,33 +265,27 @@ define ensure_nextauth_base
 	@grep -q '^INTERNAL_BACKEND_URL=' $(FRONTEND_ENV) 2>/dev/null || echo 'INTERNAL_BACKEND_URL=http://localhost:8000' >> $(FRONTEND_ENV)
 endef
 
-auth-dev: ## Dev login only — no OAuth (credentials at /auth/login)
-	@echo "==> Configuring dev auth (no OAuth providers)..."
-	@rm -f $(FRONTEND_ENV)
-	@echo '# Dev: JWT/credentials only — leave Google/GitHub vars unset' > $(FRONTEND_ENV)
-	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
-	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
-	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
-	@echo 'INTERNAL_BACKEND_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+auth-dev: ## Removed — use auth-setup (Google required for /auth/login)
 	@echo ""
-	@echo "  ✓ Dev auth: use Django username/password at http://localhost:3000/auth/login"
+	@echo "  The Next.js app signs users in with Google only."
+	@echo "  Run: make auth-setup GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=..."
+	@echo "  Django API testing can still use POST /api/token/ (JWT)."
 	@echo ""
+	@exit 1
 
 auth-google: auth-setup ## Alias for auth-setup (Google OAuth)
 
-auth-github: auth-add-github ## Alias for auth-add-github
+auth-github: ## Removed — frontend no longer registers GitHub with NextAuth
+	@echo ""
+	@echo "  GitHub OAuth is not enabled in heritage_graph_ui. Use Google (make auth-setup)."
+	@echo ""
+	@exit 1
 
-auth-all: ## Google + GitHub OAuth (needs all four credentials)
-	@if [ -z "$(GOOGLE_CLIENT_ID)" ] || [ -z "$(GOOGLE_CLIENT_SECRET)" ] || [ -z "$(GITHUB_ID)" ] || [ -z "$(GITHUB_SECRET)" ]; then \
-		echo ""; \
-		echo "  Usage: make auth-all GOOGLE_CLIENT_ID=xxx GOOGLE_CLIENT_SECRET=yyy GITHUB_ID=aaa GITHUB_SECRET=bbb"; \
-		echo ""; \
-		exit 1; \
+auth-all: ## Same as auth-setup (GitHub combo target retained for old scripts)
+	@if [ -n "$(GITHUB_ID)" ] || [ -n "$(GITHUB_SECRET)" ]; then \
+		echo "Note: GITHUB_* is ignored — the UI uses Google sign-in only."; \
 	fi
 	@$(MAKE) auth-setup GOOGLE_CLIENT_ID=$(GOOGLE_CLIENT_ID) GOOGLE_CLIENT_SECRET=$(GOOGLE_CLIENT_SECRET)
-	@$(MAKE) auth-add-github GITHUB_ID=$(GITHUB_ID) GITHUB_SECRET=$(GITHUB_SECRET)
-	@echo "  ✓ Google + GitHub OAuth configured in $(FRONTEND_ENV)"
-	@echo ""
 
 auth-setup: ## Configure Google OAuth (primary auth — REQUIRED)
 	@echo "==> Configuring Google OAuth (primary auth)..."
@@ -319,50 +311,21 @@ auth-setup: ## Configure Google OAuth (primary auth — REQUIRED)
 	@echo "  Also set GOOGLE_CLIENT_ID in heritage_graph/.env for backend verification"
 	@echo ""
 
-auth-add-github: ## Add GitHub OAuth as secondary provider
-	@echo "==> Adding GitHub OAuth (secondary provider)..."
-	@if [ -z "$(GITHUB_ID)" ] || [ -z "$(GITHUB_SECRET)" ]; then \
-		echo ""; \
-		echo "  Usage: make auth-add-github GITHUB_ID=xxx GITHUB_SECRET=yyy"; \
-		echo ""; \
-		echo "  Get credentials from: https://github.com/settings/developers → OAuth Apps"; \
-		echo "  Set callback URL to:  http://localhost:3000/api/auth/callback/github"; \
-		echo ""; \
-		exit 1; \
-	fi
-	@if [ ! -f $(FRONTEND_ENV) ] || ! grep -q '^GOOGLE_CLIENT_ID=' $(FRONTEND_ENV) 2>/dev/null; then \
-		echo ""; \
-		echo "  ⚠ Google OAuth is not configured yet. Run 'make auth-setup' first."; \
-		echo ""; \
-		exit 1; \
-	fi
-	@grep -q '^GITHUB_ID=' $(FRONTEND_ENV) 2>/dev/null && sed -i '/^GITHUB_ID=/d' $(FRONTEND_ENV)
-	@grep -q '^GITHUB_SECRET=' $(FRONTEND_ENV) 2>/dev/null && sed -i '/^GITHUB_SECRET=/d' $(FRONTEND_ENV)
-	@echo "GITHUB_ID=$(GITHUB_ID)" >> $(FRONTEND_ENV)
-	@echo "GITHUB_SECRET=$(GITHUB_SECRET)" >> $(FRONTEND_ENV)
-	@echo ""
-	@echo "  ✓ GitHub OAuth added as secondary provider"
-	@echo "  Also set GITHUB_CLIENT_ID in heritage_graph/.env for backend verification"
-	@echo ""
+auth-add-github: auth-github ## Deprecated alias
 
-auth-status: ## Show which auth providers are currently configured
+auth-status: ## Show Google OAuth configuration in frontend .env.local
 	@echo ""
-	@echo "  Auth Provider Status"
-	@echo "  ===================="
+	@echo "  Auth (Next.js — Google only)"
+	@echo "  ============================"
 	@if [ -f $(FRONTEND_ENV) ]; then \
 		echo "  Frontend env: $(FRONTEND_ENV)"; \
 		if grep -q '^GOOGLE_CLIENT_ID=' $(FRONTEND_ENV) 2>/dev/null; then \
-			echo "  ✓ Google OAuth:  ENABLED (primary)"; \
+			echo "  ✓ Google OAuth:  configured"; \
 		else \
-			echo "  ✗ Google OAuth:  NOT CONFIGURED — run 'make auth-setup'"; \
-		fi; \
-		if grep -q '^GITHUB_ID=' $(FRONTEND_ENV) 2>/dev/null; then \
-			echo "  ✓ GitHub OAuth:  ENABLED (secondary)"; \
-		else \
-			echo "  · GitHub OAuth:  not configured (optional — run 'make auth-add-github')"; \
+			echo "  ✗ Google OAuth:  missing — run 'make auth-setup'"; \
 		fi; \
 	else \
-		echo "  No .env.local found — run 'make auth-setup' to configure Google OAuth"; \
+		echo "  No .env.local — run 'make auth-setup'"; \
 	fi
 	@echo ""
 

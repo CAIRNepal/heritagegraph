@@ -2,6 +2,8 @@
 
 > **Audience:** Developers who want to add a new OAuth provider (e.g., Facebook, Discord, Microsoft) to HeritageGraph.
 
+> **Current main app:** `heritage_graph_ui` ships with **Google sign-in only** in NextAuth (`src/lib/auth.ts`). Treat this guide as the pattern for *adding* another provider later; day-to-day setup is in **AUTH.md** and `make auth-setup`.
+
 ---
 
 ## Table of Contents
@@ -30,7 +32,7 @@ HeritageGraph auth has **two layers** — a **frontend** (NextAuth v4) and a **b
 ```
                   ┌──────────────────┐
                   │  OAuth Provider  │
-   ┌─────────────►│  (Google/GitHub) │
+   ┌─────────────►│  (e.g. Google)   │
    │              └────────┬─────────┘
    │                       │ Returns token (id_token / access_token)
    │                       ▼
@@ -46,96 +48,46 @@ HeritageGraph auth has **two layers** — a **frontend** (NextAuth v4) and a **b
 
 **Key principle:** The frontend (NextAuth) handles the OAuth dance and stores the provider's token. The backend (Django) verifies that token on every API request. Each provider needs implementation on **both** sides.
 
-### Token Types by Provider
+### Token types (reference)
 
-| Provider | Token sent to Django | Django verification method |
-|----------|---------------------|---------------------------|
-| **Credentials (dev)** | SimpleJWT `access` token | `JWTAuthentication` (built-in) |
-| **Google** | Google `id_token` (JWT) | `google.oauth2.id_token.verify_oauth2_token()` |
-| **GitHub** | GitHub `access_token` (opaque) | Call `https://api.github.com/user` |
+| Source | Token sent to Django | Typical Django handler |
+|--------|---------------------|------------------------|
+| **NextAuth + Google** | Google OAuth **access** token | `GoogleTokenAuthentication` (userinfo check) |
+| **SimpleJWT** | JWT `access` | `JWTAuthentication` |
+| **(Optional / future)** | Other provider tokens | Custom `BaseAuthentication` in `heritage_data` |
 
 ---
 
 ## Current Auth Modes
 
-| Mode | Providers | Detection | Use Case |
-|------|-----------|-----------|----------|
-| **Dev (default)** | Credentials (username/password → JWT) | No `GOOGLE_CLIENT_ID` or `GITHUB_ID` set | Local development |
-| **Google** | Google OAuth | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` set | Production |
-| **GitHub** | GitHub OAuth | `GITHUB_ID` + `GITHUB_SECRET` set | Production |
-| **All** | Google + GitHub | Both sets of vars configured | Production (multiple sign-in options) |
-
-**Detection is automatic.** The frontend checks which env vars are set and enables the corresponding providers at startup.
+| Layer | Behavior |
+|-------|-----------|
+| **Next.js UI** | Google only — `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` required for `/auth/login` |
+| **Django** | Ordered chain (Google, optional GitHub, session/JWT) — see AUTH.md |
 
 ---
 
-## Quick Start — Switching Auth Modes
-
-### JWT Only (Default Dev)
-
-No setup needed. Just create a user and go:
+## Quick Start — Local Google sign-in
 
 ```bash
-make auth-dev       # Reset to JWT mode (clears OAuth env vars)
-make superuser      # Create admin user
-make backend        # Terminal 1
-make frontend       # Terminal 2
-# → Login at http://localhost:3000/auth/login
-```
-
-### Google OAuth
-
-```bash
-# 1. Get credentials from https://console.cloud.google.com/apis/credentials
-# 2. Set callback URL: http://localhost:3000/api/auth/callback/google
-
-make auth-google \
+make auth-setup \
   GOOGLE_CLIENT_ID=123456.apps.googleusercontent.com \
   GOOGLE_CLIENT_SECRET=GOCSPX-xxxxx
 
-# 3. Also set the backend env var:
-echo "GOOGLE_CLIENT_ID=123456.apps.googleusercontent.com" > heritage_graph/.env
+# Same GOOGLE_CLIENT_ID on Django (heritage_graph/.env or your compose env)
 
-# 4. Restart both servers
-make kill-ports && make backend  # Terminal 1
-make frontend                    # Terminal 2
+make backend    # Terminal 1
+make frontend   # Terminal 2
+# → http://localhost:3000/auth/login
 ```
 
-### GitHub OAuth
+API-only JWT access (no browser UI): `POST /api/token/` with Django username/password.
 
 ```bash
-# 1. Get credentials from https://github.com/settings/developers → OAuth Apps
-# 2. Set callback URL:     http://localhost:3000/api/auth/callback/github
-# 3. Set homepage URL:     http://localhost:3000
-
-make auth-github \
-  GITHUB_ID=Ov23lixxxxxxxxxx \
-  GITHUB_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# 4. Also set the backend env vars:
-cat >> heritage_graph/.env << 'EOF'
-GITHUB_CLIENT_ID=Ov23lixxxxxxxxxx
-GITHUB_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-EOF
-
-# 5. Restart both servers
+make auth-status   # shows whether frontend .env.local has Google vars
 ```
 
-### Both Google + GitHub
-
-```bash
-make auth-all \
-  GOOGLE_CLIENT_ID=123456.apps.googleusercontent.com \
-  GOOGLE_CLIENT_SECRET=GOCSPX-xxxxx \
-  GITHUB_ID=Ov23lixxxxxxxxxx \
-  GITHUB_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-```
-
-### Check Current Status
-
-```bash
-make auth-status
-```
+**Removed from the UI:** `make auth-dev` (no OAuth), `make auth-github`, and combined `make auth-all` no longer add alternate NextAuth providers. Use `make auth-setup` only.
 
 ---
 
@@ -176,7 +128,7 @@ Common provider developer consoles:
 NextAuth has 60+ built-in providers. See the full list at:
 https://next-auth.js.org/providers/
 
-**File to edit:** `heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts`
+**File to edit:** `heritage_graph_ui/src/lib/auth.ts` (and keep `src/app/api/auth/[...nextauth]/route.ts` importing `authOptions`)
 
 #### 2a. Import the provider
 
@@ -191,10 +143,7 @@ const isMyProviderEnabled =
   !!process.env.MY_PROVIDER_CLIENT_ID && !!process.env.MY_PROVIDER_CLIENT_SECRET;
 ```
 
-Update `hasOAuthProvider`:
-```typescript
-const hasOAuthProvider = isGoogleAuthEnabled || isGitHubAuthEnabled || isMyProviderEnabled;
-```
+Ensure your new provider is registered in the `providers` array (today only Google is registered for the product app).
 
 #### 2c. Push the provider
 

@@ -30,7 +30,7 @@ declare module 'next-auth/jwt' {
     refreshToken?: string;
     /** Timestamp (ms) when the access token expires */
     accessTokenExpires?: number;
-    /** Which OAuth provider was used: 'google' | 'github' */
+    /** Always `google` for this app */
     authProvider?: string;
     id?: string;
     username?: string | null;

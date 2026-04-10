@@ -12,7 +12,7 @@ export type HeritageAuthErrorCode =
 
 const HERITAGE_AUTH_MESSAGES: Record<HeritageAuthErrorCode, string> = {
   BACKEND_REJECTED:
-    'The server could not verify your Google or GitHub token. In production, use the same OAuth client ID on the frontend and backend, set DJANGO_ENV=production on Django, and ensure the Google ID you use is allowed.',
+    'The server could not verify your Google token. Use the same Google OAuth client on the Next.js app and Django, ensure GOOGLE_CLIENT_ID is set on the backend, and try again.',
   BACKEND_UNAVAILABLE:
     'The HeritageGraph API returned an error while signing you in. Please try again in a few minutes.',
   BACKEND_UNREACHABLE:
@@ -29,7 +29,7 @@ const NEXTAUTH_ERROR_MESSAGES: Record<string, string> = {
   Verification: 'The sign-in link is no longer valid or has expired.',
   OAuthSignin: 'Could not start sign-in with the provider. Try again in a moment.',
   OAuthCallback:
-    'The provider rejected the redirect. Confirm the callback URL in Google/GitHub matches NEXTAUTH_URL (e.g. http://localhost:3000/api/auth/callback/google).',
+    'Google rejected the redirect. In Google Cloud Console, add the authorized redirect URI that matches your app (e.g. https://your-host/api/auth/callback/google) and ensure NEXTAUTH_URL matches the site origin.',
   OAuthCreateAccount: 'Could not create an account from this provider sign-in.',
   EmailCreateAccount: 'Could not create an account from email sign-in.',
   Callback: 'Something went wrong during the sign-in callback.',
@@ -58,6 +58,10 @@ export function describeAuthUrlError(code: string | null | undefined): string | 
 }
 
 /** Session / JWT `error` field surfaced to the client */
+/** Shown on `/auth/login` when `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are missing. */
+export const missingGoogleOAuthConfigMessage =
+  'Google sign-in is not configured on this server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET for the Next.js app, then restart. See AUTH.md.';
+
 export function describeSessionAuthError(code: string): string {
   switch (code) {
     case 'RefreshAccessTokenError':

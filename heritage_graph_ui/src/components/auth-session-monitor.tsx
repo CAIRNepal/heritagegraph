@@ -5,7 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
 /**
- * When the JWT/session carries `error` (refresh failure, expired provider token),
+ * When the JWT/session carries `error` (Google refresh failure or expired token),
  * show a blocking banner and let the user sign in again.
  */
 export function AuthSessionMonitor() {
