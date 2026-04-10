@@ -142,7 +142,7 @@ export default function UserProfilePage() {
   const [updating, setUpdating] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [tab, setTab] = useState('activity');
+  const [tab, setTab] = useState('contributions');
   const [resolvedSlug, setResolvedSlug] = useState<string>(slug);
   const imgRef = useRef<HTMLInputElement>(null);
   const profileAbortRef = useRef<AbortController | null>(null);
@@ -458,16 +458,18 @@ export default function UserProfilePage() {
                   </div>
                 </div>
 
-                {/* Email */}
-                <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50">
-                  <a href={`mailto:${user.email}`} className="flex items-center gap-2 min-w-0 flex-1">
-                    <Mail className="h-4 w-4 shrink-0" />
-                    <span className="text-sm truncate">{user.email}</span>
-                  </a>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={copyEmail}>
-                    {emailCopied ? <CheckCheck className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
-                  </Button>
-                </div>
+                {/* Email — full address only for the signed-in owner (not shown publicly) */}
+                {isOwn && user.email ? (
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-muted/50">
+                    <a href={`mailto:${user.email}`} className="flex items-center gap-2 min-w-0 flex-1">
+                      <Mail className="h-4 w-4 shrink-0" />
+                      <span className="text-sm truncate">{user.email}</span>
+                    </a>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={copyEmail}>
+                      {emailCopied ? <CheckCheck className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
+                ) : null}
 
                 {/* Bio */}
                 {user.biography && (
@@ -672,9 +674,6 @@ export default function UserProfilePage() {
               <CardContent className="pt-6">
                 <Tabs value={tab} onValueChange={setTab}>
                   <TabsList className="mb-4">
-                    <TabsTrigger value="activity" className="gap-1.5">
-                      <ClipboardList className="h-4 w-4" /> Activity
-                    </TabsTrigger>
                     <TabsTrigger value="contributions" className="gap-1.5">
                       <FileText className="h-4 w-4" /> Contributions
                     </TabsTrigger>
@@ -684,7 +683,22 @@ export default function UserProfilePage() {
                     <TabsTrigger value="comments" className="gap-1.5">
                       <MessageSquare className="h-4 w-4" /> Comments
                     </TabsTrigger>
+                    <TabsTrigger value="activity" className="gap-1.5">
+                      <ClipboardList className="h-4 w-4" /> Activity
+                    </TabsTrigger>
                   </TabsList>
+
+                  <TabsContent value="contributions">
+                    <EmptyTab label="contributions" />
+                  </TabsContent>
+
+                  <TabsContent value="reviews">
+                    <EmptyTab label="reviews" />
+                  </TabsContent>
+
+                  <TabsContent value="comments">
+                    <EmptyTab label="comments" />
+                  </TabsContent>
 
                   <TabsContent value="activity">
                     {activities.length > 0 ? (
@@ -705,18 +719,6 @@ export default function UserProfilePage() {
                     ) : (
                       <EmptyTab label="activity" />
                     )}
-                  </TabsContent>
-
-                  <TabsContent value="contributions">
-                    <EmptyTab label="contributions" />
-                  </TabsContent>
-
-                  <TabsContent value="reviews">
-                    <EmptyTab label="reviews" />
-                  </TabsContent>
-
-                  <TabsContent value="comments">
-                    <EmptyTab label="comments" />
                   </TabsContent>
                 </Tabs>
               </CardContent>
