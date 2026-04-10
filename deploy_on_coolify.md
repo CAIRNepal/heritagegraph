@@ -162,11 +162,30 @@ docker exec -it <container_id> python manage.py migrate
 docker exec -it <container_id> python manage.py createsuperuser
 ```
 
+### API homepage, admin, and documentation
+
+After the **backend** domain resolves to the Django container, open it in a browser:
+
+| What | URL (replace with your API host) |
+|------|-----------------------------------|
+| Entry page (links to everything below) | `https://api.example.com/` |
+| Same as JSON | `https://api.example.com/?format=json` |
+| Django admin | `https://api.example.com/admin/` |
+| Swagger UI (interactive API docs) | `https://api.example.com/docs` |
+| ReDoc | `https://api.example.com/redoc/` |
+| OpenAPI schema | `https://api.example.com/schema/` |
+| Health | `https://api.example.com/health/` |
+
+If `/admin/` or `/docs` return **404**, the domain is almost certainly mapped to the **frontend** (port 3000) instead of **backend** (8000). Fix the service mapping in Coolify.
+
 ### Verify Services
 
 ```bash
 # Check backend health
 curl http://api.heritagegraph.xyz/health/
+
+# Check API index (HTML or JSON)
+curl -s http://api.heritagegraph.xyz/?format=json
 
 # Check frontend
 curl http://heritagegraph.xyz

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.views import LogoutView
-from django.urls import include, path
+from django.urls import include, path, re_path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -9,6 +9,7 @@ from drf_spectacular.views import (
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.health_check import (
+    deployment_index,
     health_check,
     health_check_detailed,
     liveness_check,
@@ -17,6 +18,8 @@ from apps.health_check import (
 from apps.heritage_data.views import CurrentUserView, RegisterView
 
 urlpatterns = [
+    # Root: deployment index (admin + docs links); must stay before prometheus '' include
+    re_path(r"^$", deployment_index, name="deployment-index"),
     # Health check endpoints (used by Docker, Traefik, and monitoring)
     path("health/", health_check, name="health"),
     path("health/detailed/", health_check_detailed, name="health-detailed"),

@@ -13,7 +13,20 @@
 # 1. Create a new "Docker Compose" resource in Coolify
 # 2. Paste this file or point to this file in the repo
 # 3. Configure environment variables in Coolify UI
-# 4. Set domains for backend/frontend/landing in Coolify UI
+# 4. Map each public domain to the correct *service* and *internal port*:
+#    - API host (e.g. devapi.example.com)  → backend : 8000
+#    - App host (e.g. dev.example.com)     → frontend : 3000
+#    - Landing / marketing                 → landing : 3000
+#    If the API domain points at the frontend container, /admin, /data/,
+#    /cidoc/, /docs, etc. will all 404 because those routes exist on Django only.
+# 5. After routing the API domain to backend:8000, open the root URL in a browser.
+#    You get a small index page linking to:
+#      /admin/   Django admin
+#      /docs     Swagger UI (API docs)
+#      /redoc/   ReDoc
+#      /schema/  OpenAPI JSON
+#      /health/  Health probe
+#    JSON index: https://<api-domain>/?format=json
 # ================================================================
 
 services:
@@ -55,6 +68,8 @@ services:
 
   # ---------------------------------------------------------------
   # Django REST Framework Backend
+  # Public API host should point here (port 8000). Root GET / shows links to
+  # /admin/, /docs, /redoc/, /schema/, /health/ for operators.
   # ---------------------------------------------------------------
   backend:
     build:
