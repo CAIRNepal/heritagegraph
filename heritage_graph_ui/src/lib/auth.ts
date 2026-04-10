@@ -98,10 +98,9 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
-      const token =
-        (account as { id_token?: string; access_token?: string })?.id_token ||
-        account.access_token;
-      if (!token) {
+      const accessToken = account.access_token;
+      const idToken = (account as { id_token?: string }).id_token;
+      if (!accessToken && !idToken) {
         return '/auth/login?error=Configuration';
       }
 
@@ -110,15 +109,29 @@ export const authOptions: NextAuthOptions = {
       ).replace(/\/$/, '');
       const testUrl = `${backendBase}/data/api/testme/`;
 
+      /** Try access token first, then ID token — Django accepts both. */
+      async function backendGet(url: string): Promise<Response> {
+        const tryTokens = [accessToken, idToken].filter(
+          (t, i, arr): t is string => Boolean(t) && arr.indexOf(t) === i,
+        );
+        let last = new Response(null, { status: 401 });
+        for (const bearer of tryTokens) {
+          last = await fetch(url, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${bearer}`,
+              Accept: 'application/json',
+            },
+          });
+          if (last.ok) return last;
+          if (last.status !== 401 && last.status !== 403) return last;
+        }
+        return last;
+      }
+
       try {
-        const response = await fetch(testUrl, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/json',
-          },
-        });
-        const bodyText = await response.text();
+        const response = await backendGet(testUrl);
+        await response.text();
 
         if (!response.ok) {
           if (response.status === 401 || response.status === 403) {
@@ -131,13 +144,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          const meResp = await fetch(`${backendBase}/data/api/user/me/`, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: 'application/json',
-            },
-          });
+          const meResp = await backendGet(`${backendBase}/data/api/user/me/`);
           if (meResp.ok) {
             const meData = await meResp.json();
             if (meData.user_id) {
