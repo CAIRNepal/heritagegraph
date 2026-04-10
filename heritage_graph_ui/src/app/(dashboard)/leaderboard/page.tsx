@@ -147,7 +147,6 @@ export default function LeaderboardPage() {
       if (err instanceof Error && err.name === 'AbortError') return;
       const message = getApiErrorMessage(err, 'Could not load the leaderboard.');
       setError(message);
-      console.error('Leaderboard fetch error:', err);
     } finally {
       setLoading(false);
     }

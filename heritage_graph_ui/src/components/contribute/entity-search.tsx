@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 import { apiFetch, apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
+import { getPublicApiUrl } from "@/lib/api-base";
 
 interface SearchResult {
   id: number | string;
@@ -40,7 +41,7 @@ interface EntitySearchProps {
   className?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE = getPublicApiUrl();
 
 export function EntitySearch({
   label,

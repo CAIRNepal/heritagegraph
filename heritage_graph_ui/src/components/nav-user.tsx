@@ -27,9 +27,10 @@ import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 import { toast } from 'sonner';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 export function NavUser({
   user,
@@ -61,6 +62,10 @@ export function NavUser({
     if (status === 'authenticated' && session?.accessToken && !session?.user?.slug) {
       const fetchSlug = async () => {
         try {
+          if (!API_BASE) {
+            toast.error('API is not configured. Set NEXT_PUBLIC_API_URL and reload.');
+            return;
+          }
           const data = await apiFetchJson<{ slug?: string }>(`${API_BASE}/data/api/user/me/`, {
             headers: {
               Authorization: `Bearer ${session.accessToken}`,
@@ -70,7 +75,6 @@ export function NavUser({
           if (data.slug) setUserSlug(data.slug);
         } catch (err) {
           const msg = getApiErrorMessage(err);
-          console.error('[NavUser] profile slug:', msg);
           toast.error('Could not load your profile link.', { description: msg });
         }
       };
@@ -80,28 +84,6 @@ export function NavUser({
     }
   }, [status, session]);
 
-  // 🔥 Initialize user in backend when logged in
-  useEffect(() => {
-    if (status === 'authenticated' && session?.accessToken) {
-      const initUser = async () => {
-        try {
-          await apiFetch(`${API_BASE}/data/api/testthelogin`, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-              Accept: 'application/json',
-            },
-          });
-        } catch (err) {
-          const msg = getApiErrorMessage(err);
-          console.error('[NavUser] backend user init:', msg);
-          toast.error('Could not sync your account with the server.', { description: msg });
-        }
-      };
-
-      initUser();
-    }
-  }, [status, session, user]);
   return (
     <SidebarMenu>
       <SidebarMenuItem>

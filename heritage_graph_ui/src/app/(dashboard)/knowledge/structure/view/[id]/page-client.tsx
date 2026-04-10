@@ -229,7 +229,6 @@ export default function StructureRecordPage() {
         setAssertions(data.assertions);
       }
     } catch (err: unknown) {
-      console.error("Fetch error:", err);
       const msg = getApiErrorMessage(err, "Could not load this structure.");
       setError(msg);
       toast.error(msg);

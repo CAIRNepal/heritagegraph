@@ -18,8 +18,9 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { SimpleRankAvatar, tierConfig, TierType } from '@/components/rank-avatar';
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { getPublicApiUrl } from '@/lib/api-base';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 /**
  * Standalone auth component — works anywhere (landing page, dashboard header,
@@ -30,34 +31,15 @@ export default function AuthSection() {
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [backendInitError, setBackendInitError] = useState<string | null>(null);
 
-  // Initialize user in backend when logged in
-  useEffect(() => {
-    if (status === 'authenticated' && session?.accessToken) {
-      const initUser = async () => {
-        try {
-          setBackendInitError(null);
-          await apiFetch(`${API_BASE}/data/api/testthelogin`, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-              Accept: 'application/json',
-            },
-          });
-        } catch (err) {
-          const msg = getApiErrorMessage(err);
-          console.error('[AuthSection] backend user init failed:', msg);
-          setBackendInitError(msg);
-        }
-      };
-      initUser();
-    }
-  }, [status, session]);
-
   // Eagerly fetch slug if it's not in the session
   useEffect(() => {
     if (status === 'authenticated' && session?.accessToken && !session?.user?.slug) {
       const fetchSlug = async () => {
         try {
+          if (!API_BASE) {
+            setBackendInitError('API is not configured. Set NEXT_PUBLIC_API_URL.');
+            return;
+          }
           const data = await apiFetchJson<{ slug?: string }>(`${API_BASE}/data/api/user/me/`, {
             headers: {
               Authorization: `Bearer ${session.accessToken}`,
@@ -66,7 +48,7 @@ export default function AuthSection() {
           });
           if (data.slug) setUserSlug(data.slug);
         } catch (err) {
-          console.error('Error fetching user slug:', getApiErrorMessage(err));
+          setBackendInitError(getApiErrorMessage(err));
         }
       };
       fetchSlug();

@@ -49,12 +49,12 @@ The dashboard uses a shared shortcut grid component + shared link config.
 
 To add a new dashboard shortcut:
 
-1) Open `src/config/dashboard-links.ts`
-2) Add a new item to one of:
-   - `dashboardQuickActions`
-   - `dashboardBrowseCategories`
-   - `dashboardCurationShortcuts`
-3) The dashboard page will update automatically.
+1. Open `src/config/dashboard-links.ts`
+2. Add a new item to one of:
+  - `dashboardQuickActions`
+  - `dashboardBrowseCategories`
+  - `dashboardCurationShortcuts`
+3. The dashboard page will update automatically.
 
 ---
 
@@ -77,6 +77,8 @@ In this repo there is a shared auth guard component:
 - `src/components/require-auth.tsx`
 
 Use it to ensure consistent “sign in” UX instead of each page handling session states differently.
+
+For **high-effort user flows** (especially contribution forms), add **early gating**: middleware and/or a parent layout that wraps `RequireAuth` (see `(dashboard)/contribute/layout.tsx`) so users sign in before starting the form. See `AUTH.md` → “Route-Level Guard”.
 
 ---
 

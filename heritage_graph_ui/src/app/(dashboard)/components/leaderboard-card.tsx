@@ -13,8 +13,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 type LeaderboardProps = {
   type: 'Curation' | 'Revisions' | 'Moderation' | 'Forks';
@@ -44,7 +45,6 @@ export function Leaderboard({ type }: LeaderboardProps) {
           })),
         );
       } catch (err) {
-        console.error(err);
         setError(getApiErrorMessage(err, 'Could not load the leaderboard.'));
         setData([]);
       } finally {

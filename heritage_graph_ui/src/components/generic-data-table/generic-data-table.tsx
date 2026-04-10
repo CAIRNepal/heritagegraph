@@ -445,7 +445,6 @@ export function GenericDataTable<TData>({
 
         if (!cancelled) setData(rows);
       } catch (error) {
-        console.error('Error fetching data:', error);
         const message = getApiErrorMessage(
           error,
           'Could not load this table. Please try again.'

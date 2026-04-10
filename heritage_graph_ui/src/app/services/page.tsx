@@ -1,8 +1,13 @@
 'use client';
 
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Services() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   const services = [
     {
       name: 'Frontend Application',

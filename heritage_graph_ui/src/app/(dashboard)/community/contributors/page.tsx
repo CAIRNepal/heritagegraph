@@ -86,7 +86,6 @@ export default function ContributorsPage() {
       setTotalPages(data.total_pages || 1);
       setTotalCount(data.count || 0);
     } catch (error) {
-      console.error(error);
       toast.error(getApiErrorMessage(error, 'Could not load contributors.'));
     } finally {
       setLoading(false);

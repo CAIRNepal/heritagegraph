@@ -70,8 +70,8 @@ export function EntityQRCode({
       await navigator.clipboard.writeText(contributeUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy URL:', err);
+    } catch {
+      // Clipboard permissions can fail; keep UX silent (button still works via download).
     }
   }, [contributeUrl]);
   

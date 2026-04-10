@@ -315,7 +315,6 @@ export function DataTable() {
         setData(result.results || []);
         setPageCount(Math.ceil(result.count / pagination.pageSize));
       } catch (error) {
-        console.error('Error fetching data:', error);
         toast.error(
           getApiErrorMessage(error, 'Could not load submissions. Please try again.')
         );

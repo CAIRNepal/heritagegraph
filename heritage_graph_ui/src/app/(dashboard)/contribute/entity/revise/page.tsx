@@ -84,18 +84,14 @@ export default function CulturalEntityContributionPage() {
 
     const entityParam = searchParams.get('entity');
     const modeParam = searchParams.get('mode') as FormMode;
-    
-    console.log('URL Parameters:', { entityParam, modeParam });
-    
+
     if (entityParam) {
       try {
         // Decode the URL parameter and parse JSON
         const decodedEntityParam = decodeURIComponent(entityParam);
-        console.log('Decoded entity param:', decodedEntityParam);
-        
+
         const entityData: EntityData = JSON.parse(decodedEntityParam);
-        console.log('Parsed entity data:', entityData);
-        
+
         setOriginalEntity(entityData);
         setFormMode(modeParam || 'revise'); // Default to revise if mode not specified
         
@@ -108,9 +104,7 @@ export default function CulturalEntityContributionPage() {
         });
 
         toast.success(`Entity data loaded for ${modeParam === 'edit' ? 'editing' : 'revision'}`);
-      } catch (err) {
-        console.error('Error parsing entity data:', err);
-        console.error('Raw entity param:', entityParam);
+      } catch {
         toast.error('Failed to load entity data. Please try again.');
       }
     }
@@ -182,7 +176,6 @@ export default function CulturalEntityContributionPage() {
       toast.success(`Revision for "${formData.name}" submitted successfully!`);
       setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
-      console.error('Revision submission error:', err);
       toast.error(
         getApiErrorMessage(err, 'Could not submit this revision. Please try again.')
       );
@@ -225,7 +218,6 @@ export default function CulturalEntityContributionPage() {
       toast.success(`"${formData.name}" updated successfully!`);
       setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
-      console.error('Edit submission error:', err);
       toast.error(
         getApiErrorMessage(err, 'Could not update this entity. Please try again.')
       );
@@ -264,7 +256,6 @@ export default function CulturalEntityContributionPage() {
       toast.success(`"${formData.name}" submitted successfully!`);
       setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
-      console.error('Submission error:', err);
       toast.error(
         getApiErrorMessage(err, 'Could not submit this entity. Please try again.')
       );

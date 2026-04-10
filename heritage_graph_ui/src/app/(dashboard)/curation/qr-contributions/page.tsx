@@ -26,8 +26,10 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
+import { RequireAuth } from '@/components/require-auth';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = getPublicApiUrl();
 
 interface PublicContribution {
   id: string;
@@ -127,7 +129,7 @@ export default function QRContributionsPage() {
       }>(`${API}/data/api/public-contributions/stats/`, { headers: headers() });
       setStats(data);
     } catch (err) {
-      console.error('Error fetching stats:', getApiErrorMessage(err));
+      // Avoid console noise; stats will remain stale.
     }
   }, [headers]);
 
@@ -196,12 +198,16 @@ export default function QRContributionsPage() {
   };
 
   return (
-    <motion.div 
-      initial="hidden" 
-      animate="show" 
-      variants={staggerContainer} 
-      className="space-y-6"
+    <RequireAuth
+      title="Sign in to review QR contributions"
+      description="QR submissions may include contact details. Sign-in is required for moderation tools."
     >
+      <motion.div 
+        initial="hidden" 
+        animate="show" 
+        variants={staggerContainer} 
+        className="space-y-6"
+      >
       {/* Header */}
       <motion.div variants={fadeInUp} className={glassCard}>
         <CardHeader>
@@ -522,6 +528,7 @@ export default function QRContributionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </motion.div>
+      </motion.div>
+    </RequireAuth>
   );
 }

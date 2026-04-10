@@ -318,7 +318,6 @@ export default function OntologyDataTable({
 
         setCurrentPage(page);
       } catch (err) {
-        console.error("Fetch error:", err);
         toast.error(
           getApiErrorMessage(
             err,

@@ -27,8 +27,9 @@ import {
 } from '@tabler/icons-react';
 
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = getPublicApiUrl();
 
 /* ── Track data (matches progression page) ── */
 const trackInfo = {
@@ -111,10 +112,7 @@ function useUserProgress(): { progress: UserProgressData | null; leaderboard: Le
           });
         }
       } catch (err) {
-        console.error(
-          'Failed to fetch progression data for widget:',
-          getApiErrorMessage(err)
-        );
+        // Silent fail: widgets can render without progression data.
       } finally {
         setLoading(false);
       }

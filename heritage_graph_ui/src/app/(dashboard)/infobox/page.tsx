@@ -1,10 +1,15 @@
 'use client';
 
+import { notFound } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function WikiPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   const [tab, setTab] = useState<'article' | 'talk'>('article');
   const [view, setView] = useState<'read' | 'source' | 'history'>('read');
 

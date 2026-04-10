@@ -381,7 +381,6 @@ export function DataTable() {
         }
 
       } catch (error) {
-        console.error('Error fetching data:', error);
         toast.error(
           getApiErrorMessage(error, 'Could not load search results. Please try again.')
         );

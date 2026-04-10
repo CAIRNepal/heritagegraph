@@ -29,9 +29,9 @@ import { cn } from "@/lib/utils";
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 import { EntitySearch, type SearchResult } from "@/components/contribute/entity-search";
+import { getPublicApiUrl } from "@/lib/api-base";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = getPublicApiUrl();
 
 function FieldRenderer({
   field,
@@ -516,7 +516,6 @@ export default function OntologyForm({
       );
       setTimeout(() => router.push(postSubmitPath), 1500);
     } catch (err) {
-      console.error("Submission error:", err);
       toast.error(
         getApiErrorMessage(err, "Could not submit this form. Please try again.")
       );

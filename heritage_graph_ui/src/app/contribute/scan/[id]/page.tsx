@@ -33,8 +33,9 @@ import {
 } from 'lucide-react';
 
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = getPublicApiUrl();
 
 // Animation variants
 const fadeInUp = {
@@ -128,7 +129,6 @@ export default function ScanContributePage() {
           });
         }
       } catch (err) {
-        console.error('Error fetching entity:', err);
         setError(getApiErrorMessage(err, 'Could not load site information.'));
       } finally {
         setLoading(false);
@@ -178,7 +178,6 @@ export default function ScanContributePage() {
       setSubmitted(true);
       toast.success('Thank you for your contribution!');
     } catch (err) {
-      console.error('Submission error:', err);
       toast.error(
         getApiErrorMessage(err, 'Could not submit your contribution. Please try again.')
       );
@@ -216,7 +215,7 @@ export default function ScanContributePage() {
               
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold text-green-700 dark:text-green-400">
-                  Thank You! 🙏
+                  Thank you
                 </h1>
                 <p className="text-muted-foreground">
                   Your contribution helps preserve our cultural heritage for future generations.
@@ -372,7 +371,7 @@ export default function ScanContributePage() {
               required
             />
             <p className="text-xs text-muted-foreground">
-              Every piece of knowledge helps preserve our heritage 🙏
+              Every piece of knowledge helps preserve our heritage.
             </p>
           </motion.div>
           
