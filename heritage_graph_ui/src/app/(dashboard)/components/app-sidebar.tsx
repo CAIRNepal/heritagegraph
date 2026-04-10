@@ -48,6 +48,7 @@ import {
 // import { useSidebar } from '@/components/ui/sidebar';
 // import { NavDocuments } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
+import { NavKnowledgebase } from '@/components/nav-knowledgebase';
 // import { NavSecondary } from '@/components/nav-secondary';
 // import { NavUser } from '@/components/nav-user';
 import {
@@ -391,6 +392,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const contentRef = React.useRef<HTMLDivElement>(null);
   const { isModerator, isReviewer, isPlatformAdmin } = useSidebarRoles();
 
+  const knowledgeBrowseItems = React.useMemo(
+    () => [
+      { title: t('person'), url: '/knowledge/person', icon: IconUser },
+      { title: t('location'), url: '/knowledge/location', icon: IconMapPin },
+      { title: t('event'), url: '/knowledge/event', icon: IconCalendarEvent },
+      { title: t('historicalPeriod'), url: '/knowledge/period', icon: IconClock },
+      { title: t('traditionPractice'), url: '/knowledge/tradition', icon: IconFlame },
+      { title: t('source'), url: '/knowledge/source', icon: IconInvoice },
+      { title: t('deity'), url: '/knowledge/deity', icon: IconMoodSmile },
+      { title: t('guthi'), url: '/knowledge/guthi', icon: IconHomeCog },
+      { title: t('structure'), url: '/knowledge/structure', icon: IconBuildingArch },
+      { title: t('ritual'), url: '/knowledge/ritual', icon: IconCandle },
+      { title: t('festival'), url: '/knowledge/festival', icon: IconConfetti },
+      { title: t('iconography'), url: '/knowledge/iconography', icon: IconPalette },
+      { title: t('monument'), url: '/knowledge/monument', icon: IconColumns },
+    ],
+    [t],
+  );
+
   React.useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
@@ -464,21 +484,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ]}
         />
 
-        <NavMain navtitle={t('knowledgebase')} items={[
-          { title: t('person'), url: '/knowledge/person', icon: IconUser },
-          { title: t('location'), url: '/knowledge/location', icon: IconMapPin },
-          { title: t('event'), url: '/knowledge/event', icon: IconCalendarEvent },
-          { title: t('historicalPeriod'), url: '/knowledge/period', icon: IconClock },
-          { title: t('traditionPractice'), url: '/knowledge/tradition', icon: IconFlame },
-          { title: t('source'), url: '/knowledge/source', icon: IconInvoice },
-          { title: t('deity'), url: '/knowledge/deity', icon: IconMoodSmile },
-          { title: t('guthi'), url: '/knowledge/guthi', icon: IconHomeCog },
-          { title: t('structure'), url: '/knowledge/structure', icon: IconBuildingArch },
-          { title: t('ritual'), url: '/knowledge/ritual', icon: IconCandle },
-          { title: t('festival'), url: '/knowledge/festival', icon: IconConfetti },
-          { title: t('iconography'), url: '/knowledge/iconography', icon: IconPalette },
-          { title: t('monument'), url: '/knowledge/monument', icon: IconColumns },
-        ]} />
+        <NavKnowledgebase
+          sectionTitle={t('knowledgebase')}
+          hubTitle={t('knowledgeHub')}
+          hubUrl="/knowledge/entity"
+          hubIcon={IconBuildingCommunity}
+          browseLabel={t('browseByType')}
+          items={knowledgeBrowseItems}
+        />
         <NavMain navtitle={t('curation')} items={[
           ...(isModerator ? [{ title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard }] : []),
           ...(isReviewer ? [

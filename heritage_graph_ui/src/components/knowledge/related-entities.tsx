@@ -81,9 +81,20 @@ function OntologyLucideIcon({
 interface RelatedEntitiesProps {
   domain: string;
   entityId: string;
+  /** Tighter layout when shown inside the entity view sidebar (no outer card chrome). */
+  embedded?: boolean;
+  /** Shown when embedded and there are no related entities (e.g. link to contribution flow). */
+  emptyCtaHref?: string;
+  emptyCtaLabel?: string;
 }
 
-export function RelatedEntities({ domain, entityId }: RelatedEntitiesProps) {
+export function RelatedEntities({
+  domain,
+  entityId,
+  embedded = false,
+  emptyCtaHref,
+  emptyCtaLabel,
+}: RelatedEntitiesProps) {
   const { data: session } = useSession();
   const [groups, setGroups] = useState<RelatedGroupResponse[]>([]);
   const [totalRelated, setTotalRelated] = useState(0);
@@ -162,7 +173,12 @@ export function RelatedEntities({ domain, entityId }: RelatedEntitiesProps) {
 
   if (loading) {
     return (
-      <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground text-sm">
+      <div
+        className={cn(
+          "text-center text-muted-foreground text-sm",
+          embedded ? "py-6 px-2" : "rounded-lg border bg-card p-8",
+        )}
+      >
         <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-r-transparent" />
         <p className="mt-3">Loading related entities…</p>
       </div>
@@ -171,9 +187,14 @@ export function RelatedEntities({ domain, entityId }: RelatedEntitiesProps) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-destructive/30 bg-card p-6 text-center text-sm text-muted-foreground">
+      <div
+        className={cn(
+          "text-center text-sm text-muted-foreground",
+          embedded ? "py-4 px-1" : "rounded-lg border border-destructive/30 bg-card p-6",
+        )}
+      >
         {error}
-        <div className="mt-4">
+        <div className="mt-3">
           <Button variant="outline" size="sm" onClick={() => void fetchInitial()}>
             Try again
           </Button>
@@ -188,14 +209,31 @@ export function RelatedEntities({ domain, entityId }: RelatedEntitiesProps) {
         initial="hidden"
         animate="show"
         variants={fadeInUp}
-        className="rounded-lg border bg-card p-10 text-center"
+        className={cn(
+          "text-center",
+          embedded ? "py-4 px-2" : "rounded-lg border bg-card p-10",
+        )}
       >
-        <Lucide.Link2 className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-40" />
-        <p className="font-medium text-foreground">No related entities yet</p>
-        <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
-          Nothing in the knowledge base references this record via relation fields. When other records link
-          here (for example a syncretic claim documented in a source), they will appear here.
+        <Lucide.Link2
+          className={cn(
+            "mx-auto mb-2 text-muted-foreground opacity-40",
+            embedded ? "h-7 w-7" : "h-10 w-10 mb-3",
+          )}
+        />
+        <p className="font-medium text-foreground text-sm">No related entities yet</p>
+        <p
+          className={cn(
+            "text-muted-foreground mt-1 mx-auto",
+            embedded ? "text-xs leading-relaxed" : "text-sm max-w-md",
+          )}
+        >
+          Nothing links here yet. When other records reference this one, they will show up.
         </p>
+        {embedded && emptyCtaHref ? (
+          <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+            <Link href={emptyCtaHref}>{emptyCtaLabel ?? "Add links via contribute"}</Link>
+          </Button>
+        ) : null}
       </motion.div>
     );
   }
@@ -203,13 +241,28 @@ export function RelatedEntities({ domain, entityId }: RelatedEntitiesProps) {
   const defaultOpen = groups.map((g) => g.domain_key);
 
   return (
-    <motion.div initial="hidden" animate="show" variants={staggerContainer} className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {totalRelated} related entit{totalRelated === 1 ? "y" : "ies"} across {groups.length} type
-        {groups.length === 1 ? "" : "s"}.
-      </p>
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={staggerContainer}
+      className={embedded ? "space-y-2" : "space-y-4"}
+    >
+      {!embedded ? (
+        <p className="text-sm text-muted-foreground">
+          {totalRelated} related entit{totalRelated === 1 ? "y" : "ies"} across {groups.length} type
+          {groups.length === 1 ? "" : "s"}.
+        </p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          {totalRelated} linked entit{totalRelated === 1 ? "y" : "ies"}
+        </p>
+      )}
 
-      <Accordion type="multiple" defaultValue={defaultOpen} className="rounded-lg border bg-card px-2">
+      <Accordion
+        type="multiple"
+        defaultValue={defaultOpen}
+        className={cn(embedded ? "border-0 bg-transparent px-0" : "rounded-lg border bg-card px-2")}
+      >
         {groups.map((g) => {
           const oc = getOntologyClass(g.domain_key);
           return (
