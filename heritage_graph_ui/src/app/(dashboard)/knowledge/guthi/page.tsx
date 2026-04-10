@@ -1,11 +1,14 @@
-import { GenericDataTable, guthiTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, guthiTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function GuthiKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={guthiTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Guthi"
+      description="Endowments and traditional institutions that steward cultural and religious assets."
+      contributeHref="/contribute/guthi"
+    >
+      <GenericDataTable config={guthiTableConfig} />
+    </KnowledgeListPage>
   );
 }

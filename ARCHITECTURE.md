@@ -118,7 +118,7 @@ In production, replace `.localhost` with your domain (e.g., `api.example.com`).
 2. **NextAuth callbacks:**
    - `jwt` callback: stores Google's `account.id_token` into JWT
    - `session` callback: exposes `accessToken` (the Google ID token) on session object
-   - `signIn` callback: calls Django backend to initialize user (`GET /data/testme/`)
+   - `signIn` callback: verifies the provider token against Django (`GET /data/api/testme/`) before creating a session; failures redirect to `/auth/login?error=…` with a specific code
 3. **Backend** `GoogleTokenAuthentication`:
    - Verifies Google ID token using `google-auth` library
    - Checks token signature, expiry, issuer (`accounts.google.com`), and audience

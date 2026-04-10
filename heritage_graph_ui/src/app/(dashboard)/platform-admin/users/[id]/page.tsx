@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -47,7 +48,7 @@ export default function PlatformAdminUserDetailPage() {
     if (!id || status !== 'authenticated' || !session?.accessToken) return;
     setLoading(true);
     try {
-      const res = await fetch(
+      const row = await apiFetchJson<PlatformAdminUserRow>(
         `${getPublicApiUrl()}/data/api/platform-admin/users/${id}/`,
         {
           headers: {
@@ -56,11 +57,6 @@ export default function PlatformAdminUserDetailPage() {
           },
         }
       );
-      if (!res.ok) {
-        setUser(null);
-        return;
-      }
-      const row = (await res.json()) as PlatformAdminUserRow;
       setUser(row);
       if (row.reviewer_role?.role) {
         setSelectedRole(row.reviewer_role.role);
@@ -83,7 +79,7 @@ export default function PlatformAdminUserDetailPage() {
     }
     setSaving(true);
     try {
-      const res = await fetch(`${getPublicApiUrl()}/data/api/reviewer-roles/assign/`, {
+      await apiFetchJson(`${getPublicApiUrl()}/data/api/reviewer-roles/assign/`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session.accessToken}`,
@@ -95,14 +91,10 @@ export default function PlatformAdminUserDetailPage() {
           expertise_areas: [],
         }),
       });
-      if (!res.ok) {
-        toast.error(t('assignError'));
-        return;
-      }
       toast.success(t('assignSuccess'));
       await loadUser();
-    } catch {
-      toast.error(t('assignError'));
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, t('assignError')));
     } finally {
       setSaving(false);
     }

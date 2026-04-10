@@ -25,6 +25,7 @@ import {
   type AssertionData,
 } from "@/components/contribute/assertion-wrapper";
 import { ontologyEnums } from "@/lib/ontology";
+import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
 // ─────────────────────────────────────────────────────────
 // Form state
@@ -265,25 +266,18 @@ export default function ContributeRitualPage() {
         headers.Authorization = `Bearer ${session.accessToken}`;
       }
 
-      const res = await fetch(`${backendUrl}/cidoc/contribute/rituals/`, {
+      await apiFetchJson(`${backendUrl}/cidoc/contribute/rituals/`, {
         method: "POST",
         headers,
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        toast.success("Ritual event submitted successfully!");
-        router.push("/knowledge/ritual");
-      } else {
-        const errorData = await res.json().catch(() => null);
-        toast.error(
-          `Submission failed: ${
-            errorData ? JSON.stringify(errorData) : res.statusText
-          }`
-        );
-      }
-    } catch {
-      toast.error("Network error. Please try again.");
+      toast.success("Ritual event submitted successfully!");
+      router.push("/knowledge/ritual");
+    } catch (err) {
+      toast.error(
+        getApiErrorMessage(err, "Could not submit this ritual. Please try again.")
+      );
     } finally {
       setIsSubmitting(false);
     }

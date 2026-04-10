@@ -70,29 +70,45 @@
 - **Fix:** Delete `clerk_auth.py` since `authentication.py` now handles all auth via Google OAuth.
 - **Status:** Fixed (file removed).
 
+### 10. `InconsistentMigrationHistory` during `make setup` / `migrate`
+- **Error:** `django.db.migrations.exceptions.InconsistentMigrationHistory: Migration admin.0001_initial is applied before its dependency users.0001_initial`
+- **Cause:** A stale local dev SQLite database (`heritage_graph/db.sqlite3`) created under an older auth/user-model configuration.
+- **Fix (recommended):** Reset the local dev DB (it will be backed up with a timestamp) and re-run migrations:
+
+```bash
+make reset-dev-db
+```
+
+- **Fix (manual):**
+
+```bash
+mv heritage_graph/db.sqlite3 heritage_graph/db.sqlite3.bak-$(date +%Y%m%d-%H%M%S)
+make migrate
+```
+
 ---
 
 ## 🐛 Behavioral Quirks
 
-### 10. UserStatistics auto-updates only on Submission save
+### 11. UserStatistics auto-updates only on Submission save
 - **Where:** `heritage_data/signals.py`
 - **Problem:** The `post_save` signal on `Submission` recalculates `UserStatistics`, but there's no signal for `CulturalEntity` saves.
 - **Impact:** If using the new `CulturalEntity` workflow, `UserStatistics` won't update.
 - **Fix:** Add a `post_save` signal for `CulturalEntity` that also recalculates statistics.
 - **Status:** Fixed — `refresh_user_stats()` aggregates submissions + cultural entities; both models trigger it.
 
-### 11. PersonRevision auto-creation fires on every save
+### 12. PersonRevision auto-creation fires on every save
 - **Where:** `cidoc_data/signals.py`
 - **Problem:** The `post_save` signal creates a `PersonRevision` on every `Person.save()`, even if no fields changed.
 - **Impact:** Could create unnecessary revision records.
 - **Fix:** Compare old and new field values before creating revision.
 
-### 12. Submission `submission_id` is auto-generated
+### 13. Submission `submission_id` is auto-generated
 - **Where:** `heritage_data/models.py` → `Submission.save()`
 - **Problem:** `submission_id` is generated as `random.choices(string.ascii_uppercase + string.digits, k=11)` — not guaranteed unique (though collisions are rare with 11 chars from 36-char alphabet).
 - **Impact:** Very unlikely collision, but not enforced at DB level beyond `unique=True` (which would raise an IntegrityError).
 
-### 13. Frontend `.env.local` is in wrong location
+### 14. Frontend `.env.local` is in wrong location
 - **Where:** Should be at `heritage_graph_ui/.env.local`
 - **Problem:** Next.js expects `.env.local` at the project root (next to `package.json`). If it's elsewhere, env vars won't load.
 - **Fix:** Ensure `.env.local` is in `heritage_graph_ui/` directory.
@@ -101,7 +117,7 @@
 
 ## 🐳 Docker Issues
 
-### 14. Google OAuth requires correct redirect URIs
+### 15. Google OAuth requires correct redirect URIs
 - **Where:** Google Cloud Console → API Credentials
 - **Problem:** Google OAuth will reject sign-in attempts if the redirect URIs don't match exactly. For development, you need `http://localhost:3000/api/auth/callback/google`.
 - **Fix:** In Google Cloud Console, add all redirect URIs:
@@ -109,12 +125,12 @@
   - Prod: `https://yourdomain.com/api/auth/callback/google`
 - **Status:** ℹ️ Configuration requirement.
 
-### 15. Frontend volume mounts override built assets in dev
+### 16. Frontend volume mounts override built assets in dev
 - **Where:** `docker-compose.yml` → `frontend` service
 - **Problem:** Volume mounts (`./heritage_graph_ui:/app`) override the built `.next` directory. Anonymous volumes (`/app/node_modules`, `/app/.next`) are used to prevent this, but can cause stale cache issues.
 - **Fix:** In development, use `docker-compose up --build` to rebuild. Or remove volume mounts and rely on image rebuilds.
 
-### 16. PostgreSQL init script only runs on first boot
+### 17. PostgreSQL init script only runs on first boot
 - **Where:** `infra/postgres/init-scripts/01-init-databases.sh`
 - **Problem:** Docker's `docker-entrypoint-initdb.d` scripts only run when the data directory is empty (first `docker-compose up`).
 - **Impact:** If you need to re-run init scripts, you must delete the volume: `docker-compose down -v`.

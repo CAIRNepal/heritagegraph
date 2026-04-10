@@ -52,6 +52,7 @@ import { z } from 'zod';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { apiFetch, getApiErrorMessage } from '@/lib/api-client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -307,13 +308,17 @@ export function DataTable() {
     const fetchData = async () => {
       try {
         const url = `${getPublicApiUrl()}/data/submissions/?page=${pagination.pageIndex + 1}&page_size=${pagination.pageSize}`;
-        const response = await fetch(url);
+        const response = await apiFetch(url, {
+          headers: { Accept: 'application/json' },
+        });
         const result = await response.json();
         setData(result.results || []);
         setPageCount(Math.ceil(result.count / pagination.pageSize));
       } catch (error) {
         console.error('Error fetching data:', error);
-        toast.error('Failed to load submissions');
+        toast.error(
+          getApiErrorMessage(error, 'Could not load submissions. Please try again.')
+        );
       } finally {
         setLoading(false);
       }

@@ -13,6 +13,7 @@ import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { AccessDenied } from '@/components/access-denied';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Contribution {
@@ -45,11 +46,14 @@ export default function ConflictsPage() {
   const fetchConflicts = useCallback(async () => {
     try {
       setIsLoading(true); setError(null);
-      const res = await fetch(`${API_BASE}/data/api/review-queue/?queue_type=conflicts`, { headers: getHeaders() });
-      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-      const data: ContributionsResponse = await res.json();
+      const data = await apiFetchJson<ContributionsResponse>(
+        `${API_BASE}/data/api/review-queue/?queue_type=conflicts`,
+        { headers: getHeaders() }
+      );
       setConflicts(data.results);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to load conflicts'); }
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Could not load conflicts.'));
+    }
     finally { setIsLoading(false); }
   }, [getHeaders]);
 

@@ -6,8 +6,6 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from rest_framework import permissions
-from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from apps.health_check import (
@@ -17,10 +15,6 @@ from apps.health_check import (
     readiness_check,
 )
 from apps.heritage_data.views import CurrentUserView, RegisterView
-
-# DefaultRouter for API endpoints
-router = DefaultRouter()
-
 
 urlpatterns = [
     # Health check endpoints (used by Docker, Traefik, and monitoring)
@@ -40,13 +34,15 @@ urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
     # API Endpoints
-    path("", include(router.urls)),  # DefaultRouter URLs
     path(
         "data/", include("apps.heritage_data.urls")
     ),  # Heritage Data App
     path(
         "cidoc/", include("apps.cidoc_data.urls")
     ),  # Heritage Data App
+    # Versioned API (recommended for new clients)
+    path("api/v1/data/", include("apps.heritage_data.urls")),
+    path("api/v1/cidoc/", include("apps.cidoc_data.urls")),
 
     # Authentication
     path("auth/", include("djoser.urls")),  # Djoser URLs

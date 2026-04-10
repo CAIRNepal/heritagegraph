@@ -3,18 +3,15 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
-import {
-  GenericDataTable,
-  personTableConfig,
-} from '@/components/generic-data-table';
 import {
   ProgressionWidgetFull,
   LeaderboardPreview,
   MotivationCard,
 } from '@/components/progression-widgets';
+import { SectionCards } from '@/app/(dashboard)/components/section-cards';
 import {
   IconPlus,
   IconBuildingCommunity,
@@ -69,17 +66,17 @@ const quickActions = [
 
 /* ── knowledgebase shortcuts ── */
 const kbShortcuts = [
-  { title: 'Cultural Entity', icon: IconBuildingCommunity, href: '/knowledge/entity', gradient: 'from-blue-400 to-sky-500' },
-  { title: 'Person', icon: IconUser, href: '/knowledge/person', gradient: 'from-blue-500 to-cyan-500' },
-  { title: 'Location', icon: IconMapPin, href: '/knowledge/location', gradient: 'from-sky-400 to-blue-500' },
-  { title: 'Event', icon: IconCalendarEvent, href: '/knowledge/event', gradient: 'from-blue-600 to-sky-600' },
-  { title: 'Tradition', icon: IconFlame, href: '/knowledge/tradition', gradient: 'from-blue-400 to-cyan-500' },
+  { title: 'Cultural Entity', icon: IconBuildingCommunity, href: '/knowledge/entity', gradient: 'from-blue-500 to-sky-500' },
+  { title: 'Person', icon: IconUser, href: '/knowledge/person', gradient: 'from-sky-500 to-cyan-500' },
+  { title: 'Location', icon: IconMapPin, href: '/knowledge/location', gradient: 'from-blue-600 to-sky-600' },
+  { title: 'Event', icon: IconCalendarEvent, href: '/knowledge/event', gradient: 'from-blue-600 to-cyan-500' },
   { title: 'Contributors', icon: IconUsers, href: '/community/contributors', gradient: 'from-sky-500 to-blue-600' },
 ];
 
 export default function Page() {
   const { data: session } = useSession();
   const [greeting, setGreeting] = useState('Welcome');
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const h = new Date().getHours();
@@ -88,77 +85,41 @@ export default function Page() {
     else setGreeting('Good evening');
   }, []);
 
-  useEffect(() => {
-    if (!session?.accessToken) return;
-
-    const fetchBackend = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/testthelogin/`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-            Accept: 'application/json',
-          },
-        });
-        const contentType = res.headers.get('content-type') || '';
-        const isJson = contentType.includes('application/json');
-
-        if (!res.ok) {
-          const errorPayload = isJson ? await res.json() : await res.text();
-          const errorMessage =
-            typeof errorPayload === 'string'
-              ? errorPayload.slice(0, 200) || `Request failed with status ${res.status}`
-              : errorPayload?.detail || `Request failed with status ${res.status}`;
-          throw new Error(errorMessage);
-        }
-
-        const data = isJson ? await res.json() : await res.text();
-        console.log('Data: ', data);
-      } catch (_err: any) {
-        console.error('Error fetching backend data:', _err.message);
-      }
-    };
-    fetchBackend();
-  }, [session]);
-
   const userName = session?.user?.name?.split(' ')[0] || 'there';
 
   return (
     <div className="space-y-8">
       {/* ── Hero Welcome (glassmorphic + gradient, matches landing hero) ── */}
       <motion.div
-        initial="hidden"
-        animate="show"
+        initial={reduceMotion ? false : 'hidden'}
+        animate={reduceMotion ? false : 'show'}
         variants={staggerContainer}
         className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}
       >
         {/* Gradient overlay like landing page sections */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
-        {/* Decorative orbs (like landing GradientOrbs) */}
-        <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-sky-300/20 rounded-full blur-2xl animate-pulse" />
+        {/* Decorative orb (keep subtle; avoid visual noise) */}
+        <div className="absolute -top-12 -right-14 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
 
         <motion.div variants={fadeInUp} className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
             <IconSparkles className="w-4 h-4" />
             Heritage Graph Dashboard
           </div>
-          <h1 className="text-3xl md:text-4xl font-black leading-tight text-white">
+          <h1 className="text-3xl md:text-4xl font-bold leading-tight text-white">
             {greeting},{' '}
             <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">
               {userName}!
             </span>
           </h1>
-          <p className="text-blue-100 max-w-xl text-base md:text-lg leading-relaxed">
-            Preserving cultural heritage through AI and Knowledge Graphs. Contribute,
-            curate, and explore Nepal&apos;s rich heritage.
+          <p className="text-blue-100 max-w-2xl text-base md:text-lg leading-relaxed">
+            Your workspace for contributing, reviewing, and exploring cultural heritage data.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
             <Link href="/contribute">
               <Button
                 size="lg"
-                className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105"
+                className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold shadow-lg transition-colors duration-200"
               >
                 <IconPlus className="w-4 h-4 mr-2" />
                 New Contribution
@@ -179,10 +140,29 @@ export default function Page() {
         </motion.div>
       </motion.div>
 
+      {/* ── Operational overview (state > navigation) ── */}
+      <motion.div
+        initial={reduceMotion ? false : 'hidden'}
+        whileInView={reduceMotion ? undefined : 'show'}
+        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+        variants={staggerContainer}
+      >
+        <motion.h2
+          variants={fadeInUp}
+          className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100"
+        >
+          Your{' '}
+          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
+            Overview
+          </span>
+        </motion.h2>
+        <SectionCards />
+      </motion.div>
+
       {/* ── Quick Actions (glassmorphic cards with gradient icons, like landing "Preserve" cards) ── */}
       <motion.div
-        initial="hidden"
-        animate="show"
+        initial={reduceMotion ? false : 'hidden'}
+        animate={reduceMotion ? false : 'show'}
         variants={staggerContainer}
       >
         <motion.h2
@@ -198,7 +178,7 @@ export default function Page() {
           {quickActions.map((action) => (
             <motion.div key={action.title} variants={scaleIn} className="group relative">
               <Link href={action.href}>
-                <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.02] overflow-hidden hover:shadow-xl cursor-pointer`}>
+                <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-colors duration-200 overflow-hidden hover:shadow-xl cursor-pointer`}>
                   {/* Gradient overlay on hover (same as landing cards) */}
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`}
@@ -222,9 +202,9 @@ export default function Page() {
 
       {/* ── Your Progress & Leaderboard (side by side on desktop) ── */}
       <motion.div
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.2 }}
+        initial={reduceMotion ? false : 'hidden'}
+        whileInView={reduceMotion ? undefined : 'show'}
+        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
         variants={staggerContainer}
       >
         <motion.h2
@@ -249,9 +229,9 @@ export default function Page() {
 
       {/* ── Browse by Category (glassmorphic grid with gradient icons) ── */}
       <motion.div
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.3 }}
+        initial={reduceMotion ? false : 'hidden'}
+        whileInView={reduceMotion ? undefined : 'show'}
+        viewport={reduceMotion ? undefined : { once: true, amount: 0.3 }}
         variants={staggerContainer}
       >
         <motion.h2
@@ -263,11 +243,11 @@ export default function Page() {
             Category
           </span>
         </motion.h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {kbShortcuts.map((item) => (
             <motion.div key={item.title} variants={scaleIn} className="group relative">
               <Link href={item.href}>
-                <div className={`relative text-center p-5 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.03] overflow-hidden hover:shadow-xl cursor-pointer`}>
+                <div className={`relative text-center p-5 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-colors duration-200 overflow-hidden hover:shadow-xl cursor-pointer`}>
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`}
                   />
@@ -284,13 +264,21 @@ export default function Page() {
             </motion.div>
           ))}
         </div>
+        <div className="mt-3">
+          <Link
+            href="/knowledge/entity"
+            className="text-sm font-medium text-blue-700/80 hover:text-blue-800 dark:text-blue-200/70 dark:hover:text-blue-200 underline underline-offset-4"
+          >
+            View all categories in the sidebar
+          </Link>
+        </div>
       </motion.div>
 
       {/* ── Curation Shortcuts (glassmorphic, matches landing About/Team cards) ── */}
       <motion.div
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.3 }}
+        initial={reduceMotion ? false : 'hidden'}
+        whileInView={reduceMotion ? undefined : 'show'}
+        viewport={reduceMotion ? undefined : { once: true, amount: 0.3 }}
         variants={staggerContainer}
       >
         <motion.h2
@@ -328,7 +316,7 @@ export default function Page() {
           ].map((item) => (
             <motion.div key={item.title} variants={scaleIn} className="group relative">
               <Link href={item.href}>
-                <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.02] overflow-hidden hover:shadow-xl cursor-pointer h-full`}>
+                <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-colors duration-200 overflow-hidden hover:shadow-xl cursor-pointer h-full`}>
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`}
                   />

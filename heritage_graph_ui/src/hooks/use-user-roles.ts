@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface ReviewerRoleInfo {
@@ -57,23 +59,21 @@ export function useUserRolesProvider(): UserRoles {
       setIsLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE}/api/user/info`, {
+      const data = await apiFetchJson<{
+        groups?: string[];
+        is_staff?: boolean;
+        reviewer_role?: ReviewerRoleInfo | null;
+      }>(`${API_BASE}/api/user/info`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.accessToken}`,
         },
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        setGroups(data.groups || []);
-        setIsStaff(data.is_staff || false);
-        setReviewerRole(data.reviewer_role || null);
-      } else {
-        setError(`Failed to fetch roles (${res.status})`);
-      }
+      setGroups(data.groups || []);
+      setIsStaff(data.is_staff || false);
+      setReviewerRole(data.reviewer_role || null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch user roles');
+      setError(getApiErrorMessage(err, 'Could not load your account permissions.'));
     } finally {
       setIsLoading(false);
     }

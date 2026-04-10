@@ -34,6 +34,8 @@ Django REST Framework resolves `request.user` using an **authentication class ch
 
 Details and diagrams: [AUTH.md — Architecture](./AUTH.md#architecture-overview).
 
+**Sign-in failures and session errors in the UI** (banner, `/auth/login?error=`, token refresh): see [AUTH.md — Errors and Recovery](./AUTH.md#errors-and-recovery-ux).
+
 ### 1.2 Authorization (what may this user do?)
 
 HeritageGraph uses **DRF `permission_classes`** on views/viewsets (and `@action(permission_classes=…)` for ad-hoc actions).

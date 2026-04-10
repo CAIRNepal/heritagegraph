@@ -577,6 +577,25 @@ Check the Next.js server logs (terminal running `make frontend`). Common causes:
 - Missing `NEXTAUTH_SECRET` — generate one: `openssl rand -base64 32`
 - Missing `NEXTAUTH_URL` — should be `http://localhost:3000`
 
+### Sign-in shows an error on `/auth/login` (`BACKEND_*` codes)
+
+After OAuth, NextAuth verifies the token against Django (`GET /data/api/testme/`). The login page maps query param `error` to user-visible text (see `src/lib/auth-errors.ts`):
+
+| `error` value | Typical cause |
+|---------------|----------------|
+| `BACKEND_REJECTED` | `401`/`403` from Django — mismatched `GOOGLE_CLIENT_ID` (frontend vs backend), wrong `DJANGO_ENV`, or backend not accepting the provider token |
+| `BACKEND_UNAVAILABLE` | Django returned `5xx` during the handshake |
+| `BACKEND_UNREACHABLE` | Next.js could not reach `INTERNAL_BACKEND_URL` (Docker: use `http://backend:8000`, not `localhost`) |
+| `BACKEND_SYNC` | Other HTTP errors during the handshake |
+
+### Session banner: “Session needs attention”
+
+If `session.error` is set (e.g. `RefreshAccessTokenError` after Google token refresh fails), the app shows `AuthSessionMonitor` and **Sign in again**. See **Errors and Recovery** in `AUTH.md`.
+
+### Wrong API path after login (404 on “test” endpoints)
+
+Authenticated checks must use the real routes: **`/data/api/testme/`** and **`GET /data/api/testthelogin`** (not `/data/testme/` or `/data/testthelogin` without `api/`).
+
 ### "Could not retrieve email" from GitHub
 
 Some GitHub users have private emails. The `GitHubTokenAuthentication` backend already handles this by calling `/user/emails`, but the GitHub OAuth app must request the `user:email` scope. NextAuth's GitHub provider does this by default.
@@ -600,7 +619,10 @@ This clears the OAuth env vars and switches back to username/password login.
 |------|------|
 | `heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts` | NextAuth route handler — provider selection + callbacks |
 | `heritage_graph_ui/src/lib/auth.ts` | NextAuth config for `getServerSession()` |
-| `heritage_graph_ui/src/app/auth/login/page.tsx` | Dev-only login page (username/password) |
+| `heritage_graph_ui/src/app/auth/login/page.tsx` | OAuth entry + `?error=` display and retry |
+| `heritage_graph_ui/src/app/auth/error/page.tsx` | NextAuth error page (`pages.error`) |
+| `heritage_graph_ui/src/lib/auth-errors.ts` | User-facing auth error strings |
+| `heritage_graph_ui/src/components/auth-session-monitor.tsx` | Banner when session/JWT has `error` |
 | `heritage_graph_ui/types/next-auth.d.ts` | TypeScript type augmentations |
 | `heritage_graph/apps/heritage_data/authentication.py` | Django DRF auth backends (all providers) |
 | `heritage_graph/settings/development.py` | Dev DRF auth class chain |

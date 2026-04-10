@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 
+import { apiFetchJson, ApiError, getApiErrorMessage } from '@/lib/api-client';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export interface ReviewerRole {
@@ -46,28 +48,28 @@ export function useReviewerRole(): UseReviewerRoleReturn {
       setIsLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE}/data/api/reviewer-roles/my_role/`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
-
-      if (res.ok) {
-        const data: ReviewerRole = await res.json();
+      try {
+        const data = await apiFetchJson<ReviewerRole>(
+          `${API_BASE}/data/api/reviewer-roles/my_role/`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
         setRole(data);
         setIsStaff(false);
-      } else if (res.status === 404) {
-        // No reviewer role assigned — check if user is staff via a
-        // lightweight endpoint. For now, treat 404 as no access.
-        setRole(null);
-      } else if (res.status === 403) {
-        setRole(null);
-      } else {
-        setError(`Failed to check role (${res.status})`);
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 404 || err.status === 403)) {
+          setRole(null);
+          setError(null);
+        } else {
+          throw err;
+        }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to check reviewer role');
+      setError(getApiErrorMessage(err, 'Could not verify reviewer access.'));
     } finally {
       setIsLoading(false);
     }

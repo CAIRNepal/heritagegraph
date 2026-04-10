@@ -26,6 +26,8 @@ import {
   IconTarget,
 } from '@tabler/icons-react';
 
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /* ── Track data (matches progression page) ── */
@@ -80,13 +82,19 @@ function useUserProgress(): { progress: UserProgressData | null; leaderboard: Le
           headers['Authorization'] = `Bearer ${session.accessToken}`;
         }
 
-        const res = await fetch(`${API_BASE_URL}/data/api/progression/`, { headers });
-        if (!res.ok) {
-          setLoading(false);
-          return;
-        }
-
-        const data = await res.json();
+        const data = await apiFetchJson<{
+          leaderboard?: LeaderboardUser[];
+          user_progress?: {
+            tierId?: string;
+            rank: number;
+            totalPoints: number;
+            pointsToNextTier: number;
+            progressPercent: number;
+            medals: { gold: number; silver: number; bronze: number };
+            recentActivity?: { type: string; points: number; label: string }[];
+            streak?: number;
+          };
+        }>(`${API_BASE_URL}/data/api/progression/`, { headers });
         setLeaderboard(data.leaderboard || []);
 
         if (data.user_progress) {
@@ -103,7 +111,10 @@ function useUserProgress(): { progress: UserProgressData | null; leaderboard: Le
           });
         }
       } catch (err) {
-        console.error('Failed to fetch progression data for widget:', err);
+        console.error(
+          'Failed to fetch progression data for widget:',
+          getApiErrorMessage(err)
+        );
       } finally {
         setLoading(false);
       }

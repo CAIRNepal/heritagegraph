@@ -24,6 +24,12 @@ export const scaleIn = {
   show: { scale: 1, opacity: 1, transition: { duration: 0.4 } },
 };
 
+/** Use with Framer Motion: disable enter/scroll animations when the user prefers reduced motion. */
+export function motionInitialWhenEnabled(reduceMotion: boolean | null): false | 'hidden' {
+  if (reduceMotion) return false;
+  return 'hidden';
+}
+
 /* ── glassmorphic card base ── */
 export const glassCard =
   'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg';

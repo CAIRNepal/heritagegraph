@@ -1,3 +1,5 @@
+import { apiFetch } from '@/lib/api-client';
+
 /**
  * HeritageGraph — Live Instance Data Graph
  *
@@ -251,8 +253,7 @@ async function fetchAllPages(
   let nextUrl: string | null = url + (url.includes('?') ? '&' : '?') + 'limit=' + PAGE_LIMIT;
 
   while (nextUrl) {
-    const res = await fetch(nextUrl, { headers, signal });
-    if (!res.ok) break;
+    const res = await apiFetch(nextUrl, { headers, signal });
     const json = await res.json();
 
     // Handle both paginated {count, next, results} and flat array responses
@@ -505,11 +506,10 @@ export async function fetchForkEdges(
   const nodeIdSet = new Set<string>();
 
   try {
-    const res = await fetch(
+    const res = await apiFetch(
       `${apiBaseUrl}/data/api/cultural-entities/?page_size=200`,
       { headers }
     );
-    if (!res.ok) return { nodes, edges };
     const data = await res.json();
     const entities = data.results || data || [];
 

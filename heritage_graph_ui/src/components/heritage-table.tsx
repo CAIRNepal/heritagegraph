@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { apiFetch, getApiErrorMessage } from '@/lib/api-client';
 import {
   closestCenter,
   DndContext,
@@ -361,7 +362,9 @@ export function DataTable() {
     const fetchData = async () => {
       try {
         const url = `${getPublicApiUrl()}/cidoc/search/?q=mahadev`;
-        const response = await fetch(url);
+        const response = await apiFetch(url, {
+          headers: { Accept: 'application/json' },
+        });
         const result = await response.json();
 
         // The JSON response structure is { persons: [...] }
@@ -379,7 +382,9 @@ export function DataTable() {
 
       } catch (error) {
         console.error('Error fetching data:', error);
-        toast.error('Failed to load submissions');
+        toast.error(
+          getApiErrorMessage(error, 'Could not load search results. Please try again.')
+        );
       } finally {
         setLoading(false);
       }

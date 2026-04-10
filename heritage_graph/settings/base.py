@@ -107,6 +107,10 @@ AUTH_USER_MODEL = "users.User"
 REST_FRAMEWORK = {
     # Auth classes are set per-environment in development.py / production.py
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Versioning: prefer URL-based (/api/v1/...)
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
+    "DEFAULT_VERSION": "v1",
+    "ALLOWED_VERSIONS": ["v1"],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_FILTER_BACKENDS": [

@@ -28,6 +28,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import {
   Mail,
   Edit3,
@@ -75,6 +77,7 @@ type OrgMembership = {
 };
 
 type UserData = {
+  slug?: string;
   username: string;
   email: string;
   first_name: string;
@@ -142,6 +145,8 @@ export default function UserProfilePage() {
   const [tab, setTab] = useState('activity');
   const [resolvedSlug, setResolvedSlug] = useState<string>(slug);
   const imgRef = useRef<HTMLInputElement>(null);
+  const profileAbortRef = useRef<AbortController | null>(null);
+  const activityAbortRef = useRef<AbortController | null>(null);
 
   const [editingHandle, setEditingHandle] = useState(false);
   const [handleDraft, setHandleDraft] = useState('');
@@ -159,20 +164,20 @@ export default function UserProfilePage() {
   // Fetch user profile — try UUID slug first, fall back to username lookup
   useEffect(() => {
     (async () => {
+      profileAbortRef.current?.abort();
+      const controller = new AbortController();
+      profileAbortRef.current = controller;
       try {
         // Check if slug looks like a UUID
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
         
-        let res: Response;
-        if (isUUID) {
-          res = await fetch(`${API}/data/api/user/${slug}/`);
-        } else {
-          // Fall back to username-based lookup
-          res = await fetch(`${API}/data/api/user/by-username/${slug}/`);
-        }
-        
-        if (!res.ok) throw new Error('User not found');
-        const data = await res.json();
+        const profileUrl = isUUID
+          ? `${API}/data/api/user/${slug}/`
+          : `${API}/data/api/user/by-username/${slug}/`;
+        const data = await apiFetchJson<UserData>(profileUrl, {
+          headers: { Accept: 'application/json' },
+          signal: controller.signal,
+        });
         setUser(data);
         // Store the actual UUID slug for subsequent API calls
         if (data.slug) {
@@ -195,27 +200,39 @@ export default function UserProfilePage() {
           facebook: data.social_links?.facebook || '',
           instagram: data.social_links?.instagram || '',
         });
-      } catch {
-        toast.error('Failed to load user profile');
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        toast.error(getApiErrorMessage(err, 'Could not load this profile.'));
       } finally {
         setLoading(false);
       }
     })();
+    return () => profileAbortRef.current?.abort();
   }, [slug]);
 
   // Fetch user activities
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API}/data/api/activities/?page_size=20`);
-        if (!res.ok) return;
-        const data = await res.json();
-        // Filter to this user's activities
-        setActivities(
-          data.results?.filter((a: ActivityItem) => a.user?.username === user?.username) || []
+        if (!user?.username) return;
+        activityAbortRef.current?.abort();
+        const controller = new AbortController();
+        activityAbortRef.current = controller;
+        const sp = new URLSearchParams({
+          limit: "20",
+          username: user.username,
+        });
+        const data = await apiFetchJson<{ results?: ActivityItem[] }>(
+          `${API}/data/api/activities/?${sp.toString()}`,
+          { headers: { Accept: 'application/json' }, signal: controller.signal }
         );
-      } catch { /* non-critical */ }
+        setActivities(data.results ?? []);
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') return;
+        /* non-critical */
+      }
     })();
+    return () => activityAbortRef.current?.abort();
   }, [slug, user?.username]);
 
   const copyEmail = () => {
@@ -255,7 +272,7 @@ export default function UserProfilePage() {
           ...(form.instagram && { instagram: form.instagram }),
         },
       };
-      const res = await fetch(`${API}/data/api/user/${resolvedSlug}/`, {
+      const updated = await apiFetchJson<UserData>(`${API}/data/api/user/${resolvedSlug}/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -263,13 +280,11 @@ export default function UserProfilePage() {
         },
         body: JSON.stringify(body),
       });
-      if (!res.ok) throw new Error();
-      const updated = await res.json();
       setUser(updated);
       toast.success('Profile updated');
       setIsEditOpen(false);
-    } catch {
-      toast.error('Failed to update profile');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not update your profile.'));
     } finally {
       setUpdating(false);
     }
@@ -281,17 +296,16 @@ export default function UserProfilePage() {
     const fd = new FormData();
     fd.append('profile_image', file);
     try {
-      const res = await fetch(`${API}/data/api/user/profile-image/`, {
+      const res = await apiFetch(`${API}/data/api/user/profile-image/`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${session?.accessToken ?? ''}` },
         body: fd,
       });
-      if (!res.ok) throw new Error();
       const data = await res.json();
       setUser(u => u ? { ...u, profile_image: data.profile_image } : u);
       toast.success('Profile image updated');
-    } catch {
-      toast.error('Failed to upload image');
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not upload this image.'));
     }
   };
 
@@ -316,7 +330,7 @@ export default function UserProfilePage() {
     setHandleSaving(true);
     setHandleError('');
     try {
-      const res = await fetch(`${API}/user/username/`, {
+      await apiFetchJson(`${API}/user/username/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -324,15 +338,11 @@ export default function UserProfilePage() {
         },
         body: JSON.stringify({ username: val }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.username?.[0] || 'Failed to update username');
-      }
       setUser(u => u ? { ...u, username: val } : u);
       setEditingHandle(false);
       toast.success('Username updated');
-    } catch (e: any) {
-      setHandleError(e.message || 'Failed to update username');
+    } catch (e: unknown) {
+      setHandleError(getApiErrorMessage(e, 'Could not update username.'));
     } finally {
       setHandleSaving(false);
     }

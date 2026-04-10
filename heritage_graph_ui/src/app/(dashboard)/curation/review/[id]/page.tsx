@@ -22,6 +22,7 @@ import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { AccessDenied } from '@/components/access-denied';
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
@@ -96,10 +97,14 @@ export default function ReviewWorkspacePage() {
   const fetchWorkspace = useCallback(async () => {
     try {
       setIsLoading(true); setError(null);
-      const res = await fetch(`${API_BASE}/data/api/review-workspace/${entityId}/`, { headers: getHeaders() });
-      if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
-      setWorkspace(await res.json());
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to load review workspace'); }
+      const data = await apiFetchJson<ReviewWorkspaceData>(
+        `${API_BASE}/data/api/review-workspace/${entityId}/`,
+        { headers: getHeaders() }
+      );
+      setWorkspace(data);
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Could not load this review workspace.'));
+    }
     finally { setIsLoading(false); }
   }, [entityId, getHeaders]);
 
@@ -113,12 +118,17 @@ export default function ReviewWorkspacePage() {
       const body: Record<string, unknown> = { verdict, conflict_handling: conflictHandling, feedback, reconciliation_note: reconciliationNote, internal_note: internalNote };
       if (confidenceOverride) body.confidence_override = confidenceOverride;
       if (verificationMethod) body.verification_method = verificationMethod;
-      const res = await fetch(`${API_BASE}/data/api/review-workspace/${entityId}/decide/`, { method: 'POST', headers: getHeaders(), body: JSON.stringify(body) });
-      if (!res.ok) { const errData = await res.json().catch(() => ({})); throw new Error(JSON.stringify(errData) || `Error: ${res.status}`); }
+      await apiFetchJson(`${API_BASE}/data/api/review-workspace/${entityId}/decide/`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(body),
+      });
       toast.success('Review decision submitted successfully');
       await fetchWorkspace();
       setVerdict(''); setConflictHandling('not_applicable'); setConfidenceOverride(''); setVerificationMethod(''); setFeedback(''); setReconciliationNote(''); setInternalNote('');
-    } catch (err) { toast.error(err instanceof Error ? err.message : 'Failed to submit decision'); }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not submit this review decision.'));
+    }
     finally { setIsSubmitting(false); }
   };
 
@@ -604,19 +614,17 @@ function ForkActionsCard({ workspace }: { workspace: ReviewWorkspaceData }) {
     setLoading(action);
     try {
       const body = action === 'reject' ? JSON.stringify({ reason: rejectReason }) : undefined;
-      const res = await fetch(`${API_BASE}/data/api/forks/${forkId}/${action}/`, {
+      await apiFetch(`${API_BASE}/data/api/forks/${forkId}/${action}/`, {
         method: 'POST',
         headers: getHeaders(),
         body,
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Failed to ${action} fork`);
-      }
       toast.success(`Fork ${action}d successfully`);
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : `Failed to ${action} fork`);
+      toast.error(
+        getApiErrorMessage(err, `Could not ${action} this fork. Please try again.`)
+      );
     } finally {
       setLoading(null);
     }

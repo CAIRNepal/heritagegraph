@@ -1,6 +1,9 @@
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+
+import { apiFetch, apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -100,12 +103,13 @@ export function useNotifications(
             if (value) searchParams.set(key, value);
           }
         }
-        const res = await fetch(
+        const data = await apiFetchJson<{
+          results?: Notification[];
+          count?: number;
+        }>(
           `${API_BASE_URL}/data/api/notifications/?${searchParams}`,
           { headers: getHeaders() },
         );
-        if (!res.ok) throw new Error("Failed to fetch notifications");
-        const data = await res.json();
         const results: Notification[] =
           data.results ?? (Array.isArray(data) ? data : []);
         const count = data.count ?? results.length;
@@ -117,8 +121,8 @@ export function useNotifications(
         }
         setTotalCount(count);
         setHasMore(offset + results.length < count);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(getApiErrorMessage(err, "Could not load notifications."));
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -150,16 +154,13 @@ export function useNotifications(
   const fetchUnreadCount = useCallback(async () => {
     if (!sessionRef.current) return;
     try {
-      const res = await fetch(
+      const data = await apiFetchJson<{ unread_count: number }>(
         `${API_BASE_URL}/data/api/notifications/unread_count/`,
         { headers: getHeaders() },
       );
-      if (res.ok) {
-        const data = await res.json();
-        setUnreadCount(data.unread_count);
-      }
+      setUnreadCount(data.unread_count);
     } catch {
-      // silently fail for count
+      // Badge-only: avoid toasting on background poll failures
     }
   }, [getHeaders]);
 
@@ -167,37 +168,32 @@ export function useNotifications(
     async (notificationIds?: string[]) => {
       if (!sessionRef.current) return;
       try {
-        const res = await fetch(
-          `${API_BASE_URL}/data/api/notifications/mark_read/`,
-          {
-            method: "POST",
-            headers: getHeaders(),
-            body: JSON.stringify({
-              notification_ids: notificationIds || [],
-            }),
-          },
-        );
-        if (res.ok) {
-          if (notificationIds) {
-            setNotifications((prev) =>
-              prev.map((n) =>
-                notificationIds.includes(n.notification_id)
-                  ? { ...n, is_read: true }
-                  : n,
-              ),
-            );
-            setUnreadCount((prev) =>
-              Math.max(0, prev - notificationIds.length),
-            );
-          } else {
-            setNotifications((prev) =>
-              prev.map((n) => ({ ...n, is_read: true })),
-            );
-            setUnreadCount(0);
-          }
+        await apiFetch(`${API_BASE_URL}/data/api/notifications/mark_read/`, {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({
+            notification_ids: notificationIds || [],
+          }),
+        });
+        if (notificationIds) {
+          setNotifications((prev) =>
+            prev.map((n) =>
+              notificationIds.includes(n.notification_id)
+                ? { ...n, is_read: true }
+                : n,
+            ),
+          );
+          setUnreadCount((prev) =>
+            Math.max(0, prev - notificationIds.length),
+          );
+        } else {
+          setNotifications((prev) =>
+            prev.map((n) => ({ ...n, is_read: true })),
+          );
+          setUnreadCount(0);
         }
-      } catch {
-        // ignore
+      } catch (err) {
+        toast.error(getApiErrorMessage(err, "Could not mark notifications as read."));
       }
     },
     [getHeaders],
@@ -206,32 +202,24 @@ export function useNotifications(
   const markAllAsRead = useCallback(async () => {
     if (!sessionRef.current) return;
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/data/api/notifications/mark_all_read/`,
-        { method: "POST", headers: getHeaders() },
+      await apiFetch(`${API_BASE_URL}/data/api/notifications/mark_all_read/`, {
+        method: "POST",
+        headers: getHeaders(),
+      });
+      setNotifications((prev) =>
+        prev.map((n) => ({ ...n, is_read: true })),
       );
-      if (res.ok) {
-        setNotifications((prev) =>
-          prev.map((n) => ({ ...n, is_read: true })),
-        );
-        setUnreadCount(0);
-      }
-    } catch {
-      // ignore
+      setUnreadCount(0);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, "Could not mark all as read."));
     }
   }, [getHeaders]);
-
-  useEffect(() => {
-    if (!session) return;
-    fetchUnreadCount();
-    if (autoFetch) fetchNotifications();
-  }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!session || !pathname) return;
     fetchUnreadCount();
     if (autoFetch) fetchNotifications();
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [session, pathname, autoFetch, fetchNotifications, fetchUnreadCount]);
 
   useEffect(() => {
     if (!session) return;

@@ -1,5 +1,8 @@
 import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
+
+import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -112,20 +115,15 @@ export function useReactions() {
       entityId?: string,
       commentId?: string
     ) => {
-      const res = await fetch(
-        `${API_BASE_URL}/data/api/reactions/toggle/`,
-        {
-          method: "POST",
-          headers: getHeaders(),
-          body: JSON.stringify({
-            reaction_type: reactionType,
-            ...(entityId ? { entity_id: entityId } : {}),
-            ...(commentId ? { comment_id: commentId } : {}),
-          }),
-        }
-      );
-      if (!res.ok) throw new Error("Failed to toggle reaction");
-      return res.json();
+      return apiFetchJson(`${API_BASE_URL}/data/api/reactions/toggle/`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({
+          reaction_type: reactionType,
+          ...(entityId ? { entity_id: entityId } : {}),
+          ...(commentId ? { comment_id: commentId } : {}),
+        }),
+      });
     },
     [getHeaders]
   );
@@ -135,12 +133,10 @@ export function useReactions() {
       const params = entityId
         ? `entity_id=${entityId}`
         : `comment_id=${commentId}`;
-      const res = await fetch(
+      return apiFetchJson(
         `${API_BASE_URL}/data/api/reactions/summary/?${params}`,
         { headers: getHeaders() }
       );
-      if (!res.ok) throw new Error("Failed to get reaction summary");
-      return res.json();
     },
     [getHeaders]
   );
@@ -166,14 +162,14 @@ export function useComments(entityId: string) {
   const fetchComments = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const data = await apiFetchJson<{ results?: Comment[] } | Comment[]>(
         `${API_BASE_URL}/data/api/entities/${entityId}/comments/`,
         { headers: getHeaders() }
       );
-      if (res.ok) {
-        const data = await res.json();
-        setComments(data.results || data);
-      }
+      setComments(Array.isArray(data) ? data : data.results || []);
+    } catch (e) {
+      setComments([]);
+      toast.error(getApiErrorMessage(e, "Could not load comments."));
     } finally {
       setLoading(false);
     }
@@ -181,7 +177,7 @@ export function useComments(entityId: string) {
 
   const addComment = useCallback(
     async (text: string, parentId?: number) => {
-      const res = await fetch(
+      const newComment = await apiFetchJson<Comment>(
         `${API_BASE_URL}/data/api/entities/${entityId}/comments/`,
         {
           method: "POST",
@@ -192,8 +188,6 @@ export function useComments(entityId: string) {
           }),
         }
       );
-      if (!res.ok) throw new Error("Failed to add comment");
-      const newComment = await res.json();
       await fetchComments(); // refresh
       return newComment;
     },
@@ -202,11 +196,10 @@ export function useComments(entityId: string) {
 
   const deleteComment = useCallback(
     async (commentPk: number) => {
-      const res = await fetch(
+      await apiFetchJson(
         `${API_BASE_URL}/data/api/entities/${entityId}/comments/${commentPk}/`,
         { method: "DELETE", headers: getHeaders() }
       );
-      if (!res.ok) throw new Error("Failed to delete comment");
       await fetchComments();
     },
     [entityId, getHeaders, fetchComments]
@@ -235,7 +228,7 @@ export function useForks() {
       forkReasonTag: string = "other",
       changes: Record<string, any> = {},
     ) => {
-      const res = await fetch(`${API_BASE_URL}/data/api/forks/`, {
+      return apiFetchJson(`${API_BASE_URL}/data/api/forks/`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({
@@ -245,81 +238,67 @@ export function useForks() {
           changes,
         }),
       });
-      if (!res.ok) throw new Error("Failed to fork entity");
-      return res.json();
     },
     [getHeaders]
   );
 
   const listForks = useCallback(
     async (entityId: string): Promise<ForkInfo[]> => {
-      const res = await fetch(
+      return apiFetchJson(
         `${API_BASE_URL}/data/api/forks/?entity_id=${entityId}`,
         { headers: getHeaders() }
       );
-      if (!res.ok) throw new Error("Failed to list forks");
-      return res.json();
     },
     [getHeaders]
   );
 
   const getLineage = useCallback(
     async (entityId: string): Promise<ForkLineageNode> => {
-      const res = await fetch(
+      return apiFetchJson(
         `${API_BASE_URL}/data/api/cultural-entities/${entityId}/lineage/`,
         { headers: getHeaders() }
       );
-      if (!res.ok) throw new Error("Failed to get lineage");
-      return res.json();
     },
     [getHeaders]
   );
 
   const getForkDiff = useCallback(
     async (entityId: string, forkEntityId: string): Promise<CrossEntityDiff> => {
-      const res = await fetch(
+      return apiFetchJson(
         `${API_BASE_URL}/data/api/cultural-entities/${entityId}/fork-diff/${forkEntityId}/`,
         { headers: getHeaders() }
       );
-      if (!res.ok) throw new Error("Failed to get fork diff");
-      return res.json();
     },
     [getHeaders]
   );
 
   const mergeFork = useCallback(
     async (forkId: string) => {
-      const res = await fetch(`${API_BASE_URL}/data/api/forks/${forkId}/merge/`, {
+      return apiFetchJson(`${API_BASE_URL}/data/api/forks/${forkId}/merge/`, {
         method: "POST",
         headers: getHeaders(),
       });
-      if (!res.ok) throw new Error("Failed to merge fork");
-      return res.json();
     },
     [getHeaders]
   );
 
   const promoteFork = useCallback(
     async (forkId: string) => {
-      const res = await fetch(`${API_BASE_URL}/data/api/forks/${forkId}/promote/`, {
+      return apiFetchJson(`${API_BASE_URL}/data/api/forks/${forkId}/promote/`, {
         method: "POST",
         headers: getHeaders(),
       });
-      if (!res.ok) throw new Error("Failed to promote fork");
-      return res.json();
     },
     [getHeaders]
   );
 
   const rejectFork = useCallback(
     async (forkId: string, reason: string) => {
-      const res = await fetch(`${API_BASE_URL}/data/api/forks/${forkId}/reject/`, {
+      return apiFetchJson(`${API_BASE_URL}/data/api/forks/${forkId}/reject/`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({ reason }),
       });
-      if (!res.ok) throw new Error("Failed to reject fork");
-      return res.json();
     },
     [getHeaders]
   );
@@ -350,12 +329,10 @@ export function useRevisionDiff() {
 
   const getDiff = useCallback(
     async (entityId: string, fromRev: number, toRev: number): Promise<RevisionDiff> => {
-      const res = await fetch(
+      return apiFetchJson(
         `${API_BASE_URL}/data/api/entities/${entityId}/diff/?from=${fromRev}&to=${toRev}`,
         { headers: getHeaders() }
       );
-      if (!res.ok) throw new Error("Failed to get diff");
-      return res.json();
     },
     [getHeaders]
   );

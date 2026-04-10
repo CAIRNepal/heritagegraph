@@ -2,9 +2,10 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,6 +59,7 @@ export default function PlatformAdminUsersPage() {
   const [data, setData] = useState<Paginated<PlatformAdminUserRow> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -69,6 +71,9 @@ export default function PlatformAdminUsersPage() {
 
   const load = useCallback(async () => {
     if (status !== 'authenticated' || !session?.accessToken) return;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError(null);
     try {
@@ -78,24 +83,20 @@ export default function PlatformAdminUsersPage() {
         ordering: '-date_joined',
       });
       if (debouncedSearch) params.set('search', debouncedSearch);
-      const res = await fetch(
+      const json = await apiFetchJson<Paginated<PlatformAdminUserRow>>(
         `${getPublicApiUrl()}/data/api/platform-admin/users/?${params.toString()}`,
         {
           headers: {
             Authorization: `Bearer ${session.accessToken}`,
             'Content-Type': 'application/json',
           },
+          signal: controller.signal,
         }
       );
-      if (!res.ok) {
-        setError(t('loadError'));
-        setData(null);
-        return;
-      }
-      const json = (await res.json()) as Paginated<PlatformAdminUserRow>;
       setData(json);
-    } catch {
-      setError(t('loadError'));
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      setError(getApiErrorMessage(err, t('loadError')));
       setData(null);
     } finally {
       setLoading(false);
@@ -105,6 +106,10 @@ export default function PlatformAdminUsersPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
 
   const from = data && data.results.length ? offset + 1 : 0;
   const to = data ? offset + data.results.length : 0;

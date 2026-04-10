@@ -5,6 +5,8 @@ import React from 'react';
 import { useSession } from 'next-auth/react';
 import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { glassCard } from '@/lib/design';
 
 interface Stats {
   total_submissions: number;
@@ -40,21 +42,14 @@ export function SectionCards() {
           (headers as Record<string, string>).Authorization =
             `Bearer ${session.accessToken}`;
         }
-        const res = await fetch(`${getPublicApiUrl()}/data/api/user-stats/`, {
+        const data = await apiFetchJson<Stats>(`${getPublicApiUrl()}/data/api/user-stats/`, {
           headers,
         });
-
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
-        const data: Stats = await res.json();
-        console.log('DATA: ', data);
         setStats(data);
       } catch (err: unknown) {
-        console.error('Failed to fetch stats:', err);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred');
-        }
+        setError(
+          getApiErrorMessage(err, 'Could not load your dashboard statistics.')
+        );
       } finally {
         setLoading(false);
       }
@@ -73,8 +68,28 @@ export function SectionCards() {
   const formatChange = (val: number, isPercent = false) =>
     `${val >= 0 ? '+' : ''}${val.toFixed(1)}${isPercent ? '%' : ''}`;
 
-  if (loading) return <div className="text-gray-500 font-medium">Loading...</div>;
-  if (error) return <div className="text-red-500 font-medium">Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className={`${glassCard} p-4`}>
+        <div className="text-sm font-medium text-blue-700/80 dark:text-blue-200/70">
+          Loading your dashboard overview…
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`${glassCard} p-4`}>
+        <div className="text-sm font-semibold text-red-600 dark:text-red-400">
+          Couldn&apos;t load your dashboard overview
+        </div>
+        <div className="mt-1 text-xs text-blue-700/70 dark:text-blue-200/70">
+          {error}
+        </div>
+      </div>
+    );
+  }
   if (!stats) return null;
 
   const cards: CardData[] = [
@@ -119,23 +134,27 @@ export function SectionCards() {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4 p-4">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
       {cards.map((card) => (
         <div
           key={card.title}
-          className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 flex flex-col justify-between border border-gray-200 dark:border-gray-700"
+          className={`${glassCard} p-4 flex flex-col justify-between`}
         >
           <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{card.title}</p>
-            <h2 className="text-2xl font-bold mt-1">{card.value}</h2>
-            <span className="inline-flex items-center mt-2 text-sm font-medium text-gray-600 dark:text-gray-300">
+            <p className="text-sm text-blue-700/70 dark:text-blue-200/70">
+              {card.title}
+            </p>
+            <h2 className="text-2xl font-bold mt-1 text-blue-950 dark:text-blue-50">
+              {card.value}
+            </h2>
+            <span className="inline-flex items-center mt-2 text-sm font-medium text-blue-800/80 dark:text-blue-100/80">
               <UpOrDown value={card.change} />
               <span className="ml-1">
                 {formatChange(card.change, card.changeIsPercent)}
               </span>
             </span>
           </div>
-          <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="mt-4 text-sm text-blue-700/70 dark:text-blue-200/70">
             <p>
               {card.footer} <UpOrDown value={card.change} />
             </p>

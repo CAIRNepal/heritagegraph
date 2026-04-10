@@ -1,11 +1,14 @@
-import { GenericDataTable, eventTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, eventTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function EventKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={eventTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Events"
+      description="Cultural, historical, and ritual events with optional links to people, places, and traditions."
+      contributeHref="/contribute/event"
+    >
+      <GenericDataTable config={eventTableConfig} />
+    </KnowledgeListPage>
   );
 }

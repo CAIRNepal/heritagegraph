@@ -21,8 +21,9 @@
 7. [Backend: How Django Verifies the Token](#backend-how-django-verifies-the-token)
 8. [TypeScript Types for Session](#typescript-types-for-session)
 9. [Sign In / Sign Out](#sign-in--sign-out)
-10. [Common Pitfalls](#common-pitfalls)
-11. [Quick Reference Cheat Sheet](#quick-reference-cheat-sheet)
+10. [Errors and Recovery (UX)](#errors-and-recovery-ux)
+11. [Common Pitfalls](#common-pitfalls)
+12. [Quick Reference Cheat Sheet](#quick-reference-cheat-sheet)
 
 ---
 
@@ -136,8 +137,11 @@ HeritageGraph uses **two authentication modes** depending on the environment:
 |---|---|
 | `heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts` | NextAuth route handler — auto-selects Google vs Credentials provider |
 | `heritage_graph_ui/src/lib/auth.ts` | `authOptions` config (importable for server-side `getServerSession`) |
-| `heritage_graph_ui/src/app/auth/login/page.tsx` | Dev-only login page (username/password form) |
-| `heritage_graph_ui/src/app/SessionProvider.tsx` | Client wrapper — provides `SessionProvider` + `ThemeProvider` |
+| `heritage_graph_ui/src/app/auth/login/page.tsx` | Google sign-in entry (shows `?error=` messages, retry button) |
+| `heritage_graph_ui/src/app/auth/error/page.tsx` | NextAuth `pages.error` — maps provider/configuration errors to copy |
+| `heritage_graph_ui/src/lib/auth-errors.ts` | User-facing strings for URL errors, session errors, and NextAuth codes |
+| `heritage_graph_ui/src/components/auth-session-monitor.tsx` | Banner when `session.error` is set (e.g. token refresh failure) |
+| `heritage_graph_ui/src/app/SessionProvider.tsx` | Client wrapper — `SessionProvider` + `ThemeProvider` + session error monitor |
 | `heritage_graph_ui/src/app/layout.tsx` | Root layout — wraps everything in `NextAuthSessionProvider` |
 | `heritage_graph_ui/types/next-auth.d.ts` | TypeScript augmentations for `Session`, `JWT`, and `User` |
 | `heritage_graph/apps/heritage_data/authentication.py` | Both auth backends: `DevSessionAuthentication` + `GoogleTokenAuthentication` |
@@ -379,6 +383,8 @@ session.user.name         // string | null      — full name
 session.user.email        // string | null      — email
 session.user.username     // string | null      — same as email
 session.user.image        // string | null      — Google avatar URL
+session.error             // string | optional — e.g. RefreshAccessTokenError
+session.errorDescription  // string | optional — safe UI copy for session.error
 ```
 
 If you add new fields to the session, update **both**:
@@ -442,6 +448,40 @@ import AuthButtons from '@/components/AuthButtons';
 ```
 
 > **Note:** `AuthButtons` uses `SidebarFooter` and `NavUser`, which depend on sidebar context. Use it inside `SidebarProvider` (e.g., dashboard) or within a try-catch guarded component.
+
+---
+
+## Errors and Recovery (UX)
+
+Sign-in and session maintenance now fail **loudly** with actionable copy instead of only logging to the server console.
+
+### Backend handshake during OAuth (`signIn` callback)
+
+After Google/GitHub returns a token, NextAuth calls Django `GET /data/api/testme/` with `Authorization: Bearer <token>` before the session is finalized.
+
+| Result | What the user sees |
+|--------|---------------------|
+| `401` / `403` | Redirect to `/auth/login?error=BACKEND_REJECTED` with guidance (matching OAuth client IDs, `DJANGO_ENV`, etc.) |
+| `5xx` | `?error=BACKEND_UNAVAILABLE` |
+| Network failure from Next.js → Django | `?error=BACKEND_UNREACHABLE` (check `INTERNAL_BACKEND_URL` in Docker) |
+| Other non-success HTTP | `?error=BACKEND_SYNC` |
+
+Profile enrichment (`GET /data/api/user/me/`) is **best-effort**: if it fails, sign-in still succeeds and the failure is logged.
+
+### NextAuth and configuration errors
+
+- Custom **`pages.error`** is `/auth/error`. Query param `error` uses [NextAuth’s documented values](https://next-auth.js.org/configuration/pages) (`Configuration`, `OAuthCallback`, …), mapped to readable text in `src/lib/auth-errors.ts`.
+- **`/auth/login`** reads the same `error` query param (HeritageGraph codes and NextAuth codes). If automatic redirect to Google fails, the page shows a **Try again** button and any message from `signIn(..., { redirect: false })`.
+
+### Session token refresh (Google)
+
+When Google’s refresh token exchange fails, the JWT carries `error: 'RefreshAccessTokenError'` and the session exposes `session.error` / `session.errorDescription`. **`AuthSessionMonitor`** renders a top-of-screen alert with **Sign in again** (calls `signOut` → `/auth/login`).
+
+Non-Google OAuth without refresh (e.g. expired GitHub access token in JWT) sets **`AccessTokenExpiredError`** with the same banner pattern.
+
+### Post-login API “ping”
+
+Components that sync the Django user after OAuth (e.g. `AuthButtons`, `NavUser`) use **`GET /data/api/testthelogin`** (authenticated list endpoint). Failures surface as an inline alert or `toast` with the message from `getApiErrorMessage()` — not only `console.error`.
 
 ---
 

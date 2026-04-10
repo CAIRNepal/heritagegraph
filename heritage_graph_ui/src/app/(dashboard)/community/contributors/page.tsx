@@ -28,6 +28,9 @@ import {
   Loader2,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
+
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -74,17 +77,17 @@ export default function ContributorsPage() {
       });
       if (search) params.set('search', search);
 
-      const res = await fetch(
-        `${API_BASE}/data/api/contributors/?${params}`,
-        { headers: getHeaders() }
-      );
-      if (!res.ok) throw new Error('Failed to fetch contributors');
-      const data = await res.json();
+      const data = await apiFetchJson<{
+        results?: Contributor[];
+        total_pages?: number;
+        count?: number;
+      }>(`${API_BASE}/data/api/contributors/?${params}`, { headers: getHeaders() });
       setContributors(data.results || []);
       setTotalPages(data.total_pages || 1);
       setTotalCount(data.count || 0);
     } catch (error) {
       console.error(error);
+      toast.error(getApiErrorMessage(error, 'Could not load contributors.'));
     } finally {
       setLoading(false);
     }

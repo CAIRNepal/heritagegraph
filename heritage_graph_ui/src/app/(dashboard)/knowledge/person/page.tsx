@@ -1,11 +1,14 @@
-import { GenericDataTable, personTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, personTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function PersonKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={personTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Persons"
+      description="Historical and contemporary people linked to heritage narratives. Data follows the CIDOC-CRM person model where applicable."
+      contributeHref="/contribute/person"
+    >
+      <GenericDataTable config={personTableConfig} />
+    </KnowledgeListPage>
   );
 }

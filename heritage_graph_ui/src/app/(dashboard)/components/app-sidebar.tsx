@@ -63,6 +63,9 @@ import {
   SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
+
 const data = {
   user: {
     name: 'nabin2004',
@@ -327,7 +330,7 @@ const data = {
   ],
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 interface SidebarRoles {
   isModerator: boolean;
@@ -345,16 +348,20 @@ function useSidebarRoles(): SidebarRoles {
 
   React.useEffect(() => {
     if (status !== 'authenticated' || !session?.accessToken) return;
+    if (!API_BASE) return;
 
-    fetch(`${API_BASE}/api/user/info`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.accessToken}`,
-      },
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!data) return;
+    (async () => {
+      try {
+        const data = await apiFetchJson<{
+          groups?: string[];
+          is_staff?: boolean;
+          reviewer_role?: { is_active?: boolean; can_manage_roles?: boolean } | null;
+        }>(`${API_BASE}/api/user/info`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        });
         const groups: string[] = data.groups || [];
         const isStaff = data.is_staff || false;
         const hasActiveReviewerRole = data.reviewer_role?.is_active ?? false;
@@ -365,8 +372,10 @@ function useSidebarRoles(): SidebarRoles {
           isReviewer: isMod || groups.includes('Reviewers') || hasActiveReviewerRole,
           isPlatformAdmin: isStaff || (hasActiveReviewerRole && canManageRoles),
         });
-      })
-      .catch(() => {});
+      } catch (err) {
+        // Avoid console noise in production; roles will remain false.
+      }
+    })();
   }, [session, status]);
 
   return roles;

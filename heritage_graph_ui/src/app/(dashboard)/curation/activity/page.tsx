@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface ActivityItem {
@@ -97,13 +98,18 @@ export default function ActivityLogPage() {
       sp.set('page', String(p)); sp.set('page_size', String(perPage));
       sp.set('ordering', sortDir === 'desc' ? '-created_at' : 'created_at');
       if (actType !== 'all') sp.set('activity_type', actType);
-      const res = await fetch(`${API}/data/api/activities/?${sp}`, { headers: headers() });
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data: APIResponse = await res.json();
+      const data = await apiFetchJson<APIResponse>(
+        `${API}/data/api/activities/?${sp}`,
+        { headers: headers() }
+      );
       if (append) setActivities(prev => [...prev, ...data.results]);
       else setActivities(data.results);
       setTotal(data.count); setHasMore(!!data.next); setPage(p);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Load failed'); toast.error('Failed to load activity'); }
+    } catch (e) {
+      const msg = getApiErrorMessage(e, 'Could not load the activity log.');
+      setError(msg);
+      toast.error(msg);
+    }
     finally { setLoading(false); }
   }, [headers, actType, sortDir]);
 

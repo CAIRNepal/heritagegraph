@@ -23,6 +23,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // --- TYPES ---
 type Category = 'monument' | 'festival' | 'ritual' | 'tradition' | 'artifact' | 'other';
@@ -159,32 +162,30 @@ export default function CulturalEntityContributionPage() {
     try {
       const token = (session as any)?.accessToken;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/cultural-entities/${originalEntity.entity_id}/create_revision/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          description: formData.description.trim(),
-          category: formData.category,
-          form_data: formData.form_data,
-        }),
-      });
+      await apiFetchJson(
+        `${API_BASE}/data/api/cultural-entities/${originalEntity.entity_id}/create_revision/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            description: formData.description.trim(),
+            category: formData.category,
+            form_data: formData.form_data,
+          }),
+        }
+      );
 
-      if (res.ok) {
-        const responseData = await res.json();
-        toast.success(`Revision for "${formData.name}" submitted successfully!`);
-        setTimeout(() => router.push('/knowledge/entity'), 1200);
-      } else {
-        const errorData = await res.json().catch(() => null);
-        console.error('Revision submission error details:', errorData);
-        toast.error(errorData?.error || errorData?.detail || errorData?.message || 'Revision submission failed. Please try again.');
-      }
+      toast.success(`Revision for "${formData.name}" submitted successfully!`);
+      setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
       console.error('Revision submission error:', err);
-      toast.error('Network error. Please try again later.');
+      toast.error(
+        getApiErrorMessage(err, 'Could not submit this revision. Please try again.')
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -207,7 +208,7 @@ export default function CulturalEntityContributionPage() {
     try {
       const token = (session as any)?.accessToken;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/cultural-entities/${originalEntity.entity_id}/`, {
+      await apiFetchJson(`${API_BASE}/data/api/cultural-entities/${originalEntity.entity_id}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -221,18 +222,13 @@ export default function CulturalEntityContributionPage() {
         }),
       });
 
-      if (res.ok) {
-        const responseData = await res.json();
-        toast.success(`"${formData.name}" updated successfully!`);
-        setTimeout(() => router.push('/knowledge/entity'), 1200);
-      } else {
-        const errorData = await res.json().catch(() => null);
-        console.error('Edit submission error details:', errorData);
-        toast.error(errorData?.error || errorData?.detail || errorData?.message || 'Update failed. Please try again.');
-      }
+      toast.success(`"${formData.name}" updated successfully!`);
+      setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
       console.error('Edit submission error:', err);
-      toast.error('Network error. Please try again later.');
+      toast.error(
+        getApiErrorMessage(err, 'Could not update this entity. Please try again.')
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -251,7 +247,7 @@ export default function CulturalEntityContributionPage() {
     try {
       const token = (session as any)?.accessToken;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/cultural-entities/`, {
+      await apiFetchJson(`${API_BASE}/data/api/cultural-entities/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -265,18 +261,13 @@ export default function CulturalEntityContributionPage() {
         }),
       });
 
-      if (res.ok) {
-        const responseData = await res.json();
-        toast.success(`"${formData.name}" submitted successfully!`);
-        setTimeout(() => router.push('/knowledge/entity'), 1200);
-      } else {
-        const errorData = await res.json().catch(() => null);
-        console.error('Submission error details:', errorData);
-        toast.error(errorData?.detail || errorData?.message || 'Submission failed. Please try again.');
-      }
+      toast.success(`"${formData.name}" submitted successfully!`);
+      setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
       console.error('Submission error:', err);
-      toast.error('Network error. Please try again later.');
+      toast.error(
+        getApiErrorMessage(err, 'Could not submit this entity. Please try again.')
+      );
     } finally {
       setIsSubmitting(false);
     }

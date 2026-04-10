@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from '@/lib/config';
+import { apiFetch, getApiErrorMessage } from '@/lib/api-fetch';
 import type { DiscoveryCategory } from '@/data/dummyDiscovery';
 
 export interface DiscoveryResult {
@@ -33,13 +34,13 @@ export async function fetchPublicDiscovery(
     params.set('q', trimmed);
   }
   const url = `${base}/cidoc/discovery/?${params.toString()}`;
-  const res = await fetch(url, {
-    signal: options?.signal,
-    headers: { Accept: 'application/json' },
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(text?.slice(0, 200) || `Discovery failed (${res.status})`);
+  try {
+    const res = await apiFetch(url, {
+      signal: options?.signal,
+      headers: { Accept: 'application/json' },
+    });
+    return res.json() as Promise<DiscoveryResponse>;
+  } catch (e) {
+    throw new Error(getApiErrorMessage(e, 'Discovery could not load results. Please try again.'));
   }
-  return res.json() as Promise<DiscoveryResponse>;
 }

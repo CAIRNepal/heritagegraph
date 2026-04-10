@@ -1,11 +1,14 @@
-import { GenericDataTable, monumentTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, monumentTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function MonumentKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={monumentTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Monuments"
+      description="Standalone monuments and commemorative structures with cultural significance."
+      contributeHref="/contribute/monument"
+    >
+      <GenericDataTable config={monumentTableConfig} />
+    </KnowledgeListPage>
   );
 }

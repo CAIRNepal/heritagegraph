@@ -24,6 +24,7 @@ import {
   type AssertionData,
 } from "@/components/contribute/assertion-wrapper";
 import { ontologyEnums } from "@/lib/ontology";
+import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
 // ─────────────────────────────────────────────────────────
 // Form state
@@ -255,27 +256,18 @@ export default function ContributeStructurePage() {
         headers.Authorization = `Bearer ${session.accessToken}`;
       }
 
-      const res = await fetch(`${backendUrl}/cidoc/contribute/structures/`, {
+      await apiFetchJson(`${backendUrl}/cidoc/contribute/structures/`, {
         method: "POST",
         headers,
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        toast.success("Structure record submitted successfully!");
-        router.push("/knowledge/structure");
-      } else {
-        const errorData = await res.json().catch(() => null);
-        toast.error(
-          `Submission failed: ${
-            errorData
-              ? JSON.stringify(errorData)
-              : res.statusText
-          }`
-        );
-      }
+      toast.success("Structure record submitted successfully!");
+      router.push("/knowledge/structure");
     } catch (err) {
-      toast.error("Network error. Please try again.");
+      toast.error(
+        getApiErrorMessage(err, "Could not submit this structure. Please try again.")
+      );
     } finally {
       setIsSubmitting(false);
     }

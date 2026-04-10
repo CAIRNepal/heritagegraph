@@ -136,12 +136,15 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `GET /schema/` — OpenAPI schema
 
 **Heritage Data (prefix: `/data/`):**
-- `GET/POST /data/submissions/` — list/create submissions
-- `GET/PUT/PATCH/DELETE /data/submissions/<id>/` — submission CRUD
-- `POST /data/form-submit/` — full heritage form submission
-- `GET/POST /data/review/` — moderation review
-- `GET /data/leaderboard/` — ranked contributors
-- `GET/POST /data/comments/` — comments on entities
+- **Routing note**: Most endpoints are available under both `/data/api/...` (legacy/canonical for existing clients) and `/data/...` (clean prefix). New clients should prefer `/data/...` when possible.
+- `GET/POST /data/api/submissions/` — list/create submissions (legacy workflow)
+- `GET/PUT/PATCH/DELETE /data/api/submissions/<id>/` — submission CRUD (legacy workflow)
+- `POST /data/api/form-submit/` — full heritage form submission (legacy workflow)
+- `GET/POST /data/api/comments/` — comments on submissions/entities (legacy workflow)
+- `GET /data/api/leaderboard/` — ranked contributors
+- `GET /data/api/contributors/` — contributor directory
+- `GET /data/api/personal-stats/` — current user stats
+- `GET /data/api/progression/` — progression metrics
 
 **CIDOC Data (prefix: `/cidoc/`):**
 - `/cidoc/persons/` — historical persons CRUD
@@ -161,11 +164,11 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 **Epistemic Review (prefix: `/data/`):**
 - `/data/review-queue/` — triaged queue (filterable: all, new_claims, conflicts, flagged, expiring)
 - `/data/review-queue/queue_counts/` — count per queue type
-- `GET /data/review-workspace/<uuid>/` — three-panel workspace data
-- `POST /data/review-workspace/<uuid>/decide/` — submit review decision
+- `GET /data/api/review-workspace/<uuid>/` — three-panel workspace data
+- `POST /data/api/review-workspace/<uuid>/decide/` — submit review decision
 - `/data/review-flags/` — CRUD + resolve action
 - `/data/reviewer-roles/` — role management + my_role/assign actions
-- `GET /data/reviewer-dashboard/` — reviewer stats and metrics
+- `GET /data/api/reviewer-dashboard/` — reviewer stats and metrics
 
 **Auth:**
 - `POST /api/token/` — obtain JWT
@@ -213,8 +216,9 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | File | Purpose |
 |------|---------|
 | `FORMS.md` | **How forms work** — add fields/enums/sections/entities, registry-driven form system |
-| `AUTH.md` | Authentication system — NextAuth + Google OAuth + Django token verification |
+| `AUTH.md` | Authentication system — NextAuth + Google OAuth + Django token verification; includes **Errors and Recovery** (`/auth/login` codes, `session.error`, `/auth/error`) |
 | `AUTH_GUIDE.md` | **How to add new auth providers** — step-by-step guide with templates |
+| `API_VERSIONING.md` | **API versioning** — `/api/v1/...` conventions and how to add `v2+` safely |
 | `CLAUDE.md` | Coding conventions and style guide for AI agents |
 | `SKILLS.md` | Feature capabilities matrix and implementation guide |
 | `ARCHITECTURE.md` | System design, data flow, and component relationships |

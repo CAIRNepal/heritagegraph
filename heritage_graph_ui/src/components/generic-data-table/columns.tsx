@@ -43,12 +43,17 @@ function formatDate(dateString?: string): string {
 }
 
 function getStatusColor(status?: string): string {
-  switch (status?.toLowerCase()) {
+  const s = (status ?? '').toLowerCase().replace(/\s+/g, '_');
+  switch (s) {
     case 'approved':
     case 'published':
+    case 'accepted':
+    case 'merged':
       return 'text-green-600 dark:text-green-400 border-green-500';
     case 'pending':
     case 'draft':
+    case 'pending_review':
+    case 'pending_revision':
       return 'text-yellow-600 dark:text-yellow-400 border-yellow-500';
     case 'rejected':
       return 'text-red-600 dark:text-red-400 border-red-500';
@@ -534,8 +539,8 @@ export const traditionColumns: ColumnDef<TraditionRecord>[] = [
 
 export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
   {
-    accessorKey: 'label',
-    header: 'Label',
+    accessorKey: 'name',
+    header: 'Name',
     cell: ({ row }) => {
       const item = row.original;
       return (
@@ -545,15 +550,15 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
               href={`/knowledge/entity/view/${item.entity_id}`}
               className="text-blue-600 hover:underline font-medium"
             >
-              {item.label}
+              {item.name}
             </Link>
           </HoverCardTrigger>
           <HoverCardContent className="w-80">
             <div className="space-y-3">
-              <h4 className="font-semibold">{item.label}</h4>
+              <h4 className="font-semibold">{item.name}</h4>
               <Badge variant="outline">{item.category.replace('_', ' ')}</Badge>
               <Badge variant="secondary" className={getStatusColor(item.status)}>
-                {item.status}
+                {item.status ? item.status.replace(/_/g, ' ') : '—'}
               </Badge>
               <div className="pt-2">
                 <Link href={`/knowledge/entity/view/${item.entity_id}`}>
@@ -585,24 +590,26 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
     header: 'Status',
     cell: ({ row }) => {
       const status = row.original.status;
+      if (!status) return '-';
       return (
         <Badge variant="outline" className={getStatusColor(status)}>
-          {status.charAt(0).toUpperCase() + status.slice(1)}
+          {status.replace(/_/g, ' ')}
         </Badge>
       );
     },
     enableColumnFilter: true,
   },
   {
-    accessorKey: 'created_by',
-    header: 'Created By',
+    id: 'contributor',
+    accessorFn: (row) => row.contributor?.username ?? '',
+    header: 'Contributor',
     cell: ({ row }) => {
-      const creator = row.original.created_by;
-      if (!creator) return '-';
+      const username = row.original.contributor?.username;
+      if (!username) return '-';
       return (
-        <Link href={`/users/${creator}`}>
+        <Link href={`/users/${username}`}>
           <Badge variant="secondary" className="cursor-pointer">
-            @{creator}
+            @{username}
           </Badge>
         </Link>
       );
@@ -1661,6 +1668,7 @@ export const culturalEntityTableConfig: DataTableConfig<CulturalEntityRecord> = 
   endpoint: '/data/cultural-entities/',
   columns: culturalEntityColumns,
   dataKey: 'results',
+  rowIdField: 'entity_id',
   viewBasePath: '/knowledge/entity',
   title: 'Cultural Entities',
   description: 'Browse contributed cultural entities — monuments, festivals, rituals, traditions, and artifacts.',

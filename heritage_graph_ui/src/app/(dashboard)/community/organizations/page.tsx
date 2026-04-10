@@ -17,6 +17,7 @@ import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 import { resolveMediaSrc } from '@/lib/resolve-media-src';
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 type CustomSession = { accessToken?: string; user?: { username?: string; name?: string | null; email?: string | null } };
 type Organization = {
@@ -41,14 +42,22 @@ export default function OrganizationsPage() {
 
   const [form, setForm] = useState({ name: '', short_name: '', description: '', website: '', country: '', focus_areas: '' });
 
-  const authHeaders = () => ({ Authorization: `Bearer ${session?.accessToken ?? ''}` });
+  const authHeaders = (): HeadersInit => ({
+    Authorization: `Bearer ${session?.accessToken ?? ''}`,
+    Accept: 'application/json',
+  });
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${API}/data/api/organizations/`);
-        if (res.ok) { const data = await res.json(); setOrgs(data.results || data); }
-      } catch { /* ignore */ } finally { setLoading(false); }
+        const data = await apiFetchJson<{ results?: Organization[] } | Organization[]>(
+          `${API}/data/api/organizations/`,
+          { headers: { Accept: 'application/json' } }
+        );
+        setOrgs(Array.isArray(data) ? data : data.results || []);
+      } catch {
+        toast.error('Could not load organizations. Please refresh the page.');
+      } finally { setLoading(false); }
     })();
   }, []);
 
@@ -56,9 +65,13 @@ export default function OrganizationsPage() {
     if (!session?.accessToken) return;
     (async () => {
       try {
-        const res = await fetch(`${API}/data/api/organizations/my_organizations/`, { headers: authHeaders() });
-        if (res.ok) { const data = await res.json(); setMyOrgs((data.results || data).map((o: Organization) => o.id)); }
-      } catch { /* ignore */ }
+        const data = await apiFetchJson<{ results?: Organization[] } | Organization[]>(
+          `${API}/data/api/organizations/my_organizations/`,
+          { headers: authHeaders() }
+        );
+        const list = Array.isArray(data) ? data : data.results || [];
+        setMyOrgs(list.map((o: Organization) => o.id));
+      } catch { /* non-critical */ }
     })();
   }, [session?.accessToken]);
 
@@ -74,37 +87,47 @@ export default function OrganizationsPage() {
         description: form.description, website: form.website || undefined, country: form.country || undefined,
         focus_areas: form.focus_areas ? form.focus_areas.split(',').map(s => s.trim()).filter(Boolean) : [],
       };
-      const res = await fetch(`${API}/data/api/organizations/`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }, body: JSON.stringify(body),
+      const created = await apiFetchJson<Organization>(`${API}/data/api/organizations/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(authHeaders() as Record<string, string>) },
+        body: JSON.stringify(body),
       });
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.name?.[0] || 'Failed to create'); }
-      const created = await res.json();
       setOrgs(prev => [created, ...prev]); setMyOrgs(prev => [...prev, created.id]);
       setForm({ name: '', short_name: '', description: '', website: '', country: '', focus_areas: '' });
       setIsCreateOpen(false); toast.success(`${created.name} created!`);
-    } catch (err: any) { toast.error(err.message || 'Failed to create organization'); } finally { setCreating(false); }
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Could not create this organization.'));
+    } finally { setCreating(false); }
   };
 
   const handleJoin = async (orgId: string) => {
     setJoiningId(orgId);
     try {
-      const res = await fetch(`${API}/data/api/organizations/${orgId}/join/`, { method: 'POST', headers: authHeaders() });
-      if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.detail || 'Failed to join'); }
+      await apiFetch(`${API}/data/api/organizations/${orgId}/join/`, {
+        method: 'POST',
+        headers: authHeaders() as Record<string, string>,
+      });
       setMyOrgs(prev => [...prev, orgId]);
       setOrgs(prev => prev.map(o => o.id === orgId ? { ...o, member_count: o.member_count + 1 } : o));
       toast.success('Joined organization!');
-    } catch (err: any) { toast.error(err.message); } finally { setJoiningId(null); }
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Could not join this organization.'));
+    } finally { setJoiningId(null); }
   };
 
   const handleLeave = async (orgId: string) => {
     setJoiningId(orgId);
     try {
-      const res = await fetch(`${API}/data/api/organizations/${orgId}/leave/`, { method: 'POST', headers: authHeaders() });
-      if (!res.ok) throw new Error();
+      await apiFetch(`${API}/data/api/organizations/${orgId}/leave/`, {
+        method: 'POST',
+        headers: authHeaders() as Record<string, string>,
+      });
       setMyOrgs(prev => prev.filter(id => id !== orgId));
       setOrgs(prev => prev.map(o => o.id === orgId ? { ...o, member_count: Math.max(0, o.member_count - 1) } : o));
       toast.success('Left organization');
-    } catch { toast.error('Failed to leave organization'); } finally { setJoiningId(null); }
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Could not leave this organization.'));
+    } finally { setJoiningId(null); }
   };
 
   const filtered = orgs.filter(o => {

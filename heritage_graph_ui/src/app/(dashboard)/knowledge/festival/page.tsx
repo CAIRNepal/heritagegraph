@@ -1,11 +1,14 @@
-import { GenericDataTable, festivalTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, festivalTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function FestivalKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={festivalTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Festivals"
+      description="Annual and periodic public celebrations, processions, and calendar-bound gatherings."
+      contributeHref="/contribute/festival"
+    >
+      <GenericDataTable config={festivalTableConfig} />
+    </KnowledgeListPage>
   );
 }

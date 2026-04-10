@@ -5,7 +5,7 @@
 # ================================================================
 
 .PHONY: help setup superuser backend frontend landing landing-install dev-local kill-ports \
-        migrate migrations shell seed seed-reset \
+        reset-dev-db migrate migrations shell seed seed-reset \
         docs-build docs-serve docs-clean \
         docker-up docker-up-build docker-down docker-build \
         docker-logs docker-ps docker-shell docker-migrate \
@@ -57,6 +57,7 @@ help:
 	@echo "    make migrate        Apply pending migrations"
 	@echo "    make migrations     Create new migration files"
 	@echo "    make shell          Open Django interactive shell"
+	@echo "    make reset-dev-db   Reset local SQLite DB (development only)"
 	@echo "    make seed           Load sample heritage data"
 	@echo "    make seed-reset     Flush DB and re-seed from scratch"
 	@echo ""
@@ -100,6 +101,14 @@ setup: $(VENV_PY) ## Install all deps, create venv, run migrations
 	@echo "==> Installing Python packages..."
 	uv pip install -r $(BACKEND)/requirements.txt --python $(VENV_PY)
 	@echo "==> Running Django migrations..."
+	@# Dev uses SQLite by default. If an old db.sqlite3 exists, it can contain
+	@# migration history from a previous auth/user-model configuration and break migrate.
+	@if [ -f "$(BACKEND)/db.sqlite3" ]; then \
+		backup="$(BACKEND)/db.sqlite3.bak-$$(date +%Y%m%d-%H%M%S)"; \
+		echo "==> Found existing $(BACKEND)/db.sqlite3"; \
+		echo "==> Backing it up to $$backup (then creating a fresh dev DB)..."; \
+		mv "$(BACKEND)/db.sqlite3" "$$backup"; \
+	fi
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
 	@echo "==> Installing frontend packages..."
 	cd $(FRONTEND) && $(NODE_PATH) npm ci
@@ -169,6 +178,18 @@ kill-ports: ## Kill any process on ports 8000, 3000, and 3001
 # DJANGO UTILS
 # ================================================================
 migrate: $(VENV_PY) ## Apply pending Django migrations
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
+
+reset-dev-db: ## Reset local SQLite db (development only) by backing up db.sqlite3
+	@mkdir -p $(BACKEND)
+	@if [ -f "$(BACKEND)/db.sqlite3" ]; then \
+		backup="$(BACKEND)/db.sqlite3.bak-$$(date +%Y%m%d-%H%M%S)"; \
+		echo "==> Backing up $(BACKEND)/db.sqlite3 to $$backup"; \
+		mv "$(BACKEND)/db.sqlite3" "$$backup"; \
+	else \
+		echo "==> No $(BACKEND)/db.sqlite3 found (nothing to reset)"; \
+	fi
+	@echo "==> Running migrations to create a fresh dev DB..."
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py migrate
 
 migrations: $(VENV_PY) ## Create new Django migration files
@@ -243,6 +264,7 @@ define ensure_nextauth_base
 	@grep -q '^NEXTAUTH_URL=' $(FRONTEND_ENV) 2>/dev/null || echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
 	@grep -q '^NEXTAUTH_SECRET=' $(FRONTEND_ENV) 2>/dev/null || echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
 	@grep -q '^NEXT_PUBLIC_API_URL=' $(FRONTEND_ENV) 2>/dev/null || echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@grep -q '^INTERNAL_BACKEND_URL=' $(FRONTEND_ENV) 2>/dev/null || echo 'INTERNAL_BACKEND_URL=http://localhost:8000' >> $(FRONTEND_ENV)
 endef
 
 auth-dev: ## Dev login only — no OAuth (credentials at /auth/login)
@@ -252,6 +274,7 @@ auth-dev: ## Dev login only — no OAuth (credentials at /auth/login)
 	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
 	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
 	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@echo 'INTERNAL_BACKEND_URL=http://localhost:8000' >> $(FRONTEND_ENV)
 	@echo ""
 	@echo "  ✓ Dev auth: use Django username/password at http://localhost:3000/auth/login"
 	@echo ""
@@ -288,6 +311,7 @@ auth-setup: ## Configure Google OAuth (primary auth — REQUIRED)
 	@echo 'NEXTAUTH_URL=http://localhost:3000' >> $(FRONTEND_ENV)
 	@echo "NEXTAUTH_SECRET=$$(openssl rand -base64 32)" >> $(FRONTEND_ENV)
 	@echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' >> $(FRONTEND_ENV)
+	@echo 'INTERNAL_BACKEND_URL=http://localhost:8000' >> $(FRONTEND_ENV)
 	@echo "GOOGLE_CLIENT_ID=$(GOOGLE_CLIENT_ID)" >> $(FRONTEND_ENV)
 	@echo "GOOGLE_CLIENT_SECRET=$(GOOGLE_CLIENT_SECRET)" >> $(FRONTEND_ENV)
 	@echo ""

@@ -19,6 +19,7 @@ import { ForkButton, ForkList } from "@/components/fork-button";
 import { ForkTreeView } from "@/components/fork-tree-view";
 import { EntityComments } from "@/components/entity-comments";
 import { Separator } from "@/components/ui/separator";
+import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const fadeInUp = { initial: { opacity: 1, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
@@ -53,10 +54,20 @@ export default function EntityViewPage() {
     try {
       const token = (session as any)?.accessToken;
       const url = `${API_BASE_URL}${ontologyClass.apiEndpoint}${id}/`;
-      const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-      if (!res.ok) throw new Error(res.status === 404 ? `${ontologyClass.label} not found.` : `Failed to load (HTTP ${res.status})`);
-      setRecord(await res.json());
-    } catch (err: any) { setError(err.message || "Something went wrong"); toast.error(err.message || "Failed to load record"); }
+      const data = await apiFetchJson<Record<string, unknown>>(url, {
+        headers: token
+          ? { Authorization: `Bearer ${token}`, Accept: "application/json" }
+          : { Accept: "application/json" },
+      });
+      setRecord(data);
+    } catch (err: unknown) {
+      const msg = getApiErrorMessage(
+        err,
+        `Could not load this ${ontologyClass.label.toLowerCase()}.`
+      );
+      setError(msg);
+      toast.error(msg);
+    }
     finally { setIsLoading(false); }
   }, [ontologyClass, id, session]);
 

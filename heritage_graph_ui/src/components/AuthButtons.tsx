@@ -16,6 +16,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { SimpleRankAvatar, tierConfig, TierType } from '@/components/rank-avatar';
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /**
  * Standalone auth component — works anywhere (landing page, dashboard header,
@@ -24,25 +28,25 @@ import { SimpleRankAvatar, tierConfig, TierType } from '@/components/rank-avatar
 export default function AuthSection() {
   const { data: session, status } = useSession();
   const [userSlug, setUserSlug] = useState<string | null>(null);
+  const [backendInitError, setBackendInitError] = useState<string | null>(null);
 
   // Initialize user in backend when logged in
   useEffect(() => {
     if (status === 'authenticated' && session?.accessToken) {
       const initUser = async () => {
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/testthelogin`, {
-            method: 'POST',
+          setBackendInitError(null);
+          await apiFetch(`${API_BASE}/data/api/testthelogin`, {
+            method: 'GET',
             headers: {
-              'Content-Type': 'application/json',
               Authorization: `Bearer ${session.accessToken}`,
+              Accept: 'application/json',
             },
-            body: JSON.stringify({
-              name: session.user?.name,
-              email: session.user?.email,
-            }),
           });
         } catch (err) {
-          console.error('Error initializing user:', err);
+          const msg = getApiErrorMessage(err);
+          console.error('[AuthSection] backend user init failed:', msg);
+          setBackendInitError(msg);
         }
       };
       initUser();
@@ -54,21 +58,15 @@ export default function AuthSection() {
     if (status === 'authenticated' && session?.accessToken && !session?.user?.slug) {
       const fetchSlug = async () => {
         try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/user/me/`,
-            {
-              headers: {
-                Authorization: `Bearer ${session.accessToken}`,
-                Accept: 'application/json',
-              },
-            }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (data.slug) setUserSlug(data.slug);
-          }
+          const data = await apiFetchJson<{ slug?: string }>(`${API_BASE}/data/api/user/me/`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              Accept: 'application/json',
+            },
+          });
+          if (data.slug) setUserSlug(data.slug);
         } catch (err) {
-          console.error('Error fetching user slug:', err);
+          console.error('Error fetching user slug:', getApiErrorMessage(err));
         }
       };
       fetchSlug();
@@ -99,7 +97,14 @@ export default function AuthSection() {
     .toUpperCase();
 
   return (
-    <DropdownMenu>
+    <div className="flex flex-col items-end gap-2">
+      {backendInitError && (
+        <Alert variant="destructive" className="max-w-xs py-2 text-left">
+          <AlertTitle className="text-xs">Could not reach the server</AlertTitle>
+          <AlertDescription className="text-xs">{backendInitError}</AlertDescription>
+        </Alert>
+      )}
+      <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2 px-2">
           <SimpleRankAvatar
@@ -172,5 +177,6 @@ export default function AuthSection() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    </div>
   );
 }

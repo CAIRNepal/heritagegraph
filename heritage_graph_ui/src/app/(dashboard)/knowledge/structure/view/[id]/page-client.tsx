@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { apiFetch, apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
+
 import {
   Card,
   CardContent,
@@ -216,28 +218,21 @@ export default function StructureRecordPage() {
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch(
+      const data = await apiFetchJson<StructureRecord>(
         `${API_BASE_URL}/cidoc/structures/${id}/`,
         { headers }
       );
-      if (!res.ok) {
-        throw new Error(
-          res.status === 404
-            ? "Structure not found."
-            : `Failed to load (HTTP ${res.status})`
-        );
-      }
-      const data: StructureRecord = await res.json();
       setRecord(data);
 
       // If assertions are embedded in the response, use them
       if (data.assertions && Array.isArray(data.assertions)) {
         setAssertions(data.assertions);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Fetch error:", err);
-      setError(err.message || "Something went wrong");
-      toast.error(err.message || "Failed to load record");
+      const msg = getApiErrorMessage(err, "Could not load this structure.");
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -249,15 +244,13 @@ export default function StructureRecordPage() {
       const headers: Record<string, string> = {};
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      const res = await fetch(
+      const res = await apiFetch(
         `${API_BASE_URL}/cidoc/assertions/?entity_type=architecturalstructure&entity_id=${id}`,
         { headers }
       );
-      if (res.ok) {
-        const data = await res.json();
-        const results = Array.isArray(data) ? data : data.results || [];
-        setAssertions(results);
-      }
+      const data = await res.json();
+      const results = Array.isArray(data) ? data : data.results || [];
+      setAssertions(results);
     } catch {
       // Non-critical, assertions tab will show empty state
     }
@@ -271,21 +264,18 @@ export default function StructureRecordPage() {
 
       // Search for rituals that mention this structure's name in location
       if (!record?.name) return;
-      const res = await fetch(
+      const res = await apiFetch(
         `${API_BASE_URL}/cidoc/search/?q=${encodeURIComponent(record.name)}`,
         { headers }
       );
-      if (res.ok) {
-        const data = await res.json();
-        // Filter to events/rituals that match this location
-        const events = (Array.isArray(data) ? data : data.results || [])
-          .filter(
-            (item: any) =>
-              (item.type === "ritual" || item.type === "festival" || item.model === "ritualevent" || item.model === "festival") &&
-              item.id !== record?.id
-          );
-        setLinkedEvents(events);
-      }
+      const data = await res.json();
+      const events = (Array.isArray(data) ? data : data.results || [])
+        .filter(
+          (item: any) =>
+            (item.type === "ritual" || item.type === "festival" || item.model === "ritualevent" || item.model === "festival") &&
+            item.id !== record?.id
+        );
+      setLinkedEvents(events);
     } catch {
       // Non-critical
     }

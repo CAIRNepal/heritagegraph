@@ -1,11 +1,14 @@
-import { GenericDataTable, culturalEntityTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, culturalEntityTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function EntityKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={culturalEntityTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Cultural entities"
+      description="Community-submitted and curated heritage records in the CulturalEntity workflow. Open a row for detail, revision history, and review context."
+      contributeHref="/contribute/entity"
+    >
+      <GenericDataTable config={culturalEntityTableConfig} />
+    </KnowledgeListPage>
   );
 }

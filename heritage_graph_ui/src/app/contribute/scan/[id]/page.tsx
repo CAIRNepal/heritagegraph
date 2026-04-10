@@ -32,6 +32,8 @@ import {
   Heart,
 } from 'lucide-react';
 
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Animation variants
@@ -106,11 +108,10 @@ export default function ScanContributePage() {
         
         for (const url of endpoints) {
           try {
-            const res = await fetch(url);
-            if (res.ok) {
-              entityData = await res.json();
-              break;
-            }
+            entityData = await apiFetchJson<EntityInfo>(url, {
+              headers: { Accept: 'application/json' },
+            });
+            break;
           } catch {
             continue;
           }
@@ -128,7 +129,7 @@ export default function ScanContributePage() {
         }
       } catch (err) {
         console.error('Error fetching entity:', err);
-        setError('Could not load site information');
+        setError(getApiErrorMessage(err, 'Could not load site information.'));
       } finally {
         setLoading(false);
       }
@@ -156,7 +157,7 @@ export default function ScanContributePage() {
     
     try {
       // Submit to the public contributions endpoint
-      const res = await fetch(`${API_BASE_URL}/data/api/public-contributions/`, {
+      await apiFetchJson(`${API_BASE_URL}/data/api/public-contributions/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -173,18 +174,14 @@ export default function ScanContributePage() {
           submitted_via: 'qr_scan',
         }),
       });
-      
-      if (!res.ok) {
-        throw new Error('Failed to submit');
-      }
-      
+
       setSubmitted(true);
       toast.success('Thank you for your contribution!');
     } catch (err) {
       console.error('Submission error:', err);
-      // Still show success for now (backend endpoint may not exist yet)
-      setSubmitted(true);
-      toast.success('Thank you! Your contribution has been recorded.');
+      toast.error(
+        getApiErrorMessage(err, 'Could not submit your contribution. Please try again.')
+      );
     } finally {
       setSubmitting(false);
     }

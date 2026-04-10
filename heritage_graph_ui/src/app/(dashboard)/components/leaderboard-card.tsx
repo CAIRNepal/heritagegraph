@@ -12,6 +12,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -22,14 +23,17 @@ type LeaderboardProps = {
 export function Leaderboard({ type }: LeaderboardProps) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const res = await fetch(`${API_BASE}/data/leaderboard/?type=${type}`);
-        if (!res.ok) throw new Error('Failed to fetch leaderboard data');
-        const json = await res.json();
+        const json = await apiFetchJson<{ results?: unknown[] }>(
+          `${API_BASE}/data/leaderboard/?type=${type}`,
+          { headers: { Accept: 'application/json' } }
+        );
         const results = json.results || json;
         setData(
           (Array.isArray(results) ? results : []).map((entry: any, i: number) => ({
@@ -39,8 +43,10 @@ export function Leaderboard({ type }: LeaderboardProps) {
             avatar: entry.profile_image || entry.avatar_url || '',
           })),
         );
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
+        setError(getApiErrorMessage(err, 'Could not load the leaderboard.'));
+        setData([]);
       } finally {
         setLoading(false);
       }
@@ -56,6 +62,8 @@ export function Leaderboard({ type }: LeaderboardProps) {
       <CardContent>
         {loading ? (
           <p>Loading...</p>
+        ) : error ? (
+          <p className="text-sm text-destructive">{error}</p>
         ) : (
           <Table>
             <TableHeader>

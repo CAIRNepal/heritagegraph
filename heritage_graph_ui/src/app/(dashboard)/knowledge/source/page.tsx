@@ -1,11 +1,14 @@
-import { GenericDataTable, sourceTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, sourceTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function SourceKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={sourceTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Sources"
+      description="Bibliographic and documentary references that support claims in the knowledge base."
+      contributeHref="/contribute/source"
+    >
+      <GenericDataTable config={sourceTableConfig} />
+    </KnowledgeListPage>
   );
 }

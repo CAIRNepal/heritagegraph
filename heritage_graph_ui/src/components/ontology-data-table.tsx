@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 
 import type { OntologyClass, OntologyColumn } from "@/lib/ontology/types";
+import { apiFetch, getApiErrorMessage } from "@/lib/api-client";
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
@@ -296,11 +297,11 @@ export default function OntologyDataTable({
         }
 
         const token = (session as any)?.accessToken;
-        const res = await fetch(url, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        const res = await apiFetch(url, {
+          headers: token
+            ? { Authorization: `Bearer ${token}`, Accept: "application/json" }
+            : { Accept: "application/json" },
         });
-
-        if (!res.ok) throw new Error("Failed to fetch");
 
         const data = await res.json();
 
@@ -318,7 +319,12 @@ export default function OntologyDataTable({
         setCurrentPage(page);
       } catch (err) {
         console.error("Fetch error:", err);
-        toast.error(`Failed to load ${ontologyClass.labelPlural.toLowerCase()}`);
+        toast.error(
+          getApiErrorMessage(
+            err,
+            `Could not load ${ontologyClass.labelPlural.toLowerCase()}. Please try again.`
+          )
+        );
         setRecords([]);
         setTotalCount(0);
         setTotalPages(1);

@@ -22,6 +22,7 @@ import {
 import { Shield, Loader2, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -67,17 +68,16 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/data/api/reviewer-role-requests/`, {
-        headers: buildHeaders(),
-      });
-      if (!res.ok) throw new Error(`Failed to load requests (${res.status})`);
-      const data: unknown = await res.json();
+      const data = await apiFetchJson<unknown>(
+        `${API_BASE}/data/api/reviewer-role-requests/`,
+        { headers: buildHeaders() }
+      );
       const list = Array.isArray(data)
         ? data
         : (data as { results?: ReviewerRoleRequest[] }).results ?? [];
       setRequests(list);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Could not load reviewer requests');
+      toast.error(getApiErrorMessage(e, 'Could not load reviewer requests.'));
     } finally {
       setLoading(false);
     }
@@ -98,24 +98,16 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
     }
     setSubmitting(true);
     try {
-      const res = await fetch(`${API_BASE}/data/api/reviewer-role-requests/`, {
+      await apiFetchJson(`${API_BASE}/data/api/reviewer-role-requests/`, {
         method: 'POST',
         headers: buildHeaders(),
         body: JSON.stringify({ requested_role: role, message }),
       });
-      const body: Record<string, unknown> = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const errs = body.non_field_errors as string[] | undefined;
-        const msg =
-          (errs && errs[0]) ||
-          (body.detail as string) ||
-          `Request failed (${res.status})`;
-        toast.error(typeof msg === 'string' ? msg : 'Request failed');
-        return;
-      }
       toast.success('Your request was submitted. Staff will review it soon.');
       setMessage('');
       await load();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not submit your request.'));
     } finally {
       setSubmitting(false);
     }
@@ -125,17 +117,14 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
     if (!latest || !token) return;
     setSubmitting(true);
     try {
-      const res = await fetch(
+      await apiFetch(
         `${API_BASE}/data/api/reviewer-role-requests/${latest.id}/withdraw/`,
         { method: 'POST', headers: buildHeaders() }
       );
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        toast.error((body as { detail?: string }).detail || 'Could not withdraw');
-        return;
-      }
       toast.success('Request withdrawn');
       await load();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not withdraw this request.'));
     } finally {
       setSubmitting(false);
     }

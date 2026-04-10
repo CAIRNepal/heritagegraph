@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
+import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 import { EntitySearch, type SearchResult } from "@/components/contribute/entity-search";
 
 const API_BASE_URL =
@@ -496,7 +497,7 @@ export default function OntologyForm({
         }
       }
 
-      const res = await fetch(endpoint, {
+      await apiFetchJson(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -505,37 +506,20 @@ export default function OntologyForm({
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        toast.success(
-          `"${formData.name || formData.title || "Entry"}" submitted successfully!`,
-          {
-            description:
-              "Your contribution is now in the review queue. You'll be notified when a reviewer comments or makes a decision.",
-            duration: 5000,
-          }
-        );
-        setTimeout(() => router.push(postSubmitPath), 1500);
-      } else {
-        const errorData = await res.json().catch(() => null);
-        console.error("Submission error:", errorData);
-
-        if (errorData && typeof errorData === "object" && !errorData.detail) {
-          const messages = Object.entries(errorData)
-            .map(
-              ([key, val]) =>
-                `${key}: ${Array.isArray(val) ? val.join(", ") : val}`
-            )
-            .join("\n");
-          toast.error(messages || "Submission failed.");
-        } else {
-          toast.error(
-            errorData?.detail || errorData?.message || "Submission failed."
-          );
+      toast.success(
+        `"${formData.name || formData.title || "Entry"}" submitted successfully!`,
+        {
+          description:
+            "Your contribution is now in the review queue. You'll be notified when a reviewer comments or makes a decision.",
+          duration: 5000,
         }
-      }
+      );
+      setTimeout(() => router.push(postSubmitPath), 1500);
     } catch (err) {
       console.error("Submission error:", err);
-      toast.error("Network error. Please try again later.");
+      toast.error(
+        getApiErrorMessage(err, "Could not submit this form. Please try again.")
+      );
     } finally {
       setIsSubmitting(false);
     }

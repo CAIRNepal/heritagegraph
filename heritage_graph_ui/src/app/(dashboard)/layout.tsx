@@ -18,6 +18,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { UserProgressBadge } from '@/components/progression-widgets';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ChatContextWrapper } from '@/providers/ChatContextWrapper';
+import { ApiBaseWarning } from '@/components/api-base-warning';
 
 import Image from 'next/image';
 import { Github, Mail, ExternalLink } from 'lucide-react';
@@ -36,6 +37,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <AppSidebar variant="sidebar" />
 
       <SidebarInset>
+        <ApiBaseWarning />
         {/* ── Header ── */}
         <header
           className="sticky top-0 z-40 flex items-center px-4 md:px-6 h-14 border-b border-blue-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl transition-all duration-300"

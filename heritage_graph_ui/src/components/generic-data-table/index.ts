@@ -2,6 +2,8 @@
 export { GenericDataTable } from './generic-data-table';
 export type { GenericDataTableProps } from './generic-data-table';
 
+export { createStatusWorkflowTabs } from './create-status-tabs';
+
 // Types
 export * from './types';
 

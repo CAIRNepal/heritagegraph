@@ -1,11 +1,14 @@
-import { GenericDataTable, locationTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, locationTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function LocationKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={locationTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Locations"
+      description="Heritage places, sites, and spatial anchors used across the knowledge graph."
+      contributeHref="/contribute/location"
+    >
+      <GenericDataTable config={locationTableConfig} />
+    </KnowledgeListPage>
   );
 }

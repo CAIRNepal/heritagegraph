@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
@@ -106,9 +107,10 @@ export default function ContributionQueuePage() {
       if (cat !== 'all') sp.set('category', cat);
       if (q) sp.set('search', q);
       sp.set('ordering', `${sortAsc ? '' : '-'}${sortField}`);
-      const res = await fetch(`${API}/data/api/contribution-queue/?${sp}`, { headers: headers() });
-      if (!res.ok) throw new Error(`${res.status}`);
-      const data: APIResponse = await res.json();
+      const data = await apiFetchJson<APIResponse>(
+        `${API}/data/api/contribution-queue/?${sp}`,
+        { headers: headers() }
+      );
       let all = data.results;
       const nc = all.filter(c => c.status === 'pending_review' && c.activity_count <= 1).length;
       const co = all.filter(c => c.has_conflicts).length;
@@ -122,7 +124,11 @@ export default function ContributionQueuePage() {
       else if (tab === 'expiring') all = all.filter(c => c.days_in_review > 14);
       else if (tab === 'forks') all = all.filter(c => c.is_fork);
       setItems(all); setTotal(tab === 'all' ? data.count : all.length); setPage(p);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Load failed'); toast.error('Failed to load queue'); }
+    } catch (e) {
+      const msg = getApiErrorMessage(e, 'Could not load the contribution queue.');
+      setError(msg);
+      toast.error(msg);
+    }
     finally { setLoading(false); }
   }, [headers, tab, cat, q, sortField, sortAsc]);
 
@@ -130,13 +136,19 @@ export default function ContributionQueuePage() {
 
   const moderate = async (c: Contribution, action: 'accept' | 'reject') => {
     try {
-      const res = await fetch(`${API}/data/api/contribution-queue/${c.entity_id}/moderate/`, {
+      await apiFetch(`${API}/data/api/contribution-queue/${c.entity_id}/moderate/`, {
         method: 'POST', headers: headers(), body: JSON.stringify({ action }),
       });
-      if (!res.ok) throw new Error();
       toast.success(`${action === 'accept' ? 'Accepted' : 'Rejected'}: ${c.name}`);
       load(page);
-    } catch { toast.error(`Failed to ${action}`); }
+    } catch (err) {
+      toast.error(
+        getApiErrorMessage(
+          err,
+          `Could not ${action === 'accept' ? 'accept' : 'reject'} this item.`
+        )
+      );
+    }
   };
 
   return (

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BookOpen, ExternalLink, Loader2 } from 'lucide-react';
 import { getApiBaseUrl, appPath } from '@/lib/config';
+import { apiFetch, getApiErrorMessage } from '@/lib/api-fetch';
 import { PublicSiteHeader } from '@/components/public-site-header';
 import { cn } from '@/lib/utils';
 
@@ -67,18 +68,12 @@ export default function PublicRecordViewPage() {
     setLoading(true);
     setError(null);
     const url = `${getApiBaseUrl()}/cidoc/${resource}/${encodeURIComponent(id)}/`;
-    fetch(url, { signal: ac.signal, headers: { Accept: 'application/json' } })
-      .then(async (res) => {
-        if (!res.ok) {
-          const t = await res.text().catch(() => '');
-          throw new Error(t?.slice(0, 200) || `Request failed (${res.status})`);
-        }
-        return res.json() as Promise<Record<string, unknown>>;
-      })
+    apiFetch(url, { signal: ac.signal, headers: { Accept: 'application/json' } })
+      .then((res) => res.json() as Promise<Record<string, unknown>>)
       .then(setRecord)
-      .catch((e: Error) => {
-        if (e.name === 'AbortError') return;
-        setError(e.message || 'Failed to load record');
+      .catch((e: unknown) => {
+        if (e instanceof Error && e.name === 'AbortError') return;
+        setError(getApiErrorMessage(e, 'Could not load this record.'));
         setRecord(null);
       })
       .finally(() => setLoading(false));

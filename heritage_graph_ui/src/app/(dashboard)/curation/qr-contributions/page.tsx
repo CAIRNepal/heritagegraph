@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -117,13 +118,16 @@ export default function QRContributionsPage() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/data/api/public-contributions/stats/`, { headers: headers() });
-      if (res.ok) {
-        const data = await res.json();
-        setStats(data);
-      }
+      const data = await apiFetchJson<{
+        total: number;
+        pending: number;
+        approved: number;
+        rejected: number;
+        incorporated: number;
+      }>(`${API}/data/api/public-contributions/stats/`, { headers: headers() });
+      setStats(data);
     } catch (err) {
-      console.error('Error fetching stats:', err);
+      console.error('Error fetching stats:', getApiErrorMessage(err));
     }
   }, [headers]);
 
@@ -136,17 +140,17 @@ export default function QRContributionsPage() {
       if (typeFilter !== 'all') params.set('contribution_type', typeFilter);
       if (searchQuery) params.set('search', searchQuery);
       
-      const res = await fetch(`${API}/data/api/public-contributions/?${params}`, { headers: headers() });
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch contributions');
-      }
-      
-      const data = await res.json();
-      setContributions(data.results || data);
-    } catch (err: any) {
-      setError(err.message);
-      toast.error('Failed to load contributions');
+      const data = await apiFetchJson<{ results?: PublicContribution[] } | PublicContribution[]>(
+        `${API}/data/api/public-contributions/?${params}`,
+        { headers: headers() }
+      );
+      setContributions(
+        Array.isArray(data) ? data : data.results || []
+      );
+    } catch (err: unknown) {
+      const msg = getApiErrorMessage(err, 'Could not load public contributions.');
+      setError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -171,7 +175,7 @@ export default function QRContributionsPage() {
     
     setSubmittingReview(true);
     try {
-      const res = await fetch(`${API}/data/api/public-contributions/${selectedContribution.id}/review/`, {
+      await apiFetch(`${API}/data/api/public-contributions/${selectedContribution.id}/review/`, {
         method: 'POST',
         headers: headers(),
         body: JSON.stringify({
@@ -179,17 +183,13 @@ export default function QRContributionsPage() {
           review_notes: reviewNotes,
         }),
       });
-      
-      if (!res.ok) {
-        throw new Error('Failed to submit review');
-      }
-      
+
       toast.success(`Contribution ${reviewAction}`);
       setReviewDialogOpen(false);
       fetchContributions();
       fetchStats();
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, 'Could not submit this review.'));
     } finally {
       setSubmittingReview(false);
     }

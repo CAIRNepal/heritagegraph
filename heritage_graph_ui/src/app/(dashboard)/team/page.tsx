@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 import { useEffect, useState } from 'react';
 
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+
 /**
  * Curated core team members shown in the "Meet the Team" grid.
  * Add/remove entries here as the team changes.
@@ -63,6 +65,7 @@ export default function OurTeam() {
   const [contributors, setContributors] = useState<GitHubContributor[]>([]);
   // Drives the loading spinner while the fetch is in-flight.
   const [loadingContributors, setLoadingContributors] = useState(true);
+  const [contributorsError, setContributorsError] = useState<string | null>(null);
 
   useEffect(() => {
     /**
@@ -78,25 +81,25 @@ export default function OurTeam() {
      * the contributors grid only highlights external / community contributors
      * (core team is already shown in the "Meet the Team" section above).
      */
-    fetch('/api/github-contributors')
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data: GitHubContributor[]) => {
+    (async () => {
+      try {
+        const data = await apiFetchJson<GitHubContributor[]>('/api/github-contributors', {
+          headers: { Accept: 'application/json' },
+        });
         if (!Array.isArray(data)) return;
 
-        // Keep only contributors who are NOT part of the core team.
         const communityContributors = data.filter(
           (c) => !CORE_TEAM_LOGINS.has(c.login)
         );
         setContributors(communityContributors);
-      })
-      .catch(() => {
-        // If the fetch fails (network error, rate limit, etc.) we leave the
-        // list empty and the UI shows a graceful "no contributors" message.
-      })
-      .finally(() => setLoadingContributors(false));
+      } catch (err) {
+        setContributorsError(
+          getApiErrorMessage(err, 'Could not load community contributors from GitHub.')
+        );
+      } finally {
+        setLoadingContributors(false);
+      }
+    })();
   }, []);
 
   return (
@@ -185,7 +188,7 @@ export default function OurTeam() {
           The entire section is hidden once loading finishes and no
           community contributors remain after filtering.
       */}
-      {(loadingContributors || contributors.length > 0) && (
+      {(loadingContributors || contributors.length > 0 || contributorsError) && (
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}>
         <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6">
           <IconBrandGithub className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -202,6 +205,10 @@ export default function OurTeam() {
               <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               <span className="text-sm font-medium">Loading contributors…</span>
             </div>
+          </motion.div>
+        ) : contributorsError ? (
+          <motion.div variants={fadeInUp} className={`${glassCard} p-6 text-sm text-muted-foreground`}>
+            {contributorsError}
           </motion.div>
         ) : (
           /* Contributor grid — only rendered when community contributors exist */

@@ -15,6 +15,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+
+import { apiFetch, apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
 interface SearchResult {
   id: number | string;
@@ -84,27 +87,27 @@ export function EntitySearch({
       setLoading(true);
       try {
         const url = `${backendUrl}${endpoint}?search=${encodeURIComponent(q)}`;
-        const res = await fetch(url);
-        if (res.ok) {
-          const data = await res.json();
-          const items = Array.isArray(data) ? data : data.results || [];
-          setResults(
-            items.slice(0, 10).map((item: Record<string, unknown>) => ({
-              id: item.id,
-              name:
-                (item.name as string) ||
-                (item.title as string) ||
-                `#${item.id}`,
-              type:
-                (item.structure_type as string) ||
-                (item.ritual_type as string) ||
-                (item.guthi_type as string) ||
-                (item.type as string) ||
-                undefined,
-              description: (item.description as string) || undefined,
-            }))
-          );
-        }
+        const res = await apiFetch(url, {
+          headers: { Accept: "application/json" },
+        });
+        const data = await res.json();
+        const items = Array.isArray(data) ? data : data.results || [];
+        setResults(
+          items.slice(0, 10).map((item: Record<string, unknown>) => ({
+            id: item.id,
+            name:
+              (item.name as string) ||
+              (item.title as string) ||
+              `#${item.id}`,
+            type:
+              (item.structure_type as string) ||
+              (item.ritual_type as string) ||
+              (item.guthi_type as string) ||
+              (item.type as string) ||
+              undefined,
+            description: (item.description as string) || undefined,
+          }))
+        );
       } catch {
         setResults([]);
       } finally {
@@ -136,33 +139,28 @@ export function EntitySearch({
       const body: Record<string, string> = { name: createName.trim() };
       if (createDesc.trim()) body.description = createDesc.trim();
 
-      const res = await fetch(`${backendUrl}${endpoint}`, {
+      const data = await apiFetchJson<{
+        id: number | string;
+        name?: string;
+        title?: string;
+      }>(`${backendUrl}${endpoint}`, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const newEntity: SearchResult = {
-          id: data.id,
-          name: data.name || data.title || createName,
-        };
-        onSelect(newEntity);
-        setCreating(false);
-        setCreateName("");
-        setCreateDesc("");
-      } else {
-        const err = await res.json().catch(() => null);
-        const msg =
-          err?.detail ||
-          (err && typeof err === "object"
-            ? Object.values(err).flat().join(", ")
-            : "Creation failed");
-        alert(msg);
-      }
-    } catch {
-      alert("Network error. Please try again.");
+      const newEntity: SearchResult = {
+        id: data.id,
+        name: data.name || data.title || createName,
+      };
+      onSelect(newEntity);
+      setCreating(false);
+      setCreateName("");
+      setCreateDesc("");
+    } catch (err) {
+      toast.error(
+        getApiErrorMessage(err, "Could not create this record. Please try again.")
+      );
     } finally {
       setIsCreating(false);
     }

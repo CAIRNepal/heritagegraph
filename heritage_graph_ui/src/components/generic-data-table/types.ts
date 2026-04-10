@@ -1,6 +1,16 @@
 import { ColumnDef } from '@tanstack/react-table';
 
 /**
+ * One tab in a filterable tab strip (e.g. All / Pending / Approved).
+ * Omit `filter` for an "All" tab that shows every row.
+ */
+export interface DataTableTab<TData> {
+  id: string;
+  label: string;
+  filter?: (row: TData) => boolean;
+}
+
+/**
  * Configuration for a data table instance.
  * This interface allows the GenericDataTable to be fully customizable
  * for different data types (persons, locations, events, etc.)
@@ -14,7 +24,12 @@ export interface DataTableConfig<TData> {
   dataKey?: string;
   /** Base path for viewing individual items (e.g., "/knowledge/person") */
   viewBasePath?: string;
-  /** Field to use as the unique row ID (default: "id") */
+  /**
+   * Unique row id for selection, pagination, and drag-drop (TanStack `getRowId`).
+   * Defaults to numeric/string `id`. Use `entity_id` for cultural entities.
+   */
+  rowIdField?: keyof TData;
+  /** @deprecated Use `rowIdField` */
   idField?: keyof TData;
   /** Title to display in the table header */
   title?: string;
@@ -22,7 +37,14 @@ export interface DataTableConfig<TData> {
   description?: string;
   /** Whether to show the header section (title, description, add button) */
   showHeader?: boolean;
-  /** Whether to show tabs (All, Pending, Approved, etc.) */
+  /**
+   * Tab definitions. Set to `false` to hide tabs.
+   * If omitted and `showTabs` is not false, default status workflow tabs are used.
+   */
+  tabs?: false | DataTableTab<TData>[];
+  /** Initial tab id when using tabs (default: first tab, usually `all`) */
+  defaultTabId?: string;
+  /** Whether to show tabs (legacy). Prefer `tabs: false` to disable. */
   showTabs?: boolean;
   /** Custom empty state message */
   emptyMessage?: string;
@@ -100,13 +122,13 @@ export interface TraditionRecord extends BaseRecord {
  */
 export interface CulturalEntityRecord {
   entity_id: string;
+  name: string;
   category: string;
-  label: string;
   status: string;
   created_at: string;
-  updated_at: string;
-  created_by?: string;
-  current_data?: Record<string, unknown>;
+  updated_at?: string;
+  contributor?: { username?: string; id?: number };
+  current_revision?: Record<string, unknown>;
 }
 
 /**

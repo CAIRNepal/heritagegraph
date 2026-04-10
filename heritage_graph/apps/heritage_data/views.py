@@ -278,6 +278,77 @@ class SubmissionListView(generics.ListAPIView):
     serializer_class = SubmissionSerializer
 
 
+# ---------------------------------------------------------------------
+# Legacy workflow: ViewSets (preferred routing via DefaultRouter)
+# ---------------------------------------------------------------------
+
+class SubmissionViewSet(viewsets.ModelViewSet):
+    """
+    Legacy `Submission` CRUD.
+
+    Exposes:
+      - /data/submissions/
+      - /data/api/submissions/ (alias maintained in urls.py)
+    """
+
+    queryset = Submission.objects.all().order_by("-created_at")
+    serializer_class = SubmissionSerializer
+
+    def get_permissions(self):
+        if self.action in ("create", "update", "partial_update", "destroy", "form_submit"):
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
+
+    @action(detail=False, methods=["post"], url_path="form-submit")
+    def form_submit(self, request):
+        # Reuse the existing implementation to avoid behavior drift.
+        return FormSubmissionAPIView().post(request)
+
+
+class ActivityLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Legacy activity log feed.
+
+    Exposes:
+      - /data/activity-logs/
+      - /data/api/activity-logs/ (alias maintained in urls.py)
+    """
+
+    queryset = ActivityLog.objects.all().order_by("-timestamp")
+    serializer_class = ActivityLogSerializer
+    permission_classes = [AllowAny]
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    """
+    Legacy flat comments API (submission/entity scoped).
+
+    List supports ?submission_id=<id> (kept for backwards compatibility).
+    """
+
+    queryset = Comments.objects.all().order_by("-created_at")
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        submission_id = self.request.query_params.get("submission_id")
+        if submission_id:
+            return Comments.objects.filter(entity_id=submission_id).order_by("-created_at")
+        return super().get_queryset()
+
+    def perform_create(self, serializer):
+        submission_id = self.request.data.get("submission_id")
+        if not submission_id:
+            raise ValidationError({"submission_id": "This field is required."})
+
+        try:
+            submission = Submission.objects.get(id=submission_id)
+        except Submission.DoesNotExist:
+            raise ValidationError({"submission_id": "Invalid submission ID."})
+
+        serializer.save(user=self.request.user, submission=submission)
+
+
 # Moderator view: Review a submission
 class ModerationReviewView(generics.UpdateAPIView):
     queryset = Moderation.objects.all()
@@ -1392,19 +1463,29 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        username = (self.request.query_params.get("username") or "").strip()
 
         # If anonymous user → return all (or optionally none)
         if not user or user.is_anonymous:
-            return Activity.objects.all().select_related('user', 'entity')
+            qs = Activity.objects.all()
+            if username:
+                qs = qs.filter(user__username=username)
+            return qs.select_related('user', 'entity')
 
         # Staff/admin → return all
         if user.is_staff:
-            return Activity.objects.select_related('user', 'entity')
+            qs = Activity.objects.all()
+            if username:
+                qs = qs.filter(user__username=username)
+            return qs.select_related('user', 'entity')
 
         # Authenticated non-staff → user-specific
-        return Activity.objects.filter(
+        qs = Activity.objects.filter(
             Q(user=user) | Q(entity__contributor=user)
-        ).select_related('user', 'entity')
+        )
+        if username:
+            qs = qs.filter(user__username=username)
+        return qs.select_related('user', 'entity')
 
 
 # =====================================================================

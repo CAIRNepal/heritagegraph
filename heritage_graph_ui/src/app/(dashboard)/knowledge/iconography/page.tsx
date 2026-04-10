@@ -1,11 +1,14 @@
-import { GenericDataTable, iconographyTableConfig } from "@/components/generic-data-table";
+import { GenericDataTable, iconographyTableConfig } from '@/components/generic-data-table';
+import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function IconographyKnowledgePage() {
   return (
-    <div className="space-y-0">
-      <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg overflow-hidden">
-        <GenericDataTable config={iconographyTableConfig} />
-      </div>
-    </div>
+    <KnowledgeListPage
+      title="Iconography"
+      description="Symbols, motifs, and visual programs used in heritage art and ritual contexts."
+      contributeHref="/contribute/iconography"
+    >
+      <GenericDataTable config={iconographyTableConfig} />
+    </KnowledgeListPage>
   );
 }

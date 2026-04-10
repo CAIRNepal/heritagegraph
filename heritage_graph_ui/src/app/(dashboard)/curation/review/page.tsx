@@ -24,6 +24,7 @@ import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { AccessDenied } from '@/components/access-denied';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
@@ -58,6 +59,7 @@ export default function ReviewQueuePage() {
   const [activeTab, setActiveTab] = useState<QueueTab>('all');
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [appliedSearch, setAppliedSearch] = useState('');
   const [queueCounts, setQueueCounts] = useState<QueueCounts>({ new_claims: 0, conflicts: 0, flagged: 0, expiring: 0, total: 0 });
   const pageSize = 10;
 
@@ -77,9 +79,14 @@ export default function ReviewQueuePage() {
 
   const fetchQueueCounts = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/data/api/review-queue/queue_counts/`, { headers: getHeaders() });
-      if (res.ok) setQueueCounts(await res.json());
-    } catch { /* silent */ }
+      const counts = await apiFetchJson<QueueCounts>(
+        `${API_BASE}/data/api/review-queue/queue_counts/`,
+        { headers: getHeaders() }
+      );
+      setQueueCounts(counts);
+    } catch {
+      /* counts are supplementary */
+    }
   }, [getHeaders]);
 
   const fetchContributions = useCallback(async (page = 1, queueType: QueueTab = 'all', category: CategoryType = 'all', search = '') => {
@@ -89,27 +96,34 @@ export default function ReviewQueuePage() {
       if (queueType !== 'all') url += `&queue_type=${queueType}`;
       if (category !== 'all') url += `&category=${category}`;
       if (search) url += `&search=${encodeURIComponent(search)}`;
-      const res = await fetch(url, { headers: getHeaders() });
-      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-      const data: ContributionsResponse = await res.json();
+      const data = await apiFetchJson<ContributionsResponse>(url, { headers: getHeaders() });
       setContributions(data.results); setTotalCount(data.count);
       setTotalPages(Math.ceil(data.count / pageSize)); setCurrentPage(page);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load review queue';
+      const message = getApiErrorMessage(err, 'Could not load the review queue.');
       setError(message); toast.error(message);
     } finally { setIsLoading(false); }
   }, [getHeaders]);
 
   useEffect(() => {
-    if (session) { fetchContributions(1, activeTab, selectedCategory, searchQuery); fetchQueueCounts(); }
-  }, [session, activeTab, selectedCategory]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!session) return;
+    fetchContributions(currentPage, activeTab, selectedCategory, appliedSearch);
+    fetchQueueCounts();
+  }, [session, currentPage, activeTab, selectedCategory, appliedSearch, fetchContributions, fetchQueueCounts]);
 
-  const handleTabChange = (tab: string) => { setActiveTab(tab as QueueTab); setCurrentPage(1); fetchContributions(1, tab as QueueTab, selectedCategory, searchQuery); };
-  const handleCategoryChange = (value: CategoryType) => { setSelectedCategory(value); setCurrentPage(1); fetchContributions(1, activeTab, value, searchQuery); };
-  const handleSearch = (e: React.FormEvent) => { e.preventDefault(); setCurrentPage(1); fetchContributions(1, activeTab, selectedCategory, searchQuery); };
-  const handleRefresh = () => { fetchContributions(currentPage, activeTab, selectedCategory, searchQuery); fetchQueueCounts(); };
+  const handleTabChange = (tab: string) => { setActiveTab(tab as QueueTab); setCurrentPage(1); };
+  const handleCategoryChange = (value: CategoryType) => { setSelectedCategory(value); setCurrentPage(1); };
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAppliedSearch(searchQuery);
+    setCurrentPage(1);
+  };
+  const handleRefresh = () => {
+    fetchContributions(currentPage, activeTab, selectedCategory, appliedSearch);
+    fetchQueueCounts();
+  };
   const handleOpenReview = (c: Contribution) => { router.push(`/curation/review/${c.entity_id}`); };
-  const handlePageChange = (page: number) => { fetchContributions(page, activeTab, selectedCategory, searchQuery); };
+  const handlePageChange = (page: number) => { setCurrentPage(page); };
 
   const getCategoryBadge = (category: string) => {
     const colors: Record<string, string> = {

@@ -26,6 +26,11 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
+import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { toast } from 'sonner';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export function NavUser({
   user,
 }: {
@@ -56,21 +61,17 @@ export function NavUser({
     if (status === 'authenticated' && session?.accessToken && !session?.user?.slug) {
       const fetchSlug = async () => {
         try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/api/user/me/`,
-            {
-              headers: {
-                Authorization: `Bearer ${session.accessToken}`,
-                Accept: 'application/json',
-              },
-            }
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (data.slug) setUserSlug(data.slug);
-          }
+          const data = await apiFetchJson<{ slug?: string }>(`${API_BASE}/data/api/user/me/`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+              Accept: 'application/json',
+            },
+          });
+          if (data.slug) setUserSlug(data.slug);
         } catch (err) {
-          console.error('Error fetching user slug:', err);
+          const msg = getApiErrorMessage(err);
+          console.error('[NavUser] profile slug:', msg);
+          toast.error('Could not load your profile link.', { description: msg });
         }
       };
       fetchSlug();
@@ -84,25 +85,17 @@ export function NavUser({
     if (status === 'authenticated' && session?.accessToken) {
       const initUser = async () => {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/data/testthelogin`, {
-            method: 'POST',
+          await apiFetch(`${API_BASE}/data/api/testthelogin`, {
+            method: 'GET',
             headers: {
-              'Content-Type': 'application/json',
               Authorization: `Bearer ${session.accessToken}`,
+              Accept: 'application/json',
             },
-            body: JSON.stringify({
-              name: user.name,
-              email: user.email,
-            }),
           });
-
-          if (!res.ok) {
-            // const err = await res.json();
-          } else {
-            // const data = await res.json();
-          }
         } catch (err) {
-          console.error('Error initializing user:', err);
+          const msg = getApiErrorMessage(err);
+          console.error('[NavUser] backend user init:', msg);
+          toast.error('Could not sync your account with the server.', { description: msg });
         }
       };
 

@@ -16,6 +16,7 @@ import { IconSparkles, IconArrowRight } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { AccessDenied } from '@/components/access-denied';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 interface ReviewerRoleData {
   id: string;
@@ -54,11 +55,17 @@ export default function ReviewerDashboardPage() {
   }, [session]);
 
   const fetchDashboard = useCallback(async () => {
-    try { setIsLoading(true); setError(null);
-      const res = await fetch(`${API_BASE}/data/api/reviewer-dashboard/`, { headers: getHeaders() });
-      if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
-      setDashboard(await res.json());
-    } catch (err) { setError(err instanceof Error ? err.message : 'Failed to load dashboard'); }
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await apiFetchJson<DashboardData>(
+        `${API_BASE}/data/api/reviewer-dashboard/`,
+        { headers: getHeaders() }
+      );
+      setDashboard(data);
+    } catch (err) {
+      setError(getApiErrorMessage(err, 'Could not load the reviewer dashboard.'));
+    }
     finally { setIsLoading(false); }
   }, [getHeaders]);
 

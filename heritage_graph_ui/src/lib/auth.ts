@@ -1,8 +1,11 @@
 // src/lib/auth.ts
 import { NextAuthOptions } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
+import { formatErrorBody } from '@/lib/api-client';
+import { describeSessionAuthError } from '@/lib/auth-errors';
 
 // -------------------------------------------------------------------
 // OAuth Providers:
@@ -34,6 +37,19 @@ const isGitHubAuthEnabled =
 const providers: NextAuthOptions['providers'] = [
 ];
 
+function jwtExpMs(jwt: string | undefined | null): number | null {
+  if (!jwt) return null;
+  const parts = jwt.split('.');
+  if (parts.length < 2) return null;
+  try {
+    const payloadJson = Buffer.from(parts[1], 'base64url').toString('utf8');
+    const payload = JSON.parse(payloadJson) as { exp?: number };
+    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+}
+
 if (isGoogleAuthEnabled) {
   // Google OAuth — primary provider
   // Request offline access to get a refresh_token for auto-renewal
@@ -47,6 +63,66 @@ if (isGoogleAuthEnabled) {
           prompt: 'consent',
           scope: 'openid email profile',
         },
+      },
+    })
+  );
+}
+
+// Credentials (username/password) — dev default when Google isn't enabled.
+// Uses Django SimpleJWT: POST /api/token/ -> { access, refresh }.
+if (!isGoogleAuthEnabled) {
+  providers.push(
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        const username = credentials?.username?.trim();
+        const password = credentials?.password;
+
+        if (!username || !password) return null;
+
+        const backendBase = (
+          process.env.INTERNAL_BACKEND_URL || 'http://backend:8000'
+        ).replace(/\/$/, '');
+
+        const tokenUrl = `${backendBase}/api/token/`;
+
+        try {
+          const resp = await fetch(tokenUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ username, password }),
+          });
+
+          const bodyText = await resp.text();
+          if (!resp.ok) {
+            console.error('[auth] credentials authorize failed', resp.status, bodyText?.slice(0, 400));
+            return null;
+          }
+
+          const data = JSON.parse(bodyText) as { access?: string; refresh?: string };
+          if (!data?.access) return null;
+
+          // NextAuth expects a "user" object. We also stash tokens on it so the
+          // jwt() callback can copy them into the JWT cookie.
+          const user = {
+            id: username,
+            name: username,
+            email: null,
+            image: null,
+            username,
+            accessToken: data.access,
+            refreshToken: data.refresh,
+          } as any;
+
+          return user;
+        } catch (e) {
+          console.error('[auth] credentials authorize threw', e);
+          return null;
+        }
       },
     })
   );
@@ -82,81 +158,146 @@ async function refreshGoogleAccessToken(token: JWT): Promise<JWT> {
     const refreshed = await response.json();
 
     if (!response.ok) {
-      console.error('Google token refresh failed:', refreshed);
-      return { ...token, error: 'RefreshAccessTokenError' };
+      console.error('[auth] Google token refresh failed', {
+        status: response.status,
+        error: refreshed?.error,
+        error_description: refreshed?.error_description,
+      });
+      return {
+        ...token,
+        error: 'RefreshAccessTokenError',
+        errorDescription: describeSessionAuthError('RefreshAccessTokenError'),
+      };
     }
 
+    const { error: _e, errorDescription: _d, ...rest } = token;
     return {
-      ...token,
+      ...rest,
       accessToken: refreshed.access_token,
       accessTokenExpires: Date.now() + refreshed.expires_in * 1000,
       // Google may or may not return a new refresh_token
       refreshToken: refreshed.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
-    console.error('Error refreshing Google access token:', error);
-    return { ...token, error: 'RefreshAccessTokenError' };
+    console.error('[auth] Google token refresh threw', error);
+    return {
+      ...token,
+      error: 'RefreshAccessTokenError',
+      errorDescription: describeSessionAuthError('RefreshAccessTokenError'),
+    };
   }
 }
 
 export const authOptions: NextAuthOptions = {
   providers,
   session: { strategy: 'jwt' },
+  pages: {
+    error: '/auth/error',
+  },
 
   callbacks: {
-    // Ping the backend on first OAuth sign-in to auto-create the Django user
+    /**
+     * After OAuth succeeds, verify the token against Django so user provisioning runs
+     * before we issue a session. On failure, redirect to login with a specific ?error= code.
+     */
     async signIn({ account, user }) {
-      if (account?.provider === 'google' || account?.provider === 'github') {
-        try {
-          const token = account.access_token;
-          if (token) {
-            const backendUrl =
-              process.env.INTERNAL_BACKEND_URL || 'http://backend:8000';
-            // Ping backend to auto-create Django user
-            const response = await fetch(`${backendUrl}/data/testme/`, {
-              method: 'GET',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json',
-              },
-            });
-            if (!response.ok) {
-              console.error(
-                `Django sync call failed for ${account.provider}:`,
-                await response.text()
-              );
-            }
+      if (account?.provider === 'credentials') {
+        // Credentials auth already validated against Django via /api/token/.
+        return true;
+      }
+      if (account?.provider !== 'google' && account?.provider !== 'github') {
+        return true;
+      }
 
-            // Fetch the user's profile slug for URL-safe profile links
+      // Django production auth typically verifies an OIDC ID token.
+      // Prefer `id_token` when present (Google), otherwise fall back to access_token.
+      const token = (account as { id_token?: string; access_token?: string })?.id_token || account.access_token;
+      if (!token) {
+        console.error('[auth] signIn: provider returned no access_token', account.provider);
+        return '/auth/login?error=Configuration';
+      }
+
+      const backendBase = (
+        process.env.INTERNAL_BACKEND_URL || 'http://backend:8000'
+      ).replace(/\/$/, '');
+      const testUrl = `${backendBase}/data/api/testme/`;
+
+      try {
+        const response = await fetch(testUrl, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        });
+        const bodyText = await response.text();
+
+        if (!response.ok) {
+          let parsed: unknown = bodyText;
+          if (
+            bodyText &&
+            (response.headers.get('content-type') || '').includes('application/json')
+          ) {
             try {
-              const meResp = await fetch(`${backendUrl}/data/api/user/me/`, {
-                method: 'GET',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  Accept: 'application/json',
-                },
-              });
-              if (meResp.ok) {
-                const meData = await meResp.json();
-                // Store backend identity on the user object so the jwt callback can pick it up
-                if (meData.user_id) {
-                  (user as any).id = meData.user_id;
-                }
-                if (meData.username) {
-                  (user as any).username = meData.username;
-                }
-                if (meData.slug) {
-                  (user as any).slug = meData.slug;
-                }
-              }
-            } catch (err) {
-              console.error('Error fetching user profile slug:', err);
+              parsed = JSON.parse(bodyText);
+            } catch {
+              parsed = bodyText;
             }
           }
-        } catch (err) {
-          console.error('Error during signIn callback:', err);
+          const friendly =
+            formatErrorBody(typeof parsed === 'object' ? parsed : bodyText) ||
+            `HTTP ${response.status}`;
+
+          console.error(
+            `[auth] signIn: ${account.provider} backend check failed`,
+            response.status,
+            friendly
+          );
+
+          if (response.status === 401 || response.status === 403) {
+            return '/auth/login?error=BACKEND_REJECTED';
+          }
+          if (response.status >= 500) {
+            return '/auth/login?error=BACKEND_UNAVAILABLE';
+          }
+          return '/auth/login?error=BACKEND_SYNC';
         }
+
+        try {
+          const meResp = await fetch(`${backendBase}/data/api/user/me/`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+            },
+          });
+          if (meResp.ok) {
+            const meData = await meResp.json();
+            if (meData.user_id) {
+              (user as { id?: string }).id = meData.user_id;
+            }
+            if (meData.username) {
+              (user as { username?: string }).username = meData.username;
+            }
+            if (meData.slug) {
+              (user as { slug?: string }).slug = meData.slug;
+            }
+          } else {
+            const meBody = await meResp.text();
+            console.warn(
+              '[auth] signIn: GET /data/api/user/me/ non-fatal failure',
+              meResp.status,
+              meBody?.slice(0, 400)
+            );
+          }
+        } catch (meErr) {
+          console.warn('[auth] signIn: profile fetch threw (non-fatal)', meErr);
+        }
+      } catch (err) {
+        console.error('[auth] signIn: backend unreachable', testUrl, err);
+        return '/auth/login?error=BACKEND_UNREACHABLE';
       }
+
       return true;
     },
 
@@ -169,26 +310,39 @@ export const authOptions: NextAuthOptions = {
         token.id = (user as any).id || token.id || null;
         token.username = (user as any).username || user.email || null;
         token.slug = (user as any).slug || null;
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.accessTokenExpires = account.expires_at
-          ? account.expires_at * 1000
-          : Date.now() + 3600 * 1000;
+        if (account.provider === 'credentials') {
+          token.accessToken = (user as any).accessToken;
+          token.refreshToken = (user as any).refreshToken;
+          token.accessTokenExpires = jwtExpMs((user as any).accessToken) ?? (Date.now() + 55 * 60 * 1000);
+        } else {
+          token.accessToken = account.access_token;
+          token.refreshToken = account.refresh_token;
+          token.accessTokenExpires = account.expires_at
+            ? account.expires_at * 1000
+            : Date.now() + 3600 * 1000;
+        }
         token.authProvider = account.provider;
         return token;
       }
 
       // Return previous token if the access token has not expired
-      if (Date.now() < (token.accessTokenExpires as number ?? 0)) {
+      if (Date.now() < (token.accessTokenExpires ?? 0)) {
         return token;
       }
 
-      // Access token expired — refresh it
+      // Access token expired — refresh (Google) or surface a session error
       if (token.authProvider === 'google' && token.refreshToken) {
         return refreshGoogleAccessToken(token);
       }
 
-      // For other providers or if no refresh token, return as-is
+      if (token.accessTokenExpires != null && Date.now() >= token.accessTokenExpires) {
+        return {
+          ...token,
+          error: 'AccessTokenExpiredError',
+          errorDescription: describeSessionAuthError('AccessTokenExpiredError'),
+        };
+      }
+
       return token;
     },
 
@@ -202,9 +356,14 @@ export const authOptions: NextAuthOptions = {
       session.user.slug = token.slug as string | null;
       session.accessToken = token.accessToken as string | undefined;
 
-      // Expose token error so the frontend can force re-login if needed
       if (token.error) {
         session.error = token.error as string;
+        session.errorDescription =
+          (token.errorDescription as string | undefined) ||
+          describeSessionAuthError(token.error as string);
+      } else {
+        delete session.error;
+        delete session.errorDescription;
       }
 
       return session;

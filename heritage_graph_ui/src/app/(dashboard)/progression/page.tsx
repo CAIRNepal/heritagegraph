@@ -34,6 +34,8 @@ import {
 } from '@tabler/icons-react';
 import { signIn } from 'next-auth/react';
 
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 /* ── Animation variants ── */
@@ -275,18 +277,17 @@ export default function ProgressionPage() {
         headers['Authorization'] = `Bearer ${session.accessToken}`;
       }
 
-      const res = await fetch(`${API_BASE_URL}/data/api/progression/`, { headers });
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch progression data (${res.status})`);
-      }
-
-      const data = await res.json();
+      const data = await apiFetchJson<{
+        user_progress: UserProgress;
+        leaderboard?: LeaderboardEntry[];
+      }>(`${API_BASE_URL}/data/api/progression/`, { headers });
       setUserProgress(data.user_progress);
       setLeaderboard(data.leaderboard || []);
     } catch (err) {
       console.error('Failed to fetch progression:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load progression data');
+      setError(
+        getApiErrorMessage(err, 'Could not load progression data. Please try again.')
+      );
     } finally {
       setLoading(false);
     }

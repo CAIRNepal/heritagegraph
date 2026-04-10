@@ -16,12 +16,14 @@ import {
 } from '@/components/ui/pagination';
 import { SimpleRankAvatar, type TierType } from '@/components/rank-avatar';
 import { cn } from '@/lib/utils';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   IconTrophy, IconMedal, IconStar, IconSearch, IconFileText,
   IconChecks, IconEye, IconGitBranch, IconUsers,
 } from '@tabler/icons-react';
+
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -96,6 +98,7 @@ export default function LeaderboardPage() {
   const [institutionFilter, setInstitutionFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const abortRef = useRef<AbortController | null>(null);
 
   // Debounce search input
   useEffect(() => {
@@ -112,6 +115,9 @@ export default function LeaderboardPage() {
     search?: string;
     institution?: string;
   }) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError('');
     try {
@@ -121,19 +127,25 @@ export default function LeaderboardPage() {
       if (params?.search) sp.set('search', params.search);
       if (params?.institution && params.institution !== 'all') sp.set('institution', params.institution);
 
-      const res = await fetch(`${API_BASE_URL}/data/leaderboard/?${sp}`, {
+      const json = await apiFetchJson<{
+        results?: LeaderboardEntry[];
+        total_pages?: number;
+        count?: number;
+        institutions?: string[];
+        stats?: LeaderboardStats;
+      }>(`${API_BASE_URL}/data/leaderboard/?${sp}`, {
         method: 'GET',
         headers: { Accept: 'application/json' },
+        signal: controller.signal,
       });
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      const json = await res.json();
       setData(json.results ?? []);
       setTotalPages(json.total_pages ?? 1);
       setFilteredCount(json.count ?? 0);
       setInstitutions(json.institutions ?? []);
       setStats(json.stats ?? { total_contributors: 0, total_score: 0, total_entities: 0, total_reviews: 0 });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to load leaderboard';
+      if (err instanceof Error && err.name === 'AbortError') return;
+      const message = getApiErrorMessage(err, 'Could not load the leaderboard.');
       setError(message);
       console.error('Leaderboard fetch error:', err);
     } finally {
@@ -149,6 +161,10 @@ export default function LeaderboardPage() {
       institution: institutionFilter,
     });
   }, [page, search, institutionFilter, fetchLeaderboard]);
+
+  useEffect(() => {
+    return () => abortRef.current?.abort();
+  }, []);
 
   return (
     <TooltipProvider>

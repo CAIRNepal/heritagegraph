@@ -40,6 +40,7 @@ import {
   type InstanceCategory,
   type InstanceGraphData,
 } from '@/lib/instance-graph';
+import { getApiErrorMessage } from '@/lib/api-client';
 
 /* ── Cytoscape is client-only ── */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -270,8 +271,10 @@ export default function GraphViewPage() {
         : baseData;
       setInstanceData(data);
       return data;
-    } catch (err: any) {
-      setInstanceError(err.message || 'Failed to fetch data');
+    } catch (err: unknown) {
+      setInstanceError(
+        getApiErrorMessage(err, 'Could not load the live graph. Try again or check your connection.')
+      );
       return null;
     } finally {
       setInstanceLoading(false);
