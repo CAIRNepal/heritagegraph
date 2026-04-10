@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 import { useSession } from 'next-auth/react';
 
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 export interface ReviewerRoleInfo {
   role: 'community_reviewer' | 'domain_expert' | 'expert_curator';
@@ -52,6 +53,11 @@ export function useUserRolesProvider(): UserRoles {
   const fetchRoles = useCallback(async () => {
     if (status !== 'authenticated' || !session?.accessToken) {
       setIsLoading(false);
+      return;
+    }
+    if (!API_BASE) {
+      setIsLoading(false);
+      setError('API is not configured. Set NEXT_PUBLIC_API_URL and reload.');
       return;
     }
 

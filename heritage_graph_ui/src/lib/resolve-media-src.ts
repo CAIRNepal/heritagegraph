@@ -10,10 +10,8 @@ export function resolveMediaSrc(src: string | null | undefined): string | null {
   if (t.startsWith('http://') || t.startsWith('https://')) return t;
   if (t.startsWith('//')) return `https:${t}`;
   if (t.startsWith('/media/')) {
-    const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(
-      /\/$/,
-      '',
-    );
+    const base =
+      (process.env.NEXT_PUBLIC_API_URL || '').trim().replace(/\/$/, '');
     return `${base}${t}`;
   }
   return t.startsWith('/') ? t : `/${t}`;
