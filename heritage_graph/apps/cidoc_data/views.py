@@ -85,12 +85,14 @@ class ContributionFlowMixin:
             revision_data['_cidoc_model'] = instance.__class__.__name__
             revision_data['_cidoc_id'] = instance.pk
 
-            Revision.objects.create(
+            revision = Revision.objects.create(
                 entity=entity,
                 data=revision_data,
                 revision_number=1,
                 created_by=self.request.user,
             )
+            entity.current_revision = revision
+            entity.save(update_fields=["current_revision"])
 
             Activity.objects.create(
                 entity=entity,

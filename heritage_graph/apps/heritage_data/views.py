@@ -1216,9 +1216,22 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter()
         
         # Prefetch related data for performance
-        if self.action in ['retrieve', 'list']:
-            queryset = queryset.select_related('contributor', 'current_revision').prefetch_related('revisions', 'activities')
-        
+        if self.action == 'list':
+            from django.db.models import Prefetch
+
+            queryset = queryset.select_related('contributor', 'current_revision').prefetch_related(
+                Prefetch(
+                    'revisions',
+                    queryset=Revision.objects.order_by('-revision_number'),
+                    to_attr='prefetched_revisions_newest_first',
+                ),
+                'activities',
+            )
+        elif self.action == 'retrieve':
+            queryset = queryset.select_related('contributor', 'current_revision').prefetch_related(
+                'revisions', 'activities'
+            )
+
         return queryset
     
     def perform_create(self, serializer):
@@ -1249,7 +1262,19 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
         """
         Get contributions by the current user
         """
-        contributions = CulturalEntity.objects.filter(contributor=request.user)
+        from django.db.models import Prefetch
+
+        contributions = (
+            CulturalEntity.objects.filter(contributor=request.user)
+            .select_related('contributor', 'current_revision')
+            .prefetch_related(
+                Prefetch(
+                    'revisions',
+                    queryset=Revision.objects.order_by('-revision_number'),
+                    to_attr='prefetched_revisions_newest_first',
+                ),
+            )
+        )
         page = self.paginate_queryset(contributions)
         if page is not None:
             serializer = CulturalEntityListSerializer(page, many=True)

@@ -405,7 +405,7 @@ class ActivitySerializer(serializers.ModelSerializer):
 
 class CulturalEntityListSerializer(serializers.ModelSerializer):
     contributor = UserSerializer(read_only=True)
-    current_revision = RevisionSerializer(read_only=True)
+    current_revision = serializers.SerializerMethodField()
     is_fork = serializers.SerializerMethodField()
 
     class Meta:
@@ -415,6 +415,22 @@ class CulturalEntityListSerializer(serializers.ModelSerializer):
             'contributor', 'created_at', 'current_revision',
             'root_entity', 'parent_entity', 'fork_depth', 'is_fork',
         ]
+
+    def get_current_revision(self, obj):
+        """
+        Prefer the FK; if unset (legacy rows), use the newest revision so list UIs
+        can link to CIDOC detail routes using revision.data (_cidoc_model / id).
+        """
+        rev = obj.current_revision
+        if rev is not None:
+            return RevisionSerializer(rev).data
+        prefetched = getattr(obj, "prefetched_revisions_newest_first", None)
+        if prefetched and len(prefetched) > 0:
+            return RevisionSerializer(prefetched[0]).data
+        latest = (
+            Revision.objects.filter(entity=obj).order_by("-revision_number").first()
+        )
+        return RevisionSerializer(latest).data if latest else None
 
     def get_is_fork(self, obj):
         return obj.parent_entity_id is not None
