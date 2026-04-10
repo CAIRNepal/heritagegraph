@@ -555,6 +555,138 @@ def public_discovery(request):
     )
 
 
+def _field_reference_q(field_name: str, entity_id_str: str, multivalued: bool) -> Q:
+    """Match stored relation value: exact id or comma-separated list of ids."""
+    sid = str(entity_id_str).strip()
+    if not sid:
+        return Q(pk__in=[])
+    if not multivalued:
+        return Q(**{field_name: sid})
+    q = Q(**{field_name: sid})
+    q |= Q(**{f"{field_name}__startswith": f"{sid},"})
+    q |= Q(**{f"{field_name}__endswith": f",{sid}"})
+    q |= Q(**{f"{field_name}__contains": f",{sid},"})
+    return q
+
+
+def _related_entity_row(instance):
+    from apps.cidoc_data.relation_backrefs import MODEL_ONTOLOGY_DOMAIN_KEY, REFERRED_GROUP_LABELS
+
+    domain_key = MODEL_ONTOLOGY_DOMAIN_KEY[instance.__class__]
+    return {
+        "id": str(instance.pk),
+        "domain_key": domain_key,
+        "name": _discovery_record_name(instance),
+        "summary": _discovery_summary(instance),
+        "display_type": REFERRED_GROUP_LABELS.get(
+            domain_key,
+            instance.__class__.__name__,
+        ),
+    }
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def related_entities(request):
+    """
+    Entities that reference the given entity via ontology relation fields (reverse lookup).
+
+    Query params:
+      - domain: ontology key of the entity being viewed (e.g. source, deity, person)
+      - id: primary key of that entity (string; matches stored relation values)
+      - page: page number (default 1), applied per group
+      - page_size: max items per group (default 10, max 50)
+      - group: optional ontology key of the *referring* type (e.g. syncretism) to
+        return only that bucket (for load-more per section)
+    """
+    from collections import defaultdict
+
+    from apps.cidoc_data.relation_backrefs import (
+        CIDOC_RELATION_BACKREFS,
+        MODEL_ONTOLOGY_DOMAIN_KEY,
+        REFERRED_GROUP_LABELS,
+    )
+
+    domain = (request.query_params.get("domain") or "").strip()
+    raw_id = (request.query_params.get("id") or "").strip()
+    group_filter = (request.query_params.get("group") or "").strip()
+
+    if not domain or not raw_id:
+        return Response(
+            {"error": "Query parameters 'domain' and 'id' are required."},
+            status=drf_status.HTTP_400_BAD_REQUEST,
+        )
+
+    valid_referrer_keys = set(MODEL_ONTOLOGY_DOMAIN_KEY.values())
+    if group_filter and group_filter not in valid_referrer_keys:
+        return Response(
+            {"error": f"Unknown group '{group_filter}'."},
+            status=drf_status.HTTP_400_BAD_REQUEST,
+        )
+
+    try:
+        page = int(request.query_params.get("page") or 1)
+        page_size = int(request.query_params.get("page_size") or 10)
+    except ValueError:
+        return Response(
+            {"error": "page and page_size must be integers."},
+            status=drf_status.HTTP_400_BAD_REQUEST,
+        )
+    page = max(1, page)
+    page_size = min(max(1, page_size), 50)
+
+    entries_by_model = defaultdict(list)
+    for model_cls, field_name, multivalued, ref_domain in CIDOC_RELATION_BACKREFS:
+        if ref_domain != domain:
+            continue
+        entries_by_model[model_cls].append((field_name, multivalued))
+
+    groups_out = []
+    total_related = 0
+
+    for model_cls in sorted(entries_by_model.keys(), key=lambda m: MODEL_ONTOLOGY_DOMAIN_KEY[m]):
+        domain_key = MODEL_ONTOLOGY_DOMAIN_KEY[model_cls]
+        if group_filter and domain_key != group_filter:
+            continue
+
+        q_total = Q()
+        for field_name, multivalued in entries_by_model[model_cls]:
+            q_total |= _field_reference_q(field_name, raw_id, multivalued)
+
+        qs = model_cls.objects.filter(q_total).order_by("-id")
+        total = qs.count()
+        total_related += total
+        start = (page - 1) * page_size
+        slice_qs = qs[start : start + page_size]
+        rows = [_related_entity_row(obj) for obj in slice_qs]
+        groups_out.append(
+            {
+                "domain_key": domain_key,
+                "display_type": REFERRED_GROUP_LABELS.get(
+                    domain_key,
+                    model_cls.__name__,
+                ),
+                "count": total,
+                "page": page,
+                "page_size": page_size,
+                "has_more": start + page_size < total,
+                "results": rows,
+            }
+        )
+
+    return Response(
+        {
+            "domain": domain,
+            "entity_id": raw_id,
+            "page": page,
+            "page_size": page_size,
+            "group": group_filter or None,
+            "total_related": total_related,
+            "groups": groups_out,
+        }
+    )
+
+
 ###############################################################
 
 

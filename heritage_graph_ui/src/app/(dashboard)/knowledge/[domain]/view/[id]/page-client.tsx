@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { ArrowLeft, Calendar, User, Users, Tag, Edit, ExternalLink, MapPin, ThumbsUp, ThumbsDown, GitFork, Share2, MessageSquare, ChevronDown, QrCode } from "lucide-react";
+import { ArrowLeft, Calendar, User, Users, Tag, Edit, ExternalLink, MapPin, ThumbsUp, ThumbsDown, GitFork, Share2, MessageSquare, ChevronDown, QrCode, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { ForkButton, ForkList } from "@/components/fork-button";
 import { ForkTreeView } from "@/components/fork-tree-view";
 import { EntityComments } from "@/components/entity-comments";
 import { EntityQRCode } from "@/components/entity-qr-code";
+import { RelatedEntities } from "@/components/knowledge/related-entities";
 import { Separator } from "@/components/ui/separator";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
@@ -167,6 +168,7 @@ export default function OntologyViewPage() {
   }
 
   const displayName = (record.name as string) || (record.title as string) || `${ontologyClass.label} #${id}`;
+  const showRelatedTab = ontologyClass.apiEndpoint.startsWith("/cidoc/");
   const status = record.status as string | undefined;
   const category = record.category as string | undefined;
   const contributorInfo = contributorFromRecord(record);
@@ -279,6 +281,11 @@ export default function OntologyViewPage() {
               <TabsTrigger value="forks" className="flex-1 sm:flex-none">
                 <GitFork className="h-3.5 w-3.5 mr-1.5" /> Forks
               </TabsTrigger>
+              {showRelatedTab ? (
+                <TabsTrigger value="related" className="flex-1 sm:flex-none">
+                  <Link2 className="h-3.5 w-3.5 mr-1.5" /> Related
+                </TabsTrigger>
+              ) : null}
             </TabsList>
             
             <TabsContent value="details" className="mt-4 space-y-4">
@@ -374,6 +381,12 @@ export default function OntologyViewPage() {
                 )}
               </div>
             </TabsContent>
+
+            {showRelatedTab ? (
+              <TabsContent value="related" className="mt-4">
+                <RelatedEntities domain={domain} entityId={id} />
+              </TabsContent>
+            ) : null}
           </Tabs>
         </div>
 

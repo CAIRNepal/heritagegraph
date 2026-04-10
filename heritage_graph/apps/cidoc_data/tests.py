@@ -1,6 +1,18 @@
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from apps.cidoc_data.models import Person, Location, Event, HistoricalPeriod, Tradition, Source
+from rest_framework.test import APITestCase
+
+from apps.cidoc_data.models import (
+    Deity,
+    Event,
+    HistoricalPeriod,
+    IconographicObject,
+    Location,
+    Person,
+    Source,
+    SyncreticRelationship,
+    Tradition,
+)
 
 
 class PersonModelTest(TestCase):
@@ -133,3 +145,102 @@ class SourceTest(TestCase):
 ###################################################################################################
 
 
+class RelatedEntitiesApiTest(APITestCase):
+    def test_related_requires_domain_and_id(self):
+        res = self.client.get("/cidoc/related/", {})
+        self.assertEqual(res.status_code, 400)
+
+    def test_related_unknown_group(self):
+        res = self.client.get(
+            "/cidoc/related/",
+            {"domain": "source", "id": "1", "group": "not_a_real_group"},
+        )
+        self.assertEqual(res.status_code, 400)
+
+    def test_related_source_via_syncretism(self):
+        src = Source.objects.create(
+            title="Ref Book",
+            authors="A",
+            type="book",
+        )
+        SyncreticRelationship.objects.create(
+            name="Equivalence claim",
+            documented_in_source=str(src.pk),
+        )
+        res = self.client.get(
+            "/cidoc/related/",
+            {"domain": "source", "id": str(src.pk)},
+        )
+        self.assertEqual(res.status_code, 200)
+        body = res.json()
+        self.assertEqual(body["entity_id"], str(src.pk))
+        self.assertEqual(body["total_related"], 1)
+        self.assertEqual(len(body["groups"]), 1)
+        g0 = body["groups"][0]
+        self.assertEqual(g0["domain_key"], "syncretism")
+        self.assertEqual(len(g0["results"]), 1)
+        self.assertEqual(g0["results"][0]["name"], "Equivalence claim")
+
+    def test_related_deity_via_iconography(self):
+        deity = Deity.objects.create(name="Test Deity")
+        IconographicObject.objects.create(
+            name="Test Object",
+            depicts_deity=str(deity.pk),
+        )
+        res = self.client.get(
+            "/cidoc/related/",
+            {"domain": "deity", "id": str(deity.pk)},
+        )
+        self.assertEqual(res.status_code, 200)
+        body = res.json()
+        self.assertEqual(body["total_related"], 1)
+        self.assertEqual(body["groups"][0]["domain_key"], "iconography")
+
+    def test_related_pagination_and_group_filter(self):
+        src = Source.objects.create(
+            title="Multi",
+            authors="B",
+            type="journal",
+        )
+        SyncreticRelationship.objects.create(
+            name="First",
+            documented_in_source=str(src.pk),
+        )
+        SyncreticRelationship.objects.create(
+            name="Second",
+            documented_in_source=str(src.pk),
+        )
+        res = self.client.get(
+            "/cidoc/related/",
+            {"domain": "source", "id": str(src.pk), "page_size": "1", "page": "1"},
+        )
+        self.assertEqual(res.status_code, 200)
+        body = res.json()
+        self.assertEqual(body["total_related"], 2)
+        g0 = body["groups"][0]
+        self.assertTrue(g0["has_more"])
+        self.assertEqual(len(g0["results"]), 1)
+
+        res2 = self.client.get(
+            "/cidoc/related/",
+            {
+                "domain": "source",
+                "id": str(src.pk),
+                "page_size": "1",
+                "page": "2",
+                "group": "syncretism",
+            },
+        )
+        self.assertEqual(res2.status_code, 200)
+        body2 = res2.json()
+        self.assertEqual(len(body2["groups"]), 1)
+        self.assertEqual(len(body2["groups"][0]["results"]), 1)
+
+    def test_related_empty_for_unreferenced_domain(self):
+        res = self.client.get(
+            "/cidoc/related/",
+            {"domain": "festival", "id": "999"},
+        )
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.json()["total_related"], 0)
+        self.assertEqual(res.json()["groups"], [])
