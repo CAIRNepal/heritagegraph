@@ -14,64 +14,17 @@ import {
 import { SectionCards } from '@/app/(dashboard)/components/section-cards';
 import {
   IconPlus,
-  IconBuildingCommunity,
-  IconUser,
-  IconMapPin,
-  IconCalendarEvent,
-  IconFlame,
-  IconChartBar,
-  IconShield,
-  IconFileDescription,
-  IconTrophy,
   IconArrowRight,
   IconSparkles,
-  IconBooks,
-  IconUsers,
   IconGraph,
-  IconMedal,
 } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
-
-/* ── quick-action data ── */
-const quickActions = [
-  {
-    title: 'Knowledge Graph',
-    desc: 'Explore the ontology graph visualization.',
-    icon: IconGraph,
-    href: '/graphview',
-    gradient: 'from-violet-500 to-blue-500',
-  },
-  {
-    title: 'New Contribution',
-    desc: 'Submit a cultural heritage entry.',
-    icon: IconPlus,
-    href: '/contribute',
-    gradient: 'from-blue-500 to-sky-500',
-  },
-  {
-    title: 'Knowledge Base',
-    desc: 'Browse cultural entities & records.',
-    icon: IconBooks,
-    href: '/knowledge/entity',
-    gradient: 'from-blue-600 to-cyan-500',
-  },
-  {
-    title: 'Progression',
-    desc: 'Track your ranks, seals & achievements.',
-    icon: IconMedal,
-    href: '/progression',
-    gradient: 'from-amber-500 to-yellow-500',
-  },
-];
-
-/* ── knowledgebase shortcuts ── */
-const kbShortcuts = [
-  { title: 'Cultural Entity', icon: IconBuildingCommunity, href: '/knowledge/entity', gradient: 'from-blue-500 to-sky-500' },
-  { title: 'Person', icon: IconUser, href: '/knowledge/person', gradient: 'from-sky-500 to-cyan-500' },
-  { title: 'Location', icon: IconMapPin, href: '/knowledge/location', gradient: 'from-blue-600 to-sky-600' },
-  { title: 'Event', icon: IconCalendarEvent, href: '/knowledge/event', gradient: 'from-blue-600 to-cyan-500' },
-  { title: 'Contributors', icon: IconUsers, href: '/community/contributors', gradient: 'from-sky-500 to-blue-600' },
-];
+import {
+  dashboardBrowseCategories,
+  dashboardCurationShortcuts,
+  dashboardQuickActions,
+} from '@/config/dashboard-links';
+import { ShortcutGrid } from '@/components/dashboard/shortcut-grid';
 
 export default function Page() {
   const { data: session } = useSession();
@@ -174,30 +127,7 @@ export default function Page() {
             Actions
           </span>
         </motion.h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {quickActions.map((action) => (
-            <motion.div key={action.title} variants={scaleIn} className="group relative">
-              <Link href={action.href}>
-                <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-colors duration-200 overflow-hidden hover:shadow-xl cursor-pointer`}>
-                  {/* Gradient overlay on hover (same as landing cards) */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`}
-                  />
-                  <div
-                    className={`inline-flex p-3 rounded-2xl bg-gradient-to-br ${action.gradient} mb-4 shadow-lg`}
-                  >
-                    <action.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">
-                    {action.title}
-                  </h3>
-                  <p className="text-blue-700 dark:text-blue-300 text-sm leading-relaxed">{action.desc}</p>
-                  <IconArrowRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300 mt-3" />
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        <ShortcutGrid items={dashboardQuickActions} variant="detailed" />
       </motion.div>
 
       {/* ── Your Progress & Leaderboard (side by side on desktop) ── */}
@@ -243,27 +173,15 @@ export default function Page() {
             Category
           </span>
         </motion.h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {kbShortcuts.map((item) => (
-            <motion.div key={item.title} variants={scaleIn} className="group relative">
-              <Link href={item.href}>
-                <div className={`relative text-center p-5 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-colors duration-200 overflow-hidden hover:shadow-xl cursor-pointer`}>
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`}
-                  />
-                  <div
-                    className={`inline-flex p-3 rounded-2xl bg-gradient-to-br ${item.gradient} mb-3 shadow-md mx-auto`}
-                  >
-                    <item.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <span className="block text-xs font-semibold text-blue-800 dark:text-blue-200 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">
-                    {item.title}
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        <ShortcutGrid
+          items={dashboardBrowseCategories}
+          variant="compact"
+          columns={{
+            base: "grid-cols-2",
+            sm: "sm:grid-cols-3",
+            lg: "lg:grid-cols-5",
+          }}
+        />
         <div className="mt-3">
           <Link
             href="/knowledge/entity"
@@ -290,54 +208,11 @@ export default function Page() {
             Review
           </span>
         </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              title: 'Contributions Queue',
-              desc: 'Pending community submissions awaiting review.',
-              icon: IconFileDescription,
-              href: '/curation/contributions',
-              gradient: 'from-blue-400 to-sky-500',
-            },
-            {
-              title: 'Activity Log',
-              desc: 'Track recent changes and platform activity.',
-              icon: IconChartBar,
-              href: '/curation/activity',
-              gradient: 'from-blue-500 to-cyan-500',
-            },
-            {
-              title: 'Reviewer Dashboard',
-              desc: 'Your review stats, decisions, and metrics.',
-              icon: IconShield,
-              href: '/curation/dashboard',
-              gradient: 'from-sky-500 to-blue-600',
-            },
-          ].map((item) => (
-            <motion.div key={item.title} variants={scaleIn} className="group relative">
-              <Link href={item.href}>
-                <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-colors duration-200 overflow-hidden hover:shadow-xl cursor-pointer h-full`}>
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`}
-                  />
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`inline-flex p-3 rounded-2xl bg-gradient-to-br ${item.gradient} shadow-lg shrink-0`}
-                    >
-                      <item.icon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <h3 className="font-bold text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">
-                        {item.title}
-                      </h3>
-                      <p className="text-blue-700 dark:text-blue-300 text-sm leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        <ShortcutGrid
+          items={dashboardCurationShortcuts}
+          variant="detailed"
+          columns={{ base: "grid-cols-1", md: "md:grid-cols-3" }}
+        />
       </motion.div>
 
       {/* ── Heritage Data Table (glassmorphic container) ── */}
