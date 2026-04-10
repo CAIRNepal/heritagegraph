@@ -17,10 +17,9 @@ function pathRequiresLogin(pathname: string): boolean {
     '/account',
     '/notification',
     '/progression',
-    '/team',
     '/community/reviewer-request',
-    '/contribute/entity/edit',
-    '/contribute/entity/revise',
+    // /contribute is gated in (dashboard)/contribute/layout.tsx (RequireAuth) so Edge
+    // middleware getToken() cannot fight the client session after OAuth.
   ];
 
   return protectedPrefixes.some(

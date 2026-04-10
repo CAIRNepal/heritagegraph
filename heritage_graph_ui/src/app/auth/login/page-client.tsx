@@ -2,7 +2,7 @@
 
 import { signIn, useSession } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   describeAuthUrlError,
   missingGoogleOAuthConfigMessage,
@@ -14,6 +14,15 @@ interface LoginRedirectPageClientProps {
   googleOAuthConfigured: boolean;
 }
 
+/** Same-origin path only; avoid open redirects and loops back to this page. */
+function safeCallbackUrl(raw: string | null): string {
+  if (!raw) return '/';
+  const path = raw.trim();
+  if (!path.startsWith('/')) return '/';
+  if (path === '/auth/login' || path.startsWith('/auth/login?')) return '/';
+  return path;
+}
+
 /**
  * Google-only sign-in. Preserves `callbackUrl`. Surfaces ?error= from NextAuth or
  * HeritageGraph backend handshake without silent failures.
@@ -22,18 +31,26 @@ export default function LoginRedirectPageClient({
   googleOAuthConfigured,
 }: LoginRedirectPageClientProps) {
   const { status } = useSession();
-  const searchParams = useSearchParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [localError, setLocalError] = useState<string | null>(null);
   const autoSignInStarted = useRef(false);
+  const postAuthRedirectDone = useRef(false);
 
-  const callbackUrlRaw = searchParams.get('callbackUrl') || '/';
-  const callbackUrl = callbackUrlRaw.startsWith('/') ? callbackUrlRaw : '/';
+  const callbackUrl = safeCallbackUrl(searchParams.get('callbackUrl'));
   const errorParam = searchParams.get('error');
   const urlMessage = describeAuthUrlError(errorParam);
 
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      postAuthRedirectDone.current = false;
+    }
+  }, [status]);
+
+  useEffect(() => {
     if (status !== 'authenticated') return;
+    if (postAuthRedirectDone.current) return;
+    postAuthRedirectDone.current = true;
     router.replace(callbackUrl);
   }, [status, router, callbackUrl]);
 
