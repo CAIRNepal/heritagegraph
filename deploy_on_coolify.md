@@ -171,7 +171,7 @@ After the **backend** domain resolves to the Django container, open it in a brow
 | Entry page (links to everything below) | `https://api.example.com/` |
 | Same as JSON | `https://api.example.com/?format=json` |
 | Django admin | `https://api.example.com/admin/` |
-| Swagger UI (interactive API docs) | `https://api.example.com/docs` |
+| Swagger UI (interactive API docs) | `https://api.example.com/docs` or `/docs/` |
 | ReDoc | `https://api.example.com/redoc/` |
 | OpenAPI schema | `https://api.example.com/schema/` |
 | Health | `https://api.example.com/health/` |

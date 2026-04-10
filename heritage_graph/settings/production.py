@@ -23,6 +23,10 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
 if not ALLOWED_HOSTS or ALLOWED_HOSTS == [""]:
     raise ValueError("ALLOWED_HOSTS must be set for production.")
 
+# Behind Coolify / Traefik: correct scheme and host for redirects and OpenAPI URLs
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # --------------------------------------------------------------------
 # Database Configuration
 # --------------------------------------------------------------------
@@ -57,6 +61,14 @@ REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
     "apps.heritage_data.authentication.GoogleTokenAuthentication",
     "apps.heritage_data.authentication.GitHubTokenAuthentication",
     "rest_framework_simplejwt.authentication.JWTAuthentication",
+)
+
+# Spectacular (/docs, /redoc/, /schema/) must stay public; do not inherit Google/JWT auth
+SPECTACULAR_SETTINGS.update(  # noqa: F405
+    {
+        "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+        "SERVE_AUTHENTICATION": [],
+    }
 )
 
 # # --------------------------------------------------------------------

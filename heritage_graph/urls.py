@@ -25,15 +25,15 @@ urlpatterns = [
     path("health/detailed/", health_check_detailed, name="health-detailed"),
     path("health/ready/", readiness_check, name="readiness"),
     path("health/live/", liveness_check, name="liveness"),
-    # API Documentation
-    path('', include('django_prometheus.urls')),
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),  # OpenAPI schema
-    path(
-        "docs", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"
-    ),  # Swagger UI
-    path(
-        "redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
-    ),  # ReDoc
+    # OpenAPI / Swagger / ReDoc — register before prometheus '' include; optional /docs slash
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    re_path(
+        r"^docs/?$",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("", include("django_prometheus.urls")),
     # Admin
     path("admin/", admin.site.urls),
     # API Endpoints
