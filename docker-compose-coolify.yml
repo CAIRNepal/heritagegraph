@@ -82,7 +82,8 @@ services:
       DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
       DEBUG: "False"
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-api.heritagegraph.xyz,localhost}
+      # Include Docker hostname `backend` for NextAuth server-side Host: backend (INTERNAL_BACKEND_URL).
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-api.heritagegraph.xyz,localhost,backend}
       # Database
       DB_ENGINE: django.db.backends.postgresql
       DB_NAME: ${POSTGRES_DB:-heritage_db}
@@ -133,6 +134,10 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-build-placeholder}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-build-placeholder}
+        GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-build-placeholder}
     restart: always
     environment:
       NODE_ENV: production
@@ -180,6 +185,9 @@ services:
     build:
       context: ./heritage_graph_landing
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+        NEXT_PUBLIC_APP_URL: ${NEXTAUTH_URL:-}
     restart: always
     environment:
       NODE_ENV: production

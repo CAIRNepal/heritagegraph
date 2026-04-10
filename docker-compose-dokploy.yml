@@ -108,6 +108,10 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-build-placeholder}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-build-placeholder}
+        GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-build-placeholder}
     restart: always
     environment:
       NODE_ENV: production

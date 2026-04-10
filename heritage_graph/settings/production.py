@@ -19,8 +19,9 @@ if not SECRET_KEY:
     raise ValueError("Missing DJANGO_SECRET_KEY in environment variables.")
 
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
-if not ALLOWED_HOSTS or ALLOWED_HOSTS == [""]:
+_allowed_raw = os.environ.get("ALLOWED_HOSTS", "")
+ALLOWED_HOSTS = [h.strip() for h in _allowed_raw.split(",") if h.strip()]
+if not ALLOWED_HOSTS:
     raise ValueError("ALLOWED_HOSTS must be set for production.")
 
 # Behind Coolify / Traefik: correct scheme and host for redirects and OpenAPI URLs
@@ -125,8 +126,11 @@ MEDIA_URL = "/media/"
 # --------------------------------------------------------------------
 # CORS Configuration
 # --------------------------------------------------------------------
-_cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
-if _cors_origins:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins.split(",") if origin.strip()]
+# When set (including empty), replace base.py defaults so production uses only listed origins.
+if "CORS_ALLOWED_ORIGINS" in os.environ:
+    _cors_origins = os.environ["CORS_ALLOWED_ORIGINS"]
+    CORS_ALLOWED_ORIGINS = [
+        origin.strip() for origin in _cors_origins.split(",") if origin.strip()
+    ]
 
 CORS_ALLOW_CREDENTIALS = True

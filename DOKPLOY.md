@@ -8,7 +8,8 @@ Use the repository file **`docker-compose-dokploy.yml`** as the Compose definiti
 2. **Secrets in Dokploy:** `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, `NEXTAUTH_SECRET`, and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
 3. **URLs:** `NEXT_PUBLIC_API_URL` (public `https://…` API), `NEXTAUTH_URL` (public `https://…` app), `CORS_ALLOWED_ORIGINS` (your app origin, comma-separated).
 4. **`ALLOWED_HOSTS`:** Must list every hostname that hits Django **plus** the Docker hostname `backend` (used by NextAuth server-side `INTERNAL_BACKEND_URL`). Example:  
-   `devapi.example.com,app.example.com,localhost,backend`
+   `devapi.heritagegraph.xyz,dev.heritagegraph.xyz,localhost,backend`  
+   (Omitting `backend` causes `400 Bad Request` / DisallowedHost on token exchange.)
 5. **Domains in Dokploy:** API → **backend** port **8000**; dashboard → **frontend** **3000**; landing → **landing** **3000**.
 
 ## Migrations
