@@ -56,8 +56,7 @@ if [ "${MIGRATION_AUTO_REPAIR:-0}" = "1" ] || [ "${MIGRATION_AUTO_REPAIR:-}" = "
     python manage.py repair_migration_history || log_warn "repair_migration_history failed; migrate may still error."
 fi
 log_info "Running database migrations..."
-python manage.py migrate --noinput
-if [ $? -eq 0 ]; then
+if python manage.py migrate --noinput; then
     log_info "Database migrations completed successfully."
 else
     log_error "Database migrations failed!"
@@ -69,11 +68,10 @@ fi
 # ================================================================
 if [ "${DEBUG}" = "False" ] || [ "${DEBUG}" = "false" ]; then
     log_info "Collecting static files for production..."
-    python manage.py collectstatic --noinput --clear
-    if [ $? -eq 0 ]; then
+    if python manage.py collectstatic --noinput --clear; then
         log_info "Static files collected successfully."
     else
-        log_warn "Static files collection had warnings, but continuing..."
+        log_warn "Static files collection failed or had warnings; continuing startup."
     fi
 fi
 
