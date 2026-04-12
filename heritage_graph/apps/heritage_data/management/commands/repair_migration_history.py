@@ -44,6 +44,10 @@ class Command(BaseCommand):
             # Refresh introspection cache
             tables = connection.introspection.table_names(cursor)
 
+            if "django_migrations" not in tables:
+                self.stdout.write(self.style.SUCCESS("django_migrations table does not exist. Skipping repair since there is no history to repair."))
+                return
+
             heritage_applied = _migration_applied(cursor, "heritage_data", "0001_initial")
             users_applied = _migration_applied(cursor, "users", "0001_initial")
 

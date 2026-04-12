@@ -21,6 +21,11 @@ if not SECRET_KEY:
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 _allowed_raw = os.environ.get("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for h in _allowed_raw.split(",") if h.strip()]
+
+# Allow internal docker network requests from Next.js frontend to 'backend:8000'
+if "backend" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("backend")
+
 if not ALLOWED_HOSTS:
     raise ValueError("ALLOWED_HOSTS must be set for production.")
 
