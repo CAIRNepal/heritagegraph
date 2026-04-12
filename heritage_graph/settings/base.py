@@ -33,6 +33,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -100,6 +101,13 @@ LOCALE_PATHS = [
 
 STATIC_URL = "static/"
 
+# WhiteNoise: serve and compress static files from the app itself
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "users.User"
@@ -124,6 +132,10 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Detailed documentation for all available APIs.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    # Register custom auth extensions so Spectacular resolves our custom authenticators
+    "EXTENSIONS": [
+        "apps.heritage_data.openapi_extensions",
+    ],
 }
 
 SIMPLE_JWT = {
