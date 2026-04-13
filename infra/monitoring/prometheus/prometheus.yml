@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "backend"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["backend:8000"]
+
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres_exporter:9187"]
+
+  - job_name: "frontend"
+    metrics_path: "/api/metrics"
+    static_configs:
+      - targets: ["frontend:3000"]
+
