@@ -1,0 +1,139 @@
+openapi: 3.0.3
+info:
+  title: HeritageGraph — OCR / document processing (v1 draft)
+  version: 0.1.0
+  description: >
+    Draft contract for new versioned endpoints. Final paths should be registered
+    in DRF routers so OpenAPI/Swagger stays the source of truth in production.
+servers:
+  - url: https://{host}/api/v1
+    variables:
+      host:
+        default: backend.localhost
+security:
+  - bearerAuth: []
+paths:
+  /data/ocr-documents/{documentId}/:
+    get:
+      tags: [OCR]
+      summary: Get processing status for an UploadedDocument
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrDocumentStatus"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+  /data/ocr-documents/{documentId}/suggestions/:
+    get:
+      tags: [OCR]
+      summary: Get pre-fill suggestions derived from ExtractedField rows
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrSuggestionsResponse"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+  /data/ocr-documents/{documentId}/retry/:
+    post:
+      tags: [OCR]
+      summary: Re-queue processing (staff/reviewer only)
+      parameters:
+        - in: path
+          name: documentId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrDocumentStatus"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    OcrDocumentStatus:
+      type: object
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        document_type:
+          type: string
+        classification_confidence:
+          type: number
+        processing_started:
+          type: string
+          format: date-time
+          nullable: true
+        processing_finished:
+          type: string
+          format: date-time
+          nullable: true
+        user_safe_error:
+          type: string
+          nullable: true
+    OcrSuggestionsResponse:
+      type: object
+      description: Map of form field key -> suggestion object
+      additionalProperties:
+        $ref: "#/components/schemas/OcrFieldSuggestion"
+    OcrFieldSuggestion:
+      type: object
+      required: [value, confidence]
+      properties:
+        value:
+          type: string
+        confidence:
+          type: number
+        entityType:
+          type: string
+        fieldName:
+          type: string
+        source:
+          type: string
+          description: Provenance string safe to show users (e.g., engine + page)
