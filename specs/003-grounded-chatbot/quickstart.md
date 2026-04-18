@@ -5,7 +5,8 @@
 
 ## Prerequisites
 
-- Backend running with **new** assistant env vars set (see root / backend `.env.example` after implementation—`ANTHROPIC_API_KEY` or project-standard name).
+- Backend running with **assistant** env vars set: **`OPENROUTER_API_KEY`**, **`OPENROUTER_MODEL_STANDARD`**, and optionally `OPENROUTER_MODEL_FAST` / `OPENROUTER_MODEL_PREMIUM` (see root and `heritage_graph/.env.example` for the full set, including optional `ASSISTANT_TIER_*` tuning).
+- For **OCR / vision** in `document_processing`, set **`ANTHROPIC_API_KEY`** (direct Anthropic; not used for the in-app chat LLM).
 - `NEXT_PUBLIC_API_URL` set to the Django origin (e.g. `http://localhost:8000` in dev, per constitution).
 - Frontend: `heritage_graph_ui` dev server; optionally `heritage_graph_landing` for the mirror chat.
 
@@ -27,6 +28,7 @@ Prepare **20+ scripted prompts** in a doc (not committed if sensitive): 10 from 
 
 - `POST /api/v1/assistant/chat/` (see `contracts/openapi-assistant-chat.v1.yaml`) with a minimal `messages` array; expect `200` and a JSON body with `message.role === "assistant"`.
 
-## Known limitations (until tasks land)
+## Known limitations
 
-- Until the implementation MR merges, the UI still uses `getDummyResponse` — the quickstart steps apply **after** the chat client is switched to the live API.
+- If `OPENROUTER_API_KEY` or `OPENROUTER_MODEL_STANDARD` is missing, the assistant returns **503**; confirm env before manual checks.
+- The keyword router in `dummyResponses.ts` is for **local experiments** only if you wire it in dev; production UIs use the live API.

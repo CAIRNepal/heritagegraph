@@ -5,16 +5,16 @@
 
 ## Summary
 
-**Current state (repo):** The in-product **chat UI** in `heritage_graph_ui` and `heritage_graph_landing` is **fully client-side** and uses **`getDummyResponse`** (keyword / latency simulation) in `lib/chat/dummyResponses.ts`—it does **not** call the Django API and is **not** grounded in real graph data or the **About** page.
+**Current state (repo):** The in-product **chat** in `heritage_graph_ui` and `heritage_graph_landing` **POSTs** to `POST /api/v1/assistant/chat/` (see `lib/chat/assistantClient.ts`). The backend runs **grounding** + **retrieval** and calls **OpenRouter** with **tiered** models. `dummyResponses.ts` may remain for **optional** local/offline toggles; it is not the default production path.
 
-**Target state:** A **versioned** backend **chat completion** endpoint that (1) loads **curated** site/mission copy from **versioned grounding files** in the API repo, (2) **retrieves** **public** CIDOC / discovery rows using the same search/discovery patterns as `apps/cidoc_data/views.py` (`universal_search` / `public_discovery` logic, refactored into importable helpers as needed), and (3) calls an **LLM** (Anthropic, consistent with `document_processing`) with a **strict** “answer only from context” system prompt. Both Next.js apps **replace** the dummy with `fetch` to the API, preserving **loading**, **order**, and **error** UX.
+**Target state (as implemented):** A **versioned** backend **chat completion** endpoint that (1) loads **curated** site/mission copy from **grounding files** under `apps/assistant/grounding/`, (2) **retrieves** public CIDOC / discovery rows via the same patterns as `apps/cidoc_data/views.py`, and (3) calls an **LLM** through **OpenRouter** (OpenAI-compatible `chat.completions` from `apps/assistant/services/openrouter.py`) with a **strict** “answer only from context” system message. **Cost tiers** select `OPENROUTER_MODEL_*` per request using **server-side** heuristics in `apps/assistant/services/routing.py`. **OCR/vision** in `document_processing` still uses **direct Anthropic**, not OpenRouter. Both Next.js apps call the API (see `assistantClient.ts`), preserving **loading**, **order**, and **error** UX.
 
 **Not in v1 (unless tasks expand):** Vector DB RAG, streaming, persistent chat history in PostgreSQL, automatic HTML scraping of every React page.
 
 ## Technical Context
 
 **Language/Version**: Python 3.13 (Django + DRF), TypeScript (Next.js 15, React 19)  
-**Primary Dependencies**: DRF `APIView` or `@api_view` for a single `POST` route; **Anthropic** Python SDK (already in repo for OCR-related vision); Next.js `fetch` + `apiFetchJson` / `getPublicApiUrl` in `heritage_graph_ui`  
+**Primary Dependencies**: DRF `@api_view` for `POST /api/v1/assistant/chat/`; **`openai`** Python package (OpenAI-compatible client → OpenRouter); **Anthropic** remains for **OCR/vision** only; Next.js `fetch` + `apiFetchJson` / `getPublicApiUrl` in `heritage_graph_ui`  
 **Storage**: No new database tables in v1 (ephemeral messages); **grounding** text files in the backend tree; **PostgreSQL** for retrieved CIDOC models as today  
 **Testing**: `python manage.py test` for the new app’s permissions and view edge cases; manual checks per `quickstart.md`  
 **Target Platform**: Web (Docker/Traefik per repo)  
@@ -68,13 +68,16 @@ specs/003-grounded-chatbot/
 
 ```text
 heritage_graph/
-├── apps/assistant/                    # NEW: thin app — views, grounding/, services (retrieval + LLM)
+├── apps/assistant/                    # views, grounding/, services (retrieval + OpenRouter + routing)
 │   ├── __init__.py
 │   ├── apps.py
 │   ├── views.py
 │   ├── services/
-│   │   ├── chat_completion.py
+│   │   ├── chat_completion.py        # system prompt, tier log, openrouter call
+│   │   ├── openrouter.py            # OpenAI client → OpenRouter
+│   │   ├── routing.py              # select_tier (server-only); model_id_for_tier
 │   │   └── retrieval.py            # uses cidoc_data search/discovery query helpers
+│   ├── nav_allowlist.py
 │   ├── grounding/                  # site copy .md; mission / product / usage
 │   └── tests/
 ├── apps/cidoc_data/
@@ -102,11 +105,11 @@ heritage_graph_landing/
 |-----------|------------|-------------------------------------|
 | (none) | | |
 
-**Operational note (not a waiver):** A new LLM path introduces **cost** and **rate-limit** risk—monitor and cap request size; document in `AGENTS.md` / runbooks as needed.
+**Operational note (not a waiver):** The assistant path uses **OpenRouter** with **tiered** models; monitor **per-tier** cost and rate limits in the OpenRouter dashboard. Cap request size; document in [`AGENTS.md`](../../AGENTS.md) and root `.env.example` (`OPENROUTER_*`, `ASSISTANT_TIER_*`).
 
 ## Phase 0: Research (see `research.md`)
 
-- Resolved: **Django** vs BFF, **grounding** strategy (file + search retrieval), **Anthropic**, **public vs authed** behavior, **dual** frontend, **nav** allow list.
+- Resolved: **Django** vs BFF, **grounding** strategy (file + search retrieval), **OpenRouter** + **tiered** models for the assistant (OCR still **Anthropic**), **public vs authed** behavior, **dual** frontend, **nav** allow list.
 - No outstanding `[NEEDS CLARIFICATION]` in technical context; details are in `research.md` R-001–R-007.
 
 ## Phase 1: Design outputs

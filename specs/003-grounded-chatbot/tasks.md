@@ -27,8 +27,8 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 
 - [x] T001 Add Django app `heritage_graph/apps/assistant/` with `__init__.py` and `apps.py` using `name = "apps.assistant"`, and register `"apps.assistant"` in `heritage_graph/settings/base.py` `INSTALLED_APPS` list
 - [x] T002 [P] Create `heritage_graph/apps/assistant/grounding/site.md` with curated mission/product/usage text aligned with themes in `heritage_graph_ui/src/app/(dashboard)/about/page.tsx` (no HTML—plain markdown for the model)
-- [x] T003 [P] Ensure `ANTHROPIC_API_KEY` (or the project’s single Anthropic var) is documented in root `.env.example` and `heritage_graph/.env.example`; confirm `docker-compose.yml` already passes `ANTHROPIC_API_KEY` to the backend and document any new key only in example files, not in git
-- [x] T004 [P] Confirm `anthropic` is already listed in `requirements.txt` / `heritage_graph/requirements.txt` (no new dependency for v1 unless a split install path requires adding the package to an optional requirements file the backend image uses)
+- [x] T003 [P] Document **`OPENROUTER_API_KEY`**, `OPENROUTER_MODEL_*`, optional `OPENROUTER_HTTP_REFERER` / `OPENROUTER_X_TITLE` / `ASSISTANT_TIER_*` in root `.env.example` and `heritage_graph/.env.example`; keep **`ANTHROPIC_API_KEY`** documented for **OCR/vision**; confirm `docker-compose.yml` passes the needed vars to the backend (no secrets in git)
+- [x] T004 [P] Ensure **`openai`** is in `heritage_graph/requirements.txt` for the OpenRouter client path; keep **`anthropic`** for `document_processing` (OCR)
 
 **Checkpoint**: App importable, grounding file present, env discoverable for operators.
 
@@ -52,7 +52,7 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 **Independent test**: With API + UI wired, ask (1) an “About” style question and (2) a heritage fact findable via public search/discovery; answers should not contradict `site.md` or a manual check against the same entity in the app.
 
 - [x] T007 [US1] Implement `heritage_graph/apps/assistant/services/retrieval.py` to build a bounded text context from CIDOC data by reusing or extracting query logic from `heritage_graph/apps/cidoc_data/views.py` (`universal_search` / `public_discovery` patterns; cap row count and field length per `specs/003-grounded-chatbot/data-model.md`)
-- [x] T008 [US1] Implement `heritage_graph/apps/assistant/services/chat_completion.py` to load `heritage_graph/apps/assistant/grounding/site.md`, merge retrieval context, call **Anthropic** with a strict “only use provided context” system prompt, and return assistant text plus optional `sources` / `nav` candidates
+- [x] T008 [US1] Implement `heritage_graph/apps/assistant/services/chat_completion.py` to load `heritage_graph/apps/assistant/grounding/site.md`, merge retrieval context, select a **cost tier** (`routing.py`) and call **OpenRouter** via `openrouter.py` with a strict “only use provided context” system message, and return assistant text plus optional `sources` / `nav` candidates
 - [x] T009 [US1] Implement DRF `POST` handler in `heritage_graph/apps/assistant/views.py` (and optional `heritage_graph/apps/assistant/serializers.py` if you prefer DRF serialization) with request body matching `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`, return `200` with `{ message, sources?, nav? }` and map upstream failures to `502`/`503` with safe messages
 - [x] T010 [US1] Add `heritage_graph_ui/src/lib/chat/assistantClient.ts` that POSTs to `getPublicApiUrl()` + `/api/v1/assistant/chat/`, passes `Authorization: Bearer <accessToken>` when the NextAuth session provides `accessToken`, and throws/returns errors compatible with `heritage_graph_ui/src/lib/api-client.ts` patterns
 - [x] T011 [US1] Update `heritage_graph_ui/src/components/chat/ChatPanel.tsx` to call `assistantClient` instead of `getDummyResponse` from `heritage_graph_ui/src/lib/chat/dummyResponses.ts`, preserving message order, `isLoading` in `heritage_graph_ui/src/lib/chat/useChatStore.ts`, and optional `navigationPath` when the API returns `nav`
@@ -157,7 +157,7 @@ T011 ChatPanel.tsx
 1. Complete Phase 1 and Phase 2.  
 2. Complete Phase 3 (US1).  
 3. **Stop**: Run manual checks from `specs/003-grounded-chatbot/quickstart.md` for the main UI.  
-4. Ship or demo: grounded chat in `heritage_graph_ui` only; landing still on dummy (acceptable only as a **temporary** gap—complete T014 for external parity).
+4. Ship or demo: after **T014**, both `heritage_graph_ui` and `heritage_graph_landing` use the same grounded API (MVP can still be main-app–only for early demos if landing is not wired yet).
 
 ### Incremental delivery
 

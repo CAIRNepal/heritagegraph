@@ -506,7 +506,9 @@ PostgreSQL (user-level access, connection limits)
 | Frontend | Google | HTTPS | OAuth consent flow (via NextAuth) |
 | Frontend | Backend | HTTP (internal) | API calls (via browser, through Traefik) |
 | Backend | Google | HTTPS | Verify ID tokens (via google-auth) |
-| Backend | PostgreSQL | TCP | Database queries || Backend | Redis | TCP:6379 | Queue OCR tasks (Celery broker) |
+| Backend | PostgreSQL | TCP | Database queries |
+| Backend | Redis | TCP:6379 | Queue OCR tasks (Celery broker) |
+| Backend | OpenRouter API | HTTPS | In-app chat (`/api/v1/assistant/chat/`; tiered models) |
 | OCR Worker | Redis | TCP:6379 | Dequeue tasks, store results |
 | OCR Worker | PostgreSQL | TCP | Read documents, store OCR results |
 | OCR Worker | Anthropic API | HTTPS | Claude Vision for inscription rescue (optional) |

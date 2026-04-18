@@ -1,6 +1,6 @@
 # HeritageGraph — marketing landing
 
-Public **collections discovery** UI for [HeritageGraph](https://github.com/CAIRNepal/heritagegraph) (LUX-style layout: search, category tabs, facet sidebar, result list). Uses the **same CSS design tokens** as `heritage_graph_ui` (primary `#1e4e8c`, surfaces, borders, dark mode). Dummy results live in `src/data/dummyDiscovery.ts` until the API is wired.
+Public **collections discovery** UI for [HeritageGraph](https://github.com/CAIRNepal/heritagegraph) (LUX-style layout: search, category tabs, facet sidebar, result list). Uses the **same CSS design tokens** as `heritage_graph_ui` (primary `#1e4e8c`, surfaces, borders, dark mode). The **in-page chat** calls the Django **assistant** API at `POST /api/v1/assistant/chat/` (see `src/lib/chat/assistantClient.ts`); the backend must have **`OPENROUTER_API_KEY`** and model env vars. Dummy discovery data may still live in `src/data/dummyDiscovery.ts` where the discovery API is not yet wired.
 
 ## Local development
 

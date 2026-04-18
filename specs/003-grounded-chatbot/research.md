@@ -8,7 +8,7 @@
 
 **Decision:** Implement **grounded chat completion on the Django API** as a new **versioned** endpoint (e.g. under `api/v1/assistant/…`), with the **LLM and retrieval logic server-side**. The Next.js apps call it with `getPublicApiUrl()` and, when the user is signed in, `Authorization: Bearer <session.accessToken>`.
 
-**Rationale:** Keeps model/provider keys off the client, matches the spec’s need for **trustworthy** answers tied to **authoritative** data, and reuses the repo’s existing **Anthropic** usage pattern (`document_processing` already depends on `anthropic`). A thin Next.js `route.ts` that proxies to the same API would add latency and duplicate auth without benefit unless streaming is required in v1.
+**Rationale:** Keeps model/provider keys off the client and matches the spec’s need for **trustworthy** answers tied to **authoritative** data. The **in-app assistant** today uses [OpenRouter](https://openrouter.ai/) (OpenAI-compatible `chat.completions` from the Django `apps.assistant` service) with **server-side** cost tiers; **OCR/vision** in `document_processing` still uses the **direct Anthropic** API and is unchanged. A thin Next.js `route.ts` that proxies the assistant would add latency and duplicate auth without benefit unless streaming is required in v1.
 
 **Alternatives considered:**
 
@@ -31,11 +31,13 @@
 
 ## R-003 — LLM provider and model
 
-**Decision:** Use **Anthropic Messages API** (already in use for `document_processing` vision rescue), configured via a **new server env var** (e.g. `ANTHROPIC_API_KEY` already may exist; if missing, add to `.env.example` without committing values). System prompt: **only answer from the provided context**; if missing, say so and point to “About / browse knowledge” in generic terms.
+**Decision (in-app assistant):** Use **OpenRouter** with the **`openai` Python client** and `base_url` `https://openrouter.ai/api/v1`. The assistant must use **`OPENROUTER_API_KEY`**; model slugs are set per **cost tier** in env: `OPENROUTER_MODEL_FAST`, `OPENROUTER_MODEL_STANDARD` (required; fallback for the other tiers), and `OPENROUTER_MODEL_PREMIUM`. **Tier choice is server-only** (see `apps/assistant/services/routing.py` — heuristics from last message length, thread size, and retrieval `source` count; tunable `ASSISTANT_TIER_*` env vars). System content is still **“only answer from the provided context.”**
 
-**Rationale:** One less vendor; operational overlap with existing Python dependency.
+**OCR / vision (unchanged):** `document_processing` continues to use the **direct Anthropic** API and `ANTHROPIC_API_KEY` (not OpenRouter).
 
-**Alternatives considered:** OpenAI / local models — *deferred* unless product mandates; would add deps and key management surface.
+**Rationale (assistant):** OpenRouter supports **multiple providers and price points** in one key path; **tiering** keeps simple turns on cheaper models. OCR stays on direct Anthropic where it was already implemented.
+
+**Alternatives considered (assistant):** Single Anthropic model for all turns — *superseded* in favor of OpenRouter tiering. Local inference — *deferred*.
 
 ## R-004 — Endpoint shape and client wiring
 

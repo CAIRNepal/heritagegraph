@@ -73,6 +73,8 @@ The feature adds **ephemeral** chat (no new PostgreSQL tables required for v1). 
 - **matchedRows**: list of **trimmed** serializer excerpts from CIDOC search/discovery
 - **limits**: cap rows and string length to fit model context
 
+**Backend LLM (implementation):** Completions go to **OpenRouter** via the OpenAI-compatible `chat.completions` API; the **model** is chosen per request from **server-side tiers** (`OPENROUTER_MODEL_FAST` / `STANDARD` / `PREMIUM`). This is separate from **OCR**, which uses **direct Anthropic** in `document_processing`.
+
 ## State diagram (client)
 
 ```text

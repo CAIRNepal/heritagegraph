@@ -280,7 +280,7 @@ A three-persona review workflow for expert-reviewed heritage claims with conflic
 | App | `heritage_graph_landing/` (Next.js 15, port **3001** locally via `make landing`) |
 | Page | `heritage_graph_landing/src/app/page.tsx` |
 | Design tokens | Same as dashboard — `heritage_graph_landing/src/app/globals.css` (aligned with `heritage_graph_ui`) |
-| Chat (dummy) | `heritage_graph_landing/src/components/chat/*`, `src/lib/chat/*` |
+| Chat (API) | `heritage_graph_landing/src/components/chat/*`, `src/lib/chat/*` (assistant → `POST /api/v1/assistant/chat/`) |
 | Env | `NEXT_PUBLIC_APP_URL` → main app origin (`http://localhost:3000` local, `http://frontend.localhost` Docker) |
 
 ---
