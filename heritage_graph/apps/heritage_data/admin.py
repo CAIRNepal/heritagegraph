@@ -18,6 +18,7 @@ from .models import (
     Reaction,
     ReviewDecision,
     ReviewerRole,
+    ReviewerApplication,
     ReviewFlag,
     Revision,
     Share,
@@ -271,6 +272,101 @@ class ReviewerRoleAdmin(admin.ModelAdmin):
             return "-"
         return ", ".join(obj.expertise_areas[:3]) + ("..." if len(obj.expertise_areas) > 3 else "")
     expertise_preview.short_description = "Expertise"
+
+
+@admin.register(ReviewerApplication)
+class ReviewerApplicationAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "status_colored",
+        "message_preview",
+        "created_at",
+        "reviewed_by",
+        "reviewed_at",
+    )
+    list_filter = ("status", "created_at")
+    search_fields = ("user__username", "user__email", "message", "admin_notes")
+    readonly_fields = (
+        "id",
+        "user",
+        "created_at",
+        "updated_at",
+        "reviewed_by",
+        "reviewed_at",
+    )
+    list_select_related = ("user", "reviewed_by")
+    list_per_page = 25
+    actions = ("approve_as_community_reviewer", "reject_applications")
+    ordering = ("-created_at",)
+
+    fieldsets = (
+        (
+            "Application",
+            {
+                "fields": ("id", "user", "message", "status", "admin_notes"),
+            },
+        ),
+        (
+            "Review",
+            {
+                "fields": ("reviewed_by", "reviewed_at"),
+            },
+        ),
+        (
+            "Timestamps",
+            {
+                "fields": ("created_at", "updated_at"),
+            },
+        ),
+    )
+
+    @admin.action(description="Approve — grant community reviewer (via model)")
+    def approve_as_community_reviewer(self, request, queryset):
+        count = 0
+        for app in queryset:
+            if app.approve(request.user):
+                count += 1
+        self.message_user(
+            request,
+            f"Approved {count} application(s). User(s) now have community reviewer + Reviewers group.",
+        )
+
+    @admin.action(description="Reject selected pending applications")
+    def reject_applications(self, request, queryset):
+        count = 0
+        for app in queryset:
+            if app.reject(request.user):
+                count += 1
+        self.message_user(request, f"Rejected {count} application(s).")
+
+    def has_add_permission(self, request):
+        return False
+
+    def status_colored(self, obj):
+        color_map = {
+            "pending": "#DAA520",
+            "approved": "#228B22",
+            "rejected": "#B22222",
+        }
+        color = color_map.get(obj.status, "#000000")
+        return format_html(
+            '<b style="color:{};">{}</b>', color, obj.get_status_display()
+        )
+
+    status_colored.short_description = "Status"
+
+    def message_preview(self, obj):
+        if not obj.message:
+            return "—"
+        t = obj.message.replace("\n", " ")
+        return (t[:80] + "…") if len(t) > 80 else t
+
+    message_preview.short_description = "Message"
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.status != "pending":
+            return self.readonly_fields + ("message", "status")
+        return self.readonly_fields
 
 
 @admin.register(ReviewDecision)

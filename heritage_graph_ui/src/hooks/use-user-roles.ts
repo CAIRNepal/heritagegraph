@@ -16,10 +16,19 @@ export interface ReviewerRoleInfo {
   can_manage_roles: boolean;
 }
 
+export interface ReviewerApplicationInfo {
+  id: string;
+  status: 'pending' | 'approved' | 'rejected';
+  message: string;
+  created_at: string;
+}
+
 export interface UserRoles {
   groups: string[];
   isStaff: boolean;
   reviewerRole: ReviewerRoleInfo | null;
+  /** Latest reviewer application, if any (for apply-to-review flow). */
+  reviewerApplication: ReviewerApplicationInfo | null;
   isModerator: boolean;
   isReviewer: boolean;
   isContributor: boolean;
@@ -32,6 +41,7 @@ const defaultRoles: UserRoles = {
   groups: [],
   isStaff: false,
   reviewerRole: null,
+  reviewerApplication: null,
   isModerator: false,
   isReviewer: false,
   isContributor: false,
@@ -47,12 +57,14 @@ export function useUserRolesProvider(): UserRoles {
   const [groups, setGroups] = useState<string[]>([]);
   const [isStaff, setIsStaff] = useState(false);
   const [reviewerRole, setReviewerRole] = useState<ReviewerRoleInfo | null>(null);
+  const [reviewerApplication, setReviewerApplication] = useState<ReviewerApplicationInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRoles = useCallback(async () => {
     if (status !== 'authenticated' || !session?.accessToken) {
       setIsLoading(false);
+      setReviewerApplication(null);
       return;
     }
     if (!API_BASE) {
@@ -69,6 +81,12 @@ export function useUserRolesProvider(): UserRoles {
         groups?: string[];
         is_staff?: boolean;
         reviewer_role?: ReviewerRoleInfo | null;
+        reviewer_application?: {
+          id: string;
+          status: 'pending' | 'approved' | 'rejected';
+          message: string;
+          created_at: string;
+        } | null;
       }>(`${API_BASE}/api/user/info`, {
         headers: {
           'Content-Type': 'application/json',
@@ -78,6 +96,7 @@ export function useUserRolesProvider(): UserRoles {
       setGroups(data.groups || []);
       setIsStaff(data.is_staff || false);
       setReviewerRole(data.reviewer_role || null);
+      setReviewerApplication(data.reviewer_application || null);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Could not load your account permissions.'));
     } finally {
@@ -97,6 +116,7 @@ export function useUserRolesProvider(): UserRoles {
     groups,
     isStaff,
     reviewerRole,
+    reviewerApplication,
     isModerator,
     isReviewer,
     isContributor,

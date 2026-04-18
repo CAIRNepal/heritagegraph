@@ -16,7 +16,19 @@ from .models import (
     PublicContribution,
 )
 User = get_user_model()
-from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole, Notification, Reaction, Fork, Share
+from .models import (
+    CulturalEntity,
+    Revision,
+    Activity,
+    ReviewDecision,
+    ReviewFlag,
+    ReviewerRole,
+    ReviewerApplication,
+    Notification,
+    Reaction,
+    Fork,
+    Share,
+)
 
 
 class SubmissionSerializer(serializers.ModelSerializer):
@@ -271,10 +283,23 @@ class RegisterSerializer(ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     user = serializers.StringRelatedField(read_only=True)  # show username
     submission = serializers.PrimaryKeyRelatedField(read_only=True)
+    entity_id = serializers.UUIDField(source="submission_id", read_only=True)
+    entity_name = serializers.CharField(
+        source="submission.name", read_only=True, allow_null=True, default=None
+    )
 
     class Meta:
         model = Comments
-        fields = ["comment_id", "id", "submission", "user", "comment", "created_at"]
+        fields = [
+            "comment_id",
+            "id",
+            "submission",
+            "entity_id",
+            "entity_name",
+            "user",
+            "comment",
+            "created_at",
+        ]
 
 
 class SubmissionEditSuggestionSerializer(serializers.ModelSerializer):
@@ -397,11 +422,22 @@ class RevisionSerializer(serializers.ModelSerializer):
 
 class ActivitySerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    
+    entity_name = serializers.CharField(
+        source="entity.name", read_only=True, allow_null=True, default=None
+    )
+
     class Meta:
         model = Activity
-        fields = ['activity_id', 'user', 'activity_type', 'comment', 'created_at']
-        read_only_fields = ['activity_id', 'user', 'created_at']
+        fields = [
+            "activity_id",
+            "user",
+            "entity_id",
+            "entity_name",
+            "activity_type",
+            "comment",
+            "created_at",
+        ]
+        read_only_fields = ["activity_id", "user", "entity_id", "created_at"]
 
 class CulturalEntityListSerializer(serializers.ModelSerializer):
     contributor = UserSerializer(read_only=True)
@@ -614,6 +650,42 @@ class ReviewerRoleAssignSerializer(serializers.Serializer):
     )
 
 
+class ReviewerApplicationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewerApplication
+        fields = [
+            "id",
+            "message",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class ReviewerApplicationCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReviewerApplication
+        fields = ["message"]
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+        if user.is_staff:
+            raise ValidationError("Staff accounts do not submit reviewer applications.")
+        if user.groups.filter(name="Reviewers").exists():
+            raise ValidationError("You are already a reviewer.")
+        if ReviewerRole.objects.filter(user=user, is_active=True).exists():
+            raise ValidationError("You already have an active reviewer role.")
+        if ReviewerApplication.objects.filter(user=user, status="pending").exists():
+            raise ValidationError("You already have a pending application.")
+        return attrs
+
+    def create(self, validated_data):
+        return ReviewerApplication.objects.create(
+            user=self.context["request"].user, **validated_data
+        )
+
+
 class PlatformAdminUserSerializer(serializers.ModelSerializer):
     """User directory rows for the in-app platform admin UI (staff or expert curators)."""
 
@@ -665,6 +737,26 @@ class ReviewDecisionSerializer(serializers.ModelSerializer):
             'internal_note', 'escalated_to', 'created_at'
         ]
         read_only_fields = ['id', 'reviewer', 'created_at']
+
+
+class ReviewDecisionProfileSerializer(serializers.ModelSerializer):
+    """Public profile: verdict, entity, date — no internal curation text."""
+
+    entity_id = serializers.UUIDField(read_only=True)
+    entity_name = serializers.CharField(
+        source="entity.name", read_only=True, allow_null=True, default=None
+    )
+
+    class Meta:
+        model = ReviewDecision
+        fields = ["id", "entity_id", "entity_name", "verdict", "created_at"]
+        read_only_fields = [
+            "id",
+            "entity_id",
+            "entity_name",
+            "verdict",
+            "created_at",
+        ]
 
 
 class ReviewDecisionCreateSerializer(serializers.ModelSerializer):

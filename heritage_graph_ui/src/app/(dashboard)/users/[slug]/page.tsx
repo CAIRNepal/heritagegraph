@@ -30,6 +30,8 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { socialProfileUrl, normalizeSocialLinksForSave, tryNormalizeExistingUrlOrDomain, type SocialPlatform } from '@/lib/social-profile-urls';
+import Link from 'next/link';
 import {
   Mail,
   Edit3,
@@ -77,6 +79,7 @@ type OrgMembership = {
 };
 
 type UserData = {
+  user_id?: string;
   slug?: string;
   username: string;
   email: string;
@@ -104,7 +107,52 @@ type ActivityItem = {
   activity_type: string;
   comment: string | null;
   created_at: string;
-  entity_name?: string;
+  entity_id?: string;
+  entity_name?: string | null;
+};
+
+type CulturalEntityListItem = {
+  entity_id: string;
+  name: string;
+  category: string;
+  status: string;
+  created_at: string;
+};
+
+type ProfileComment = {
+  comment_id: string;
+  comment: string;
+  created_at: string;
+  entity_id: string;
+  entity_name?: string | null;
+};
+
+type ReviewProfileItem = {
+  id: string;
+  entity_id: string;
+  entity_name?: string | null;
+  verdict: string;
+  created_at: string;
+};
+
+const ACTIVITY_TYPE_LABEL: Record<string, string> = {
+  submitted: 'Submitted',
+  accepted: 'Accepted',
+  rejected: 'Rejected',
+  revised: 'Revised',
+  commented: 'Commented',
+  escalated: 'Escalated to expert',
+  changes_requested: 'Changes requested',
+  flagged: 'Flagged',
+  conflict_resolved: 'Conflict resolved',
+};
+
+const VERDICT_LABEL: Record<string, string> = {
+  accept: 'Accept',
+  accept_with_edits: 'Accept with edits',
+  request_changes: 'Request changes',
+  reject: 'Reject',
+  escalate: 'Escalate to expert',
 };
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -139,6 +187,10 @@ export default function UserProfilePage() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [contributions, setContributions] = useState<CulturalEntityListItem[]>([]);
+  const [profileComments, setProfileComments] = useState<ProfileComment[]>([]);
+  const [reviewDecisions, setReviewDecisions] = useState<ReviewProfileItem[]>([]);
+  const [tabDataLoading, setTabDataLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -147,6 +199,7 @@ export default function UserProfilePage() {
   const imgRef = useRef<HTMLInputElement>(null);
   const profileAbortRef = useRef<AbortController | null>(null);
   const activityAbortRef = useRef<AbortController | null>(null);
+  const tabDataAbortRef = useRef<AbortController | null>(null);
 
   const [editingHandle, setEditingHandle] = useState(false);
   const [handleDraft, setHandleDraft] = useState('');
@@ -235,6 +288,48 @@ export default function UserProfilePage() {
     return () => activityAbortRef.current?.abort();
   }, [slug, user?.username]);
 
+  // Contributions, comments, and review decisions (profile detail tabs)
+  useEffect(() => {
+    if (!user?.user_id) return;
+    (async () => {
+      setTabDataLoading(true);
+      tabDataAbortRef.current?.abort();
+      const controller = new AbortController();
+      tabDataAbortRef.current = controller;
+      const { signal } = controller;
+      const q = (base: string) => `${base}&limit=20&offset=0`;
+      const uid = user.user_id!;
+      try {
+        const [cRes, comRes, revRes] = await Promise.all([
+          apiFetchJson<{ results?: CulturalEntityListItem[] }>(
+            q(`${API}/data/api/cultural-entities/?contributor=${encodeURIComponent(uid)}`),
+            { headers: { Accept: 'application/json' }, signal }
+          ),
+          apiFetchJson<{ results?: ProfileComment[] }>(
+            q(`${API}/data/api/comments/?user_id=${encodeURIComponent(uid)}`),
+            { headers: { Accept: 'application/json' }, signal }
+          ),
+          apiFetchJson<{ results?: ReviewProfileItem[] } | ReviewProfileItem[]>(
+            `${API}/data/api/review-decisions-profile/?reviewer=${encodeURIComponent(uid)}&limit=20&offset=0`,
+            { headers: { Accept: 'application/json' }, signal }
+          ),
+        ]);
+        setContributions(cRes.results ?? []);
+        setProfileComments(comRes.results ?? []);
+        if (Array.isArray(revRes)) {
+          setReviewDecisions(revRes);
+        } else {
+          setReviewDecisions(revRes.results ?? []);
+        }
+      } catch (e) {
+        if (e instanceof Error && e.name === 'AbortError') return;
+      } finally {
+        setTabDataLoading(false);
+      }
+    })();
+    return () => tabDataAbortRef.current?.abort();
+  }, [user?.user_id]);
+
   const copyEmail = () => {
     if (user?.email) {
       navigator.clipboard.writeText(user.email);
@@ -251,6 +346,7 @@ export default function UserProfilePage() {
     e.preventDefault();
     setUpdating(true);
     try {
+      const { website_link, social_links } = normalizeSocialLinksForSave(form);
       const body = {
         username: user?.username,
         email: user?.email,
@@ -263,13 +359,13 @@ export default function UserProfilePage() {
         organization: form.organization,
         position: form.position,
         university_school: form.university_school,
-        website_link: form.website_link,
+        website_link,
         social_links: {
-          ...(form.twitter && { twitter: form.twitter }),
-          ...(form.linkedin && { linkedin: form.linkedin }),
-          ...(form.github && { github: form.github }),
-          ...(form.facebook && { facebook: form.facebook }),
-          ...(form.instagram && { instagram: form.instagram }),
+          ...(form.twitter && social_links.twitter && { twitter: social_links.twitter }),
+          ...(form.linkedin && social_links.linkedin && { linkedin: social_links.linkedin }),
+          ...(form.github && social_links.github && { github: social_links.github }),
+          ...(form.facebook && social_links.facebook && { facebook: social_links.facebook }),
+          ...(form.instagram && social_links.instagram && { instagram: social_links.instagram }),
         },
       };
       const updated = await apiFetchJson<UserData>(`${API}/data/api/user/${resolvedSlug}/`, {
@@ -281,6 +377,15 @@ export default function UserProfilePage() {
         body: JSON.stringify(body),
       });
       setUser(updated);
+      setForm(f => ({
+        ...f,
+        website_link: updated.website_link || '',
+        twitter: updated.social_links?.twitter || '',
+        linkedin: updated.social_links?.linkedin || '',
+        github: updated.social_links?.github || '',
+        facebook: updated.social_links?.facebook || '',
+        instagram: updated.social_links?.instagram || '',
+      }));
       toast.success('Profile updated');
       setIsEditOpen(false);
     } catch (err) {
@@ -525,16 +630,27 @@ export default function UserProfilePage() {
                   <>
                     <Separator />
                     <div className="space-y-1.5">
-                      {user.website_link && (
-                        <a href={user.website_link} target="_blank" rel="noopener noreferrer"
+                      {user.website_link && (() => {
+                        const w = user.website_link!.trim();
+                        const whref =
+                          tryNormalizeExistingUrlOrDomain(w) ||
+                          (w.includes('.') && !w.includes(' ')
+                            ? `https://${w.replace(/^\/+/, '')}`
+                            : w);
+                        if (!whref) return null;
+                        return (
+                        <a href={whref} target="_blank" rel="noopener noreferrer"
                           className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 text-sm">
                           <Globe className="h-4 w-4" /> Website <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground" />
                         </a>
-                      )}
+                        );
+                      })()}
                       {socials.map(([platform, url]) => {
                         const Icon = SOCIAL_ICONS[platform] || Globe;
+                        const href = socialProfileUrl(platform as SocialPlatform, url);
+                        if (!href) return null;
                         return (
-                          <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
+                          <a key={platform} href={href} target="_blank" rel="noopener noreferrer"
                             className="flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 text-sm capitalize">
                             <Icon className="h-4 w-4" /> {platform}
                             <ExternalLink className="h-3 w-3 ml-auto text-muted-foreground" />
@@ -689,15 +805,97 @@ export default function UserProfilePage() {
                   </TabsList>
 
                   <TabsContent value="contributions">
-                    <EmptyTab label="contributions" />
+                    {tabDataLoading ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : contributions.length > 0 ? (
+                      <div className="space-y-2">
+                        {contributions.map(c => (
+                          <div key={c.entity_id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                            <div className="flex-1 min-w-0">
+                              <Link
+                                href={`/knowledge/entity/view/${c.entity_id}`}
+                                className="text-sm font-medium hover:underline"
+                              >
+                                {c.name}
+                              </Link>
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                <Badge variant="outline" className="text-xs">{c.category}</Badge>
+                                <Badge variant="secondary" className="text-xs capitalize">
+                                  {c.status.replace(/_/g, ' ')}
+                                </Badge>
+                              </div>
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {relTime(c.created_at)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyTab label="contributions" />
+                    )}
                   </TabsContent>
 
                   <TabsContent value="reviews">
-                    <EmptyTab label="reviews" />
+                    {tabDataLoading ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : reviewDecisions.length > 0 ? (
+                      <div className="space-y-2">
+                        {reviewDecisions.map(r => (
+                          <div key={r.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                            <div className="flex-1 min-w-0">
+                              <Link
+                                href={`/knowledge/entity/view/${r.entity_id}`}
+                                className="text-sm font-medium hover:underline"
+                              >
+                                {r.entity_name || 'Unnamed record'}
+                              </Link>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {VERDICT_LABEL[r.verdict] || r.verdict.replace(/_/g, ' ')}
+                              </p>
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {relTime(r.created_at)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyTab label="reviews" />
+                    )}
                   </TabsContent>
 
                   <TabsContent value="comments">
-                    <EmptyTab label="comments" />
+                    {tabDataLoading ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : profileComments.length > 0 ? (
+                      <div className="space-y-3">
+                        {profileComments.map(c => (
+                          <div key={c.comment_id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                            <div className="flex-1 min-w-0">
+                              <Link
+                                href={`/knowledge/entity/view/${c.entity_id}`}
+                                className="text-sm font-medium hover:underline block"
+                              >
+                                {c.entity_name || 'Unnamed record'}
+                              </Link>
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-4">{c.comment}</p>
+                            </div>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {relTime(c.created_at)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <EmptyTab label="comments" />
+                    )}
                   </TabsContent>
 
                   <TabsContent value="activity">
@@ -705,14 +903,29 @@ export default function UserProfilePage() {
                       <div className="space-y-3">
                         {activities.map(a => (
                           <div key={a.activity_id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
-                            <Badge variant="secondary" className="text-xs mt-0.5 shrink-0">{a.activity_type}</Badge>
+                            <Badge variant="secondary" className="text-xs mt-0.5 shrink-0 max-w-[8rem] truncate" title={a.activity_type}>
+                              {ACTIVITY_TYPE_LABEL[a.activity_type] || a.activity_type}
+                            </Badge>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm">
-                                {a.entity_name && <span className="font-medium">{a.entity_name}</span>}
-                              </p>
-                              {a.comment && <p className="text-xs text-muted-foreground mt-0.5">{a.comment}</p>}
+                              {a.entity_id ? (
+                                <Link
+                                  href={`/knowledge/entity/view/${a.entity_id}`}
+                                  className="text-sm font-medium hover:underline"
+                                >
+                                  {a.entity_name || 'Unnamed record'}
+                                </Link>
+                              ) : (
+                                <p className="text-sm font-medium">
+                                  {a.entity_name || 'Unnamed record'}
+                                </p>
+                              )}
+                              {a.comment && (
+                                <p className="text-xs text-muted-foreground mt-0.5">{a.comment}</p>
+                              )}
                             </div>
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">{relTime(a.created_at)}</span>
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {relTime(a.created_at)}
+                            </span>
                           </div>
                         ))}
                       </div>

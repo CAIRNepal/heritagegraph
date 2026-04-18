@@ -114,7 +114,7 @@ class ContributionFlowMixin:
                 entity=entity,
                 user=self.request.user,
                 activity_type="submitted",
-                comment=f"Submitted via {instance.__class__.__name__} form",
+                comment=f'Submitted "{entity_name}" via {instance.__class__.__name__} form',
             )
 
             # Determine where the user should land when clicking this notification.

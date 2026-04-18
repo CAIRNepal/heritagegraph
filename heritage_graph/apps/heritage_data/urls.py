@@ -15,6 +15,11 @@ router.register(r'review-queue', views.ReviewQueueViewSet, basename='reviewqueue
 router.register(r'review-flags', views.ReviewFlagViewSet, basename='reviewflag')
 router.register(r'reviewer-roles', views.ReviewerRoleViewSet, basename='reviewerrole')
 router.register(
+    r'reviewer-applications',
+    views.ReviewerApplicationViewSet,
+    basename='reviewerapplication',
+)
+router.register(
     r'platform-admin/users',
     views.PlatformAdminUserViewSet,
     basename='platform-admin-user',
@@ -58,6 +63,16 @@ urlpatterns = [
         "api/reviewer-dashboard/",
         views.ReviewerDashboardView.as_view(),
         name='reviewer-dashboard',
+    ),
+    path(
+        "api/review-decisions-profile/",
+        views.UserReviewDecisionsListView.as_view(),
+        name="review-decisions-profile",
+    ),
+    path(
+        "review-decisions-profile/",
+        views.UserReviewDecisionsListView.as_view(),
+        name="review-decisions-profile-clean",
     ),
 
     # Revision diff endpoint

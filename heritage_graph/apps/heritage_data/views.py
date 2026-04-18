@@ -12,12 +12,20 @@ from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 
 from django.db.models import Q
-from rest_framework import viewsets, status, permissions
+from rest_framework import mixins, viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import CulturalEntity, Revision, Activity, ReviewDecision, ReviewFlag, ReviewerRole
+from .models import (
+    CulturalEntity,
+    Revision,
+    Activity,
+    ReviewDecision,
+    ReviewFlag,
+    ReviewerRole,
+    ReviewerApplication,
+)
 from .models import Organization, OrganizationMembership
 from .models import Notification, Reaction, Fork, Share
 from .models import PublicContribution
@@ -768,6 +776,21 @@ class CurrentUserView(APIView):
                 "can_manage_roles": rr.can_manage_roles,
             }
 
+        application_data = None
+        latest_app = (
+            ReviewerApplication.objects.filter(user=user)
+            .order_by("-created_at")
+            .only("id", "status", "created_at", "message")
+            .first()
+        )
+        if latest_app:
+            application_data = {
+                "id": str(latest_app.id),
+                "status": latest_app.status,
+                "message": (latest_app.message or "")[:500],
+                "created_at": latest_app.created_at.isoformat(),
+            }
+
         return Response(
             {
                 "username": user.username,
@@ -775,6 +798,7 @@ class CurrentUserView(APIView):
                 "groups": groups,
                 "is_staff": user.is_staff,
                 "reviewer_role": reviewer_role_data,
+                "reviewer_application": application_data,
             }
         )
 
@@ -919,16 +943,23 @@ class CommentListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        submission_id = self.request.query_params.get("submission_id")
-        print("===========================")
-        print(submission_id)
-        print("===========================")
+        """List comments for a single entity (submission_id) or a user (username / user_id)."""
+        params = self.request.query_params
+        submission_id = (params.get("submission_id") or "").strip()
+        username = (params.get("username") or "").strip()
+        user_id = (params.get("user_id") or "").strip()
+
+        base = Comments.objects.select_related("user", "submission").order_by(
+            "-created_at"
+        )
 
         if submission_id:
-            return Comments.objects.filter(entity_id=submission_id).order_by(
-                "-created_at"
-            )
-        return Comments.objects.all().order_by("-created_at")
+            return base.filter(submission_id=submission_id)
+        if user_id:
+            return base.filter(user_id=user_id)
+        if username:
+            return base.filter(user__username__iexact=username)
+        return Comments.objects.none()
 
     def perform_create(self, serializer):
         submission_id = self.request.data.get("submission_id")
@@ -1183,7 +1214,7 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
     """
     queryset = CulturalEntity.objects.all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['category', 'status']
+    filterset_fields = ['category', 'status', 'contributor']
     search_fields = ['name', 'description']
     ordering_fields = ['created_at', 'updated_at', 'name']
     ordering = ['-created_at']
@@ -1207,7 +1238,28 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [permissions.IsAuthenticatedOrReadOnly]
         return [permission() for permission in permission_classes]
-    
+
+    def filter_queryset(self, queryset):
+        """When filtering by contributor, hide non-accepted work except for the owner (or staff)."""
+        qs = super().filter_queryset(queryset)
+        if self.action != "list":
+            return qs
+        contributor_param = self.request.query_params.get("contributor")
+        if not contributor_param:
+            return qs
+        from uuid import UUID
+        try:
+            cid = UUID(str(contributor_param))
+        except (ValueError, TypeError):
+            return qs
+        is_owner = (
+            self.request.user.is_authenticated
+            and self.request.user.id == cid
+        )
+        if not is_owner and not self.request.user.is_staff:
+            return qs.filter(status="accepted")
+        return qs
+
     def get_queryset(self):
         queryset = CulturalEntity.objects.all()
         
@@ -1505,13 +1557,37 @@ class ActivityViewSet(viewsets.ReadOnlyModelViewSet):
                 qs = qs.filter(user__username=username)
             return qs.select_related('user', 'entity')
 
-        # Authenticated non-staff → user-specific
-        qs = Activity.objects.filter(
-            Q(user=user) | Q(entity__contributor=user)
-        )
+        # Authenticated non-staff: profile and similar clients pass ?username= to
+        # show a specific user’s public activity; do not intersect with “my
+        # entities” in that case (otherwise viewing another user while logged
+        # in would hide most of their rows).
         if username:
-            qs = qs.filter(user__username=username)
-        return qs.select_related('user', 'entity')
+            return (
+                Activity.objects.filter(user__username=username)
+                .select_related("user", "entity")
+            )
+        qs = Activity.objects.filter(Q(user=user) | Q(entity__contributor=user))
+        return qs.select_related("user", "entity")
+
+
+class UserReviewDecisionsListView(generics.ListAPIView):
+    """
+    Public list of a reviewer's decisions (for user profile).
+    GET /data/api/review-decisions-profile/?reviewer=<user_uuid>
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = ReviewDecisionProfileSerializer
+
+    def get_queryset(self):
+        reviewer = (self.request.query_params.get("reviewer") or "").strip()
+        if not reviewer:
+            return ReviewDecision.objects.none()
+        return (
+            ReviewDecision.objects.filter(reviewer_id=reviewer)
+            .select_related("entity")
+            .order_by("-created_at")
+        )
 
 
 # =====================================================================
@@ -1856,6 +1932,41 @@ class ReviewerRoleViewSet(viewsets.ModelViewSet):
         return Response(
             ReviewerRoleSerializer(role).data,
             status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
+
+
+class ReviewerApplicationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    Request reviewer access. Staff (or a curator) approves in Django admin.
+    """
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['post', 'head', 'options', 'get']
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return ReviewerApplicationCreateSerializer
+        return ReviewerApplicationSerializer
+
+    @action(detail=False, methods=['get'])
+    def mine(self, request):
+        app = (
+            ReviewerApplication.objects.filter(user=request.user)
+            .order_by('-created_at')
+            .first()
+        )
+        if not app:
+            return Response({
+                'id': None, 'message': None, 'status': None, 'created_at': None, 'updated_at': None
+            })
+        return Response(ReviewerApplicationSerializer(app).data)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            ReviewerApplicationSerializer(serializer.instance).data,
+            status=status.HTTP_201_CREATED,
         )
 
 

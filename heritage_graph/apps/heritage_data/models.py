@@ -36,7 +36,8 @@ def submit_for_review(self):
     Activity.objects.create(
         entity=self,
         user=self.contributor,
-        activity_type='submitted'
+        activity_type='submitted',
+        comment=f'Submitted "{self.name}" for review',
     )
 
 def accept_contribution(self, editor, comment=None):
@@ -363,6 +364,110 @@ class ReviewerRole(models.Model):
     @property
     def can_manage_roles(self):
         return self.role == 'expert_curator'
+
+
+class ReviewerApplication(models.Model):
+    """
+    A user requests the ability to curate; staff approve in Django admin
+    (or expert curators can still use ReviewerRole assign).
+    """
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reviewer_applications"
+    )
+    message = models.TextField(
+        blank=True, help_text="Optional note from the applicant (background, interest, etc.)"
+    )
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="pending", db_index=True
+    )
+    admin_notes = models.TextField(
+        blank=True, help_text="Internal notes (visible only in admin)"
+    )
+    reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reviewed_reviewer_applications",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "reviewer_applications"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "created_at"]),
+            models.Index(fields=["status", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Reviewer application — {self.user.username} ({self.status})"
+
+    def approve(self, reviewed_by):
+        """
+        Grant community reviewer: ReviewerRole + Reviewers group.
+        No-op if not pending.
+        """
+        if self.status != "pending":
+            return False
+        from django.contrib.auth.models import Group
+        from django.utils import timezone
+
+        ReviewerRole.objects.update_or_create(
+            user=self.user,
+            defaults={
+                "role": "community_reviewer",
+                "is_active": True,
+                "assigned_by": reviewed_by,
+                "expertise_areas": [],
+            },
+        )
+        try:
+            reviewers_g = Group.objects.get(name="Reviewers")
+            self.user.groups.add(reviewers_g)
+        except Group.DoesNotExist:
+            pass
+
+        self.status = "approved"
+        self.reviewed_by = reviewed_by
+        self.reviewed_at = timezone.now()
+        self.save(
+            update_fields=["status", "reviewed_by", "reviewed_at", "updated_at"]
+        )
+        return True
+
+    def reject(self, reviewed_by, append_note: str = ""):
+        if self.status != "pending":
+            return False
+        from django.utils import timezone
+
+        self.status = "rejected"
+        self.reviewed_by = reviewed_by
+        self.reviewed_at = timezone.now()
+        if append_note and append_note.strip():
+            prev = (self.admin_notes or "").strip()
+            line = f"[{reviewed_by}] {append_note.strip()}"
+            self.admin_notes = f"{prev}\n{line}".strip() if prev else line
+        self.save(
+            update_fields=[
+                "status",
+                "reviewed_by",
+                "reviewed_at",
+                "admin_notes",
+                "updated_at",
+            ]
+        )
+        return True
 
 
 class ReviewDecision(models.Model):

@@ -17,13 +17,23 @@ import {
 import {
   Calendar, FileText, RefreshCw, Search, Eye, CheckCircle,
   XCircle, ExternalLink, Flag, AlertTriangle, Inbox, Timer, ArrowUpDown,
-  GitFork,
+  GitFork, UserPlus,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { useUserRoles } from '@/hooks/use-user-roles';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
@@ -77,7 +87,12 @@ function fullName(u: UserInfo) { return `${u.first_name} ${u.last_name}`.trim() 
 
 export default function ContributionQueuePage() {
   const { data: session } = useSession();
+  const { isStaff, isReviewer, reviewerApplication, isLoading: rolesLoading, refetch: refetchRoles } =
+    useUserRoles();
   const router = useRouter();
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [applyMessage, setApplyMessage] = useState('');
+  const [applySubmitting, setApplySubmitting] = useState(false);
   const [items, setItems] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,12 +107,43 @@ export default function ContributionQueuePage() {
   const perPage = 20;
   const pages = Math.ceil(total / perPage);
 
+  const showApplyCta =
+    !rolesLoading &&
+    !isStaff &&
+    !isReviewer &&
+    (reviewerApplication == null || reviewerApplication.status === 'rejected');
+  const showPendingCta =
+    !rolesLoading && !isStaff && !isReviewer && reviewerApplication?.status === 'pending';
+
   const headers = useCallback(() => {
     const h: HeadersInit = { 'Content-Type': 'application/json' };
     const t = (session as any)?.accessToken;
     if (t) h['Authorization'] = `Bearer ${t}`;
     return h;
   }, [session]);
+
+  const submitReviewerApplication = async () => {
+    if (!session || applySubmitting) return;
+    setApplySubmitting(true);
+    try {
+      const h: HeadersInit = { 'Content-Type': 'application/json' };
+      const t = (session as Record<string, unknown>)?.accessToken;
+      if (t) h['Authorization'] = `Bearer ${t}`;
+      await apiFetchJson(`${API}/data/api/reviewer-applications/`, {
+        method: 'POST',
+        headers: h,
+        body: JSON.stringify({ message: applyMessage.trim() || '' }),
+      });
+      toast.success('Application submitted. We will follow up if your request is approved.');
+      setApplyOpen(false);
+      setApplyMessage('');
+      await refetchRoles();
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Could not submit your application.'));
+    } finally {
+      setApplySubmitting(false);
+    }
+  };
 
   const load = useCallback(async (p = 1) => {
     setLoading(true); setError(null);
@@ -171,8 +217,60 @@ export default function ContributionQueuePage() {
             <p className="text-blue-100 max-w-2xl">
               New submitted entities and contributions must be accepted by an editor. These queues list items in need of moderation.
             </p>
+            {showPendingCta && (
+              <p className="text-sm text-amber-200 border border-amber-400/40 bg-amber-500/20 rounded-lg px-4 py-2 max-w-2xl">
+                Your request to become a reviewer is <strong>pending</strong>. Staff will review it in the admin panel. You can still use this list to look at submissions, but accept/reject remains limited to staff.
+              </p>
+            )}
+            {showApplyCta && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 max-w-2xl">
+                <p className="text-sm text-white/90">
+                  Want to help curate? Apply to be a community reviewer. If approved, you will be added to the Reviewers group (accept on this page still requires a staff account).
+                </p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="shrink-0 bg-white/95 text-blue-800 hover:bg-white"
+                  onClick={() => setApplyOpen(true)}
+                >
+                  <UserPlus className="h-4 w-4 mr-1.5" />
+                  Apply to be a reviewer
+                </Button>
+              </div>
+            )}
           </motion.div>
         </motion.div>
+
+        <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Apply to be a reviewer</DialogTitle>
+              <DialogDescription>
+                Optional: share a short note about your background, languages, or areas of interest. Staff can approve or decline in the Django admin (Heritage data → Reviewer applications).
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              value={applyMessage}
+              onChange={e => setApplyMessage(e.target.value)}
+              placeholder="Why you would like to help review (optional)…"
+              className="min-h-[100px] border-blue-200 dark:border-gray-600"
+              maxLength={4000}
+            />
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setApplyOpen(false)} disabled={applySubmitting}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                className="bg-gradient-to-r from-blue-600 to-sky-500"
+                onClick={submitReviewerApplication}
+                disabled={applySubmitting}
+              >
+                {applySubmitting ? 'Submitting…' : 'Submit application'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Queue tabs */}
         <motion.div initial="hidden" animate="show" variants={fadeInUp}>

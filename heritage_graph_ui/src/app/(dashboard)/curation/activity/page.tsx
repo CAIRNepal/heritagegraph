@@ -11,13 +11,20 @@ import {
 } from '@/components/ui/select';
 import {
   CheckCircle, XCircle, Edit, Send, MessageSquare, ArrowUpRight,
-  RotateCcw, Flag, Scale, RefreshCw, ChevronDown, Calendar, Clock,
+  RotateCcw, Flag, Scale, RefreshCw, Calendar, Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface ActivityItem {
@@ -78,7 +85,6 @@ export default function ActivityLogPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
   const [actType, setActType] = useState('all');
   const [sortDir, setSortDir] = useState<'desc' | 'asc'>('desc');
   const perPage = 50;
@@ -90,31 +96,37 @@ export default function ActivityLogPage() {
     return h;
   }, [session]);
 
-  const load = useCallback(async (p = 1, append = false) => {
-    if (!append) setLoading(true);
+  const load = useCallback(async (p: number) => {
+    setLoading(true);
     setError(null);
     try {
       const sp = new URLSearchParams();
-      sp.set('page', String(p)); sp.set('page_size', String(perPage));
+      // DRF default is LimitOffsetPagination: use limit/offset, not page/page_size.
+      const offset = Math.max(0, (p - 1) * perPage);
+      sp.set('limit', String(perPage));
+      sp.set('offset', String(offset));
       sp.set('ordering', sortDir === 'desc' ? '-created_at' : 'created_at');
       if (actType !== 'all') sp.set('activity_type', actType);
       const data = await apiFetchJson<APIResponse>(
         `${API}/data/api/activities/?${sp}`,
         { headers: headers() }
       );
-      if (append) setActivities(prev => [...prev, ...data.results]);
-      else setActivities(data.results);
-      setTotal(data.count); setHasMore(!!data.next); setPage(p);
+      setActivities(data.results);
+      setTotal(data.count);
     } catch (e) {
       const msg = getApiErrorMessage(e, 'Could not load the activity log.');
       setError(msg);
       toast.error(msg);
-    }
-    finally { setLoading(false); }
-  }, [headers, actType, sortDir]);
+    } finally { setLoading(false); }
+  }, [headers, actType, sortDir, perPage]);
 
-  useEffect(() => { load(1); }, [session, actType, sortDir]);
-  const loadMore = () => load(page + 1, true);
+  useEffect(() => {
+    setPage(1);
+  }, [session]);
+
+  useEffect(() => {
+    load(page);
+  }, [load, page]);
 
   const grouped = activities.reduce<Record<string, ActivityItem[]>>((acc, a) => {
     const day = new Date(a.created_at).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -122,6 +134,12 @@ export default function ActivityLogPage() {
     acc[day].push(a);
     return acc;
   }, {});
+
+  const totalPages = total > 0 ? Math.ceil(total / perPage) : 0;
+  const rangeFrom = total > 0 ? (page - 1) * perPage + 1 : 0;
+  const rangeTo = total > 0 ? Math.min(page * perPage, total) : 0;
+  const canPrev = page > 1;
+  const canNext = totalPages > 0 && page < totalPages;
 
   return (
     <>
@@ -154,7 +172,7 @@ export default function ActivityLogPage() {
                 <SelectTrigger className="w-52 border-blue-200 dark:border-gray-600"><SelectValue placeholder="Activity Type" /></SelectTrigger>
                 <SelectContent>{ACTIVITY_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
               </Select>
-              <Select value={sortDir} onValueChange={v => setSortDir(v as 'desc' | 'asc')}>
+              <Select value={sortDir} onValueChange={v => { setSortDir(v as 'desc' | 'asc'); setPage(1); }}>
                 <SelectTrigger className="w-40 border-blue-200 dark:border-gray-600"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="desc">Newest first</SelectItem>
@@ -162,7 +180,7 @@ export default function ActivityLogPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="outline" size="icon" className="h-9 w-9 border-blue-200 dark:border-gray-600 text-blue-600 dark:text-blue-400" onClick={() => load(1)}>
+            <Button variant="outline" size="icon" className="h-9 w-9 border-blue-200 dark:border-gray-600 text-blue-600 dark:text-blue-400" onClick={() => load(page)}>
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
@@ -170,7 +188,10 @@ export default function ActivityLogPage() {
 
         {/* Count */}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-blue-700 dark:text-blue-300">{activities.length} of {total} loaded</p>
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            {total > 0 ? `Showing ${rangeFrom}–${rangeTo} of ${total.toLocaleString()}` : 'No results'}
+            {totalPages > 0 ? ` · Page ${page} of ${totalPages}` : ''}
+          </p>
           <Badge variant="outline" className="gap-1 border-blue-200 dark:border-gray-600 text-blue-700 dark:text-blue-300">
             <Clock className="h-3 w-3" /> Timeline
           </Badge>
@@ -185,7 +206,7 @@ export default function ActivityLogPage() {
         ) : error ? (
           <div className="text-center py-20">
             <p className="text-red-600 mb-2">{error}</p>
-            <Button onClick={() => load(1)} className="bg-gradient-to-r from-blue-600 to-sky-500 text-white">Retry</Button>
+            <Button onClick={() => load(page)} className="bg-gradient-to-r from-blue-600 to-sky-500 text-white">Retry</Button>
           </div>
         ) : activities.length === 0 ? (
           <div className={`${glassCard} text-center py-20 px-6`}>
@@ -239,12 +260,31 @@ export default function ActivityLogPage() {
                 </div>
               </motion.div>
             ))}
-            {hasMore && (
-              <div className="text-center pt-2">
-                <Button variant="outline" onClick={loadMore} className="gap-2 border-blue-200 dark:border-gray-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-800">
-                  <ChevronDown className="h-4 w-4" /> Load more activity
-                </Button>
-              </div>
+            {totalPages > 1 && (
+              <Pagination className="pt-4">
+                <PaginationContent className="mx-auto">
+                  <PaginationItem>
+                    <PaginationPrevious
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        if (canPrev) setPage(p => p - 1);
+                      }}
+                      className={!canPrev ? 'pointer-events-none opacity-40' : undefined}
+                    />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationNext
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        if (canNext) setPage(p => p + 1);
+                      }}
+                      className={!canNext ? 'pointer-events-none opacity-40' : undefined}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
             )}
           </motion.div>
         )}
