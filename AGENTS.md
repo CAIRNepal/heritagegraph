@@ -183,10 +183,11 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `GET /data/ocr-documents/<uuid>/suggestions/` — JSON map of `ExtractedField` suggestions
 - `POST /data/ocr-documents/<uuid>/retry/` — staff-only requeue
 
-**In-app assistant (prefix: `/api/v1/assistant/`, public; requires `ANTHROPIC_API_KEY` on the server):**
+**In-app assistant (prefix: `/api/v1/assistant/`, public; requires `OPENROUTER_API_KEY` on the server):**
 - `POST /api/v1/assistant/chat/` — grounded chat: `heritage_graph/apps/assistant/grounding/site.md` plus public discovery search excerpts (see `retrieval.py`). OpenAPI: `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`
-- **Env:** `ANTHROPIC_API_KEY` (shared with Claude Vision in OCR). Optional `ASSISTANT_ANTHROPIC_MODEL` (default `claude-3-5-haiku-20241022` for latency/cost)
-- **Ops:** each user turn calls the model; do not log full user prompts in production. Rate-limit or cap at the edge if exposed publicly
+- **LLM:** [OpenRouter](https://openrouter.ai/) OpenAI-compatible API (`openai` Python client, base URL `https://openrouter.ai/api/v1`). **Cost tiers** (server-side heuristics in `apps/assistant/services/routing.py`): `OPENROUTER_MODEL_FAST`, `OPENROUTER_MODEL_STANDARD` (required), `OPENROUTER_MODEL_PREMIUM`. Optional `OPENROUTER_HTTP_REFERER` / `OPENROUTER_X_TITLE` for OpenRouter app headers.
+- **OCR / Vision** still uses `ANTHROPIC_API_KEY` (direct Anthropic) in `document_processing` — not OpenRouter.
+- **Ops:** each user turn calls OpenRouter; log at **INFO** only `tier` + `model` (see `chat_completion.py`), not full prompts. Rate-limit or cap at the edge if exposed publicly
 
 **Auth:**
 - `POST /api/token/` — obtain JWT

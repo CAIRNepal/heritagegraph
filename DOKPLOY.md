@@ -5,7 +5,7 @@ Use the repository file **`docker-compose-dokploy.yml`** as the Compose definiti
 ## Quick checklist
 
 1. **Compose file:** `docker-compose-dokploy.yml` at repo root; build context is the monorepo root (backend Dockerfile expects that).
-2. **Secrets in Dokploy:** `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, `NEXTAUTH_SECRET`, and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+2. **Secrets in Dokploy:** `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, `NEXTAUTH_SECRET`, and optionally `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`. For the **in-app assistant**, set **`OPENROUTER_API_KEY`** and at least **`OPENROUTER_MODEL_STANDARD`** (and optional `OPENROUTER_MODEL_FAST` / `OPENROUTER_MODEL_PREMIUM`); for **OCR/vision**, set **`ANTHROPIC_API_KEY`** on the backend if you use that feature.
 3. **URLs:** `NEXT_PUBLIC_API_URL` (public `https://…` API), `NEXTAUTH_URL` (public `https://…` app), `CORS_ALLOWED_ORIGINS` (your app origin, comma-separated).
 4. **`ALLOWED_HOSTS`:** Must list every hostname that hits Django **plus** the Docker hostname `backend` (used by NextAuth server-side `INTERNAL_BACKEND_URL`). Example:  
    `devapi.heritagegraph.xyz,dev.heritagegraph.xyz,localhost,backend`  
