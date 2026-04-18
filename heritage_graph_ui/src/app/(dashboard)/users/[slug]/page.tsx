@@ -346,7 +346,7 @@ export default function UserProfilePage() {
     e.preventDefault();
     setUpdating(true);
     try {
-      const { website_link, social_links } = normalizeSocialLinksForSave(form);
+      const { website_link, social_links: sl } = normalizeSocialLinksForSave(form);
       const body = {
         username: user?.username,
         email: user?.email,
@@ -360,13 +360,7 @@ export default function UserProfilePage() {
         position: form.position,
         university_school: form.university_school,
         website_link,
-        social_links: {
-          ...(form.twitter && social_links.twitter && { twitter: social_links.twitter }),
-          ...(form.linkedin && social_links.linkedin && { linkedin: social_links.linkedin }),
-          ...(form.github && social_links.github && { github: social_links.github }),
-          ...(form.facebook && social_links.facebook && { facebook: social_links.facebook }),
-          ...(form.instagram && social_links.instagram && { instagram: social_links.instagram }),
-        },
+        social_links: { ...sl },
       };
       const updated = await apiFetchJson<UserData>(`${API}/data/api/user/${resolvedSlug}/`, {
         method: 'POST',
@@ -729,7 +723,13 @@ export default function UserProfilePage() {
                             return (
                               <div key={s} className="grid gap-1.5">
                                 <Label htmlFor={s} className="flex items-center gap-2 capitalize"><Icon className="h-4 w-4" /> {s}</Label>
-                                <Input id={s} name={s} value={(form as any)[s]} onChange={handleChange} placeholder={`https://${s}.com/...`} />
+                                <Input
+                                  id={s}
+                                  name={s}
+                                  value={(form as any)[s]}
+                                  onChange={handleChange}
+                                  placeholder="URL, https://…, or @handle"
+                                />
                               </div>
                             );
                           })}
