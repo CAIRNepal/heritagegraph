@@ -26,11 +26,13 @@ heritagegraph/
 │   ├── apps/
 │   │   ├── heritage_data/       # Main app: submissions, moderation, profiles
 │   │   ├── cidoc_data/          # CIDOC-CRM ontology app: persons, events, locations
+│   │   ├── document_processing/ # **NEW** OCR & document processing pipeline
 │   │   └── health_check.py     # /health/ endpoints for Docker/Traefik
+│   ├── celery.py                # **NEW** Celery app initialization
 │   ├── settings/
 │   │   ├── __init__.py          # Env-based dispatch (DJANGO_ENV → dev or prod)
-│   │   ├── base.py              # Shared settings (apps, middleware, DRF config)
-│   │   ├── development.py       # Dev: SQLite, DEBUG=True
+│   │   ├── base.py              # Shared settings (apps, middleware, DRF config, Celery)
+│   │   ├── development.py       # Dev: SQLite, DEBUG=True, Celery eager mode
 │   │   └── production.py        # Prod: PostgreSQL, env-based secrets
 │   ├── urls.py                  # Root URL configuration
 │   ├── entrypoint.sh            # Docker entrypoint (migrate, superuser, start)
@@ -199,16 +201,114 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | Service | Image | Internal Port | Traefik Route |
 |---------|-------|--------------|---------------|
 | `postgres` | postgres:16-alpine | 5432 | — (internal) |
+| `redis` | redis:7-alpine | 6379 | — (internal, Celery broker) |
 | `traefik` | traefik:latest | 80, 443, 8080 | `traefik.localhost` |
-| `backend` | custom (Dockerfile.backend) | 8000 | `backend.localhost` |
+| `backend` | custom (Dockerfile.backend, runtime-lean target) | 8000 | `backend.localhost` |
 | `frontend` | custom (heritage_graph_ui/Dockerfile) | 3000 | `frontend.localhost` |
 | `landing` | custom (heritage_graph_landing/Dockerfile) | 3000 | `landing.localhost` |
+| `ocr-worker` | custom (Dockerfile.backend, ocr-worker target) | — | — (background, OCR processing) |
+
+---
+
+## 🔄 Celery & Async Task Processing
+
+**Status:** Infrastructure complete (Phase 0 & 1)
+
+HeritageGraph uses **Celery + Redis** for async task processing:
+- Broker: Redis (`redis://localhost:6379` in dev, env-based in prod)
+- Result backend: Redis (separate database)
+- Development: `CELERY_TASK_ALWAYS_EAGER=True` (tasks run synchronously for debugging)
+- Production: Tasks queued async, processed by `ocr-worker` service
+
+**Key Files:**
+- `heritage_graph/celery.py` — Celery app initialization
+- `heritage_graph/settings/base.py` — Celery configuration
+- `requirements.txt` — `celery`, `redis` dependencies
+- `requirements-ocr.txt` — Heavy OCR-specific dependencies (separate)
+
+---
+
+## 📄 OCR & Document Processing Pipeline
+
+**Status:** Infrastructure complete, engines pending implementation (Phase 0-1 ✅, Phase 2+ TODO)
+
+**Purpose:** Automatically extract and structure text from uploaded documents (PDFs, images, handwritten notes, stone inscriptions) to pre-populate heritage contribution forms.
+
+**How It Works:**
+1. User uploads document via `POST /data/api/form-submit/` or `POST /data/cultural-entities/`
+2. Signal fires: `Media` created → `on_media_upload()` handler triggersautomatically
+3. Creates `UploadedDocument` record with status='pending'
+4. Queues Celery task: `classify_and_route_document(doc_id)`
+5. Classifier determines document type (PDF digital/scanned, printed image, handwritten, stone inscription)
+6. Routes to appropriate OCR engine:
+   - **Digital PDFs** → `pdfplumber` (direct text extraction, no OCR)
+   - **Printed Devanagari** → `Tesseract 5` (primary) + `EasyOCR` (fallback)
+   - **Handwritten** → `TrOCR` (transformer-based HTR)
+   - **Stone inscriptions** → `Claude Vision` (LLM rescue for difficult cases)
+7. Task: `extract_structured_fields()` runs NER extraction → parses entities (PERSON, LOCATION, DATE, ARTIFACT, EVENT, TRADITION)
+8. Task: `map_fields_to_form()` maps entities to form field structure
+9. Result stored in `ExtractedField` records (ready for form pre-population)
+
+**Models** (in `heritage_graph/apps/document_processing/models.py`):
+- `UploadedDocument` — Main document record (document_type, status, raw_text, classification_confidence, processing timestamps)
+- `DocumentPage` — Per-page OCR text + confidence score
+- `OCRResult` — Engine-specific results audit trail (pdfplumber/tesseract/easyocr/trocr/claude_vision)
+- `ExtractedField` — NER-extracted entities for form pre-population (field_name, field_value, confidence, vocabulary_match_score)
+
+**Database Tables:**
+- `document_processing_uploaded_document`
+- `document_processing_document_page`
+- `document_processing_ocr_result`
+- `document_processing_extracted_field`
+
+**Celery Tasks** (skeleton implementations in `heritage_graph/apps/document_processing/tasks.py`):
+- `classify_and_route_document()` — Main pipeline entry, routes to engine
+- `extract_text_pdfplumber()` — Digital PDFs (direct text)
+- `extract_text_tesseract()` — Printed Devanagari (primary)
+- `extract_text_easyocr_fallback()` — Multi-script fallback
+- `extract_text_trocr()` — Handwritten HTR
+- `vision_rescue_task()` — Claude Vision for inscriptions (per-document cap)
+- `extract_structured_fields()` — NER extraction (Instructor + Claude)
+- `map_fields_to_form()` — Entity → form field mapping
+- `cleanup_failed_documents()` — Periodic cleanup
+
+**Django Admin:**
+- Accessible at `/admin/document_processing/`
+- Color-coded status badges (pending/processing/completed/failed)
+- Searchable, filterable document list
+- Bulk actions: Retry failed, Delete results
+
+**Environment Variables** (see `.env.example`):
+- `CELERY_BROKER_URL` — Redis connection
+- `CELERY_RESULT_BACKEND` — Redis result storage
+- `OCR_ENABLED` — Enable/disable pipeline
+- `TESSERACT_PATH` — Path to tesseract binary
+- `ANTHROPIC_API_KEY` — Claude Vision API key
+- `OCR_CONFIDENCE_THRESHOLD` — Min confidence (default: 0.6)
+- `OCR_MAX_PAGES_PER_DOCUMENT` — Max pages to process
+- `OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT` — Cost control (default: 1)
+
+**API Endpoint** (TODO - Phase 4):
+- `GET /data/documents/<doc_id>/extracted-fields/` — Returns pre-filled form structure
+
+**Next Steps (Phase 2+):**
+- [ ] Implement classifier logic (document type detection)
+- [ ] Implement OCR engines (pdfplumber, Tesseract, EasyOCR, TrOCR, Claude Vision)
+- [ ] Implement NER extraction (Instructor + Claude)
+- [ ] Deploy API endpoint for form pre-population
+- [ ] Create frontend integration (show pre-filled forms with confidence badges)
+- [ ] Add monitoring & logging
+- [ ] Unit tests & end-to-end testing
+
+**Documentation:**
+- `OCR_INTEGRATION_SUMMARY.md` — Detailed architecture, implementation guide, and troubleshooting
 
 ---
 
 ## 🧪 Testing
 
 - Backend: `cd heritage_graph && python manage.py test apps.cidoc_data`
+- OCR: (incoming) `python manage.py test apps.document_processing`
 - Frontend: No test framework configured yet
 - Docker validation: `docker compose config --quiet`
 
@@ -230,4 +330,5 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | `TROUBLESHOOTING.md` | Known issues, gotchas, and their fixes |
 | `TRANSLATION.md` | **i18n guide** — how to translate pages to Nepali or add new languages |
 | `DEPLOYMENT.md` | Production deployment guide |
+| `OCR_INTEGRATION_SUMMARY.md` | **OCR pipeline details** — architecture, implementation guide, phase tracking |
 | `contributing.md` | Contributor instructions |

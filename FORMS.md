@@ -684,6 +684,29 @@ construction_date = models.CharField(...)  # Must match key
 
 ---
 
+## 📄 Form Pre-Population from OCR Documents
+
+> **New Feature:** HeritageGraph can automatically extract and pre-fill form fields from uploaded documents (PDFs, images, handwritten notes) using OCR and NER.
+
+When a user uploads a document alongside a contribution form:
+1. The OCR pipeline processes the document asynchronously (Tesseract, EasyOCR, TrOCR, Claude Vision)
+2. Named Entity Recognition (NER) extracts structured data (persons, locations, dates, artifacts, events, traditions)
+3. Extracted entities are mapped to registry field names
+4. Form shows extracted values with **confidence badges** (high/medium/low)
+5. User can edit extracted text or accept as-is before submitting
+
+**For Developers:**
+- Extracted fields are stored in `ExtractedField` Django model (`heritage_graph/apps/document_processing/models.py`)
+- API endpoint (TODO Phase 4): `GET /data/documents/<doc_id>/extracted-fields/` returns pre-fill structure
+- Frontend integration (TODO Phase 4): Components in `heritage_graph_ui` will fetch and display suggestions
+- Field mapping uses registry `key` values to match NER entities to form fields
+
+**See Also:**
+- [OCR_INTEGRATION_SUMMARY.md](OCR_INTEGRATION_SUMMARY.md) — Full pipeline architecture and implementation guide
+- [AGENTS.md](AGENTS.md) — `📄 OCR & Document Processing Pipeline` section
+
+---
+
 ## 15. Related Documentation
 
 | Document | Purpose |
@@ -697,6 +720,7 @@ construction_date = models.CharField(...)  # Must match key
 | [SKILLS.md](SKILLS.md) | Feature capability matrix with file-level mappings |
 | [PLATFORM_PLAN.md](PLATFORM_PLAN.md) | Contributing platform vision and phased roadmap |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Docker deployment, production config, SSL |
+| [OCR_INTEGRATION_SUMMARY.md](OCR_INTEGRATION_SUMMARY.md) | **NEW** OCR document processing — auto-populate forms from documents |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Known issues, debugging tips |
 | [contributing.md](contributing.md) | Contributor instructions |
 
