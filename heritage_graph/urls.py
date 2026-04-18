@@ -40,11 +40,13 @@ urlpatterns = [
     path(
         "data/", include("apps.heritage_data.urls")
     ),  # Heritage Data App
+    path("data/", include("apps.document_processing.urls")),  # OCR / document processing
     path(
         "cidoc/", include("apps.cidoc_data.urls")
     ),  # Heritage Data App
     # Versioned API (recommended for new clients)
     path("api/v1/data/", include("apps.heritage_data.urls")),
+    path("api/v1/data/", include("apps.document_processing.urls")),
     path("api/v1/cidoc/", include("apps.cidoc_data.urls")),
 
     # Authentication

@@ -527,9 +527,9 @@ class CulturalHeritageAdmin(admin.ModelAdmin):
 
 @admin.register(Media)
 class MediaAdmin(admin.ModelAdmin):
-    list_display = ("submission", "media_type", "file", "description")
+    list_display = ("submission", "cultural_entity", "media_type", "file", "description")
     list_filter = ("media_type",)
-    search_fields = ("file", "description")
+    search_fields = ("file", "description", "submission__submission_id", "cultural_entity__name")
 
 
 @admin.register(Contributor)

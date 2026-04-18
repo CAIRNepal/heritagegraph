@@ -72,9 +72,18 @@ class UploadedDocument(models.Model):
     processing_finished = models.DateTimeField(null=True, blank=True)
     
     # Error tracking
+    user_safe_error = models.TextField(
+        blank=True,
+        help_text="User-safe error message (no stack traces, minimal PII)"
+    )
     error_message = models.TextField(
         blank=True,
         help_text="Error details if processing failed"
+    )
+
+    claude_vision_invocations = models.PositiveIntegerField(
+        default=0,
+        help_text="Count of Claude Vision (or other vision-rescue) invocations for cost control/audit"
     )
     
     # Link to contributions

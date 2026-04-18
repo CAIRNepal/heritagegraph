@@ -183,6 +183,23 @@ CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # Process one task at a time
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after 1000 tasks to prevent memory leaks
 
+# ── Document OCR / processing ────────────────────────────────────────────────
+# These are *defaults*; tune per environment via .env
+OCR_ENABLED = (os.environ.get("OCR_ENABLED", "true").lower() in {"1", "true", "yes", "y", "on"})
+OCR_CONFIDENCE_THRESHOLD = float(os.environ.get("OCR_CONFIDENCE_THRESHOLD", "0.6"))
+OCR_MAX_PAGES_PER_DOCUMENT = int(os.environ.get("OCR_MAX_PAGES_PER_DOCUMENT", "100"))
+OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT = int(
+    os.environ.get("OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT", "1")
+)
+OCR_MAX_FILE_BYTES = int(
+    os.environ.get(
+        "OCR_MAX_FILE_BYTES",
+        str(25 * 1024 * 1024),
+    )
+)
+# Optional override for the Tesseract binary location (useful in containers)
+TESSERACT_PATH = os.environ.get("TESSERACT_PATH", "")
+
 GRAPH_MODELS = {
     "all_applications": True,
     "graph_models": True,

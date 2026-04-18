@@ -121,6 +121,14 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       # CORS
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend.localhost}
+      # OCR: configuration only (actual OCR runs in `ocr-worker`, not this container)
+      OCR_ENABLED: ${OCR_ENABLED:-true}
+      TESSERACT_PATH: ${TESSERACT_PATH:-/usr/bin/tesseract}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
+      OCR_MAX_PAGES_PER_DOCUMENT: ${OCR_MAX_PAGES_PER_DOCUMENT:-100}
+      OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
+      OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
     depends_on:
       postgres:
         condition: service_healthy
@@ -295,6 +303,7 @@ services:
       TESSERACT_PATH: ${TESSERACT_PATH:-/usr/bin/tesseract}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
+      OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
     depends_on:
       postgres:
         condition: service_healthy

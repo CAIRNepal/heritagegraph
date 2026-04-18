@@ -58,3 +58,6 @@ SIMPLE_JWT.update({
 # In development, run tasks synchronously (eager mode) for easier debugging
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
+
+# OCR / document processing guardrails (read from environment in `settings.base`)
+# - OCR_ENABLED, OCR_MAX_FILE_BYTES, OCR_MAX_PAGES_PER_DOCUMENT, OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT, TESSERACT_PATH, ...

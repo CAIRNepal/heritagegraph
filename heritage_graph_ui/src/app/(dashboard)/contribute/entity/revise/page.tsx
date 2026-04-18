@@ -24,11 +24,21 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+import { getPublicApiUrl } from "@/lib/api-base";
+import { HeritageDocumentUpload } from "@/components/ocr/heritage-document-upload";
+import type { OcrFieldSuggestion } from "@/hooks/use-heritage-ocr-suggestions";
 
 // --- TYPES ---
 type Category = 'monument' | 'festival' | 'ritual' | 'tradition' | 'artifact' | 'other';
+
+const CATEGORY_OPTIONS: Category[] = [
+  'monument',
+  'festival',
+  'ritual',
+  'tradition',
+  'artifact',
+  'other',
+];
 
 // --- INITIAL STATE ---
 const INITIAL_FORM_STATE = {
@@ -45,6 +55,7 @@ interface EntityData {
   category: Category;
   current_revision: any;
   status?: string;
+  contributor?: string;
 }
 
 type FormMode = 'new' | 'revise' | 'edit';
@@ -69,14 +80,13 @@ export default function CulturalEntityContributionPage() {
   const searchParams = useSafeSearchParams();
   const { data: session, status } = useSession();
   const isSignedIn = status === 'authenticated';
+  const API_BASE = getPublicApiUrl();
 
   // --- FORM STATE ---
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalEntity, setOriginalEntity] = useState<EntityData | null>(null);
   const [formMode, setFormMode] = useState<FormMode>('new');
-
-  const categoryOptions: Category[] = ['monument', 'festival', 'ritual', 'tradition', 'artifact', 'other'];
 
   // Load entity data from URL parameters
   useEffect(() => {
@@ -337,6 +347,47 @@ export default function CulturalEntityContributionPage() {
     }
   };
 
+  const applyOcrSuggestions = useCallback(
+    (suggestions: Record<string, OcrFieldSuggestion>) => {
+      const topLevelKeys = new Set(["name", "description", "category"]);
+      setFormData((prev) => {
+        const next = { ...prev, form_data: { ...prev.form_data } };
+
+        for (const [k, s] of Object.entries(suggestions)) {
+          if (!k) continue;
+          const v = s.value;
+          if (topLevelKeys.has(k)) {
+            const cur = (next as any)[k];
+            const empty =
+              cur === undefined ||
+              cur === null ||
+              (typeof cur === "string" && cur.trim() === "");
+            if (!empty) continue;
+            if (k === "category") {
+              const val = String(v) as Category;
+              if (CATEGORY_OPTIONS.includes(val)) (next as any).category = val;
+            } else {
+              (next as any)[k] = v;
+            }
+            continue;
+          }
+
+          const cur = (next.form_data as any)[k];
+          const empty =
+            cur === undefined ||
+            cur === null ||
+            (typeof cur === "string" && cur.trim() === "");
+          if (!empty) continue;
+          (next.form_data as any)[k] = v;
+        }
+
+        return next;
+      });
+      toast.message("Applied OCR suggestions to empty fields where possible.");
+    },
+    []
+  );
+
   // Show loading state while search params are being initialized
   if (!searchParams) {
     return (
@@ -387,6 +438,13 @@ export default function CulturalEntityContributionPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {originalEntity ? (
+              <HeritageDocumentUpload
+                className="border-dashed"
+                culturalEntityId={originalEntity.entity_id}
+                onApply={applyOcrSuggestions}
+              />
+            ) : null}
             <div>
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -409,7 +467,7 @@ export default function CulturalEntityContributionPage() {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categoryOptions.map((option) => (
+                  {CATEGORY_OPTIONS.map((option) => (
                     <SelectItem key={option} value={option}>
                       {option.charAt(0).toUpperCase() + option.slice(1)}
                     </SelectItem>

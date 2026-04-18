@@ -1,16 +1,45 @@
-from django.contrib import admin
-from django.utils.html import format_html
-from .models import UploadedDocument, DocumentPage, OCRResult, ExtractedField
+import logging
+
+from django.contrib import admin, messages
+
+from .models import DocumentPage, ExtractedField, OCRResult, UploadedDocument
+
+logger = logging.getLogger(__name__)
 
 
 @admin.register(UploadedDocument)
 class UploadedDocumentAdmin(admin.ModelAdmin):
     """Admin interface for UploadedDocument."""
     
-    list_display = ('id', 'document_type_display', 'status_display', 'classification_confidence', 'created_at', 'pages_count')
+    list_display = (
+        "id",
+        "document_type_display",
+        "status_display",
+        "classification_confidence",
+        "claude_vision_invocations",
+        "created_at",
+        "pages_count",
+    )
     list_filter = ('status', 'document_type', 'created_at')
-    search_fields = ('id', 'raw_text', 'error_message')
-    readonly_fields = ('id', 'created_at', 'updated_at', 'processing_started', 'processing_finished', 'raw_text', 'error_message')
+    search_fields = (
+        "id",
+        "raw_text",
+        "user_safe_error",
+        "error_message",
+        "submission__submission_id",
+        "cultural_entity__name",
+    )
+    readonly_fields = (
+        "id",
+        "claude_vision_invocations",
+        "created_at",
+        "updated_at",
+        "processing_started",
+        "processing_finished",
+        "raw_text",
+        "user_safe_error",
+        "error_message",
+    )
     
     fieldsets = (
         ('Document Identity', {
@@ -20,49 +49,29 @@ class UploadedDocumentAdmin(admin.ModelAdmin):
             'fields': ('document_type', 'classification_confidence', 'status')
         }),
         ('Processing', {
-            'fields': ('created_at', 'updated_at', 'processing_started', 'processing_finished')
+            'fields': (
+                'created_at',
+                'updated_at',
+                'processing_started',
+                'processing_finished',
+            )
         }),
         ('OCR Output', {
             'fields': ('raw_text',),
             'classes': ('collapse',)
         }),
         ('Error Information', {
-            'fields': ('error_message',),
+            'fields': ("user_safe_error", 'error_message',),
             'classes': ('collapse',)
         }),
     )
     
     def document_type_display(self, obj):
-        """Display document type with color badge."""
-        colors = {
-            'pdf_digital': '#28a745',
-            'pdf_scanned': '#ff9999',
-            'image_print': '#ffc107',
-            'image_handwritten': '#17a2b8',
-            'image_inscription': '#6c757d',
-        }
-        color = colors.get(obj.document_type, '#6c757d')
-        return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>',
-            color,
-            obj.get_document_type_display()
-        )
+        return obj.get_document_type_display()
     document_type_display.short_description = 'Document Type'
     
     def status_display(self, obj):
-        """Display status with color badge."""
-        colors = {
-            'pending': '#6c757d',
-            'processing': '#0dcaf0',
-            'completed': '#28a745',
-            'failed': '#dc3545',
-        }
-        color = colors.get(obj.status, '#6c757d')
-        return format_html(
-            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 3px;">{}</span>',
-            color,
-            obj.get_status_display()
-        )
+        return obj.get_status_display()
     status_display.short_description = 'Status'
     
     def pages_count(self, obj):
@@ -75,17 +84,48 @@ class UploadedDocumentAdmin(admin.ModelAdmin):
     def retry_failed_documents(self, request, queryset):
         """Admin action: Retry OCR processing for failed documents."""
         from .tasks import classify_and_route_document
-        
-        failed = queryset.filter(status='failed')
-        count = failed.count()
-        
+
+        failed = queryset.filter(status="failed")
+        if failed.count() > 50:
+            self.message_user(
+                request,
+                (
+                    "Too many selected failed documents (max 50). "
+                    "Narrow your selection and try again."
+                ),
+                level=messages.ERROR,
+            )
+            return
+
+        count = 0
         for doc in failed:
-            doc.status = 'pending'
-            doc.save()
+            doc.user_safe_error = ""
+            doc.error_message = ""
+            doc.claude_vision_invocations = 0
+            doc.status = "pending"
+            doc.save(
+                update_fields=[
+                    "user_safe_error",
+                    "error_message",
+                    "claude_vision_invocations",
+                    "status",
+                    "updated_at",
+                ]
+            )
             classify_and_route_document.delay(str(doc.id))
+            count += 1
+            logger.info(
+                "admin_ocr_requeue",
+                extra={
+                    "uploaded_document_id": str(doc.id),
+                    "actor_id": getattr(request.user, "id", None),
+                },
+            )
         
         self.message_user(request, f"Queued {count} failed documents for reprocessing")
-    retry_failed_documents.short_description = "Retry OCR processing for failed documents"
+    retry_failed_documents.short_description = (
+        "Retry OCR processing for failed documents"
+    )
     
     def delete_results(self, request, queryset):
         """Admin action: Delete OCR results but keep the document record."""
@@ -103,7 +143,13 @@ class UploadedDocumentAdmin(admin.ModelAdmin):
 class DocumentPageAdmin(admin.ModelAdmin):
     """Admin interface for DocumentPage."""
     
-    list_display = ('short_id', 'document_short_id', 'page_number', 'confidence', 'created_at')
+    list_display = (
+        "short_id",
+        "document_short_id",
+        "page_number",
+        "confidence",
+        "created_at",
+    )
     list_filter = ('document', 'created_at')
     search_fields = ('document__id', 'raw_text')
     readonly_fields = ('id', 'document', 'page_number', 'created_at', 'raw_text')
@@ -124,7 +170,15 @@ class OCRResultAdmin(admin.ModelAdmin):
     list_display = ('short_id', 'page_info', 'engine', 'confidence', 'created_at')
     list_filter = ('engine', 'created_at', 'page__document')
     search_fields = ('page__document__id', 'text')
-    readonly_fields = ('id', 'page', 'engine', 'confidence', 'text', 'metadata', 'created_at')
+    readonly_fields = (
+        "id",
+        "page",
+        "engine",
+        "confidence",
+        "text",
+        "metadata",
+        "created_at",
+    )
     
     fieldsets = (
         ('Identity', {
@@ -156,10 +210,25 @@ class OCRResultAdmin(admin.ModelAdmin):
 class ExtractedFieldAdmin(admin.ModelAdmin):
     """Admin interface for ExtractedField."""
     
-    list_display = ('field_name', 'source_entity_type', 'confidence', 'vocabulary_score', 'document_short_id', 'created_at')
+    list_display = (
+        "field_name",
+        "source_entity_type",
+        "confidence",
+        "vocabulary_score",
+        "document_short_id",
+        "created_at",
+    )
     list_filter = ('source_entity_type', 'created_at', 'confidence')
     search_fields = ('document__id', 'field_name', 'field_value')
-    readonly_fields = ('id', 'document', 'field_name', 'field_value', 'confidence', 'vocabulary_match_score', 'created_at')
+    readonly_fields = (
+        "id",
+        "document",
+        "field_name",
+        "field_value",
+        "confidence",
+        "vocabulary_match_score",
+        "created_at",
+    )
     
     fieldsets = (
         ('Identity', {

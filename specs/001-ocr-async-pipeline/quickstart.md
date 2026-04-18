@@ -17,11 +17,16 @@
    - `cd heritage_graph && python manage.py migrate`
 3. Run the backend:
    - `cd heritage_graph && python manage.py runserver 0.0.0.0:8000`
-4. Trigger an upload that creates `heritage_data.Media` and thus `document_processing.UploadedDocument` (this is the current hook point).
+4. Trigger an upload that creates `heritage_data.Media` and thus `document_processing.UploadedDocument`.
+
+   Fastest path (no UI): `POST` multipart form to:
+
+   - `/api/v1/data/ocr-documents/upload/` (versioned, recommended)
+   - (legacy mirror) `/data/ocr-documents/upload/`
 
 **What to look for in logs**:
 - `Document uploaded: ...` from `apps.document_processing.signals`
-- A transition from `pending` → `processing` in `classify_and_route_document` (once implemented)
+- A transition from `pending` → `processing` / `completed` in `classify_and_route_document` (via `services/pipeline.py`)
 
 ## Docker (closer to production: separate worker)
 
@@ -43,15 +48,15 @@ Use:
 
 - `Authorization: Bearer <accessToken>`
 
-**Minimal manual test flow (intended end state)**:
+**Minimal manual test flow**:
 
-1. Upload a document through the new contributor upload endpoint (to be implemented per plan).
-2. Poll processing status from the OCR document resource endpoint.
-3. Fetch suggestions JSON for pre-fill when status is `completed`.
+1. `POST` upload to `/api/v1/data/ocr-documents/upload/` (requires `Authorization: Bearer`, plus `file` and either `cultural_entity_id` or `submission_id`)
+2. Poll `GET /api/v1/data/ocr-documents/<uuid>/` until `status` is `completed` (or `failed`)
+3. Fetch `GET /api/v1/data/ocr-documents/<uuid>/suggestions/`
 
 ## Common failure modes
 
 - Upload creates `Media` but OCR doesn’t start:
   - `OCR_ENABLED` is false, file extension not treated as a document, or the upload path didn’t create `Media` the signal listens to.
 - Task runs but nothing changes:
-  - Engine tasks are still TODO (current repo state) — the queue path may execute but does not yet persist pages/results.
+  - check worker logs, `OCR_ENABLED`, and that the runtime has Tesseract/Poppler available for the process handling the task

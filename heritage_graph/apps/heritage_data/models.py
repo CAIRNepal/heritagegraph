@@ -539,7 +539,18 @@ class Media(models.Model):
         ("audio", "Audio"),
     ]
     submission = models.ForeignKey(
-        "Submission", on_delete=models.CASCADE, related_name="media"
+        "Submission",
+        on_delete=models.CASCADE,
+        related_name="media",
+        null=True,
+        blank=True,
+    )
+    cultural_entity = models.ForeignKey(
+        "CulturalEntity",
+        on_delete=models.CASCADE,
+        related_name="media",
+        null=True,
+        blank=True,
     )
     media_type = models.CharField(max_length=50, choices=MEDIA_TYPE_CHOICES)
     file = models.FileField(upload_to="heritage_media/")
@@ -547,6 +558,18 @@ class Media(models.Model):
 
     def __str__(self):
         return f"{self.media_type}: {self.file.name}"
+
+    def clean(self):
+        super().clean()
+        from django.core.exceptions import ValidationError
+
+        has_submission = self.submission_id is not None
+        has_entity = self.cultural_entity_id is not None
+
+        if has_submission and has_entity:
+            raise ValidationError("Media cannot be linked to both a Submission and a CulturalEntity.")
+        if not has_submission and not has_entity:
+            raise ValidationError("Media must be linked to a Submission or a CulturalEntity.")
 
 class Contributor(models.Model):
     user = models.ForeignKey(

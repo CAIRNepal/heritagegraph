@@ -13,6 +13,42 @@ servers:
 security:
   - bearerAuth: []
 paths:
+  /data/ocr-documents/upload/:
+    post:
+      tags: [OCR]
+      summary: Upload a document and enqueue OCR (creates `heritage_data.Media` + `document_processing.UploadedDocument`)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                media_type:
+                  type: string
+                  description: One of the `heritage_data.Media` media_type choices (defaults to `image` server-side)
+                description:
+                  type: string
+                cultural_entity_id:
+                  type: string
+                  format: uuid
+                submission_id:
+                  type: string
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OcrDocumentUploadResponse"
+        "400":
+          description: Validation error
+        "401":
+          description: Unauthorized
   /data/ocr-documents/{documentId}/:
     get:
       tags: [OCR]
@@ -92,6 +128,17 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
+    OcrDocumentUploadResponse:
+      type: object
+      additionalProperties: true
+      properties:
+        media_id:
+          type: integer
+        uploaded_document_id:
+          type: string
+          format: uuid
+        status:
+          type: string
     OcrDocumentStatus:
       type: object
       additionalProperties: true

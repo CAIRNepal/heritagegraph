@@ -7,6 +7,7 @@ Automatically triggers OCR when documents are uploaded.
 import logging
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
 from apps.heritage_data.models import Media
 from .models import UploadedDocument
 
@@ -71,11 +72,20 @@ def on_media_upload(sender, instance, created, **kwargs):
         doc = UploadedDocument.objects.create(
             media=instance,
             document_type='image_print',  # Will be replaced by classifier
-            status='pending'
+            status='pending',
+            submission=instance.submission,
+            cultural_entity=instance.cultural_entity,
         )
         
         logger.info(f"Created UploadedDocument {doc.id} for media {instance.id}")
         
+        if not getattr(settings, "OCR_ENABLED", True):
+            doc.status = "failed"
+            doc.user_safe_error = "Document processing is disabled in this environment."
+            doc.error_message = "OCR_ENABLED is false"
+            doc.save(update_fields=["status", "user_safe_error", "error_message", "updated_at"])
+            return
+
         # Queue the classification and routing task
         # In development (with CELERY_TASK_ALWAYS_EAGER=True), this runs synchronously
         # In production, this queues an async task to a Celery worker

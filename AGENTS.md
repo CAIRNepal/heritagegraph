@@ -28,7 +28,7 @@ heritagegraph/
 │   │   ├── cidoc_data/          # CIDOC-CRM ontology app: persons, events, locations
 │   │   ├── document_processing/ # **NEW** OCR & document processing pipeline
 │   │   └── health_check.py     # /health/ endpoints for Docker/Traefik
-│   ├── celery.py                # **NEW** Celery app initialization
+│   ├── celery_app.py            # **NEW** Celery app initialization (imported from `heritage_graph/__init__.py`)
 │   ├── settings/
 │   │   ├── __init__.py          # Env-based dispatch (DJANGO_ENV → dev or prod)
 │   │   ├── base.py              # Shared settings (apps, middleware, DRF config, Celery)
@@ -176,6 +176,12 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/data/reviewer-roles/` — role management + my_role/assign actions
 - `GET /data/api/reviewer-dashboard/` — reviewer stats and metrics
 
+**OCR / Document processing (prefix: `/data/`, also available under `/api/v1/data/`):**
+- `POST /data/ocr-documents/upload/` — multipart upload: creates `heritage_data.Media` and enqueues `document_processing.UploadedDocument` processing
+- `GET /data/ocr-documents/<uuid>/` — OCR run status
+- `GET /data/ocr-documents/<uuid>/suggestions/` — JSON map of `ExtractedField` suggestions
+- `POST /data/ocr-documents/<uuid>/retry/` — staff-only requeue
+
 **Auth:**
 - `POST /api/token/` — obtain JWT
 - `POST /api/token/refresh/` — refresh JWT
@@ -222,7 +228,7 @@ HeritageGraph uses **Celery + Redis** for async task processing:
 - Production: Tasks queued async, processed by `ocr-worker` service
 
 **Key Files:**
-- `heritage_graph/celery.py` — Celery app initialization
+- `heritage_graph/celery_app.py` — Celery app initialization
 - `heritage_graph/settings/base.py` — Celery configuration
 - `requirements.txt` — `celery`, `redis` dependencies
 - `requirements-ocr.txt` — Heavy OCR-specific dependencies (separate)

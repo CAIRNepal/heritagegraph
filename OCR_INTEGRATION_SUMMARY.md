@@ -19,7 +19,7 @@ HeritageGraph now has infrastructure in place for document OCR processing. Two m
   - Serialization: JSON (safe for all data types)
   - Task time limits: 30min hard / 25min soft
 - Development mode: `CELERY_TASK_ALWAYS_EAGER = True` (tasks run synchronously for easier debugging)
-- Created [heritage_graph/celery.py](../heritage_graph/celery.py) app initialization
+- Created [heritage_graph/celery_app.py](../heritage_graph/celery_app.py) app initialization
 - Updated [heritage_graph/__init__.py](../heritage_graph/__init__.py) to load Celery on startup
 
 **Docker Setup:**
@@ -160,64 +160,27 @@ map_fields_to_form task:
   2. Map to form fields (e.g., PERSON with name → person_name field)
   3. Generate pre-populate structure for frontend
     ↓
-API Endpoint [TO BE CREATED]:
-  GET /data/documents/<doc_id>/extracted-fields/
-  Returns: { form_fields: { person_name: { value, confidence, source }, ... } }
+API (DRF) — also mirrored under `/api/v1/data/...` (recommended):
+  POST   /data/ocr-documents/upload/              (multipart: `file` + `cultural_entity_id` or `submission_id`)
+  GET    /data/ocr-documents/<uuid>/              (status)
+  GET    /data/ocr-documents/<uuid>/suggestions/  (map of `ExtractedField` suggestions)
+  POST   /data/ocr-documents/<uuid>/retry/        (staff: requeue)
     ↓
-Frontend [TO BE CREATED]:
-  On contribution form: check if Media has associated UploadedDocument
-  Fetch extracted_fields JSON
-  Show form pre-filled with:
-    - Green checkmark ✓ for high-confidence (>0.8) fields
-    - Yellow warning ⚠ for medium (0.6-0.8)
-    - Red X ✗ for low (<0.6)
-  User can edit before submitting
+Frontend (MVP in `heritage_graph_ui`):
+  `HeritageDocumentUpload` uploads + polls, then "Apply" merges suggestions into **empty** form fields
 ```
 
 ---
 
 ## Current Limitations / TODO
 
-### To Complete Phase 2 (OCR Engines)
-1. **Implement classifier logic** in `classify_and_route_document()`
-   - read file from Media
-   - detect PDF vs image
-   - if image: run light Tesseract on thumbnail to detect script/handwriting
-   - set document_type + classification_confidence
-   - decide routing
+The unified pipeline in `apps.document_processing.services.pipeline` is a **v1** implementation: it is end-to-end wired (upload → process → `ExtractedField` rows → API), but some engines are still best-effort or intentionally lightweight.
 
-2. **Implement pdfplumber engine**
-   - extract text from PDFs with embedded text
-   - fallback to PDF→image→Tesseract if no text
-
-3. **Implement Tesseract engine**
-   - install tesseract binary (apt-get / brew)
-   - configure with deva+eng languages
-   - per-page processing
-   - confidence thresholding
-
-4. **Implement EasyOCR**
-   - multi-script support (better than Tesseract for Devanagari+English)
-   - fallback when Tesseract < 0.6 confidence
-
-5. **Implement TrOCR**
-   - model: microsoft/trocr-large-handwritten
-   - for handwritten documents
-
-6. **Implement Claude Vision rescue**
-   - call Anthropic API
-   - specialized prompt for inscriptions
-   - per-document cap (cost control)
-
-### To Complete Phase 3 (NER & Confidence)
-1. Implement `extract_structured_fields()` using Instructor + Claude
-2. Implement vocabulary cross-checking (Wikipedia/Wikidata SPARQL, Getty AAT)
-3. Add per-entity confidence scoring
-
-### To Complete Phase 4 (Form Integration)
-1. Create API endpoint: `GET /data/documents/<id>/extracted-fields/`
-2. Update form submission flow to link UploadedDocument
-3. Frontend: consume endpoint + show pre-filled form with confidence badges
+1. **Classify/routing** is heuristic (PDF digital vs scanned vs image types) — can be improved with stronger signals and fixtures.
+2. **EasyOCR** is not used on the “lean” path yet; `requirements-ocr.txt` includes it for worker experiments.
+3. **TrOCR** is not wired; handwriting currently follows the Tesseract/raster path (`services/htr.py` v1).
+4. **NER** is currently heuristic (`services/ner.py`) rather than instructor/LLM-structured extraction.
+5. **Monitoring/metrics** beyond structured logs in tasks/services is still open.
 
 ### To Complete Phase 5 (Monitoring)
 1. Add task status endpoint (admin only)
@@ -274,7 +237,7 @@ docker-compose up -d redis ocr-worker
 ## Files Modified/Created
 
 **Created:**
-- `heritage_graph/celery.py` — Celery app initialization
+- `heritage_graph/celery_app.py` — Celery app initialization
 - `heritage_graph/__init__.py` — Celery setup on Django startup
 - `heritage_graph/apps/document_processing/` — New app (5 files)
   - `models.py` — 4 data models
@@ -297,4 +260,4 @@ docker-compose up -d redis ocr-worker
 
 ## Next Session
 
-Start with Phase 2: Implement OCR engine tasks. Begin with `classifier.py` to determine document routing logic, then implement each engine in sequence (pdfplumber → Tesseract → EasyOCR → TrOCR → Claude Vision).
+Harden the v1 pipeline: improve `classifier.py` accuracy, add EasyOCR fallback where Tesseract is weak, wire optional TrOCR in the worker image, and expand `ner.py` from heuristics toward schema-guided extraction.

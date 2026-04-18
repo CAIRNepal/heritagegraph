@@ -139,3 +139,6 @@ if "CORS_ALLOWED_ORIGINS" in os.environ:
     ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# OCR / document processing configuration is read from environment in `settings.base`
+# (OCR_ENABLED, OCR_MAX_FILE_BYTES, OCR_MAX_PAGES_PER_DOCUMENT, etc.)
