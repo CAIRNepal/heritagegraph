@@ -15,6 +15,7 @@ INSTALLED_APPS = [
     "apps.heritage_data",
     "apps.cidoc_data",
     "apps.document_processing",
+    "apps.assistant",
 
     "django_prometheus",
     # "djoser",

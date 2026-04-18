@@ -25,10 +25,10 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 
 **Purpose**: New app package, settings, grounded copy, environment documentation.
 
-- [ ] T001 Add Django app `heritage_graph/apps/assistant/` with `__init__.py` and `apps.py` using `name = "apps.assistant"`, and register `"apps.assistant"` in `heritage_graph/settings/base.py` `INSTALLED_APPS` list
-- [ ] T002 [P] Create `heritage_graph/apps/assistant/grounding/site.md` with curated mission/product/usage text aligned with themes in `heritage_graph_ui/src/app/(dashboard)/about/page.tsx` (no HTML—plain markdown for the model)
-- [ ] T003 [P] Ensure `ANTHROPIC_API_KEY` (or the project’s single Anthropic var) is documented in root `.env.example` and `heritage_graph/.env.example`; confirm `docker-compose.yml` already passes `ANTHROPIC_API_KEY` to the backend and document any new key only in example files, not in git
-- [ ] T004 [P] Confirm `anthropic` is already listed in `requirements.txt` / `heritage_graph/requirements.txt` (no new dependency for v1 unless a split install path requires adding the package to an optional requirements file the backend image uses)
+- [x] T001 Add Django app `heritage_graph/apps/assistant/` with `__init__.py` and `apps.py` using `name = "apps.assistant"`, and register `"apps.assistant"` in `heritage_graph/settings/base.py` `INSTALLED_APPS` list
+- [x] T002 [P] Create `heritage_graph/apps/assistant/grounding/site.md` with curated mission/product/usage text aligned with themes in `heritage_graph_ui/src/app/(dashboard)/about/page.tsx` (no HTML—plain markdown for the model)
+- [x] T003 [P] Ensure `ANTHROPIC_API_KEY` (or the project’s single Anthropic var) is documented in root `.env.example` and `heritage_graph/.env.example`; confirm `docker-compose.yml` already passes `ANTHROPIC_API_KEY` to the backend and document any new key only in example files, not in git
+- [x] T004 [P] Confirm `anthropic` is already listed in `requirements.txt` / `heritage_graph/requirements.txt` (no new dependency for v1 unless a split install path requires adding the package to an optional requirements file the backend image uses)
 
 **Checkpoint**: App importable, grounding file present, env discoverable for operators.
 
@@ -38,8 +38,8 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 
 **Purpose**: API route exists and is wired; services package ready. **No user story work should start before this phase completes** (except parallel doc-only work).
 
-- [ ] T005 Add `heritage_graph/apps/assistant/urls.py` with a `urlpatterns` list and `heritage_graph/apps/assistant/services/__init__.py` (empty re-export or package marker) so service modules can be imported
-- [ ] T006 Wire `path("api/v1/assistant/", include("apps.assistant.urls"))` in `heritage_graph/urls.py` next to other `api/v1/` includes; map `path("chat/", ...)` in `heritage_graph/apps/assistant/urls.py` to the post view added in the next tasks
+- [x] T005 Add `heritage_graph/apps/assistant/urls.py` with a `urlpatterns` list and `heritage_graph/apps/assistant/services/__init__.py` (empty re-export or package marker) so service modules can be imported
+- [x] T006 Wire `path("api/v1/assistant/", include("apps.assistant.urls"))` in `heritage_graph/urls.py` next to other `api/v1/` includes; map `path("chat/", ...)` in `heritage_graph/apps/assistant/urls.py` to the post view added in the next tasks
 
 **Checkpoint**: URL namespace resolves; running server returns a defined response for `POST` once the view is implemented in US1.
 
@@ -51,11 +51,11 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 
 **Independent test**: With API + UI wired, ask (1) an “About” style question and (2) a heritage fact findable via public search/discovery; answers should not contradict `site.md` or a manual check against the same entity in the app.
 
-- [ ] T007 [US1] Implement `heritage_graph/apps/assistant/services/retrieval.py` to build a bounded text context from CIDOC data by reusing or extracting query logic from `heritage_graph/apps/cidoc_data/views.py` (`universal_search` / `public_discovery` patterns; cap row count and field length per `specs/003-grounded-chatbot/data-model.md`)
-- [ ] T008 [US1] Implement `heritage_graph/apps/assistant/services/chat_completion.py` to load `heritage_graph/apps/assistant/grounding/site.md`, merge retrieval context, call **Anthropic** with a strict “only use provided context” system prompt, and return assistant text plus optional `sources` / `nav` candidates
-- [ ] T009 [US1] Implement DRF `POST` handler in `heritage_graph/apps/assistant/views.py` (and optional `heritage_graph/apps/assistant/serializers.py` if you prefer DRF serialization) with request body matching `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`, return `200` with `{ message, sources?, nav? }` and map upstream failures to `502`/`503` with safe messages
-- [ ] T010 [US1] Add `heritage_graph_ui/src/lib/chat/assistantClient.ts` that POSTs to `getPublicApiUrl()` + `/api/v1/assistant/chat/`, passes `Authorization: Bearer <accessToken>` when the NextAuth session provides `accessToken`, and throws/returns errors compatible with `heritage_graph_ui/src/lib/api-client.ts` patterns
-- [ ] T011 [US1] Update `heritage_graph_ui/src/components/chat/ChatPanel.tsx` to call `assistantClient` instead of `getDummyResponse` from `heritage_graph_ui/src/lib/chat/dummyResponses.ts`, preserving message order, `isLoading` in `heritage_graph_ui/src/lib/chat/useChatStore.ts`, and optional `navigationPath` when the API returns `nav`
+- [x] T007 [US1] Implement `heritage_graph/apps/assistant/services/retrieval.py` to build a bounded text context from CIDOC data by reusing or extracting query logic from `heritage_graph/apps/cidoc_data/views.py` (`universal_search` / `public_discovery` patterns; cap row count and field length per `specs/003-grounded-chatbot/data-model.md`)
+- [x] T008 [US1] Implement `heritage_graph/apps/assistant/services/chat_completion.py` to load `heritage_graph/apps/assistant/grounding/site.md`, merge retrieval context, call **Anthropic** with a strict “only use provided context” system prompt, and return assistant text plus optional `sources` / `nav` candidates
+- [x] T009 [US1] Implement DRF `POST` handler in `heritage_graph/apps/assistant/views.py` (and optional `heritage_graph/apps/assistant/serializers.py` if you prefer DRF serialization) with request body matching `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`, return `200` with `{ message, sources?, nav? }` and map upstream failures to `502`/`503` with safe messages
+- [x] T010 [US1] Add `heritage_graph_ui/src/lib/chat/assistantClient.ts` that POSTs to `getPublicApiUrl()` + `/api/v1/assistant/chat/`, passes `Authorization: Bearer <accessToken>` when the NextAuth session provides `accessToken`, and throws/returns errors compatible with `heritage_graph_ui/src/lib/api-client.ts` patterns
+- [x] T011 [US1] Update `heritage_graph_ui/src/components/chat/ChatPanel.tsx` to call `assistantClient` instead of `getDummyResponse` from `heritage_graph_ui/src/lib/chat/dummyResponses.ts`, preserving message order, `isLoading` in `heritage_graph_ui/src/lib/chat/useChatStore.ts`, and optional `navigationPath` when the API returns `nav`
 
 **Checkpoint**: Primary app chat returns live grounded answers; MVP demonstrable.
 
@@ -67,9 +67,9 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 
 **Independent test**: Use `specs/003-grounded-chatbot/quickstart.md` items 2–6 (errors, empty send, follow-up in thread) on both UIs.
 
-- [ ] T012 [P] [US2] Add request timeout and `AbortController` support in `heritage_graph_ui/src/lib/chat/assistantClient.ts` and map failures to user-visible copy in `heritage_graph_ui/src/components/chat/ChatPanel.tsx` (no infinite `isLoading` per FR-005)
-- [ ] T013 [P] [US2] Enforce max input length and block empty/whitespace sends in `heritage_graph_ui/src/components/chat/ChatPanel.tsx` (spec edge cases: empty and very long input)
-- [ ] T014 [US2] Add `heritage_graph_landing/src/lib/chat/assistantClient.ts` and update `heritage_graph_landing/src/components/chat/ChatPanel.tsx` to match the `heritage_graph_ui` behavior (copy or keep in sync with `useChatStore` in `heritage_graph_landing/src/lib/chat/useChatStore.ts` and `getPublicApiUrl` in `heritage_graph_landing/src/lib/config` or equivalent)
+- [x] T012 [P] [US2] Add request timeout and `AbortController` support in `heritage_graph_ui/src/lib/chat/assistantClient.ts` and map failures to user-visible copy in `heritage_graph_ui/src/components/chat/ChatPanel.tsx` (no infinite `isLoading` per FR-005)
+- [x] T013 [P] [US2] Enforce max input length and block empty/whitespace sends in `heritage_graph_ui/src/components/chat/ChatPanel.tsx` (spec edge cases: empty and very long input)
+- [x] T014 [US2] Add `heritage_graph_landing/src/lib/chat/assistantClient.ts` and update `heritage_graph_landing/src/components/chat/ChatPanel.tsx` to match the `heritage_graph_ui` behavior (copy or keep in sync with `useChatStore` in `heritage_graph_landing/src/lib/chat/useChatStore.ts` and `getPublicApiUrl` in `heritage_graph_landing/src/lib/config` or equivalent)
 
 **Checkpoint**: Both frontends show grounded answers with robust UX; US2 independent test passes on landing + dashboard.
 
@@ -81,8 +81,8 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 
 **Independent test**: `nav` only ever goes to allow-listed internal paths; reviewers can compare `sources` (if exposed) to graph rows; vague questions get deferral, not invention (spot-check with `specs/003-grounded-chatbot/spec.md` Story 3).
 
-- [ ] T015 [US3] Implement allow-listed `nav` paths only (e.g. constant prefix set in `heritage_graph/apps/assistant/services/chat_completion.py` or `heritage_graph/apps/assistant/nav_allowlist.py`) and strip or null invalid model suggestions before returning JSON from `heritage_graph/apps/assistant/views.py` (per `specs/003-grounded-chatbot/research.md` R-006)
-- [ ] T016 [US3] Tighten system/assistant instructions in `heritage_graph/apps/assistant/services/chat_completion.py` for speculation and out-of-context questions; include optional `sources` array in responses from `heritage_graph/apps/assistant/views.py` for internal or future UI citation (per `data-model.md`)
+- [x] T015 [US3] Implement allow-listed `nav` paths only (e.g. constant prefix set in `heritage_graph/apps/assistant/services/chat_completion.py` or `heritage_graph/apps/assistant/nav_allowlist.py`) and strip or null invalid model suggestions before returning JSON from `heritage_graph/apps/assistant/views.py` (per `specs/003-grounded-chatbot/research.md` R-006)
+- [x] T016 [US3] Tighten system/assistant instructions in `heritage_graph/apps/assistant/services/chat_completion.py` for speculation and out-of-context questions; include optional `sources` array in responses from `heritage_graph/apps/assistant/views.py` for internal or future UI citation (per `data-model.md`)
 
 **Checkpoint**: US3 acceptance scenarios reviewable; security footgun for `nav` closed.
 
@@ -92,10 +92,10 @@ Django app under `heritage_graph/apps/assistant/`; main UI in `heritage_graph_ui
 
 **Purpose**: Quality gates, operator docs, manual spec validation.
 
-- [ ] T017 [P] Run `ruff format` and `ruff check` on `heritage_graph/apps/assistant/` and any edited `heritage_graph/apps/cidoc_data/` modules
-- [ ] T018 [P] Run `npm run build` in `heritage_graph_ui` and `heritage_graph_landing` after TypeScript changes
-- [ ] T019 Update `AGENTS.md` at the repository root with a short “Assistant / LLM” section: env vars, cost/latency expectations, and that `POST /api/v1/assistant/chat/` is the supported contract (link to `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`)
-- [ ] T020 Manually execute `specs/003-grounded-chatbot/quickstart.md` and note any follow-ups; align `heritage_graph/apps/assistant/grounding/site.md` with `heritage_graph_ui/src/app/(dashboard)/about/page.tsx` if copy drift is found (SC-004)
+- [x] T017 [P] Run `ruff format` and `ruff check` on `heritage_graph/apps/assistant/` and any edited `heritage_graph/apps/cidoc_data/` modules
+- [x] T018 [P] Run `npm run build` in `heritage_graph_ui` and `heritage_graph_landing` after TypeScript changes
+- [x] T019 Update `AGENTS.md` at the repository root with a short “Assistant / LLM” section: env vars, cost/latency expectations, and that `POST /api/v1/assistant/chat/` is the supported contract (link to `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`)
+- [x] T020 Manually execute `specs/003-grounded-chatbot/quickstart.md` and note any follow-ups; align `heritage_graph/apps/assistant/grounding/site.md` with `heritage_graph_ui/src/app/(dashboard)/about/page.tsx` if copy drift is found (SC-004)
 
 ---
 

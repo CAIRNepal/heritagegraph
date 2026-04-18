@@ -2,15 +2,22 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { X, Send } from 'lucide-react';
 import { useChatStore } from '@/lib/chat/useChatStore';
 import { useChatContext } from '@/providers/ChatContextProvider';
-import { getDummyResponse } from '@/lib/chat/dummyResponses';
+import { getApiErrorMessage } from '@/lib/api-client';
+import {
+  CHAT_MAX_USER_CHARS,
+  postAssistantChat,
+} from '@/lib/chat/assistantClient';
 import { ChatMessage, TypingIndicator } from './ChatMessage';
 import { SuggestionChips } from './SuggestionChips';
 
 export function ChatPanel() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const accessToken = (session as { accessToken?: string } | null)?.accessToken;
   const { surface, entityType } = useChatContext();
   const { messages, isLoading, close, addMessage, setLoading } =
     useChatStore();
@@ -31,29 +38,48 @@ export function ChatPanel() {
 
   const handleSend = useCallback(
     async (text: string) => {
-      if (!text.trim() || isLoading) return;
-
-      addMessage({ role: 'user', content: text });
-      setInput('');
-      setLoading(true);
-
-      await new Promise((r) => setTimeout(r, 700 + Math.random() * 400));
-
-      const { response, nav } = getDummyResponse(text);
-
-      if (nav) {
-        router.push(nav);
+      const trimmed = text.trim();
+      if (!trimmed || isLoading) return;
+      if (trimmed.length > CHAT_MAX_USER_CHARS) {
+        addMessage({
+          role: 'assistant',
+          content: `Please keep messages to ${CHAT_MAX_USER_CHARS} characters or less.`,
+        });
+        return;
       }
 
-      addMessage({
-        role: 'assistant',
-        content: response,
-        navigationPath: nav,
-      });
-
-      setLoading(false);
+      addMessage({ role: 'user', content: trimmed });
+      setInput('');
+      setLoading(true);
+      try {
+        const thread = useChatStore.getState().messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+        const res = await postAssistantChat({
+          messages: thread,
+          accessToken,
+        });
+        const reply = res.message?.content?.trim() || 'No response.';
+        const nav = res.nav;
+        if (nav) {
+          router.push(nav);
+        }
+        addMessage({
+          role: 'assistant',
+          content: reply,
+          navigationPath: nav,
+        });
+      } catch (e) {
+        addMessage({
+          role: 'assistant',
+          content: getApiErrorMessage(e),
+        });
+      } finally {
+        setLoading(false);
+      }
     },
-    [isLoading, addMessage, setLoading, router]
+    [isLoading, addMessage, setLoading, router, accessToken]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -131,7 +157,11 @@ export function ChatPanel() {
         />
         <button
           onClick={() => handleSend(input)}
-          disabled={!input.trim() || isLoading}
+          disabled={
+            !input.trim() ||
+            isLoading ||
+            input.trim().length > CHAT_MAX_USER_CHARS
+          }
           className="w-8 h-8 flex items-center justify-center rounded-full bg-[#2C2C2A] dark:bg-zinc-700 text-white disabled:opacity-30 hover:bg-[#3C3C3A] dark:hover:bg-zinc-600 transition-colors shrink-0"
         >
           <Send size={14} />

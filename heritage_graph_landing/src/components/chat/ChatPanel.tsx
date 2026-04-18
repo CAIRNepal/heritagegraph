@@ -4,7 +4,11 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { X, Send } from 'lucide-react';
 import { useChatStore } from '@/lib/chat/useChatStore';
 import { useChatContext } from '@/providers/ChatContextProvider';
-import { getDummyResponse } from '@/lib/chat/dummyResponses';
+import { getApiErrorMessage } from '@/lib/api-fetch';
+import {
+  CHAT_MAX_USER_CHARS,
+  postAssistantChat,
+} from '@/lib/chat/assistantClient';
 import { ChatMessage, TypingIndicator } from './ChatMessage';
 import { SuggestionChips } from './SuggestionChips';
 import { appPath } from '@/lib/config';
@@ -30,28 +34,41 @@ export function ChatPanel() {
 
   const handleSend = useCallback(
     async (text: string) => {
-      if (!text.trim() || isLoading) return;
-
-      addMessage({ role: 'user', content: text });
-      setInput('');
-      setLoading(true);
-
-      await new Promise((r) => setTimeout(r, 700 + Math.random() * 400));
-
-      const { response, nav } = getDummyResponse(text);
-
-      if (nav) {
-        const target = appPath(nav);
-        window.location.assign(target);
+      const trimmed = text.trim();
+      if (!trimmed || isLoading) return;
+      if (trimmed.length > CHAT_MAX_USER_CHARS) {
+        addMessage({
+          role: 'assistant',
+          content: `Please keep messages to ${CHAT_MAX_USER_CHARS} characters or less.`,
+        });
+        return;
       }
 
-      addMessage({
-        role: 'assistant',
-        content: response,
-        navigationPath: nav,
-      });
-
-      setLoading(false);
+      addMessage({ role: 'user', content: trimmed });
+      setInput('');
+      setLoading(true);
+      try {
+        const thread = useChatStore.getState().messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+        const res = await postAssistantChat({ messages: thread });
+        const reply = res.message?.content?.trim() || 'No response.';
+        const nav = res.nav;
+        if (nav) {
+          const target = appPath(nav);
+          window.location.assign(target);
+        }
+        addMessage({
+          role: 'assistant',
+          content: reply,
+          navigationPath: nav,
+        });
+      } catch (e) {
+        addMessage({ role: 'assistant', content: getApiErrorMessage(e) });
+      } finally {
+        setLoading(false);
+      }
     },
     [isLoading, addMessage, setLoading]
   );
@@ -128,7 +145,11 @@ export function ChatPanel() {
         />
         <button
           onClick={() => handleSend(input)}
-          disabled={!input.trim() || isLoading}
+          disabled={
+            !input.trim() ||
+            isLoading ||
+            input.trim().length > CHAT_MAX_USER_CHARS
+          }
           className="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-opacity shrink-0"
         >
           <Send size={14} />

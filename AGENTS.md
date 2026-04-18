@@ -27,6 +27,7 @@ heritagegraph/
 │   │   ├── heritage_data/       # Main app: submissions, moderation, profiles
 │   │   ├── cidoc_data/          # CIDOC-CRM ontology app: persons, events, locations
 │   │   ├── document_processing/ # **NEW** OCR & document processing pipeline
+│   │   ├── assistant/        # In-app LLM chat (grounded: site copy + public graph search)
 │   │   └── health_check.py     # /health/ endpoints for Docker/Traefik
 │   ├── celery_app.py            # **NEW** Celery app initialization (imported from `heritage_graph/__init__.py`)
 │   ├── settings/
@@ -65,7 +66,7 @@ heritagegraph/
 │   └── public/                  # Static assets
 │
 ├── heritage_graph_landing/      # Next.js 15 marketing site (port 3001 locally)
-│   ├── src/app/                 # Public landing + chat widget (dummy)
+│   ├── src/app/                 # Public landing + chat widget (calls same assistant API)
 │   └── README.md                # Env: NEXT_PUBLIC_APP_URL → main app origin
 │
 ├── infra/                       # Infrastructure configs
@@ -181,6 +182,11 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `GET /data/ocr-documents/<uuid>/` — OCR run status
 - `GET /data/ocr-documents/<uuid>/suggestions/` — JSON map of `ExtractedField` suggestions
 - `POST /data/ocr-documents/<uuid>/retry/` — staff-only requeue
+
+**In-app assistant (prefix: `/api/v1/assistant/`, public; requires `ANTHROPIC_API_KEY` on the server):**
+- `POST /api/v1/assistant/chat/` — grounded chat: `heritage_graph/apps/assistant/grounding/site.md` plus public discovery search excerpts (see `retrieval.py`). OpenAPI: `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`
+- **Env:** `ANTHROPIC_API_KEY` (shared with Claude Vision in OCR). Optional `ASSISTANT_ANTHROPIC_MODEL` (default `claude-3-5-haiku-20241022` for latency/cost)
+- **Ops:** each user turn calls the model; do not log full user prompts in production. Rate-limit or cap at the edge if exposed publicly
 
 **Auth:**
 - `POST /api/token/` — obtain JWT

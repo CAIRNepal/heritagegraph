@@ -45,6 +45,11 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
 
 export function getApiErrorMessage(error: unknown, fallback = 'Something went wrong.'): string {
   if (error instanceof ApiError) return error.message;
-  if (error instanceof Error) return error.message || fallback;
+  if (error instanceof Error) {
+    if (error.name === 'AbortError') {
+      return 'The request was cancelled or timed out. Please try again.';
+    }
+    return error.message || fallback;
+  }
   return fallback;
 }

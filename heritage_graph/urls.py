@@ -48,6 +48,7 @@ urlpatterns = [
     path("api/v1/data/", include("apps.heritage_data.urls")),
     path("api/v1/data/", include("apps.document_processing.urls")),
     path("api/v1/cidoc/", include("apps.cidoc_data.urls")),
+    path("api/v1/assistant/", include("apps.assistant.urls")),
 
     # Authentication
     path("auth/", include("djoser.urls")),  # Djoser URLs
