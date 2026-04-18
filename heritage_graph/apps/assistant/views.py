@@ -2,10 +2,17 @@ from __future__ import annotations
 
 import logging
 
-import anthropic
 from apps.assistant.serializers import ChatCompletionRequestSerializer
 from apps.assistant.services.chat_completion import run_assistant_turn
 from django.core.exceptions import ImproperlyConfigured
+from openai import (
+    APIConnectionError,
+    APIError,
+    APITimeoutError,
+    AuthenticationError,
+    BadRequestError,
+    RateLimitError,
+)
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -32,8 +39,32 @@ def chat_completion(request: Request) -> Response:
             },
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
-    except anthropic.APIError as e:
-        logger.warning("Assistant Anthropic error: %s", e, exc_info=True)
+    except RateLimitError as e:
+        logger.warning("Assistant rate limited: %s", e, exc_info=True)
+        return Response(
+            {
+                "detail": "The assistant is busy. Please try again in a few moments.",
+            },
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+    except (AuthenticationError, BadRequestError) as e:
+        logger.warning("Assistant OpenRouter client/config error: %s", e, exc_info=True)
+        return Response(
+            {
+                "detail": "Assistant API misconfiguration. Check OpenRouter keys.",
+            },
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+    except (APIConnectionError, APITimeoutError, APIError) as e:
+        logger.warning("Assistant OpenRouter API error: %s", e, exc_info=True)
+        return Response(
+            {
+                "detail": "The assistant is temporarily unavailable. Please try again.",
+            },
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
+    except RuntimeError as e:
+        logger.warning("Assistant model runtime error: %s", e, exc_info=True)
         return Response(
             {
                 "detail": "The assistant is temporarily unavailable. Please try again.",

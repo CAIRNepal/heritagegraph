@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
 
-import anthropic
 from apps.assistant.nav_allowlist import sanitize_nav_path
+from apps.assistant.services.openrouter import openrouter_chat_completion
 from apps.assistant.services.retrieval import build_graph_context
-from django.core.exceptions import ImproperlyConfigured
+from apps.assistant.services.routing import model_id_for_tier, select_tier
+
+logger = logging.getLogger(__name__)
 
 
 def _grounding_path() -> Path:
@@ -19,20 +22,6 @@ def _read_grounding_copy() -> str:
     if not p.is_file():
         return "# (Grounding file missing. Ask an administrator.)\n"
     return p.read_text(encoding="utf-8", errors="replace")[:20_000]
-
-
-def _read_api_key() -> str:
-    k = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
-    if not k:
-        msg = "ANTHROPIC_API_KEY is not configured."
-        raise ImproperlyConfigured(msg)
-    return k
-
-
-def _model_id() -> str:
-    return (
-        os.environ.get("ASSISTANT_ANTHROPIC_MODEL") or ""
-    ).strip() or "claude-3-5-haiku-20241022"
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,10 +38,10 @@ def _last_user_text(messages: list[dict[str, str]]) -> str:
     return ""
 
 
-def _claude_conversation(
+def _user_assistant_messages(
     messages: list[dict[str, str]],
 ) -> list[dict[str, str]]:
-    """Map API messages to Anthropic: only user/assistant, non-empty content."""
+    """Map API messages to OpenAI: only user/assistant, non-empty content."""
     out: list[dict[str, str]] = []
     for m in messages:
         role = m.get("role")
@@ -95,6 +84,34 @@ def _system_instructions_with_context(site: str, graph_text: str) -> str:
     )
 
 
+def _max_output_tokens() -> int:
+    return _int_from_env("ASSISTANT_MAX_OUTPUT_TOKENS", 1_200)
+
+
+def _temperature() -> float:
+    return _float_from_env("ASSISTANT_TEMPERATURE", 0.25)
+
+
+def _int_from_env(name: str, default: int) -> int:
+    raw = (os.environ.get(name) or "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        return default
+
+
+def _float_from_env(name: str, default: float) -> float:
+    raw = (os.environ.get(name) or "").strip()
+    if not raw:
+        return default
+    try:
+        return float(raw)
+    except ValueError:
+        return default
+
+
 def run_assistant_turn(
     messages: list[dict[str, str]],
 ) -> AssistantTurnResult:
@@ -110,24 +127,33 @@ def run_assistant_turn(
         )
 
     system = _system_instructions_with_context(site, graph_text)
-    claude_messages = _claude_conversation(messages)
-    if not claude_messages:
+    ua = _user_assistant_messages(messages)
+    if not ua:
         return AssistantTurnResult(
             "I could not read the conversation. Try again.", None, []
         )
 
-    client = anthropic.Anthropic(api_key=_read_api_key())
-    out = client.messages.create(
-        model=_model_id(),
-        max_tokens=1_200,
-        temperature=0.25,
-        system=system,
-        messages=claude_messages,
+    source_n = len(graph_sources)
+    tier = select_tier(
+        last_user_len=len(last_q),
+        messages=ua,
+        source_count=source_n,
     )
-    raw_text = ""
-    for block in out.content:
-        if block.type == "text":
-            raw_text += block.text
+    model = model_id_for_tier(tier)
+    logger.info(
+        "assistant tier=%s openrouter_model=%s sources=%s",
+        tier.value,
+        model,
+        source_n,
+    )
+    raw_text = openrouter_chat_completion(
+        model=model,
+        system=system,
+        user_assistant_messages=ua,
+        max_tokens=_max_output_tokens(),
+        temperature=_temperature(),
+    )
+
     text, nav_raw = _parse_nav_trailer(raw_text)
     safe_nav = sanitize_nav_path(nav_raw) if nav_raw else None
     if nav_raw and not safe_nav and "none" not in (nav_raw or "").lower():
