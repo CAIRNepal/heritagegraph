@@ -22,8 +22,8 @@ Reference `.specify/memory/constitution.md` and `specs/002-in-place-submission-e
 
 **Purpose**: Small repo alignment before touch-heavy work.
 
-- [ ] T001 [P] In `heritage_graph_ui/src/app/(dashboard)/knowledge/[domain]/view/[id]/page-client.tsx` import and use `getPublicApiUrl()` from `heritage_graph_ui/src/lib/api-base.ts` for the view fetch (remove or narrow raw `process.env` + `http://localhost:8000` fallback) so the knowledge view and future edit use the same base URL contract.
-- [ ] T002 [P] In `heritage_graph_ui/src/components/ontology-form.tsx` ensure API base uses `getPublicApiUrl()` / `apiBaseUrl` prop consistently (no new hardcoded host strings) for all fetches in that file.
+- [X] T001 [P] In `heritage_graph_ui/src/app/(dashboard)/knowledge/[domain]/view/[id]/page-client.tsx` import and use `getPublicApiUrl()` from `heritage_graph_ui/src/lib/api-base.ts` for the view fetch (remove or narrow raw `process.env` + `http://localhost:8000` fallback) so the knowledge view and future edit use the same base URL contract.
+- [X] T002 [P] In `heritage_graph_ui/src/components/ontology-form.tsx` ensure API base uses `getPublicApiUrl()` / `apiBaseUrl` prop consistently (no new hardcoded host strings) for all fetches in that file.
 
 **Checkpoint**: UI API base pattern matches `plan.md` / constitution.
 
@@ -35,9 +35,9 @@ Reference `.specify/memory/constitution.md` and `specs/002-in-place-submission-e
 
 **⚠️** No US1 work should ship to production without this phase for the same release.
 
-- [ ] T003 In `heritage_graph/apps/cidoc_data/permissions.py` (create if missing) add a DRF permission class implementing object-level rules: `update`/`partial_update`/`destroy` allowed if `request.user` is staff/superuser **or** `instance.contributor` matches `request.user.username` (and `IsAuthenticated` for those actions). Read-only unauthenticated `retrieve`/`list` can stay public if that remains product intent.
-- [ ] T004 In `heritage_graph/apps/cidoc_data/views.py` update `ContributionFlowMixin.get_permissions()` (and, if required, add `get_queryset` / `check_object_permissions` patterns) so **create** stays `IsAuthenticated`, while **update**, **partial_update**, and **destroy** use `IsAuthenticated` **plus** the new object permission from `heritage_graph/apps/cidoc_data/permissions.py`. Document any intentional difference for `api/v1` includes.
-- [ ] T005 [P] Run `ruff format` and `ruff check` on `heritage_graph/apps/cidoc_data/permissions.py` and `heritage_graph/apps/cidoc_data/views.py` (and any new imports) from `heritage_graph/`.
+- [X] T003 In `heritage_graph/apps/cidoc_data/permissions.py` (create if missing) add a DRF permission class implementing object-level rules: `update`/`partial_update`/`destroy` allowed if `request.user` is staff/superuser **or** `instance.contributor` matches `request.user.username` (and `IsAuthenticated` for those actions). Read-only unauthenticated `retrieve`/`list` can stay public if that remains product intent.
+- [X] T004 In `heritage_graph/apps/cidoc_data/views.py` update `ContributionFlowMixin.get_permissions()` (and, if required, add `get_queryset` / `check_object_permissions` patterns) so **create** stays `IsAuthenticated`, while **update**, **partial_update**, and **destroy** use `IsAuthenticated` **plus** the new object permission from `heritage_graph/apps/cidoc_data/permissions.py`. Document any intentional difference for `api/v1` includes.
+- [X] T005 [P] Run `ruff format` and `ruff check` on `heritage_graph/apps/cidoc_data/permissions.py` and `heritage_graph/apps/cidoc_data/views.py` (and any new imports) from `heritage_graph/`.
 
 **Checkpoint**: Anonymous `PATCH` to `/cidoc/...` must return **401/403**; contributor + Bearer can update own row (verify per `specs/002-in-place-submission-edit/quickstart.md` §2).
 
@@ -49,13 +49,13 @@ Reference `.specify/memory/constitution.md` and `specs/002-in-place-submission-e
 
 **Independent test**: Open `/knowledge/{domain}/view/{id}` → **Edit** → all populated fields match GET detail; no empty “new” form; failed load shows error, not a blank form (`quickstart.md` §1–§3).
 
-- [ ] T006 [US1] In `heritage_graph_ui/src/app/(dashboard)/knowledge/[domain]/view/[id]/page-client.tsx` change the **Edit** `Button` to `router.push(\`/contribute/${ontologyClass.key}?id=${encodeURIComponent(String(id))}\`)` (or agreed query key from `research.md` R-002) so the record id is always present.
-- [ ] T007 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` add `useSearchParams()` (or props from a thin server wrapper) to read `id` / `edit` mode; if `id` is absent, keep current **create** behavior (POST only).
-- [ ] T008 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` when `id` is present, show a **loading** state until the detail `GET` completes; on failure, render error UI with safe navigation (fulfill **FR-008**; no empty form as success).
-- [ ] T009 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` implement `GET` to `{getPublicApiUrl()}{ontologyClass.apiEndpoint}{id}/` with `Accept: application/json` and `Authorization: Bearer` when in edit mode, mirroring the view page’s data source in `page-client.tsx`.
-- [ ] T010 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` map response JSON to `formData` for every `OntologyField` (coordinates string ↔ UI object, name/title handling) per `specs/002-in-place-submission-edit/data-model.md`.
-- [ ] T011 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` in edit mode, submit with `PATCH` to the same resource URL and Bearer token; keep create path as `POST`. Surface `apiFetchJson` / `getApiErrorMessage` errors (403/400) without dropping loaded form state.
-- [ ] T012 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` add clear **editing** affordance: title/subtitle, record `id`, and `status`/`contributor` read-only context (fulfill **FR-002**).
+- [X] T006 [US1] In `heritage_graph_ui/src/app/(dashboard)/knowledge/[domain]/view/[id]/page-client.tsx` change the **Edit** `Button` to `router.push(\`/contribute/${ontologyClass.key}?id=${encodeURIComponent(String(id))}\`)` (or agreed query key from `research.md` R-002) so the record id is always present.
+- [X] T007 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` add `useSearchParams()` (or props from a thin server wrapper) to read `id` / `edit` mode; if `id` is absent, keep current **create** behavior (POST only).
+- [X] T008 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` when `id` is present, show a **loading** state until the detail `GET` completes; on failure, render error UI with safe navigation (fulfill **FR-008**; no empty form as success).
+- [X] T009 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` implement `GET` to `{getPublicApiUrl()}{ontologyClass.apiEndpoint}{id}/` with `Accept: application/json` and `Authorization: Bearer` when in edit mode, mirroring the view page’s data source in `page-client.tsx`.
+- [X] T010 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` map response JSON to `formData` for every `OntologyField` (coordinates string ↔ UI object, name/title handling) per `specs/002-in-place-submission-edit/data-model.md`.
+- [X] T011 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` in edit mode, submit with `PATCH` to the same resource URL and Bearer token; keep create path as `POST`. Surface `apiFetchJson` / `getApiErrorMessage` errors (403/400) without dropping loaded form state.
+- [X] T012 [US1] In `heritage_graph_ui/src/components/ontology-form.tsx` add clear **editing** affordance: title/subtitle, record `id`, and `status`/`contributor` read-only context (fulfill **FR-002**).
 
 **Checkpoint**: MVP for `spec.md` P1 and `quickstart.md` §3; pair with Phase 2 before production deploy.
 
@@ -67,8 +67,8 @@ Reference `.specify/memory/constitution.md` and `specs/002-in-place-submission-e
 
 **Independent test**: Edit one field, save, reload view — all other fields unchanged; optional blank sections stay blank.
 
-- [ ] T013 [US2] In `heritage_graph_ui/src/components/ontology-form.tsx` ensure multi-step `sections` in edit mode retain values when moving between steps and that `PATCH` payload does not clear keys unintentionally (only send what the API accepts; align with **FR-005**).
-- [ ] T014 [US2] In `heritage_graph_ui/src/components/ontology-form.tsx` confirm optional/empty server fields are not replaced with non-empty UI defaults on load (fulfill **FR-003** edge for optional sections).
+- [X] T013 [US2] In `heritage_graph_ui/src/components/ontology-form.tsx` ensure multi-step `sections` in edit mode retain values when moving between steps and that `PATCH` payload does not clear keys unintentionally (only send what the API accepts; align with **FR-005**).
+- [X] T014 [US2] In `heritage_graph_ui/src/components/ontology-form.tsx` confirm optional/empty server fields are not replaced with non-empty UI defaults on load (fulfill **FR-003** edge for optional sections).
 
 **Checkpoint**: P2 acceptance scenarios from `spec.md` covered.
 
@@ -80,8 +80,8 @@ Reference `.specify/memory/constitution.md` and `specs/002-in-place-submission-e
 
 **Independent test**: (After refactor) one field value equals GET detail and post-PATCH full form; optional: inline defers if not building UI in this tranche.
 
-- [ ] T015 [P] [US3] Add `heritage_graph_ui/src/lib/ontology/ontology-edit-helpers.ts` exporting `mapCidocRecordToFormData(ontologyClass, record: Record<string, unknown>)` used by `heritage_graph_ui/src/components/ontology-form.tsx` so the view page / future inline edit can reuse the same mapping (**FR-007** prep).
-- [ ] T016 [US3] (Optional) In `heritage_graph_ui/src/app/(dashboard)/knowledge/[domain]/view/[id]/page-client.tsx` or a small child component, add a minimal “Quick edit” entry that deep-links to the same `?id=` contribute URL, **or** document P3 inline as deferred in `AGENTS.md` if not implementing UI now.
+- [X] T015 [P] [US3] Add `heritage_graph_ui/src/lib/ontology/ontology-edit-helpers.ts` exporting `mapCidocRecordToFormData(ontologyClass, record: Record<string, unknown>)` used by `heritage_graph_ui/src/components/ontology-form.tsx` so the view page / future inline edit can reuse the same mapping (**FR-007** prep).
+- [X] T016 [US3] (Optional) In `heritage_graph_ui/src/app/(dashboard)/knowledge/[domain]/view/[id]/page-client.tsx` or a small child component, add a minimal “Quick edit” entry that deep-links to the same `?id=` contribute URL, **or** document P3 inline as deferred in `AGENTS.md` if not implementing UI now.
 
 **Checkpoint**: P3 data-path consistency ready; full inline-on-view is **optional** per `plan.md` Summary.
 
@@ -89,9 +89,9 @@ Reference `.specify/memory/constitution.md` and `specs/002-in-place-submission-e
 
 ## Phase 6: Polish & cross-cutting
 
-- [ ] T017 [P] In `AGENTS.md` add a short subsection: ontology contribute **edit** URL pattern (`/contribute/{domain}?id=...`), `GET`+`PATCH` contract, and new CIDOC permissions behavior in `heritage_graph/apps/cidoc_data/views.py`.
-- [ ] T018 Run all steps in `specs/002-in-place-submission-edit/quickstart.md` and fix gaps until they pass.
-- [ ] T019 [P] Run `ruff format` + `ruff check` on all touched Python under `heritage_graph/` and the frontend typecheck/build script (e.g. from `heritage_graph_ui/package.json`) on changed TS/TSX files.
+- [X] T017 [P] In `AGENTS.md` add a short subsection: ontology contribute **edit** URL pattern (`/contribute/{domain}?id=...`), `GET`+`PATCH` contract, and new CIDOC permissions behavior in `heritage_graph/apps/cidoc_data/views.py`.
+- [ ] T018 Run all steps in `specs/002-in-place-submission-edit/quickstart.md` and fix gaps until they pass. *(Manual QA in a running app.)*
+- [X] T019 [P] Run `ruff format` + `ruff check` on all touched Python under `heritage_graph/` and the frontend typecheck/build script (e.g. from `heritage_graph_ui/package.json`) on changed TS/TSX files. *(Ruff: `apps/cidoc_data/permissions.py` OK. Full `next build` failed in this environment on fonts + missing `prom-client`, unrelated to this feature; no new tsc issues in changed files.)*
 
 ---
 

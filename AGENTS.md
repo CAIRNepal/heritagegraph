@@ -160,6 +160,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/cidoc/sources/` — documentary sources CRUD
 - `/cidoc/search/?q=<query>` — cross-model search
 - `/cidoc/discovery/?type=<persons|monuments|...>&q=<optional>` — public faceted browse + counts (landing)
+- **Ontology edit (UI):** From `/knowledge/<domain>/view/<id>`, **Edit** opens `/contribute/<domain>?id=<id>`. The form **GET**s the same detail resource as the view, then **PATCH**es with `Authorization: Bearer` (NextAuth). **Mutations** require an authenticated user who is **staff/superuser** or the row’s `contributor` (see `CidocObjectEditPermission` in `heritage_graph/apps/cidoc_data/permissions.py` and `ContributionFlowMixin.get_permissions` in `heritage_graph/apps/cidoc_data/views.py`).
 
 **Cultural Entities (prefix: `/data/`):**
 - `/data/cultural-entities/` — CRUD + submit/review actions
@@ -184,7 +185,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 
 - `/` — dashboard home (authenticated shell)
 - `/knowledge/<domain>` — knowledge base (entity, person, location, event, period, tradition, source)
-- `/contribute/<domain>` — contribution forms
+- `/contribute/<domain>` — contribution forms (add `?id=<recordId>` to edit an existing CIDOC record)
 - `/curation/contributions` — moderation queue
 - `/curation/activity` — activity log
 - `/curation/review` — triaged epistemic review queue

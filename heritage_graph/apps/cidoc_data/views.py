@@ -11,30 +11,31 @@ from .serializers import *
 # CONTRIBUTION MIXIN — hooks CIDOC creates into the review workflow
 # =====================================================================
 
+
 def _get_category_for_model(model_class):
     """Map a CIDOC model class to a CulturalEntity category."""
     mapping = {
-        'Person': 'other',
-        'Location': 'other',
-        'Event': 'other',
-        'HistoricalPeriod': 'other',
-        'Tradition': 'tradition',
-        'Source': 'document',
-        'Deity': 'other',
-        'Guthi': 'tradition',
-        'ArchitecturalStructure': 'monument',
-        'RitualEvent': 'ritual',
-        'Festival': 'festival',
-        'IconographicObject': 'artifact',
-        'Monument': 'monument',
-        'KumariTenure': 'ritual',
-        'KumariSelection': 'ritual',
-        'KumariRetirement': 'ritual',
-        'SyncreticRelationship': 'other',
-        'CasteGroup': 'other',
-        'CalendarSystem': 'other',
+        "Person": "other",
+        "Location": "other",
+        "Event": "other",
+        "HistoricalPeriod": "other",
+        "Tradition": "tradition",
+        "Source": "document",
+        "Deity": "other",
+        "Guthi": "tradition",
+        "ArchitecturalStructure": "monument",
+        "RitualEvent": "ritual",
+        "Festival": "festival",
+        "IconographicObject": "artifact",
+        "Monument": "monument",
+        "KumariTenure": "ritual",
+        "KumariSelection": "ritual",
+        "KumariRetirement": "ritual",
+        "SyncreticRelationship": "other",
+        "CasteGroup": "other",
+        "CalendarSystem": "other",
     }
-    return mapping.get(model_class.__name__, 'other')
+    return mapping.get(model_class.__name__, "other")
 
 
 class ContributionFlowMixin:
@@ -51,7 +52,14 @@ class ContributionFlowMixin:
     """
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ("update", "partial_update", "destroy"):
+            from .permissions import CidocObjectEditPermission
+
+            return [
+                permissions.IsAuthenticated(),
+                CidocObjectEditPermission(),
+            ]
+        if self.action == "create":
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
@@ -59,31 +67,39 @@ class ContributionFlowMixin:
         # Set contributor info on the CIDOC record
         instance = serializer.save(
             contributor=self.request.user.username,
-            status='pending_review',
+            status="pending_review",
         )
 
         # Create a CulturalEntity wrapper for the review queue
         try:
             from apps.heritage_data.models import (
-                CulturalEntity, Revision, Activity, Notification, ReviewerRole,
+                CulturalEntity,
+                Revision,
+                Activity,
+                Notification,
+                ReviewerRole,
             )
 
-            entity_name = getattr(instance, 'name', None) or getattr(instance, 'title', '') or str(instance)
-            entity_description = getattr(instance, 'description', '') or ''
+            entity_name = (
+                getattr(instance, "name", None)
+                or getattr(instance, "title", "")
+                or str(instance)
+            )
+            entity_description = getattr(instance, "description", "") or ""
             category = _get_category_for_model(instance.__class__)
 
             entity = CulturalEntity.objects.create(
                 name=entity_name,
                 description=entity_description,
                 category=category,
-                status='pending_review',
+                status="pending_review",
                 contributor=self.request.user,
             )
 
             # Build revision data from the serialized instance
             revision_data = serializer.data.copy()
-            revision_data['_cidoc_model'] = instance.__class__.__name__
-            revision_data['_cidoc_id'] = instance.pk
+            revision_data["_cidoc_model"] = instance.__class__.__name__
+            revision_data["_cidoc_id"] = instance.pk
 
             revision = Revision.objects.create(
                 entity=entity,
@@ -97,21 +113,21 @@ class ContributionFlowMixin:
             Activity.objects.create(
                 entity=entity,
                 user=self.request.user,
-                activity_type='submitted',
-                comment=f'Submitted via {instance.__class__.__name__} form',
+                activity_type="submitted",
+                comment=f"Submitted via {instance.__class__.__name__} form",
             )
 
             # Determine where the user should land when clicking this notification.
             # For CIDOC "Source", we route directly to the source details page rather than
             # the generic CulturalEntity wrapper page.
-            contributor_link = f'/knowledge/entity/view/{entity.entity_id}'
+            contributor_link = f"/knowledge/entity/view/{entity.entity_id}"
             if instance.__class__.__name__ == "Source":
-                contributor_link = f'/knowledge/source/view/{instance.pk}'
+                contributor_link = f"/knowledge/source/view/{instance.pk}"
 
             Notification.objects.create(
                 user=self.request.user,
                 actor=self.request.user,
-                notification_type='submission_update',
+                notification_type="submission_update",
                 message=f'Your contribution "{entity_name}" has been submitted and is pending review.',
                 entity=entity,
                 link=contributor_link,
@@ -124,17 +140,18 @@ class ContributionFlowMixin:
                 Notification.objects.create(
                     user=reviewer,
                     actor=self.request.user,
-                    notification_type='submission_update',
+                    notification_type="submission_update",
                     message=f'New contribution "{entity_name}" submitted by {self.request.user.username} — awaiting review.',
                     entity=entity,
-                    link=f'/curation/review/{entity.entity_id}',
+                    link=f"/curation/review/{entity.entity_id}",
                 )
 
         except Exception as e:
             # Log but don't fail the CIDOC save — the data is still persisted
             import logging
+
             logger = logging.getLogger(__name__)
-            logger.warning(f'Failed to create CulturalEntity wrapper: {e}')
+            logger.warning(f"Failed to create CulturalEntity wrapper: {e}")
 
 
 #################################################################
@@ -145,25 +162,30 @@ class PersonViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     serializer_class = PersonSerializer
     search_fields = ["name", "aliases", "occupation"]
 
+
 class LocationViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
     search_fields = ["name", "description"]
+
 
 class EventViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
     search_fields = ["name", "description"]
 
+
 class HistoricalPeriodViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = HistoricalPeriod.objects.all()
     serializer_class = HistoricalPeriodSerializer
     search_fields = ["name", "description"]
 
+
 class TraditionViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Tradition.objects.all()
     serializer_class = TraditionSerializer
     search_fields = ["name", "description"]
+
 
 class SourceViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Source.objects.all()
@@ -175,65 +197,78 @@ class SourceViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
 # NEW ONTOLOGY-DRIVEN VIEWSETS
 # =====================================================================
 
+
 class DeityViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Deity.objects.all()
     serializer_class = DeitySerializer
     search_fields = ["name", "alternate_names", "religious_tradition"]
+
 
 class GuthiViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Guthi.objects.all()
     serializer_class = GuthiSerializer
     search_fields = ["name", "location"]
 
+
 class ArchitecturalStructureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = ArchitecturalStructure.objects.all()
     serializer_class = ArchitecturalStructureSerializer
     search_fields = ["name", "location_name"]
+
 
 class RitualEventViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = RitualEvent.objects.all()
     serializer_class = RitualEventSerializer
     search_fields = ["name", "location_name", "performed_by"]
 
+
 class FestivalViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Festival.objects.all()
     serializer_class = FestivalSerializer
     search_fields = ["name", "location_name"]
+
 
 class IconographicObjectViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = IconographicObject.objects.all()
     serializer_class = IconographicObjectSerializer
     search_fields = ["name", "depicts_deity"]
 
+
 class MonumentViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = Monument.objects.all()
     serializer_class = MonumentSerializer
     search_fields = ["name", "location_name"]
+
 
 class KumariTenureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = KumariTenure.objects.all()
     serializer_class = KumariTenureSerializer
     search_fields = ["name", "had_participant"]
 
+
 class KumariSelectionViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = KumariSelection.objects.all()
     serializer_class = KumariSelectionSerializer
     search_fields = ["name", "selected_person"]
+
 
 class KumariRetirementViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = KumariRetirement.objects.all()
     serializer_class = KumariRetirementSerializer
     search_fields = ["name"]
 
+
 class SyncreticRelationshipViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = SyncreticRelationship.objects.all()
     serializer_class = SyncreticRelationshipSerializer
     search_fields = ["name", "assigned_to_deity"]
 
+
 class CasteGroupViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = CasteGroup.objects.all()
     serializer_class = CasteGroupSerializer
     search_fields = ["name", "traditional_role"]
+
 
 class CalendarSystemViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = CalendarSystem.objects.all()
@@ -250,6 +285,7 @@ class PersonRevisionViewSet(viewsets.ModelViewSet):
 # PROVENANCE VIEWSETS
 # =====================================================================
 
+
 class DataSourceViewSet(viewsets.ModelViewSet):
     queryset = DataSource.objects.all()
     serializer_class = DataSourceSerializer
@@ -261,25 +297,28 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
     serializer_class = HeritageAssertionSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action == "create":
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
         extra = {}
         if self.request.user.is_authenticated:
-            extra['contributed_by'] = self.request.user.email or self.request.user.username
+            extra["contributed_by"] = (
+                self.request.user.email or self.request.user.username
+            )
         serializer.save(**extra)
 
     def get_queryset(self):
         qs = super().get_queryset()
         # Filter by entity type and ID
-        entity_type = self.request.query_params.get('entity_type')
-        entity_id = self.request.query_params.get('entity_id')
-        status = self.request.query_params.get('status')
+        entity_type = self.request.query_params.get("entity_type")
+        entity_id = self.request.query_params.get("entity_id")
+        status = self.request.query_params.get("status")
 
         if entity_type:
             from django.contrib.contenttypes.models import ContentType
+
             try:
                 ct = ContentType.objects.get(model=entity_type)
                 qs = qs.filter(content_type=ct)
@@ -297,10 +336,11 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
 
 class AssertionAwareStructureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Structure ViewSet that uses assertion-aware serializer for writes."""
+
     queryset = ArchitecturalStructure.objects.all()
 
     def get_serializer_class(self):
-        if self.action in ('create', 'update', 'partial_update'):
+        if self.action in ("create", "update", "partial_update"):
             return AssertionAwareStructureSerializer
         # For list/retrieve, also return the assertion-aware serializer
         # so assertions are included in the response
@@ -309,6 +349,7 @@ class AssertionAwareStructureViewSet(ContributionFlowMixin, viewsets.ModelViewSe
 
 class AssertionAwareRitualViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Ritual ViewSet with assertion support."""
+
     queryset = RitualEvent.objects.all()
 
     def get_serializer_class(self):
@@ -317,6 +358,7 @@ class AssertionAwareRitualViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
 
 class AssertionAwareDeityViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Deity ViewSet with assertion support."""
+
     queryset = Deity.objects.all()
 
     def get_serializer_class(self):
@@ -325,6 +367,7 @@ class AssertionAwareDeityViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
 
 class AssertionAwareGuthiViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     """Guthi ViewSet with assertion support."""
+
     queryset = Guthi.objects.all()
 
     def get_serializer_class(self):
@@ -339,20 +382,35 @@ from rest_framework.response import Response
 from django.db.models import Q
 
 from apps.cidoc_data.models import (
-    Person, Location, Event, Tradition,
-    Deity, Guthi, ArchitecturalStructure, RitualEvent, Festival, Monument,
+    Person,
+    Location,
+    Event,
+    Tradition,
+    Deity,
+    Guthi,
+    ArchitecturalStructure,
+    RitualEvent,
+    Festival,
+    Monument,
 )
 from apps.cidoc_data.serializers import (
-    PersonSerializer, LocationSerializer, EventSerializer, TraditionSerializer,
-    DeitySerializer, GuthiSerializer, ArchitecturalStructureSerializer,
-    RitualEventSerializer, FestivalSerializer, MonumentSerializer,
+    PersonSerializer,
+    LocationSerializer,
+    EventSerializer,
+    TraditionSerializer,
+    DeitySerializer,
+    GuthiSerializer,
+    ArchitecturalStructureSerializer,
+    RitualEventSerializer,
+    FestivalSerializer,
+    MonumentSerializer,
     _get_cultural_entity_id,
 )
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def universal_search(request):
-    q = request.GET.get('q', '').strip()
+    q = request.GET.get("q", "").strip()
 
     if not q:
         return Response({"error": "Query parameter 'q' is required."}, status=400)
@@ -572,7 +630,10 @@ def _field_reference_q(field_name: str, entity_id_str: str, multivalued: bool) -
 
 
 def _related_entity_row(instance):
-    from apps.cidoc_data.relation_backrefs import MODEL_ONTOLOGY_DOMAIN_KEY, REFERRED_GROUP_LABELS
+    from apps.cidoc_data.relation_backrefs import (
+        MODEL_ONTOLOGY_DOMAIN_KEY,
+        REFERRED_GROUP_LABELS,
+    )
 
     domain_key = MODEL_ONTOLOGY_DOMAIN_KEY[instance.__class__]
     return {
@@ -646,7 +707,9 @@ def related_entities(request):
     groups_out = []
     total_related = 0
 
-    for model_cls in sorted(entries_by_model.keys(), key=lambda m: MODEL_ONTOLOGY_DOMAIN_KEY[m]):
+    for model_cls in sorted(
+        entries_by_model.keys(), key=lambda m: MODEL_ONTOLOGY_DOMAIN_KEY[m]
+    ):
         domain_key = MODEL_ONTOLOGY_DOMAIN_KEY[model_cls]
         if group_filter and domain_key != group_filter:
             continue
@@ -690,10 +753,6 @@ def related_entities(request):
 
 
 ###############################################################
-
-
-
-
 
 
 # --- User ViewSet ---

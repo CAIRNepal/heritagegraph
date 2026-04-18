@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,8 +30,10 @@ import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 import { EntitySearch, type SearchResult } from "@/components/contribute/entity-search";
 import { getPublicApiUrl } from "@/lib/api-base";
-
-const API_BASE_URL = getPublicApiUrl();
+import {
+  buildOntologyFormPayload,
+  mapCidocRecordToFormData,
+} from "@/lib/ontology/ontology-edit-helpers";
 
 function FieldRenderer({
   field,
@@ -365,7 +367,13 @@ export interface OntologyFormProps {
   apiBaseUrl?: string;
   title?: string;
   description?: string;
+  onFormControl?: (api: OntologyFormControlApi) => void;
 }
+
+export type OntologyFormControlApi = {
+  mergeValues: (patch: Record<string, any>, opts?: { onlyIfEmpty?: boolean }) => void;
+  getValues: () => Record<string, any>;
+};
 
 export default function OntologyForm({
   ontologyClass,
@@ -373,8 +381,12 @@ export default function OntologyForm({
   apiBaseUrl,
   title,
   description,
+  onFormControl,
 }: OntologyFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const recordId = searchParams.get("id")?.trim() || null;
+  const isEditMode = Boolean(recordId);
   const { data: session, status } = useSession();
   const isSignedIn = status === "authenticated";
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -382,9 +394,68 @@ export default function OntologyForm({
   const [currentStep, setCurrentStep] = useState(0);
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [editLoad, setEditLoad] = useState<"ok" | "loading" | "error">(
+    isEditMode ? "loading" : "ok"
+  );
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [recordMeta, setRecordMeta] = useState<{
+    id: string;
+    status?: string;
+    contributor?: string;
+  } | null>(null);
 
-  const baseUrl = apiBaseUrl || API_BASE_URL;
+  const baseUrl = useMemo(
+    () => apiBaseUrl || getPublicApiUrl(),
+    [apiBaseUrl]
+  );
   const endpoint = `${baseUrl}${ontologyClass.apiEndpoint}`;
+
+  useEffect(() => {
+    if (!recordId) {
+      setFormData({});
+      setEditLoad("ok");
+      setLoadError(null);
+      setRecordMeta(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setEditLoad("loading");
+      setLoadError(null);
+      try {
+        const url = `${baseUrl}${ontologyClass.apiEndpoint}${encodeURIComponent(recordId)}/`;
+        const token = (session as { accessToken?: string } | null)
+          ?.accessToken;
+        const data = await apiFetchJson<Record<string, unknown>>(url, {
+          headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        if (cancelled) return;
+        setFormData(mapCidocRecordToFormData(ontologyClass, data));
+        setRecordMeta({
+          id: String(recordId),
+          status: typeof data.status === "string" ? data.status : undefined,
+          contributor:
+            typeof data.contributor === "string" ? data.contributor : undefined,
+        });
+        setCurrentStep(0);
+        setEditLoad("ok");
+      } catch (e) {
+        if (cancelled) return;
+        setLoadError(
+          getApiErrorMessage(e, "Could not load this record for editing.")
+        );
+        setFormData({});
+        setRecordMeta(null);
+        setEditLoad("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [baseUrl, ontologyClass, recordId, session]);
   const postSubmitPath =
     redirectTo || `/knowledge/${ontologyClass.key}`;
 
@@ -452,13 +523,45 @@ export default function OntologyForm({
     setTouchedFields((prev) => new Set(prev).add(key));
   }, []);
 
+  const mergeValues = useCallback(
+    (patch: Record<string, any>, opts?: { onlyIfEmpty?: boolean }) => {
+      const onlyIfEmpty = opts?.onlyIfEmpty !== false;
+      setFormData((prev) => {
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(patch)) {
+          if (onlyIfEmpty) {
+            const cur = (next as any)[k];
+            const empty =
+              cur === undefined ||
+              cur === null ||
+              (typeof cur === "string" && cur.trim() === "");
+            if (!empty) continue;
+          }
+          (next as any)[k] = v;
+        }
+        return next;
+      });
+    },
+    []
+  );
+
+  const getValues = useCallback(() => formData, [formData]);
+
+  useEffect(() => {
+    if (!onFormControl) return;
+    onFormControl({ mergeValues, getValues });
+  }, [onFormControl, mergeValues, getValues]);
+
   const clearForm = useCallback(() => {
+    if (isEditMode) {
+      return;
+    }
     setFormData({});
     setTouchedFields(new Set());
     setSubmitAttempted(false);
     setCurrentStep(0);
     toast.info("Form cleared");
-  }, []);
+  }, [isEditMode]);
 
   const validate = useCallback((): boolean => {
     const requiredFields = ontologyClass.fields.filter((f) => f.required);
@@ -483,18 +586,32 @@ export default function OntologyForm({
     setIsSubmitting(true);
 
     try {
-      const token = (session as any)?.accessToken;
+      const token = (session as { accessToken?: string } | null)
+        ?.accessToken;
+      const payload = buildOntologyFormPayload(ontologyClass.fields, formData);
 
-      const payload: Record<string, any> = {};
-      for (const field of ontologyClass.fields) {
-        const val = formData[field.key];
-        if (val === undefined || val === null || val === "") continue;
-
-        if (field.type === "coordinates" && typeof val === "object") {
-          payload[field.key] = `${val.lat}, ${val.lng}`;
-        } else {
-          payload[field.key] = val;
-        }
+      if (isEditMode && recordId) {
+        const detailUrl = `${baseUrl}${ontologyClass.apiEndpoint}${encodeURIComponent(recordId)}/`;
+        await apiFetchJson(detailUrl, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(payload),
+        });
+        toast.success(
+          `"${(formData.name as string) || (formData.title as string) || "Entry"}" updated successfully!`,
+          { duration: 4000 }
+        );
+        setTimeout(
+          () =>
+            router.push(
+              `/knowledge/${ontologyClass.key}/view/${encodeURIComponent(recordId)}`
+            ),
+          1200
+        );
+        return;
       }
 
       await apiFetchJson(endpoint, {
@@ -507,7 +624,7 @@ export default function OntologyForm({
       });
 
       toast.success(
-        `"${formData.name || formData.title || "Entry"}" submitted successfully!`,
+        `"${(formData.name as string) || (formData.title as string) || "Entry"}" submitted successfully!`,
         {
           description:
             "Your contribution is now in the review queue. You'll be notified when a reviewer comments or makes a decision.",
@@ -517,7 +634,12 @@ export default function OntologyForm({
       setTimeout(() => router.push(postSubmitPath), 1500);
     } catch (err) {
       toast.error(
-        getApiErrorMessage(err, "Could not submit this form. Please try again.")
+        getApiErrorMessage(
+          err,
+          isEditMode
+            ? "Could not save changes. Please try again."
+            : "Could not submit this form. Please try again."
+        )
       );
     } finally {
       setIsSubmitting(false);
@@ -541,6 +663,45 @@ export default function OntologyForm({
   };
   const isLastStep = currentStep === sections.length - 1;
 
+  if (isEditMode && editLoad === "loading") {
+    return (
+      <div className="container mx-auto max-w-2xl py-16 text-center">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
+        <p className="mt-4 text-muted-foreground">Loading current values…</p>
+      </div>
+    );
+  }
+
+  if (isEditMode && editLoad === "error" && loadError) {
+    return (
+      <div className="container mx-auto max-w-2xl space-y-4 px-4 py-12">
+        <h2 className="text-xl font-semibold">Could not open editor</h2>
+        <p className="text-muted-foreground">{loadError}</p>
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/knowledge/${ontologyClass.key}`)}
+        >
+          Back to {ontologyClass.labelPlural}
+        </Button>
+      </div>
+    );
+  }
+
+  const mainTitle = isEditMode
+    ? `Edit ${ontologyClass.label}`
+    : title || `Contribute ${ontologyClass.label}`;
+  const mainDescription = isEditMode
+    ? `You are editing record ${
+        recordMeta?.id ?? recordId
+      }${recordMeta?.status ? `. Status: ${String(recordMeta.status).replace(/_/g, " ")}` : ""}${
+        recordMeta?.contributor
+          ? `. Contributor: @${recordMeta.contributor}`
+          : ""
+      }.`
+    : description ||
+      ontologyClass.description ||
+      `Add a new ${ontologyClass.label.toLowerCase()} to the knowledge base.`;
+
   if (!hasSections) {
     return (
       <div className="container max-w-2xl mx-auto space-y-6 px-4 lg:px-6">
@@ -552,21 +713,25 @@ export default function OntologyForm({
             ← Back to contribute
           </button>
           <h1 className="text-2xl font-bold">
-            {title || `Contribute ${ontologyClass.label}`}
+            {mainTitle}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {description ||
-              ontologyClass.description ||
-              `Add a new ${ontologyClass.label.toLowerCase()} to the knowledge base.`}
+            {mainDescription}
           </p>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>{ontologyClass.label} Information</CardTitle>
+            <CardTitle>
+              {isEditMode
+                ? `${ontologyClass.label} (editing)`
+                : `${ontologyClass.label} information`}
+            </CardTitle>
             <CardDescription>
               {isSignedIn
-                ? `Provide details about this ${ontologyClass.label.toLowerCase()}.`
+                ? isEditMode
+                  ? "Change the fields you need, then save."
+                  : `Provide details about this ${ontologyClass.label.toLowerCase()}.`
                 : "Please sign in to submit contributions."}
             </CardDescription>
           </CardHeader>
@@ -585,7 +750,12 @@ export default function OntologyForm({
         </Card>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={clearForm} disabled={!isSignedIn}>
+          <Button
+            variant="outline"
+            onClick={clearForm}
+            disabled={!isSignedIn || isEditMode}
+            title={isEditMode ? "Clear is disabled while editing" : undefined}
+          >
             Clear
           </Button>
           <Button
@@ -598,8 +768,10 @@ export default function OntologyForm({
             ) : isSubmitting ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Submitting…
+                {isEditMode ? "Saving…" : "Submitting…"}
               </span>
+            ) : isEditMode ? (
+              "Save changes"
             ) : (
               "Submit"
             )}
@@ -620,12 +792,10 @@ export default function OntologyForm({
           ← Back to contribute
         </button>
         <h1 className="text-2xl font-bold">
-          {title || `Contribute ${ontologyClass.label}`}
+          {mainTitle}
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {description ||
-            ontologyClass.description ||
-            `Add a new ${ontologyClass.label.toLowerCase()} to the knowledge base.`}
+          {mainDescription}
         </p>
       </div>
 
@@ -711,8 +881,9 @@ export default function OntologyForm({
           <Button
             variant="ghost"
             onClick={clearForm}
-            disabled={!isSignedIn}
+            disabled={!isSignedIn || isEditMode}
             size="sm"
+            title={isEditMode ? "Clear is disabled while editing" : undefined}
           >
             Clear
           </Button>
@@ -726,10 +897,12 @@ export default function OntologyForm({
             ) : isSubmitting ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Submitting…
+                {isEditMode ? "Saving…" : "Submitting…"}
               </span>
+            ) : isEditMode ? (
+              "Save changes"
             ) : (
-              "Submit Contribution"
+              "Submit contribution"
             )}
           </Button>
         </div>

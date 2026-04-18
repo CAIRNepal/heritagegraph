@@ -21,6 +21,7 @@ import { EntityMetadataGrid } from "@/components/knowledge/entity-metadata-grid"
 import { EntityProvenanceCard } from "@/components/knowledge/entity-provenance-card";
 import { Separator } from "@/components/ui/separator";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
+import { getPublicApiUrl } from "@/lib/api-base";
 import {
   authorNamesFromRecord,
   buildEntitySubtitleParts,
@@ -28,7 +29,7 @@ import {
 } from "@/lib/knowledge/entity-view-utils";
 import { motion } from "framer-motion";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = getPublicApiUrl();
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -171,7 +172,14 @@ export default function OntologyViewPage() {
           <EntityQRCode entityId={id} entityName={displayName} size="sm" />
         </>
       )}
-      <Button size="sm" onClick={() => router.push(`/contribute/${ontologyClass.key}`)}>
+      <Button
+        size="sm"
+        onClick={() =>
+          router.push(
+            `/contribute/${ontologyClass.key}?id=${encodeURIComponent(String(id))}`
+          )
+        }
+      >
         <Edit className="mr-1 h-3.5 w-3.5" /> Edit
       </Button>
     </>
