@@ -14,6 +14,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.heritage_data",
     "apps.cidoc_data",
+    "apps.document_processing",
 
     "django_prometheus",
     # "djoser",
@@ -166,6 +167,21 @@ CORS_ALLOWED_ORIGINS = [
     "http://app.localhost",
     "http://heritagegraph.olinabin.com.np",
 ]
+
+# ── Celery Configuration ──────────────────────────────────────────────────────
+# Async task queue for OCR, NER extraction, and heavy processing
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/1')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kathmandu'
+CELERY_ENABLE_UTC = True
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes hard limit
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # Process one task at a time
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after 1000 tasks to prevent memory leaks
 
 GRAPH_MODELS = {
     "all_applications": True,

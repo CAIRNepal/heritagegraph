@@ -2,8 +2,8 @@
 # Multi-stage build for Django REST Framework backend
 # ================================================================
 
-# Stage 1: Builder
-FROM python:3.13-slim as builder
+# Stage 1: Base builder (common dependencies)
+FROM python:3.13-slim as base-builder
 
 # Prevent Python from writing .pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -22,13 +22,31 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy requirements
 COPY heritage_graph/requirements.txt .
 
-# Create wheels for dependencies (faster installation in runtime image)
+# Create wheels for dependencies
 RUN pip install --upgrade pip setuptools wheel && \
     pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels -r requirements.txt
 
 # ================================================================
-# Stage 2: Runtime
-FROM python:3.13-slim
+# Stage 2: OCR builder (heavy dependencies for Tesseract, Torch, etc.)
+FROM base-builder as ocr-builder
+
+# Install OCR system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tesseract-ocr \
+    tesseract-ocr-dev \
+    tesseract-ocr-nep \
+    tesseract-ocr-script-deva \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy OCR requirements
+COPY heritage_graph/requirements-ocr.txt .
+
+# Create wheels for OCR dependencies (heavy: PyTorch, transformers, etc.)
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels -r requirements-ocr.txt
+
+# ================================================================
+# Stage 3: Lean runtime (main backend — no OCR)
+FROM python:3.13-slim as runtime-lean
 
 # Prevent Python from writing .pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -38,27 +56,26 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Create non-root user for security
 RUN useradd -m -u 1000 django
 
-# Set working directory — /app/heritage_graph/ so manage.py is in CWD
-# and 'heritage_graph' is a proper Python package under /app/
+# Set working directory
 WORKDIR /app/heritage_graph
 
-# PYTHONPATH=/app so 'import heritage_graph.wsgi' resolves to /app/heritage_graph/wsgi.py
+# PYTHONPATH=/app so imports work
 ENV PYTHONPATH=/app
 
-# Install runtime dependencies only
+# Install minimal runtime dependencies (no OCR, no Tesseract)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     curl \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy wheels from builder and install
-COPY --from=builder /build/wheels /wheels
+# Copy wheels from base-builder and install
+COPY --from=base-builder /build/wheels /wheels
 COPY heritage_graph/requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache /wheels/*
 
-# Copy application code into /app/heritage_graph/ (creates a proper Python package)
+# Copy application code
 COPY ./heritage_graph /app/heritage_graph
 
 # Create necessary directories
@@ -74,10 +91,76 @@ USER django
 # Expose port
 EXPOSE 8000
 
-# Health check endpoint
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health/ || exit 1
 
 # Entrypoint
 ENTRYPOINT ["/app/heritage_graph/entrypoint.sh"]
 CMD ["gunicorn", "heritage_graph.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--worker-class", "sync", "--max-requests", "1000", "--max-requests-jitter", "100", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-"]
+
+# ================================================================
+# Stage 4: Full fat runtime (OCR worker — includes Tesseract, PyTorch, etc.)
+# Use: docker build --target ocr-worker
+FROM python:3.13-slim as ocr-worker
+
+# Prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Create non-root user for security
+RUN useradd -m -u 1000 django
+
+# Set working directory
+WORKDIR /app/heritage_graph
+
+# PYTHONPATH=/app
+ENV PYTHONPATH=/app
+
+# Install full runtime + OCR dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    postgresql-client \
+    tesseract-ocr \
+    tesseract-ocr-dev \
+    tesseract-ocr-nep \
+    tesseract-ocr-script-deva \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy wheels from both builders
+COPY --from=base-builder /build/wheels /wheels
+COPY --from=ocr-builder /build/wheels /wheels
+COPY heritage_graph/requirements.txt heritage_graph/requirements-ocr.txt /tmp/
+
+# Install all dependencies (main + OCR)
+RUN pip install --upgrade pip && \
+    pip install --no-cache /wheels/*
+
+# Copy application code
+COPY ./heritage_graph /app/heritage_graph
+
+# Create necessary directories
+RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media && \
+    chown -R django:django /app
+
+# Ensure entrypoint script is executable
+RUN chmod +x /app/heritage_graph/entrypoint.sh
+
+# Switch to non-root user
+USER django
+
+# Expose port (for admin tasks if needed)
+EXPOSE 8000
+
+# NO healthcheck for worker (doesn't listen on 8000)
+# Celery worker logs to stdout instead
+
+# Start Celery worker
+# Note: ENTRYPOINT is not used for worker; we use CMD directly
+CMD ["celery", "-A", "heritage_graph", "worker", "-l", "info", "--concurrency=2", "--max-tasks-per-child=100"]

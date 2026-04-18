@@ -53,3 +53,8 @@ SIMPLE_JWT.update({
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": False,
 })
+
+# ── Celery Development Configuration ──────────────────────────────────────
+# In development, run tasks synchronously (eager mode) for easier debugging
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True

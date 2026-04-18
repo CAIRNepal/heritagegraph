@@ -100,6 +100,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
+      target: runtime-lean
     container_name: heritage-backend
     restart: unless-stopped
     environment:
@@ -237,12 +238,89 @@ services:
         max-file: "3"
 
   # ---------------------------------------------------------------
+  # Redis Cache & Message Broker
+  # Used by Celery for async task queue
+  # ---------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: heritage-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Celery Worker for OCR & Document Processing
+  # Runs in background; processes async tasks from Redis queue
+  # ---------------------------------------------------------------
+  ocr-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: ocr-worker
+    container_name: heritage-ocr-worker
+    restart: unless-stopped
+    environment:
+      # Django settings
+      DJANGO_ENV: ${DJANGO_ENV:-production}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.production}
+      DEBUG: ${DEBUG:-False}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key-change-in-production}
+      # Database
+      DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
+      DB_NAME: ${DB_NAME:-heritage_db}
+      DB_USER: ${DB_USER:-heritage_user}
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      # Celery
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+      # OCR
+      OCR_ENABLED: ${OCR_ENABLED:-true}
+      TESSERACT_PATH: ${TESSERACT_PATH:-/usr/bin/tesseract}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./heritage_graph:/app/heritage_graph
+      - backend-media:/app/heritage_graph/media
+    networks:
+      - backend
+    command: celery -A heritage_graph worker -l info --concurrency=2 --max-tasks-per-child=100
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
 
 # ================================================================
 # VOLUMES
 # ================================================================
 volumes:
   postgres-data:
+    driver: local
+  redis-data:
     driver: local
   backend-static:
     driver: local
@@ -260,4 +338,5 @@ networks:
     driver: bridge
   # Backend network for inter-service communication
   backend:
+    driver: bridge
 
