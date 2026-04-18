@@ -375,10 +375,15 @@ docker-compose up --build
   │       └── init-scripts/01-init-databases.sh creates DBs
   │       └── healthcheck: pg_isready
   │
-  ├── 2. traefik starts (no dependencies)
+  ├── 2. redis starts (no dependencies)
+  │       └── listens on :6379
+  │       └── used as Celery broker + result backend
+  │       └── healthcheck: redis-cli ping
+  │
+  ├── 3. traefik starts (no dependencies)
   │       └── reads docker labels for routing
   │
-  ├── 3. backend starts (depends: postgres healthy)
+  ├── 4. backend starts (depends: postgres healthy)
   │       └── entrypoint.sh:
   │           ├── wait for DB connection
   │           ├── run migrations
@@ -387,27 +392,52 @@ docker-compose up --build
   │           └── exec gunicorn (4 workers)
   │       └── healthcheck: /health/
   │
-  ├── 4. frontend starts (no strict dependency)
+  ├── 5. frontend starts (no strict dependency)
   │       └── Next.js production server
   │       └── healthcheck: GET /
   │
-  └── 5. landing starts (no strict dependency)
-          └── Next.js production server
-          └── healthcheck: GET /
+  ├── 6. landing starts (no strict dependency)
+  │       └── Next.js production server
+  │       └── healthcheck: GET /
+  │
+  └── 7. ocr-worker starts (depends: redis + postgres healthy)
+          └── entrypoint: celery worker process
+          └── listens for OCR tasks on Redis queue
+          └── processes document classification, OCR, NER
+          └── concurrency: 2 workers (limits resource usage)
 ```
 
 ### Build Stages
 
-**Backend (`Dockerfile.backend`):**
+**Backend (`Dockerfile.backend`) — Multi-Stage Build:**
 ```
-builder (python:3.13-slim)
-  └── install build deps, create pip wheels
+Stage 1: base-builder (python:3.13-slim)
+  └── install build deps, create pip wheels for main requirements
 
-runtime (python:3.13-slim)
-  └── install runtime deps only, copy wheels
+Stage 2: ocr-builder (python:3.13-slim)
+  └── install tesseract, PyTorch system deps
+  └── create pip wheels for requirements-ocr.txt
+
+Stage 3: runtime-lean (python:3.13-slim) ← MAIN BACKEND IMAGE
+  └── install runtime deps only (libpq, curl, postgresql-client)
+  └── copy wheels from base-builder
   └── non-root user: django (1000)
   └── CMD: gunicorn with 4 workers
+  └── Size: ~600MB (lightweight, no OCR)
+
+Stage 4: ocr-worker (python:3.13-slim) ← CELERY WORKER IMAGE
+  └── install full runtime + OCR deps (tesseract, libsm6, libgomp1)
+  └── copy wheels from both builders
+  └── non-root user: django (1000)
+  └── CMD: celery worker (processes OCR tasks)
+  └── Size: ~3GB (includes torch, transformers, etc.)
 ```
+
+**Design Rationale:**
+- Separate images allow lean main backend (~600MB) vs. fat OCR worker (~3GB)
+- Faster deployment iteration on backend (small image)
+- Flexible scaling: run multiple generic backends, fewer expensive OCR workers
+- Development: both stages available for local testing
 
 **Frontend (`heritage_graph_ui/Dockerfile`):**
 ```
@@ -476,8 +506,10 @@ PostgreSQL (user-level access, connection limits)
 | Frontend | Google | HTTPS | OAuth consent flow (via NextAuth) |
 | Frontend | Backend | HTTP (internal) | API calls (via browser, through Traefik) |
 | Backend | Google | HTTPS | Verify ID tokens (via google-auth) |
-| Backend | PostgreSQL | TCP | Database queries |
-
+| Backend | PostgreSQL | TCP | Database queries || Backend | Redis | TCP:6379 | Queue OCR tasks (Celery broker) |
+| OCR Worker | Redis | TCP:6379 | Dequeue tasks, store results |
+| OCR Worker | PostgreSQL | TCP | Read documents, store OCR results |
+| OCR Worker | Anthropic API | HTTPS | Claude Vision for inscription rescue (optional) |
 ---
 
 ## 📐 Design Decisions & Rationale
@@ -492,3 +524,6 @@ PostgreSQL (user-level access, connection limits)
 | **PostgreSQL single database** | Simpler ops for small team; no longer need a separate Keycloak DB |
 | **Multi-stage Docker builds** | Smaller images, faster deploys, no build tools in production |
 | **Non-root containers** | Security best practice — limits blast radius of container escape |
+| **Celery + Redis for async tasks** | OCR is I/O-heavy; async prevents blocking Django. Redis scales to multiple workers, persistent queues. Alternatives: RQ (simpler, less reliable), APScheduler (no queue). Celery is battle-tested. |
+| **Separate OCR worker image** | Heavy deps (PyTorch, Tesseract) don't belong in main backend. Separate image: lean backend (~600MB) vs. fat worker (~3GB). Run fewer OCR workers, many generic backends. |
+| **requirements-ocr.txt separate file** | OCR deps are massive; separating them clarifies what goes where. Easy to skip in lightweight builds. |
