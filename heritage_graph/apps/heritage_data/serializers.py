@@ -437,7 +437,13 @@ class ActivitySerializer(serializers.ModelSerializer):
             "comment",
             "created_at",
         ]
-        read_only_fields = ["activity_id", "user", "entity_id", "created_at"]
+        read_only_fields = [
+            "activity_id",
+            "user",
+            "entity_id",
+            "entity_name",
+            "created_at",
+        ]
 
 class CulturalEntityListSerializer(serializers.ModelSerializer):
     contributor = UserSerializer(read_only=True)
