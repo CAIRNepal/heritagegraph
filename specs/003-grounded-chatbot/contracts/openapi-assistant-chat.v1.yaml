@@ -1,0 +1,154 @@
+openapi: 3.0.3
+info:
+  title: HeritageGraph Assistant Chat API
+  version: 0.1.0
+  description: |
+    Versioned contract for the grounded in-product chatbot. Implemented as Django REST Framework
+    under `/api/v1/assistant/`. All paths in this file are **relative to the server origin**
+    (e.g. `NEXT_PUBLIC_API_URL` in the browser).
+
+servers:
+  - url: /api/v1/assistant
+    description: Versioned assistant namespace (Django `urls.py` include)
+
+paths:
+  /chat/:
+    post:
+      operationId: assistantChatCompletion
+      summary: Return a grounded assistant reply for a chat turn
+      description: |
+        Accepts a short message history and optional client context. Server retrieves approved
+        graph and site-copy context, calls the model with a constrained system prompt, and
+        returns the assistant turn. `nav` is optional; when present, the client may navigate
+        only to allow-listed in-app paths.
+      tags: [assistant]
+      security:
+        - bearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatCompletionRequest'
+            examples:
+              about:
+                summary: About the product
+                value:
+                  messages:
+                    - role: user
+                      content: What is HeritageGraph and who is it for?
+              followUp:
+                summary: Follow-up with history
+                value:
+                  context:
+                    surface: dashboard
+                    path: /knowledge/monument
+                  messages:
+                    - role: user
+                      content: Tell me about the Kumari tradition.
+                    - role: assistant
+                      content: >-
+                        (prior assistant text omitted in examples)
+                    - role: user
+                      content: Where in Kathmandu is this most visible?
+      responses:
+        '200':
+          description: Successful completion
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatCompletionResponse'
+        '400':
+          description: Validation error (empty messages, malformed body)
+        '401':
+          description: Authentication required (only if endpoint is made auth-only; v1 may allow anonymous)
+        '502':
+          description: Upstream model or retrieval failure
+        '503':
+          description: Service unavailable (rate limit / configuration)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Google OAuth access token as issued through NextAuth session, when signed in
+
+  schemas:
+    ChatMessageDTO:
+      type: object
+      required: [role, content]
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
+        content:
+          type: string
+          minLength: 1
+          maxLength: 16000
+      description: One turn in a chat transcript. History length is server-clamped in implementation.
+
+    ChatClientContext:
+      type: object
+      properties:
+        surface:
+          type: string
+          example: public
+        path:
+          type: string
+          example: /about
+        locale:
+          type: string
+          example: en
+
+    ChatCompletionRequest:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatMessageDTO'
+          minItems: 1
+        context:
+          $ref: '#/components/schemas/ChatClientContext'
+        maxContextEntities:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 12
+          description: Suggested cap for graph rows in retrieval (server enforces a maximum).
+
+    SourceAttribution:
+      type: object
+      required: [id, type, title]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          example: graph_monument
+        title:
+          type: string
+        excerpt:
+          type: string
+          maxLength: 500
+
+    ChatCompletionResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          $ref: '#/components/schemas/ChatMessageDTO'
+          description: Assistant message (role `assistant`) with reply text.
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceAttribution'
+        nav:
+          type: string
+          pattern: '^/[^/].*'
+          example: /knowledge/monument
+          description: Optional in-app path for client navigation; must be allow-listed on server.
