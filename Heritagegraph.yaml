@@ -1,0 +1,2061 @@
+id: HeritageGrap
+name: HeritageGrap
+description: "An event-centric LinkML schema for representing cultural heritage information that fully aligns with CIDOC-CRM and PROV-O, enabling provenance tracking and ritual-spatial-temporal reasoning."
+version: 1.0.0
+license: CC-BY-4.0
+
+
+imports:
+  - linkml:types
+default_range: string
+
+types:
+  wktLiteral:
+    typeof: string
+    uri: "http://www.opengis.net/ont/geosparql#wktLiteral"
+
+enums:
+  ConditionTypeEnum:
+    permissible_values:
+      Good:
+        description: "No significant damage"
+      Damaged:
+        description: "Partially damaged"
+      Ruined:
+        description: "Severely damaged or collapsed"
+      Restored:
+        description: "Repaired and stabilized"
+
+
+  ExistenceStatusEnum:
+    permissible_values:
+      Extant:
+        description: "Currently exists in physical form"
+      PartiallyExtant:
+        description: "Fragments or ruins remain"
+      Destroyed:
+        description: "Known to have been destroyed; no physical remains"
+      Lost:
+        description: "Existence documented but location/remains unknown"
+      Hypothetical:
+        description: "Reconstructed or theorized; never physically realized"
+      Unknown:
+        description: "Existence status uncertain"
+
+  RitualTypeEnum:
+    permissible_values:
+      NityaPuja:
+        description: "Daily mandatory worship"
+        meaning: heritageGraph:NityaPuja
+        exact_mappings:
+          - aat:300055603  
+      NaimittikaPuja:
+        description: "Occasional/Festival worship"
+        meaning: heritageGraph:NaimittikaPuja
+      KamyaPuja:
+        description: "Desire-based optional worship"
+        meaning: heritageGraph:KamyaPuja
+      Abhisheka:
+        description: "Ritual bathing/anointing of deity"
+        meaning: heritageGraph:Abhisheka
+        exact_mappings:
+          - aat:300264383  
+      Homa:
+        description: "Fire offering ritual"
+        meaning: heritageGraph:Homa
+        exact_mappings:
+          - aat:300264387 
+      Bhajan:
+        description: "Devotional singing ritual"
+        meaning: heritageGraph:Bhajan
+        exact_mappings:
+          - aat:300264388  
+      Yagna:
+        description: "Vedic sacrifice ritual"
+        meaning: heritageGraph:Yagna
+        exact_mappings:
+          - aat:300264386  
+      Vrata:
+        description: "Vow observance ritual"
+        meaning: heritageGraph:Vrata
+        exact_mappings:
+          - aat:300264389 
+      Jatra:
+        description: "Festival procession ritual"
+        meaning: heritageGraph:Jatra
+        exact_mappings:
+          - aat:300264390  
+      ChariotProcession:
+        description: "Ritual chariot pulling"
+        meaning: heritageGraph:ChariotProcession
+        exact_mappings:
+          - aat:300254776  
+      MaskedPerformance:
+        description: "Ritual masked dance"
+        meaning: heritageGraph:MaskedPerformance
+        exact_mappings:
+          - aat:300264391 
+         
+      
+      RitualConsecration:
+        description: "Consecration/activation ritual"
+      ProcessionRitual:
+        description: "Ritual procession/movement"
+      InstallationRitual:
+        description: "Installation/enshrinement ritual"
+      DeinstallationRitual:
+        description: "De-installation/conclusion ritual"
+      ReturningRitual:
+        description: "Return to normal state ritual" 
+
+      Circumambulation:
+        description: "Ritual circular movement around sacred site"
+      RelicTour:
+        description: "Procession with sacred relics between sites"
+      ProcessionalMovement:
+        description: "General ritual movement between locations"
+
+  
+  DatePrecisionEnum:
+    permissible_values:
+      Exact:
+        description: "Precise date known"
+      Year:
+        description: "Year-level precision only"
+      Decade:
+        description: "Within 10-year range"
+      Century:
+        description: "Within century range"
+      Circa:
+        description: "Approximate date"
+
+  #Syncretic relationship types
+  SyncreticTypeEnum:
+    permissible_values:
+      Equivalence:
+        description: "Same deity in different traditions (e.g., Avalokiteshvara = Matsyendranath)"
+      Appropriation:
+        description: "Deity borrowed from one tradition into another"
+      Fusion:
+        description: "Intrinsically syncretic deity merging multiple traditions"
+      Historical:
+        description: "Gradual syncretism over time"
+
+  
+  ArchitecturalStyleEnum:
+      description: "A vocabulary of architectural styles for South Asian heritage, mapped to CIDOC E55 Type."
+      
+      enum_uri: crm:E55_Type  
+      permissible_values:
+        Pagoda:
+          description: "Multi-tiered roof style indigenous to Nepal"
+          meaning: aat:300004829
+        Shikhara:
+          description: "North Indian spire-shaped style"
+          meaning: aat:300446671
+        Dome:
+          description: "Dome-based style (Mughal/Neo-classical influence)"
+          meaning: aat:300001285
+        Chaitya:
+          description: "Buddhist votive shrine style"
+          meaning: aat:300007562
+        Stupa:
+          description: "Buddhist dome-shaped reliquary"
+          meaning: aat:300007576
+
+  #Guthi type enum
+  GuthiTypeEnum:
+    description: "Controlled vocabulary of Guthi functional types (CRM E55_Type)"
+    permissible_values:
+      SiGuthi:
+        description: "Funeral trust"
+        
+      JatraGuthi:
+        description: "Festival organization trust"
+        
+      PujaGuthi:
+        description: "Daily worship trust"
+      
+      TempleGuthi:
+        description: "Temple maintenance trust"
+        
+      NashaGuthi:
+        description: "Music and dance trust"
+       
+      SanaGuthi:
+        description: "Agricultural cooperative trust"
+       
+      SanGuthi:
+        description: "Life-cycle ritual trust"
+        
+      RajGuthi:
+        description: "Royal endowment trust"
+        
+
+
+prefixes:
+  heritageGraph: "https://w3id.org/heritagegraph/"
+  rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  owl: "http://www.w3.org/2002/07/owl#"
+  xsd: "http://www.w3.org/2001/XMLSchema#"
+  skos: "http://www.w3.org/2004/02/skos/core#"
+  dcterms: "http://purl.org/dc/terms/"
+  dct: "http://purl.org/dc/terms/"
+  
+ 
+  geo: "http://www.opengis.net/ont/geosparql#"
+  time: "http://www.w3.org/2006/time#"
+  wgs84: "http://www.w3.org/2003/01/geo/wgs84_pos#"
+  
+  
+  aat: "http://vocab.getty.edu/aat/"
+  tgn: "http://vocab.getty.edu/tgn/"
+  wikidata: "http://www.wikidata.org/entity/"
+  schema: "https://schema.org/"
+  dbo: "http://dbpedia.org/ontology/"
+  foaf: "http://xmlns.com/foaf/0.1/"
+  
+  prov: "http://www.w3.org/ns/prov#"
+  
+ 
+  crm: "http://www.cidoc-crm.org/cidoc-crm/"
+  crmsci: "http://www.cidoc-crm.org/crmsci/"
+  crmdig: "http://www.cidoc-crm.org/crmdig/"
+  crminf: "http://www.cidoc-crm.org/crminf/"
+  rico: "https://www.ica.org/standards/RiC/ontology#"
+  
+  datacite: "http://purl.org/spar/datacite/"
+
+default_prefix: heritageGraph
+
+annotations:
+  owl:ontologyIRI: "https://w3id.org/heritagegraph/ontology"
+  owl:versionIRI: "https://w3id.org/heritagegraph/ontology/0.1.0-alpha.2"
+  dcterms:creator: "Cair Nepal"
+  dcterms:publisher: "Cair Nepal"
+  dcterms:license: "https://creativecommons.org/licenses/by/4.0/"
+  owl:imports: "http://www.cidoc-crm.org/cidoc-crm/ http://www.w3.org/ns/prov#"
+
+classes:
+  # ========================================================================
+  # CORE TANGIBLE HERITAGE (CIDOC E22 Human-Made Objects)
+  # ========================================================================
+  HumanMadeObject:
+    class_uri: crm:E22_Human-Made_Object
+    description: "Physical objects created by human activity"
+    exact_mappings:
+      - schema:CreativeWork
+      - aat:300033618 
+      - wikidata:Q838948
+   
+    slots:
+      - id
+      - name
+      - has_current_location
+      - was_produced_by_event
+      - has_condition_assessment
+      - participates_in_ritual
+      - has_custody_event
+      - was_documented_by
+
+  ArchitecturalStructure:
+    is_a: HumanMadeObject
+    class_uri: crm:E22_Human-Made_Object
+
+    description: "Physical structures built for religious, social, or civic purposes. Links to events of production, use, custody, and documentation."
+    
+    exact_mappings:
+      - aat:300006888
+      - schema:Place
+      - wikidata:Q811979
+    slots:
+      - name
+      - note
+      # Event-centric relationships (not direct attribution)
+      - was_produced_by_event
+      - has_current_location
+
+      
+      - has_condition_assessment
+      - has_component
+      - has_architectural_style
+      #slots for tracking existence status
+      - existence_status
+      - last_known_existence_date
+      - destruction_event
+      - hypothesized_location
+      - documented_in_source
+      # slots for provenance assertions
+      - has_provenance_assertion
+      
+        
+    slot_usage:
+      name:
+        required: true
+      has_current_location:
+        required: true
+        minimum_cardinality: 1
+        maximum_cardinality: 1
+
+  Temple:
+    is_a: ArchitecturalStructure
+    class_uri: heritageGraph:Temple
+    
+    description: "Sacred architectural structure legally classified as an 'Ancient Monument' under Nepal's preservation laws, characterized by deity enshrinement and ritual activation."
+    
+   
+    exact_mappings:
+      - schema:HinduTemple
+      - aat:300007595
+      - wikidata:Q44539
+      - dbo:ReligiousBuilding
+      - dbo:Temple
+
+    
+    close_mappings:
+      - schema:PlaceOfWorship
+    slots:
+      - enshrines_deity_through_event
+      - has_architectural_style
+    slot_usage:
+      has_architectural_style:
+        required: true
+         
+
+
+
+  BuddhistMonument:
+    is_a: ArchitecturalStructure
+    class_uri: heritageGraph:BuddhistMonument
+    exact_mappings:
+      - aat:300007576  # stupa
+      - wikidata:Q177980
+    description: "Buddhist sacred structure (Stupa, Chaitya) with circumambulation and ritual activation patterns"
+
+  Stupa:
+    is_a: BuddhistMonument
+    class_uri: heritageGraph:Stupa
+    description: "Buddhist dome-shaped reliquary shrine (e.g., Boudhanath, Swayambhunath)"
+
+  Chaitya:
+    is_a: BuddhistMonument
+    class_uri: heritageGraph:Chaitya
+    description: "Buddhist votive shrine or prayer hall"
+
+  RestHouse:
+    is_a: ArchitecturalStructure
+    class_uri: heritageGraph:RestHouse
+    description: "Community structures for travelers and pilgrims, maintained by Guthi organizations"
+
+  Pati:
+    is_a: RestHouse
+    class_uri: heritageGraph:Pati
+    description: "Open-air pavilion for resting travelers"
+
+  Sattal:
+    is_a: RestHouse
+    class_uri: heritageGraph:Sattal
+    description: "Multi-story rest house (3-5 floors) with ritual and social functions"
+
+  Dharmashala:
+    is_a: RestHouse
+    class_uri: heritageGraph:Dharmashala
+    description: "Pilgrim lodge operated by a Guthi organization"
+
+  WaterStructure:
+    is_a: ArchitecturalStructure
+    class_uri: heritageGraph:WaterStructure
+    description: "Engineered water supply systems with ritual and civic significance"
+
+  DhungeDhara:
+    is_a: WaterStructure
+    class_uri: heritageGraph:DhungeDhara
+    description: "Stone spout (hiti) with carved imagery, used for ritual bathing and daily water supply"
+
+  Pokhari:
+    is_a: WaterStructure
+    class_uri: heritageGraph:Pokhari
+    description: "Pond or tank for water storage, ritual bathing, and ecological management"
+
+  IconographicObject:
+    is_a: HumanMadeObject
+    class_uri:  crm:E22_Human-Made_Object 
+    description: "Sacred visual art objects that depict or embody deities through iconographic conventions"
+    exact_mappings:
+      - aat:300033618  
+      - aat:300041273  
+      - dbo:Artwork
+    close_mappings:
+      - crm:E36_Visual_Item
+
+    slots:
+      - name
+      - note
+      - depicts_deity
+      - was_produced_by_event
+      - participates_in_ritual
+      - has_current_location
+      - used_by
+
+  Paubha:
+    is_a: IconographicObject
+    class_uri: heritageGraph:Paubha
+    exact_mappings:
+      - aat:300033618  
+      - wikidata:Q130993
+    description: "Traditional Newari scroll painting (thangka) with mandala and deity iconography"
+
+  Murti:
+    is_a: IconographicObject
+    class_uri: heritageGraph:Murti
+    description: "Consecrated statue of a deity, ritually activated to serve as divine presence (not merely depiction)"
+    exact_mappings:
+      - aat:300264383  
+      - wikidata:Q2594295
+    slots:
+      - consecrated_by_event
+      - is_about_deity
+
+  ArchitecturalElement:
+    class_uri: crm:E25_Architectural_Element
+    description: "Carved or constructed component of a architectural strucuture (e.g., Gajur, Torana, Tundal)"
+    exact_mappings:
+      - aat:300001819
+    slots:
+      - name
+      - note
+      - is_component_of
+   
+    slot_usage:
+      name:
+        required: true
+      is_component_of:
+        required: true
+
+  # ========================================================================
+  # CONCEPTUAL ENTITIES (CIDOC E28 Conceptual Objects)
+  # ========================================================================
+
+  PhysicalHeritageThing:
+    class_uri: heritageGraph:PhysicalHeritageThing
+    union_of:
+      - ArchitecturalStructure
+      - IconographicObject
+      - ArchitecturalElement
+
+
+  Deity:
+    class_uri: crm:E28_Conceptual_Object
+    description: "Divine conceptual entity in Hindu, Buddhist, or syncretic traditions. Distinct from physical representations (Murti) and ritual presences."
+    exact_mappings:
+      - aat:300343156
+      - dbo:Deity
+      - schema:Deity
+    slots:
+      - name
+      - note
+      - has_religious_tradition
+      - is_depicted_in
+      - is_invoked_in_ritual
+      - is_enshrined_through_event
+      
+  ReligiousTradition:
+    class_uri: crm:E55_Type
+    description: "Religious or philosophical tradition (e.g., Hindu, Buddhist, Syncretic)"
+    exact_mappings:
+      - aat:300073708 
+    slots:
+      - name
+      - note
+  HistoricalEvent:
+    class_uri: crm:E5_Event
+    description: "Major event affecting heritage structures or ritual life
+      (earthquake, epidemic, political transition, fire, flood)."
+    slots:
+      - name
+      - note
+      - has_timespan
+      - took_place_at
+      - architectural_structures
+      - includes_ritual_event
+
+  CalendarSystem:
+
+    class_uri: time:Calendar
+    exact_mappings:
+      - time:Calendar
+      - crm:E29_Designated_Reference_System
+    description: "Calendar reckoning system with conversion rules for multi-calendar temporal reasoning"
+    slots:
+      - name
+    
+      - epoch_date_gregorian
+      - is_primary_for_tradition
+      - year_offset_from_gregorian
+      - note
+    slot_usage:
+      name:
+        required: true
+   
+  # ========================================================================
+  # EVENT CLASSES (CIDOC-CRM Event-Centric Core)
+  # ========================================================================
+
+  Production:
+    class_uri: crm:E12_Production
+    description: "Event of creating an architectural structure, murti, or paubha"
+    slots:
+      - name
+      - produced_object
+      - carried_out_by
+      - used_technique
+      - took_place_at
+      - has_timespan
+      - commissioned_by
+      - was_documented_by
+      - has_provenance_assertion
+
+  RitualEvent:
+    class_uri: crm:E7_Activity
+    description: "Intentional ritual activity that activates sacred space, invokes deities, and binds social groups"
+    exact_mappings:
+      - aat:300055603
+    slots:
+      - name
+      - note
+      - ritual_type
+      - ritual_on_structure
+      - has_timespan
+      - lunar_date_tithi
+      - recurrence_pattern
+      - invokes_deity
+      - carried_out_by
+      - performed_by_group
+     
+      - is_part_of_festival
+      - managed_by_guthi
+      - was_documented_by
+      - has_provenance_assertion
+      - occurs_before
+      - occurs_after
+      - used_materials
+
+      # for moving pocessions
+      - route_places          
+      - start_place         
+      - end_place            
+      - route_description 
+
+  Festival:
+    is_a: RitualEvent
+    class_uri: crm:E7_Activity
+    description: "Large-scale community ritual event (Jatra) involving processions, music, and collective participation"
+    slots:
+      - includes_ritual_event
+
+  ChariotFestival:
+    is_a: Festival
+    class_uri: heritageGraph:ChariotFestival
+    description: "Festival involving ceremonial chariot procession (e.g., Rato Machhindranath Jatra)"
+
+  MaskedDance:
+    is_a: Festival
+    class_uri: heritageGraph:MaskedDance
+    description: "Festival featuring masked dancers embodying deities (e.g., Kartik Naach)"
+   
+
+  Consecration:
+    class_uri: crm:E7_Activity
+    description: "Ritual event that transforms an object into a sacred vessel (e.g., Prana Pratistha for Murti)"
+    slots:
+      - name
+      - consecrated_object
+      - carried_out_by
+      - took_place_at
+      - has_timespan
+      - makes_deity_present
+
+  Enshrinement:
+    class_uri: crm:E7_Activity
+    description: "Event of installing a deity's murti or symbol within a temple sanctum"
+    slots:
+      - name
+      - enshrined_deity
+      - enshrined_in_structure
+      - carried_out_by
+      - has_timespan
+
+  TransferOfCustody:
+    class_uri: crm:E10_Transfer_of_Custody
+    description: "Event of transferring responsibility for temple maintenance, ritual performance, or artifact stewardship"
+    slots:
+      - name
+      - transferred_object
+      - transferred_from_actor
+      - transferred_to_actor
+      - transferred_to_guthi
+      - took_place_at
+      - has_timespan
+
+  ConditionAssessment:
+    class_uri: crm:E14_Condition_Assessment
+    description: "Event of evaluating the physical state of a heritage object or structure"
+    slots:
+      - name
+      - assessed_object
+      - assessed_condition_state
+      - carried_out_by
+      - has_timespan
+      
+  ConditionState:
+    class_uri: crm:E3_Condition_State
+    description: "A physical condition state of a heritage object"
+    slots:
+      - name
+      - note
+      - has_condition_type
+     
+
+
+  # ========================================================================
+  # SOCIAL ORGANIZATIONS (CIDOC E74 Group)
+  # ========================================================================
+
+  Guthi:
+    class_uri: crm:E74_Group
+    description: "Endowed trust organization unique to Nepal, managing temples, rituals, and land through hereditary or voluntary membership"
+    slots:
+      - name
+      - note
+      - guthi_type
+      - performs_ritual
+      - holds_custody_of
+      - has_membership
+     
+      # - has_land_endowment
+    slot_usage:
+      guthi_type:
+        range: GuthiTypeEnum
+
+  # SiGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:SiGuthi
+  #   description: "Funeral trust responsible for death rituals and cremation ceremonies"
+
+  # JatraGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:JatraGuthi
+  #   description: "Festival trust responsible for organizing and funding annual Jatra events"
+
+  # PujaGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:PujaGuthi
+  #   description: "Worship trust responsible for daily puja rituals. Distinct from JatraGuthi."
+
+  # TempleGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:TempleGuthi
+  #   description: "Trust managing temple maintenance, daily puja, and priest salaries"
+
+  # NashaGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:NashaGuthi
+  #   description: "Music and dance trust (nāsaḥdyaḥ) preserving ritual performance traditions"
+
+  # SanaGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:SanaGuthi
+  #   description: "Agricultural cooperative managing communal farmland"
+
+  # SanGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:SanGuthi
+  #   description: "Life-cycle ritual trust managing rites of passage"
+
+  # RajGuthi:
+  #   is_a: Guthi
+  #   class_uri: heritageGraph:RajGuthi
+  #   description: "Royal Guthi established by Malla or Shah monarchy (pre-1964)"
+
+  CasteGroup:
+    class_uri: crm:E74_Group
+    description: "Hereditary social group (Jati) with specific ritual roles and occupational duties"
+    slots:
+      - name
+      - note
+      - traditional_role
+
+  # ========================================================================
+  # ACTORS (CIDOC E39 Actor / E21 Person)
+  # ========================================================================
+
+  Person:
+    class_uri: crm:E21_Person
+    description: "Individual person who performs, commissions, documents, or verifies heritage activities"
+    slots:
+      - id
+      - name
+      - note
+      - birth_timespan
+      - death_timespan
+      - member_of_group
+      - carried_out_activity
+      - institutional_affiliation
+      - expertise_area
+
+  Actor:
+    class_uri: crm:E39_Actor
+    description: "General actor (person or group) responsible for events"
+    slots:
+      - name
+      - note
+
+  # ========================================================================
+  # SPATIOTEMPORAL CLASSES
+  # ========================================================================
+
+  Place:
+    class_uri: crm:E53_Place
+    description: "Defined geographic location where events occur and structures exist"
+    slots:
+      - name
+      - place_coordinates
+      - place_type
+      - contains_structure
+     
+
+  TimeSpan:
+    class_uri: crm:E52_Time-Span
+    description: "Temporal extent of an event or period"
+    slots:
+   
+      - date_earliest
+      - date_latest
+      - calendar_system
+      - date_precision
+    slot_usage:
+      calendar_system:
+        
+        range: CalendarSystem
+      date_precision:
+        range: DatePrecisionEnum
+
+  # ========================================================================
+  # PROVENANCE CLASSES (PROV-O aligned with CIDOC)
+  # ========================================================================
+
+  AssertableEntity:
+    class_uri: crminf:E1_Entity
+    description: "Any entity that can be the subject of a heritage assertion"
+    union_of:
+      - HumanMadeObject
+      - ArchitecturalStructure
+      - IconographicObject
+      - ArchitecturalElement
+      - Deity
+      - Person
+      - Guthi
+      - CasteGroup
+      - Place
+      - TimeSpan
+      - Material
+      - Technique
+  HeritageAssertion:
+
+    class_uri: crminf:I2_Belief  # ISO standard for arguments
+    exact_mappings:
+      - prov:Entity
+      - schema:Claim
+
+    description: "A single factual claim about a heritage entity, with explicit source, author, date, and confidence"
+    slots:
+      - assertion_content
+      - asserts_about_entity
+      - asserts_about_event
+      - was_derived_from_source
+      - was_attributed_to_agent
+      - generated_at_time
+      - confidence_score
+      - data_quality_note
+      - reconciliation_status
+      # to track what is being asserted
+      - asserted_property
+      - asserted_value
+      - supersedes_assertion
+
+  DataSource:
+    class_uri: crm:E73_Information_Object
+    description: "Original source from which heritage information was derived"
+    slots:
+      - name
+      - datacite_identifier
+      - datacite_identifier_type
+      - datacite_creator
+      - datacite_publisher
+      - datacite_resource_type
+      - publication_timespan
+      - source_citation
+      - source_url
+      - source_language
+      - note
+
+
+ 
+
+  FieldSurveyActivity:
+    is_a: DocumentationActivity
+    class_uri: crmsci:S4_Observation 
+    description: "The activity of measuring, photographing, or assessing a site in person."
+   
+
+  OralHistoryInterview:
+    is_a: DocumentationActivity
+    class_uri: crm:E65_Creation    # The event of creating the interview
+    description: "The interaction event between a researcher and a knowledge holder."
+
+  FieldSurveyDataset:
+    is_a: DataSource
+    class_uri: crm:E31_Document
+    description: "The structured data or report resulting from a field survey."
+
+  OralHistoryRecording:
+    is_a: DataSource
+    class_uri: crm:E33_Linguistic_Object
+    description: "The recording or transcript of an oral history interview."
+
+
+  ArchivalRecord:
+    is_a: DataSource
+    class_uri: heritageGraph:ArchivalRecord
+    description: "Government or institutional administrative record"
+    exact_mappings:
+      - rico:Record  
+    broad_mappings:
+      - crm:E31_Document
+
+  DocumentationActivity:
+    class_uri: crm:E7_Activity
+    broad_mappings:
+      - prov:Activity  
+    description: "The intellectual or technical process of recording information about a heritage entity, aligning CIDOC E13 (Attribute Assignment) with PROV-O Activity."
+    
+
+    slots:
+      - name
+      - produced_information_object 
+      - subject_entity
+      - subject_event 
+   
+      - performed_by_agent
+      - used_method
+      - used_equipment
+
+      - generated_assertion
+      
+      - has_timespan
+  InformationObject:
+    is_a: DataSource
+    class_uri: crm:E73_Information_Object
+    description: "A recorded piece of information about heritage"
+    slots:
+      - name
+      - is_about_entity
+      - created_by_documentation
+      - is_about_event
+      - was_documented_by
+      - source_language
+    
+
+  Verification:
+    is_a: DocumentationActivity
+    class_uri: heritageGraph:Verification
+    description: "Process of cross-checking heritage claims against multiple sources"
+    slots:
+      - verification_method
+      - note
+      - verified_assertion
+      - verified_by_expert
+
+  DataCustodian:
+    class_uri: prov:Agent
+    description: "Institution or person currently stewarding heritage data"
+    slots:
+      - name
+      - custodian_type
+      - note
+  
+  DestructionEvent:
+    is_a: HistoricalEvent
+    class_uri: crm:E6_Destruction
+    description: "Event that destroyed or damaged a structure."
+    slots:
+      - note
+      - has_timespan
+      - took_place_at
+     
+
+
+
+
+ 
+
+  
+    # ============================================================================
+  # LIVING GODDESS (KUMARI) CLASSES
+  # ============================================================================
+
+
+
+  SyncreticRelationship:
+    class_uri: crm:E13_Attribute_Assignment
+    description: "Formalizes the syncretic equivalence between divine entities across different
+      theological frameworks. Following CIDOC CRM E13, it treats syncretism as a
+      propositional claim with associated epistemic authority and provenance."
+    slots:
+      - name
+      - note
+      - assigned_to_deity       
+      - assigned_equivalent     
+      - syncretic_type     
+      - was_derived_from_source
+      - was_documented_by
+      - documented_in_source     
+      
+
+     
+
+
+  LivingGoddessTenure:
+    class_uri: crm:E4_Period
+    description: "Time-bounded role where a person embodies a deity as Living Goddess (Kumari),
+      residing at a specific god-house and supported by religious institutions.
+      This class captures the unique Nepali tradition of living deity embodiment
+      in young girls selected from Buddhist Shakya/Vajracharya families."
+    slots:
+      - name
+      - had_participant
+      - embodied_deity
+      - residence_structure
+      - has_timespan
+      - supported_by_institution
+      - has_retirement_event 
+      - was_documented_by
+    
+    slot_usage:
+      name:
+        required: true
+        description: "Name of this tenure period (e.g., 'Kumari Samita Bajracharya Tenure 2015-2023')"
+    
+      had_participant:
+        required: true
+        range: Person
+        description: "The girl serving as Living Goddess during this period"
+      
+      embodied_deity:
+        required: true
+        range: Deity
+        description: "Deity believed to be present in this person (e.g., Taleju, Kumari Devi)"
+      
+      residence_structure:
+        required: true
+        range: ArchitecturalStructure
+        description: "God-house where Living Goddess resides (e.g., Kumari Ghar)"
+      
+      has_timespan:
+        required: true
+        range: TimeSpan
+        description: "Duration of Living Goddess tenure (from selection to retirement)"
+      
+      supported_by_institution:
+        range: Guthi
+        multivalued: true
+        description: "Guthi or state body providing economic/ritual support during tenure"
+      
+
+
+  LivingGoddessRetirement:
+    is_a: RitualEvent
+    class_uri: heritageGraph:LivingGoddessRetirement
+    description: "
+      Ritual or administrative event that formally ends a Living Goddess tenure,
+      marking the person's return to secular status. Common triggers include
+      first menstruation, injury causing blood loss, or serious illness.
+      This event terminates the divine embodiment and restores the girl to ordinary status."
+
+    
+    exact_mappings:
+      - crm:E7_Activity
+    
+    slots:
+      - name
+      - ended_tenure_of
+      - has_timespan
+      - note
+      - carried_out_by
+      - performed_by_group
+      - took_place_at
+     
+      - has_provenance_assertion
+      - was_documented_by
+    
+    slot_usage:
+      name:
+        required: true
+        description: "Name of retirement event"
+
+      
+      ended_tenure_of:
+        required: true
+        range: LivingGoddessTenure
+        description: "The Living Goddess tenure that this event terminated"
+      
+      has_timespan:
+        required: true
+        range: TimeSpan
+        description: "When the retirement occurred"
+
+      
+      carried_out_by:
+        range: Person
+        multivalued: true
+        description: "Priests or officials who performed the retirement ritual"
+      
+      took_place_at:
+        range: Place
+        description: "Where the retirement ceremony occurred"
+
+  LivingGoddessSelection:
+    is_a: RitualEvent
+    class_uri: heritageGraph:LivingGoddessSelection
+    description: "
+      Tantric ritual process of selecting a new Living Goddess from eligible candidates.
+      Involves examination of 32 auspicious physical marks (lakshana), horoscope matching
+      with the city and ruling authority, and tests of fearlessness (e.g., remaining calm
+      among buffalo heads and masked dancers in darkness). Performed by committee of
+      Vajracharya priests, royal priest (Raj Jyotish), and astrologer."
+    
+
+    
+    exact_mappings:
+      - crm:E7_Activity
+    
+    slots:
+      - name
+      - selected_person
+      - initiated_tenure
+      - has_timespan
+      - carried_out_by
+      - performed_by_group
+       
+      - took_place_at
+      - selection_criteria_met
+      - has_provenance_assertion
+      - was_documented_by
+      - is_critical_for_festival
+    
+    slot_usage:
+      name:
+        required: true
+        description: "Name of selection event"
+      
+      selected_person:
+        required: true
+        range: Person
+        description: "Girl selected to become Living Goddess"
+      
+      initiated_tenure:
+        required: true
+        range: LivingGoddessTenure
+        description: "Living Goddess tenure that this selection event initiated"
+      
+      selection_criteria_met:
+        range: string
+        multivalued: true
+        description: "List of selection criteria verified"
+
+  
+  Technique:
+    class_uri: crm:E29_Design_or_Procedure
+    description: "Method or craft process used in production or ritual"
+    slots:
+      - name
+      - note
+
+  Material:
+    class_uri: crm:E57_Material
+    description: "Physical substance used in construction or crafting"
+    slots:
+      - name
+      - note
+
+  Container:
+    tree_root: true
+    description: "Root container for cultural heritage data instances"
+    attributes:
+      places:
+        description: "Collection of Place instances"
+        range: Place
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      calendar_systems:
+        description: "Collection of CalendarSystem instances"
+        range: CalendarSystem
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+        
+      syncretic_relationships:
+        description: "Collection of SyncreticRelationship instances"
+        range: SyncreticRelationship
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+
+      
+      physical_heritage_things:
+        description: "Collection of all physical heritage objects"
+        range: PhysicalHeritageThing
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      religious_traditions:
+        description: "Collection of ReligiousTradition instances"
+        range: ReligiousTradition
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      deities:
+        description: "Collection of Deity instances"
+        range: Deity
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      has_architectural_style:
+        description: "Collection of ArchitecturalStyle instances"
+        range: ArchitecturalStyleEnum
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+   
+      
+      architectural_elements:
+        description: "Collection of ArchitecturalElement instances"
+        range: ArchitecturalElement
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      persons:
+        description: "Collection of Person instances"
+        range: Person
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      caste_groups:
+        description: "Collection of CasteGroup instances"
+        range: CasteGroup
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      guthis:
+        description: "Collection of Guthi instances"
+        range: Guthi
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      production_events:
+        description: "Collection of Production event instances"
+        range: Production
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      enshrinement_events:
+        description: "Collection of Enshrinement event instances"
+        range: Enshrinement
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      consecration_events:
+        description: "Collection of Consecration event instances"
+        range: Consecration
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      ritual_events:
+        description: "Collection of RitualEvent instances"
+        range: RitualEvent
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      festivals:
+        description: "Collection of Festival instances"
+        range: Festival
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      custody_events:
+        description: "Collection of TransferOfCustody event instances"
+        range: TransferOfCustody
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      data_sources:
+        description: "Collection of DataSource instances"
+        range: DataSource
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      data_custodians:
+        description: "Collection of DataCustodian instances"
+        range: DataCustodian
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      provenance_assertions:
+        description: "Collection of Assertion instances"
+        range: HeritageAssertion
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      documentation_activities:
+        description: "Collection of DocumentationActivity instances"
+        range: DocumentationActivity
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      information_objects:
+        description: "Collection of InformationObject instances"
+        range: InformationObject
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+ 
+      
+      materials:
+        description: "Collection of Material instances"
+        range: Material
+        multivalued: true
+        inlined: true
+        inlined_as_list: true
+      
+      metadata:
+        description: "Dataset metadata"
+        range: Metadata
+
+  Metadata:
+    description: "Dataset metadata information"
+    attributes:
+      dataset_name:
+        range: string
+      dataset_version:
+        range: string
+      schema_version:
+        range: string
+      generated_date:
+        range: string
+      license:
+        range: string
+      curator:
+        range: string
+# ============================================================================
+# SLOTS (PROPERTIES)
+# ============================================================================
+
+slots:
+  architectural_structures:
+    slot_uri: crm:P12_occurred_in_the_presence_of
+    range: ArchitecturalStructure
+    multivalued: true
+    description: "Heritage structures affected by or present during this historical event"
+
+
+
+  id:
+    identifier: true
+    range: uriorcurie 
+    required: true
+    description: "Globally unique URI identifier"
+    slot_uri: dcterms:identifier
+    exact_mappings:
+      - schema:identifier
+ 
+  route_places:
+    slot_uri: crm:P7_took_place_at
+    range: Place
+    multivalued: true
+    
+    description: "Ordered list of places visited during movement ritual"
+
+  start_place:
+    slot_uri: heritageGraph:start_place
+    range: Place
+    description: "Starting location of movement ritual"
+
+  end_place:
+    slot_uri: heritageGraph:end_place
+    range: Place
+    description: "Ending location of movement ritual"
+
+  route_description:
+    slot_uri: heritageGraph:route_description
+    range: string
+    description: "Text description of the procession route"
+
+  name:
+    slot_uri: rdfs:label 
+    range: string
+    description: "Primary name or label"
+
+  is_component_of:
+    slot_uri: crm:P46i_forms_part_of
+    range: ArchitecturalStructure
+    description: "Larger structure that this element is part of"
+
+
+  note:
+    slot_uri: crm:P3_has_note
+    range: string
+    description: "Free-text note (description, reason, verification notes"
+
+    # ============================================================================
+  # LIVING GODDESS (KUMARI) SLOTS
+  # ============================================================================
+
+  had_participant:
+    slot_uri: crm:P11_had_participant
+    range: Actor
+    multivalued: true
+
+  embodied_deity:
+    slot_uri: crm:P14.1_in_the_role_of  # ✅ Use CRM role mechanism
+    range: Deity
+    description: "Deity role embodied by participant"
+
+  residence_structure:
+    slot_uri: crm:P74_has_current_or_former_residence
+    range: ArchitecturalStructure
+    description: "Structure where a person resides during a specific period. For Living Goddess, this is typically a Kumari Ghar (god-house)."
+
+
+  supported_by_institution:
+    slot_uri: heritageGraph:supported_by_institution
+    range: Guthi
+    multivalued: true
+    description: "Institution(s) providing economic support (stipend, land endowment) or ritual support (priest salaries) for a Living Goddess during tenure. Extends Guthi role beyond structure management to person support."
+
+
+
+  ended_tenure_of:
+    slot_uri: heritageGraph:ended_tenure_of
+    range: LivingGoddessTenure
+    description: "Points from a LivingGoddessRetirement event to the tenure that it terminated. Enables reconstruction of complete Living Goddess lifecycle."
+    inverse: has_retirement_event
+
+  has_retirement_event:
+    slot_uri: heritageGraph:has_retirement_event
+    range: LivingGoddessRetirement
+    description: "Retirement event that ended this Living Goddess tenure"
+    inverse: ended_tenure_of
+
+  selected_person:
+    slot_uri: heritageGraph:selected_person
+    range: Person
+    description: "Person selected through a ritual selection process to assume a sacred role or office"
+
+  initiated_tenure:
+    slot_uri: heritageGraph:initiated_tenure
+    range: LivingGoddessTenure
+    description: "Living Goddess tenure that was initiated by this selection event"
+
+  selection_criteria_met:
+    slot_uri: heritageGraph:selection_criteria_met
+    range: string
+    multivalued: true
+    description: "List of selection criteria verified during Living Goddess selection process (e.g., '32 lakshana present', 'No scars or blemishes', 'Horoscope compatible with city', 'Passed fearlessness test')"
+
+  has_timespan:
+    slot_uri: crm:P4_has_time-span
+    range: TimeSpan
+    description: "Links event to its temporal extent"
+
+
+
+  date_earliest:
+    slot_uri: crm:P82a_begin_of_the_begin
+    range: date
+    description: "Earliest possible date (for uncertain dates)"
+
+  date_latest:
+    slot_uri: crm:P82b_end_of_the_end
+    range: date
+    description: "Latest possible date (for uncertain dates)"
+
+  calendar_system:
+    slot_uri: heritageGraph:calendar_system
+    range: CalendarSystem
+    description: "Calendar system used for date representation"
+
+  lunar_date_tithi:
+    slot_uri: heritageGraph:lunar_date_tithi
+    range: string
+    description: "Lunar day (Tithi) for ritual timing"
+
+  recurrence_pattern:
+    slot_uri: heritageGraph:recurrence_pattern
+    range: string
+    description: "Frequency of recurring ritual (e.g., annual, monthly)"
+
+  birth_timespan:
+    slot_uri: crm:P4_has_time-span
+    range: TimeSpan
+    description: "Person's birth timespan"
+
+  death_timespan:
+    slot_uri: crm:P4_has_time-span
+    range: TimeSpan
+    description: "Person's death timespan"
+
+  publication_timespan:
+    slot_uri: crm:P4_has_time-span
+    range: TimeSpan
+    description: "When source was published"
+
+  # --- SPATIAL PROPERTIES ---
+
+
+  place_coordinates:
+    slot_uri: geo:asWKT  
+    range: wktLiteral
+    description: "Coordinates as WKT literal"
+
+  place_type:
+    slot_uri: crm:P2_has_type
+    range: string
+    description: "Type of place (city, village, region)"
+
+  has_current_location:
+    slot_uri: crm:P55_has_current_location
+    range: Place
+    description: "Current location of object or structure"
+
+  took_place_at:
+    slot_uri: crm:P7_took_place_at 
+    range: Place
+    description: "Place Where event occurred"
+
+  ritual_on_structure:
+    slot_uri: crm:P8_took_place_on_or_within
+    range: PhysicalHeritageThing
+    description: "Ritual occurs at specific temple or monument"
+
+
+
+  contains_structure:
+    slot_uri: crm:P53i_is_former_or_current_location_of
+    range: ArchitecturalStructure
+    multivalued: true
+    description: "Structures located in this place"
+
+  # --- EVENT-CENTRIC PRODUCTION RELATIONSHIPS ---
+  is_primary_for_tradition:
+    slot_uri: heritageGraph:is_primary_for_tradition
+    range: ReligiousTradition
+    multivalued: true
+    description: "Religious tradition(s) that primarily use this calendar system (e.g., Bikram Sambat for Hindu, Nepal Sambat for Newar Buddhist)"
+
+  existence_status:
+    slot_uri: heritageGraph:existence_status
+    range: ExistenceStatusEnum
+    description: "Current physical status of the structure"
+
+  last_known_existence_date:
+    slot_uri: heritageGraph:last_known_existence_date
+    range: date
+    description: "Latest date when this structure is documented as existing (ISO 8601)"
+
+  destruction_event:
+    slot_uri: heritageGraph:destruction_event
+    range: DestructionEvent
+    description: "Event that destroyed this structure (if known)"
+
+  hypothesized_location:
+    slot_uri: heritageGraph:hypothesized_location
+    range: Place
+    multivalued: true
+    description: "Possible locations if the structure is lost"
+
+  documented_in_source:
+    slot_uri: prov:wasDerivedFrom
+    range: DataSource
+    multivalued: true
+    description: "Sources that mention or document this entity"
+
+
+
+  was_produced_by_event:
+    slot_uri: crm:P108i_was_produced_by
+    range: Production
+    description: "Event that created this object or structure"
+
+  produced_object:
+    slot_uri: crm:P108_has_produced
+    range: PhysicalHeritageThing
+    description: "Object produced by this production event"
+    
+
+  carried_out_by:
+    slot_uri: crm:P14_carried_out_by
+    range: Actor
+    multivalued: true
+    description: "Actor(s) who performed this event"
+  used_by:
+    slot_uri: heritageGraph:used_by
+    range: Actor
+    multivalued: true
+    description: "Actor(s) who use, handle, or are responsible for this object in ritual contexts"
+
+  commissioned_by:
+    slot_uri: crm:P17_was_motivated_by
+    range: Actor
+    multivalued: true
+    description: "Person or group who commissioned production"
+   
+
+  used_technique:
+    slot_uri: crm:P32_used_general_technique
+    range: Technique
+    multivalued: true
+    description: "Craft technique used in production"
+
+  # --- RITUAL EVENT RELATIONSHIPS ---
+
+  invokes_deity:
+    slot_uri: crm:P12_occurred_in_the_presence_of
+    range: Deity
+    multivalued: true
+    description: "Deity invoked or made present through ritual"
+
+  occurs_before:
+    slot_uri: crm:P120_occurs_before
+    range: RitualEvent
+    description: "Points to the next ritual in the canonical sequence."
+
+  occurs_after:
+    slot_uri: crm:P120i_is_occurred_before_by
+    range: RitualEvent
+    description: "Points to the prerequisite ritual."
+
+
+
+  performed_by_group:
+    is_a: carried_out_by
+    slot_uri: crm:P14_carried_out_by
+    any_of:
+      - range: Guthi
+      - range: CasteGroup
+    multivalued: true
+    description: "Group (Guthi, caste) responsible for ritual"
+
+  is_critical_for_festival:
+    slot_uri: heritageGraph:is_critical_for_festival
+    range: boolean
+    description: "Whether this ritual is essential for the festival's completion"
+    
+
+  is_part_of_festival:
+    slot_uri: crm:P9i_forms_part_of
+    range: Festival
+    description: "Larger festival this ritual is part of"
+
+  has_religious_tradition:
+    slot_uri: crm:P2_has_type
+    range: ReligiousTradition
+    multivalued: true
+    description: "Religious tradition(s) within which this deity is venerated"
+
+  includes_ritual_event:
+    slot_uri: crm:P9_consists_of
+    range: RitualEvent
+    multivalued: true
+    description: "Component rituals of festival"
+
+  ritual_type:
+    slot_uri: crm:P2_has_type
+    range: RitualTypeEnum 
+    description: "Classification of ritual (puja, jatra, consecration)"
+
+  # --- DEITY-STRUCTURE RELATIONSHIPS (EVENT-MEDIATED) ---
+ 
+  assigned_to_deity:
+    slot_uri: crm:P140_assigned_attribute_to
+    description: "The deity instance that is the subject of the syncretic claim."
+    range: Deity
+    required: true
+    
+
+  assigned_equivalent:
+    slot_uri: crm:P141_assigned
+    description: "The deity or sacred figure being identified as equivalent to the primary deity."
+    range: Deity
+    required: true
+    multivalued: true
+
+  syncretic_type:
+    slot_uri: crm:P2_has_type
+    description: "The typological nature of the syncretism (e.g., Ontological Identity, Functional Overlap, Iconographic Similarity)."
+    range: SyncreticTypeEnum
+    recommended: true
+
+
+
+  assertion_author:
+    slot_uri: crm:P14_carried_out_by
+    description: "The agent (scholar, priest, or tradition-bearer) making or recording the syncretic claim."
+    range: Actor
+
+
+    
+
+
+
+  enshrines_deity_through_event:
+    slot_uri: heritageGraph:enshrines_deity_through_event
+    range: Enshrinement
+    multivalued: true
+    description: "Enshrinement event that installed deity in temple"
+
+  used_materials: 
+    slot_uri: crm:P125_used_object_of_type
+    range: Material
+    multivalued: true
+    description: "Ephemeral materials consumed during the ritual (e.g., oil, rice)."
+
+  enshrined_deity:
+    slot_uri: crm:P12_occurred_in_the_presence_of
+    range: Deity
+    description: "Deity installed through enshrinement"
+
+  enshrined_in_structure:
+    slot_uri: crm:P8_took_place_on_or_within
+    range: Temple
+    description: "Temple where deity was enshrined"
+
+  is_enshrined_through_event:
+    slot_uri: heritageGraph:is_enshrined_through_event
+    range: Enshrinement
+    multivalued: true
+    description: "Events where this deity was enshrined"
+
+  depicts_deity:
+    slot_uri: crm:P62_depicts
+    range: Deity
+    multivalued: true
+    description: "Deity depicted iconographically (not cultic presence)"
+    
+
+  is_depicted_in:
+    slot_uri: crm:P62i_is_depicted_by
+    range: IconographicObject
+    multivalued: true
+    
+  is_about_deity:
+    slot_uri: crm:P129_is_about
+    range: Deity
+    description: "Deity represented and ritually associated with the Murti"
+
+  consecrated_by_event:
+    slot_uri: heritageGraph:consecrated_by_event
+    range: Consecration
+    description: "Consecration event that activated this murti"
+
+  consecrated_object:
+    slot_uri: crm:P11_had_participant
+    range: Murti
+    description: "Murti that participated in the consecration ritual"
+
+  makes_deity_present:
+    slot_uri: heritageGraph:makes_deity_present
+    range: Deity
+    description: "Deity made present through consecration"
+
+  is_invoked_in_ritual:
+    slot_uri: crm:P12i_was_present_at
+    range: RitualEvent
+    multivalued: true
+    description: "Rituals where this deity is invoked"
+
+  # --- GUTHI RELATIONSHIPS ---
+
+  managed_by_guthi:
+    slot_uri: heritageGraph:managed_by_guthi
+    range: Guthi
+    multivalued: true
+    description: "Guthi organization managing this structure or ritual"
+  
+
+  performs_ritual:
+    slot_uri: crm:P14i_performed
+    range: RitualEvent
+    multivalued: true
+    description: "Rituals performed by this Guthi"
+
+  holds_custody_of:
+    slot_uri: crm:P50_has_current_keeper
+    range: ArchitecturalStructure
+    multivalued: true
+    description: "Structures under Guthi custodianship"
+
+  has_custody_event:
+    slot_uri: crm:P30i_custody_transferred_through
+    range: TransferOfCustody
+    multivalued: true
+    description: "Custody transfer events for this structure"
+
+  transferred_object:
+    slot_uri: crm:P30_transferred_custody_of
+    range: PhysicalHeritageThing
+    description: "Object transferred in custody event"
+
+  transferred_from_actor:
+    slot_uri: crm:P28_custody_surrendered_by
+    range: Actor
+    description: "Previous custodian"
+
+  transferred_to_actor:
+    slot_uri: crm:P29_custody_received_by
+    range: Actor
+    description: "New custodian (person or group)"
+
+  transferred_to_guthi:
+    slot_uri: crm:P29_custody_received_by
+    range: Guthi
+    description: "New custodian (Guthi)"
+
+  guthi_type:
+    slot_uri: crm:P2_has_type
+    range: GuthiTypeEnum
+    description: "Type of Guthi (Si, Jatra, Temple)"
+
+  has_membership:
+    slot_uri: crm:P107_has_current_or_former_member
+    range: Person
+    multivalued: true
+    description: "Members of Guthi organization"
+
+  member_of_group:
+    slot_uri: crm:P107i_is_current_or_former_member_of
+    range: Guthi
+    multivalued: true
+    description: "Groups this person belongs to"
+
+ 
+  traditional_role:
+    slot_uri: heritageGraph:traditional_role
+    range: string
+    description: "Hereditary occupation or ritual duty"
+
+  # --- CONDITION ASSESSMENT ---
+
+  has_condition_assessment:
+    slot_uri: crm:P34i_was_assessed_by
+    range: ConditionAssessment
+    multivalued: true
+    description: "Condition assessment events for this structure"
+  has_condition_type:
+    slot_uri: crm:P2_has_type
+    range:  ConditionTypeEnum
+    description: "Categorization of the condition state"
+
+
+
+  assessed_object:
+    slot_uri: crm:P34_concerned
+    range: PhysicalHeritageThing
+    description: "Object assessed for condition"
+
+  assessed_condition_state:
+    slot_uri: crm:P35_has_identified
+    range: ConditionState
+    description: "Condition state identified by the assessment"
+
+ 
+
+  epoch_date_gregorian:
+    slot_uri: heritageGraph:epoch_date_gregorian
+    range: string
+    description: "The start date of this calendar era in Gregorian ISO format."
+
+  year_offset_from_gregorian:
+    slot_uri: heritageGraph:year_offset_from_gregorian
+    range: integer
+    description: "Mathematical offset to convert to Common Era (e.g., +57 for BS)."
+    
+  date_precision:
+    slot_uri: heritageGraph:date_precision
+    range: DatePrecisionEnum
+    description: "The level of precision for a recorded date."
+
+  # --- COMPONENTS ---
+
+  has_component:
+    slot_uri: crm:P46_is_composed_of
+    range: ArchitecturalElement
+    
+    description: "Architectural elements composing structure"
+
+  has_architectural_style:
+    slot_uri: crm:P2_has_type
+    range: ArchitecturalStyleEnum 
+    description: "Architectural style classification"
+
+  # --- PROVENANCE (PROV-O aligned with CIDOC) ---
+  source_type:
+    slot_uri: heritageGraph:source_type
+    range: string
+    description: " Type of source: Manuscript, Inscription, FieldSurvey, 
+      PublishedBook, Archive, MuseumCollection, OralHistoryInterview, etc."
+
+  archival_location:
+    slot_uri: heritageGraph:archival_location
+    range: string
+    description: "Where stored (e.g., National Museum Kathmandu, British Library, URL)"
+
+  asserted_property:
+    slot_uri: heritageGraph:asserted_property
+    range: string
+    required: true
+    description: "Property or attribute name (e.g., 'existence_status', 'hypothesized_location', 'construction_date')"
+
+  asserted_value:
+    slot_uri: heritageGraph:asserted_value
+    range: string
+    required: true
+    description: "The value claimed for this property (e.g., 'Lost', 'Handigaun', '598 CE')"
+
+  supersedes_assertion:
+    slot_uri: prov:invalidated
+    range: HeritageAssertion
+    description: "
+      Previous version of this assertion (if this is an update).
+      Creates version chain: A1 → A2 → A3
+      Query pattern: latest assertion = one with no incoming prov:invalidated"
+
+  institutional_affiliation:
+    slot_uri: heritageGraph:institutional_affiliation
+    range: string
+    description: "Institutional affiliation (e.g., Tribhuvan University, Nepal Heritage Society)"
+
+  expertise_area:
+    slot_uri: heritageGraph:expertise_area
+    range: string
+    multivalued: true
+    description: "Areas of expertise (e.g., Lichhavi inscriptions, Sanskrit epigraphy, Newari archaeology)"
+
+  produced_information_object:
+    slot_uri: prov:generated
+    range: InformationObject
+    description: "Information object (record, document) produced by documentation"
+
+  is_about_entity:
+    slot_uri: crm:P129_is_about
+    range: ArchitecturalStructure
+    description: "Entity that this information object describes"
+
+  is_about_event:
+    slot_uri: crm:P129_is_about
+    range: RitualEvent
+    description: "Event that this information object describes"
+
+  performed_by_agent:
+    slot_uri: prov:wasAssociatedWith
+    range: Person
+    multivalued: true
+    description: "Agent who performed documentation"
+
+  used_method:
+    slot_uri: crm:P33_used_specific_technique
+    range: string
+    description: "Documentation method used"
+
+  used_equipment:
+    slot_uri: crm:P16_used_specific_object
+    range: string
+    multivalued: true
+    description: "Equipment used in documentation"
+
+  # --- ASSERTION-LEVEL PROVENANCE ---
+
+  has_provenance_assertion:
+    slot_uri: heritageGraph:has_provenance_assertion
+    range: HeritageAssertion
+    multivalued: true
+    description: "All factual claims about this structure with full provenance"
+
+  assertion_content:
+    slot_uri: prov:value
+    range: string
+    description: "The factual claim being asserted"
+
+  asserts_about_entity:
+    slot_uri: crm:P140_assigned_attribute_to
+    range: AssertableEntity
+
+  asserts_about_event:
+    slot_uri: crm:P141_assigned
+    range: RitualEvent
+  source_language:
+    slot_uri: crm:P72_has_language
+    range: string
+    description: "Language of the source material"
+
+  was_derived_from_source:
+    slot_uri: prov:wasDerivedFrom
+    range: DataSource
+    multivalued: true
+    description: "Source(s) from which this assertion was derived"
+
+  was_attributed_to_agent:
+    slot_uri: prov:wasAttributedTo
+    range: Person
+    multivalued: true
+    description: "Person who made this assertion"
+
+  generated_at_time:
+    slot_uri: prov:generatedAtTime
+    range: datetime
+    description: "When this assertion was recorded (ISO 8601)"
+
+
+  subject_entity:
+    slot_uri: crm:P140_assigned_attribute_to
+    range: PhysicalHeritageThing
+    multivalued: true
+    description: "Heritage entity that is the subject of documentation"
+
+  subject_event:
+    slot_uri: crm:P141_assigned
+    range: RitualEvent
+    multivalued: true
+    description: "Event that is the subject of documentation"
+  created_by_documentation:
+    slot_uri: prov:wasGeneratedBy
+    range: DocumentationActivity
+    description: "Documentation activity that produced this information object"
+    inverse: produced_information_object
+  generated_assertion:
+    slot_uri: prov:generated
+    range: HeritageAssertion
+    multivalued: true
+    description: "Assertions generated by documentation activity"
+
+  confidence_score:
+    slot_uri: heritageGraph:confidence_score
+    range: float
+    description: "Reliability score for assertion (0.0-1.0)"
+
+  data_quality_note:
+    slot_uri: heritageGraph:data_quality_note
+    range: string
+    description: "Notes on data quality, completeness, or uncertainty"
+
+  reconciliation_status:
+    slot_uri: heritageGraph:reconciliation_status
+    range: string
+    description: "Status of multi-source reconciliation (confirmed, conflicting, unverified)"
+
+  # --- VERIFICATION ---
+
+  verification_method:
+    slot_uri: heritageGraph:verification_method
+    range: string
+    description: "Method used for verification (cross-check, expert review, field visit)"
+  verified_assertion:
+    slot_uri: heritageGraph:verified_assertion
+    range: HeritageAssertion
+    multivalued: true
+    description: "Assertions verified by this activity"
+  verified_by_expert:
+    slot_uri: heritageGraph:verified_by_expert
+    is_a: carried_out_by
+    range: Person
+    multivalued: true
+    description: "Expert who performed verification"
+  source_citation:
+    slot_uri: heritageGraph:source_citation
+    is_a: note
+    range: string
+    description: "Formal citation of source"
+  source_url:
+    slot_uri: heritageGraph:source_url
+    range: string
+    description: "URL or digital identifier for source"
+  custodian_type:
+    slot_uri: crm:P2_has_type
+    range: string
+    description: "Type of custodian (government, academic, community)"
+
+  carried_out_activity:
+    slot_uri: crm:P14i_performed
+    range: RitualEvent
+    multivalued: true
+    description: "Activities performed by this actor"
+
+  participates_in_ritual:
+    slot_uri: crm:P12i_was_present_at
+    range: RitualEvent
+    multivalued: true
+    description: "Rituals in which this structure participates"
+
+  was_documented_by:
+    slot_uri: prov:wasGeneratedBy
+    range: DocumentationActivity
+    multivalued: true
+    description: "Documentation event that recorded this entity or event"
+
+
+  ###########################################################################
+  #      DATA CITE IDENTIFIER TYPES ENUMERATION
+  ##########################################################################
+  datacite_identifier:
+    slot_uri: datacite:identifier
+    range: string
+    description: "Persistent identifier for the source (DOI, archive ID, catalog number)"
+
+  datacite_identifier_type:
+    slot_uri: datacite:identifierType
+    range: string
+    description: "Type of identifier (DOI, ISBN, Handle, LocalArchiveID)"
+
+  datacite_creator:
+    slot_uri: datacite:creator
+    range: Actor
+    multivalued: true
+    description: "Person or organization primarily responsible for creating the source"
+
+  datacite_publisher:
+    slot_uri: datacite:publisher
+    range: Actor
+    description: "Entity responsible for making the source available"
+
+  datacite_resource_type:
+    slot_uri: datacite:resourceType
+    range: string
+    description: "High-level DataCite resource type (Dataset, Text, Image, Audio, Interview)"

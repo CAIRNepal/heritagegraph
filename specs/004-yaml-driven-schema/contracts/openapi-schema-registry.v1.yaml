@@ -1,0 +1,238 @@
+# Contract: Ontology schema registry (effective merged schema for UI + validation)
+# Authenticated; aligns with FR-004–FR-007, FR-021.
+# Base URL pattern follows existing API: {API_ORIGIN}/api/v1/... or /cidoc/... (finalize in implementation).
+openapi: 3.0.3
+info:
+  title: HeritageGraph — Ontology schema registry
+  version: 1.0.0
+  description: |
+    Returns the effective ontology registry for the authenticated principal's tenant
+    (single-tenant deployments use a default scope). Payload mirrors the frontend
+    OntologyRegistry shape (classes + enums). Include schema_version for cache invalidation.
+
+servers:
+  - url: /api/v1/cidoc
+    description: Illustrative — align with heritage_graph urlconf
+
+paths:
+  /schema/registry/:
+    get:
+      summary: Get effective ontology registry (classes, enums, version)
+      operationId: getOntologySchemaRegistry
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: If-None-Match
+          in: header
+          required: false
+          schema:
+            type: string
+          description: ETag from prior response; server returns 304 if schema_version unchanged
+      responses:
+        "200":
+          description: Full registry payload
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: Quoted hash matching schema_version
+            Cache-Control:
+              schema:
+                type: string
+              example: private, max-age=60
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OntologyRegistryResponse"
+        "304":
+          description: Not Modified — use cached body
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "503":
+          description: Schema unavailable and no last-known-good snapshot
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Google ID token via NextAuth (Authorization Bearer)
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+    Forbidden:
+      description: Valid token but insufficient scope
+
+  schemas:
+    OntologyRegistryResponse:
+      type: object
+      required:
+        - schema_version
+        - classes
+        - enums
+      properties:
+        schema_version:
+          type: string
+          description: Content hash + generator version (opaque to clients)
+        generated_at:
+          type: string
+          format: date-time
+          nullable: true
+        tenant_id:
+          type: string
+          nullable: true
+          description: Present when multi-tenant; null or default in single-tenant
+        degraded:
+          type: boolean
+          default: false
+          description: True when serving last-known-good due to YAML/extension error
+        classes:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/OntologyClass"
+        enums:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: "#/components/schemas/EnumValue"
+      additionalProperties: false
+
+    EnumValue:
+      type: object
+      required:
+        - value
+        - label
+      properties:
+        value:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+
+    OntologyClass:
+      type: object
+      required:
+        - key
+        - label
+        - labelPlural
+        - description
+        - apiEndpoint
+        - fields
+        - columns
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        labelPlural:
+          type: string
+        description:
+          type: string
+        classUri:
+          type: string
+        parentClass:
+          type: string
+        icon:
+          type: string
+        apiEndpoint:
+          type: string
+        navigable:
+          type: boolean
+        category:
+          type: string
+          enum:
+            - tangible
+            - conceptual
+            - event
+            - social
+            - spatiotemporal
+            - provenance
+        sections:
+          type: array
+          items:
+            type: object
+            required:
+              - key
+              - label
+            properties:
+              key:
+                type: string
+              label:
+                type: string
+              description:
+                type: string
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/OntologyField"
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/OntologyColumn"
+
+    OntologyField:
+      type: object
+      required:
+        - key
+        - label
+        - type
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+          description: text, textarea, number, date, select, multiselect, boolean, url, coordinates, relation, float
+        description:
+          type: string
+        required:
+          type: boolean
+        options:
+          type: array
+          items:
+            type: object
+        relationTo:
+          type: string
+        relationEndpoint:
+          type: string
+        multivalued:
+          type: boolean
+        section:
+          type: string
+        order:
+          type: integer
+        placeholder:
+          type: string
+        slot_uri:
+          type: string
+          description: Optional RDF slot URI from LinkML for export
+
+    OntologyColumn:
+      type: object
+      required:
+        - key
+        - label
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        sortable:
+          type: boolean
+        visible:
+          type: boolean
+        format:
+          type: string
+          enum:
+            - text
+            - date
+            - badge
+            - link
+            - list
