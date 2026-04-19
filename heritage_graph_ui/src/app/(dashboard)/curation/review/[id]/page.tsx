@@ -23,6 +23,7 @@ import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { AccessDenied } from '@/components/access-denied';
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
@@ -61,6 +62,14 @@ type ConflictHandling = 'not_applicable' | 'supersedes' | 'coexist' | 'existing_
 type Confidence = '' | 'certain' | 'likely' | 'uncertain' | 'speculative';
 type VerificationMethod = '' | 'source_crosscheck' | 'expert_knowledge' | 'field_verification' | 'community_consensus';
 
+const VERDICT_SUBMIT_LABEL: Record<Verdict, string> = {
+  accept: 'Accept — publish this assertion',
+  accept_with_edits: 'Accept with edits — modify before publishing',
+  request_changes: 'Request changes — send back to contributor',
+  reject: 'Reject — do not publish',
+  escalate: 'Escalate to expert — beyond my domain',
+};
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function ReviewWorkspacePage() {
@@ -86,6 +95,7 @@ export default function ReviewWorkspacePage() {
   const [feedback, setFeedback] = useState('');
   const [reconciliationNote, setReconciliationNote] = useState('');
   const [internalNote, setInternalNote] = useState('');
+  const [decisionConfirmOpen, setDecisionConfirmOpen] = useState(false);
 
   const getHeaders = useCallback(() => {
     const token = (session as Record<string, unknown>)?.accessToken as string | undefined;
@@ -110,12 +120,29 @@ export default function ReviewWorkspacePage() {
 
   useEffect(() => { if (session && entityId) fetchWorkspace(); }, [session, entityId, fetchWorkspace]);
 
+  const openSubmitDecisionConfirm = () => {
+    if (!verdict) {
+      toast.error('Please select a verdict');
+      return;
+    }
+    if (verdict === 'reject' && !feedback.trim()) {
+      toast.error('Feedback is required when rejecting');
+      return;
+    }
+    setDecisionConfirmOpen(true);
+  };
+
   const submitDecision = async () => {
-    if (!verdict) { toast.error('Please select a verdict'); return; }
-    if (verdict === 'reject' && !feedback.trim()) { toast.error('Feedback is required when rejecting'); return; }
+    if (!verdict) return;
     setIsSubmitting(true);
     try {
-      const body: Record<string, unknown> = { verdict, conflict_handling: conflictHandling, feedback, reconciliation_note: reconciliationNote, internal_note: internalNote };
+      const body: Record<string, unknown> = {
+        verdict,
+        conflict_handling: conflictHandling,
+        feedback,
+        reconciliation_note: reconciliationNote,
+        internal_note: internalNote,
+      };
       if (confidenceOverride) body.confidence_override = confidenceOverride;
       if (verificationMethod) body.verification_method = verificationMethod;
       await apiFetchJson(`${API_BASE}/data/api/review-workspace/${entityId}/decide/`, {
@@ -125,11 +152,20 @@ export default function ReviewWorkspacePage() {
       });
       toast.success('Review decision submitted successfully');
       await fetchWorkspace();
-      setVerdict(''); setConflictHandling('not_applicable'); setConfidenceOverride(''); setVerificationMethod(''); setFeedback(''); setReconciliationNote(''); setInternalNote('');
+      setDecisionConfirmOpen(false);
+      setVerdict('');
+      setConflictHandling('not_applicable');
+      setConfidenceOverride('');
+      setVerificationMethod('');
+      setFeedback('');
+      setReconciliationNote('');
+      setInternalNote('');
     } catch (err) {
       toast.error(getApiErrorMessage(err, 'Could not submit this review decision.'));
+      throw err;
+    } finally {
+      setIsSubmitting(false);
     }
-    finally { setIsSubmitting(false); }
   };
 
   if (isLoading) {
@@ -161,6 +197,29 @@ export default function ReviewWorkspacePage() {
 
   return (
     <>
+      <ConfirmActionDialog
+        open={decisionConfirmOpen}
+        onOpenChange={setDecisionConfirmOpen}
+        title="Submit this review decision?"
+        description={
+          verdict ? (
+            <>
+              <p>
+                <span className="font-medium text-foreground">{workspace.name}</span>
+                {' — '}
+                {VERDICT_SUBMIT_LABEL[verdict]}
+              </p>
+              <p className="mt-2">This will be logged and may change the entity&apos;s workflow state.</p>
+            </>
+          ) : (
+            <span>This will be logged and may change the entity&apos;s workflow state.</span>
+          )
+        }
+        confirmLabel="Submit decision"
+        confirmVariant={verdict === 'reject' ? 'destructive' : 'default'}
+        onConfirm={submitDecision}
+        isPending={isSubmitting}
+      />
 
       <div className="space-y-4">
         {/* Header */}
@@ -202,7 +261,7 @@ export default function ReviewWorkspacePage() {
               confidenceOverride={confidenceOverride} setConfidenceOverride={setConfidenceOverride}
               verificationMethod={verificationMethod} setVerificationMethod={setVerificationMethod}
               feedback={feedback} setFeedback={setFeedback} reconciliationNote={reconciliationNote} setReconciliationNote={setReconciliationNote}
-              internalNote={internalNote} setInternalNote={setInternalNote} isSubmitting={isSubmitting} onSubmit={submitDecision}
+              internalNote={internalNote} setInternalNote={setInternalNote} isSubmitting={isSubmitting} onSubmit={openSubmitDecisionConfirm}
             />
           </motion.div>
         </motion.div>

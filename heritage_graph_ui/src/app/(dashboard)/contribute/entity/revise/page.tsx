@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 import { getPublicApiUrl } from "@/lib/api-base";
 import { HeritageDocumentUpload } from "@/components/ocr/heritage-document-upload";
 import type { OcrFieldSuggestion } from "@/hooks/use-heritage-ocr-suggestions";
@@ -87,6 +88,8 @@ export default function CulturalEntityContributionPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [originalEntity, setOriginalEntity] = useState<EntityData | null>(null);
   const [formMode, setFormMode] = useState<FormMode>('new');
+  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   // Load entity data from URL parameters
   useEffect(() => {
@@ -125,11 +128,12 @@ export default function CulturalEntityContributionPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const clearForm = useCallback(() => {
+  const performClearForm = useCallback(() => {
     setFormData(INITIAL_FORM_STATE);
     setOriginalEntity(null);
     setFormMode('new');
     toast.info('Form cleared');
+    setClearConfirmOpen(false);
   }, []);
 
   // --- VALIDATION ---
@@ -151,11 +155,6 @@ export default function CulturalEntityContributionPage() {
 
   // --- SUBMIT REVISION ---
   const handleSubmitRevision = async () => {
-    if (!validateForm()) return;
-    if (!isSignedIn) {
-      toast.error('Please sign in to submit revisions.');
-      return;
-    }
     if (!originalEntity) {
       toast.error('Original entity data not found.');
       return;
@@ -183,12 +182,14 @@ export default function CulturalEntityContributionPage() {
         }
       );
 
+      setSubmitConfirmOpen(false);
       toast.success(`Revision for "${formData.name}" submitted successfully!`);
       setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
       toast.error(
         getApiErrorMessage(err, 'Could not submit this revision. Please try again.')
       );
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
@@ -196,11 +197,6 @@ export default function CulturalEntityContributionPage() {
 
   // --- SUBMIT EDIT ---
   const handleSubmitEdit = async () => {
-    if (!validateForm()) return;
-    if (!isSignedIn) {
-      toast.error('Please sign in to edit entities.');
-      return;
-    }
     if (!originalEntity) {
       toast.error('Original entity data not found.');
       return;
@@ -225,12 +221,14 @@ export default function CulturalEntityContributionPage() {
         }),
       });
 
+      setSubmitConfirmOpen(false);
       toast.success(`"${formData.name}" updated successfully!`);
       setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
       toast.error(
         getApiErrorMessage(err, 'Could not update this entity. Please try again.')
       );
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
@@ -238,12 +236,6 @@ export default function CulturalEntityContributionPage() {
 
   // --- SUBMIT NEW ENTITY ---
   const handleSubmitNewEntity = async () => {
-    if (!validateForm()) return;
-    if (!isSignedIn) {
-      toast.error('Please sign in to submit contributions.');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -263,27 +255,44 @@ export default function CulturalEntityContributionPage() {
         }),
       });
 
+      setSubmitConfirmOpen(false);
       toast.success(`"${formData.name}" submitted successfully!`);
       setTimeout(() => router.push('/knowledge/entity'), 1200);
     } catch (err) {
       toast.error(
         getApiErrorMessage(err, 'Could not submit this entity. Please try again.')
       );
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Determine which submit handler to use
-  const handleSubmit = () => {
+  const prepareSubmit = () => {
+    if (!validateForm()) return;
+    if (!isSignedIn) {
+      toast.error('Please sign in to submit.');
+      return;
+    }
+    if ((formMode === 'revise' || formMode === 'edit') && !originalEntity) {
+      toast.error('Original entity data not found.');
+      return;
+    }
+    setSubmitConfirmOpen(true);
+  };
+
+  const executeSubmit = async () => {
     switch (formMode) {
       case 'revise':
-        return handleSubmitRevision();
+        await handleSubmitRevision();
+        break;
       case 'edit':
-        return handleSubmitEdit();
+        await handleSubmitEdit();
+        break;
       case 'new':
       default:
-        return handleSubmitNewEntity();
+        await handleSubmitNewEntity();
+        break;
     }
   };
 
@@ -399,8 +408,59 @@ export default function CulturalEntityContributionPage() {
     );
   }
 
+  const submitConfirmTitle =
+    formMode === 'revise'
+      ? 'Submit this revision?'
+      : formMode === 'edit'
+        ? 'Save changes to this entity?'
+        : 'Submit this cultural entity?';
+
+  const submitConfirmDescription =
+    formMode === 'revise' ? (
+      <>
+        A new revision will be created for{' '}
+        <span className="font-medium text-foreground">{formData.name || 'this entity'}</span>.
+      </>
+    ) : formMode === 'edit' ? (
+      <>
+        Updates to{' '}
+        <span className="font-medium text-foreground">{formData.name || 'this entity'}</span> will be saved to the server.
+      </>
+    ) : (
+      <>
+        <span className="font-medium text-foreground">{formData.name || 'This entity'}</span> will be submitted to the contribution queue.
+      </>
+    );
+
+  const submitConfirmLabel =
+    formMode === 'revise'
+      ? 'Submit revision'
+      : formMode === 'edit'
+        ? 'Update entity'
+        : 'Submit entity';
+
   return (
     <>
+      <ConfirmActionDialog
+        open={submitConfirmOpen}
+        onOpenChange={setSubmitConfirmOpen}
+        title={submitConfirmTitle}
+        description={submitConfirmDescription}
+        confirmLabel={submitConfirmLabel}
+        onConfirm={executeSubmit}
+        isPending={isSubmitting}
+      />
+      <ConfirmActionDialog
+        open={clearConfirmOpen}
+        onOpenChange={setClearConfirmOpen}
+        title="Clear this form?"
+        description="All entered data will be removed and revision/edit context will be reset."
+        confirmLabel="Clear form"
+        confirmVariant="destructive"
+        onConfirm={async () => {
+          performClearForm();
+        }}
+      />
 
       <div className="container max-w-2xl mx-auto space-y-6 px-4 lg:px-6">
         {/* Header */}
@@ -530,14 +590,14 @@ export default function CulturalEntityContributionPage() {
           <div className="flex gap-3">
             <Button 
               variant="outline" 
-              onClick={clearForm} 
+              onClick={() => setClearConfirmOpen(true)} 
               disabled={!isSignedIn}
             >
               Clear Form
             </Button>
 
             <Button 
-              onClick={handleSubmit} 
+              onClick={prepareSubmit} 
               disabled={isSubmitting || !isSignedIn} 
               size="lg"
               className="min-w-32"

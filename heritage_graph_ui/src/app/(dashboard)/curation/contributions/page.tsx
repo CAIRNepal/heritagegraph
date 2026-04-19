@@ -34,6 +34,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
@@ -93,6 +94,10 @@ export default function ContributionQueuePage() {
   const [applyOpen, setApplyOpen] = useState(false);
   const [applyMessage, setApplyMessage] = useState('');
   const [applySubmitting, setApplySubmitting] = useState(false);
+  const [moderateConfirm, setModerateConfirm] = useState<{
+    contribution: Contribution;
+    action: 'accept' | 'reject';
+  } | null>(null);
   const [items, setItems] = useState<Contribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -194,11 +199,43 @@ export default function ContributionQueuePage() {
           `Could not ${action === 'accept' ? 'accept' : 'reject'} this item.`
         )
       );
+      throw err;
     }
   };
 
   return (
     <>
+      <ConfirmActionDialog
+        open={moderateConfirm !== null}
+        onOpenChange={(open) => !open && setModerateConfirm(null)}
+        title={
+          moderateConfirm?.action === 'accept'
+            ? 'Accept this contribution?'
+            : 'Reject this contribution?'
+        }
+        description={
+          moderateConfirm ? (
+            <>
+              <span className="font-medium text-foreground">{moderateConfirm.contribution.name}</span>
+              {moderateConfirm.action === 'reject' ? (
+                <span>
+                  {' '}
+                  will be marked rejected and removed from the pending queue.
+                </span>
+              ) : (
+                <span> will be marked accepted.</span>
+              )}
+            </>
+          ) : undefined
+        }
+        confirmLabel={moderateConfirm?.action === 'accept' ? 'Accept' : 'Reject'}
+        confirmVariant={moderateConfirm?.action === 'reject' ? 'destructive' : 'default'}
+        onConfirm={async () => {
+          if (!moderateConfirm) return;
+          await moderate(moderateConfirm.contribution, moderateConfirm.action);
+          setModerateConfirm(null);
+        }}
+      />
 
       <div className="space-y-6">
         {/* ── Hero Header ── */}
@@ -426,9 +463,9 @@ export default function ContributionQueuePage() {
                                 {c.status === 'pending_review' && (
                                   <>
                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                      onClick={() => moderate(c, 'accept')} title="Accept"><CheckCircle className="h-4 w-4" /></Button>
+                                      onClick={() => setModerateConfirm({ contribution: c, action: 'accept' })} title="Accept"><CheckCircle className="h-4 w-4" /></Button>
                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                      onClick={() => moderate(c, 'reject')} title="Reject"><XCircle className="h-4 w-4" /></Button>
+                                      onClick={() => setModerateConfirm({ contribution: c, action: 'reject' })} title="Reject"><XCircle className="h-4 w-4" /></Button>
                                   </>
                                 )}
                               </div>

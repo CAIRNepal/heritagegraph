@@ -26,6 +26,7 @@ import {
 } from "@/components/contribute/assertion-wrapper";
 import { ontologyEnums } from "@/lib/ontology";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
+import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 
 // ─────────────────────────────────────────────────────────
 // Form state
@@ -190,6 +191,7 @@ export default function ContributeRitualPage() {
   const { data: session } = useSession();
   const [form, setForm] = useState<RitualFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
 
   const updateField = <K extends keyof RitualFormData>(
     key: K,
@@ -225,12 +227,15 @@ export default function ContributeRitualPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const openSubmitConfirm = () => {
     if (!form.assertion.source_citation.trim()) {
       toast.error("Please provide a source citation");
       return;
     }
+    setSubmitConfirmOpen(true);
+  };
 
+  const performSubmit = async () => {
     setIsSubmitting(true);
     try {
       const backendUrl =
@@ -272,22 +277,42 @@ export default function ContributeRitualPage() {
         body: JSON.stringify(payload),
       });
 
+      setSubmitConfirmOpen(false);
       toast.success("Ritual event submitted successfully!");
       router.push("/knowledge/ritual");
     } catch (err) {
       toast.error(
         getApiErrorMessage(err, "Could not submit this ritual. Please try again.")
       );
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-3xl">
+    <>
+      <ConfirmActionDialog
+        open={submitConfirmOpen}
+        onOpenChange={setSubmitConfirmOpen}
+        title="Submit this ritual record?"
+        description={
+          <>
+            You are about to submit{" "}
+            <span className="font-medium text-foreground">
+              {form.name.trim() || "this ritual"}
+            </span>{" "}
+            to the knowledge base. It will be reviewed like other CIDOC contributions.
+          </>
+        }
+        confirmLabel="Submit ritual"
+        onConfirm={performSubmit}
+        isPending={isSubmitting}
+      />
+      <div className="container mx-auto px-4 py-6 max-w-3xl">
       <StepWizard
         steps={steps}
-        onComplete={handleSubmit}
+        onComplete={openSubmitConfirm}
         onCancel={() => router.push("/contribute")}
         isSubmitting={isSubmitting}
         validateStep={validateStep}
@@ -567,5 +592,6 @@ export default function ContributeRitualPage() {
         </div>
       </StepWizard>
     </div>
+    </>
   );
 }

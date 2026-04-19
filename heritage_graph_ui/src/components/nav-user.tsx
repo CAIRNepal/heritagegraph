@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { IconDotsVertical, IconLogout, IconUserCircle } from '@tabler/icons-react';
 import { useTranslations } from 'next-intl';
 
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -26,7 +25,8 @@ import {
 import { signOut, useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
-import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { getPublicApiUrl } from '@/lib/api-base';
 import { toast } from 'sonner';
 
@@ -56,6 +56,7 @@ export function NavUser({
   const { data: session, status } = useSession();
   const t = useTranslations('user');
   const [userSlug, setUserSlug] = useState<string | null>(null);
+  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
   // Eagerly fetch slug if it's not in the session (e.g., first login before JWT refresh)
   useEffect(() => {
@@ -85,6 +86,19 @@ export function NavUser({
   }, [status, session]);
 
   return (
+    <>
+      <ConfirmActionDialog
+        open={signOutConfirmOpen}
+        onOpenChange={setSignOutConfirmOpen}
+        title={t('signOut')}
+        description="You will be signed out of HeritageGraph on this device and need to sign in again to access your dashboard."
+        confirmLabel={t('signOut')}
+        confirmVariant="destructive"
+        onConfirm={async () => {
+          setSignOutConfirmOpen(false);
+          await signOut({ callbackUrl: '/' });
+        }}
+      />
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
@@ -166,21 +180,20 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={() => {
-                signOut({ callbackUrl: '/' });
+            <DropdownMenuItem
+              className="flex cursor-pointer items-center gap-2"
+              onSelect={(e) => {
+                e.preventDefault();
+                setSignOutConfirmOpen(true);
               }}
             >
               <IconLogout />
               {t('signOut')}
-            </Button>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
+    </>
   );
 }

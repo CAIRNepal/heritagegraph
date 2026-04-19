@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,9 +18,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { User, KeyRound, MonitorSmartphone } from 'lucide-react';
 
 import { glassCard } from '@/lib/design';
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 
 export default function MyAccount() {
   const { data: session, status } = useSession();
+  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -54,6 +57,18 @@ export default function MyAccount() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
+      <ConfirmActionDialog
+        open={signOutConfirmOpen}
+        onOpenChange={setSignOutConfirmOpen}
+        title="Sign out?"
+        description="You will be signed out of HeritageGraph on this device and need to sign in again to access your dashboard."
+        confirmLabel="Sign out"
+        confirmVariant="destructive"
+        onConfirm={async () => {
+          setSignOutConfirmOpen(false);
+          await signOut({ callbackUrl: '/' });
+        }}
+      />
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-blue-900 dark:text-blue-100">
           Account
@@ -136,7 +151,7 @@ export default function MyAccount() {
           <Button
             variant="outline"
             className="mt-4"
-            onClick={() => signOut({ callbackUrl: '/' })}
+            onClick={() => setSignOutConfirmOpen(true)}
           >
             Sign out
           </Button>

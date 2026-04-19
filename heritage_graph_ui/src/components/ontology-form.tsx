@@ -34,6 +34,7 @@ import {
   buildOntologyFormPayload,
   mapCidocRecordToFormData,
 } from "@/lib/ontology/ontology-edit-helpers";
+import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 
 function FieldRenderer({
   field,
@@ -403,6 +404,8 @@ export default function OntologyForm({
     status?: string;
     contributor?: string;
   } | null>(null);
+  const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
 
   const baseUrl = useMemo(
     () => apiBaseUrl || getPublicApiUrl(),
@@ -552,7 +555,7 @@ export default function OntologyForm({
     onFormControl({ mergeValues, getValues });
   }, [onFormControl, mergeValues, getValues]);
 
-  const clearForm = useCallback(() => {
+  const performClearForm = useCallback(() => {
     if (isEditMode) {
       return;
     }
@@ -561,6 +564,7 @@ export default function OntologyForm({
     setSubmitAttempted(false);
     setCurrentStep(0);
     toast.info("Form cleared");
+    setClearConfirmOpen(false);
   }, [isEditMode]);
 
   const validate = useCallback((): boolean => {
@@ -575,14 +579,17 @@ export default function OntologyForm({
     return true;
   }, [formData, ontologyClass.fields]);
 
-  const handleSubmit = async () => {
+  const openSubmitConfirm = () => {
     setSubmitAttempted(true);
     if (!validate()) return;
     if (!isSignedIn) {
       toast.error("Please sign in to submit contributions.");
       return;
     }
+    setSubmitConfirmOpen(true);
+  };
 
+  const handleSubmit = async () => {
     setIsSubmitting(true);
 
     try {
@@ -600,6 +607,7 @@ export default function OntologyForm({
           },
           body: JSON.stringify(payload),
         });
+        setSubmitConfirmOpen(false);
         toast.success(
           `"${(formData.name as string) || (formData.title as string) || "Entry"}" updated successfully!`,
           { duration: 4000 }
@@ -623,6 +631,7 @@ export default function OntologyForm({
         body: JSON.stringify(payload),
       });
 
+      setSubmitConfirmOpen(false);
       toast.success(
         `"${(formData.name as string) || (formData.title as string) || "Entry"}" submitted successfully!`,
         {
@@ -641,10 +650,16 @@ export default function OntologyForm({
             : "Could not submit this form. Please try again."
         )
       );
+      throw err;
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const entryDisplayName =
+    (formData.name as string) ||
+    (formData.title as string) ||
+    "this entry";
 
   const shouldShowError = (field: OntologyField) => {
     if (!field.required) return false;
@@ -702,9 +717,51 @@ export default function OntologyForm({
       ontologyClass.description ||
       `Add a new ${ontologyClass.label.toLowerCase()} to the knowledge base.`;
 
+  const submitConfirmDialogs = (
+    <>
+      <ConfirmActionDialog
+        open={submitConfirmOpen}
+        onOpenChange={setSubmitConfirmOpen}
+        title={
+          isEditMode
+            ? "Save changes to this record?"
+            : "Submit this contribution?"
+        }
+        description={
+          isEditMode ? (
+            <>
+              Updates to <span className="font-medium text-foreground">{entryDisplayName}</span> will
+              be sent to the server and may enter the review workflow.
+            </>
+          ) : (
+            <>
+              You are about to submit <span className="font-medium text-foreground">{entryDisplayName}</span> as a new{" "}
+              {ontologyClass.label.toLowerCase()}. It will enter the review queue.
+            </>
+          )
+        }
+        confirmLabel={isEditMode ? "Save changes" : "Submit"}
+        onConfirm={handleSubmit}
+        isPending={isSubmitting}
+      />
+      <ConfirmActionDialog
+        open={clearConfirmOpen}
+        onOpenChange={setClearConfirmOpen}
+        title="Clear all fields?"
+        description="All entered data on this form will be removed. This cannot be undone."
+        confirmLabel="Clear form"
+        confirmVariant="destructive"
+        onConfirm={async () => {
+          performClearForm();
+        }}
+      />
+    </>
+  );
+
   if (!hasSections) {
     return (
       <div className="container max-w-2xl mx-auto space-y-6 px-4 lg:px-6">
+        {submitConfirmDialogs}
         <div>
           <button
             onClick={() => router.push("/contribute")}
@@ -752,14 +809,14 @@ export default function OntologyForm({
         <div className="flex justify-end gap-3">
           <Button
             variant="outline"
-            onClick={clearForm}
+            onClick={() => setClearConfirmOpen(true)}
             disabled={!isSignedIn || isEditMode}
             title={isEditMode ? "Clear is disabled while editing" : undefined}
           >
             Clear
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={openSubmitConfirm}
             disabled={isSubmitting || !isSignedIn}
             className="min-w-28"
           >
@@ -783,6 +840,7 @@ export default function OntologyForm({
 
   return (
     <div className="container max-w-2xl mx-auto space-y-5 px-4 lg:px-6">
+      {submitConfirmDialogs}
       {/* Header */}
       <div>
         <button
@@ -880,7 +938,7 @@ export default function OntologyForm({
         <div className="flex gap-2">
           <Button
             variant="ghost"
-            onClick={clearForm}
+            onClick={() => setClearConfirmOpen(true)}
             disabled={!isSignedIn || isEditMode}
             size="sm"
             title={isEditMode ? "Clear is disabled while editing" : undefined}
@@ -888,7 +946,7 @@ export default function OntologyForm({
             Clear
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={openSubmitConfirm}
             disabled={isSubmitting || !isSignedIn}
             className="min-w-28"
           >

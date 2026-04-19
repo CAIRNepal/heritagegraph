@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 import { SimpleRankAvatar, tierConfig, TierType } from '@/components/rank-avatar';
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -30,6 +31,7 @@ export default function AuthSection() {
   const { data: session, status } = useSession();
   const [userSlug, setUserSlug] = useState<string | null>(null);
   const [backendInitError, setBackendInitError] = useState<string | null>(null);
+  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
   // Eagerly fetch slug if it's not in the session
   useEffect(() => {
@@ -108,6 +110,18 @@ export default function AuthSection() {
 
   return (
     <div className="flex flex-col items-end gap-2">
+      <ConfirmActionDialog
+        open={signOutConfirmOpen}
+        onOpenChange={setSignOutConfirmOpen}
+        title="Sign out?"
+        description="You will be signed out of HeritageGraph on this device and need to sign in again to access your dashboard."
+        confirmLabel="Sign out"
+        confirmVariant="destructive"
+        onConfirm={async () => {
+          setSignOutConfirmOpen(false);
+          await signOut({ callbackUrl: '/' });
+        }}
+      />
       {backendInitError && (
         <Alert variant="destructive" className="max-w-xs py-2 text-left">
           <AlertTitle className="text-xs">Could not reach the server</AlertTitle>
@@ -175,15 +189,15 @@ export default function AuthSection() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            onClick={() => signOut({ callbackUrl: '/' })}
-          >
-            <IconLogout className="h-4 w-4" />
-            Sign out
-          </Button>
+        <DropdownMenuItem
+          className="flex cursor-pointer items-center gap-2"
+          onSelect={(e) => {
+            e.preventDefault();
+            setSignOutConfirmOpen(true);
+          }}
+        >
+          <IconLogout className="h-4 w-4" />
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
