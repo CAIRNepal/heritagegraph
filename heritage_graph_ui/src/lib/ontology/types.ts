@@ -47,6 +47,8 @@ export interface OntologyField {
   placeholder?: string;
   /** Default value */
   defaultValue?: string | number | boolean;
+  /** RDF slot URI from LinkML (overlay from schema API / generator) */
+  slot_uri?: string;
 }
 
 /** Column definition for knowledge data tables */

@@ -1,9 +1,11 @@
 // =================================================================
-// Ontology Registry — Single Source of Truth
+// Ontology Registry — hand-tuned UI (baseline for runtime merge)
 // =================================================================
-// Maps every HeritageGraph ontology class to its fields, columns,
-// API endpoint, and UI metadata. Add new ontology classes here and
-// the contribute forms + knowledge tables auto-generate.
+// The LinkML schema is the semantic source of truth (ontology/HeritageGraph.yaml).
+// At runtime the UI merges this file with GET /api/v1/cidoc/schema/registry/
+// (see OntologyProvider) to overlay slot_uri / YAML-driven slots.
+// Prefer editing the YAML + running `python3 tools/linkml_generate_registry.py`;
+// keep rich sections/columns here until generation covers them fully (004-yaml-driven-schema).
 // =================================================================
 
 import type { OntologyClass } from "./types";

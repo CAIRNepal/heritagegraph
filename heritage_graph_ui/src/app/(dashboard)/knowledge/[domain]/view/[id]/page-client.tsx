@@ -7,7 +7,7 @@ import { ArrowLeft, Edit, GitFork, MessageSquare, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getOntologyClass } from "@/lib/ontology";
+import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { OntologyField } from "@/lib/ontology";
 import { ReactionButtons } from "@/components/reaction-buttons";
 import { ShareButton } from "@/components/share-button";
@@ -39,6 +39,7 @@ export default function OntologyViewPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const { getOntologyClass } = useOntology();
   const domain = params.domain as string;
   const id = params.id as string;
   const ontologyClass = getOntologyClass(domain);

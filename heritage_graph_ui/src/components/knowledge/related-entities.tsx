@@ -16,7 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { apiFetchJson, apiUrl, getApiErrorMessage } from "@/lib/api-client";
-import { getOntologyClass } from "@/lib/ontology";
+import { useOntology } from "@/lib/ontology/OntologyProvider";
 import { cn } from "@/lib/utils";
 
 const fadeInUp = {
@@ -95,6 +95,7 @@ export function RelatedEntities({
   emptyCtaHref,
   emptyCtaLabel,
 }: RelatedEntitiesProps) {
+  const { getOntologyClass } = useOntology();
   const { data: session } = useSession();
   const [groups, setGroups] = useState<RelatedGroupResponse[]>([]);
   const [totalRelated, setTotalRelated] = useState(0);

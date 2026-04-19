@@ -1,6 +1,9 @@
+import json
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.core.exceptions import ValidationError
-from rest_framework.test import APITestCase
+from rest_framework.test import APITestCase, APIClient
 
 from apps.cidoc_data.models import (
     Deity,
@@ -244,3 +247,26 @@ class RelatedEntitiesApiTest(APITestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()["total_related"], 0)
         self.assertEqual(res.json()["groups"], [])
+
+
+class OntologySchemaRegistryAPITests(APITestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.user = User.objects.create_user(username="schema_test_user", password="x")
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_registry_shape_and_etag(self):
+        url = "/api/v1/cidoc/schema/registry/"
+        r1 = self.client.get(url)
+        self.assertEqual(r1.status_code, 200, r1.content)
+        body = json.loads(r1.content.decode())
+        self.assertIn("schema_version", body)
+        self.assertIn("classes", body)
+        self.assertIn("enums", body)
+        self.assertIn("tenant_id", body)
+        self.assertIn("degraded", body)
+        etag = r1.headers.get("ETag")
+        self.assertTrue(etag)
+        r2 = self.client.get(url, HTTP_IF_NONE_MATCH=etag)
+        self.assertEqual(r2.status_code, 304)

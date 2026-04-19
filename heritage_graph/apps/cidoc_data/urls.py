@@ -76,6 +76,11 @@ router.register(r'person_revisions', PersonRevisionViewSet)
 # router.register(r'notifications', NotificationForUserViewSet)
 
 urlpatterns = [
+    path(
+        "schema/registry/",
+        OntologySchemaRegistryView.as_view(),
+        name="ontology-schema-registry",
+    ),
     path('', include(router.urls)),
     path("search/", universal_search, name="universal-search"),
     path("discovery/", public_discovery, name="public-discovery"),

@@ -1,7 +1,5 @@
-import OntologyForm from "@/components/ontology-form";
-import { getOntologyClass } from "@/lib/ontology";
+import { ContributeOntologyForm } from "@/components/contribute/ContributeOntologyForm";
 
-export default function ContributeCasteGroupPage() {
-  const cls = getOntologyClass("caste_group")!;
-  return <OntologyForm ontologyClass={cls} />;
+export default function Page() {
+  return <ContributeOntologyForm ontologyKey="caste_group" />;
 }

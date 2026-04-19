@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getOntologyClass } from "@/lib/ontology";
+import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { OntologyClass, OntologyField } from "@/lib/ontology";
 import { motion } from "framer-motion";
 import { IconSparkles } from "@tabler/icons-react";
@@ -40,6 +40,7 @@ export default function EntityViewPage() {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const { getOntologyClass } = useOntology();
   const domain = "entity"; // Fixed domain for this route
   const id = params.id as string;
   const ontologyClass = getOntologyClass(domain);

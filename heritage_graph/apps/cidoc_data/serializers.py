@@ -57,6 +57,15 @@ class PersonSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
         model = Person
         fields = '__all__'
 
+    def validate(self, attrs):
+        allowed = set(self.fields)
+        unknown = set(attrs) - allowed
+        if unknown:
+            raise serializers.ValidationError(
+                {k: "Unknown or read-only field for this resource." for k in unknown}
+            )
+        return attrs
+
 class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Location

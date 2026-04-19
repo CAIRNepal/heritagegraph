@@ -4,7 +4,8 @@
 # Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: help setup superuser backend frontend landing landing-install dev-local kill-ports \
+.PHONY: ontology \
+        help setup superuser backend frontend landing landing-install dev-local kill-ports \
         reset-dev-db migrate migrations shell seed seed-reset \
         docs-build docs-serve docs-clean \
         docker-up docker-up-build docker-down docker-build \
@@ -30,6 +31,12 @@ NODE_BIN  := $(shell test -f $(MISE_NODE)/node && echo $(MISE_NODE) || dirname $
 NODE_PATH := PATH=$(NODE_BIN):$$PATH
 
 # ================================================================
+# ONTOLOGY / SCHEMA REGISTRY (specs/004-yaml-driven-schema)
+# ================================================================
+ontology:
+	python3 tools/linkml_generate_registry.py
+
+# ================================================================
 # HELP
 # ================================================================
 help:
@@ -42,6 +49,7 @@ help:
 	@echo "    make superuser      Create a Django admin login"
 	@echo ""
 	@echo "  \033[1mDAILY USE\033[0m  (local dev — open one terminal per service)"
+	@echo "    make ontology       Regenerate registry.generated.* from ontology/HeritageGraph.yaml"
 	@echo "    make backend        Django API        →  http://localhost:8000"
 	@echo "    make frontend       Main app (UI)     →  http://localhost:3000"
 	@echo "    make landing        Marketing site    →  http://localhost:3001"

@@ -1,6 +1,9 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.cache import patch_cache_control
 from rest_framework import permissions, status as drf_status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 User = get_user_model()
 from .models import *
@@ -826,3 +829,38 @@ def related_entities(request):
 # class NotificationForUserViewSet(viewsets.ModelViewSet):
 #     queryset = NotificationForUser.objects.all()
 #     serializer_class = NotificationForUserSerializer
+
+
+class OntologySchemaRegistryView(APIView):
+    """
+    Effective ontology registry (classes + enums) for schema-driven UI.
+    GET /api/v1/cidoc/schema/registry/
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        from apps.cidoc_data.linkml_loader import get_effective_registry_payload
+
+        payload = get_effective_registry_payload(tenant=None)
+        version = payload["schema_version"]
+        etag = f'"{version}"'
+        inm = request.headers.get("If-None-Match")
+        if inm and inm == etag:
+            resp = Response(status=304)
+            resp["ETag"] = etag
+            patch_cache_control(
+                resp,
+                private=True,
+                max_age=getattr(settings, "HERITAGEGRAPH_SCHEMA_CACHE_TTL", 60),
+            )
+            return resp
+
+        resp = Response(payload)
+        resp["ETag"] = etag
+        patch_cache_control(
+            resp,
+            private=True,
+            max_age=getattr(settings, "HERITAGEGRAPH_SCHEMA_CACHE_TTL", 60),
+        )
+        return resp

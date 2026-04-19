@@ -753,6 +753,81 @@ class HeritageAssertion(models.Model):
         return f"Assertion on {self.content_type.model}#{self.object_id}: {self.asserted_property}"
 
 
+class Tenant(models.Model):
+    """Optional multi-tenant scope (004-yaml-driven-schema); single-tenant uses null FK."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slug = models.SlugField(max_length=64, unique=True)
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "cidoc_tenant"
+        verbose_name_plural = "Tenants"
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class SchemaRegistry(models.Model):
+    """Last materialized ontology registry JSON for cold start / degraded mode."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="schema_rows",
+    )
+    schema_version = models.CharField(max_length=64, db_index=True)
+    core_hash = models.CharField(max_length=64, blank=True)
+    extension_hash = models.CharField(max_length=64, blank=True, null=True)
+    registry_json = models.JSONField()
+    jsonschema_blob = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "cidoc_schema_registry"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"SchemaRegistry {self.schema_version[:12]}…"
+
+
+class DynamicOntologyEntity(models.Model):
+    """Extension-class entities without a typed Django model (tenant-scoped)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="dynamic_entities",
+    )
+    class_key = models.CharField(max_length=100, db_index=True)
+    class_uri = models.CharField(max_length=500, blank=True)
+    uri = models.CharField(max_length=500)
+    data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "cidoc_dynamic_ontology_entity"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "uri"],
+                name="cidoc_dynamic_entity_tenant_uri_uniq",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.class_key}:{self.uri}"
+
+
 # =====================================================================
 # Add GenericRelation to existing models for assertion access
 # =====================================================================

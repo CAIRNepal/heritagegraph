@@ -201,6 +201,24 @@ OCR_MAX_FILE_BYTES = int(
 # Optional override for the Tesseract binary location (useful in containers)
 TESSERACT_PATH = os.environ.get("TESSERACT_PATH", "")
 
+# ── Ontology / schema registry (LinkML YAML → API, see specs/004-yaml-driven-schema) ──
+HERITAGEGRAPH_SCHEMA_PATH = os.environ.get(
+    "HERITAGEGRAPH_SCHEMA_PATH",
+    str(BASE_DIR / "ontology" / "HeritageGraph.yaml"),
+)
+HERITAGEGRAPH_SCHEMA_EXTENSION_PATH = os.environ.get(
+    "HERITAGEGRAPH_SCHEMA_EXTENSION_PATH", ""
+)
+HERITAGEGRAPH_SCHEMA_CACHE_TTL = int(os.environ.get("HERITAGEGRAPH_SCHEMA_CACHE_TTL", "60"))
+RDF_ENDPOINT_URL = os.environ.get("RDF_ENDPOINT_URL", "")
+RDF_SYNC_ENABLED = os.environ.get("RDF_SYNC_ENABLED", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+    "y",
+    "on",
+}
+
 GRAPH_MODELS = {
     "all_applications": True,
     "graph_models": True,

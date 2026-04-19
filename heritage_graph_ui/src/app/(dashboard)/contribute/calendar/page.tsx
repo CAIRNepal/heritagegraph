@@ -1,7 +1,5 @@
-import OntologyForm from "@/components/ontology-form";
-import { getOntologyClass } from "@/lib/ontology";
+import { ContributeOntologyForm } from "@/components/contribute/ContributeOntologyForm";
 
-export default function ContributeCalendarPage() {
-  const cls = getOntologyClass("calendar")!;
-  return <OntologyForm ontologyClass={cls} />;
+export default function Page() {
+  return <ContributeOntologyForm ontologyKey="calendar" />;
 }
