@@ -35,6 +35,9 @@ import {
   mapCidocRecordToFormData,
 } from "@/lib/ontology/ontology-edit-helpers";
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { CidocCrmHint } from "@/components/ontology/CidocCrmHint";
 
 function FieldRenderer({
   field,
@@ -55,12 +58,16 @@ function FieldRenderer({
     : "";
 
   const labelEl = (
-    <Label htmlFor={id} className={cn(hasError && "text-red-600 dark:text-red-400")}>
-      {field.label}
-      {field.required && (
-        <span className="text-red-500 ml-0.5">*</span>
-      )}
-    </Label>
+    <div className="flex items-start justify-between gap-3">
+      <Label
+        htmlFor={id}
+        className={cn(hasError && "text-red-600 dark:text-red-400")}
+      >
+        {field.label}
+        {field.required && <span className="text-red-500 ml-0.5">*</span>}
+      </Label>
+      <CidocCrmHint slotUri={field.slot_uri} />
+    </div>
   );
 
   const descEl = field.description ? (
@@ -85,23 +92,44 @@ function FieldRenderer({
         </div>
       );
 
-    case "select":
+    case "select": {
+      const opts = field.options || [];
+      const noChoices = opts.length === 0;
       return (
         <div className="space-y-1">
           {labelEl}
           {descEl}
+          {noChoices ? (
+            <p className="text-xs text-amber-700 dark:text-amber-400/90 rounded-md border border-amber-200/80 bg-amber-50/60 px-2 py-1.5 dark:border-amber-900/40 dark:bg-amber-950/25">
+              No choices were loaded for this dropdown (
+              {field.enum_range ? (
+                <>
+                  enum <code className="font-mono">{field.enum_range}</code>
+                </>
+              ) : (
+                "unknown enum"
+              )}
+              ). The schema snapshot may be incomplete, or the enum has no permissible values.
+              Try refreshing; if it persists, the ontology needs to be regenerated (
+              <code className="font-mono">make ontology</code>).
+            </p>
+          ) : null}
           <Select
             value={value || ""}
             onValueChange={(v) => onChange(field.key, v)}
-            disabled={disabled}
+            disabled={disabled || noChoices}
           >
             <SelectTrigger className={errorRing}>
               <SelectValue
-                placeholder={`Select ${field.label.toLowerCase()}`}
+                placeholder={
+                  noChoices
+                    ? "No options available"
+                    : `Select ${field.label.toLowerCase()}`
+                }
               />
             </SelectTrigger>
             <SelectContent>
-              {(field.options || []).map((opt) => (
+              {opts.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>
@@ -110,6 +138,7 @@ function FieldRenderer({
           </Select>
         </div>
       );
+    }
 
     case "number":
     case "float":
@@ -678,6 +707,42 @@ export default function OntologyForm({
   };
   const isLastStep = currentStep === sections.length - 1;
 
+  if (sortedFields.length === 0) {
+    return (
+      <div className="container mx-auto max-w-2xl space-y-6 px-4 py-12">
+        <Alert className="border-amber-200 bg-amber-50/80 dark:border-amber-900/50 dark:bg-amber-950/30">
+          <AlertCircle className="text-amber-700 dark:text-amber-400" />
+          <AlertTitle className="text-amber-950 dark:text-amber-100">
+            This form has no fields in the loaded schema
+          </AlertTitle>
+          <AlertDescription className="space-y-2 text-amber-950/90 dark:text-amber-100/90">
+            <p>
+              The registry entry for{" "}
+              <strong className="text-foreground">{ontologyClass.label}</strong> (
+              <code className="rounded bg-muted px-1 font-mono text-xs text-foreground">
+                {ontologyClass.key}
+              </code>
+              ) exists, but its field list is empty. That usually means the LinkML class has
+              no induced slots mapped for the UI, or generation failed partway through.
+            </p>
+            <p className="text-sm">
+              <strong className="text-foreground">What you can do:</strong> try refreshing
+              the page or signing in so the latest schema loads. If it persists, report it—
+              maintainers should verify{" "}
+              <code className="rounded bg-background px-1 font-mono text-xs">ontology/HeritageGraph.yaml</code>{" "}
+              and{" "}
+              <code className="rounded bg-background px-1 font-mono text-xs">tools/ui-classmap.yaml</code>
+              , then run <code className="rounded bg-background px-1 font-mono text-xs">make ontology</code>.
+            </p>
+          </AlertDescription>
+        </Alert>
+        <Button variant="outline" onClick={() => router.push("/contribute")}>
+          Back to Contribute
+        </Button>
+      </div>
+    );
+  }
+
   if (isEditMode && editLoad === "loading") {
     return (
       <div className="container mx-auto max-w-2xl py-16 text-center">
@@ -690,8 +755,19 @@ export default function OntologyForm({
   if (isEditMode && editLoad === "error" && loadError) {
     return (
       <div className="container mx-auto max-w-2xl space-y-4 px-4 py-12">
-        <h2 className="text-xl font-semibold">Could not open editor</h2>
-        <p className="text-muted-foreground">{loadError}</p>
+        <Alert variant="destructive">
+          <AlertCircle />
+          <AlertTitle>Could not open editor</AlertTitle>
+          <AlertDescription className="space-y-2">
+            <p>{loadError}</p>
+            <p className="text-sm opacity-90">
+              The form definition loaded, but the record could not be fetched. Common causes:
+              the record was deleted, you do not have permission, the API is down, or your
+              session expired. Try signing in again or open the list view and pick the item
+              from there.
+            </p>
+          </AlertDescription>
+        </Alert>
         <Button
           variant="outline"
           onClick={() => router.push(`/knowledge/${ontologyClass.key}`)}
