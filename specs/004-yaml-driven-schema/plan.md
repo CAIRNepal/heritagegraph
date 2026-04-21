@@ -5,7 +5,7 @@
 
 ## Summary
 
-**Problem:** The LinkML ontology (`ontology/HeritageGraph.yaml` or repo-root `Heritagegraph.yaml`), the hand-maintained frontend `heritage_graph_ui/src/lib/ontology/registry.ts`, and Django `cidoc_data` models/serializers are three sources of truth that drift. That blocks reuse and forces triple edits for every class/slot change.
+**Problem:** Historically, LinkML, a hand-maintained frontend registry, and Django `cidoc_data` models could drift. The codebase now treats **`ontology/HeritageGraph.yaml`** + **`tools/ui-classmap.yaml`** as the edited ontology surface and materializes **`registry.generated.*`** plus the schema API; Django models must still be kept in sync for persisted fields.
 
 **Target:** Make the LinkML YAML the **only** edited ontology artifact. Add a **generation pipeline** (LinkML + custom emitters) that produces: (1) a **frontend-consumable registry** (same conceptual shape as today’s `OntologyClass` tree), (2) **JSON Schema** for client validation, (3) **server-side validation** metadata (and optionally Pydantic models) aligned with API writes, (4) **RDF URI maps** for export/sync. Add a **schema-serving API** (public GET, versioned, cache-friendly) so the UI loads the registry at **runtime**, with a **checked-in generated snapshot** as CI/offline fallback. Keep **typed Django models** for existing CIDOC resources; add a **schema registry** table plus **dynamic/extension entity** storage for tenant-only classes. **Phase later:** write-through **RDF sidecar** (triplestore) for SPARQL/LOD, non-blocking on Django writes.
 
@@ -35,7 +35,7 @@
 
 **Scale/Scope:**
 
-- ~50+ ontology classes, hundreds of slots (see `registry.ts` size today).
+- ~50+ ontology classes, hundreds of slots (see `ontology/HeritageGraph.yaml` and generated `registry.generated.json`).
 - Incremental delivery: **M1** generation + schema API + runtime UI loader; **M2** tenant extensions + dynamic CRUD; **M3** RDF sidecar + re-materialization job.
 
 ## Constitution Check
@@ -64,8 +64,8 @@ specs/004-yaml-driven-schema/
 ### Source Code (repository root)
 
 ```text
-ontology/                                 # or repo root: Heritagegraph.yaml — single edited ontology source
-├── HeritageGraph.yaml                    # authoritative LinkML (name may vary; unify path in implementation)
+ontology/                                 # single edited ontology package (no duplicate root `Heritagegraph.yaml`; CI rejects it)
+├── HeritageGraph.yaml                    # authoritative LinkML
 
 heritage_graph/
 ├── apps/cidoc_data/
@@ -85,10 +85,10 @@ tools/                                    # NEW (recommended) — gen scripts no
 heritage_graph_ui/
 ├── src/
 │   ├── lib/ontology/
-│   │   ├── registry.ts                   # becomes generated snapshot + thin re-exports; or split generated file
-│   │   ├── types.ts                      # stable TS interfaces (unchanged or extended)
-│   │   ├── load-registry.ts            # NEW — fetch schema API, SWR/cache, degraded mode
-│   │   └── OntologyProvider.tsx        # NEW — React context for registry + version
+│   │   ├── registry.generated.ts         # emitted snapshot (`make ontology`)
+│   │   ├── types.ts                      # stable TS interfaces
+│   │   ├── load-registry.ts              # fetch schema API, cache, degraded mode
+│   │   └── OntologyProvider.tsx          # React context for registry + version
 │   └── app/ ...                          # contribute + knowledge pages consume provider instead of static import
 ```
 

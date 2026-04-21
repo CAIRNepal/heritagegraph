@@ -1,7 +1,7 @@
 # ONTOLOGY.md — HeritageGraph Ontology & Form System Guide
 
 > **Audience:** Developers, researchers, and AI agents who need to understand, modify, or extend the ontology-driven form system in HeritageGraph.  
-> **Last Updated:** February 2026 (aligned with `ontology/HeritageGraph.yaml` v1.0.0)
+> **Last Updated:** April 2026 — **UI registry is generated** from LinkML + `tools/ui-classmap.yaml` (see `registry.generated.*`). Step-by-step form tasks: root **`FORMS.md`**. End-to-end pipeline: **`docs/en/guides/developers/yaml-schema-workflow.md`**.
 
 ---
 
@@ -11,7 +11,7 @@
 2. [Architecture Diagram](#2-architecture-diagram)
 3. [Source of Truth Files](#3-source-of-truth-files)
 4. [Ontology → Frontend Mapping](#4-ontology--frontend-mapping)
-5. [Registered Entity Types (24 total)](#5-registered-entity-types-24-total)
+5. [Registered Entity Types](#5-registered-entity-types)
 6. [Controlled Vocabularies (Enums)](#6-controlled-vocabularies-enums)
 7. [How to Make Changes](#7-how-to-make-changes)
    - [7.1 Add a Field to an Existing Entity](#71-add-a-field-to-an-existing-entity)
@@ -34,43 +34,40 @@
 
 ## 1. Overview — How It All Connects
 
-HeritageGraph uses a **registry-driven architecture** where a single TypeScript file (`registry.ts`) defines every entity type. The entire UI — forms, data tables, detail views, and navigation — auto-generates from this registry.
+HeritageGraph uses a **YAML-driven, registry-based UI**: LinkML (`ontology/HeritageGraph.yaml`) plus **`tools/ui-classmap.yaml`** (and optional **`tools/ui-presentation.yaml`**, **`tools/contribute-hub.yaml`**) materialize a JSON registry consumed by the Next.js app. Committed **`registry.generated.json`** / **`.ts`** provide an offline baseline; signed-in clients can refresh from **`GET /api/v1/cidoc/schema/registry/`**.
 
 ```
-HeritageGraph.yaml (LinkML)        ← Canonical ontology (classes, slots, enums)
+ontology/HeritageGraph.yaml (LinkML)   ← Canonical ontology (classes, slots, enums)
         │
+        ├── tools/ui-classmap.yaml     ← Registry keys, labels, apiEndpoint, nav
+        ├── tools/ui-presentation.yaml ← Optional slot-level UI overrides
+        ├── tools/contribute-hub.yaml  ← Contribute landing intents
         ▼
-Heritage.ttl (OWL/Turtle)          ← Generated OWL for linked-data consumers
+tools/linkml_generate_registry.py  +  heritage_graph ... ontology_builder.py
         │
+        ├── registry.generated.json / .ts   ← Snapshot (commit after make ontology)
+        └── Django SchemaRegistry + schema API (optional DB cache)
         ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  Frontend (heritage_graph_ui/src/lib/ontology/)                 │
 │                                                                 │
-│  types.ts     → TypeScript interfaces (OntologyField, etc.)     │
-│  enums.ts     → Controlled vocabularies (dropdown options)      │
-│  registry.ts  → Entity class definitions (fields, sections...)  │
-│  index.ts     → Barrel re-export                                │
-│                                                                 │
-│  ↓ auto-generates ↓                                             │
-│                                                                 │
-│  OntologyForm     → Contribute forms                            │
-│  OntologyDataTable → Knowledge tables                           │
-│  Detail views     → Entity detail pages                         │
-│  Contribute page  → Dashboard intent cards                      │
+│  types.ts, OntologyProvider, OntologyForm, tables, detail views │
+│  Payload may include registry_jsonschema for validation hints   │
 └─────────────────────────────────────────────────────────────────┘
         │
         ▼  (POST/GET via Bearer token)
 ┌─────────────────────────────────────────────────────────────────┐
-│  Backend (heritage_graph/apps/cidoc_data/)                      │
+│  Backend — cidoc_data, heritage_data, …                         │
 │                                                                 │
-│  models.py       → Django models (must match field keys)        │
-│  serializers.py  → DRF serializers                              │
-│  views.py        → ViewSets + search                            │
-│  urls.py         → API routes (must match apiEndpoint)          │
+│  models.py       → Django models (field keys must match registry)│
+│  serializers.py  → DRF serializers                               │
+│  urls.py         → Routes must match each class’s apiEndpoint   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Golden rule:** The field `key` in the registry **must exactly match** the Django model field name, and `apiEndpoint` must match the URL route registered in `urls.py`.
+**Golden rule:** Each registry field **`key`** must match the Django model field name for that entity type, and **`apiEndpoint`** must match the registered URL (CIDOC under `cidoc_data/urls.py`; cultural entities under `heritage_data`).
+
+**Do not** add a second ontology file at the repo root named `Heritagegraph.yaml` — CI **`make ontology-check`** rejects it.
 
 ---
 
@@ -79,26 +76,23 @@ Heritage.ttl (OWL/Turtle)          ← Generated OWL for linked-data consumers
 ```
                     ┌──────────────────────────────┐
                     │  ontology/HeritageGraph.yaml  │
-                    │  (LinkML — 2060 lines)        │
-                    │  40+ classes, 100+ slots      │
+                    │  LinkML + classmap + hub      │
                     └───────────┬───────────────────┘
-                                │  derived from
+                                │
                     ┌───────────▼───────────────────┐
-                    │  ontology/Heritage.ttl         │
-                    │  (OWL/Turtle — 5190 lines)     │
+                    │  registry.generated.* + API    │
+                    │  (classes, enums, jsonschema)  │
                     └───────────┬───────────────────┘
                                 │
           ┌─────────────────────┼─────────────────────┐
           │                     │                      │
    ┌──────▼──────┐    ┌────────▼────────┐    ┌────────▼────────┐
-   │  enums.ts   │    │  registry.ts    │    │  Django models  │
-   │  22 enums   │───▶│  24 classes     │    │  cidoc_data     │
-   │  dropdowns  │    │  fields/cols    │    │  heritage_data  │
-   └─────────────┘    └────────┬────────┘    └────────┬────────┘
+   │  OntologyProvider │  OntologyForm   │    │  Django models  │
+   │  + types.ts      │  tables / views │    │  cidoc + heritage│
+   └──────────────────┴────────┬────────┘    └────────┬────────┘
                                │                      │
                     ┌──────────▼──────────┐    ┌──────▼──────────┐
-                    │  OntologyForm       │    │  DRF Serializer │
-                    │  auto-generates UI  │───▶│  API ViewSet    │
+                    │  Next.js dashboard │    │  DRF API        │
                     └─────────────────────┘    └─────────────────┘
 ```
 
@@ -106,25 +100,25 @@ Heritage.ttl (OWL/Turtle)          ← Generated OWL for linked-data consumers
 
 ## 3. Source of Truth Files
 
-| File | Location | Purpose | Lines |
-|------|----------|---------|-------|
-| **HeritageGraph.yaml** | `ontology/HeritageGraph.yaml` | Canonical LinkML schema — classes, slots, enums, prefixes | ~2060 |
-| **Heritage.ttl** | `ontology/Heritage.ttl` | Generated OWL/Turtle for linked-data consumers | ~5190 |
-| **types.ts** | `heritage_graph_ui/src/lib/ontology/types.ts` | TypeScript interfaces (`OntologyField`, `OntologyClass`, etc.) | ~103 |
-| **enums.ts** | `heritage_graph_ui/src/lib/ontology/enums.ts` | Controlled vocabularies for `select` fields | ~230 |
-| **registry.ts** | `heritage_graph_ui/src/lib/ontology/registry.ts` | All 24 entity class definitions with fields, sections, columns | ~900 |
-| **index.ts** | `heritage_graph_ui/src/lib/ontology/index.ts` | Barrel export | ~17 |
+| File | Location | Purpose |
+|------|----------|---------|
+| **HeritageGraph.yaml** | `ontology/HeritageGraph.yaml` | Canonical LinkML — classes, slots, enums, URIs |
+| **ui-classmap.yaml** | `tools/ui-classmap.yaml` | Maps each exposed LinkML class → registry `key`, `apiEndpoint`, labels |
+| **ui-presentation.yaml** | `tools/ui-presentation.yaml` | Optional per-slot UI overrides (`ui_section`, `ui_widget`, …) |
+| **contribute-hub.yaml** | `tools/contribute-hub.yaml` | Contribute landing intents and copy |
+| **registry.generated.*** | `heritage_graph_ui/src/lib/ontology/` | **Generated** registry + `registry_jsonschema` — run `make ontology` |
+| **Heritage.ttl** | `ontology/Heritage.ttl` | OWL/Turtle for linked-data consumers (where maintained) |
+| **types.ts** | `heritage_graph_ui/src/lib/ontology/types.ts` | TypeScript interfaces for registry payloads |
 
-### Relationship between ontology YAML and frontend registry
+### Relationship between ontology YAML and the registry
 
-| HeritageGraph.yaml concept | Frontend equivalent |
+| HeritageGraph.yaml concept | Registry / UI |
 |---|---|
-| `classes:` block | `OntologyClass` in `registry.ts` |
-| `slots:` block | `OntologyField` in each class's `fields` array |
-| `enums:` block | Entry in `ontologyEnums` in `enums.ts` |
-| `class_uri` | `classUri` property on `OntologyClass` |
-| `is_a` (inheritance) | `parentClass` property on `OntologyClass` |
-| `slot_usage` (required, range) | `required`, `options`, `relationTo` on `OntologyField` |
+| `classes:` / induced slots | `OntologyClass.fields[]` from generator |
+| `enums:` | `enums` map + inlined `options` on `select` fields |
+| `class_uri` | `classUri` on `OntologyClass` |
+| `slot_usage` (required, cardinality) | `required`, `minimumCardinality`, `maximumCardinality` on `OntologyField` |
+| LinkML class range | `type: "relation"`, `relationEndpoint` from classmap |
 
 ---
 
@@ -132,24 +126,27 @@ Heritage.ttl (OWL/Turtle)          ← Generated OWL for linked-data consumers
 
 When translating from `HeritageGraph.yaml` to the frontend registry, follow these rules:
 
-| YAML construct | Frontend mapping | Example |
+| YAML construct | Frontend mapping | Notes |
 |---|---|---|
-| `ArchitecturalStructure` class | `const architecturalStructure: OntologyClass` with `key: "structure"` | `registry.ts` |
-| `name` slot with `slot_uri: rdfs:label` | `nameField("Structure Name")` | Every class |
-| `note` slot with `slot_uri: crm:P3_has_note` | `noteField()` | Every class |
-| `has_current_location` slot with `range: Place` | `{ type: "relation", relationTo: "location" }` | Structures |
-| `ArchitecturalStyleEnum` enum | `ontologyEnums.ArchitecturalStyleEnum` in `enums.ts` | Structure form |
-| `multivalued: true` in YAML | `multivalued: true` on `OntologyField` | Ritual deity links |
-| `required: true` in `slot_usage` | `required: true` on `OntologyField` | Name fields |
+| `ArchitecturalStructure` class | `OntologyClass` with `key: "structure"` | From `ontology_builder.py` + `ui-classmap.yaml` |
+| `name` slot with `slot_uri: rdfs:label` | Label field on the form | Slot key matches Django field name |
+| `note` slot with `slot_uri: crm:P3_has_note` | Text / textarea field | Same |
+| `has_current_location` slot with `range: Place` | `type: "relation"`, `relationTo: "location"` | `relationEndpoint` from classmap |
+| `ArchitecturalStyleEnum` enum | `type: "select"` with inlined `options` + entry in `registry.enums` | Define enum in LinkML `enums:` |
+| `multivalued: true` in YAML | `multivalued: true` on `OntologyField` | Multiselect / multi-relation as configured |
+| `required: true` in `slot_usage` | `required: true` (and cardinality) on `OntologyField` | Also `minimumCardinality` / `maximumCardinality` when set |
 
 ---
 
-## 5. Registered Entity Types (24 total)
+## 5. Registered entity types
+
+The exposed class list, registry keys, and API paths are defined in **`tools/ui-classmap.yaml`** (materialized into `registry.generated.*` by `make ontology`).
 
 ### Navigable (show in sidebar & contribute dashboard)
 
 | Registry Key | Label | Category | Ontology Class | CIDOC-CRM URI | API Endpoint |
 |---|---|---|---|---|---|
+| `entity` | Cultural Entity | tangible | `CulturalEntity` | `heritageGraph:CulturalEntity` | `/data/api/cultural-entities/` |
 | `person` | Person | social | `Person` | `crm:E21_Person` | `/cidoc/persons/` |
 | `location` | Place | spatiotemporal | `Place` | `crm:E53_Place` | `/cidoc/locations/` |
 | `event` | Event | event | `HistoricalEvent` | `crm:E5_Event` | `/cidoc/events/` |
@@ -184,7 +181,7 @@ When translating from `HeritageGraph.yaml` to the frontend registry, follow thes
 
 | Category Key | Label | Icon | Entities |
 |---|---|---|---|
-| `tangible` | Tangible Heritage | landmark | structure, iconography, monument, material, technique |
+| `tangible` | Tangible Heritage | landmark | entity, structure, iconography, monument, material, technique |
 | `conceptual` | Conceptual Entities | lightbulb | deity, tradition, syncretism, religious_tradition |
 | `event` | Events & Rituals | calendar | event, ritual, festival, kumari_tenure, kumari_selection, kumari_retirement |
 | `social` | Social Organizations | users | person, guthi, caste_group |
@@ -195,7 +192,9 @@ When translating from `HeritageGraph.yaml` to the frontend registry, follow thes
 
 ## 6. Controlled Vocabularies (Enums)
 
-All enums live in `heritage_graph_ui/src/lib/ontology/enums.ts`. Each is an array of `{ value, label, description? }`.
+**Authoritative definitions** are LinkML `enums:` blocks in **`ontology/HeritageGraph.yaml`**. After `make ontology`, permissible values appear in the registry API as **`registry.enums`** and as **`options`** on each `select` field. The table below summarizes major enums; see the YAML for the full set.
+
+`heritage_graph_ui/src/lib/ontology/enums.ts` remains for **legacy / supplemental** UI-only lists — prefer LinkML for anything that must match Django `choices` and server validation.
 
 | Enum Key | Values | Used By | Ontology Source |
 |---|---|---|---|
@@ -226,247 +225,110 @@ All enums live in `heritage_graph_ui/src/lib/ontology/enums.ts`. Each is an arra
 
 ## 7. How to Make Changes
 
+> **Authoritative procedure:** Root **`FORMS.md`** (add fields, enums, sections, new entity types, Django checklist).  
+> **Do not** hand-edit per-class TypeScript registries — edit **LinkML** and **`tools/ui-classmap.yaml`**, then **`make ontology`**.
+
 ### 7.1 Add a Field to an Existing Entity
 
-**Scenario:** Add a "patron_deity" field to the Guthi form.
+**Scenario:** Add a `patron_deity` relation from Guthi to Deity.
 
-**Step 1 — Edit `registry.ts`:**
+Follow **`FORMS.md` §4**. In short:
 
-Find the `guthi` definition and add to its `fields` array:
+1. **LinkML** — Add the slot under `slots:` in `ontology/HeritageGraph.yaml`, attach it to the Guthi class, set `range` (e.g. to the Deity class) and any `slot_usage` / UI annotations.
+2. **Django** — Add `patron_deity` on the model, serializer, and migrations; keep the **Python field name identical** to the registry slot key.
+3. **Regenerate** — `make ontology` and commit `registry.generated.json` / `registry.generated.ts`.
+
+The registry **shape** for such a field looks like this (generated — do not paste into TypeScript by hand):
 
 ```typescript
 {
-  key: "patron_deity",             // Must match Django model field name
-  label: "Patron Deity",           // Human-readable label
-  type: "relation",                // Field type (see Section 8)
-  section: "function",             // Which section to place it in
-  order: 2,                        // Sort order within section
-  relationTo: "deity",             // Related ontology class key
-  relationEndpoint: "/cidoc/deities/",  // API endpoint for search
-  description: "Primary deity this Guthi serves"
+  key: "patron_deity",
+  label: "Patron Deity",
+  type: "relation",
+  section: "function",
+  order: 2,
+  relationTo: "deity",
+  relationEndpoint: "/cidoc/deities/",
+  description: "Primary deity this Guthi serves",
 },
 ```
 
-**Step 2 — Django model** (if new field):
+Example **Django** side:
 
 ```python
 # heritage_graph/apps/cidoc_data/models.py
 class Guthi(CIDOCBaseModel):
     # ... existing fields ...
-    patron_deity = models.ForeignKey('Deity', null=True, blank=True, on_delete=models.SET_NULL)
+    patron_deity = models.ForeignKey("Deity", null=True, blank=True, on_delete=models.SET_NULL)
 ```
 
-**Step 3 — Serializer + migration:**
-
-```bash
-cd heritage_graph
-python manage.py makemigrations cidoc_data
-python manage.py migrate
-```
-
-Add the field to the serializer's `Meta.fields` list if needed.
-
-**That's it.** The form, table, and detail view all update automatically.
+After migrate + registry refresh, the contribute form, table, and detail views pick up the field via **`OntologyProvider`**.
 
 ---
 
 ### 7.2 Add a New Enum (Dropdown)
 
-**Scenario:** Add a "MaterialTypeEnum" for construction materials.
+**Scenario:** Add `MaterialTypeEnum` for construction materials.
 
-**Step 1 — Edit `enums.ts`:**
+Use **`FORMS.md` §5**:
 
-Add inside the `ontologyEnums` object:
+1. Add the enum under `enums:` in `ontology/HeritageGraph.yaml` (`permissible_values` with optional titles/descriptions).
+2. Set the slot’s `range` to that enum name.
+3. Run `make ontology`.
+4. Add matching Django **`choices`** on the model field (string values must match LinkML `text` keys exactly).
 
-```typescript
-MaterialTypeEnum: [
-  { value: "stone", label: "Stone", description: "Natural stone (brick, slate, marble)" },
-  { value: "wood", label: "Wood", description: "Timber construction material" },
-  { value: "brick", label: "Brick", description: "Fired clay brick" },
-  { value: "metal", label: "Metal", description: "Bronze, copper, iron" },
-  { value: "terracotta", label: "Terracotta", description: "Unglazed ceramic" },
-],
-```
-
-**Step 2 — Use it in a field:**
-
-```typescript
-{
-  key: "primary_material",
-  label: "Primary Material",
-  type: "select",
-  options: ontologyEnums.MaterialTypeEnum,
-  section: "architecture",
-  order: 4,
-},
-```
-
-**Step 3 — Django model:**
-
-Add corresponding `choices` tuple to the Django model field.
+Avoid defining production dropdowns **only** in `enums.ts`; that bypasses the YAML-driven pipeline and drifts from the API.
 
 ---
 
 ### 7.3 Add a New Entity Type
 
-**Scenario:** Add an "Inscription" entity for stone/copper-plate inscriptions.
+**Scenario:** Add an “Inscription” (or any new CIDOC-backed type).
 
-**Step 1 — Define the class in `registry.ts`:**
+Use the full checklist in **`FORMS.md` §7**. Summary:
 
-```typescript
-const inscription: OntologyClass = {
-  key: "inscription",
-  label: "Inscription",
-  labelPlural: "Inscriptions",
-  description: "Stone or copper-plate inscription with epigraphic content",
-  classUri: "crm:E34_Inscription",
-  icon: "file-text",                    // Lucide icon name
-  apiEndpoint: "/cidoc/inscriptions/",  // Must match Django URL
-  category: "tangible",                 // Category group
-  navigable: true,                      // Show in sidebar/nav
-  sections: [
-    { key: "basic", label: "Basic Information" },
-    { key: "content", label: "Epigraphic Content" },
-    { key: "location", label: "Location" },
-  ],
-  fields: [
-    nameField("Inscription Name"),
-    { key: "script", label: "Script", type: "text", section: "content", order: 1,
-      placeholder: "e.g., Lichhavi Brahmi, Ranjana", description: "Writing system used" },
-    { key: "language", label: "Language", type: "text", section: "content", order: 2,
-      placeholder: "e.g., Sanskrit, Nepal Bhasa" },
-    { key: "transcription", label: "Transcription", type: "textarea", section: "content", order: 3,
-      description: "Full transcription of the inscription text" },
-    { key: "date_earliest", label: "Date", type: "text", section: "basic", order: 2,
-      placeholder: "e.g., 464 CE (Lichhavi)" },
-    { key: "location_name", label: "Location", type: "text", section: "location", order: 1 },
-    { key: "coordinates", label: "Coordinates", type: "coordinates", section: "location", order: 2 },
-    noteField(),
-  ],
-  columns: [
-    { key: "name", label: "Name", sortable: true, visible: true },
-    { key: "script", label: "Script", sortable: true, visible: true, format: "badge" },
-    { key: "language", label: "Language", sortable: true, visible: true },
-    { key: "date_earliest", label: "Date", sortable: true, visible: true },
-  ],
-};
-```
+1. **LinkML** — New class in `ontology/HeritageGraph.yaml` (URI, slots, enums).
+2. **`tools/ui-classmap.yaml`** — Map the LinkML class name to a registry **`key`**, **`apiEndpoint`**, labels, **`category`**, **`navigable`**, icon, etc. (see the `entity` → `CulturalEntity` row for a non-`/cidoc/` example).
+3. **`tools/contribute-hub.yaml`** — Add a hub intent if contributors should see a card (copy, route, difficulty).
+4. **`make ontology`** — Commit updated `registry.generated.*`.
+5. **Next.js** — Thin route under `heritage_graph_ui/src/app/(dashboard)/contribute/<segment>/page.tsx` that loads `getOntologyClass("<key>")` and renders **`OntologyForm`** (see **`FORMS.md`** for the template).
+6. **Django** — Model, serializer, `ViewSet`, `urls.py` registration; URL path must match the classmap **`apiEndpoint`**.
 
-**Step 2 — Register it:**
-
-Add to the `ontologyClasses` export:
-
-```typescript
-export const ontologyClasses: Record<string, OntologyClass> = {
-  // ... existing entries ...
-  inscription,
-};
-```
-
-**Step 3 — Create the contribute page:**
-
-Create `heritage_graph_ui/src/app/dashboard/contribute/inscription/page.tsx`:
-
-```tsx
-"use client";
-
-import OntologyForm from "@/components/ontology-form";
-import { getOntologyClass } from "@/lib/ontology";
-
-export default function ContributeInscriptionPage() {
-  const cls = getOntologyClass("inscription")!;
-  return <OntologyForm ontologyClass={cls} />;
-}
-```
-
-**Step 4 — Add to contribute dashboard (optional):**
-
-Edit `heritage_graph_ui/src/app/dashboard/contribute/page.tsx` — add an entry to `contributionIntents`:
-
-```typescript
-{
-  key: "inscription",
-  label: "Record an Inscription",
-  description: "Stone or copper-plate inscriptions with transcription and dating.",
-  icon: "📜",
-  category: "Tangible Heritage",
-  route: "/dashboard/contribute/inscription",
-  difficulty: "advanced",
-  gradient: "from-blue-500 to-sky-600",
-},
-```
-
-**Step 5 — Django backend:**
-
-1. Add model in `heritage_graph/apps/cidoc_data/models.py`
-2. Add serializer in `serializers.py`
-3. Add ViewSet in `views.py`
-4. Register route in `urls.py` → `router.register(r'inscriptions', InscriptionViewSet)`
-5. Run `makemigrations` + `migrate`
-
-**Step 6 — Knowledge page** (auto-generated):
-
-Create `heritage_graph_ui/src/app/dashboard/knowledge/inscription/page.tsx` following the same pattern as other knowledge pages.
+Knowledge tables and generic **`[domain]/view/[id]`** flows use the same registry key — no duplicate field lists in TypeScript.
 
 ---
 
 ### 7.4 Add a Relation Field (Entity Linking)
 
-Relation fields let users link entities together (e.g., "this ritual invokes deity X").
+Declare a slot in **LinkML** whose **`range`** is another ontology class (e.g. Deity). The builder sets **`type: "relation"`**, **`relationTo`**, and **`relationEndpoint`** from **`ui-classmap.yaml`**. Example registry fragment:
 
 ```typescript
 {
-  key: "invokes_deity",              // Django field name
-  label: "Invokes Deity",            // Form label
-  type: "relation",                  // Must be "relation"
-  section: "participation",          // Form section
+  key: "invokes_deity",
+  label: "Invokes Deity",
+  type: "relation",
+  section: "participation",
   order: 2,
-  relationTo: "deity",               // Registry key of the related class
-  relationEndpoint: "/cidoc/deities/", // API endpoint for autocomplete search
-  multivalued: true,                 // Allow linking multiple entities
-  description: "Deity invoked or made present through ritual"
+  relationTo: "deity",
+  relationEndpoint: "/cidoc/deities/",
+  multivalued: true,
+  description: "Deity invoked or made present through ritual",
 },
 ```
 
-The `EntitySearch` component renders an autocomplete dropdown that calls the related API endpoint.
+The form uses **`EntitySearch`** against `relationEndpoint`.
 
 ---
 
 ### 7.5 Add a New Form Section
 
-Sections visually group fields in the form. Add to the `sections` array:
-
-```typescript
-sections: [
-  { key: "basic", label: "Basic Information" },
-  { key: "provenance", label: "Provenance & Sources" },       // ← new
-  { key: "status", label: "Status & Condition", description: "Current physical state" },
-],
-```
-
-Then set `section: "provenance"` on any field you want in that group.
+See **`FORMS.md` §6**. Prefer slot annotations **`ui_section`** / **`ui_order`** in LinkML, or a class annotation **`ui_sections`**, then **`make ontology`**. Multi-section classes use the built-in step flow inside **`OntologyForm`**.
 
 ---
 
 ### 7.6 Add to the Contribute Dashboard
 
-The contribute page at `/dashboard/contribute/` shows intent cards grouped by category.
-
-Edit `heritage_graph_ui/src/app/dashboard/contribute/page.tsx`:
-
-```typescript
-// Add to the contributionIntents array
-{
-  key: "your_entity",               // Unique key
-  label: "Your Label",              // Card title
-  description: "Description...",    // Card description
-  icon: "🏛️",                      // Emoji icon
-  category: "Tangible Heritage",    // Category group header
-  route: "/dashboard/contribute/your-entity",  // Must match page route
-  difficulty: "beginner",           // beginner | intermediate | advanced
-  gradient: "from-blue-500 to-sky-500",       // Tailwind gradient
-},
-```
+Intent cards and categories are driven by **`tools/contribute-hub.yaml`**. Edit that file, run **`make ontology`**, and deploy so the embedded hub payload matches the app. The runtime contribute landing page consumes this data via the ontology registry / provider — do not hand-edit a large `contributionIntents` array in a page file unless you are intentionally overriding the hub for a one-off experiment.
 
 ---
 
@@ -480,10 +342,12 @@ Edit `heritage_graph_ui/src/app/dashboard/contribute/page.tsx`:
 | `float` | Number input (decimal) | Decimal values | Confidence score (0.0–1.0) |
 | `date` | Date picker | ISO dates | Last known existence date |
 | `select` | Dropdown | Pick one from enum | Structure type, ritual type |
-| `multiselect` | Multi-select | Pick many from enum | _(not yet fully implemented)_ |
-| `boolean` | Checkbox | Yes/no flags | `is_critical_for_festival` |
+| `multiselect` | Checkbox group | Pick many from enum | Multivalued enum slots |
+| `boolean` | Toggle (`Switch`) | Yes/no flags | Feature flags, booleans |
 | `url` | URL input | Web links | Digital source URL |
-| `coordinates` | Lat/Long input | GPS positions | Structure coordinates |
+| `coordinates` | Lat/Long inputs | GPS positions | Legacy combined coordinate string |
+| `geo_point` | Lat/Long inputs | Point geometry | When the builder maps a geo slot to `geo_point` |
+| `edtf_date` | Text (EDTF-friendly) | Imprecise historical dates | Extended date/time textual encoding |
 | `relation` | Entity search autocomplete | Link to another entity | Deity → Structure, Ritual → Festival |
 
 ---
@@ -527,6 +391,8 @@ interface OntologyField {
   order?: number;         // Sort order within section
   placeholder?: string;   // Input placeholder text
   defaultValue?: any;     // Default value
+  minimumCardinality?: number;  // From LinkML (optional)
+  maximumCardinality?: number;  // From LinkML (optional; unbounded may be omitted)
 }
 ```
 
@@ -545,10 +411,11 @@ Every frontend entity class must have a corresponding Django model, serializer, 
 | 3 | `cidoc_data/views.py` | Add `ModelViewSet` |
 | 4 | `cidoc_data/urls.py` | Register with router: `router.register(r'endpoint', ViewSet)` |
 | 5 | Run migrations | `python manage.py makemigrations cidoc_data && python manage.py migrate` |
-| 6 | `ontology/enums.ts` | Add any new enums |
-| 7 | `ontology/registry.ts` | Add `OntologyClass` definition |
-| 8 | `contribute/<key>/page.tsx` | Create contribute page |
-| 9 | `contribute/page.tsx` | Add intent card |
+| 6 | `ontology/HeritageGraph.yaml` | LinkML class, slots, enums |
+| 7 | `tools/ui-classmap.yaml` | Registry `key`, `apiEndpoint`, nav metadata |
+| 8 | `tools/contribute-hub.yaml` | Hub intent card (if the type should appear on `/contribute`) |
+| 9 | `make ontology` | Regenerate `registry.generated.*` |
+| 10 | `heritage_graph_ui/.../(dashboard)/contribute/<route>/page.tsx` | Thin `OntologyForm` page |
 
 ### Key field name mapping rules:
 
@@ -656,15 +523,15 @@ This means **every factual claim** about a heritage entity can be traced back to
 
 ### Form field doesn't appear
 
-- ✅ Check `section` matches a key in the class's `sections` array
-- ✅ Check `order` is set (fields without order sort unpredictably)
-- ✅ Check the class is exported in `ontologyClasses` in `registry.ts`
+- ✅ Confirm the slot is listed on the LinkML class and **`make ontology`** was run
+- ✅ Check `ui_section` / class `ui_sections` matches a section key on the class
+- ✅ Check `ui_order` / ordering so the field isn’t hidden on another step
 
 ### Dropdown shows empty
 
-- ✅ Check `type: "select"` is set
-- ✅ Check `options: ontologyEnums.YourEnum` points to an existing enum
-- ✅ Check the enum is properly exported from `enums.ts`
+- ✅ Check `type: "select"` in the generated registry for that slot
+- ✅ Confirm the slot `range` is a LinkML enum and **`registry.enums`** / inlined **`options`** are present after regeneration
+- ✅ If you only edited `enums.ts`, regenerate from YAML instead — hand edits there do not update the API snapshot
 
 ### API call returns 404
 
@@ -689,9 +556,9 @@ This means **every factual claim** about a heritage entity can be traced back to
 
 ### New contribute page shows blank
 
-- ✅ Check `getOntologyClass("your_key")` uses the correct registry key
-- ✅ Check the file is at `contribute/your-route/page.tsx`
-- ✅ Check the contribute dashboard card's `route` matches the page path
+- ✅ Check `getOntologyClass("your_key")` uses the same key as **`tools/ui-classmap.yaml`**
+- ✅ Check the file is under `src/app/(dashboard)/contribute/<segment>/page.tsx`
+- ✅ Check **`tools/contribute-hub.yaml`** intent `route` matches the real URL path
 
 ---
 
@@ -701,57 +568,42 @@ This means **every factual claim** about a heritage entity can be traced back to
 heritage_graph_ui/
 └── src/
     ├── lib/ontology/
-    │   ├── types.ts              # TypeScript interfaces
-    │   ├── enums.ts              # 22 controlled vocabularies
-    │   ├── registry.ts           # 24 entity class definitions
-    │   └── index.ts              # Barrel export
+    │   ├── types.ts                 # TypeScript interfaces
+    │   ├── registry.generated.json  # Committed snapshot (make ontology)
+    │   ├── registry.generated.ts    # TS export of snapshot + helpers
+    │   ├── load-registry.ts         # Fetch registry from schema API
+    │   ├── OntologyProvider.tsx     # Runtime registry + degraded mode
+    │   ├── enums.ts                 # Legacy / supplemental enums
+    │   └── index.ts                 # Barrel export
     │
     ├── components/
-    │   ├── ontology-form.tsx     # Auto-generates forms from registry
-    │   └── contribute/
-    │       ├── step-wizard.tsx   # Multi-step wizard container
-    │       ├── step-indicator.tsx # Wizard progress bar
-    │       ├── type-picker.tsx   # Card-based type selector
-    │       ├── entity-search.tsx # Autocomplete entity linker
-    │       └── assertion-wrapper.tsx # Provenance fields
+    │   ├── ontology-form.tsx        # Form driven by OntologyClass
+    │   ├── ontology-form/           # Step nav + progress bar
+    │   └── contribute/              # EntitySearch, assertion wrapper, …
     │
-    └── app/dashboard/
-        ├── contribute/
-        │   ├── page.tsx          # Contribute dashboard (21 intent cards)
-        │   ├── person/page.tsx   # Person form
-        │   ├── deity/page.tsx    # Deity form
-        │   ├── structure/page.tsx # Structure wizard
-        │   ├── ritual/page.tsx   # Ritual wizard
-        │   ├── festival/page.tsx # Festival form
-        │   ├── guthi/page.tsx    # Guthi form
-        │   ├── location/page.tsx # Place form
-        │   ├── source/page.tsx   # Source form
-        │   ├── event/page.tsx    # Event form
-        │   ├── period/page.tsx   # Period form
-        │   ├── tradition/page.tsx # Tradition form
-        │   ├── iconography/page.tsx # Iconographic object form
-        │   ├── monument/page.tsx # Monument form
-        │   ├── calendar/page.tsx # Calendar system form
-        │   ├── syncretism/page.tsx # Syncretic relationship form
-        │   ├── kumari-tenure/page.tsx    # Living Goddess tenure form
-        │   ├── kumari-selection/page.tsx  # Living Goddess selection form
-        │   ├── kumari-retirement/page.tsx # Living Goddess retirement form
-        │   ├── documentation/page.tsx    # Documentation activity form
-        │   ├── caste-group/page.tsx      # Caste group form
-        │   └── assertion/page.tsx        # Heritage assertion form
-        │
+    └── app/(dashboard)/
+        ├── contribute/              # OntologyForm routes (+ entity/ for cultural entities)
         └── knowledge/
-            └── [domain]/page.tsx  # Auto-generated data tables
+            └── [domain]/            # Tables + generic record view
+
+tools/
+├── ui-classmap.yaml       # LinkML class → registry key, apiEndpoint, nav
+├── ui-presentation.yaml   # Optional slot UI overrides
+├── contribute-hub.yaml    # Contribute landing intents
+└── linkml_generate_registry.py
 
 ontology/
-├── HeritageGraph.yaml   # Canonical LinkML schema (source of truth)
-└── Heritage.ttl         # Generated OWL/Turtle
+├── HeritageGraph.yaml     # Canonical LinkML (source of truth)
+└── Heritage.ttl           # OWL/Turtle (where maintained)
 
 heritage_graph/apps/cidoc_data/
-├── models.py            # Django models (must match field keys)
-├── serializers.py       # DRF serializers
-├── views.py             # ViewSets + search
-└── urls.py              # API route registration
+├── ontology_builder.py    # Registry payload + jsonschema blob
+├── models.py              # Django models (field keys match registry)
+├── serializers.py
+├── views.py               # ViewSets + OntologySchemaRegistryView
+└── urls.py
+
+heritage_graph/apps/heritage_data/   # Cultural entities API (e.g. /data/api/cultural-entities/)
 ```
 
 ---

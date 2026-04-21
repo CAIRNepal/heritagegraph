@@ -167,15 +167,15 @@ heritage_graph_ui/src/
 │       ├── event-timeline.tsx       # Vertical timeline of events
 │       ├── claims-panel.tsx         # Assertion provenance viewer
 │       └── network-graph.tsx        # Cytoscape entity graph
-├── app/dashboard/contribute/
-│   ├── page.tsx                     # Redesigned intent-based hub
-│   ├── structure/page.tsx           # Multi-step structure form
-│   ├── ritual/page.tsx              # Multi-step ritual form
-│   ├── deity/page.tsx               # Multi-step deity form
-│   └── guthi/page.tsx               # Multi-step Guthi form
+├── app/(dashboard)/contribute/
+│   ├── page.tsx                     # Hub (data from registry / contribute-hub.yaml)
+│   ├── structure/page.tsx           # OntologyForm (multi-section)
+│   ├── ritual/page.tsx              # OntologyForm (multi-section)
+│   ├── deity/page.tsx               # OntologyForm
+│   └── guthi/page.tsx               # OntologyForm
 └── lib/ontology/
-    ├── enums.ts                     # + new enum values
-    └── registry.ts                  # Updated with new fields
+    ├── enums.ts                     # Legacy / supplemental enum literals
+    └── registry.generated.ts        # Regenerated via `make ontology` (committed snapshot)
 ```
 
 ---

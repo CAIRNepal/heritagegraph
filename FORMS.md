@@ -100,6 +100,7 @@ The UI reads the effective registry via **`OntologyProvider`** and auto-generate
 
 | Key | Label | Category | API Endpoint |
 |-----|-------|----------|-------------|
+| `entity` | Cultural Entity | tangible | `/data/api/cultural-entities/` |
 | `person` | Historical Person | social | `/cidoc/persons/` |
 | `location` | Place / Location | spatiotemporal | `/cidoc/locations/` |
 | `event` | Historical Event | event | `/cidoc/events/` |
@@ -200,7 +201,20 @@ Sections group related fields under collapsible accordion headers.
 2. Alternatively set a **class annotation** `ui_sections` (JSON array) on the LinkML class for full control.
 3. Run `make ontology`.
 
-The `OntologyForm` renders each section as an `AccordionItem`. Sections with no fields are automatically hidden.
+When a class has **more than one** section, `OntologyForm` renders a **multi-step flow** (one section per step): progress, step navigation, Next/Previous, and a single Submit on the last step.
+
+### URL steps (`?step=`)
+
+- The active step is reflected in the query string: **`?step=<section_key>`** (the `key` from the class `sections` array, or from slot `ui_section`).
+- You may also use a **numeric index** (`?step=0`) for the same section order; the UI normalizes the URL to the canonical section key.
+- Invalid or missing `step` values fall back to the **first** section and update the URL accordingly (works with browser Back/Forward).
+
+### Local drafts (new entries only)
+
+- For **new** contributions (no `?id=`), field values are **autosaved** to `localStorage` (debounced) under a key derived from user identity + ontology class key.
+- Reloading the page restores the draft once per key (deduped toast).
+- **Edit mode** (`?id=`) does not read or write local drafts (server record is the source of truth).
+- Successful **Submit** or **Clear** removes the draft for that key.
 
 ---
 
@@ -221,7 +235,7 @@ Add `Model`, `Serializer`, `ViewSet`, `router.register(...)`, and migrations.
 
 ### Step 3 — Create page stubs (Frontend)
 
-**Knowledge list page** — `src/app/dashboard/knowledge/inscription/page.tsx`:
+**Knowledge list page** — `src/app/(dashboard)/knowledge/inscription/page.tsx`:
 
 ```tsx
 "use client";
@@ -234,7 +248,7 @@ export default function InscriptionKnowledgePage() {
 }
 ```
 
-**Contribute form page** — `src/app/dashboard/contribute/inscription/page.tsx`:
+**Contribute form page** — `src/app/(dashboard)/contribute/inscription/page.tsx`:
 
 ```tsx
 "use client";
@@ -338,13 +352,15 @@ for _model in [
 | `textarea` | `<Textarea>` | Multi-line text, renders with 4 rows |
 | `number` | `<Input type="number">` | Stores as `number`, `null` when empty |
 | `date` | `<Input type="text">` | Text input (heritage dates are often imprecise strings like "c. 1200 CE") |
-| `select` | `<Select>` dropdown | Requires `options` array (inline or from `ontologyEnums`) |
+| `select` | `<Select>` dropdown | Requires `options` array (inline or from `registry.enums`) |
 | `url` | `<Input type="url">` | URL input with https:// placeholder |
-| `coordinates` | Two `<Input>` (lat/lng) | Renders as side-by-side lat/lng, serialized as `"lat, lng"` string |
-| `boolean` | `<Input type="text">` | Not yet implemented as a toggle — falls back to text |
-| `multiselect` | `<Input type="text">` | Not yet implemented — falls back to text |
-| `relation` | `<Input type="text">` | Not yet implemented — falls back to text. Use `EntitySearch` in custom wizards |
-| `float` | `<Input type="text">` | Not yet implemented — falls back to text |
+| `coordinates` | Two `<Input>` (lat/lng) | Side-by-side lat/lng, serialized as `"lat, lng"` string |
+| `geo_point` | Two `<Input>` (lat/lng) | Same UX as coordinates when the builder emits `geo_point` |
+| `edtf_date` | `<Input type="text">` | Textual / EDTF-style heritage dates |
+| `boolean` | `Switch` toggle | Native boolean values in the payload |
+| `multiselect` | Checkbox group | Multivalued enum slots |
+| `relation` | `EntitySearch` | Autocomplete against `relationEndpoint`; multivalued supported |
+| `float` | `<Input type="number">` (step any) | Decimal values |
 
 ### Field Properties
 
@@ -491,9 +507,9 @@ python manage.py migrate
 | `src/components/contribute/type-picker.tsx` | Visual type selector cards |
 | `src/components/contribute/assertion-wrapper.tsx` | Source + confidence provenance fields |
 | `src/components/contribute/entity-search.tsx` | Entity search-and-link component |
-| `src/app/dashboard/contribute/<domain>/page.tsx` | Per-domain contribute page stubs |
-| `src/app/dashboard/knowledge/<domain>/page.tsx` | Per-domain knowledge table page stubs |
-| `src/app/dashboard/knowledge/[domain]/view/[id]/page.tsx` | Generic entity detail/record view |
+| `src/app/(dashboard)/contribute/<domain>/page.tsx` | Per-domain contribute page stubs |
+| `src/app/(dashboard)/knowledge/<domain>/page.tsx` | Per-domain knowledge table page stubs |
+| `src/app/(dashboard)/knowledge/[domain]/view/[id]/page.tsx` | Generic entity detail/record view |
 
 ### Backend (Django API)
 
