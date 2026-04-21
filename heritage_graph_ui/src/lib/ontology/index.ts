@@ -6,7 +6,17 @@ export {
   type CurationFormRole,
 } from "./OntologyProvider";
 export { loadOntologyRegistry, type OntologyRegistryPayload } from "./load-registry";
-export { validateRequiredFields } from "./useValidation";
+export {
+  validateRequiredFields,
+  validateRequiredFieldsForFieldKeys,
+} from "./useValidation";
+export {
+  buildOntologyFormDraftStorageKey,
+  clearOntologyFormDraft,
+  loadOntologyFormDraft,
+  saveOntologyFormDraft,
+  type OntologyFormDraftPayload,
+} from "./form-drafts";
 export type {
   ContributeHubCategoryRow,
   ContributeHubIntentRow,

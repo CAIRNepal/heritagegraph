@@ -26,9 +26,13 @@ class OcrDocumentStatusSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-def suggestions_for_document(*, document: UploadedDocument) -> dict[str, dict]:
+def suggestions_for_document(
+    *, document: UploadedDocument, ontology_class_key: str | None = None
+) -> dict[str, dict]:
     """
     Map field key -> { value, confidence, entityType, fieldName, source }.
+
+    When ``ontology_class_key`` is set, only keys present on that registry class are returned.
     """
     out: dict[str, dict] = {}
     for row in document.extracted_fields.all().only(
@@ -44,6 +48,14 @@ def suggestions_for_document(*, document: UploadedDocument) -> dict[str, dict]:
             "fieldName": row.field_name,
             "source": "ner_v1",
         }
+    if ontology_class_key:
+        from apps.cidoc_data.linkml_loader import get_effective_registry_payload
+
+        registry = get_effective_registry_payload()
+        cls = (registry.get("classes") or {}).get(ontology_class_key) or {}
+        allowed = {f.get("key") for f in (cls.get("fields") or []) if f.get("key")}
+        if allowed:
+            out = {k: v for k, v in out.items() if k in allowed}
     return out
 
 

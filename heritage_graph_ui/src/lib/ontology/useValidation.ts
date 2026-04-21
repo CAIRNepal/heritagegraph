@@ -6,11 +6,18 @@ function isEmptyForField(field: OntologyField, v: unknown): boolean {
   if (v === undefined || v === null) return true;
   if (typeof v === "string" && v.trim() === "") return true;
   if (Array.isArray(v) && v.length === 0) return true;
-  if (field.type === "coordinates" && v && typeof v === "object") {
+  if (
+    (field.type === "coordinates" || field.type === "geo_point") &&
+    v &&
+    typeof v === "object"
+  ) {
     const o = v as { lat?: unknown; lng?: unknown };
     const lat = String(o.lat ?? "").trim();
     const lng = String(o.lng ?? "").trim();
     return !lat && !lng;
+  }
+  if (field.type === "geo_point" && typeof v === "string") {
+    return v.trim() === "";
   }
   if (field.type === "relation" && !field.multivalued) {
     if (v && typeof v === "object" && "id" in (v as object)) return false;
@@ -23,6 +30,11 @@ function isEmptyForField(field: OntologyField, v: unknown): boolean {
     return false;
   }
   return false;
+}
+
+/** Exported for completeness meter and other UI that mirrors required-field logic. */
+export function isEmptyOntologyFieldValue(field: OntologyField, v: unknown): boolean {
+  return isEmptyForField(field, v);
 }
 
 function countItems(field: OntologyField, v: unknown): number {
@@ -66,4 +78,18 @@ export function validateRequiredFields(
     }
   }
   return errors;
+}
+
+/** Like `validateRequiredFields`, but only for the given field keys (e.g. one form section). */
+export function validateRequiredFieldsForFieldKeys(
+  ontologyClass: OntologyClass,
+  fieldKeys: readonly string[],
+  values: Record<string, unknown>
+): Record<string, string> {
+  const keySet = new Set(fieldKeys);
+  const slim: OntologyClass = {
+    ...ontologyClass,
+    fields: ontologyClass.fields.filter((f) => keySet.has(f.key)),
+  };
+  return validateRequiredFields(slim, values);
 }

@@ -19,7 +19,8 @@ export type FieldType =
   | "url"
   | "coordinates"
   | "relation"
-  | "float";
+  | "float"
+  | "media";
 
 /** A single field definition */
 export interface OntologyField {
@@ -56,6 +57,16 @@ export interface OntologyField {
   /** From LinkML slot_usage / slot (when present) */
   minimumCardinality?: number;
   maximumCardinality?: number;
+  /** Optional weight (1–10) for completeness score on non-required fields */
+  ui_weight?: number;
+  /** JSON Schema string pattern (from LinkML / ui-presentation) */
+  pattern?: string;
+  minLength?: number;
+  maxLength?: number;
+  minimum?: number;
+  maximum?: number;
+  /** Merged into generated JSON Schema for this property */
+  jsonSchemaExtras?: Record<string, unknown>;
 }
 
 /** One row from tools/contribute-hub.yaml `hubCategories` */

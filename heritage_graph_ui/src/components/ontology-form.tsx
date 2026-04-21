@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { ProgressBar } from "@/components/ontology-form/progress-bar";
 import { StepNav } from "@/components/ontology-form/step-nav";
+import { CompletenessMeter } from "@/components/ontology-form/completeness-meter";
 
 import {
   Card,
@@ -41,26 +42,71 @@ import {
 } from "@/lib/ontology/ontology-edit-helpers";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import { validatePayloadAgainstRegistrySchema } from "@/lib/ontology/validate-registry-payload";
-import { validateRequiredFields } from "@/lib/ontology/useValidation";
+import {
+  validateRequiredFields,
+  validateRequiredFieldsForFieldKeys,
+} from "@/lib/ontology/useValidation";
+import {
+  buildOntologyFormDraftStorageKey,
+  clearOntologyFormDraft,
+  loadOntologyFormDraft,
+  saveOntologyFormDraft,
+} from "@/lib/ontology/form-drafts";
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Sparkles } from "lucide-react";
 import { CidocCrmHint } from "@/components/ontology/CidocCrmHint";
+import { HeritageDocumentUpload } from "@/components/ocr/heritage-document-upload";
+import { OcrSuggestionBadge } from "@/components/ocr/ocr-suggestion-badge";
+import { GeoPointField } from "@/components/ontology-form/geo-point-field";
+import type { OcrFieldSuggestion } from "@/hooks/use-heritage-ocr-suggestions";
+
+/** Map `?step=` (section key or numeric index) to a valid section index and canonical URL key. */
+function resolveOntologyFormStep(
+  stepParam: string | null,
+  sections: readonly { key: string }[]
+): { index: number; canonicalKey: string } {
+  if (!sections.length) return { index: 0, canonicalKey: "basic" };
+  const raw = stepParam?.trim() ?? "";
+  if (!raw) {
+    return { index: 0, canonicalKey: sections[0].key };
+  }
+  const asIdx = Number.parseInt(raw, 10);
+  if (
+    !Number.isNaN(asIdx) &&
+    Number.isFinite(asIdx) &&
+    asIdx >= 0 &&
+    asIdx < sections.length
+  ) {
+    return { index: asIdx, canonicalKey: sections[asIdx].key };
+  }
+  const byKey = sections.findIndex((s) => s.key === raw);
+  if (byKey >= 0) {
+    return { index: byKey, canonicalKey: sections[byKey].key };
+  }
+  return { index: 0, canonicalKey: sections[0].key };
+}
 
 function FieldRenderer({
   field,
   value,
   onChange,
-  disabled,
+  disabled = false,
   hasError,
   errorMessage,
+  onAssistClick,
+  assistPending,
+  assistConfidence,
 }: {
   field: OntologyField;
   value: any;
   onChange: (key: string, value: any) => void;
-  disabled: boolean;
+  disabled?: boolean;
   hasError?: boolean;
   errorMessage?: string;
+  onAssistClick?: () => void;
+  assistPending?: boolean;
+  assistConfidence?: number;
 }) {
   const id = `field-${field.key}`;
   const errorRing = hasError
@@ -69,14 +115,35 @@ function FieldRenderer({
 
   const labelEl = (
     <div className="flex items-start justify-between gap-3">
-      <Label
-        htmlFor={id}
-        className={cn(hasError && "text-red-600 dark:text-red-400")}
-      >
-        {field.label}
-        {field.required && <span className="text-red-500 ml-0.5">*</span>}
-      </Label>
-      <CidocCrmHint slotUri={field.slot_uri} />
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+        <Label
+          htmlFor={id}
+          className={cn(hasError && "text-red-600 dark:text-red-400")}
+        >
+          {field.label}
+          {field.required && <span className="text-red-500 ml-0.5">*</span>}
+        </Label>
+        {assistConfidence != null && assistConfidence >= 0 ? (
+          <OcrSuggestionBadge confidence={assistConfidence} className="shrink-0" />
+        ) : null}
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        {onAssistClick ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0"
+            onClick={onAssistClick}
+            disabled={Boolean(disabled) || assistPending}
+            aria-label={`Suggest value for ${field.label}`}
+            title="AI suggest (uses current form values)"
+          >
+            <Sparkles className="h-4 w-4" />
+          </Button>
+        ) : null}
+        <CidocCrmHint slotUri={field.slot_uri} />
+      </div>
     </div>
   );
 
@@ -258,11 +325,32 @@ function FieldRenderer({
       );
     }
 
-    case "edtf_date":
+    case "edtf_date": {
+      const edtfChips = [
+        { label: "c. 1200 CE", v: "1200~" },
+        { label: "13th c.", v: "1200/1300" },
+        { label: "Malla period", v: "Malla period" },
+        { label: "NS 1140", v: "NS1140" },
+      ];
       return (
         <div className="space-y-1">
           {labelEl}
           {descEl}
+          <div className="flex flex-wrap gap-1.5 pb-1">
+            {edtfChips.map((c) => (
+              <Button
+                key={c.v}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+                disabled={disabled}
+                onClick={() => onChange(field.key, c.v)}
+              >
+                {c.label}
+              </Button>
+            ))}
+          </div>
           <Input
             id={id}
             value={value || ""}
@@ -272,41 +360,83 @@ function FieldRenderer({
             className={errorRing}
           />
           <p className="text-xs text-muted-foreground">
-            Use EDTF-style strings for imprecise heritage dates (ISO 8601-2).
+            Use EDTF-style strings for imprecise heritage dates (ISO 8601-2). Quick picks set
+            common patterns; refine in the field or use a NS↔BS converter in the docs.
           </p>
           {errorFooter}
         </div>
       );
+    }
 
     case "geo_point":
       return (
         <div className="space-y-1">
           {labelEl}
           {descEl}
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              id={`${id}-lat`}
-              type="text"
-              value={value?.lat ?? ""}
-              onChange={(e) =>
-                onChange(field.key, { ...value, lat: e.target.value })
+          <GeoPointField
+            idPrefix={id}
+            value={value}
+            onChange={(next) => onChange(field.key, next)}
+            disabled={disabled}
+            errorRing={errorRing}
+          />
+          {errorFooter}
+        </div>
+      );
+
+    case "media":
+      return (
+        <div className="space-y-1">
+          {labelEl}
+          {descEl}
+          <Input
+            id={id}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            multiple={Boolean(field.multivalued)}
+            disabled={disabled}
+            className={errorRing}
+            onChange={async (e) => {
+              const files = e.target.files;
+              if (!files?.length) return;
+              try {
+                const exifr = await import("exifr");
+                const previews: { name: string; previewUrl: string; exifLat?: number; exifLng?: number }[] = [];
+                for (const file of Array.from(files)) {
+                  const url = URL.createObjectURL(file);
+                  let exifLat: number | undefined;
+                  let exifLng: number | undefined;
+                  try {
+                    const gps = await exifr.gps(file);
+                    if (gps?.latitude != null && gps?.longitude != null) {
+                      exifLat = gps.latitude;
+                      exifLng = gps.longitude;
+                    }
+                  } catch {
+                    // ignore EXIF parse errors
+                  }
+                  previews.push({
+                    name: file.name,
+                    previewUrl: url,
+                    exifLat,
+                    exifLng,
+                  });
+                }
+                onChange(field.key, previews);
+                const first = previews.find((p) => p.exifLat != null && p.exifLng != null);
+                if (first?.exifLat != null && first?.exifLng != null) {
+                  toast.message("GPS from image metadata detected — check map fields if present.");
+                }
+              } catch {
+                toast.error("Could not read image metadata.");
               }
-              placeholder="Latitude"
-              disabled={disabled}
-              className={errorRing}
-            />
-            <Input
-              id={`${id}-lng`}
-              type="text"
-              value={value?.lng ?? ""}
-              onChange={(e) =>
-                onChange(field.key, { ...value, lng: e.target.value })
-              }
-              placeholder="Longitude"
-              disabled={disabled}
-              className={errorRing}
-            />
-          </div>
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            Fieldwork capture: photos are held client-side until you wire a Media API; EXIF GPS
+            is parsed when available.
+          </p>
           {errorFooter}
         </div>
       );
@@ -469,6 +599,8 @@ export interface OntologyFormProps {
   title?: string;
   description?: string;
   onFormControl?: (api: OntologyFormControlApi) => void;
+  /** When set, shows OCR upload that applies suggestions to empty fields (requires signed-in user). */
+  ocrCulturalEntityId?: string | null;
 }
 
 export type OntologyFormControlApi = {
@@ -483,17 +615,21 @@ export default function OntologyForm({
   title,
   description,
   onFormControl,
+  ocrCulturalEntityId,
 }: OntologyFormProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const recordId = searchParams.get("id")?.trim() || null;
   const isEditMode = Boolean(recordId);
   const { data: session, status } = useSession();
-  const { registry } = useOntology();
+  const { registry, schemaVersion } = useOntology();
   const isSignedIn = status === "authenticated";
+  const assistEnabled =
+    Boolean((session as { accessToken?: string } | null)?.accessToken) &&
+    ontologyClass.apiEndpoint.startsWith("/cidoc/");
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [editLoad, setEditLoad] = useState<"ok" | "loading" | "error">(
@@ -508,6 +644,29 @@ export default function OntologyForm({
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [suggestKey, setSuggestKey] = useState<string | null>(null);
+  const [ocrFieldConfidence, setOcrFieldConfidence] = useState<Record<string, number>>({});
+  const [lastOcrDocumentId, setLastOcrDocumentId] = useState<string | null>(null);
+  /** Prevents double draft hydration (e.g. React StrictMode) for the same storage key. */
+  const draftAppliedForKey = useRef<string | null>(null);
+
+  const userDraftKey = useMemo(() => {
+    const u = session?.user as
+      | { email?: string | null; name?: string | null }
+      | undefined;
+    return (u?.email || u?.name || "anon").trim() || "anon";
+  }, [session]);
+
+  const draftStorageKey = useMemo(
+    () =>
+      buildOntologyFormDraftStorageKey({
+        userKey: userDraftKey,
+        ontologyClassKey: ontologyClass.key,
+        mode: isEditMode ? "edit" : "new",
+        recordId,
+      }),
+    [userDraftKey, ontologyClass.key, isEditMode, recordId]
+  );
 
   const baseUrl = useMemo(
     () => apiBaseUrl || getPublicApiUrl(),
@@ -545,8 +704,13 @@ export default function OntologyForm({
           contributor:
             typeof data.contributor === "string" ? data.contributor : undefined,
         });
-        setCurrentStep(0);
         setEditLoad("ok");
+        const loadedSections = ontologyClass.sections || [{ key: "basic" }];
+        if (loadedSections.length > 1 && pathname) {
+          const p = new URLSearchParams(searchParams.toString());
+          p.set("step", loadedSections[0].key);
+          router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+        }
       } catch (e) {
         if (cancelled) return;
         setLoadError(
@@ -560,7 +724,15 @@ export default function OntologyForm({
     return () => {
       cancelled = true;
     };
-  }, [baseUrl, ontologyClass, recordId, session]);
+  }, [
+    baseUrl,
+    ontologyClass,
+    recordId,
+    session,
+    pathname,
+    router,
+    searchParams,
+  ]);
   const postSubmitPath =
     redirectTo || `/knowledge/${ontologyClass.key}`;
 
@@ -588,6 +760,164 @@ export default function OntologyForm({
 
   const hasSections = sections.length > 1;
 
+  const currentSectionIndex = useMemo(() => {
+    if (!hasSections) return 0;
+    return resolveOntologyFormStep(searchParams.get("step"), sections).index;
+  }, [hasSections, searchParams, sections]);
+
+  useEffect(() => {
+    if (!hasSections || !pathname) return;
+    const raw = searchParams.get("step");
+    const { canonicalKey } = resolveOntologyFormStep(raw, sections);
+    if (raw !== canonicalKey) {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set("step", canonicalKey);
+      router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+    }
+  }, [hasSections, pathname, router, searchParams, sections]);
+
+  useEffect(() => {
+    draftAppliedForKey.current = null;
+  }, [ontologyClass.key, isEditMode, recordId]);
+
+  useEffect(() => {
+    if (isEditMode) return;
+    if (draftAppliedForKey.current === draftStorageKey) return;
+    draftAppliedForKey.current = draftStorageKey;
+    let cancelled = false;
+    void (async () => {
+      const draft = await loadOntologyFormDraft(draftStorageKey);
+      if (cancelled) return;
+      if (draft?.formData && typeof draft.formData === "object") {
+        const keys = Object.keys(draft.formData as object);
+        if (keys.length > 0) {
+          setFormData(draft.formData as Record<string, any>);
+          toast.info("Restored your draft from this browser.", {
+            id: `ontology-draft-${draftStorageKey}`,
+          });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [draftStorageKey, isEditMode]);
+
+  useEffect(() => {
+    if (isEditMode) return;
+    const handle = window.setTimeout(() => {
+      void saveOntologyFormDraft(draftStorageKey, {
+        formData: formData as Record<string, unknown>,
+        schemaVersion: schemaVersion ?? registry.schema_version ?? null,
+        savedAt: new Date().toISOString(),
+      });
+    }, 700);
+    return () => window.clearTimeout(handle);
+  }, [
+    formData,
+    draftStorageKey,
+    isEditMode,
+    schemaVersion,
+    registry.schema_version,
+  ]);
+
+  const goNext = useCallback(() => {
+    if (!hasSections || currentSectionIndex >= sections.length - 1 || !pathname)
+      return;
+    const sectionKey = sections[currentSectionIndex].key;
+    const keys = (fieldsBySection[sectionKey] || []).map((f) => f.key);
+    const errs = validateRequiredFieldsForFieldKeys(
+      ontologyClass,
+      keys,
+      formData as Record<string, unknown>
+    );
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors((prev) => ({ ...prev, ...errs }));
+      setTouchedFields((prev) => {
+        const n = new Set(prev);
+        for (const k of Object.keys(errs)) n.add(k);
+        return n;
+      });
+      toast.error("Please complete required fields in this section.");
+      return;
+    }
+    setFieldErrors((prev) => {
+      const next = { ...prev };
+      for (const k of keys) delete next[k];
+      return next;
+    });
+    const nextIdx = currentSectionIndex + 1;
+    const p = new URLSearchParams(searchParams.toString());
+    p.set("step", sections[nextIdx].key);
+    router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+  }, [
+    hasSections,
+    currentSectionIndex,
+    sections,
+    fieldsBySection,
+    ontologyClass,
+    formData,
+    searchParams,
+    pathname,
+    router,
+  ]);
+
+  const goPrev = useCallback(() => {
+    if (!hasSections || currentSectionIndex <= 0 || !pathname) return;
+    const prevIdx = currentSectionIndex - 1;
+    const p = new URLSearchParams(searchParams.toString());
+    p.set("step", sections[prevIdx].key);
+    router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+  }, [hasSections, currentSectionIndex, sections, searchParams, pathname, router]);
+
+  const handleStepNavClick = useCallback(
+    (idx: number) => {
+      if (!hasSections || !pathname) return;
+      if (idx === currentSectionIndex) return;
+      if (idx > currentSectionIndex) {
+        for (let i = currentSectionIndex; i < idx; i++) {
+          const keys = (fieldsBySection[sections[i].key] || []).map((f) => f.key);
+          const errs = validateRequiredFieldsForFieldKeys(
+            ontologyClass,
+            keys,
+            formData as Record<string, unknown>
+          );
+          if (Object.keys(errs).length > 0) {
+            setFieldErrors((prev) => ({ ...prev, ...errs }));
+            setTouchedFields((prev) => {
+              const n = new Set(prev);
+              for (const k of Object.keys(errs)) n.add(k);
+              return n;
+            });
+            toast.error(
+              "Please complete required fields in earlier sections before skipping ahead."
+            );
+            return;
+          }
+          setFieldErrors((prev) => {
+            const next = { ...prev };
+            for (const k of keys) delete next[k];
+            return next;
+          });
+        }
+      }
+      const p = new URLSearchParams(searchParams.toString());
+      p.set("step", sections[idx].key);
+      router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+    },
+    [
+      hasSections,
+      pathname,
+      currentSectionIndex,
+      sections,
+      fieldsBySection,
+      ontologyClass,
+      formData,
+      searchParams,
+      router,
+    ]
+  );
+
   const isFieldFilled = useCallback(
     (field: OntologyField) => {
       const val = formData[field.key];
@@ -607,9 +937,16 @@ export default function OntologyForm({
       }
       if (
         (field.type === "coordinates" || field.type === "geo_point") &&
+        val &&
         typeof val === "object"
       ) {
-        return !!(val.lat || val.lng);
+        const o = val as { lat?: unknown; lng?: unknown };
+        const lat = String(o.lat ?? "").trim();
+        const lng = String(o.lng ?? "").trim();
+        return Boolean(lat && lng);
+      }
+      if (field.type === "geo_point" && typeof val === "string") {
+        return val.trim().length > 0;
       }
       return true;
     },
@@ -672,6 +1009,77 @@ export default function OntologyForm({
     []
   );
 
+  const onFieldSuggest = useCallback(
+    async (field: OntologyField) => {
+      const token = (session as { accessToken?: string } | null)?.accessToken;
+      if (!token) {
+        toast.error("Sign in to use field assist.");
+        return;
+      }
+      setSuggestKey(field.key);
+      try {
+        const url = `${baseUrl}/api/v1/cidoc/assist/suggest-field/`;
+        const data = await apiFetchJson<{
+          suggestion?: string;
+          confidence?: number;
+        }>(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            ontology_class: ontologyClass.key,
+            field_key: field.key,
+            partial_payload: formData,
+          }),
+        });
+        const s = data.suggestion;
+        if (s === undefined || s === null || String(s).trim() === "") {
+          toast.message("No suggestion returned.");
+          return;
+        }
+        updateField(field.key, s);
+        if (typeof data.confidence === "number") {
+          setOcrFieldConfidence((p) => ({ ...p, [field.key]: data.confidence! }));
+        }
+        toast.success("Suggestion applied.");
+      } catch (e: unknown) {
+        toast.error(getApiErrorMessage(e, "Assist failed."));
+      } finally {
+        setSuggestKey(null);
+      }
+    },
+    [baseUrl, formData, ontologyClass.key, session, updateField]
+  );
+
+  const ocrApplyFromUpload = useCallback(
+    (
+      suggestions: Record<string, OcrFieldSuggestion>,
+      meta?: { uploadedDocumentId?: string | null }
+    ) => {
+      const patch: Record<string, unknown> = {};
+      const conf: Record<string, number> = {};
+      for (const [k, s] of Object.entries(suggestions)) {
+        if (!k || !s) continue;
+        patch[k] = s.value;
+        conf[k] = s.confidence;
+      }
+      mergeValues(patch as Record<string, any>, { onlyIfEmpty: true });
+      setOcrFieldConfidence((prev) => ({ ...prev, ...conf }));
+      if (meta?.uploadedDocumentId) {
+        setLastOcrDocumentId(meta.uploadedDocumentId);
+      }
+      const n = Object.keys(patch).length;
+      if (n === 0) {
+        toast.message("No suggestions to merge.");
+      } else {
+        toast.success(`Merged up to ${n} OCR field hints (empty fields only).`);
+      }
+    },
+    [mergeValues]
+  );
+
   const getValues = useCallback(() => formData, [formData]);
 
   useEffect(() => {
@@ -683,14 +1091,27 @@ export default function OntologyForm({
     if (isEditMode) {
       return;
     }
+    void clearOntologyFormDraft(draftStorageKey);
     setFormData({});
     setTouchedFields(new Set());
     setSubmitAttempted(false);
     setFieldErrors({});
-    setCurrentStep(0);
+    if (hasSections && pathname) {
+      const p = new URLSearchParams(searchParams.toString());
+      p.set("step", sections[0].key);
+      router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+    }
     toast.info("Form cleared");
     setClearConfirmOpen(false);
-  }, [isEditMode]);
+  }, [
+    isEditMode,
+    draftStorageKey,
+    hasSections,
+    pathname,
+    router,
+    searchParams,
+    sections,
+  ]);
 
   const validate = useCallback((): boolean => {
     const errors = validateRequiredFields(ontologyClass, formData);
@@ -704,8 +1125,15 @@ export default function OntologyForm({
       ontologyClass.key,
       formData as Record<string, unknown>
     );
-    if (schemaErrors.length > 0) {
-      toast.error(schemaErrors[0] || "Validation failed.");
+    const schemaKeys = Object.keys(schemaErrors);
+    if (schemaKeys.length > 0) {
+      const { __non_field__, ...perField } = schemaErrors;
+      setFieldErrors((prev) => ({ ...prev, ...perField }));
+      const firstMsg =
+        __non_field__ ||
+        Object.values(perField)[0] ||
+        "Validation failed.";
+      toast.error(firstMsg);
       return false;
     }
     setFieldErrors({});
@@ -764,6 +1192,8 @@ export default function OntologyForm({
         body: JSON.stringify(payload),
       });
 
+      await clearOntologyFormDraft(draftStorageKey);
+
       setSubmitConfirmOpen(false);
       toast.success(
         `"${(formData.name as string) || (formData.title as string) || "Entry"}" submitted successfully!`,
@@ -812,6 +1242,9 @@ export default function OntologyForm({
         !String((val as { lat?: unknown }).lat ?? "").trim() &&
         !String((val as { lng?: unknown }).lng ?? "").trim();
     }
+    if (field.type === "geo_point" && typeof val === "string") {
+      isEmpty = val.trim() === "";
+    }
     if (field.type === "relation" && !field.multivalued) {
       if (val && typeof val === "object" && val !== null && "id" in val) {
         isEmpty = false;
@@ -824,15 +1257,10 @@ export default function OntologyForm({
     return isEmpty && (submitAttempted || touchedFields.has(field.key));
   };
 
-  const currentSectionFields = fieldsBySection[sections[currentStep]?.key] || [];
+  const currentSectionFields =
+    fieldsBySection[sections[currentSectionIndex]?.key] || [];
 
-  const goNext = () => {
-    if (currentStep < sections.length - 1) setCurrentStep((s) => s + 1);
-  };
-  const goPrev = () => {
-    if (currentStep > 0) setCurrentStep((s) => s - 1);
-  };
-  const isLastStep = currentStep === sections.length - 1;
+  const isLastStep = currentSectionIndex === sections.length - 1;
 
   if (sortedFields.length === 0) {
     return (
@@ -980,6 +1408,27 @@ export default function OntologyForm({
           </p>
         </div>
 
+        <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
+
+        {ocrCulturalEntityId ? (
+          <HeritageDocumentUpload
+            culturalEntityId={ocrCulturalEntityId}
+            onApply={ocrApplyFromUpload}
+            className="max-w-2xl"
+          />
+        ) : null}
+        {ocrCulturalEntityId && lastOcrDocumentId ? (
+          <details className="max-w-2xl rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <summary className="cursor-pointer font-medium text-foreground">
+              OCR job & provenance trace
+            </summary>
+            <p className="mt-2 break-all font-mono">{lastOcrDocumentId}</p>
+            <p className="mt-1">
+              Suggestions applied above are linked to this document id for reviewer traceability.
+            </p>
+          </details>
+        ) : null}
+
         <Card>
           <CardHeader>
             <CardTitle>
@@ -1005,6 +1454,11 @@ export default function OntologyForm({
                 disabled={!isSignedIn}
                 hasError={shouldShowError(field)}
                 errorMessage={fieldErrors[field.key]}
+                onAssistClick={
+                  assistEnabled ? () => void onFieldSuggest(field) : undefined
+                }
+                assistPending={suggestKey === field.key}
+                assistConfidence={ocrFieldConfidence[field.key]}
               />
             ))}
           </CardContent>
@@ -1061,21 +1515,42 @@ export default function OntologyForm({
         </p>
       </div>
 
+      <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
+
+      {ocrCulturalEntityId ? (
+        <HeritageDocumentUpload
+          culturalEntityId={ocrCulturalEntityId}
+          onApply={ocrApplyFromUpload}
+          className="max-w-2xl"
+        />
+      ) : null}
+      {ocrCulturalEntityId && lastOcrDocumentId ? (
+        <details className="max-w-2xl rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <summary className="cursor-pointer font-medium text-foreground">
+            OCR job & provenance trace
+          </summary>
+          <p className="mt-2 break-all font-mono">{lastOcrDocumentId}</p>
+          <p className="mt-1">
+            Suggestions applied above are linked to this document id for reviewer traceability.
+          </p>
+        </details>
+      ) : null}
+
       {/* Progress bar */}
       <ProgressBar filled={totalProgress.filled} total={totalProgress.total} />
 
       {/* Step navigation */}
       <StepNav
         sections={sections}
-        currentStep={currentStep}
-        onStepClick={setCurrentStep}
+        currentStep={currentSectionIndex}
+        onStepClick={handleStepNavClick}
         sectionProgress={sectionProgress}
       />
 
       {/* Current section fields */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={currentStep}
+          key={currentSectionIndex}
           initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -10 }}
@@ -1084,15 +1559,15 @@ export default function OntologyForm({
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="text-lg">
-                {sections[currentStep].label}
+                {sections[currentSectionIndex].label}
               </CardTitle>
               <CardDescription>
                 {isSignedIn ? (
                   <>
-                    Step {currentStep + 1} of {sections.length}
+                    Step {currentSectionIndex + 1} of {sections.length}
                     {" — "}
-                    {sectionProgress[sections[currentStep].key]?.filled || 0} of{" "}
-                    {sectionProgress[sections[currentStep].key]?.total || 0}{" "}
+                    {sectionProgress[sections[currentSectionIndex].key]?.filled || 0} of{" "}
+                    {sectionProgress[sections[currentSectionIndex].key]?.total || 0}{" "}
                     fields filled
                   </>
                 ) : (
@@ -1110,6 +1585,11 @@ export default function OntologyForm({
                   disabled={!isSignedIn}
                   hasError={shouldShowError(field)}
                   errorMessage={fieldErrors[field.key]}
+                  onAssistClick={
+                    assistEnabled ? () => void onFieldSuggest(field) : undefined
+                  }
+                  assistPending={suggestKey === field.key}
+                  assistConfidence={ocrFieldConfidence[field.key]}
                 />
               ))}
               {currentSectionFields.length === 0 && (
@@ -1128,7 +1608,7 @@ export default function OntologyForm({
           <Button
             variant="outline"
             onClick={goPrev}
-            disabled={currentStep === 0}
+            disabled={currentSectionIndex === 0}
             size="sm"
           >
             ← Previous

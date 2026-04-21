@@ -30,29 +30,94 @@ except Exception:
 GENERATOR_VERSION = "0.2.0"
 
 
+def _parse_number_token(s: str) -> int | float:
+    s = str(s).strip()
+    if "." in s:
+        return float(s)
+    return int(s)
+
+
 def build_registry_jsonschema_blob(classes: dict[str, Any]) -> dict[str, Any]:
     """
-    Draft-07 style JSON Schemas per ontology class key for client/server validation (MT1).
+    JSON Schemas per ontology class key for client/server validation (MT1).
     Keys match registry field `key` values sent to DRF.
+
+    Field dict may carry optional constraints: pattern, minLength, maxLength,
+    minimum, maximum, jsonSchemaExtras (object merged into the property schema).
+    Class dict may carry jsonSchemaAllOf (list of JSON Schema subschemas).
     """
 
     def _prop_schema(field: dict[str, Any]) -> dict[str, Any]:
         ft = field.get("type") or "text"
-        if ft in ("text", "textarea", "date", "select", "url"):
-            return {"type": "string"}
-        if ft == "number":
-            return {"type": "integer"}
-        if ft == "float":
-            return {"type": "number"}
-        if ft == "boolean":
-            return {"type": "boolean"}
-        if ft == "multiselect":
-            return {"type": "array", "items": {"type": "string"}}
-        if ft == "coordinates":
-            return {"type": "string"}
-        if ft == "relation":
-            return {"type": ["string", "number", "integer"]}
-        return {}
+        ps: dict[str, Any]
+        if ft in ("text", "textarea", "date", "select", "url", "edtf_date"):
+            ps = {"type": "string"}
+        elif ft == "number":
+            ps = {"type": "integer"}
+        elif ft == "float":
+            ps = {"type": "number"}
+        elif ft == "boolean":
+            ps = {"type": "boolean"}
+        elif ft == "multiselect":
+            ps = {"type": "array", "items": {"type": "string"}}
+        elif ft in ("coordinates",):
+            ps = {"type": "string"}
+        elif ft == "geo_point":
+            ps = {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "lat": {"type": ["string", "number"]},
+                            "lng": {"type": ["string", "number"]},
+                        },
+                        "additionalProperties": False,
+                    },
+                    {"type": "string"},
+                ]
+            }
+        elif ft == "relation":
+            ps = {"type": ["string", "number", "integer", "object", "array"]}
+        elif ft in ("media",):
+            ps = {"type": ["string", "array", "object"]}
+        else:
+            ps = {"type": "string"}
+
+        if ft == "select":
+            opts = field.get("options") or []
+            if isinstance(opts, list) and opts:
+                enum_vals = [o.get("value") for o in opts if isinstance(o, dict) and o.get("value") is not None]
+                if enum_vals:
+                    # Required selects must match vocabulary; optional may be blank/null.
+                    if field.get("required"):
+                        ps["enum"] = enum_vals
+                    else:
+                        ps["anyOf"] = [
+                            {"type": "string", "enum": enum_vals},
+                            {"type": "string", "maxLength": 0},
+                            {"type": "null"},
+                        ]
+
+        if field.get("pattern"):
+            ps["pattern"] = str(field["pattern"])
+        for src, dst in (
+            ("minLength", "minLength"),
+            ("maxLength", "maxLength"),
+            ("minimum", "minimum"),
+            ("maximum", "maximum"),
+        ):
+            if field.get(src) is not None:
+                try:
+                    ps[dst] = int(field[src]) if dst in ("minLength", "maxLength") else field[src]
+                except (TypeError, ValueError):
+                    ps[dst] = field[src]
+
+        extras = field.get("jsonSchemaExtras")
+        if isinstance(extras, dict):
+            merged = dict(ps)
+            merged.update(extras)
+            ps = merged
+        return ps
 
     by_key: dict[str, Any] = {}
     for class_key, cls in classes.items():
@@ -68,13 +133,17 @@ def build_registry_jsonschema_blob(classes: dict[str, Any]) -> dict[str, Any]:
                 properties[fk] = ps
             if f.get("required"):
                 required.append(fk)
-        by_key[class_key] = {
+        schema_obj: dict[str, Any] = {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "type": "object",
             "properties": properties,
             "required": required,
             "additionalProperties": True,
         }
+        all_of = cls.get("jsonSchemaAllOf")
+        if isinstance(all_of, list) and all_of:
+            schema_obj["allOf"] = all_of
+        by_key[class_key] = schema_obj
     return {"version": 1, "byClassKey": by_key}
 
 
@@ -243,7 +312,20 @@ def _slot_required_for_class(sv: SchemaView, class_name: str, slot_name: str) ->
 def _slot_ui_overrides(slot: Any) -> dict[str, Any]:
     ann = getattr(slot, "annotations", None) or {}
     out: dict[str, Any] = {}
-    for k in ("ui_section", "ui_order", "ui_placeholder", "ui_widget"):
+    for k in (
+        "ui_section",
+        "ui_order",
+        "ui_placeholder",
+        "ui_widget",
+        "ui_pattern",
+        "ui_min_length",
+        "ui_max_length",
+        "ui_minimum",
+        "ui_maximum",
+        "ui_weight",
+        "ui_json_schema_extras",
+        "ui_json_schema_rule",
+    ):
         if k in ann and ann[k] is not None:
             out[k] = str(getattr(ann[k], "value", ann[k]))
     return out
@@ -268,6 +350,7 @@ def _class_ui_overrides(cls: Any) -> dict[str, Any]:
         "ui_navigable",
         "ui_sections",
         "ui_columns",
+        "ui_json_schema_allOf",
     ):
         if k in ann and ann[k] is not None:
             out[k] = _coerce_annotation_value(ann[k])
@@ -323,6 +406,7 @@ def build_classes(
         linkml_cls = sv.get_class(linkml, strict=True)
         induced = sv.class_induced_slots(linkml)
         fields: list[dict[str, Any]] = []
+        json_schema_all_of_extra: list[dict[str, Any]] = []
         order = 0
         for slot in induced:
             if not slot or slot.name == "id":
@@ -368,7 +452,20 @@ def build_classes(
             ui = _slot_ui_overrides(slot)
             file_slot = (pres.get("slots") or {}).get(slot.name) or {}
             if isinstance(file_slot, dict):
-                for k in ("ui_section", "ui_order", "ui_placeholder", "ui_widget"):
+                for k in (
+                    "ui_section",
+                    "ui_order",
+                    "ui_placeholder",
+                    "ui_widget",
+                    "ui_pattern",
+                    "ui_min_length",
+                    "ui_max_length",
+                    "ui_minimum",
+                    "ui_maximum",
+                    "ui_weight",
+                    "ui_json_schema_extras",
+                    "ui_json_schema_rule",
+                ):
                     if file_slot.get(k) is not None:
                         ui[k] = str(file_slot[k])
             if "ui_section" in ui:
@@ -396,6 +493,53 @@ def build_classes(
                 except (TypeError, ValueError):
                     pass
 
+            if "ui_pattern" in ui:
+                field["pattern"] = str(ui["ui_pattern"])
+            if "ui_min_length" in ui:
+                try:
+                    field["minLength"] = int(ui["ui_min_length"])
+                except (TypeError, ValueError):
+                    pass
+            if "ui_max_length" in ui:
+                try:
+                    field["maxLength"] = int(ui["ui_max_length"])
+                except (TypeError, ValueError):
+                    pass
+            if "ui_minimum" in ui:
+                try:
+                    field["minimum"] = _parse_number_token(ui["ui_minimum"])
+                except (TypeError, ValueError):
+                    pass
+            if "ui_maximum" in ui:
+                try:
+                    field["maximum"] = _parse_number_token(ui["ui_maximum"])
+                except (TypeError, ValueError):
+                    pass
+            if "ui_weight" in ui:
+                try:
+                    field["ui_weight"] = int(ui["ui_weight"])
+                except (TypeError, ValueError):
+                    pass
+            if "ui_json_schema_extras" in ui:
+                parsed_ex = _maybe_parse_json(ui["ui_json_schema_extras"])
+                if isinstance(parsed_ex, dict):
+                    field["jsonSchemaExtras"] = parsed_ex
+            if "ui_json_schema_rule" in ui:
+                rule = _maybe_parse_json(ui["ui_json_schema_rule"])
+                if isinstance(rule, dict):
+                    json_schema_all_of_extra.append(rule)
+
+            slot_pattern = getattr(slot, "pattern", None)
+            if slot_pattern and "pattern" not in field:
+                field["pattern"] = str(slot_pattern)
+            for s_attr, f_key in (("minimum_value", "minimum"), ("maximum_value", "maximum")):
+                raw_sv = getattr(slot, s_attr, None)
+                if raw_sv is not None and f_key not in field:
+                    try:
+                        field[f_key] = float(raw_sv) if isinstance(raw_sv, str) and "." in str(raw_sv) else raw_sv
+                    except (TypeError, ValueError):
+                        field[f_key] = raw_sv
+
             fields.append(field)
 
         # Default columns: first 8 non-relational fields by order
@@ -417,7 +561,15 @@ def build_classes(
         class_uri = getattr(cls, "class_uri", None) if cls else None
         ui_cls = _class_ui_overrides(cls) if cls else {}
         key = str(ui_cls.get("ui_key") or meta["key"])
-        classes_out[key] = {
+        all_of_parts: list[Any] = []
+        raw_class_all = ui_cls.get("ui_json_schema_allOf")
+        if raw_class_all is not None:
+            parsed_ca = _maybe_parse_json(raw_class_all) if isinstance(raw_class_all, str) else raw_class_all
+            if isinstance(parsed_ca, list):
+                all_of_parts.extend(parsed_ca)
+        all_of_parts.extend(json_schema_all_of_extra)
+
+        cls_entry: dict[str, Any] = {
             "key": key,
             "label": str(ui_cls.get("ui_label") or meta.get("label") or key.replace("_", " ").title()),
             "labelPlural": str(
@@ -443,6 +595,9 @@ def build_classes(
             if ui_cls.get("ui_columns")
             else columns,
         }
+        if all_of_parts:
+            cls_entry["jsonSchemaAllOf"] = all_of_parts
+        classes_out[key] = cls_entry
     return classes_out
 
 
@@ -479,9 +634,24 @@ def build_classes_pyyaml(
             sdef = _slot_def(schema, slot_name)
             usage = slot_usage_root.get(slot_name) or {}
             range_name = sdef.get("range")
-            field_type = "select" if range_name in enum_names else "text"
-            if isinstance(range_name, str) and range_name in classes:
+            if range_name in enum_names:
+                field_type = "select"
+            elif isinstance(range_name, str) and range_name in classes:
                 field_type = "relation"
+            else:
+                r = (range_name or "").lower()
+                if r in ("integer", "int"):
+                    field_type = "number"
+                elif r in ("float", "double", "decimal"):
+                    field_type = "float"
+                elif r in ("boolean", "bool"):
+                    field_type = "boolean"
+                elif r in ("date", "datetime", "dateordatetime"):
+                    field_type = "date"
+                elif r in ("uri", "uriorcurie"):
+                    field_type = "url"
+                else:
+                    field_type = "text"
             required = bool(usage.get("required") or sdef.get("required"))
             slot_uri = sdef.get("slot_uri")
             label = sdef.get("title") or slot_name.replace("_", " ").title()
@@ -541,6 +711,37 @@ def build_classes_pyyaml(
                 if file_slot.get("ui_widget") is not None:
                     field["type"] = str(file_slot["ui_widget"])
                     _maybe_attach_enum_options(field, range_name=range_name, enums=enums)
+                if file_slot.get("ui_pattern") is not None:
+                    field["pattern"] = str(file_slot["ui_pattern"])
+                for fk_yaml, fk_field in (("ui_min_length", "minLength"), ("ui_max_length", "maxLength")):
+                    if file_slot.get(fk_yaml) is not None:
+                        try:
+                            field[fk_field] = int(file_slot[fk_yaml])
+                        except (TypeError, ValueError):
+                            pass
+                if file_slot.get("ui_minimum") is not None:
+                    try:
+                        field["minimum"] = _parse_number_token(str(file_slot["ui_minimum"]))
+                    except (TypeError, ValueError):
+                        pass
+                if file_slot.get("ui_maximum") is not None:
+                    try:
+                        field["maximum"] = _parse_number_token(str(file_slot["ui_maximum"]))
+                    except (TypeError, ValueError):
+                        pass
+                if file_slot.get("ui_weight") is not None:
+                    try:
+                        field["ui_weight"] = int(file_slot["ui_weight"])
+                    except (TypeError, ValueError):
+                        pass
+                if file_slot.get("ui_json_schema_extras") is not None:
+                    parsed_ex = _maybe_parse_json(str(file_slot["ui_json_schema_extras"]))
+                    if isinstance(parsed_ex, dict):
+                        field["jsonSchemaExtras"] = parsed_ex
+
+            pat = sdef.get("pattern")
+            if pat and "pattern" not in field:
+                field["pattern"] = str(pat)
 
             fields.append(field)
 

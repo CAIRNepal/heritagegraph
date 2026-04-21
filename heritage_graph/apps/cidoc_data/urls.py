@@ -81,6 +81,21 @@ urlpatterns = [
         OntologySchemaRegistryView.as_view(),
         name="ontology-schema-registry",
     ),
+    path(
+        "sparql/",
+        SparqlProxyView.as_view(),
+        name="cidoc-sparql-proxy",
+    ),
+    path(
+        "assist/suggest-field/",
+        AssistSuggestFieldView.as_view(),
+        name="cidoc-assist-suggest-field",
+    ),
+    path(
+        "<str:resource>/<path:pk>/revert/",
+        CidocRevertView.as_view(),
+        name="cidoc-revert",
+    ),
     path('', include(router.urls)),
     path("search/", universal_search, name="universal-search"),
     path("discovery/", public_discovery, name="public-discovery"),

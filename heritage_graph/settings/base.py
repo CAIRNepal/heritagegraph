@@ -214,6 +214,9 @@ HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH = os.environ.get(
     "HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH", "false"
 ).lower() in {"1", "true", "yes", "y", "on"}
 RDF_ENDPOINT_URL = os.environ.get("RDF_ENDPOINT_URL", "")
+RDF_RESOURCE_BASE_URI = os.environ.get(
+    "RDF_RESOURCE_BASE_URI", "https://heritagegraph.local/resource/"
+)
 RDF_SYNC_ENABLED = os.environ.get("RDF_SYNC_ENABLED", "false").lower() in {
     "1",
     "true",

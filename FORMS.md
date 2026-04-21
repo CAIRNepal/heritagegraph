@@ -355,12 +355,15 @@ for _model in [
 | `select` | `<Select>` dropdown | Requires `options` array (inline or from `registry.enums`) |
 | `url` | `<Input type="url">` | URL input with https:// placeholder |
 | `coordinates` | Two `<Input>` (lat/lng) | Side-by-side lat/lng, serialized as `"lat, lng"` string |
-| `geo_point` | Two `<Input>` (lat/lng) | Same UX as coordinates when the builder emits `geo_point` |
-| `edtf_date` | `<Input type="text">` | Textual / EDTF-style heritage dates |
+| `geo_point` | `GeoPointField` (Leaflet + lat/lng + GPS) | OSM tiles with click-to-set; manual inputs + **Use my GPS**; offline-safe fallback is the lat/lng inputs |
+| `edtf_date` | `<Input>` + quick-pick chips | EDTF-style strings plus one-tap chips (e.g. century span, “c. 1200 CE”); refine manually |
+| `media` | `<input type="file" capture>` + EXIF | Fieldwork-oriented multi-image picker; **exifr** reads GPS when present (toast hint); wire uploads to your `Media` API when available |
 | `boolean` | `Switch` toggle | Native boolean values in the payload |
 | `multiselect` | Checkbox group | Multivalued enum slots |
 | `relation` | `EntitySearch` | Autocomplete against `relationEndpoint`; multivalued supported |
 | `float` | `<Input type="number">` (step any) | Decimal values |
+
+**Client validation:** `OntologyForm` merges **Ajv** (`registry_jsonschema`) errors with required-field checks (`useValidation.ts`). **Server validation:** `ContributionFlowMixin` runs `validate_payload_for_class_drf` on create/update.
 
 ### Field Properties
 
@@ -431,6 +434,8 @@ Each field maps to:
 
 **Current default:** Structure, Ritual, and all other CIDOC entity contribute routes use **`ContributeOntologyForm` → `OntologyForm`**, driven by the generated registry (`ontology/HeritageGraph.yaml` + `tools/ui-classmap.yaml`). Multi-section types use the built-in step navigation inside `OntologyForm` when a class defines multiple `sections`.
 
+**OCR on any contribute route:** append **`?ce=<cultural_entity_uuid>`** to a contribute URL (e.g. `/contribute/structure?ce=…`) to mount `HeritageDocumentUpload` inside `OntologyForm` and merge suggestions into empty fields. The **`/contribute/entity`** page uses **`?id=`** for edit mode (CIDOC / wrapper id) and **`?ce=`** specifically for the OCR cultural-entity UUID.
+
 **Optional building blocks** for bespoke flows (new features, not used by default routes today):
 
 | Component | File | Purpose |
@@ -500,7 +505,15 @@ python manage.py migrate
 | `src/lib/ontology/enums.ts` | Controlled vocabularies (dropdown options) |
 | `ontology/HeritageGraph.yaml` + `tools/ui-classmap.yaml` | **Single source of truth** for generated registry |
 | `src/lib/ontology/index.ts` | Barrel re-exports |
-| `src/components/ontology-form.tsx` | Generic auto-generated contribute form |
+| `src/components/ontology-form.tsx` | Generic auto-generated contribute form (Ajv, completeness meter, OCR, assist) |
+| `src/components/ontology-form/geo-point-field.tsx` | Leaflet map + GPS for `geo_point` |
+| `src/components/ontology-form/completeness-meter.tsx` | Required / weighted optional completeness |
+| `src/components/ontology-form/step-nav.tsx` | Section stepper (mobile short labels) |
+| `src/lib/ontology/form-drafts.ts` | IndexedDB-backed drafts (`idb-keyval`) with localStorage migration |
+| `src/lib/ontology/validate-registry-payload.ts` | Ajv validation against `registry_jsonschema` |
+| `src/components/pwa-register.tsx` | Registers `/public/sw.js` in production |
+| `src/components/knowledge/why-we-believe-panel.tsx` | Public “Why we believe this” assertions panel |
+| `src/app/(dashboard)/review/page.tsx` | Reviewer workspace (queue + bulk open) |
 | `src/components/ontology-data-table.tsx` | Generic auto-generated knowledge data table |
 | `src/components/contribute/step-wizard.tsx` | Multi-step form container |
 | `src/components/contribute/step-indicator.tsx` | Step progress bar |
@@ -517,8 +530,10 @@ python manage.py migrate
 |------|------|
 | `heritage_graph/apps/cidoc_data/models.py` | All entity Django models |
 | `heritage_graph/apps/cidoc_data/serializers.py` | DRF serializers for all entities |
-| `heritage_graph/apps/cidoc_data/views.py` | DRF ViewSets for all entities |
-| `heritage_graph/apps/cidoc_data/urls.py` | Router URL registration |
+| `heritage_graph/apps/cidoc_data/views.py` | DRF ViewSets, SPARQL proxy, assist, **CIDOC revert** (`CidocRevertView`), registry validation mixin |
+| `heritage_graph/apps/cidoc_data/urls.py` | Router URL registration + `sparql/`, `assist/suggest-field/`, `<resource>/<pk>/revert/` |
+| `heritage_graph/apps/cidoc_data/rdf_signals.py` | Optional Oxigraph SPARQL Update on save |
+| `heritage_graph/apps/heritage_data/views.py` | `RevisionDiffView` (field diffs + metadata), `RevisionViewSet` (`?entity=` filter) |
 
 ---
 

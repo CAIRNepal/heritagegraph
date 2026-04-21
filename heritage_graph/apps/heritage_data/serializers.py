@@ -408,9 +408,37 @@ class UserProfileSerializer(serializers.ModelSerializer):
         ]
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Lightweight user projection for nested serializers (revisions, queue, etc.).
+    ``contributor_score`` is a heuristic 0–100 score for triage / reputation surfacing.
+    """
+
+    contributor_score = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'contributor_score',
+        ]
+
+    def get_contributor_score(self, obj):
+        try:
+            accepted = CulturalEntity.objects.filter(
+                contributor=obj, status='accepted'
+            ).count()
+            review_hits = ReviewDecision.objects.filter(
+                reviewer=obj,
+                verdict__in=('accept', 'accept_with_edits'),
+            ).count()
+            raw = accepted * 5.0 + review_hits * 2.0
+            return round(min(100.0, raw), 1)
+        except Exception:
+            return 0.0
 
 class RevisionSerializer(serializers.ModelSerializer):
     created_by = UserSerializer(read_only=True)

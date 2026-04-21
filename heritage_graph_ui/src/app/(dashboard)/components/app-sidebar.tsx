@@ -43,6 +43,7 @@ import {
   IconChevronUp,
   IconGitFork,
   IconSettings,
+  IconListCheck,
 } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
@@ -513,6 +514,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ...(isModerator ? [{ title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard }] : []),
           ...(isReviewer ? [
             { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
+            { title: 'Review workspace', url: '/review', icon: IconListCheck },
             { title: t('conflicts'), url: '/curation/conflicts', icon: IconScale },
           ] : []),
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },

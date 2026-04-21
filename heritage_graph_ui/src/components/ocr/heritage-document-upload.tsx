@@ -29,7 +29,10 @@ export function HeritageDocumentUpload({
 }: {
   culturalEntityId: string;
   className?: string;
-  onApply: (suggestions: Record<string, OcrFieldSuggestion>) => void;
+  onApply: (
+    suggestions: Record<string, OcrFieldSuggestion>,
+    meta?: { uploadedDocumentId: string | null }
+  ) => void;
 }) {
   const { data: session, status } = useSession();
   const token = (session as { accessToken?: string } | null)?.accessToken;
@@ -139,7 +142,7 @@ export function HeritageDocumentUpload({
             <Button
               type="button"
               variant="secondary"
-              onClick={() => onApply(suggestions)}
+              onClick={() => onApply(suggestions, { uploadedDocumentId: job })}
               disabled={phase !== "ready" && phase !== "error"}
             >
               Apply suggestions to empty fields

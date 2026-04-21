@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import React, { useState, useCallback, useRef, useEffect, useId } from "react";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -67,6 +67,8 @@ export function EntitySearch({
   const [isCreating, setIsCreating] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const listboxId = useId();
+  const inputId = useId();
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -196,6 +198,8 @@ export function EntitySearch({
               size="sm"
               className="ml-auto text-xs h-6"
               onClick={() => onSelect(null)}
+              type="button"
+              aria-label={`Remove ${value.name}`}
             >
               ✕
             </Button>
@@ -208,18 +212,28 @@ export function EntitySearch({
   return (
     <>
       <div className={cn("space-y-2 relative", className)} ref={wrapperRef}>
-        {label && <Label>{label}</Label>}
+        {label && <Label htmlFor={inputId}>{label}</Label>}
         <Input
+          id={inputId}
           value={query}
           onChange={handleInputChange}
           onFocus={() => query.length >= 2 && setShowDropdown(true)}
           placeholder={placeholder}
           disabled={disabled}
+          role="combobox"
+          aria-expanded={showDropdown && query.length >= 2}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
+          aria-haspopup="listbox"
           className={hasError ? "ring-2 ring-red-400/50 border-red-300 dark:border-red-700" : ""}
         />
 
         {showDropdown && query.length >= 2 && (
-          <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto">
+          <div
+            id={listboxId}
+            role="listbox"
+            className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto"
+          >
             {loading && (
               <div className="p-3 text-sm text-muted-foreground text-center">
                 Searching...
@@ -246,6 +260,7 @@ export function EntitySearch({
               <button
                 key={result.id}
                 type="button"
+                role="option"
                 className="w-full text-left px-3 py-2 hover:bg-accent transition-colors"
                 onClick={() => {
                   onSelect(result);

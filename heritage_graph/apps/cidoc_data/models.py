@@ -756,6 +756,63 @@ class HeritageAssertion(models.Model):
         return f"Assertion on {self.content_type.model}#{self.object_id}: {self.asserted_property}"
 
 
+class EntityRef(models.Model):
+    """
+    Normalized ontology relation edge (referrer → target) for graph APIs and indexing.
+
+    Populated from legacy CharField relation columns via migration / management commands.
+    """
+
+    from_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        related_name="cidoc_entityref_from_set",
+    )
+    from_object_id = models.PositiveIntegerField()
+    from_object = GenericForeignKey("from_content_type", "from_object_id")
+
+    predicate = models.CharField(
+        max_length=200,
+        db_index=True,
+        help_text="ORM field name used for this reference",
+    )
+
+    to_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        related_name="cidoc_entityref_to_set",
+    )
+    to_object_id = models.PositiveIntegerField()
+    to_object = GenericForeignKey("to_content_type", "to_object_id")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "cidoc_entityref"
+        indexes = [
+            models.Index(fields=["to_content_type", "to_object_id"]),
+            models.Index(fields=["from_content_type", "from_object_id"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "from_content_type",
+                    "from_object_id",
+                    "predicate",
+                    "to_content_type",
+                    "to_object_id",
+                ],
+                name="cidoc_entityref_unique_edge",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return (
+            f"{self.from_content_type_id}:{self.from_object_id}"
+            f" -{self.predicate}-> {self.to_content_type_id}:{self.to_object_id}"
+        )
+
+
 class Tenant(models.Model):
     """Optional multi-tenant scope (004-yaml-driven-schema); single-tenant uses null FK."""
 

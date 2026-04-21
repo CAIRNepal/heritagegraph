@@ -74,7 +74,10 @@ class UploadedDocumentViewSet(
     @action(detail=True, methods=["get"], url_path="suggestions")
     def suggestions(self, request, pk=None):
         doc = self.get_object()
-        return Response(suggestions_for_document(document=doc))
+        ontology_class = (request.query_params.get("ontology_class") or "").strip() or None
+        return Response(
+            suggestions_for_document(document=doc, ontology_class_key=ontology_class)
+        )
 
     @action(
         detail=True,

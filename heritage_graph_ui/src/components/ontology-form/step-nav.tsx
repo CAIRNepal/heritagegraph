@@ -54,6 +54,12 @@ export function StepNav({
               {isComplete ? "✓" : idx + 1}
             </span>
             <span className="hidden sm:inline">{section.label}</span>
+            <span
+              className="sm:hidden max-w-[5.5rem] truncate text-[11px] leading-tight text-left"
+              title={section.label}
+            >
+              {section.label.split(/\s+/)[0] || section.label.slice(0, 10)}
+            </span>
           </button>
         );
       })}

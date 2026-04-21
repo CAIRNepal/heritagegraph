@@ -22,6 +22,11 @@ export const metadata: Metadata = {
     'HeritageGraph: Preserving Cultural Heritage and Identity Through Knowledge Graphs',
   description:
     'HeritageGraph is a research initiative by CAIR-Nepal that uses AI and Knowledge Graphs to digitally preserve cultural heritage, history, art, and traditions—safeguarding shared identity for future generations.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    title: 'HeritageGraph',
+  },
 };
 
 export default async function RootLayout({

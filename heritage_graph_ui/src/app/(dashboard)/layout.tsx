@@ -22,6 +22,7 @@ import { ChatContextWrapper } from '@/providers/ChatContextWrapper';
 import { ApiBaseWarning } from '@/components/api-base-warning';
 import { OntologyProvider } from '@/lib/ontology/OntologyProvider';
 import { DegradedSchemaBanner } from '@/components/ontology/DegradedSchemaBanner';
+import { PwaRegister } from '@/components/pwa-register';
 
 import Image from 'next/image';
 import { Github, Mail, ExternalLink } from 'lucide-react';
@@ -33,6 +34,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <OntologyProvider>
+    <PwaRegister />
     <SidebarProvider
       style={
         {

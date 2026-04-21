@@ -9,7 +9,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.conf import settings
 from apps.heritage_data.models import Media
-from .models import UploadedDocument
+from .models import ExtractedField, UploadedDocument
 
 logger = logging.getLogger(__name__)
 
@@ -96,3 +96,56 @@ def on_media_upload(sender, instance, created, **kwargs):
     except Exception as exc:
         logger.error(f"Error initiating OCR for media {instance.id}: {exc}")
         # Don't raise - we don't want to break the Media upload if OCR init fails
+
+
+@receiver(post_save, sender=ExtractedField)
+def create_assertion_for_extracted_field(sender, instance, created, **kwargs):
+    """
+    Record a HeritageAssertion + DataSource for OCR-extracted fields.
+
+    CulturalEntity uses a UUID primary key; HeritageAssertion.object_id is an integer,
+    so we store a standalone assertion (no generic FK) and embed entity/document ids
+    in assertion_content for traceability.
+    """
+    if not created:
+        return
+    doc = instance.document
+    entity = getattr(doc, "cultural_entity", None)
+    try:
+        from apps.cidoc_data.models import DataSource, HeritageAssertion
+
+        ds = DataSource.objects.create(
+            name=f"OCR document {doc.id}",
+            source_type="field_survey",
+            citation=f"Extracted from uploaded document {doc.id}",
+            url="",
+        )
+        try:
+            cnum = float(instance.confidence or 0.5)
+        except (TypeError, ValueError):
+            cnum = 0.5
+        conf = "likely"
+        if cnum < 0.35:
+            conf = "uncertain"
+        elif cnum >= 0.75:
+            conf = "certain"
+        ent_part = ""
+        if entity is not None:
+            ent_part = f" cultural_entity_id={getattr(entity, 'entity_id', entity.pk)}"
+        HeritageAssertion.objects.create(
+            content_type=None,
+            object_id=None,
+            asserted_property=instance.field_name,
+            asserted_value=instance.field_value,
+            assertion_content=(
+                f"OCR/NER extraction (document={doc.id},{ent_part} "
+                f"confidence={instance.confidence} type={instance.source_entity_type})"
+            ),
+            source=ds,
+            source_citation=f"Document {doc.id}",
+            contributed_by="ocr-pipeline",
+            confidence=conf,
+            reconciliation_status="pending",
+        )
+    except Exception as exc:
+        logger.warning("Could not create HeritageAssertion for ExtractedField: %s", exc)

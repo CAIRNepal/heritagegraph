@@ -1,4 +1,6 @@
+import json
 import os
+import re
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -7,9 +9,17 @@ from rest_framework import permissions, status as drf_status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.heritage_data.permissions import IsReviewerOrAdmin
+
 User = get_user_model()
+from .cidoc_registry_keys import registry_class_key_for_model
 from .models import *
+from .registry_validation import coerce_for_jsonschema, validate_payload_for_class_drf
 from .serializers import *
+
+_REGISTRY_VALIDATION_STRIP = frozenset(
+    {"assertion", "assertions", "cultural_entity_id"}
+)
 
 
 # =====================================================================
@@ -54,7 +64,45 @@ class ContributionFlowMixin:
       3. Creates a CulturalEntity wrapper in heritage_data
       4. Creates a first Revision with the submitted data as JSON
       5. Fires notifications to the contributor and all active reviewers
+
+    Validates create/update payloads against ``registry_jsonschema`` when a
+    registry class key exists for the model (see ``cidoc_registry_keys``).
     """
+
+    def _payload_for_registry_validation(self, serializer, *, instance=None):
+        """Build a dict of model field values suitable for JSON Schema validation."""
+        model = getattr(serializer.Meta, "model", None) or self.queryset.model
+        out: dict = {}
+        for k, v in serializer.validated_data.items():
+            if k in _REGISTRY_VALIDATION_STRIP:
+                continue
+            out[k] = coerce_for_jsonschema(v)
+        if instance is not None:
+            for field in model._meta.concrete_fields:
+                name = field.name
+                if name in out or name == "id":
+                    continue
+                try:
+                    val = getattr(instance, name)
+                except Exception:
+                    continue
+                out[name] = coerce_for_jsonschema(val)
+        return out
+
+    def _validate_registry_payload(self, serializer, *, instance=None):
+        from apps.cidoc_data.linkml_loader import get_effective_registry_payload
+
+        model = getattr(serializer.Meta, "model", None) or self.queryset.model
+        class_key = registry_class_key_for_model(model)
+        if not class_key:
+            return
+        payload = self._payload_for_registry_validation(serializer, instance=instance)
+        registry = get_effective_registry_payload()
+        validate_payload_for_class_drf(
+            class_key=class_key,
+            payload=payload,
+            registry_jsonschema=registry.get("registry_jsonschema"),
+        )
 
     def get_permissions(self):
         if self.action in ("update", "partial_update", "destroy"):
@@ -68,7 +116,12 @@ class ContributionFlowMixin:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
+    def perform_update(self, serializer):
+        self._validate_registry_payload(serializer, instance=serializer.instance)
+        serializer.save()
+
     def perform_create(self, serializer):
+        self._validate_registry_payload(serializer, instance=None)
         # Set contributor info on the CIDOC record
         instance = serializer.save(
             contributor=self.request.user.username,
@@ -304,6 +357,8 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == "create":
             return [permissions.IsAuthenticated()]
+        if self.action in ("update", "partial_update", "destroy"):
+            return [permissions.IsAuthenticated(), IsReviewerOrAdmin()]
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
@@ -320,6 +375,9 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
         entity_type = self.request.query_params.get("entity_type")
         entity_id = self.request.query_params.get("entity_id")
         status = self.request.query_params.get("status")
+        cultural_entity_id = (
+            self.request.query_params.get("cultural_entity_id") or ""
+        ).strip()
 
         if entity_type:
             from django.contrib.contenttypes.models import ContentType
@@ -332,6 +390,11 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
 
         if entity_id:
             qs = qs.filter(object_id=entity_id)
+
+        if cultural_entity_id:
+            qs = qs.filter(
+                assertion_content__icontains=f"cultural_entity_id={cultural_entity_id}"
+            )
 
         if status:
             qs = qs.filter(reconciliation_status=status)
@@ -673,6 +736,7 @@ def related_entities(request):
         CIDOC_RELATION_BACKREFS,
         MODEL_ONTOLOGY_DOMAIN_KEY,
         REFERRED_GROUP_LABELS,
+        entityref_reverse_ids_by_referrer_model,
     )
 
     domain = (request.query_params.get("domain") or "").strip()
@@ -709,19 +773,31 @@ def related_entities(request):
             continue
         entries_by_model[model_cls].append((field_name, multivalued))
 
+    er_by_model = entityref_reverse_ids_by_referrer_model(domain=domain, raw_id=raw_id)
+    combined_models = sorted(
+        set(entries_by_model.keys()) | set(er_by_model.keys()),
+        key=lambda m: MODEL_ONTOLOGY_DOMAIN_KEY[m],
+    )
+
     groups_out = []
     total_related = 0
 
-    for model_cls in sorted(
-        entries_by_model.keys(), key=lambda m: MODEL_ONTOLOGY_DOMAIN_KEY[m]
-    ):
+    for model_cls in combined_models:
         domain_key = MODEL_ONTOLOGY_DOMAIN_KEY[model_cls]
         if group_filter and domain_key != group_filter:
             continue
 
-        q_total = Q()
-        for field_name, multivalued in entries_by_model[model_cls]:
-            q_total |= _field_reference_q(field_name, raw_id, multivalued)
+        q_parts: list[Q] = []
+        for field_name, multivalued in entries_by_model.get(model_cls, []):
+            q_parts.append(_field_reference_q(field_name, raw_id, multivalued))
+        extra_ids = er_by_model.get(model_cls) or []
+        if extra_ids:
+            q_parts.append(Q(pk__in=extra_ids))
+        if not q_parts:
+            continue
+        q_total = q_parts[0]
+        for q in q_parts[1:]:
+            q_total |= q
 
         qs = model_cls.objects.filter(q_total).order_by("-id")
         total = qs.count()
@@ -911,3 +987,308 @@ class OntologySchemaRegistryView(APIView):
             max_age=getattr(settings, "HERITAGEGRAPH_SCHEMA_CACHE_TTL", 60),
         )
         return resp
+
+
+class SparqlProxyView(APIView):
+    """
+    Read-only SPARQL proxy to RDF_ENDPOINT_URL.
+    GET …/sparql/?query=SELECT …
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        import requests
+
+        from apps.cidoc_data.rdf_signals import is_readonly_sparql_query
+
+        q = (request.query_params.get("query") or request.query_params.get("q") or "").strip()
+        if not q:
+            return Response(
+                {"error": "Missing query parameter `query` or `q`."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+        if not is_readonly_sparql_query(q):
+            return Response(
+                {"error": "Only read-only SPARQL (SELECT / ASK / CONSTRUCT / DESCRIBE) is allowed."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+        endpoint = getattr(settings, "RDF_ENDPOINT_URL", "").strip()
+        if not endpoint:
+            return Response(
+                {"error": "RDF endpoint not configured (RDF_ENDPOINT_URL)."},
+                status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        try:
+            r = requests.get(
+                endpoint,
+                params={"query": q},
+                headers={
+                    "Accept": "application/sparql-results+json, application/json;q=0.9, */*;q=0.1",
+                },
+                timeout=60,
+            )
+            r.raise_for_status()
+        except Exception as exc:
+            return Response({"error": str(exc)}, status=drf_status.HTTP_502_BAD_GATEWAY)
+        ct = (r.headers.get("Content-Type") or "").lower()
+        if "json" in ct:
+            try:
+                return Response(r.json())
+            except Exception:
+                return Response({"result": r.text})
+        return Response({"result": r.text})
+
+
+class AssistSuggestFieldView(APIView):
+    """
+    POST /cidoc/assist/suggest-field/
+    Body: { "ontology_class": "structure", "field_key": "...", "partial_payload": { ... } }
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            from anthropic import Anthropic
+        except ImportError:
+            return Response(
+                {"error": "anthropic package is not installed."},
+                status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        from apps.cidoc_data.linkml_loader import get_effective_registry_payload
+
+        class_key = (request.data.get("ontology_class") or "").strip()
+        field_key = (request.data.get("field_key") or "").strip()
+        partial = request.data.get("partial_payload") or {}
+        if not class_key or not field_key:
+            return Response(
+                {"error": "ontology_class and field_key are required."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        api_key = (
+            getattr(settings, "ANTHROPIC_API_KEY", None)
+            or os.environ.get("ANTHROPIC_API_KEY", "")
+            or ""
+        ).strip()
+        if not api_key:
+            return Response(
+                {"error": "LLM assist is not configured (ANTHROPIC_API_KEY)."},
+                status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+        registry = get_effective_registry_payload()
+        cls = (registry.get("classes") or {}).get(class_key) or {}
+        fields = cls.get("fields") or []
+        field = next((f for f in fields if f.get("key") == field_key), None)
+        if not field:
+            return Response(
+                {"error": f"Unknown field {field_key!r} for class {class_key!r}."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        partial_json = json.dumps(partial, default=str)[:8000]
+        prompt = (
+            f"Suggest the single best value for heritage metadata field {field_key!r} "
+            f"(label: {field.get('label')!r}, type: {field.get('type')!r}) "
+            f"for ontology class {class_key!r}.\n"
+            f"Partial form state (JSON):\n{partial_json}\n\n"
+            'Respond with JSON only: {"suggestion": "...", "confidence": 0.0-1, "rationale": "..."}'
+        )
+        client = Anthropic(api_key=api_key)
+        model = getattr(settings, "ANTHROPIC_OCR_MODEL", "claude-3-5-sonnet-20241022")
+        msg = client.messages.create(
+            model=model,
+            max_tokens=512,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        raw = "".join(getattr(b, "text", "") for b in msg.content).strip()
+        if raw.startswith("```"):
+            raw = re.sub(r"^```[a-zA-Z]*\n?", "", raw)
+            raw = re.sub(r"\n?```$", "", raw).strip()
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            return Response(
+                {"error": "Model returned non-JSON.", "raw": raw[:2000]},
+                status=drf_status.HTTP_502_BAD_GATEWAY,
+            )
+        return Response(data)
+
+
+# --- Map router resource segment → (Django model, serializer) for revert ---
+_CIDOC_REVERT_MAP = {
+    "historical_periods": (HistoricalPeriod, HistoricalPeriodSerializer),
+    "locations": (Location, LocationSerializer),
+    "persons": (Person, PersonSerializer),
+    "events": (Event, EventSerializer),
+    "traditions": (Tradition, TraditionSerializer),
+    "sources": (Source, SourceSerializer),
+    "deities": (Deity, DeitySerializer),
+    "guthis": (Guthi, GuthiSerializer),
+    "structures": (ArchitecturalStructure, ArchitecturalStructureSerializer),
+    "rituals": (RitualEvent, RitualEventSerializer),
+    "festivals": (Festival, FestivalSerializer),
+    "iconographic_objects": (IconographicObject, IconographicObjectSerializer),
+    "monuments": (Monument, MonumentSerializer),
+    "kumari_tenures": (KumariTenure, KumariTenureSerializer),
+    "kumari_selections": (KumariSelection, KumariSelectionSerializer),
+    "kumari_retirements": (KumariRetirement, KumariRetirementSerializer),
+    "syncretic_relationships": (SyncreticRelationship, SyncreticRelationshipSerializer),
+    "caste_groups": (CasteGroup, CasteGroupSerializer),
+    "calendar_systems": (CalendarSystem, CalendarSystemSerializer),
+}
+
+
+def _parse_cidoc_primary_key(raw: str):
+    import uuid as _uuid
+
+    s = (raw or "").strip()
+    try:
+        return int(s, 10)
+    except ValueError:
+        pass
+    try:
+        return _uuid.UUID(s)
+    except Exception:
+        return None
+
+
+def _find_revision_snapshot(*, model_cls, cidoc_pk, revision_number: int):
+    from apps.heritage_data.models import Revision
+
+    model_name = model_cls.__name__
+    cidoc_s = str(cidoc_pk)
+    qs = (
+        Revision.objects.filter(revision_number=int(revision_number))
+        .select_related("entity", "created_by")
+        .order_by("-created_at")
+    )
+    for rev in qs:
+        data = rev.data or {}
+        if data.get("_cidoc_model") != model_name:
+            continue
+        rid = data.get("_cidoc_id")
+        if rid is None:
+            continue
+        if str(rid) == cidoc_s:
+            return rev
+    return None
+
+
+class CidocRevertView(APIView):
+    """
+    POST /api/v1/cidoc/<resource>/<pk>/revert/
+    Body: { "revision_number": <int> }
+    Re-applies a stored Revision JSON snapshot onto the CIDOC row (after registry validation).
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsReviewerOrAdmin]
+
+    def post(self, request, resource, pk, *args, **kwargs):
+        from apps.heritage_data.models import Activity, Revision
+        from apps.heritage_data.serializers import RevisionSerializer
+
+        pair = _CIDOC_REVERT_MAP.get((resource or "").strip())
+        if not pair:
+            return Response(
+                {"error": f"Unknown CIDOC resource {resource!r}."},
+                status=drf_status.HTTP_404_NOT_FOUND,
+            )
+        model_cls, serializer_cls = pair
+        parsed_pk = _parse_cidoc_primary_key(pk)
+        if parsed_pk is None:
+            return Response({"error": "Invalid primary key."}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        rev_num = request.data.get("revision_number")
+        try:
+            rev_num = int(rev_num)
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "revision_number (int) is required."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            instance = model_cls.objects.get(pk=parsed_pk)
+        except model_cls.DoesNotExist:
+            return Response({"error": "Record not found."}, status=drf_status.HTTP_404_NOT_FOUND)
+
+        target_rev = _find_revision_snapshot(
+            model_cls=model_cls, cidoc_pk=parsed_pk, revision_number=rev_num
+        )
+        if target_rev is None:
+            return Response(
+                {"error": "No matching revision snapshot for this record."},
+                status=drf_status.HTTP_404_NOT_FOUND,
+            )
+
+        raw_data = dict(target_rev.data or {})
+        serializer_probe = serializer_cls(
+            instance=instance,
+            context={"request": request},
+        )
+        allowed = {
+            name
+            for name, field in serializer_probe.fields.items()
+            if not getattr(field, "read_only", False)
+        }
+        cleaned = {
+            k: v
+            for k, v in raw_data.items()
+            if not str(k).startswith("_") and k in allowed
+        }
+
+        serializer = serializer_cls(
+            instance,
+            data=cleaned,
+            partial=True,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+
+        mixin = ContributionFlowMixin()
+        mixin.request = request
+        mixin.queryset = model_cls.objects.all()
+        ContributionFlowMixin._validate_registry_payload(
+            mixin, serializer, instance=instance
+        )
+        serializer.save()
+
+        entity = target_rev.entity
+        latest = (
+            Revision.objects.filter(entity=entity).order_by("-revision_number").first()
+        )
+        next_num = (latest.revision_number + 1) if latest else 1
+        new_data = dict(serializer.data)
+        new_data["_cidoc_model"] = model_cls.__name__
+        new_data["_cidoc_id"] = instance.pk
+        new_rev = Revision.objects.create(
+            entity=entity,
+            data=new_data,
+            revision_number=next_num,
+            created_by=request.user,
+        )
+        entity.current_revision = new_rev
+        entity.save(update_fields=["current_revision"])
+
+        Activity.objects.create(
+            entity=entity,
+            user=request.user,
+            activity_type="revised",
+            comment=(
+                f"CIDOC revert: reapplied snapshot from revision {rev_num} "
+                f"onto {model_cls.__name__} pk={instance.pk}."
+            ),
+        )
+
+        return Response(
+            {
+                "ok": True,
+                "cultural_entity_id": str(entity.entity_id),
+                "new_revision": RevisionSerializer(new_rev).data,
+            },
+            status=drf_status.HTTP_200_OK,
+        )

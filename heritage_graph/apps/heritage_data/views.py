@@ -1513,7 +1513,11 @@ class RevisionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     
     def get_queryset(self):
-        return Revision.objects.select_related('created_by', 'entity')
+        qs = Revision.objects.select_related('created_by', 'entity')
+        entity_id = (self.request.query_params.get('entity') or '').strip()
+        if entity_id:
+            qs = qs.filter(entity_id=entity_id)
+        return qs
     
     @action(detail=True, methods=['get'])
     def entity_history(self, request, pk=None):
@@ -2657,16 +2661,26 @@ class RevisionDiffView(APIView):
         except Revision.DoesNotExist:
             return Response({'error': 'Revision not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Compute field-by-field diff
+        # Compute field-by-field diff (with lightweight provenance on the "to" side)
         diff = {}
         all_keys = set(list(rev_from.data.keys()) + list(rev_to.data.keys()))
         for key in sorted(all_keys):
+            if str(key).startswith('_'):
+                continue
             old_val = rev_from.data.get(key)
             new_val = rev_to.data.get(key)
             if old_val != new_val:
                 diff[key] = {
                     'old': old_val,
                     'new': new_val,
+                    'changed_at': rev_to.created_at.isoformat(),
+                    'changed_by': (
+                        UserSerializer(rev_to.created_by).data
+                        if rev_to.created_by
+                        else None
+                    ),
+                    'revision_from_number': rev_from.revision_number,
+                    'revision_to_number': rev_to.revision_number,
                 }
 
         return Response({
@@ -2675,6 +2689,10 @@ class RevisionDiffView(APIView):
             'revision_from': RevisionSerializer(rev_from).data,
             'revision_to': RevisionSerializer(rev_to).data,
             'diff': diff,
+            'field_diffs': [
+                {'field': k, **v}
+                for k, v in sorted(diff.items(), key=lambda kv: kv[0])
+            ],
         })
 
 

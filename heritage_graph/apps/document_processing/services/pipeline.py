@@ -8,7 +8,7 @@ from django.utils import timezone
 from ..models import ExtractedField, UploadedDocument
 from .classifier import classify_media_file
 from .htr import extract_handwritten
-from .ner import naive_extract
+from .ner import extract_structured_fields
 from .ocr_settings import get_ocr_settings
 from .pdf import extract_pdf_digital
 from .raster_ocr import extract_raster_ocr
@@ -115,7 +115,22 @@ def process_uploaded_document(*, document_id: str) -> None:
             raise RuntimeError("No text could be extracted from this document.")
 
         doc.raw_text = raw
-        items = naive_extract(text=raw)
+        ontology_key = None
+        if getattr(doc, "cultural_entity_id", None):
+            try:
+                ce = doc.cultural_entity
+                cat = getattr(ce, "category", None) or ""
+                ontology_key = {
+                    "monument": "structure",
+                    "artifact": "iconography",
+                    "ritual": "ritual",
+                    "festival": "festival",
+                    "tradition": "tradition",
+                    "document": "source",
+                }.get(str(cat))
+            except Exception:
+                ontology_key = None
+        items = extract_structured_fields(text=raw, ontology_class_key=ontology_key)
         for it in items:
             ExtractedField.objects.create(
                 document=doc,

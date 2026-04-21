@@ -45,13 +45,23 @@ export function TypePicker({
           return (
             <Card
               key={option.value}
+              role="button"
+              tabIndex={0}
+              aria-pressed={isSelected}
+              aria-label={option.label}
               className={cn(
-                "cursor-pointer transition-all hover:shadow-md",
+                "cursor-pointer transition-all hover:shadow-md outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                 isSelected
                   ? "border-primary ring-2 ring-primary/20 bg-primary/5"
                   : "hover:border-primary/50"
               )}
               onClick={() => onChange(option.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onChange(option.value);
+                }
+              }}
             >
               <CardHeader className="p-4 pb-1">
                 <CardTitle className="text-sm flex items-center gap-2">
