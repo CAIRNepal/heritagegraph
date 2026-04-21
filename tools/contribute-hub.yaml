@@ -1,0 +1,180 @@
+# Contribute landing page: browse groups, per-type copy, and quick-start keys.
+# Keys in `intents.registryKey` must match `key` in tools/ui-classmap.yaml.
+
+hubCategories:
+  - key: tangible
+    label: Tangible Heritage
+    icon: "🏛️"
+    order: 0
+  - key: events
+    label: Events & Rituals
+    icon: "🔥"
+    order: 1
+  - key: kumari
+    label: Living Goddess
+    icon: "👑"
+    order: 2
+  - key: conceptual
+    label: Conceptual
+    icon: "✨"
+    order: 3
+  - key: social
+    label: Social & People
+    icon: "👥"
+    order: 4
+  - key: spatiotemporal
+    label: Spaces & Time
+    icon: "🗺️"
+    order: 5
+  - key: provenance
+    label: Sources
+    icon: "📚"
+    order: 6
+
+intents:
+  - registryKey: structure
+    hubCategory: tangible
+    route: /contribute/structure
+    emoji: "🏛️"
+    shortDescription: "Temples, stupas, rest houses, water spouts"
+    description: "Record architectural heritage with location, condition, style, and Guthi links."
+    difficulty: beginner
+  - registryKey: iconography
+    hubCategory: tangible
+    route: /contribute/iconography
+    emoji: "🎨"
+    shortDescription: "Paubha paintings, Murti statues, sacred art"
+    description: "Document sacred visual art with deity depictions and provenance."
+    difficulty: intermediate
+  - registryKey: monument
+    hubCategory: tangible
+    route: /contribute/monument
+    emoji: "⛩️"
+    shortDescription: "Stupas, Chaityas, sacred structures"
+    description: "Add Buddhist sacred structures with circumambulation and ritual patterns."
+    difficulty: beginner
+  - registryKey: ritual
+    hubCategory: events
+    route: /contribute/ritual
+    emoji: "🔥"
+    shortDescription: "Puja, consecrations, processions"
+    description: "Document rituals with deity invocation, performers, timing, and routes."
+    difficulty: intermediate
+  - registryKey: festival
+    hubCategory: events
+    route: /contribute/festival
+    emoji: "🎪"
+    shortDescription: "Jatra processions, chariot festivals, dances"
+    description: "Record large-scale community events with component rituals."
+    difficulty: intermediate
+  - registryKey: event
+    hubCategory: events
+    route: /contribute/event
+    emoji: "📅"
+    shortDescription: "Earthquakes, fires, political transitions"
+    description: "Log major events that affected heritage sites or practices."
+    difficulty: beginner
+  - registryKey: kumari_tenure
+    hubCategory: kumari
+    route: /contribute/kumari-tenure
+    emoji: "👑"
+    shortDescription: "Period of divine embodiment"
+    description: "Document a Kumari's tenure — person, deity, residence, and supporting Guthi."
+    difficulty: advanced
+  - registryKey: kumari_selection
+    hubCategory: kumari
+    route: /contribute/kumari-selection
+    emoji: "🔍"
+    shortDescription: "Tantric selection ritual"
+    description: "Document the 32 lakshana examination, horoscope matching, and fearlessness tests."
+    difficulty: advanced
+  - registryKey: kumari_retirement
+    hubCategory: kumari
+    route: /contribute/kumari-retirement
+    emoji: "🚪"
+    shortDescription: "Return to secular status"
+    description: "Record the formal event ending a Living Goddess tenure."
+    difficulty: advanced
+  - registryKey: deity
+    hubCategory: conceptual
+    route: /contribute/deity
+    emoji: "✨"
+    shortDescription: "Hindu, Buddhist, or syncretic divine entities"
+    description: "Add divine entities with tradition, alternate names, and iconographic links."
+    difficulty: beginner
+  - registryKey: syncretism
+    hubCategory: conceptual
+    route: /contribute/syncretism
+    emoji: "🔗"
+    shortDescription: "Cross-tradition deity equivalences"
+    description: "Map deity equivalences (e.g., Avalokiteshvara = Matsyendranath) with provenance."
+    difficulty: advanced
+  - registryKey: guthi
+    hubCategory: social
+    route: /contribute/guthi
+    emoji: "🏘️"
+    shortDescription: "Endowed trusts managing temples and rituals"
+    description: "Register Guthi organizations with type, membership, and managed structures."
+    difficulty: intermediate
+  - registryKey: person
+    hubCategory: social
+    route: /contribute/person
+    emoji: "👤"
+    shortDescription: "Kings, artisans, priests, scholars"
+    description: "Record historical persons with biography and institutional affiliation."
+    difficulty: beginner
+  - registryKey: caste_group
+    hubCategory: social
+    route: /contribute/caste-group
+    emoji: "👥"
+    shortDescription: "Hereditary social groups (Jati)"
+    description: "Document groups with specific ritual roles and occupational duties."
+    difficulty: intermediate
+  - registryKey: location
+    hubCategory: spatiotemporal
+    route: /contribute/location
+    emoji: "🗺️"
+    shortDescription: "Geographic heritage locations"
+    description: "Add locations where heritage structures exist and events occur."
+    difficulty: beginner
+  - registryKey: period
+    hubCategory: spatiotemporal
+    route: /contribute/period
+    emoji: "⏳"
+    shortDescription: "Lichhavi, Malla, and other eras"
+    description: "Define time periods for contextualizing heritage."
+    difficulty: beginner
+  - registryKey: calendar
+    hubCategory: spatiotemporal
+    route: /contribute/calendar
+    emoji: "📆"
+    shortDescription: "Bikram Sambat, Nepal Sambat, etc."
+    description: "Register calendar systems with epoch dates and Gregorian conversion rules."
+    difficulty: intermediate
+  - registryKey: tradition
+    hubCategory: conceptual
+    route: /contribute/tradition
+    emoji: "🕯️"
+    shortDescription: "Religious and cultural traditions"
+    description: "Record traditions, practices, and their material associations."
+    difficulty: beginner
+  - registryKey: source
+    hubCategory: provenance
+    route: /contribute/source
+    emoji: "📚"
+    shortDescription: "Books, records, oral histories, inscriptions"
+    description: "Add sources with DataCite identifiers, citation, and language."
+    difficulty: beginner
+  - registryKey: assertion
+    hubCategory: provenance
+    route: /contribute/assertion
+    emoji: "✅"
+    shortDescription: "Factual claims with source and confidence"
+    description: "Record a factual claim with explicit source, author, and confidence score."
+    difficulty: advanced
+
+quickStart:
+  - structure
+  - source
+  - location
+  - person

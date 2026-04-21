@@ -1,11 +1,16 @@
 # Forms System & Ontology (summary)
 
-This page will merge the existing `FORMS.md` and `ONTOLOGY.md` into a single authoritative guide about the registry-driven form system, field types, enums, and migration patterns.
+**End-to-end YAML → UI pipeline:** see the comprehensive guide [YAML schema workflow](yaml-schema-workflow.md) (sources of truth, `make ontology`, Django registry API, `OntologyProvider`, deployment, CI).
 
-Current status: the canonical files `FORMS.md` and `ONTOLOGY.md` remain in the repository root. This page will be completed by consolidating those sources and removing duplication.
+The repository root [`FORMS.md`](https://github.com/CAIRNepal/heritagegraph/blob/main/FORMS.md) is the detailed, task-oriented reference for fields, enums, and Django sync.
 
-Key concepts to include:
+This page will eventually merge `FORMS.md` and `ONTOLOGY.md` into a single MkDocs chapter. Until then, use:
+
+- [YAML schema workflow](yaml-schema-workflow.md) — architecture and operations
+- `FORMS.md` — how to add fields, enums, and entity types step by step
+
+Key concepts to include in a future merge:
 - Field registry and types
 - How to add a new entity type
-- Mapping LinkML/schema to frontend registry
+- Mapping LinkML/schema to the generated registry
 - CIDOC-CRM alignment and provenance via PROV-O

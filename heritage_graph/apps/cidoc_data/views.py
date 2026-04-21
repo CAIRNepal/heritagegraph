@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.cache import patch_cache_control
@@ -835,20 +837,64 @@ class OntologySchemaRegistryView(APIView):
     """
     Effective ontology registry (classes + enums) for schema-driven UI.
     GET /api/v1/cidoc/schema/registry/
+
+    Public read: no authentication required (same payload is shipped in
+    registry.generated.*; optional Bearer is accepted but not required).
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
         from apps.cidoc_data.linkml_loader import get_effective_registry_payload
+        from apps.cidoc_data.models import SchemaRegistry
 
-        payload = get_effective_registry_payload(tenant=None)
+        prefer_fresh = (
+            request.query_params.get("fresh") == "1"
+            or getattr(settings, "DEBUG", False)
+            or getattr(settings, "HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH", False)
+            or os.environ.get("HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH", "").lower()
+            in ("1", "true", "yes")
+        )
+
+        payload: dict
+        source = "cache"
+        if prefer_fresh:
+            try:
+                payload = dict(get_effective_registry_payload(tenant=None))
+                source = "yaml"
+            except Exception:
+                row = SchemaRegistry.objects.order_by("-created_at").first()
+                if row and row.registry_json:
+                    payload = dict(row.registry_json)
+                    source = "cache"
+                else:
+                    return Response(
+                        {
+                            "error": "Schema unavailable and no last-known-good cache exists."
+                        },
+                        status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
+                    )
+        else:
+            row = SchemaRegistry.objects.order_by("-created_at").first()
+            if row and row.registry_json:
+                payload = dict(row.registry_json)
+                source = "cache"
+            else:
+                try:
+                    payload = dict(get_effective_registry_payload(tenant=None))
+                    source = "yaml"
+                except Exception:
+                    return Response(
+                        {"error": "Schema unavailable and no last-known-good cache exists."},
+                        status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
+                    )
         version = payload["schema_version"]
         etag = f'"{version}"'
         inm = request.headers.get("If-None-Match")
         if inm and inm == etag:
             resp = Response(status=304)
             resp["ETag"] = etag
+            resp["X-HG-Schema-Source"] = source
             patch_cache_control(
                 resp,
                 private=True,
@@ -858,6 +904,7 @@ class OntologySchemaRegistryView(APIView):
 
         resp = Response(payload)
         resp["ETag"] = etag
+        resp["X-HG-Schema-Source"] = source
         patch_cache_control(
             resp,
             private=True,

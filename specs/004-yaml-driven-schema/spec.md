@@ -113,7 +113,7 @@ A backend developer (or external integrator) opens the API docs and the reposito
 
 **Schema-serving API**
 
-- **FR-004**: The backend MUST expose an authenticated endpoint that returns the full effective ontology registry for the caller's tenant, including classes, slots, enums, sections, UI hints, and RDF URIs, in a shape the frontend can consume directly.
+- **FR-004**: The backend MUST expose an endpoint (authentication not required; same payload as the committed generated snapshot) that returns the full effective ontology registry for the caller's tenant, including classes, slots, enums, sections, UI hints, and RDF URIs, in a shape the frontend can consume directly.
 - **FR-005**: The registry response MUST be cacheable (with an explicit cache key/version) and MUST change its version when the underlying schema changes, so that clients can detect when to refresh.
 - **FR-006**: The schema endpoint MUST serve only the requesting tenant's effective schema (core + that tenant's extensions); it MUST NOT leak other tenants' classes, slots, or labels.
 - **FR-007**: If the YAML fails to parse or a tenant extension is invalid, the endpoint MUST serve the last-known-good schema for that tenant (or return a well-defined error) and MUST NOT serve a corrupt/partial schema.

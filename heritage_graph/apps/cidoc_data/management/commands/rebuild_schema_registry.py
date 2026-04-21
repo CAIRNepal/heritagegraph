@@ -16,10 +16,10 @@ class Command(BaseCommand):
         SchemaRegistry.objects.create(
             tenant=None,
             schema_version=payload["schema_version"],
-            core_hash=payload["schema_version"],
-            extension_hash=None,
+            core_hash=payload.get("core_hash") or payload["schema_version"],
+            extension_hash=payload.get("extension_hash"),
             registry_json=payload,
-            jsonschema_blob=None,
+            jsonschema_blob=payload.get("registry_jsonschema"),
         )
         self.stdout.write(
             self.style.SUCCESS(

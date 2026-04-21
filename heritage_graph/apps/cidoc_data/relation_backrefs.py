@@ -5,7 +5,7 @@ Each row is (model, field_name, multivalued, references_domain) where
 references_domain is the ontology key of the *target* entity (e.g. "source", "deity").
 
 Keep in sync with:
-  - heritage_graph_ui/src/lib/ontology/registry.ts (relation fields: relationTo)
+  - Generated registry / LinkML (relation fields: relationTo on slots whose range is a class)
   - Django columns on models in apps.cidoc_data.models
 
 When new relation CharField/TextField columns are added to models, add a row here.

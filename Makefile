@@ -4,7 +4,7 @@
 # Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: ontology \
+.PHONY: ontology ontology-check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
         reset-dev-db migrate migrations shell seed seed-reset \
         docs-build docs-serve docs-clean \
@@ -36,6 +36,10 @@ NODE_PATH := PATH=$(NODE_BIN):$$PATH
 ontology:
 	python3 tools/linkml_generate_registry.py
 
+ontology-check:
+	@test ! -f "$(CURDIR)/Heritagegraph.yaml" || (echo "ERROR: Remove repo-root Heritagegraph.yaml — canonical ontology is ontology/HeritageGraph.yaml" >&2 && exit 1)
+	python3 tools/linkml_generate_registry.py --check
+
 # ================================================================
 # HELP
 # ================================================================
@@ -50,6 +54,7 @@ help:
 	@echo ""
 	@echo "  \033[1mDAILY USE\033[0m  (local dev — open one terminal per service)"
 	@echo "    make ontology       Regenerate registry.generated.* from ontology/HeritageGraph.yaml"
+	@echo "    make ontology-check Fail if registry.generated.* is out of date (CI)"
 	@echo "    make backend        Django API        →  http://localhost:8000"
 	@echo "    make frontend       Main app (UI)     →  http://localhost:3000"
 	@echo "    make landing        Marketing site    →  http://localhost:3001"

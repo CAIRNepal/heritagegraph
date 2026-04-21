@@ -1,5 +1,9 @@
 import { apiFetchJson, apiUrl } from "@/lib/api-client";
-import type { OntologyClass } from "./types";
+import type {
+  ContributeHubPayload,
+  OntologyClass,
+  RegistryJsonSchemaBlob,
+} from "./types";
 
 /** Payload matches specs/004-yaml-driven-schema/contracts/openapi-schema-registry.v1.yaml */
 export type OntologyRegistryPayload = {
@@ -8,7 +12,12 @@ export type OntologyRegistryPayload = {
   tenant_id?: string | null;
   degraded?: boolean;
   classes: Record<string, OntologyClass>;
-  enums: Record<string, { value: string; label: string; description?: string }[]>;
+  enums: Record<
+    string,
+    readonly { readonly value: string; readonly label: string; readonly description?: string }[]
+  >;
+  contribute_hub?: ContributeHubPayload;
+  registry_jsonschema?: RegistryJsonSchemaBlob;
 };
 
 const _mem: { version: string | null; data: OntologyRegistryPayload | null } = {

@@ -1,5 +1,5 @@
-import ContributeStructurePageClient from "./page-client";
+import { ContributeOntologyForm } from "@/components/contribute/ContributeOntologyForm";
 
 export default function ContributeStructurePage() {
-  return <ContributeStructurePageClient />;
+  return <ContributeOntologyForm ontologyKey="structure" />;
 }

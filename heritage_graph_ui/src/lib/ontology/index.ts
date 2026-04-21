@@ -1,20 +1,21 @@
 // Barrel export for ontology module
 export { ontologyEnums, type OntologyEnumOption } from "./enums";
 export {
-  ontologyClasses,
-  getOntologyClass,
-  getNavigableClasses,
-  getClassesByCategory,
-  categoryMeta,
-} from "./registry";
-export { OntologyProvider, useOntology } from "./OntologyProvider";
-export { mergeOntologyRegistries } from "./merge-registries";
+  OntologyProvider,
+  useOntology,
+  type CurationFormRole,
+} from "./OntologyProvider";
 export { loadOntologyRegistry, type OntologyRegistryPayload } from "./load-registry";
 export { validateRequiredFields } from "./useValidation";
 export type {
+  ContributeHubCategoryRow,
+  ContributeHubIntentRow,
+  ContributeHubPayload,
   OntologyField,
   OntologyColumn,
-  OntologySection,
   OntologyClass,
   OntologyRegistry,
+  RegistryJsonSchemaBlob,
 } from "./types";
+export type { FormFieldIR } from "./form-ir";
+export { validatePayloadAgainstRegistrySchema } from "./validate-registry-payload";

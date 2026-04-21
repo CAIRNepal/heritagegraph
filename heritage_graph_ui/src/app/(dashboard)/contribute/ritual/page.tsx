@@ -1,5 +1,5 @@
-import ContributeRitualPageClient from "./page-client";
+import { ContributeOntologyForm } from "@/components/contribute/ContributeOntologyForm";
 
 export default function ContributeRitualPage() {
-  return <ContributeRitualPageClient />;
+  return <ContributeOntologyForm ontologyKey="ritual" />;
 }

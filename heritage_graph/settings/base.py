@@ -210,6 +210,9 @@ HERITAGEGRAPH_SCHEMA_EXTENSION_PATH = os.environ.get(
     "HERITAGEGRAPH_SCHEMA_EXTENSION_PATH", ""
 )
 HERITAGEGRAPH_SCHEMA_CACHE_TTL = int(os.environ.get("HERITAGEGRAPH_SCHEMA_CACHE_TTL", "60"))
+HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH = os.environ.get(
+    "HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH", "false"
+).lower() in {"1", "true", "yes", "y", "on"}
 RDF_ENDPOINT_URL = os.environ.get("RDF_ENDPOINT_URL", "")
 RDF_SYNC_ENABLED = os.environ.get("RDF_SYNC_ENABLED", "false").lower() in {
     "1",

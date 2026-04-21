@@ -7,21 +7,55 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ReactNode,
 } from "react";
 import { useSession } from "next-auth/react";
-import { ontologyClasses } from "./registry";
-import { ontologyEnums } from "./enums";
+import { getPublicApiUrl } from "@/lib/api-base";
 import { generatedOntologyRegistry } from "./registry.generated";
 import { loadOntologyRegistry } from "./load-registry";
-import { mergeOntologyRegistries } from "./merge-registries";
-import type { OntologyClass, OntologyRegistry } from "./types";
+import type {
+  ContributeHubPayload,
+  OntologyClass,
+  OntologyRegistry,
+} from "./types";
+
+const emptyContributeHub: ContributeHubPayload = {
+  hubCategories: [],
+  intents: [],
+  quickStart: [],
+};
+
+function normalizeRegistry(
+  payload: Pick<OntologyRegistry, "classes" | "enums"> & {
+    contribute_hub?: ContributeHubPayload;
+    registry_jsonschema?: OntologyRegistry["registry_jsonschema"];
+    schema_version?: string;
+  }
+): OntologyRegistry {
+  return {
+    schema_version: payload.schema_version,
+    classes: payload.classes,
+    enums: payload.enums,
+    contribute_hub: payload.contribute_hub ?? emptyContributeHub,
+    registry_jsonschema: payload.registry_jsonschema,
+  };
+}
+
+export type CurationFormRole =
+  | "curator"
+  | "reviewer"
+  | "ontology_engineer";
 
 type OntologyCtx = {
   /** True after the first local/remote merge pass (usually instant; static baseline is always available). */
   ready: boolean;
   degraded: boolean;
+  /** Why the registry is degraded (used for user-facing copy). */
+  degradedReason: "snapshot" | "unconfigured_api" | "unauthenticated" | "unknown" | null;
   schemaVersion: string | null;
   registry: OntologyRegistry;
+  /** UI affordances for multi-role curation (MR4). */
+  formRole: CurationFormRole;
   reload: () => Promise<void>;
   getOntologyClass: (key: string) => OntologyClass | undefined;
   getNavigableClasses: () => OntologyClass[];
@@ -29,44 +63,88 @@ type OntologyCtx = {
 
 const OntologyContext = createContext<OntologyCtx | null>(null);
 
-const baseline: OntologyRegistry = {
-  classes: ontologyClasses,
-  enums: ontologyEnums,
+const gen = generatedOntologyRegistry as unknown as {
+  classes: OntologyRegistry["classes"];
+  enums: OntologyRegistry["enums"];
+  contribute_hub?: ContributeHubPayload;
 };
 
-export function OntologyProvider({ children }: { children: React.ReactNode }) {
+const baseline: OntologyRegistry = normalizeRegistry({
+  classes: gen.classes,
+  enums: gen.enums,
+  contribute_hub: gen.contribute_hub,
+  registry_jsonschema: (gen as { registry_jsonschema?: OntologyRegistry["registry_jsonschema"] })
+    .registry_jsonschema,
+  schema_version: (gen as { schema_version?: string }).schema_version,
+});
+
+export function OntologyProvider({
+  children,
+  formRole = "curator",
+}: {
+  children: ReactNode;
+  formRole?: CurationFormRole;
+}) {
   const { data: session, status } = useSession();
   const [registry, setRegistry] = useState<OntologyRegistry>(baseline);
   const [degraded, setDegraded] = useState(false);
+  const [degradedReason, setDegradedReason] =
+    useState<OntologyCtx["degradedReason"]>(null);
   const [schemaVersion, setSchemaVersion] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   const runLoad = useCallback(async () => {
+    // If NEXT_PUBLIC_API_URL is missing in a production build, do not attempt to fetch.
+    // A dedicated banner (`ApiBaseWarning`) already guides the user to set it.
+    if (!getPublicApiUrl()) {
+      setRegistry(baseline);
+      setSchemaVersion(null);
+      setDegraded(false);
+      setDegradedReason("unconfigured_api");
+      setReady(true);
+      return;
+    }
+
+    // Avoid treating an unauthenticated 401 as "schema API is down".
+    if (status !== "authenticated") {
+      setRegistry(baseline);
+      setSchemaVersion(null);
+      setDegraded(false);
+      setDegradedReason("unauthenticated");
+      setReady(true);
+      return;
+    }
+
     try {
       const token =
-        status === "authenticated"
-          ? (session as { accessToken?: string | null } | null)?.accessToken
-          : undefined;
+        (session as { accessToken?: string | null } | null)?.accessToken;
       const api = await loadOntologyRegistry(token);
-      setRegistry(mergeOntologyRegistries(baseline, api));
+      setRegistry(
+        normalizeRegistry({
+          ...api,
+          registry_jsonschema: api.registry_jsonschema,
+        })
+      );
       setSchemaVersion(api.schema_version);
       setDegraded(Boolean(api.degraded));
+      setDegradedReason(api.degraded ? "snapshot" : null);
     } catch {
       try {
-        const snap = generatedOntologyRegistry as unknown as {
-          classes: typeof ontologyClasses;
-          enums: typeof ontologyEnums;
-        };
         setRegistry(
-          mergeOntologyRegistries(baseline, {
-            classes: snap.classes as Record<string, OntologyClass>,
-            enums: snap.enums,
+          normalizeRegistry({
+            classes: gen.classes,
+            enums: gen.enums,
+            contribute_hub: gen.contribute_hub,
+            registry_jsonschema: (gen as { registry_jsonschema?: OntologyRegistry["registry_jsonschema"] })
+              .registry_jsonschema,
+            schema_version: (gen as { schema_version?: string }).schema_version,
           })
         );
       } catch {
         setRegistry(baseline);
       }
       setDegraded(true);
+      setDegradedReason("snapshot");
     } finally {
       setReady(true);
     }
@@ -90,8 +168,10 @@ export function OntologyProvider({ children }: { children: React.ReactNode }) {
     () => ({
       ready,
       degraded,
+      degradedReason,
       schemaVersion,
       registry,
+      formRole,
       reload: runLoad,
       getOntologyClass,
       getNavigableClasses,
@@ -99,8 +179,10 @@ export function OntologyProvider({ children }: { children: React.ReactNode }) {
     [
       ready,
       degraded,
+      degradedReason,
       schemaVersion,
       registry,
+      formRole,
       runLoad,
       getOntologyClass,
       getNavigableClasses,

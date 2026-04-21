@@ -5,21 +5,23 @@ Load and cache the effective ontology registry from LinkML YAML (see ontology_bu
 from __future__ import annotations
 
 import logging
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from django.conf import settings
 
-from apps.cidoc_data.ontology_builder import (
-    build_registry_document,
-    compute_schema_version,
-)
-
 logger = logging.getLogger(__name__)
 
 _CACHE: dict[str, Any] | None = None
 _CACHE_VERSION: str | None = None
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    h.update(path.read_bytes())
+    return h.hexdigest()[:64]
 
 
 def _schema_path() -> Path:
@@ -37,6 +39,15 @@ def _extension_path() -> Path | None:
 
 
 def build_fresh_payload() -> dict[str, Any]:
+    # Import lazily so the schema endpoint can still serve last-known-good DB rows
+    # even when LinkML dependencies are not installed in the runtime environment.
+    from apps.cidoc_data.ontology_builder import (
+        build_registry_document,
+        build_registry_jsonschema_blob,
+        compute_schema_version,
+        load_contribute_hub_payload,
+    )
+
     schema_path = _schema_path()
     if not schema_path.is_file():
         raise FileNotFoundError(f"HeritageGraph schema not found: {schema_path}")
@@ -45,13 +56,30 @@ def build_fresh_payload() -> dict[str, Any]:
     classes = doc["classes"]
     enums = doc["enums"]
     version = compute_schema_version(schema_path, ext, classes, enums)
+    ui_classmap_path = Path(settings.BASE_DIR).parent / "tools" / "ui-classmap.yaml"
+    contribute_hub_path = Path(settings.BASE_DIR).parent / "tools" / "contribute-hub.yaml"
+    core_parts = [schema_path.read_bytes(), b"\n"]
+    if ui_classmap_path.is_file():
+        core_parts.append(ui_classmap_path.read_bytes())
+    if contribute_hub_path.is_file():
+        core_parts.extend((b"\n", contribute_hub_path.read_bytes()))
+    ui_pres_path = Path(settings.BASE_DIR).parent / "tools" / "ui-presentation.yaml"
+    if ui_pres_path.is_file():
+        core_parts.extend((b"\n", ui_pres_path.read_bytes()))
+    core_hash = hashlib.sha256(b"".join(core_parts)).hexdigest()[:64]
+    contribute_hub = load_contribute_hub_payload(contribute_hub_path)
+    registry_jsonschema = build_registry_jsonschema_blob(classes)
     return {
         "schema_version": version,
+        "core_hash": core_hash,
+        "extension_hash": _sha256_file(ext) if ext else None,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "tenant_id": None,
         "degraded": False,
         "classes": classes,
         "enums": enums,
+        "contribute_hub": contribute_hub,
+        "registry_jsonschema": registry_jsonschema,
     }
 
 

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -12,7 +14,10 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
+import { AlertCircle } from "lucide-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
+import { useOntology } from "@/lib/ontology/OntologyProvider";
+import type { ContributeHubIntentRow } from "@/lib/ontology/types";
 
 interface ContributionIntent {
   key: string;
@@ -25,281 +30,6 @@ interface ContributionIntent {
   route: string;
   difficulty: "beginner" | "intermediate" | "advanced";
 }
-
-const categoryOrder = [
-  "tangible",
-  "events",
-  "kumari",
-  "conceptual",
-  "social",
-  "spacetime",
-  "provenance",
-] as const;
-
-const categoryMeta: Record<string, { label: string; icon: string }> = {
-  tangible: { label: "Tangible Heritage", icon: "🏛️" },
-  events: { label: "Events & Rituals", icon: "🔥" },
-  kumari: { label: "Living Goddess", icon: "👑" },
-  conceptual: { label: "Conceptual", icon: "✨" },
-  social: { label: "Social & People", icon: "👥" },
-  spacetime: { label: "Spaces & Time", icon: "🗺️" },
-  provenance: { label: "Sources", icon: "📚" },
-};
-
-const contributionIntents: ContributionIntent[] = [
-  // Tangible Heritage
-  {
-    key: "structure",
-    label: "Structure",
-    shortDescription: "Temples, stupas, rest houses, water spouts",
-    description:
-      "Record architectural heritage with location, condition, style, and Guthi links.",
-    icon: "🏛️",
-    category: "Tangible Heritage",
-    categoryKey: "tangible",
-    route: "/contribute/structure",
-    difficulty: "beginner",
-  },
-  {
-    key: "iconography",
-    label: "Iconographic Object",
-    shortDescription: "Paubha paintings, Murti statues, sacred art",
-    description:
-      "Document sacred visual art with deity depictions and provenance.",
-    icon: "🎨",
-    category: "Tangible Heritage",
-    categoryKey: "tangible",
-    route: "/contribute/iconography",
-    difficulty: "intermediate",
-  },
-  {
-    key: "monument",
-    label: "Buddhist Monument",
-    shortDescription: "Stupas, Chaityas, sacred structures",
-    description:
-      "Add Buddhist sacred structures with circumambulation and ritual patterns.",
-    icon: "⛩️",
-    category: "Tangible Heritage",
-    categoryKey: "tangible",
-    route: "/contribute/monument",
-    difficulty: "beginner",
-  },
-
-  // Events & Rituals
-  {
-    key: "ritual",
-    label: "Ritual",
-    shortDescription: "Puja, consecrations, processions",
-    description:
-      "Document rituals with deity invocation, performers, timing, and routes.",
-    icon: "🔥",
-    category: "Events & Rituals",
-    categoryKey: "events",
-    route: "/contribute/ritual",
-    difficulty: "intermediate",
-  },
-  {
-    key: "festival",
-    label: "Festival",
-    shortDescription: "Jatra processions, chariot festivals, dances",
-    description:
-      "Record large-scale community events with component rituals.",
-    icon: "🎪",
-    category: "Events & Rituals",
-    categoryKey: "events",
-    route: "/contribute/festival",
-    difficulty: "intermediate",
-  },
-  {
-    key: "event",
-    label: "Historical Event",
-    shortDescription: "Earthquakes, fires, political transitions",
-    description: "Log major events that affected heritage sites or practices.",
-    icon: "📅",
-    category: "Events & Rituals",
-    categoryKey: "events",
-    route: "/contribute/event",
-    difficulty: "beginner",
-  },
-
-  // Living Goddess (Kumari)
-  {
-    key: "kumari_tenure",
-    label: "Kumari Tenure",
-    shortDescription: "Period of divine embodiment",
-    description:
-      "Document a Kumari's tenure — person, deity, residence, and supporting Guthi.",
-    icon: "👑",
-    category: "Living Goddess (Kumari)",
-    categoryKey: "kumari",
-    route: "/contribute/kumari-tenure",
-    difficulty: "advanced",
-  },
-  {
-    key: "kumari_selection",
-    label: "Kumari Selection",
-    shortDescription: "Tantric selection ritual",
-    description:
-      "Document the 32 lakshana examination, horoscope matching, and fearlessness tests.",
-    icon: "🔍",
-    category: "Living Goddess (Kumari)",
-    categoryKey: "kumari",
-    route: "/contribute/kumari-selection",
-    difficulty: "advanced",
-  },
-  {
-    key: "kumari_retirement",
-    label: "Kumari Retirement",
-    shortDescription: "Return to secular status",
-    description:
-      "Record the formal event ending a Living Goddess tenure.",
-    icon: "🚪",
-    category: "Living Goddess (Kumari)",
-    categoryKey: "kumari",
-    route: "/contribute/kumari-retirement",
-    difficulty: "advanced",
-  },
-
-  // Conceptual Entities
-  {
-    key: "deity",
-    label: "Deity",
-    shortDescription: "Hindu, Buddhist, or syncretic divine entities",
-    description:
-      "Add divine entities with tradition, alternate names, and iconographic links.",
-    icon: "✨",
-    category: "Conceptual Entities",
-    categoryKey: "conceptual",
-    route: "/contribute/deity",
-    difficulty: "beginner",
-  },
-  {
-    key: "syncretism",
-    label: "Syncretic Relationship",
-    shortDescription: "Cross-tradition deity equivalences",
-    description:
-      "Map deity equivalences (e.g., Avalokiteshvara = Matsyendranath) with provenance.",
-    icon: "🔗",
-    category: "Conceptual Entities",
-    categoryKey: "conceptual",
-    route: "/contribute/syncretism",
-    difficulty: "advanced",
-  },
-
-  // Social Organizations
-  {
-    key: "guthi",
-    label: "Guthi Organization",
-    shortDescription: "Endowed trusts managing temples and rituals",
-    description:
-      "Register Guthi organizations with type, membership, and managed structures.",
-    icon: "🏘️",
-    category: "Social Organizations",
-    categoryKey: "social",
-    route: "/contribute/guthi",
-    difficulty: "intermediate",
-  },
-  {
-    key: "person",
-    label: "Historical Person",
-    shortDescription: "Kings, artisans, priests, scholars",
-    description:
-      "Record historical persons with biography and institutional affiliation.",
-    icon: "👤",
-    category: "Social Organizations",
-    categoryKey: "social",
-    route: "/contribute/person",
-    difficulty: "beginner",
-  },
-  {
-    key: "caste_group",
-    label: "Caste Group",
-    shortDescription: "Hereditary social groups (Jati)",
-    description:
-      "Document groups with specific ritual roles and occupational duties.",
-    icon: "👥",
-    category: "Social Organizations",
-    categoryKey: "social",
-    route: "/contribute/caste-group",
-    difficulty: "intermediate",
-  },
-
-  // Spaces & Time
-  {
-    key: "location",
-    label: "Place / Location",
-    shortDescription: "Geographic heritage locations",
-    description:
-      "Add locations where heritage structures exist and events occur.",
-    icon: "🗺️",
-    category: "Spaces & Time",
-    categoryKey: "spacetime",
-    route: "/contribute/location",
-    difficulty: "beginner",
-  },
-  {
-    key: "period",
-    label: "Historical Period",
-    shortDescription: "Lichhavi, Malla, and other eras",
-    description:
-      "Define time periods for contextualizing heritage.",
-    icon: "⏳",
-    category: "Spaces & Time",
-    categoryKey: "spacetime",
-    route: "/contribute/period",
-    difficulty: "beginner",
-  },
-  {
-    key: "calendar",
-    label: "Calendar System",
-    shortDescription: "Bikram Sambat, Nepal Sambat, etc.",
-    description:
-      "Register calendar systems with epoch dates and Gregorian conversion rules.",
-    icon: "📆",
-    category: "Spaces & Time",
-    categoryKey: "spacetime",
-    route: "/contribute/calendar",
-    difficulty: "intermediate",
-  },
-
-  // Sources & Provenance
-  {
-    key: "source",
-    label: "Source / Document",
-    shortDescription: "Books, records, oral histories, inscriptions",
-    description:
-      "Add sources with DataCite identifiers, citation, and language.",
-    icon: "📚",
-    category: "Sources & Provenance",
-    categoryKey: "provenance",
-    route: "/contribute/source",
-    difficulty: "beginner",
-  },
-  {
-    key: "documentation",
-    label: "Documentation Activity",
-    shortDescription: "Field surveys, interviews, archival research",
-    description:
-      "Log the process of recording heritage information.",
-    icon: "📋",
-    category: "Sources & Provenance",
-    categoryKey: "provenance",
-    route: "/contribute/documentation",
-    difficulty: "intermediate",
-  },
-  {
-    key: "assertion",
-    label: "Heritage Assertion",
-    shortDescription: "Factual claims with source and confidence",
-    description:
-      "Record a factual claim with explicit source, author, and confidence score.",
-    icon: "✅",
-    category: "Sources & Provenance",
-    categoryKey: "provenance",
-    route: "/contribute/assertion",
-    difficulty: "advanced",
-  },
-];
 
 const difficultyConfig: Record<
   string,
@@ -322,7 +52,29 @@ const difficultyConfig: Record<
   },
 };
 
-const quickStartKeys = ["structure", "source", "location", "person"];
+function buildIntents(
+  hubIntents: readonly ContributeHubIntentRow[],
+  categoryLabelByKey: Map<string, string>,
+  classLabelByKey: Map<string, string>
+): ContributionIntent[] {
+  const out: ContributionIntent[] = [];
+  for (const row of hubIntents) {
+    const label = classLabelByKey.get(row.registryKey);
+    if (!label) continue;
+    out.push({
+      key: row.registryKey,
+      label,
+      description: row.description,
+      shortDescription: row.shortDescription,
+      icon: row.emoji,
+      category: categoryLabelByKey.get(row.hubCategory) ?? row.hubCategory,
+      categoryKey: row.hubCategory,
+      route: row.route,
+      difficulty: row.difficulty,
+    });
+  }
+  return out;
+}
 
 function ContributionCard({
   intent,
@@ -383,6 +135,52 @@ function ContributionCard({
 }
 
 export default function ContributeDashboard() {
+  const { registry, reload, degradedReason } = useOntology();
+  const hub = registry.contribute_hub ?? {
+    hubCategories: [],
+    intents: [],
+    quickStart: [],
+  };
+
+  const categoryLabelByKey = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of hub.hubCategories) {
+      m.set(c.key, c.label);
+    }
+    return m;
+  }, [hub.hubCategories]);
+
+  const classLabelByKey = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const [k, cls] of Object.entries(registry.classes)) {
+      m.set(k, cls.label);
+    }
+    return m;
+  }, [registry.classes]);
+
+  const categoryOrder = useMemo(
+    () =>
+      [...hub.hubCategories]
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((c) => c.key),
+    [hub.hubCategories]
+  );
+
+  const categoryMeta = useMemo(() => {
+    const r: Record<string, { label: string; icon: string }> = {};
+    for (const c of hub.hubCategories) {
+      r[c.key] = { label: c.label, icon: c.icon };
+    }
+    return r;
+  }, [hub.hubCategories]);
+
+  const contributionIntents = useMemo(
+    () => buildIntents(hub.intents, categoryLabelByKey, classLabelByKey),
+    [hub.intents, categoryLabelByKey, classLabelByKey]
+  );
+
+  const quickStartKeys = hub.quickStart;
+
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
 
@@ -396,7 +194,7 @@ export default function ContributeDashboard() {
         i.description.toLowerCase().includes(q) ||
         i.category.toLowerCase().includes(q)
     );
-  }, [search]);
+  }, [search, contributionIntents]);
 
   const tabIntents = useMemo(() => {
     if (activeTab === "all") return filteredIntents;
@@ -405,9 +203,58 @@ export default function ContributeDashboard() {
 
   const isSearching = search.trim().length > 0;
 
+  if (contributionIntents.length === 0) {
+    const hubEmpty =
+      !hub.intents?.length &&
+      !hub.hubCategories?.length &&
+      !hub.quickStart?.length;
+    return (
+      <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
+        <Alert className="border-amber-200 bg-amber-50/80 dark:border-amber-900/50 dark:bg-amber-950/30">
+          <AlertCircle className="text-amber-700 dark:text-amber-400" />
+          <AlertTitle className="text-amber-950 dark:text-amber-100">
+            Contribution types could not be loaded
+          </AlertTitle>
+          <AlertDescription className="space-y-3 text-amber-950/90 dark:text-amber-100/90">
+            <p>
+              The contribute hub needs both <strong className="text-foreground">registry classes</strong>{" "}
+              and metadata from <code className="rounded bg-muted px-1 font-mono text-xs">contribute-hub</code>.
+              Right now nothing matched, so there are no cards to show.
+            </p>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
+              {hubEmpty ? (
+                <li>
+                  The loaded registry has <strong>no contribute hub data</strong> (often an
+                  old server snapshot). Sign in and retry, or ask an admin to run{" "}
+                  <code className="font-mono">python manage.py rebuild_schema_registry</code>.
+                </li>
+              ) : (
+                <li>
+                  Hub intents reference registry keys that are missing from{" "}
+                  <code className="font-mono">registry.classes</code>—check that{" "}
+                  <code className="font-mono">tools/contribute-hub.yaml</code>{" "}
+                  <code className="font-mono">registryKey</code> values match{" "}
+                  <code className="font-mono">tools/ui-classmap.yaml</code> <code className="font-mono">key</code>{" "}
+                  entries, then run <code className="font-mono">make ontology</code>.
+                </li>
+              )}
+              {degradedReason === "unauthenticated" ? (
+                <li>You are not signed in; only the bundled snapshot is used—sign in for the live registry.</li>
+              ) : null}
+            </ul>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button type="button" size="sm" onClick={() => void reload()}>
+                Retry loading schema
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Hero — compact and focused */}
       <motion.div
         initial="hidden"
         animate="show"
@@ -430,7 +277,6 @@ export default function ContributeDashboard() {
         </div>
       </motion.div>
 
-      {/* Search bar */}
       <motion.div
         initial="hidden"
         animate="show"
@@ -446,6 +292,7 @@ export default function ContributeDashboard() {
         />
         {search && (
           <button
+            type="button"
             onClick={() => setSearch("")}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           >
@@ -455,7 +302,6 @@ export default function ContributeDashboard() {
       </motion.div>
 
       {isSearching ? (
-        /* Search results */
         <motion.div
           initial="hidden"
           animate="show"
@@ -478,6 +324,7 @@ export default function ContributeDashboard() {
                 Try different keywords or browse the categories below
               </p>
               <button
+                type="button"
                 onClick={() => setSearch("")}
                 className="mt-3 text-sm text-blue-600 hover:underline"
               >
@@ -488,7 +335,6 @@ export default function ContributeDashboard() {
         </motion.div>
       ) : (
         <>
-          {/* Quick Start — featured beginner items */}
           <motion.div
             initial="hidden"
             animate="show"
@@ -515,7 +361,6 @@ export default function ContributeDashboard() {
             </div>
           </motion.div>
 
-          {/* Category tabs + cards */}
           <motion.div
             initial="hidden"
             animate="show"
@@ -535,6 +380,7 @@ export default function ContributeDashboard() {
                 </TabsTrigger>
                 {categoryOrder.map((catKey) => {
                   const meta = categoryMeta[catKey];
+                  if (!meta) return null;
                   const count = contributionIntents.filter(
                     (i) => i.categoryKey === catKey
                   ).length;

@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { apiFetch, apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 import { getPublicApiUrl } from "@/lib/api-base";
 
-interface SearchResult {
+export interface SearchResult {
   id: number | string;
   name: string;
   type?: string;
@@ -338,5 +338,3 @@ export function EntitySearch({
     </>
   );
 }
-
-export type { SearchResult };

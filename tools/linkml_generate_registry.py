@@ -30,7 +30,9 @@ def main() -> None:
 
     from apps.cidoc_data.ontology_builder import (
         build_registry_document,
+        build_registry_jsonschema_blob,
         compute_schema_version,
+        load_contribute_hub_payload,
     )
 
     schema_path = args.schema
@@ -42,12 +44,17 @@ def main() -> None:
     classes = doc["classes"]
     enums = doc["enums"]
     version = compute_schema_version(schema_path, None, classes, enums)
+    contribute_hub_path = ROOT / "tools" / "contribute-hub.yaml"
+    contribute_hub = load_contribute_hub_payload(contribute_hub_path)
+    registry_jsonschema = build_registry_jsonschema_blob(classes)
     payload = {
         "schema_version": version,
         "tenant_id": None,
         "degraded": False,
         "classes": classes,
         "enums": enums,
+        "contribute_hub": contribute_hub,
+        "registry_jsonschema": registry_jsonschema,
     }
 
     text = json.dumps(payload, indent=2) + "\n"

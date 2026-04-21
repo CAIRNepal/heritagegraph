@@ -1,14 +1,15 @@
 # Contract: Ontology schema registry (effective merged schema for UI + validation)
-# Authenticated; aligns with FR-004–FR-007, FR-021.
+# Public GET (no auth required); optional Bearer for client consistency. Aligns with FR-004–FR-007, FR-021.
 # Base URL pattern follows existing API: {API_ORIGIN}/api/v1/... or /cidoc/... (finalize in implementation).
 openapi: 3.0.3
 info:
   title: HeritageGraph — Ontology schema registry
   version: 1.0.0
   description: |
-    Returns the effective ontology registry for the authenticated principal's tenant
-    (single-tenant deployments use a default scope). Payload mirrors the frontend
-    OntologyRegistry shape (classes + enums). Include schema_version for cache invalidation.
+    Returns the effective ontology registry (single-tenant: default scope).
+    Payload mirrors the frontend OntologyRegistry shape (classes + enums).
+    Include schema_version for cache invalidation. Authentication is not required;
+    clients may send Authorization Bearer (e.g. Google ID token) but it is optional.
 
 servers:
   - url: /api/v1/cidoc
@@ -19,8 +20,7 @@ paths:
     get:
       summary: Get effective ontology registry (classes, enums, version)
       operationId: getOntologySchemaRegistry
-      security:
-        - bearerAuth: []
+      security: []
       parameters:
         - name: If-None-Match
           in: header
@@ -46,10 +46,6 @@ paths:
                 $ref: "#/components/schemas/OntologyRegistryResponse"
         "304":
           description: Not Modified — use cached body
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "503":
           description: Schema unavailable and no last-known-good snapshot
 
@@ -100,6 +96,10 @@ components:
             type: array
             items:
               $ref: "#/components/schemas/EnumValue"
+        contribute_hub:
+          $ref: "#/components/schemas/ContributeHubPayload"
+          nullable: true
+          description: Contribute landing metadata from tools/contribute-hub.yaml
       additionalProperties: false
 
     EnumValue:
@@ -153,6 +153,7 @@ components:
             - social
             - spatiotemporal
             - provenance
+            - kumari
         sections:
           type: array
           items:
@@ -213,6 +214,75 @@ components:
         slot_uri:
           type: string
           description: Optional RDF slot URI from LinkML for export
+        enum_range:
+          type: string
+          description: LinkML enum name when options were inlined from registry enums
+
+    ContributeHubPayload:
+      type: object
+      required:
+        - hubCategories
+        - intents
+        - quickStart
+      properties:
+        hubCategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContributeHubCategory"
+        intents:
+          type: array
+          items:
+            $ref: "#/components/schemas/ContributeHubIntent"
+        quickStart:
+          type: array
+          items:
+            type: string
+
+    ContributeHubCategory:
+      type: object
+      required:
+        - key
+        - label
+        - icon
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        icon:
+          type: string
+        order:
+          type: integer
+
+    ContributeHubIntent:
+      type: object
+      required:
+        - registryKey
+        - hubCategory
+        - route
+        - emoji
+        - shortDescription
+        - description
+        - difficulty
+      properties:
+        registryKey:
+          type: string
+        hubCategory:
+          type: string
+        route:
+          type: string
+        emoji:
+          type: string
+        shortDescription:
+          type: string
+        description:
+          type: string
+        difficulty:
+          type: string
+          enum:
+            - beginner
+            - intermediate
+            - advanced
 
     OntologyColumn:
       type: object

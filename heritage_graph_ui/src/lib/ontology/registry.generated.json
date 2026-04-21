@@ -1,12 +1,12 @@
 {
-  "schema_version": "0847ab572117f2bafaa41b597478720e60a0da72c17e8c69ea255ebc911be86f",
+  "schema_version": "9ba37ef68f1c74f02dddebfedf95e200df1ebd174c889eda2cb5db5a4173cadd",
   "tenant_id": null,
   "degraded": false,
   "classes": {
     "person": {
       "key": "person",
-      "label": "Person",
-      "labelPlural": "Persons",
+      "label": "Historical Person",
+      "labelPlural": "Historical Persons",
       "description": "Individual person who performs, commissions, documents, or verifies heritage activities",
       "classUri": "crm:E21_Person",
       "icon": "user",
@@ -27,6 +27,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -37,6 +38,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -47,9 +49,10 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Person's birth timespan",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "death_timespan",
@@ -58,9 +61,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": false,
           "description": "Person's death timespan",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "member_of_group",
@@ -69,9 +73,11 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Groups this person belongs to",
           "slot_uri": "crm:P107i_is_current_or_former_member_of",
-          "relationTo": "guthi"
+          "relationTo": "Guthi",
+          "relationEndpoint": "/cidoc/guthis/"
         },
         {
           "key": "carried_out_activity",
@@ -80,9 +86,11 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Activities performed by this actor",
           "slot_uri": "crm:P14i_performed",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "institutional_affiliation",
@@ -91,6 +99,7 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "Institutional affiliation (e.g., Tribhuvan University, Nepal Heritage Society)",
           "slot_uri": "heritageGraph:institutional_affiliation"
         },
@@ -101,6 +110,7 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": true,
           "description": "Areas of expertise (e.g., Lichhavi inscriptions, Sanskrit epigraphy, Newari archaeology)",
           "slot_uri": "heritageGraph:expertise_area"
         }
@@ -166,8 +176,8 @@
     },
     "location": {
       "key": "location",
-      "label": "Location",
-      "labelPlural": "Locations",
+      "label": "Place / Location",
+      "labelPlural": "Places / Locations",
       "description": "Defined geographic location where events occur and structures exist",
       "classUri": "crm:E53_Place",
       "icon": "map-pin",
@@ -188,6 +198,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -198,6 +209,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Coordinates as WKT literal",
           "slot_uri": "geo:asWKT"
         },
@@ -208,6 +220,7 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Type of place (city, village, region)",
           "slot_uri": "crm:P2_has_type"
         },
@@ -218,9 +231,11 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Structures located in this place",
           "slot_uri": "crm:P53i_is_former_or_current_location_of",
-          "relationTo": "architecturalstructure"
+          "relationTo": "ArchitecturalStructure",
+          "relationEndpoint": "/cidoc/structures/"
         }
       ],
       "columns": [
@@ -256,8 +271,8 @@
     },
     "event": {
       "key": "event",
-      "label": "Event",
-      "labelPlural": "Events",
+      "label": "Historical Event",
+      "labelPlural": "Historical Events",
       "description": "Major event affecting heritage structures or ritual life (earthquake, epidemic, political transition, fire, flood).",
       "classUri": "crm:E5_Event",
       "icon": "calendar",
@@ -278,6 +293,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -288,6 +304,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -298,9 +315,10 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Links event to its temporal extent",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "took_place_at",
@@ -309,9 +327,11 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": false,
           "description": "Place Where event occurred",
           "slot_uri": "crm:P7_took_place_at",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "architectural_structures",
@@ -320,9 +340,11 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Heritage structures affected by or present during this historical event",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
-          "relationTo": "architecturalstructure"
+          "relationTo": "ArchitecturalStructure",
+          "relationEndpoint": "/cidoc/structures/"
         },
         {
           "key": "includes_ritual_event",
@@ -331,9 +353,11 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Component rituals of festival",
           "slot_uri": "crm:P9_consists_of",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         }
       ],
       "columns": [
@@ -405,6 +429,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -415,6 +440,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         }
@@ -438,8 +464,8 @@
     },
     "source": {
       "key": "source",
-      "label": "Source",
-      "labelPlural": "Sources",
+      "label": "Source / Document",
+      "labelPlural": "Sources / Documents",
       "description": "A recorded piece of information about heritage",
       "classUri": "crm:E73_Information_Object",
       "icon": "book-open",
@@ -460,6 +486,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -470,6 +497,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Persistent identifier for the source (DOI, archive ID, catalog number)",
           "slot_uri": "datacite:identifier"
         },
@@ -480,6 +508,7 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Type of identifier (DOI, ISBN, Handle, LocalArchiveID)",
           "slot_uri": "datacite:identifierType"
         },
@@ -490,9 +519,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Person or organization primarily responsible for creating the source",
           "slot_uri": "datacite:creator",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "datacite_publisher",
@@ -501,9 +531,10 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": false,
           "description": "Entity responsible for making the source available",
           "slot_uri": "datacite:publisher",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "datacite_resource_type",
@@ -512,6 +543,7 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": false,
           "description": "High-level DataCite resource type (Dataset, Text, Image, Audio, Interview)",
           "slot_uri": "datacite:resourceType"
         },
@@ -522,9 +554,10 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "When source was published",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "source_citation",
@@ -533,6 +566,7 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": false,
           "description": "Formal citation of source",
           "slot_uri": "heritageGraph:source_citation"
         },
@@ -543,6 +577,7 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": false,
           "description": "URL or digital identifier for source",
           "slot_uri": "heritageGraph:source_url"
         },
@@ -553,6 +588,7 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": false,
           "description": "Language of the source material",
           "slot_uri": "crm:P72_has_language"
         },
@@ -563,6 +599,7 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -573,9 +610,11 @@
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": false,
           "description": "Entity that this information object describes",
           "slot_uri": "crm:P129_is_about",
-          "relationTo": "architecturalstructure"
+          "relationTo": "ArchitecturalStructure",
+          "relationEndpoint": "/cidoc/structures/"
         },
         {
           "key": "created_by_documentation",
@@ -584,9 +623,10 @@
           "section": "basic",
           "order": 13,
           "required": false,
+          "multivalued": false,
           "description": "Documentation activity that produced this information object",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "is_about_event",
@@ -595,9 +635,11 @@
           "section": "basic",
           "order": 14,
           "required": false,
+          "multivalued": false,
           "description": "Event that this information object describes",
           "slot_uri": "crm:P129_is_about",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "was_documented_by",
@@ -606,9 +648,10 @@
           "section": "basic",
           "order": 15,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         }
       ],
       "columns": [
@@ -694,6 +737,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -704,6 +748,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -714,9 +759,11 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": true,
           "description": "Religious tradition(s) within which this deity is venerated",
           "slot_uri": "crm:P2_has_type",
-          "relationTo": "religioustradition"
+          "relationTo": "ReligiousTradition",
+          "relationEndpoint": "/cidoc/traditions/"
         },
         {
           "key": "is_depicted_in",
@@ -725,8 +772,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "slot_uri": "crm:P62i_is_depicted_by",
-          "relationTo": "iconographicobject"
+          "relationTo": "IconographicObject",
+          "relationEndpoint": "/cidoc/iconographic_objects/"
         },
         {
           "key": "is_invoked_in_ritual",
@@ -735,9 +784,11 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Rituals where this deity is invoked",
           "slot_uri": "crm:P12i_was_present_at",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "is_enshrined_through_event",
@@ -746,9 +797,10 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Events where this deity was enshrined",
           "slot_uri": "heritageGraph:is_enshrined_through_event",
-          "relationTo": "enshrinement"
+          "relationTo": "Enshrinement"
         }
       ],
       "columns": [
@@ -820,6 +872,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -830,6 +883,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -840,8 +894,52 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Type of Guthi (Si, Jatra, Temple)",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "SiGuthi",
+              "label": "SiGuthi",
+              "description": "Funeral trust"
+            },
+            {
+              "value": "JatraGuthi",
+              "label": "JatraGuthi",
+              "description": "Festival organization trust"
+            },
+            {
+              "value": "PujaGuthi",
+              "label": "PujaGuthi",
+              "description": "Daily worship trust"
+            },
+            {
+              "value": "TempleGuthi",
+              "label": "TempleGuthi",
+              "description": "Temple maintenance trust"
+            },
+            {
+              "value": "NashaGuthi",
+              "label": "NashaGuthi",
+              "description": "Music and dance trust"
+            },
+            {
+              "value": "SanaGuthi",
+              "label": "SanaGuthi",
+              "description": "Agricultural cooperative trust"
+            },
+            {
+              "value": "SanGuthi",
+              "label": "SanGuthi",
+              "description": "Life-cycle ritual trust"
+            },
+            {
+              "value": "RajGuthi",
+              "label": "RajGuthi",
+              "description": "Royal endowment trust"
+            }
+          ],
+          "enum_range": "GuthiTypeEnum"
         },
         {
           "key": "performs_ritual",
@@ -850,9 +948,11 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Rituals performed by this Guthi",
           "slot_uri": "crm:P14i_performed",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "holds_custody_of",
@@ -861,9 +961,11 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Structures under Guthi custodianship",
           "slot_uri": "crm:P50_has_current_keeper",
-          "relationTo": "architecturalstructure"
+          "relationTo": "ArchitecturalStructure",
+          "relationEndpoint": "/cidoc/structures/"
         },
         {
           "key": "has_membership",
@@ -872,9 +974,11 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Members of Guthi organization",
           "slot_uri": "crm:P107_has_current_or_former_member",
-          "relationTo": "person"
+          "relationTo": "Person",
+          "relationEndpoint": "/cidoc/persons/"
         }
       ],
       "columns": [
@@ -946,6 +1050,7 @@
           "section": "basic",
           "order": 1,
           "required": true,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -956,9 +1061,13 @@
           "section": "basic",
           "order": 2,
           "required": true,
+          "multivalued": false,
           "description": "Current location of object or structure",
           "slot_uri": "crm:P55_has_current_location",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/",
+          "minimumCardinality": 1,
+          "maximumCardinality": 1
         },
         {
           "key": "was_produced_by_event",
@@ -967,9 +1076,10 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Event that created this object or structure",
           "slot_uri": "crm:P108i_was_produced_by",
-          "relationTo": "production"
+          "relationTo": "Production"
         },
         {
           "key": "has_condition_assessment",
@@ -978,9 +1088,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Condition assessment events for this structure",
           "slot_uri": "crm:P34i_was_assessed_by",
-          "relationTo": "conditionassessment"
+          "relationTo": "ConditionAssessment"
         },
         {
           "key": "participates_in_ritual",
@@ -989,9 +1100,11 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Rituals in which this structure participates",
           "slot_uri": "crm:P12i_was_present_at",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "has_custody_event",
@@ -1000,9 +1113,10 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Custody transfer events for this structure",
           "slot_uri": "crm:P30i_custody_transferred_through",
-          "relationTo": "transferofcustody"
+          "relationTo": "TransferOfCustody"
         },
         {
           "key": "was_documented_by",
@@ -1011,9 +1125,10 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "note",
@@ -1022,6 +1137,7 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -1032,9 +1148,10 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": false,
           "description": "Architectural elements composing structure",
           "slot_uri": "crm:P46_is_composed_of",
-          "relationTo": "architecturalelement"
+          "relationTo": "ArchitecturalElement"
         },
         {
           "key": "has_architectural_style",
@@ -1043,8 +1160,37 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": false,
           "description": "Architectural style classification",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "Pagoda",
+              "label": "Pagoda",
+              "description": "Multi-tiered roof style indigenous to Nepal"
+            },
+            {
+              "value": "Shikhara",
+              "label": "Shikhara",
+              "description": "North Indian spire-shaped style"
+            },
+            {
+              "value": "Dome",
+              "label": "Dome",
+              "description": "Dome-based style (Mughal/Neo-classical influence)"
+            },
+            {
+              "value": "Chaitya",
+              "label": "Chaitya",
+              "description": "Buddhist votive shrine style"
+            },
+            {
+              "value": "Stupa",
+              "label": "Stupa",
+              "description": "Buddhist dome-shaped reliquary"
+            }
+          ],
+          "enum_range": "ArchitecturalStyleEnum"
         },
         {
           "key": "existence_status",
@@ -1053,16 +1199,51 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Current physical status of the structure",
-          "slot_uri": "heritageGraph:existence_status"
+          "slot_uri": "heritageGraph:existence_status",
+          "options": [
+            {
+              "value": "Extant",
+              "label": "Extant",
+              "description": "Currently exists in physical form"
+            },
+            {
+              "value": "PartiallyExtant",
+              "label": "PartiallyExtant",
+              "description": "Fragments or ruins remain"
+            },
+            {
+              "value": "Destroyed",
+              "label": "Destroyed",
+              "description": "Known to have been destroyed; no physical remains"
+            },
+            {
+              "value": "Lost",
+              "label": "Lost",
+              "description": "Existence documented but location/remains unknown"
+            },
+            {
+              "value": "Hypothetical",
+              "label": "Hypothetical",
+              "description": "Reconstructed or theorized; never physically realized"
+            },
+            {
+              "value": "Unknown",
+              "label": "Unknown",
+              "description": "Existence status uncertain"
+            }
+          ],
+          "enum_range": "ExistenceStatusEnum"
         },
         {
           "key": "last_known_existence_date",
           "label": "Last Known Existence Date",
-          "type": "date",
+          "type": "text",
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": false,
           "description": "Latest date when this structure is documented as existing (ISO 8601)",
           "slot_uri": "heritageGraph:last_known_existence_date"
         },
@@ -1073,9 +1254,10 @@
           "section": "basic",
           "order": 13,
           "required": false,
+          "multivalued": false,
           "description": "Event that destroyed this structure (if known)",
           "slot_uri": "heritageGraph:destruction_event",
-          "relationTo": "destructionevent"
+          "relationTo": "DestructionEvent"
         },
         {
           "key": "hypothesized_location",
@@ -1084,9 +1266,11 @@
           "section": "basic",
           "order": 14,
           "required": false,
+          "multivalued": true,
           "description": "Possible locations if the structure is lost",
           "slot_uri": "heritageGraph:hypothesized_location",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "documented_in_source",
@@ -1095,9 +1279,11 @@
           "section": "basic",
           "order": 15,
           "required": false,
+          "multivalued": true,
           "description": "Sources that mention or document this entity",
           "slot_uri": "prov:wasDerivedFrom",
-          "relationTo": "datasource"
+          "relationTo": "DataSource",
+          "relationEndpoint": "/cidoc/data_sources/"
         },
         {
           "key": "has_provenance_assertion",
@@ -1106,9 +1292,11 @@
           "section": "basic",
           "order": 16,
           "required": false,
+          "multivalued": true,
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
-          "relationTo": "heritageassertion"
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/"
         }
       ],
       "columns": [
@@ -1194,6 +1382,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -1204,6 +1393,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -1214,8 +1404,107 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Classification of ritual (puja, jatra, consecration)",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "NityaPuja",
+              "label": "NityaPuja",
+              "description": "Daily mandatory worship"
+            },
+            {
+              "value": "NaimittikaPuja",
+              "label": "NaimittikaPuja",
+              "description": "Occasional/Festival worship"
+            },
+            {
+              "value": "KamyaPuja",
+              "label": "KamyaPuja",
+              "description": "Desire-based optional worship"
+            },
+            {
+              "value": "Abhisheka",
+              "label": "Abhisheka",
+              "description": "Ritual bathing/anointing of deity"
+            },
+            {
+              "value": "Homa",
+              "label": "Homa",
+              "description": "Fire offering ritual"
+            },
+            {
+              "value": "Bhajan",
+              "label": "Bhajan",
+              "description": "Devotional singing ritual"
+            },
+            {
+              "value": "Yagna",
+              "label": "Yagna",
+              "description": "Vedic sacrifice ritual"
+            },
+            {
+              "value": "Vrata",
+              "label": "Vrata",
+              "description": "Vow observance ritual"
+            },
+            {
+              "value": "Jatra",
+              "label": "Jatra",
+              "description": "Festival procession ritual"
+            },
+            {
+              "value": "ChariotProcession",
+              "label": "ChariotProcession",
+              "description": "Ritual chariot pulling"
+            },
+            {
+              "value": "MaskedPerformance",
+              "label": "MaskedPerformance",
+              "description": "Ritual masked dance"
+            },
+            {
+              "value": "RitualConsecration",
+              "label": "RitualConsecration",
+              "description": "Consecration/activation ritual"
+            },
+            {
+              "value": "ProcessionRitual",
+              "label": "ProcessionRitual",
+              "description": "Ritual procession/movement"
+            },
+            {
+              "value": "InstallationRitual",
+              "label": "InstallationRitual",
+              "description": "Installation/enshrinement ritual"
+            },
+            {
+              "value": "DeinstallationRitual",
+              "label": "DeinstallationRitual",
+              "description": "De-installation/conclusion ritual"
+            },
+            {
+              "value": "ReturningRitual",
+              "label": "ReturningRitual",
+              "description": "Return to normal state ritual"
+            },
+            {
+              "value": "Circumambulation",
+              "label": "Circumambulation",
+              "description": "Ritual circular movement around sacred site"
+            },
+            {
+              "value": "RelicTour",
+              "label": "RelicTour",
+              "description": "Procession with sacred relics between sites"
+            },
+            {
+              "value": "ProcessionalMovement",
+              "label": "ProcessionalMovement",
+              "description": "General ritual movement between locations"
+            }
+          ],
+          "enum_range": "RitualTypeEnum"
         },
         {
           "key": "ritual_on_structure",
@@ -1224,9 +1513,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": false,
           "description": "Ritual occurs at specific temple or monument",
           "slot_uri": "crm:P8_took_place_on_or_within",
-          "relationTo": "physicalheritagething"
+          "relationTo": "PhysicalHeritageThing"
         },
         {
           "key": "has_timespan",
@@ -1235,9 +1525,10 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": false,
           "description": "Links event to its temporal extent",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "lunar_date_tithi",
@@ -1246,6 +1537,7 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": false,
           "description": "Lunar day (Tithi) for ritual timing",
           "slot_uri": "heritageGraph:lunar_date_tithi"
         },
@@ -1256,6 +1548,7 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "Frequency of recurring ritual (e.g., annual, monthly)",
           "slot_uri": "heritageGraph:recurrence_pattern"
         },
@@ -1266,9 +1559,11 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": true,
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "carried_out_by",
@@ -1277,9 +1572,10 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": true,
           "description": "Actor(s) who performed this event",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "performed_by_group",
@@ -1288,6 +1584,7 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": true,
           "description": "Group (Guthi, caste) responsible for ritual",
           "slot_uri": "crm:P14_carried_out_by"
         },
@@ -1298,9 +1595,11 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
-          "relationTo": "festival"
+          "relationTo": "Festival",
+          "relationEndpoint": "/cidoc/festivals/"
         },
         {
           "key": "managed_by_guthi",
@@ -1309,9 +1608,11 @@
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": true,
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
-          "relationTo": "guthi"
+          "relationTo": "Guthi",
+          "relationEndpoint": "/cidoc/guthis/"
         },
         {
           "key": "was_documented_by",
@@ -1320,9 +1621,10 @@
           "section": "basic",
           "order": 13,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "has_provenance_assertion",
@@ -1331,9 +1633,11 @@
           "section": "basic",
           "order": 14,
           "required": false,
+          "multivalued": true,
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
-          "relationTo": "heritageassertion"
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/"
         },
         {
           "key": "occurs_before",
@@ -1342,9 +1646,11 @@
           "section": "basic",
           "order": 15,
           "required": false,
+          "multivalued": false,
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "occurs_after",
@@ -1353,9 +1659,11 @@
           "section": "basic",
           "order": 16,
           "required": false,
+          "multivalued": false,
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "used_materials",
@@ -1364,9 +1672,10 @@
           "section": "basic",
           "order": 17,
           "required": false,
+          "multivalued": true,
           "description": "Ephemeral materials consumed during the ritual (e.g., oil, rice).",
           "slot_uri": "crm:P125_used_object_of_type",
-          "relationTo": "material"
+          "relationTo": "Material"
         },
         {
           "key": "route_places",
@@ -1375,9 +1684,11 @@
           "section": "basic",
           "order": 18,
           "required": false,
+          "multivalued": true,
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "start_place",
@@ -1386,9 +1697,11 @@
           "section": "basic",
           "order": 19,
           "required": false,
+          "multivalued": false,
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "end_place",
@@ -1397,9 +1710,11 @@
           "section": "basic",
           "order": 20,
           "required": false,
+          "multivalued": false,
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "route_description",
@@ -1408,6 +1723,7 @@
           "section": "basic",
           "order": 21,
           "required": false,
+          "multivalued": false,
           "description": "Text description of the procession route",
           "slot_uri": "heritageGraph:route_description"
         }
@@ -1495,6 +1811,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -1505,6 +1822,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -1515,8 +1833,107 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Classification of ritual (puja, jatra, consecration)",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "NityaPuja",
+              "label": "NityaPuja",
+              "description": "Daily mandatory worship"
+            },
+            {
+              "value": "NaimittikaPuja",
+              "label": "NaimittikaPuja",
+              "description": "Occasional/Festival worship"
+            },
+            {
+              "value": "KamyaPuja",
+              "label": "KamyaPuja",
+              "description": "Desire-based optional worship"
+            },
+            {
+              "value": "Abhisheka",
+              "label": "Abhisheka",
+              "description": "Ritual bathing/anointing of deity"
+            },
+            {
+              "value": "Homa",
+              "label": "Homa",
+              "description": "Fire offering ritual"
+            },
+            {
+              "value": "Bhajan",
+              "label": "Bhajan",
+              "description": "Devotional singing ritual"
+            },
+            {
+              "value": "Yagna",
+              "label": "Yagna",
+              "description": "Vedic sacrifice ritual"
+            },
+            {
+              "value": "Vrata",
+              "label": "Vrata",
+              "description": "Vow observance ritual"
+            },
+            {
+              "value": "Jatra",
+              "label": "Jatra",
+              "description": "Festival procession ritual"
+            },
+            {
+              "value": "ChariotProcession",
+              "label": "ChariotProcession",
+              "description": "Ritual chariot pulling"
+            },
+            {
+              "value": "MaskedPerformance",
+              "label": "MaskedPerformance",
+              "description": "Ritual masked dance"
+            },
+            {
+              "value": "RitualConsecration",
+              "label": "RitualConsecration",
+              "description": "Consecration/activation ritual"
+            },
+            {
+              "value": "ProcessionRitual",
+              "label": "ProcessionRitual",
+              "description": "Ritual procession/movement"
+            },
+            {
+              "value": "InstallationRitual",
+              "label": "InstallationRitual",
+              "description": "Installation/enshrinement ritual"
+            },
+            {
+              "value": "DeinstallationRitual",
+              "label": "DeinstallationRitual",
+              "description": "De-installation/conclusion ritual"
+            },
+            {
+              "value": "ReturningRitual",
+              "label": "ReturningRitual",
+              "description": "Return to normal state ritual"
+            },
+            {
+              "value": "Circumambulation",
+              "label": "Circumambulation",
+              "description": "Ritual circular movement around sacred site"
+            },
+            {
+              "value": "RelicTour",
+              "label": "RelicTour",
+              "description": "Procession with sacred relics between sites"
+            },
+            {
+              "value": "ProcessionalMovement",
+              "label": "ProcessionalMovement",
+              "description": "General ritual movement between locations"
+            }
+          ],
+          "enum_range": "RitualTypeEnum"
         },
         {
           "key": "ritual_on_structure",
@@ -1525,9 +1942,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": false,
           "description": "Ritual occurs at specific temple or monument",
           "slot_uri": "crm:P8_took_place_on_or_within",
-          "relationTo": "physicalheritagething"
+          "relationTo": "PhysicalHeritageThing"
         },
         {
           "key": "has_timespan",
@@ -1536,9 +1954,10 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": false,
           "description": "Links event to its temporal extent",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "lunar_date_tithi",
@@ -1547,6 +1966,7 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": false,
           "description": "Lunar day (Tithi) for ritual timing",
           "slot_uri": "heritageGraph:lunar_date_tithi"
         },
@@ -1557,6 +1977,7 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "Frequency of recurring ritual (e.g., annual, monthly)",
           "slot_uri": "heritageGraph:recurrence_pattern"
         },
@@ -1567,9 +1988,11 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": true,
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "carried_out_by",
@@ -1578,9 +2001,10 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": true,
           "description": "Actor(s) who performed this event",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "performed_by_group",
@@ -1589,6 +2013,7 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": true,
           "description": "Group (Guthi, caste) responsible for ritual",
           "slot_uri": "crm:P14_carried_out_by"
         },
@@ -1599,9 +2024,11 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
-          "relationTo": "festival"
+          "relationTo": "Festival",
+          "relationEndpoint": "/cidoc/festivals/"
         },
         {
           "key": "managed_by_guthi",
@@ -1610,9 +2037,11 @@
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": true,
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
-          "relationTo": "guthi"
+          "relationTo": "Guthi",
+          "relationEndpoint": "/cidoc/guthis/"
         },
         {
           "key": "was_documented_by",
@@ -1621,9 +2050,10 @@
           "section": "basic",
           "order": 13,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "has_provenance_assertion",
@@ -1632,9 +2062,11 @@
           "section": "basic",
           "order": 14,
           "required": false,
+          "multivalued": true,
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
-          "relationTo": "heritageassertion"
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/"
         },
         {
           "key": "occurs_before",
@@ -1643,9 +2075,11 @@
           "section": "basic",
           "order": 15,
           "required": false,
+          "multivalued": false,
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "occurs_after",
@@ -1654,9 +2088,11 @@
           "section": "basic",
           "order": 16,
           "required": false,
+          "multivalued": false,
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "used_materials",
@@ -1665,9 +2101,10 @@
           "section": "basic",
           "order": 17,
           "required": false,
+          "multivalued": true,
           "description": "Ephemeral materials consumed during the ritual (e.g., oil, rice).",
           "slot_uri": "crm:P125_used_object_of_type",
-          "relationTo": "material"
+          "relationTo": "Material"
         },
         {
           "key": "route_places",
@@ -1676,9 +2113,11 @@
           "section": "basic",
           "order": 18,
           "required": false,
+          "multivalued": true,
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "start_place",
@@ -1687,9 +2126,11 @@
           "section": "basic",
           "order": 19,
           "required": false,
+          "multivalued": false,
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "end_place",
@@ -1698,9 +2139,11 @@
           "section": "basic",
           "order": 20,
           "required": false,
+          "multivalued": false,
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "route_description",
@@ -1709,6 +2152,7 @@
           "section": "basic",
           "order": 21,
           "required": false,
+          "multivalued": false,
           "description": "Text description of the procession route",
           "slot_uri": "heritageGraph:route_description"
         },
@@ -1719,9 +2163,11 @@
           "section": "basic",
           "order": 22,
           "required": false,
+          "multivalued": true,
           "description": "Component rituals of festival",
           "slot_uri": "crm:P9_consists_of",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         }
       ],
       "columns": [
@@ -1807,6 +2253,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -1817,9 +2264,11 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Current location of object or structure",
           "slot_uri": "crm:P55_has_current_location",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "was_produced_by_event",
@@ -1828,9 +2277,10 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Event that created this object or structure",
           "slot_uri": "crm:P108i_was_produced_by",
-          "relationTo": "production"
+          "relationTo": "Production"
         },
         {
           "key": "has_condition_assessment",
@@ -1839,9 +2289,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Condition assessment events for this structure",
           "slot_uri": "crm:P34i_was_assessed_by",
-          "relationTo": "conditionassessment"
+          "relationTo": "ConditionAssessment"
         },
         {
           "key": "participates_in_ritual",
@@ -1850,9 +2301,11 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Rituals in which this structure participates",
           "slot_uri": "crm:P12i_was_present_at",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "has_custody_event",
@@ -1861,9 +2314,10 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Custody transfer events for this structure",
           "slot_uri": "crm:P30i_custody_transferred_through",
-          "relationTo": "transferofcustody"
+          "relationTo": "TransferOfCustody"
         },
         {
           "key": "was_documented_by",
@@ -1872,9 +2326,10 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "note",
@@ -1883,6 +2338,7 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -1893,9 +2349,11 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": true,
           "description": "Deity depicted iconographically (not cultic presence)",
           "slot_uri": "crm:P62_depicts",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "used_by",
@@ -1904,9 +2362,10 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": true,
           "description": "Actor(s) who use, handle, or are responsible for this object in ritual contexts",
           "slot_uri": "heritageGraph:used_by",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         }
       ],
       "columns": [
@@ -1992,6 +2451,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -2002,9 +2462,11 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Current location of object or structure",
           "slot_uri": "crm:P55_has_current_location",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "was_produced_by_event",
@@ -2013,9 +2475,10 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Event that created this object or structure",
           "slot_uri": "crm:P108i_was_produced_by",
-          "relationTo": "production"
+          "relationTo": "Production"
         },
         {
           "key": "has_condition_assessment",
@@ -2024,9 +2487,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Condition assessment events for this structure",
           "slot_uri": "crm:P34i_was_assessed_by",
-          "relationTo": "conditionassessment"
+          "relationTo": "ConditionAssessment"
         },
         {
           "key": "participates_in_ritual",
@@ -2035,9 +2499,11 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Rituals in which this structure participates",
           "slot_uri": "crm:P12i_was_present_at",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "has_custody_event",
@@ -2046,9 +2512,10 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Custody transfer events for this structure",
           "slot_uri": "crm:P30i_custody_transferred_through",
-          "relationTo": "transferofcustody"
+          "relationTo": "TransferOfCustody"
         },
         {
           "key": "was_documented_by",
@@ -2057,9 +2524,10 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "note",
@@ -2068,6 +2536,7 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -2078,9 +2547,10 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": false,
           "description": "Architectural elements composing structure",
           "slot_uri": "crm:P46_is_composed_of",
-          "relationTo": "architecturalelement"
+          "relationTo": "ArchitecturalElement"
         },
         {
           "key": "has_architectural_style",
@@ -2089,8 +2559,37 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": false,
           "description": "Architectural style classification",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "Pagoda",
+              "label": "Pagoda",
+              "description": "Multi-tiered roof style indigenous to Nepal"
+            },
+            {
+              "value": "Shikhara",
+              "label": "Shikhara",
+              "description": "North Indian spire-shaped style"
+            },
+            {
+              "value": "Dome",
+              "label": "Dome",
+              "description": "Dome-based style (Mughal/Neo-classical influence)"
+            },
+            {
+              "value": "Chaitya",
+              "label": "Chaitya",
+              "description": "Buddhist votive shrine style"
+            },
+            {
+              "value": "Stupa",
+              "label": "Stupa",
+              "description": "Buddhist dome-shaped reliquary"
+            }
+          ],
+          "enum_range": "ArchitecturalStyleEnum"
         },
         {
           "key": "existence_status",
@@ -2099,16 +2598,51 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Current physical status of the structure",
-          "slot_uri": "heritageGraph:existence_status"
+          "slot_uri": "heritageGraph:existence_status",
+          "options": [
+            {
+              "value": "Extant",
+              "label": "Extant",
+              "description": "Currently exists in physical form"
+            },
+            {
+              "value": "PartiallyExtant",
+              "label": "PartiallyExtant",
+              "description": "Fragments or ruins remain"
+            },
+            {
+              "value": "Destroyed",
+              "label": "Destroyed",
+              "description": "Known to have been destroyed; no physical remains"
+            },
+            {
+              "value": "Lost",
+              "label": "Lost",
+              "description": "Existence documented but location/remains unknown"
+            },
+            {
+              "value": "Hypothetical",
+              "label": "Hypothetical",
+              "description": "Reconstructed or theorized; never physically realized"
+            },
+            {
+              "value": "Unknown",
+              "label": "Unknown",
+              "description": "Existence status uncertain"
+            }
+          ],
+          "enum_range": "ExistenceStatusEnum"
         },
         {
           "key": "last_known_existence_date",
           "label": "Last Known Existence Date",
-          "type": "date",
+          "type": "text",
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": false,
           "description": "Latest date when this structure is documented as existing (ISO 8601)",
           "slot_uri": "heritageGraph:last_known_existence_date"
         },
@@ -2119,9 +2653,10 @@
           "section": "basic",
           "order": 13,
           "required": false,
+          "multivalued": false,
           "description": "Event that destroyed this structure (if known)",
           "slot_uri": "heritageGraph:destruction_event",
-          "relationTo": "destructionevent"
+          "relationTo": "DestructionEvent"
         },
         {
           "key": "hypothesized_location",
@@ -2130,9 +2665,11 @@
           "section": "basic",
           "order": 14,
           "required": false,
+          "multivalued": true,
           "description": "Possible locations if the structure is lost",
           "slot_uri": "heritageGraph:hypothesized_location",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "documented_in_source",
@@ -2141,9 +2678,11 @@
           "section": "basic",
           "order": 15,
           "required": false,
+          "multivalued": true,
           "description": "Sources that mention or document this entity",
           "slot_uri": "prov:wasDerivedFrom",
-          "relationTo": "datasource"
+          "relationTo": "DataSource",
+          "relationEndpoint": "/cidoc/data_sources/"
         },
         {
           "key": "has_provenance_assertion",
@@ -2152,9 +2691,11 @@
           "section": "basic",
           "order": 16,
           "required": false,
+          "multivalued": true,
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
-          "relationTo": "heritageassertion"
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/"
         }
       ],
       "columns": [
@@ -2224,7 +2765,7 @@
       "classUri": "crm:E4_Period",
       "icon": "crown",
       "apiEndpoint": "/cidoc/kumari_tenures/",
-      "category": "event",
+      "category": "kumari",
       "navigable": true,
       "sections": [
         {
@@ -2240,6 +2781,7 @@
           "section": "basic",
           "order": 1,
           "required": true,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -2250,8 +2792,9 @@
           "section": "basic",
           "order": 2,
           "required": true,
+          "multivalued": true,
           "slot_uri": "crm:P11_had_participant",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "embodied_deity",
@@ -2260,9 +2803,11 @@
           "section": "basic",
           "order": 3,
           "required": true,
+          "multivalued": false,
           "description": "Deity role embodied by participant",
           "slot_uri": "crm:P14.1_in_the_role_of",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "residence_structure",
@@ -2271,9 +2816,11 @@
           "section": "basic",
           "order": 4,
           "required": true,
+          "multivalued": false,
           "description": "Structure where a person resides during a specific period. For Living Goddess, this is typically a Kumari Ghar (god-house).",
           "slot_uri": "crm:P74_has_current_or_former_residence",
-          "relationTo": "architecturalstructure"
+          "relationTo": "ArchitecturalStructure",
+          "relationEndpoint": "/cidoc/structures/"
         },
         {
           "key": "has_timespan",
@@ -2282,9 +2829,10 @@
           "section": "basic",
           "order": 5,
           "required": true,
+          "multivalued": false,
           "description": "Links event to its temporal extent",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "supported_by_institution",
@@ -2293,9 +2841,11 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Institution(s) providing economic support (stipend, land endowment) or ritual support (priest salaries) for a Living Goddess during tenure. Extends Guthi role beyond structure management to person support.",
           "slot_uri": "heritageGraph:supported_by_institution",
-          "relationTo": "guthi"
+          "relationTo": "Guthi",
+          "relationEndpoint": "/cidoc/guthis/"
         },
         {
           "key": "has_retirement_event",
@@ -2304,9 +2854,11 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "Retirement event that ended this Living Goddess tenure",
           "slot_uri": "heritageGraph:has_retirement_event",
-          "relationTo": "livinggoddessretirement"
+          "relationTo": "LivingGoddessRetirement",
+          "relationEndpoint": "/cidoc/kumari_retirements/"
         },
         {
           "key": "was_documented_by",
@@ -2315,9 +2867,10 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         }
       ],
       "columns": [
@@ -2387,7 +2940,7 @@
       "classUri": "heritageGraph:LivingGoddessSelection",
       "icon": "crown",
       "apiEndpoint": "/cidoc/kumari_selections/",
-      "category": "event",
+      "category": "kumari",
       "navigable": true,
       "sections": [
         {
@@ -2403,6 +2956,7 @@
           "section": "basic",
           "order": 1,
           "required": true,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -2413,6 +2967,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -2423,8 +2978,107 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Classification of ritual (puja, jatra, consecration)",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "NityaPuja",
+              "label": "NityaPuja",
+              "description": "Daily mandatory worship"
+            },
+            {
+              "value": "NaimittikaPuja",
+              "label": "NaimittikaPuja",
+              "description": "Occasional/Festival worship"
+            },
+            {
+              "value": "KamyaPuja",
+              "label": "KamyaPuja",
+              "description": "Desire-based optional worship"
+            },
+            {
+              "value": "Abhisheka",
+              "label": "Abhisheka",
+              "description": "Ritual bathing/anointing of deity"
+            },
+            {
+              "value": "Homa",
+              "label": "Homa",
+              "description": "Fire offering ritual"
+            },
+            {
+              "value": "Bhajan",
+              "label": "Bhajan",
+              "description": "Devotional singing ritual"
+            },
+            {
+              "value": "Yagna",
+              "label": "Yagna",
+              "description": "Vedic sacrifice ritual"
+            },
+            {
+              "value": "Vrata",
+              "label": "Vrata",
+              "description": "Vow observance ritual"
+            },
+            {
+              "value": "Jatra",
+              "label": "Jatra",
+              "description": "Festival procession ritual"
+            },
+            {
+              "value": "ChariotProcession",
+              "label": "ChariotProcession",
+              "description": "Ritual chariot pulling"
+            },
+            {
+              "value": "MaskedPerformance",
+              "label": "MaskedPerformance",
+              "description": "Ritual masked dance"
+            },
+            {
+              "value": "RitualConsecration",
+              "label": "RitualConsecration",
+              "description": "Consecration/activation ritual"
+            },
+            {
+              "value": "ProcessionRitual",
+              "label": "ProcessionRitual",
+              "description": "Ritual procession/movement"
+            },
+            {
+              "value": "InstallationRitual",
+              "label": "InstallationRitual",
+              "description": "Installation/enshrinement ritual"
+            },
+            {
+              "value": "DeinstallationRitual",
+              "label": "DeinstallationRitual",
+              "description": "De-installation/conclusion ritual"
+            },
+            {
+              "value": "ReturningRitual",
+              "label": "ReturningRitual",
+              "description": "Return to normal state ritual"
+            },
+            {
+              "value": "Circumambulation",
+              "label": "Circumambulation",
+              "description": "Ritual circular movement around sacred site"
+            },
+            {
+              "value": "RelicTour",
+              "label": "RelicTour",
+              "description": "Procession with sacred relics between sites"
+            },
+            {
+              "value": "ProcessionalMovement",
+              "label": "ProcessionalMovement",
+              "description": "General ritual movement between locations"
+            }
+          ],
+          "enum_range": "RitualTypeEnum"
         },
         {
           "key": "ritual_on_structure",
@@ -2433,9 +3087,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": false,
           "description": "Ritual occurs at specific temple or monument",
           "slot_uri": "crm:P8_took_place_on_or_within",
-          "relationTo": "physicalheritagething"
+          "relationTo": "PhysicalHeritageThing"
         },
         {
           "key": "has_timespan",
@@ -2444,9 +3099,10 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": false,
           "description": "Links event to its temporal extent",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "lunar_date_tithi",
@@ -2455,6 +3111,7 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": false,
           "description": "Lunar day (Tithi) for ritual timing",
           "slot_uri": "heritageGraph:lunar_date_tithi"
         },
@@ -2465,6 +3122,7 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "Frequency of recurring ritual (e.g., annual, monthly)",
           "slot_uri": "heritageGraph:recurrence_pattern"
         },
@@ -2475,9 +3133,11 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": true,
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "carried_out_by",
@@ -2486,9 +3146,10 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": true,
           "description": "Actor(s) who performed this event",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "performed_by_group",
@@ -2497,6 +3158,7 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": true,
           "description": "Group (Guthi, caste) responsible for ritual",
           "slot_uri": "crm:P14_carried_out_by"
         },
@@ -2507,9 +3169,11 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
-          "relationTo": "festival"
+          "relationTo": "Festival",
+          "relationEndpoint": "/cidoc/festivals/"
         },
         {
           "key": "managed_by_guthi",
@@ -2518,9 +3182,11 @@
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": true,
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
-          "relationTo": "guthi"
+          "relationTo": "Guthi",
+          "relationEndpoint": "/cidoc/guthis/"
         },
         {
           "key": "was_documented_by",
@@ -2529,9 +3195,10 @@
           "section": "basic",
           "order": 13,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "has_provenance_assertion",
@@ -2540,9 +3207,11 @@
           "section": "basic",
           "order": 14,
           "required": false,
+          "multivalued": true,
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
-          "relationTo": "heritageassertion"
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/"
         },
         {
           "key": "occurs_before",
@@ -2551,9 +3220,11 @@
           "section": "basic",
           "order": 15,
           "required": false,
+          "multivalued": false,
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "occurs_after",
@@ -2562,9 +3233,11 @@
           "section": "basic",
           "order": 16,
           "required": false,
+          "multivalued": false,
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "used_materials",
@@ -2573,9 +3246,10 @@
           "section": "basic",
           "order": 17,
           "required": false,
+          "multivalued": true,
           "description": "Ephemeral materials consumed during the ritual (e.g., oil, rice).",
           "slot_uri": "crm:P125_used_object_of_type",
-          "relationTo": "material"
+          "relationTo": "Material"
         },
         {
           "key": "route_places",
@@ -2584,9 +3258,11 @@
           "section": "basic",
           "order": 18,
           "required": false,
+          "multivalued": true,
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "start_place",
@@ -2595,9 +3271,11 @@
           "section": "basic",
           "order": 19,
           "required": false,
+          "multivalued": false,
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "end_place",
@@ -2606,9 +3284,11 @@
           "section": "basic",
           "order": 20,
           "required": false,
+          "multivalued": false,
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "route_description",
@@ -2617,6 +3297,7 @@
           "section": "basic",
           "order": 21,
           "required": false,
+          "multivalued": false,
           "description": "Text description of the procession route",
           "slot_uri": "heritageGraph:route_description"
         },
@@ -2627,9 +3308,11 @@
           "section": "basic",
           "order": 22,
           "required": true,
+          "multivalued": false,
           "description": "Person selected through a ritual selection process to assume a sacred role or office",
           "slot_uri": "heritageGraph:selected_person",
-          "relationTo": "person"
+          "relationTo": "Person",
+          "relationEndpoint": "/cidoc/persons/"
         },
         {
           "key": "initiated_tenure",
@@ -2638,9 +3321,11 @@
           "section": "basic",
           "order": 23,
           "required": true,
+          "multivalued": false,
           "description": "Living Goddess tenure that was initiated by this selection event",
           "slot_uri": "heritageGraph:initiated_tenure",
-          "relationTo": "livinggoddesstenure"
+          "relationTo": "LivingGoddessTenure",
+          "relationEndpoint": "/cidoc/kumari_tenures/"
         },
         {
           "key": "took_place_at",
@@ -2649,9 +3334,11 @@
           "section": "basic",
           "order": 24,
           "required": false,
+          "multivalued": false,
           "description": "Place Where event occurred",
           "slot_uri": "crm:P7_took_place_at",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "selection_criteria_met",
@@ -2660,16 +3347,18 @@
           "section": "basic",
           "order": 25,
           "required": false,
+          "multivalued": true,
           "description": "List of selection criteria verified during Living Goddess selection process (e.g., '32 lakshana present', 'No scars or blemishes', 'Horoscope compatible with city', 'Passed fearlessness test')",
           "slot_uri": "heritageGraph:selection_criteria_met"
         },
         {
           "key": "is_critical_for_festival",
           "label": "Is Critical For Festival",
-          "type": "boolean",
+          "type": "text",
           "section": "basic",
           "order": 26,
           "required": false,
+          "multivalued": false,
           "description": "Whether this ritual is essential for the festival's completion",
           "slot_uri": "heritageGraph:is_critical_for_festival"
         }
@@ -2741,7 +3430,7 @@
       "classUri": "heritageGraph:LivingGoddessRetirement",
       "icon": "crown",
       "apiEndpoint": "/cidoc/kumari_retirements/",
-      "category": "event",
+      "category": "kumari",
       "navigable": true,
       "sections": [
         {
@@ -2757,6 +3446,7 @@
           "section": "basic",
           "order": 1,
           "required": true,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -2767,6 +3457,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -2777,8 +3468,107 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Classification of ritual (puja, jatra, consecration)",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "NityaPuja",
+              "label": "NityaPuja",
+              "description": "Daily mandatory worship"
+            },
+            {
+              "value": "NaimittikaPuja",
+              "label": "NaimittikaPuja",
+              "description": "Occasional/Festival worship"
+            },
+            {
+              "value": "KamyaPuja",
+              "label": "KamyaPuja",
+              "description": "Desire-based optional worship"
+            },
+            {
+              "value": "Abhisheka",
+              "label": "Abhisheka",
+              "description": "Ritual bathing/anointing of deity"
+            },
+            {
+              "value": "Homa",
+              "label": "Homa",
+              "description": "Fire offering ritual"
+            },
+            {
+              "value": "Bhajan",
+              "label": "Bhajan",
+              "description": "Devotional singing ritual"
+            },
+            {
+              "value": "Yagna",
+              "label": "Yagna",
+              "description": "Vedic sacrifice ritual"
+            },
+            {
+              "value": "Vrata",
+              "label": "Vrata",
+              "description": "Vow observance ritual"
+            },
+            {
+              "value": "Jatra",
+              "label": "Jatra",
+              "description": "Festival procession ritual"
+            },
+            {
+              "value": "ChariotProcession",
+              "label": "ChariotProcession",
+              "description": "Ritual chariot pulling"
+            },
+            {
+              "value": "MaskedPerformance",
+              "label": "MaskedPerformance",
+              "description": "Ritual masked dance"
+            },
+            {
+              "value": "RitualConsecration",
+              "label": "RitualConsecration",
+              "description": "Consecration/activation ritual"
+            },
+            {
+              "value": "ProcessionRitual",
+              "label": "ProcessionRitual",
+              "description": "Ritual procession/movement"
+            },
+            {
+              "value": "InstallationRitual",
+              "label": "InstallationRitual",
+              "description": "Installation/enshrinement ritual"
+            },
+            {
+              "value": "DeinstallationRitual",
+              "label": "DeinstallationRitual",
+              "description": "De-installation/conclusion ritual"
+            },
+            {
+              "value": "ReturningRitual",
+              "label": "ReturningRitual",
+              "description": "Return to normal state ritual"
+            },
+            {
+              "value": "Circumambulation",
+              "label": "Circumambulation",
+              "description": "Ritual circular movement around sacred site"
+            },
+            {
+              "value": "RelicTour",
+              "label": "RelicTour",
+              "description": "Procession with sacred relics between sites"
+            },
+            {
+              "value": "ProcessionalMovement",
+              "label": "ProcessionalMovement",
+              "description": "General ritual movement between locations"
+            }
+          ],
+          "enum_range": "RitualTypeEnum"
         },
         {
           "key": "ritual_on_structure",
@@ -2787,9 +3577,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": false,
           "description": "Ritual occurs at specific temple or monument",
           "slot_uri": "crm:P8_took_place_on_or_within",
-          "relationTo": "physicalheritagething"
+          "relationTo": "PhysicalHeritageThing"
         },
         {
           "key": "has_timespan",
@@ -2798,9 +3589,10 @@
           "section": "basic",
           "order": 5,
           "required": true,
+          "multivalued": false,
           "description": "Links event to its temporal extent",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "lunar_date_tithi",
@@ -2809,6 +3601,7 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": false,
           "description": "Lunar day (Tithi) for ritual timing",
           "slot_uri": "heritageGraph:lunar_date_tithi"
         },
@@ -2819,6 +3612,7 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "Frequency of recurring ritual (e.g., annual, monthly)",
           "slot_uri": "heritageGraph:recurrence_pattern"
         },
@@ -2829,9 +3623,11 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": true,
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "carried_out_by",
@@ -2840,9 +3636,10 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": true,
           "description": "Actor(s) who performed this event",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "performed_by_group",
@@ -2851,6 +3648,7 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": true,
           "description": "Group (Guthi, caste) responsible for ritual",
           "slot_uri": "crm:P14_carried_out_by"
         },
@@ -2861,9 +3659,11 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
-          "relationTo": "festival"
+          "relationTo": "Festival",
+          "relationEndpoint": "/cidoc/festivals/"
         },
         {
           "key": "managed_by_guthi",
@@ -2872,9 +3672,11 @@
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": true,
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
-          "relationTo": "guthi"
+          "relationTo": "Guthi",
+          "relationEndpoint": "/cidoc/guthis/"
         },
         {
           "key": "was_documented_by",
@@ -2883,9 +3685,10 @@
           "section": "basic",
           "order": 13,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "has_provenance_assertion",
@@ -2894,9 +3697,11 @@
           "section": "basic",
           "order": 14,
           "required": false,
+          "multivalued": true,
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
-          "relationTo": "heritageassertion"
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/"
         },
         {
           "key": "occurs_before",
@@ -2905,9 +3710,11 @@
           "section": "basic",
           "order": 15,
           "required": false,
+          "multivalued": false,
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "occurs_after",
@@ -2916,9 +3723,11 @@
           "section": "basic",
           "order": 16,
           "required": false,
+          "multivalued": false,
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "used_materials",
@@ -2927,9 +3736,10 @@
           "section": "basic",
           "order": 17,
           "required": false,
+          "multivalued": true,
           "description": "Ephemeral materials consumed during the ritual (e.g., oil, rice).",
           "slot_uri": "crm:P125_used_object_of_type",
-          "relationTo": "material"
+          "relationTo": "Material"
         },
         {
           "key": "route_places",
@@ -2938,9 +3748,11 @@
           "section": "basic",
           "order": 18,
           "required": false,
+          "multivalued": true,
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "start_place",
@@ -2949,9 +3761,11 @@
           "section": "basic",
           "order": 19,
           "required": false,
+          "multivalued": false,
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "end_place",
@@ -2960,9 +3774,11 @@
           "section": "basic",
           "order": 20,
           "required": false,
+          "multivalued": false,
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         },
         {
           "key": "route_description",
@@ -2971,6 +3787,7 @@
           "section": "basic",
           "order": 21,
           "required": false,
+          "multivalued": false,
           "description": "Text description of the procession route",
           "slot_uri": "heritageGraph:route_description"
         },
@@ -2981,9 +3798,11 @@
           "section": "basic",
           "order": 22,
           "required": true,
+          "multivalued": false,
           "description": "Points from a LivingGoddessRetirement event to the tenure that it terminated. Enables reconstruction of complete Living Goddess lifecycle.",
           "slot_uri": "heritageGraph:ended_tenure_of",
-          "relationTo": "livinggoddesstenure"
+          "relationTo": "LivingGoddessTenure",
+          "relationEndpoint": "/cidoc/kumari_tenures/"
         },
         {
           "key": "took_place_at",
@@ -2992,9 +3811,11 @@
           "section": "basic",
           "order": 23,
           "required": false,
+          "multivalued": false,
           "description": "Place Where event occurred",
           "slot_uri": "crm:P7_took_place_at",
-          "relationTo": "place"
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/"
         }
       ],
       "columns": [
@@ -3064,7 +3885,7 @@
       "classUri": "crm:E13_Attribute_Assignment",
       "icon": "shuffle",
       "apiEndpoint": "/cidoc/syncretic_relationships/",
-      "category": "social",
+      "category": "conceptual",
       "navigable": true,
       "sections": [
         {
@@ -3080,6 +3901,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -3090,6 +3912,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -3100,9 +3923,11 @@
           "section": "basic",
           "order": 3,
           "required": true,
+          "multivalued": false,
           "description": "The deity instance that is the subject of the syncretic claim.",
           "slot_uri": "crm:P140_assigned_attribute_to",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "assigned_equivalent",
@@ -3111,9 +3936,11 @@
           "section": "basic",
           "order": 4,
           "required": true,
+          "multivalued": true,
           "description": "The deity or sacred figure being identified as equivalent to the primary deity.",
           "slot_uri": "crm:P141_assigned",
-          "relationTo": "deity"
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/"
         },
         {
           "key": "syncretic_type",
@@ -3122,8 +3949,32 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": false,
           "description": "The typological nature of the syncretism (e.g., Ontological Identity, Functional Overlap, Iconographic Similarity).",
-          "slot_uri": "crm:P2_has_type"
+          "slot_uri": "crm:P2_has_type",
+          "options": [
+            {
+              "value": "Equivalence",
+              "label": "Equivalence",
+              "description": "Same deity in different traditions (e.g., Avalokiteshvara = Matsyendranath)"
+            },
+            {
+              "value": "Appropriation",
+              "label": "Appropriation",
+              "description": "Deity borrowed from one tradition into another"
+            },
+            {
+              "value": "Fusion",
+              "label": "Fusion",
+              "description": "Intrinsically syncretic deity merging multiple traditions"
+            },
+            {
+              "value": "Historical",
+              "label": "Historical",
+              "description": "Gradual syncretism over time"
+            }
+          ],
+          "enum_range": "SyncreticTypeEnum"
         },
         {
           "key": "was_derived_from_source",
@@ -3132,9 +3983,11 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": true,
           "description": "Source(s) from which this assertion was derived",
           "slot_uri": "prov:wasDerivedFrom",
-          "relationTo": "datasource"
+          "relationTo": "DataSource",
+          "relationEndpoint": "/cidoc/data_sources/"
         },
         {
           "key": "was_documented_by",
@@ -3143,9 +3996,10 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": true,
           "description": "Documentation event that recorded this entity or event",
           "slot_uri": "prov:wasGeneratedBy",
-          "relationTo": "documentationactivity"
+          "relationTo": "DocumentationActivity"
         },
         {
           "key": "documented_in_source",
@@ -3154,9 +4008,11 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": true,
           "description": "Sources that mention or document this entity",
           "slot_uri": "prov:wasDerivedFrom",
-          "relationTo": "datasource"
+          "relationTo": "DataSource",
+          "relationEndpoint": "/cidoc/data_sources/"
         }
       ],
       "columns": [
@@ -3242,6 +4098,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -3252,6 +4109,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         },
@@ -3262,6 +4120,7 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Hereditary occupation or ritual duty",
           "slot_uri": "heritageGraph:traditional_role"
         }
@@ -3314,6 +4173,7 @@
           "section": "basic",
           "order": 1,
           "required": true,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -3324,6 +4184,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "The start date of this calendar era in Gregorian ISO format.",
           "slot_uri": "heritageGraph:epoch_date_gregorian"
         },
@@ -3334,17 +4195,20 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": true,
           "description": "Religious tradition(s) that primarily use this calendar system (e.g., Bikram Sambat for Hindu, Nepal Sambat for Newar Buddhist)",
           "slot_uri": "heritageGraph:is_primary_for_tradition",
-          "relationTo": "religioustradition"
+          "relationTo": "ReligiousTradition",
+          "relationEndpoint": "/cidoc/traditions/"
         },
         {
           "key": "year_offset_from_gregorian",
           "label": "Year Offset From Gregorian",
-          "type": "number",
+          "type": "text",
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": false,
           "description": "Mathematical offset to convert to Common Era (e.g., +57 for BS).",
           "slot_uri": "heritageGraph:year_offset_from_gregorian"
         },
@@ -3355,6 +4219,7 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         }
@@ -3397,6 +4262,99 @@
         }
       ]
     },
+    "period": {
+      "key": "period",
+      "label": "Historical Period",
+      "labelPlural": "Historical Periods",
+      "description": "Named historical era for contextualizing heritage (e.g., Lichhavi, Malla, Shah, Rana periods).",
+      "classUri": "crm:E4_Period",
+      "icon": "clock",
+      "apiEndpoint": "/cidoc/historical_periods/",
+      "category": "spatiotemporal",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": false,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "start_year",
+          "label": "Start Year",
+          "type": "text",
+          "section": "basic",
+          "order": 2,
+          "required": false,
+          "multivalued": false,
+          "description": "Start boundary (e.g., '1768', 'c. 1200 BCE')",
+          "slot_uri": "heritageGraph:start_year"
+        },
+        {
+          "key": "end_year",
+          "label": "End Year",
+          "type": "text",
+          "section": "basic",
+          "order": 3,
+          "required": false,
+          "multivalued": false,
+          "description": "End boundary (e.g., '1482 CE', 'present')",
+          "slot_uri": "heritageGraph:end_year"
+        },
+        {
+          "key": "description",
+          "label": "Description",
+          "type": "text",
+          "section": "basic",
+          "order": 4,
+          "required": false,
+          "multivalued": false,
+          "description": "Long-form narrative description",
+          "slot_uri": "schema:description"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "start_year",
+          "label": "Start Year",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "end_year",
+          "label": "End Year",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "description",
+          "label": "Description",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
+    },
     "assertion": {
       "key": "assertion",
       "label": "Heritage Assertion",
@@ -3421,6 +4379,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "The factual claim being asserted",
           "slot_uri": "prov:value"
         },
@@ -3431,8 +4390,9 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "slot_uri": "crm:P140_assigned_attribute_to",
-          "relationTo": "assertableentity"
+          "relationTo": "AssertableEntity"
         },
         {
           "key": "asserts_about_event",
@@ -3441,8 +4401,10 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "slot_uri": "crm:P141_assigned",
-          "relationTo": "ritualevent"
+          "relationTo": "RitualEvent",
+          "relationEndpoint": "/cidoc/rituals/"
         },
         {
           "key": "was_derived_from_source",
@@ -3451,9 +4413,11 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Source(s) from which this assertion was derived",
           "slot_uri": "prov:wasDerivedFrom",
-          "relationTo": "datasource"
+          "relationTo": "DataSource",
+          "relationEndpoint": "/cidoc/data_sources/"
         },
         {
           "key": "was_attributed_to_agent",
@@ -3462,27 +4426,31 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": true,
           "description": "Person who made this assertion",
           "slot_uri": "prov:wasAttributedTo",
-          "relationTo": "person"
+          "relationTo": "Person",
+          "relationEndpoint": "/cidoc/persons/"
         },
         {
           "key": "generated_at_time",
           "label": "Generated At Time",
-          "type": "date",
+          "type": "text",
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": false,
           "description": "When this assertion was recorded (ISO 8601)",
           "slot_uri": "prov:generatedAtTime"
         },
         {
           "key": "confidence_score",
           "label": "Confidence Score",
-          "type": "float",
+          "type": "text",
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "Reliability score for assertion (0.0-1.0)",
           "slot_uri": "heritageGraph:confidence_score"
         },
@@ -3493,6 +4461,7 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": false,
           "description": "Notes on data quality, completeness, or uncertainty",
           "slot_uri": "heritageGraph:data_quality_note"
         },
@@ -3503,6 +4472,7 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": false,
           "description": "Status of multi-source reconciliation (confirmed, conflicting, unverified)",
           "slot_uri": "heritageGraph:reconciliation_status"
         },
@@ -3513,6 +4483,7 @@
           "section": "basic",
           "order": 10,
           "required": true,
+          "multivalued": false,
           "description": "Property or attribute name (e.g., 'existence_status', 'hypothesized_location', 'construction_date')",
           "slot_uri": "heritageGraph:asserted_property"
         },
@@ -3523,6 +4494,7 @@
           "section": "basic",
           "order": 11,
           "required": true,
+          "multivalued": false,
           "description": "The value claimed for this property (e.g., 'Lost', 'Handigaun', '598 CE')",
           "slot_uri": "heritageGraph:asserted_value"
         },
@@ -3533,9 +4505,11 @@
           "section": "basic",
           "order": 12,
           "required": false,
+          "multivalued": false,
           "description": " Previous version of this assertion (if this is an update). Creates version chain: A1 \u2192 A2 \u2192 A3 Query pattern: latest assertion = one with no incoming prov:invalidated",
           "slot_uri": "prov:invalidated",
-          "relationTo": "heritageassertion"
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/"
         }
       ],
       "columns": [
@@ -3621,6 +4595,7 @@
           "section": "basic",
           "order": 1,
           "required": false,
+          "multivalued": false,
           "description": "Primary name or label",
           "slot_uri": "rdfs:label"
         },
@@ -3631,6 +4606,7 @@
           "section": "basic",
           "order": 2,
           "required": false,
+          "multivalued": false,
           "description": "Persistent identifier for the source (DOI, archive ID, catalog number)",
           "slot_uri": "datacite:identifier"
         },
@@ -3641,6 +4617,7 @@
           "section": "basic",
           "order": 3,
           "required": false,
+          "multivalued": false,
           "description": "Type of identifier (DOI, ISBN, Handle, LocalArchiveID)",
           "slot_uri": "datacite:identifierType"
         },
@@ -3651,9 +4628,10 @@
           "section": "basic",
           "order": 4,
           "required": false,
+          "multivalued": true,
           "description": "Person or organization primarily responsible for creating the source",
           "slot_uri": "datacite:creator",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "datacite_publisher",
@@ -3662,9 +4640,10 @@
           "section": "basic",
           "order": 5,
           "required": false,
+          "multivalued": false,
           "description": "Entity responsible for making the source available",
           "slot_uri": "datacite:publisher",
-          "relationTo": "actor"
+          "relationTo": "Actor"
         },
         {
           "key": "datacite_resource_type",
@@ -3673,6 +4652,7 @@
           "section": "basic",
           "order": 6,
           "required": false,
+          "multivalued": false,
           "description": "High-level DataCite resource type (Dataset, Text, Image, Audio, Interview)",
           "slot_uri": "datacite:resourceType"
         },
@@ -3683,9 +4663,10 @@
           "section": "basic",
           "order": 7,
           "required": false,
+          "multivalued": false,
           "description": "When source was published",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "timespan"
+          "relationTo": "TimeSpan"
         },
         {
           "key": "source_citation",
@@ -3694,6 +4675,7 @@
           "section": "basic",
           "order": 8,
           "required": false,
+          "multivalued": false,
           "description": "Formal citation of source",
           "slot_uri": "heritageGraph:source_citation"
         },
@@ -3704,6 +4686,7 @@
           "section": "basic",
           "order": 9,
           "required": false,
+          "multivalued": false,
           "description": "URL or digital identifier for source",
           "slot_uri": "heritageGraph:source_url"
         },
@@ -3714,6 +4697,7 @@
           "section": "basic",
           "order": 10,
           "required": false,
+          "multivalued": false,
           "description": "Language of the source material",
           "slot_uri": "crm:P72_has_language"
         },
@@ -3724,6 +4708,7 @@
           "section": "basic",
           "order": 11,
           "required": false,
+          "multivalued": false,
           "description": "Free-text note (description, reason, verification notes",
           "slot_uri": "crm:P3_has_note"
         }
@@ -3786,6 +4771,119 @@
           "format": "text"
         }
       ]
+    },
+    "entity": {
+      "key": "entity",
+      "label": "Cultural Entity",
+      "labelPlural": "Cultural Entities",
+      "description": "High-level cultural contribution (monuments, festivals, rituals, traditions, artifacts) for the heritage_data review workflow.",
+      "classUri": "heritageGraph:CulturalEntity",
+      "icon": "landmark",
+      "apiEndpoint": "/data/api/cultural-entities/",
+      "category": "tangible",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "category",
+          "label": "Category",
+          "type": "select",
+          "section": "basic",
+          "order": 2,
+          "required": true,
+          "multivalued": false,
+          "description": "Domain category for a cultural entity contribution",
+          "slot_uri": "heritageGraph:entity_category",
+          "options": [
+            {
+              "value": "monument",
+              "label": "Monument",
+              "description": "Monument or built heritage"
+            },
+            {
+              "value": "artifact",
+              "label": "Artifact",
+              "description": ""
+            },
+            {
+              "value": "ritual",
+              "label": "Ritual",
+              "description": ""
+            },
+            {
+              "value": "festival",
+              "label": "Festival",
+              "description": ""
+            },
+            {
+              "value": "tradition",
+              "label": "Tradition",
+              "description": ""
+            },
+            {
+              "value": "document",
+              "label": "Document",
+              "description": ""
+            },
+            {
+              "value": "other",
+              "label": "Other",
+              "description": ""
+            }
+          ],
+          "enum_range": "CulturalEntityCategoryEnum"
+        },
+        {
+          "key": "description",
+          "label": "Description",
+          "type": "text",
+          "section": "basic",
+          "order": 3,
+          "required": true,
+          "multivalued": false,
+          "description": "Long-form narrative description",
+          "slot_uri": "schema:description"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "category",
+          "label": "Category",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "description",
+          "label": "Description",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
     }
   },
   "enums": {
@@ -3809,6 +4907,43 @@
         "value": "Restored",
         "label": "Restored",
         "description": "Repaired and stabilized"
+      }
+    ],
+    "CulturalEntityCategoryEnum": [
+      {
+        "value": "monument",
+        "label": "Monument",
+        "description": "Monument or built heritage"
+      },
+      {
+        "value": "artifact",
+        "label": "Artifact",
+        "description": ""
+      },
+      {
+        "value": "ritual",
+        "label": "Ritual",
+        "description": ""
+      },
+      {
+        "value": "festival",
+        "label": "Festival",
+        "description": ""
+      },
+      {
+        "value": "tradition",
+        "label": "Tradition",
+        "description": ""
+      },
+      {
+        "value": "document",
+        "label": "Document",
+        "description": ""
+      },
+      {
+        "value": "other",
+        "label": "Other",
+        "description": ""
       }
     ],
     "ExistenceStatusEnum": [
@@ -4058,5 +5193,1698 @@
         "description": "Royal endowment trust"
       }
     ]
+  },
+  "contribute_hub": {
+    "hubCategories": [
+      {
+        "key": "tangible",
+        "label": "Tangible Heritage",
+        "icon": "\ud83c\udfdb\ufe0f",
+        "order": 0
+      },
+      {
+        "key": "events",
+        "label": "Events & Rituals",
+        "icon": "\ud83d\udd25",
+        "order": 1
+      },
+      {
+        "key": "kumari",
+        "label": "Living Goddess",
+        "icon": "\ud83d\udc51",
+        "order": 2
+      },
+      {
+        "key": "conceptual",
+        "label": "Conceptual",
+        "icon": "\u2728",
+        "order": 3
+      },
+      {
+        "key": "social",
+        "label": "Social & People",
+        "icon": "\ud83d\udc65",
+        "order": 4
+      },
+      {
+        "key": "spatiotemporal",
+        "label": "Spaces & Time",
+        "icon": "\ud83d\uddfa\ufe0f",
+        "order": 5
+      },
+      {
+        "key": "provenance",
+        "label": "Sources",
+        "icon": "\ud83d\udcda",
+        "order": 6
+      }
+    ],
+    "intents": [
+      {
+        "registryKey": "structure",
+        "hubCategory": "tangible",
+        "route": "/contribute/structure",
+        "emoji": "\ud83c\udfdb\ufe0f",
+        "shortDescription": "Temples, stupas, rest houses, water spouts",
+        "description": "Record architectural heritage with location, condition, style, and Guthi links.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "iconography",
+        "hubCategory": "tangible",
+        "route": "/contribute/iconography",
+        "emoji": "\ud83c\udfa8",
+        "shortDescription": "Paubha paintings, Murti statues, sacred art",
+        "description": "Document sacred visual art with deity depictions and provenance.",
+        "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "monument",
+        "hubCategory": "tangible",
+        "route": "/contribute/monument",
+        "emoji": "\u26e9\ufe0f",
+        "shortDescription": "Stupas, Chaityas, sacred structures",
+        "description": "Add Buddhist sacred structures with circumambulation and ritual patterns.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "ritual",
+        "hubCategory": "events",
+        "route": "/contribute/ritual",
+        "emoji": "\ud83d\udd25",
+        "shortDescription": "Puja, consecrations, processions",
+        "description": "Document rituals with deity invocation, performers, timing, and routes.",
+        "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "festival",
+        "hubCategory": "events",
+        "route": "/contribute/festival",
+        "emoji": "\ud83c\udfaa",
+        "shortDescription": "Jatra processions, chariot festivals, dances",
+        "description": "Record large-scale community events with component rituals.",
+        "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "event",
+        "hubCategory": "events",
+        "route": "/contribute/event",
+        "emoji": "\ud83d\udcc5",
+        "shortDescription": "Earthquakes, fires, political transitions",
+        "description": "Log major events that affected heritage sites or practices.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "kumari_tenure",
+        "hubCategory": "kumari",
+        "route": "/contribute/kumari-tenure",
+        "emoji": "\ud83d\udc51",
+        "shortDescription": "Period of divine embodiment",
+        "description": "Document a Kumari's tenure \u2014 person, deity, residence, and supporting Guthi.",
+        "difficulty": "advanced"
+      },
+      {
+        "registryKey": "kumari_selection",
+        "hubCategory": "kumari",
+        "route": "/contribute/kumari-selection",
+        "emoji": "\ud83d\udd0d",
+        "shortDescription": "Tantric selection ritual",
+        "description": "Document the 32 lakshana examination, horoscope matching, and fearlessness tests.",
+        "difficulty": "advanced"
+      },
+      {
+        "registryKey": "kumari_retirement",
+        "hubCategory": "kumari",
+        "route": "/contribute/kumari-retirement",
+        "emoji": "\ud83d\udeaa",
+        "shortDescription": "Return to secular status",
+        "description": "Record the formal event ending a Living Goddess tenure.",
+        "difficulty": "advanced"
+      },
+      {
+        "registryKey": "deity",
+        "hubCategory": "conceptual",
+        "route": "/contribute/deity",
+        "emoji": "\u2728",
+        "shortDescription": "Hindu, Buddhist, or syncretic divine entities",
+        "description": "Add divine entities with tradition, alternate names, and iconographic links.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "syncretism",
+        "hubCategory": "conceptual",
+        "route": "/contribute/syncretism",
+        "emoji": "\ud83d\udd17",
+        "shortDescription": "Cross-tradition deity equivalences",
+        "description": "Map deity equivalences (e.g., Avalokiteshvara = Matsyendranath) with provenance.",
+        "difficulty": "advanced"
+      },
+      {
+        "registryKey": "guthi",
+        "hubCategory": "social",
+        "route": "/contribute/guthi",
+        "emoji": "\ud83c\udfd8\ufe0f",
+        "shortDescription": "Endowed trusts managing temples and rituals",
+        "description": "Register Guthi organizations with type, membership, and managed structures.",
+        "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "person",
+        "hubCategory": "social",
+        "route": "/contribute/person",
+        "emoji": "\ud83d\udc64",
+        "shortDescription": "Kings, artisans, priests, scholars",
+        "description": "Record historical persons with biography and institutional affiliation.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "caste_group",
+        "hubCategory": "social",
+        "route": "/contribute/caste-group",
+        "emoji": "\ud83d\udc65",
+        "shortDescription": "Hereditary social groups (Jati)",
+        "description": "Document groups with specific ritual roles and occupational duties.",
+        "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "location",
+        "hubCategory": "spatiotemporal",
+        "route": "/contribute/location",
+        "emoji": "\ud83d\uddfa\ufe0f",
+        "shortDescription": "Geographic heritage locations",
+        "description": "Add locations where heritage structures exist and events occur.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "period",
+        "hubCategory": "spatiotemporal",
+        "route": "/contribute/period",
+        "emoji": "\u23f3",
+        "shortDescription": "Lichhavi, Malla, and other eras",
+        "description": "Define time periods for contextualizing heritage.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "calendar",
+        "hubCategory": "spatiotemporal",
+        "route": "/contribute/calendar",
+        "emoji": "\ud83d\udcc6",
+        "shortDescription": "Bikram Sambat, Nepal Sambat, etc.",
+        "description": "Register calendar systems with epoch dates and Gregorian conversion rules.",
+        "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "tradition",
+        "hubCategory": "conceptual",
+        "route": "/contribute/tradition",
+        "emoji": "\ud83d\udd6f\ufe0f",
+        "shortDescription": "Religious and cultural traditions",
+        "description": "Record traditions, practices, and their material associations.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "source",
+        "hubCategory": "provenance",
+        "route": "/contribute/source",
+        "emoji": "\ud83d\udcda",
+        "shortDescription": "Books, records, oral histories, inscriptions",
+        "description": "Add sources with DataCite identifiers, citation, and language.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "assertion",
+        "hubCategory": "provenance",
+        "route": "/contribute/assertion",
+        "emoji": "\u2705",
+        "shortDescription": "Factual claims with source and confidence",
+        "description": "Record a factual claim with explicit source, author, and confidence score.",
+        "difficulty": "advanced"
+      }
+    ],
+    "quickStart": [
+      "structure",
+      "source",
+      "location",
+      "person"
+    ]
+  },
+  "registry_jsonschema": {
+    "version": 1,
+    "byClassKey": {
+      "person": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "birth_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "death_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "member_of_group": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "carried_out_activity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "institutional_affiliation": {
+            "type": "string"
+          },
+          "expertise_area": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "location": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "place_coordinates": {
+            "type": "string"
+          },
+          "place_type": {
+            "type": "string"
+          },
+          "contains_structure": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "event": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "took_place_at": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "architectural_structures": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "includes_ritual_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "tradition": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "source": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "datacite_identifier": {
+            "type": "string"
+          },
+          "datacite_identifier_type": {
+            "type": "string"
+          },
+          "datacite_creator": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "datacite_publisher": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "datacite_resource_type": {
+            "type": "string"
+          },
+          "publication_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "source_citation": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "source_language": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "is_about_entity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "created_by_documentation": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "is_about_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "deity": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "has_religious_tradition": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "is_depicted_in": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "is_invoked_in_ritual": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "is_enshrined_through_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "guthi": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "guthi_type": {
+            "type": "string"
+          },
+          "performs_ritual": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "holds_custody_of": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_membership": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "structure": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "has_current_location": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_produced_by_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_condition_assessment": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "participates_in_ritual": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_custody_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "has_component": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_architectural_style": {
+            "type": "string"
+          },
+          "existence_status": {
+            "type": "string"
+          },
+          "last_known_existence_date": {
+            "type": "string"
+          },
+          "destruction_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "hypothesized_location": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "documented_in_source": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_provenance_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "has_current_location"
+        ],
+        "additionalProperties": true
+      },
+      "ritual": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "ritual_type": {
+            "type": "string"
+          },
+          "ritual_on_structure": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "lunar_date_tithi": {
+            "type": "string"
+          },
+          "recurrence_pattern": {
+            "type": "string"
+          },
+          "invokes_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "carried_out_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "performed_by_group": {
+            "type": "string"
+          },
+          "is_part_of_festival": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "managed_by_guthi": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_provenance_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_before": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_after": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "used_materials": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_places": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "start_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "end_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_description": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "festival": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "ritual_type": {
+            "type": "string"
+          },
+          "ritual_on_structure": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "lunar_date_tithi": {
+            "type": "string"
+          },
+          "recurrence_pattern": {
+            "type": "string"
+          },
+          "invokes_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "carried_out_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "performed_by_group": {
+            "type": "string"
+          },
+          "is_part_of_festival": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "managed_by_guthi": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_provenance_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_before": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_after": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "used_materials": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_places": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "start_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "end_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_description": {
+            "type": "string"
+          },
+          "includes_ritual_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "iconography": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "has_current_location": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_produced_by_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_condition_assessment": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "participates_in_ritual": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_custody_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "depicts_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "used_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "monument": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "has_current_location": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_produced_by_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_condition_assessment": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "participates_in_ritual": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_custody_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "note": {
+            "type": "string"
+          },
+          "has_component": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_architectural_style": {
+            "type": "string"
+          },
+          "existence_status": {
+            "type": "string"
+          },
+          "last_known_existence_date": {
+            "type": "string"
+          },
+          "destruction_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "hypothesized_location": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "documented_in_source": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_provenance_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "kumari_tenure": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "had_participant": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "embodied_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "residence_structure": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "supported_by_institution": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_retirement_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "had_participant",
+          "embodied_deity",
+          "residence_structure",
+          "has_timespan"
+        ],
+        "additionalProperties": true
+      },
+      "kumari_selection": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "ritual_type": {
+            "type": "string"
+          },
+          "ritual_on_structure": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "lunar_date_tithi": {
+            "type": "string"
+          },
+          "recurrence_pattern": {
+            "type": "string"
+          },
+          "invokes_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "carried_out_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "performed_by_group": {
+            "type": "string"
+          },
+          "is_part_of_festival": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "managed_by_guthi": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_provenance_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_before": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_after": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "used_materials": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_places": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "start_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "end_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_description": {
+            "type": "string"
+          },
+          "selected_person": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "initiated_tenure": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "took_place_at": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "selection_criteria_met": {
+            "type": "string"
+          },
+          "is_critical_for_festival": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "selected_person",
+          "initiated_tenure"
+        ],
+        "additionalProperties": true
+      },
+      "kumari_retirement": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "ritual_type": {
+            "type": "string"
+          },
+          "ritual_on_structure": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "lunar_date_tithi": {
+            "type": "string"
+          },
+          "recurrence_pattern": {
+            "type": "string"
+          },
+          "invokes_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "carried_out_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "performed_by_group": {
+            "type": "string"
+          },
+          "is_part_of_festival": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "managed_by_guthi": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "has_provenance_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_before": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "occurs_after": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "used_materials": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_places": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "start_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "end_place": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "route_description": {
+            "type": "string"
+          },
+          "ended_tenure_of": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "took_place_at": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "has_timespan",
+          "ended_tenure_of"
+        ],
+        "additionalProperties": true
+      },
+      "syncretism": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "assigned_to_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "assigned_equivalent": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "syncretic_type": {
+            "type": "string"
+          },
+          "was_derived_from_source": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "documented_in_source": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [
+          "assigned_to_deity",
+          "assigned_equivalent"
+        ],
+        "additionalProperties": true
+      },
+      "caste_group": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "traditional_role": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "calendar": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "epoch_date_gregorian": {
+            "type": "string"
+          },
+          "is_primary_for_tradition": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "year_offset_from_gregorian": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": true
+      },
+      "period": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "start_year": {
+            "type": "string"
+          },
+          "end_year": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "assertion": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "assertion_content": {
+            "type": "string"
+          },
+          "asserts_about_entity": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "asserts_about_event": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_derived_from_source": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "was_attributed_to_agent": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "generated_at_time": {
+            "type": "string"
+          },
+          "confidence_score": {
+            "type": "string"
+          },
+          "data_quality_note": {
+            "type": "string"
+          },
+          "reconciliation_status": {
+            "type": "string"
+          },
+          "asserted_property": {
+            "type": "string"
+          },
+          "asserted_value": {
+            "type": "string"
+          },
+          "supersedes_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [
+          "asserted_property",
+          "asserted_value"
+        ],
+        "additionalProperties": true
+      },
+      "data_source": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "datacite_identifier": {
+            "type": "string"
+          },
+          "datacite_identifier_type": {
+            "type": "string"
+          },
+          "datacite_creator": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "datacite_publisher": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "datacite_resource_type": {
+            "type": "string"
+          },
+          "publication_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer"
+            ]
+          },
+          "source_citation": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "source_language": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": true
+      },
+      "entity": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "description"
+        ],
+        "additionalProperties": true
+      }
+    }
   }
 }

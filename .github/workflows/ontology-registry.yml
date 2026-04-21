@@ -1,0 +1,34 @@
+name: Ontology registry
+
+on:
+  push:
+    paths:
+      - "ontology/**"
+      - "tools/ui-classmap.yaml"
+      - "tools/ui-presentation.yaml"
+      - "tools/contribute-hub.yaml"
+      - "tools/linkml_generate_registry.py"
+      - "heritage_graph/apps/cidoc_data/ontology_builder.py"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+  pull_request:
+    paths:
+      - "ontology/**"
+      - "tools/ui-classmap.yaml"
+      - "tools/ui-presentation.yaml"
+      - "tools/contribute-hub.yaml"
+      - "tools/linkml_generate_registry.py"
+      - "heritage_graph/apps/cidoc_data/ontology_builder.py"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+
+jobs:
+  check-generated-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify registry.generated.* matches ontology
+        run: make ontology-check

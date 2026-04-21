@@ -1,6 +1,7 @@
 "use client";
 
 import OntologyForm from "@/components/ontology-form";
+import { OntologyUnavailablePanel } from "@/components/ontology/OntologyUnavailablePanel";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 
 export function ContributeOntologyForm({ ontologyKey }: { ontologyKey: string }) {
@@ -8,9 +9,7 @@ export function ContributeOntologyForm({ ontologyKey }: { ontologyKey: string })
   const cls = getOntologyClass(ontologyKey);
   if (!cls) {
     return (
-      <div className="p-8 text-sm text-muted-foreground">
-        Unknown ontology class: <code className="font-mono">{ontologyKey}</code>
-      </div>
+      <OntologyUnavailablePanel variant="contribute" missingKey={ontologyKey} />
     );
   }
   return <OntologyForm ontologyClass={cls} />;

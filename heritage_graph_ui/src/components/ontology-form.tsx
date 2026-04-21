@@ -4,7 +4,10 @@ import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+
+import { ProgressBar } from "@/components/ontology-form/progress-bar";
+import { StepNav } from "@/components/ontology-form/step-nav";
 
 import {
   Card,
@@ -29,11 +32,16 @@ import { cn } from "@/lib/utils";
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 import { EntitySearch, type SearchResult } from "@/components/contribute/entity-search";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { getPublicApiUrl } from "@/lib/api-base";
 import {
   buildOntologyFormPayload,
   mapCidocRecordToFormData,
 } from "@/lib/ontology/ontology-edit-helpers";
+import { useOntology } from "@/lib/ontology/OntologyProvider";
+import { validatePayloadAgainstRegistrySchema } from "@/lib/ontology/validate-registry-payload";
+import { validateRequiredFields } from "@/lib/ontology/useValidation";
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -45,12 +53,14 @@ function FieldRenderer({
   onChange,
   disabled,
   hasError,
+  errorMessage,
 }: {
   field: OntologyField;
   value: any;
   onChange: (key: string, value: any) => void;
   disabled: boolean;
   hasError?: boolean;
+  errorMessage?: string;
 }) {
   const id = `field-${field.key}`;
   const errorRing = hasError
@@ -74,6 +84,12 @@ function FieldRenderer({
     <p className="text-xs text-muted-foreground mb-1.5">{field.description}</p>
   ) : null;
 
+  const errorFooter = errorMessage ? (
+    <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+      {errorMessage}
+    </p>
+  ) : null;
+
   switch (field.type) {
     case "textarea":
       return (
@@ -89,6 +105,7 @@ function FieldRenderer({
             disabled={disabled}
             className={errorRing}
           />
+          {errorFooter}
         </div>
       );
 
@@ -136,6 +153,7 @@ function FieldRenderer({
               ))}
             </SelectContent>
           </Select>
+          {errorFooter}
         </div>
       );
     }
@@ -161,6 +179,7 @@ function FieldRenderer({
             disabled={disabled}
             className={errorRing}
           />
+          {errorFooter}
         </div>
       );
 
@@ -178,6 +197,117 @@ function FieldRenderer({
             disabled={disabled}
             className={errorRing}
           />
+          {errorFooter}
+        </div>
+      );
+
+    case "boolean":
+      return (
+        <div className="space-y-1">
+          {labelEl}
+          {descEl}
+          <div className="flex items-center gap-2">
+            <Switch
+              id={id}
+              checked={Boolean(value)}
+              onCheckedChange={(v) => onChange(field.key, v)}
+              disabled={disabled}
+            />
+            <span className="text-sm text-muted-foreground">
+              {value ? "Yes" : "No"}
+            </span>
+          </div>
+          {errorFooter}
+        </div>
+      );
+
+    case "multiselect": {
+      const opts = field.options || [];
+      const selected: string[] = Array.isArray(value)
+        ? (value as string[])
+        : typeof value === "string" && value
+          ? value.split(",").map((s) => s.trim()).filter(Boolean)
+          : [];
+      const toggle = (optVal: string) => {
+        const set = new Set(selected);
+        if (set.has(optVal)) set.delete(optVal);
+        else set.add(optVal);
+        onChange(field.key, [...set]);
+      };
+      return (
+        <div className="space-y-2">
+          {labelEl}
+          {descEl}
+          <div className="space-y-2 rounded-md border border-border p-3">
+            {opts.map((opt) => (
+              <label
+                key={opt.value}
+                className="flex items-center gap-2 text-sm cursor-pointer"
+              >
+                <Checkbox
+                  checked={selected.includes(opt.value)}
+                  onCheckedChange={() => toggle(opt.value)}
+                  disabled={disabled}
+                />
+                <span>{opt.label}</span>
+              </label>
+            ))}
+          </div>
+          {errorFooter}
+        </div>
+      );
+    }
+
+    case "edtf_date":
+      return (
+        <div className="space-y-1">
+          {labelEl}
+          {descEl}
+          <Input
+            id={id}
+            value={value || ""}
+            onChange={(e) => onChange(field.key, e.target.value)}
+            placeholder={field.placeholder || "e.g. 1200/1300 or 1975-05-01"}
+            disabled={disabled}
+            className={errorRing}
+          />
+          <p className="text-xs text-muted-foreground">
+            Use EDTF-style strings for imprecise heritage dates (ISO 8601-2).
+          </p>
+          {errorFooter}
+        </div>
+      );
+
+    case "geo_point":
+      return (
+        <div className="space-y-1">
+          {labelEl}
+          {descEl}
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              id={`${id}-lat`}
+              type="text"
+              value={value?.lat ?? ""}
+              onChange={(e) =>
+                onChange(field.key, { ...value, lat: e.target.value })
+              }
+              placeholder="Latitude"
+              disabled={disabled}
+              className={errorRing}
+            />
+            <Input
+              id={`${id}-lng`}
+              type="text"
+              value={value?.lng ?? ""}
+              onChange={(e) =>
+                onChange(field.key, { ...value, lng: e.target.value })
+              }
+              placeholder="Longitude"
+              disabled={disabled}
+              className={errorRing}
+            />
+          </div>
+          {errorFooter}
         </div>
       );
 
@@ -210,25 +340,33 @@ function FieldRenderer({
               className={errorRing}
             />
           </div>
+          {errorFooter}
         </div>
       );
 
     case "relation": {
       if (field.multivalued) {
-        const items: string[] = value
-          ? (typeof value === "string" ? value.split(", ").filter(Boolean) : Array.isArray(value) ? value : [])
-          : [];
+        const items: SearchResult[] = Array.isArray(value)
+          ? (value as SearchResult[])
+          : typeof value === "string" && value.trim()
+            ? value.split(",").map((s) => ({
+                id: s.trim(),
+                name: s.trim(),
+              }))
+            : [];
 
         const handleAdd = (entity: SearchResult | null) => {
           if (!entity) return;
           const updated = [...items];
-          if (!updated.includes(entity.name)) updated.push(entity.name);
-          onChange(field.key, updated.join(", "));
+          if (!updated.some((x) => String(x.id) === String(entity.id))) {
+            updated.push({ id: entity.id, name: entity.name });
+          }
+          onChange(field.key, updated);
         };
 
-        const handleRemove = (name: string) => {
-          const updated = items.filter((n) => n !== name);
-          onChange(field.key, updated.length > 0 ? updated.join(", ") : "");
+        const handleRemove = (id: string | number) => {
+          const updated = items.filter((x) => String(x.id) !== String(id));
+          onChange(field.key, updated);
         };
 
         return (
@@ -237,17 +375,17 @@ function FieldRenderer({
             {descEl}
             {items.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-2">
-                {items.map((name) => (
+                {items.map((ent) => (
                   <span
-                    key={name}
+                    key={String(ent.id)}
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-sm"
                   >
-                    {name}
+                    {ent.name}
                     {!disabled && (
                       <button
                         type="button"
                         className="text-muted-foreground hover:text-foreground text-xs ml-0.5"
-                        onClick={() => handleRemove(name)}
+                        onClick={() => handleRemove(ent.id)}
                       >
                         ✕
                       </button>
@@ -266,13 +404,20 @@ function FieldRenderer({
               disabled={disabled}
               hasError={hasError}
             />
+            {errorFooter}
           </div>
         );
       }
 
-      const selectedEntity: SearchResult | null = value
-        ? { id: 0, name: typeof value === "string" ? value : String(value) }
-        : null;
+      const selectedEntity: SearchResult | null =
+        value && typeof value === "object" && value !== null && "name" in value
+          ? (value as SearchResult)
+          : value
+            ? {
+                id: 0,
+                name: typeof value === "string" ? value : String(value),
+              }
+            : null;
 
       return (
         <div className="space-y-1">
@@ -282,12 +427,18 @@ function FieldRenderer({
             label=""
             endpoint={field.relationEndpoint || ""}
             value={selectedEntity}
-            onSelect={(entity) => onChange(field.key, entity?.name || "")}
+            onSelect={(entity) =>
+              onChange(
+                field.key,
+                entity ? { id: entity.id, name: entity.name } : ""
+              )
+            }
             placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
             allowCreate
             disabled={disabled}
             hasError={hasError}
           />
+          {errorFooter}
         </div>
       );
     }
@@ -305,90 +456,10 @@ function FieldRenderer({
             disabled={disabled}
             className={errorRing}
           />
+          {errorFooter}
         </div>
       );
   }
-}
-
-function StepNav({
-  sections,
-  currentStep,
-  onStepClick,
-  sectionProgress,
-}: {
-  sections: { key: string; label: string }[];
-  currentStep: number;
-  onStepClick: (idx: number) => void;
-  sectionProgress: Record<string, { filled: number; total: number; requiredOk: boolean }>;
-}) {
-  return (
-    <nav className="flex items-center gap-1 overflow-x-auto pb-2">
-      {sections.map((section, idx) => {
-        const progress = sectionProgress[section.key];
-        const isCurrent = idx === currentStep;
-        const isComplete = progress?.filled === progress?.total && progress?.total > 0;
-        const hasRequiredMissing = !progress?.requiredOk;
-
-        return (
-          <button
-            key={section.key}
-            onClick={() => onStepClick(idx)}
-            className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all",
-              isCurrent
-                ? "bg-blue-600 text-white shadow-sm"
-                : isComplete
-                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
-            )}
-          >
-            <span
-              className={cn(
-                "flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0",
-                isCurrent
-                  ? "bg-white/20 text-white"
-                  : isComplete
-                    ? "bg-emerald-500 text-white"
-                    : hasRequiredMissing
-                      ? "bg-muted-foreground/20 text-muted-foreground"
-                      : "bg-muted-foreground/20 text-muted-foreground"
-              )}
-            >
-              {isComplete ? "✓" : idx + 1}
-            </span>
-            <span className="hidden sm:inline">{section.label}</span>
-          </button>
-        );
-      })}
-    </nav>
-  );
-}
-
-function ProgressBar({ filled, total }: { filled: number; total: number }) {
-  const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
-
-  return (
-    <div className="flex items-center gap-3">
-      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-        <motion.div
-          className={cn(
-            "h-full rounded-full",
-            pct === 100
-              ? "bg-emerald-500"
-              : pct > 50
-                ? "bg-blue-500"
-                : "bg-blue-400"
-          )}
-          initial={{ width: 0 }}
-          animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        />
-      </div>
-      <span className="text-xs text-muted-foreground whitespace-nowrap">
-        {filled}/{total} fields
-      </span>
-    </div>
-  );
 }
 
 export interface OntologyFormProps {
@@ -418,6 +489,7 @@ export default function OntologyForm({
   const recordId = searchParams.get("id")?.trim() || null;
   const isEditMode = Boolean(recordId);
   const { data: session, status } = useSession();
+  const { registry } = useOntology();
   const isSignedIn = status === "authenticated";
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -435,6 +507,7 @@ export default function OntologyForm({
   } | null>(null);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const baseUrl = useMemo(
     () => apiBaseUrl || getPublicApiUrl(),
@@ -519,7 +592,23 @@ export default function OntologyForm({
     (field: OntologyField) => {
       const val = formData[field.key];
       if (val === undefined || val === null || val === "") return false;
-      if (field.type === "coordinates" && typeof val === "object") {
+      if (Array.isArray(val) && val.length === 0) return false;
+      if (field.type === "multiselect") {
+        return Array.isArray(val) && val.length > 0;
+      }
+      if (field.type === "relation" && field.multivalued) {
+        return Array.isArray(val) && val.length > 0;
+      }
+      if (field.type === "relation" && !field.multivalued) {
+        if (val && typeof val === "object" && "id" in (val as object)) {
+          return true;
+        }
+        return typeof val === "string" && val.trim() !== "";
+      }
+      if (
+        (field.type === "coordinates" || field.type === "geo_point") &&
+        typeof val === "object"
+      ) {
         return !!(val.lat || val.lng);
       }
       return true;
@@ -553,6 +642,12 @@ export default function OntologyForm({
   const updateField = useCallback((key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
     setTouchedFields((prev) => new Set(prev).add(key));
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }, []);
 
   const mergeValues = useCallback(
@@ -591,22 +686,31 @@ export default function OntologyForm({
     setFormData({});
     setTouchedFields(new Set());
     setSubmitAttempted(false);
+    setFieldErrors({});
     setCurrentStep(0);
     toast.info("Form cleared");
     setClearConfirmOpen(false);
   }, [isEditMode]);
 
   const validate = useCallback((): boolean => {
-    const requiredFields = ontologyClass.fields.filter((f) => f.required);
-    for (const field of requiredFields) {
-      const val = formData[field.key];
-      if (val === undefined || val === null || val === "") {
-        toast.error(`Please fill in "${field.label}".`);
-        return false;
-      }
+    const errors = validateRequiredFields(ontologyClass, formData);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      toast.error("Please fix the highlighted fields.");
+      return false;
     }
+    const schemaErrors = validatePayloadAgainstRegistrySchema(
+      registry.registry_jsonschema,
+      ontologyClass.key,
+      formData as Record<string, unknown>
+    );
+    if (schemaErrors.length > 0) {
+      toast.error(schemaErrors[0] || "Validation failed.");
+      return false;
+    }
+    setFieldErrors({});
     return true;
-  }, [formData, ontologyClass.fields]);
+  }, [formData, ontologyClass, registry.registry_jsonschema]);
 
   const openSubmitConfirm = () => {
     setSubmitAttempted(true);
@@ -691,9 +795,32 @@ export default function OntologyForm({
     "this entry";
 
   const shouldShowError = (field: OntologyField) => {
+    if (fieldErrors[field.key]) return true;
     if (!field.required) return false;
     const val = formData[field.key];
-    const isEmpty = val === undefined || val === null || val === "";
+    let isEmpty =
+      val === undefined ||
+      val === null ||
+      val === "" ||
+      (Array.isArray(val) && val.length === 0);
+    if (
+      (field.type === "coordinates" || field.type === "geo_point") &&
+      val &&
+      typeof val === "object"
+    ) {
+      isEmpty =
+        !String((val as { lat?: unknown }).lat ?? "").trim() &&
+        !String((val as { lng?: unknown }).lng ?? "").trim();
+    }
+    if (field.type === "relation" && !field.multivalued) {
+      if (val && typeof val === "object" && val !== null && "id" in val) {
+        isEmpty = false;
+      } else if (typeof val === "string" && val.trim() !== "") {
+        isEmpty = false;
+      } else {
+        isEmpty = true;
+      }
+    }
     return isEmpty && (submitAttempted || touchedFields.has(field.key));
   };
 
@@ -877,6 +1004,7 @@ export default function OntologyForm({
                 onChange={updateField}
                 disabled={!isSignedIn}
                 hasError={shouldShowError(field)}
+                errorMessage={fieldErrors[field.key]}
               />
             ))}
           </CardContent>
@@ -981,6 +1109,7 @@ export default function OntologyForm({
                   onChange={updateField}
                   disabled={!isSignedIn}
                   hasError={shouldShowError(field)}
+                  errorMessage={fieldErrors[field.key]}
                 />
               ))}
               {currentSectionFields.length === 0 && (

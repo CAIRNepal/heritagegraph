@@ -1,6 +1,42 @@
 "use client";
 
-import type { OntologyClass } from "./types";
+import type { OntologyClass, OntologyField } from "./types";
+
+function isEmptyForField(field: OntologyField, v: unknown): boolean {
+  if (v === undefined || v === null) return true;
+  if (typeof v === "string" && v.trim() === "") return true;
+  if (Array.isArray(v) && v.length === 0) return true;
+  if (field.type === "coordinates" && v && typeof v === "object") {
+    const o = v as { lat?: unknown; lng?: unknown };
+    const lat = String(o.lat ?? "").trim();
+    const lng = String(o.lng ?? "").trim();
+    return !lat && !lng;
+  }
+  if (field.type === "relation" && !field.multivalued) {
+    if (v && typeof v === "object" && "id" in (v as object)) return false;
+    if (typeof v === "string" && v.trim() !== "") return false;
+    return true;
+  }
+  if (field.type === "relation" && field.multivalued) {
+    if (Array.isArray(v)) return v.length === 0;
+    if (typeof v === "string" && !v.trim()) return true;
+    return false;
+  }
+  return false;
+}
+
+function countItems(field: OntologyField, v: unknown): number {
+  if (field.type === "multiselect" && Array.isArray(v)) return v.length;
+  if (field.type === "relation" && field.multivalued) {
+    if (Array.isArray(v)) return v.length;
+    if (typeof v === "string" && v.trim())
+      return v.split(",").filter(Boolean).length;
+    return 0;
+  }
+  if (v === undefined || v === null) return 0;
+  if (typeof v === "string") return v.trim() === "" ? 0 : 1;
+  return 1;
+}
 
 /** Minimal required-field checks derived from the merged ontology registry. */
 export function validateRequiredFields(
@@ -11,13 +47,22 @@ export function validateRequiredFields(
   for (const field of ontologyClass.fields) {
     if (!field.required) continue;
     const v = values[field.key];
-    const empty =
-      v === undefined ||
-      v === null ||
-      (typeof v === "string" && v.trim() === "") ||
-      (Array.isArray(v) && v.length === 0);
+    const empty = isEmptyForField(field, v);
     if (empty) {
       errors[field.key] = `${field.label} is required`;
+    }
+  }
+  for (const field of ontologyClass.fields) {
+    const min = field.minimumCardinality;
+    const max = field.maximumCardinality;
+    if (min === undefined && max === undefined) continue;
+    if (errors[field.key]) continue;
+    const n = countItems(field, values[field.key]);
+    if (min !== undefined && n < min) {
+      errors[field.key] = `${field.label} needs at least ${min} value(s)`;
+    }
+    if (max !== undefined && n > max) {
+      errors[field.key] = `${field.label} accepts at most ${max} value(s)`;
     }
   }
   return errors;

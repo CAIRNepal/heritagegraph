@@ -652,9 +652,12 @@ class DataSource(models.Model):
 
 class HeritageAssertion(models.Model):
     """
-    A single factual claim about a heritage entity, with explicit
-    source, author, date, and confidence. Every contribution creates
-    one or more assertions.
+    First-class reified statement (subject, predicate, value) with provenance.
+
+    Long-term target (MR2): treat this as the canonical *relationship* record for
+    n-ary CIDOC events and reviewer-grade curation—not only a provenance sidecar.
+    Each accepted contribution should map to one or more assertions; inverse
+    properties and symmetric relations can be materialized from this table.
 
     CIDOC: crminf:I2_Belief | PROV-O: prov:Entity
     """

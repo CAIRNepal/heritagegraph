@@ -7,7 +7,7 @@ Regenerates:
 - `heritage_graph_ui/src/lib/ontology/registry.generated.json`
 - `heritage_graph_ui/src/lib/ontology/registry.generated.ts`
 
-from `ontology/HeritageGraph.yaml`. Used as an offline fallback when the schema API is unavailable.
+from `ontology/HeritageGraph.yaml`, `tools/ui-classmap.yaml`, `tools/ui-presentation.yaml` (optional slot overrides), and `tools/contribute-hub.yaml`. Used as an offline fallback when the schema API is unavailable.
 
 ```bash
 # From repo root

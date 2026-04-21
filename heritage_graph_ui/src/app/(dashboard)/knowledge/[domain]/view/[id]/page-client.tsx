@@ -7,6 +7,7 @@ import { ArrowLeft, Edit, GitFork, MessageSquare, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OntologyUnavailablePanel } from "@/components/ontology/OntologyUnavailablePanel";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { OntologyField } from "@/lib/ontology";
 import { ReactionButtons } from "@/components/reaction-buttons";
@@ -78,17 +79,7 @@ export default function OntologyViewPage() {
   }, [fetchRecord]);
 
   if (!ontologyClass) {
-    return (
-      <div className="space-y-4 py-12 text-center">
-        <h2 className="text-2xl font-bold">Unknown domain</h2>
-        <p className="text-muted-foreground">
-          The domain &ldquo;{domain}&rdquo; is not recognized.
-        </p>
-        <Button variant="outline" onClick={() => router.push("/")}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-        </Button>
-      </div>
-    );
+    return <OntologyUnavailablePanel variant="knowledge" missingKey={domain} />;
   }
 
   if (isLoading) {

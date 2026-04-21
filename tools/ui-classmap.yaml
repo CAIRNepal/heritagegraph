@@ -1,0 +1,212 @@
+# UI class mapping for the YAML-driven schema registry.
+# This keeps UI-facing metadata (key, endpoint, icon, category, labels) in YAML
+# so it can be edited without touching TypeScript or Python code.
+#
+# This file is consumed by:
+# - backend schema registry builder (Django)
+# - offline generator (tools/linkml_generate_registry.py)
+#
+# Fields:
+# - linkml: LinkML class name in `ontology/HeritageGraph.yaml`
+# - key: UI registry key (used in routes/forms)
+# - apiEndpoint: DRF collection endpoint (must match `heritage_graph/apps/cidoc_data/urls.py`)
+# - icon/category/navigable/labels: UI hints
+classes:
+  - linkml: Person
+    key: person
+    apiEndpoint: /cidoc/persons/
+    label: Historical Person
+    labelPlural: Historical Persons
+    navigable: true
+    category: social
+    icon: user
+
+  - linkml: Place
+    key: location
+    apiEndpoint: /cidoc/locations/
+    label: Place / Location
+    labelPlural: Places / Locations
+    navigable: true
+    category: spatiotemporal
+    icon: map-pin
+
+  - linkml: HistoricalEvent
+    key: event
+    apiEndpoint: /cidoc/events/
+    label: Historical Event
+    labelPlural: Historical Events
+    navigable: true
+    category: event
+    icon: calendar
+
+  - linkml: ReligiousTradition
+    key: tradition
+    apiEndpoint: /cidoc/traditions/
+    label: Tradition
+    labelPlural: Traditions
+    navigable: true
+    category: conceptual
+    icon: sparkles
+
+  - linkml: InformationObject
+    key: source
+    apiEndpoint: /cidoc/sources/
+    label: Source / Document
+    labelPlural: Sources / Documents
+    navigable: true
+    category: provenance
+    icon: book-open
+
+  - linkml: Deity
+    key: deity
+    apiEndpoint: /cidoc/deities/
+    label: Deity
+    labelPlural: Deities
+    navigable: true
+    category: conceptual
+    icon: sun
+
+  - linkml: Guthi
+    key: guthi
+    apiEndpoint: /cidoc/guthis/
+    label: Guthi
+    labelPlural: Guthis
+    navigable: true
+    category: social
+    icon: users
+
+  - linkml: ArchitecturalStructure
+    key: structure
+    apiEndpoint: /cidoc/structures/
+    label: Architectural Structure
+    labelPlural: Architectural Structures
+    navigable: true
+    category: tangible
+    icon: landmark
+
+  - linkml: RitualEvent
+    key: ritual
+    apiEndpoint: /cidoc/rituals/
+    label: Ritual Event
+    labelPlural: Ritual Events
+    navigable: true
+    category: event
+    icon: flame-kindling
+
+  - linkml: Festival
+    key: festival
+    apiEndpoint: /cidoc/festivals/
+    label: Festival
+    labelPlural: Festivals
+    navigable: true
+    category: event
+    icon: party-popper
+
+  - linkml: IconographicObject
+    key: iconography
+    apiEndpoint: /cidoc/iconographic_objects/
+    label: Iconographic Object
+    labelPlural: Iconographic Objects
+    navigable: true
+    category: tangible
+    icon: image
+
+  - linkml: BuddhistMonument
+    key: monument
+    apiEndpoint: /cidoc/monuments/
+    label: Monument
+    labelPlural: Monuments
+    navigable: true
+    category: tangible
+    icon: landmark
+
+  - linkml: LivingGoddessTenure
+    key: kumari_tenure
+    apiEndpoint: /cidoc/kumari_tenures/
+    label: Kumari Tenure
+    labelPlural: Kumari Tenures
+    navigable: true
+    category: kumari
+    icon: crown
+
+  - linkml: LivingGoddessSelection
+    key: kumari_selection
+    apiEndpoint: /cidoc/kumari_selections/
+    label: Kumari Selection
+    labelPlural: Kumari Selections
+    navigable: true
+    category: kumari
+    icon: crown
+
+  - linkml: LivingGoddessRetirement
+    key: kumari_retirement
+    apiEndpoint: /cidoc/kumari_retirements/
+    label: Kumari Retirement
+    labelPlural: Kumari Retirements
+    navigable: true
+    category: kumari
+    icon: crown
+
+  - linkml: SyncreticRelationship
+    key: syncretism
+    apiEndpoint: /cidoc/syncretic_relationships/
+    label: Syncretic Relationship
+    labelPlural: Syncretic Relationships
+    navigable: true
+    category: conceptual
+    icon: shuffle
+
+  - linkml: CasteGroup
+    key: caste_group
+    apiEndpoint: /cidoc/caste_groups/
+    label: Caste Group
+    labelPlural: Caste Groups
+    navigable: true
+    category: social
+    icon: users
+
+  - linkml: CalendarSystem
+    key: calendar
+    apiEndpoint: /cidoc/calendar_systems/
+    label: Calendar System
+    labelPlural: Calendar Systems
+    navigable: true
+    category: spatiotemporal
+    icon: calendar-days
+
+  - linkml: HistoricalPeriod
+    key: period
+    apiEndpoint: /cidoc/historical_periods/
+    label: Historical Period
+    labelPlural: Historical Periods
+    navigable: true
+    category: spatiotemporal
+    icon: clock
+
+  - linkml: HeritageAssertion
+    key: assertion
+    apiEndpoint: /cidoc/assertions/
+    label: Heritage Assertion
+    labelPlural: Heritage Assertions
+    navigable: true
+    category: provenance
+    icon: badge-check
+
+  - linkml: DataSource
+    key: data_source
+    apiEndpoint: /cidoc/data_sources/
+    label: Data Source
+    labelPlural: Data Sources
+    navigable: false
+    category: provenance
+    icon: database
+
+  - linkml: CulturalEntity
+    key: entity
+    apiEndpoint: /data/api/cultural-entities/
+    label: Cultural Entity
+    labelPlural: Cultural Entities
+    navigable: true
+    category: tangible
+    icon: landmark
+

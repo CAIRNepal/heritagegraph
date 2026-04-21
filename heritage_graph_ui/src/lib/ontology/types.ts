@@ -11,6 +11,8 @@ export type FieldType =
   | "textarea"
   | "number"
   | "date"
+  | "edtf_date"
+  | "geo_point"
   | "select"
   | "multiselect"
   | "boolean"
@@ -49,6 +51,37 @@ export interface OntologyField {
   defaultValue?: string | number | boolean;
   /** RDF slot URI from LinkML (overlay from schema API / generator) */
   slot_uri?: string;
+  /** LinkML enum name when type is select and options were inlined from registry enums */
+  enum_range?: string;
+  /** From LinkML slot_usage / slot (when present) */
+  minimumCardinality?: number;
+  maximumCardinality?: number;
+}
+
+/** One row from tools/contribute-hub.yaml `hubCategories` */
+export interface ContributeHubCategoryRow {
+  key: string;
+  label: string;
+  icon: string;
+  order?: number;
+}
+
+/** One row from tools/contribute-hub.yaml `intents` */
+export interface ContributeHubIntentRow {
+  registryKey: string;
+  hubCategory: string;
+  route: string;
+  emoji: string;
+  shortDescription: string;
+  description: string;
+  difficulty: "beginner" | "intermediate" | "advanced";
+}
+
+/** Contribute landing metadata from tools/contribute-hub.yaml */
+export interface ContributeHubPayload {
+  hubCategories: ContributeHubCategoryRow[];
+  intents: ContributeHubIntentRow[];
+  quickStart: string[];
 }
 
 /** Column definition for knowledge data tables */
@@ -92,13 +125,35 @@ export interface OntologyClass {
   /** Whether this class is a top-level navigable domain */
   navigable?: boolean;
   /** Category grouping for sidebar/nav */
-  category?: "tangible" | "conceptual" | "event" | "social" | "spatiotemporal" | "provenance";
+  category?:
+    | "tangible"
+    | "conceptual"
+    | "event"
+    | "social"
+    | "spatiotemporal"
+    | "provenance"
+    | "kumari";
+}
+
+/** Generated JSON Schemas per class key (MT1) */
+export interface RegistryJsonSchemaBlob {
+  version: number;
+  byClassKey: Record<string, Record<string, unknown>>;
 }
 
 /** The full ontology registry */
 export interface OntologyRegistry {
+  /** Schema API hash / version string */
+  schema_version?: string;
   /** All registered ontology classes, keyed by class key */
   classes: Record<string, OntologyClass>;
   /** All enum definitions, keyed by enum key */
-  enums: Record<string, { value: string; label: string; description?: string }[]>;
+  enums: Record<
+    string,
+    readonly { readonly value: string; readonly label: string; readonly description?: string }[]
+  >;
+  /** Contribute dashboard copy and grouping (from tools/contribute-hub.yaml) */
+  contribute_hub?: ContributeHubPayload;
+  /** Optional JSON Schema bundle for client-side validation */
+  registry_jsonschema?: RegistryJsonSchemaBlob;
 }

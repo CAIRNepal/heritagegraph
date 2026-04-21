@@ -26,6 +26,24 @@ enums:
       Restored:
         description: "Repaired and stabilized"
 
+  CulturalEntityCategoryEnum:
+    permissible_values:
+      monument:
+        title: Monument
+        description: "Monument or built heritage"
+      artifact:
+        title: Artifact
+      ritual:
+        title: Ritual
+      festival:
+        title: Festival
+      tradition:
+        title: Tradition
+      document:
+        title: Document
+      other:
+        title: Other
+
 
   ExistenceStatusEnum:
     permissible_values:
@@ -741,6 +759,17 @@ classes:
       date_precision:
         range: DatePrecisionEnum
 
+  HistoricalPeriod:
+    class_uri: crm:E4_Period
+    description: >-
+      Named historical era for contextualizing heritage (e.g., Lichhavi, Malla,
+      Shah, Rana periods).
+    slots:
+      - name
+      - start_year
+      - end_year
+      - description
+
   # ========================================================================
   # PROVENANCE CLASSES (PROV-O aligned with CIDOC)
   # ========================================================================
@@ -799,6 +828,21 @@ classes:
       - source_url
       - source_language
       - note
+
+  CulturalEntity:
+    class_uri: heritageGraph:CulturalEntity
+    description: "High-level cultural contribution (monuments, festivals, rituals, traditions, artifacts) for the heritage_data review workflow."
+    slots:
+      - name
+      - category
+      - description
+    slot_usage:
+      name:
+        required: true
+      category:
+        required: true
+      description:
+        required: true
 
 
  
@@ -1323,6 +1367,26 @@ slots:
     slot_uri: rdfs:label 
     range: string
     description: "Primary name or label"
+
+  start_year:
+    slot_uri: heritageGraph:start_year
+    range: string
+    description: "Start boundary (e.g., '1768', 'c. 1200 BCE')"
+
+  end_year:
+    slot_uri: heritageGraph:end_year
+    range: string
+    description: "End boundary (e.g., '1482 CE', 'present')"
+
+  description:
+    slot_uri: schema:description
+    range: string
+    description: "Long-form narrative description"
+
+  category:
+    range: CulturalEntityCategoryEnum
+    description: "Domain category for a cultural entity contribution"
+    slot_uri: heritageGraph:entity_category
 
   is_component_of:
     slot_uri: crm:P46i_forms_part_of

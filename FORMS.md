@@ -26,64 +26,57 @@
 
 ## 1. Quick Start — Add a Field in 2 Minutes
 
-Want to add a "Commissioner" field to the Structure form? **One edit, zero component changes:**
+Want to add a "Commissioner" field to the Structure form?
 
-**File:** `heritage_graph_ui/src/lib/ontology/registry.ts`
+1. **LinkML** — In `ontology/HeritageGraph.yaml`, add a slot (e.g. `commissioner`) with `range`, `description`, and `slot_uri` where possible, and list it under `classes.ArchitecturalStructure.slots` (or `slot_usage` as needed).
+2. **Django** — Add `commissioner = models.CharField(max_length=200, blank=True)` on the structure model, serializer, and migrations ([Section 12](#12-backend-checklist--django-model-sync)).
+3. **Regenerate** — From repo root:
 
-Find the `architecturalStructure` definition and add to the `fields` array:
-
-```typescript
-{ 
-  key: "commissioner",           // Must match Django model field name
-  label: "Commissioned By",      // Human-readable label shown on form
-  type: "text",                  // Input type (see Field Type Reference)
-  section: "architecture",       // Which form section to group into
-  order: 3,                      // Sort order within section
-  placeholder: "e.g., King Pratap Malla",
-  description: "Person or entity who commissioned the structure"
-},
+```bash
+make ontology
 ```
 
-That's it. The form, data table, and detail view **all update automatically**.
+That updates `heritage_graph_ui/src/lib/ontology/registry.generated.json` (and `.ts`) with the new field. Forms and tables that use `OntologyProvider` / `OntologyForm` pick it up after refresh (and after `rebuild_schema_registry` on the server if you rely on the DB snapshot).
 
-> ⚠️ **Backend sync required:** You must also add `commissioner = models.CharField(max_length=200, blank=True)` to the Django model and run `makemigrations` + `migrate`. See [Section 12](#12-backend-checklist--django-model-sync).
+Optional: use **slot annotations** (`ui_section`, `ui_order`, etc.) in LinkML for layout; see `heritage_graph/apps/cidoc_data/ontology_builder.py`.
 
 ---
 
 ## 2. Architecture Overview
 
-HeritageGraph uses a **registry-driven** pattern. A single TypeScript file defines every entity type, its fields, dropdown options, and API endpoint. The UI components read from this registry and auto-generate forms, tables, and detail views.
+HeritageGraph uses a **YAML-driven registry** pattern:
+
+- **LinkML** (`ontology/HeritageGraph.yaml`) defines classes, slots, enums, and RDF URIs.
+- **`tools/ui-classmap.yaml`** maps LinkML classes to UI keys, API endpoints, icons, and nav categories.
+- **`tools/contribute-hub.yaml`** drives the contribute landing page (categories, copy, routes, quick start).
+- **`tools/linkml_generate_registry.py`** + `heritage_graph/apps/cidoc_data/ontology_builder.py` materialize a JSON/TS snapshot (`registry.generated.*`) and the same shape is served by `GET /api/v1/cidoc/schema/registry/`.
+
+The UI reads the effective registry via **`OntologyProvider`** and auto-generates forms, tables, and detail views.
 
 ```
-                  ┌───────────────────────────────────────┐
-                  │     src/lib/ontology/registry.ts      │
-                  │  ┌─────────────────────────────────┐  │
-                  │  │  OntologyClass definitions      │  │
-                  │  │  (fields, sections, columns,    │  │
-                  │  │   apiEndpoint, enums)            │  │
-                  │  └──────────┬──────────────────────┘  │
-                  └─────────────┼──────────────────────────┘
+   ontology/HeritageGraph.yaml  +  tools/ui-classmap.yaml  +  tools/contribute-hub.yaml
+                    │
+                    ▼
+          ontology_builder.py  /  linkml_generate_registry.py
+                    │
+                    ├── registry.generated.json  (fallback snapshot)
+                    └── Django schema registry API
                                 │
               ┌─────────────────┼─────────────────────┐
               │                 │                       │
               ▼                 ▼                       ▼
    ┌──────────────────┐ ┌─────────────────┐  ┌─────────────────────┐
-   │  OntologyForm    │ │ OntologyData    │  │  Record Detail View │
-   │  (Auto-generated │ │ Table (Auto-gen │  │  (Auto-generated    │
-   │   contribute     │ │  knowledge      │  │   entity view with  │
-   │   form)          │ │  listing)       │  │   sections)         │
-   └────────┬─────────┘ └────────┬────────┘  └─────────────────────┘
+   │  OntologyForm    │ │ Knowledge tables │  │  Record detail view │
+   └────────┬─────────┘ └────────┬─────────┘  └─────────────────────┘
             │                    │
-            │   POST payload     │   GET list
             ▼                    ▼
    ┌─────────────────────────────────────────┐
    │  Django REST Framework Backend          │
    │  models.py → serializers.py → views.py │
-   │  (fields must match registry keys)      │
    └─────────────────────────────────────────┘
 ```
 
-**Key principle:** The `key` values in the registry (e.g., `construction_date`, `structure_type`) **must exactly match** the Django model field names because `OntologyForm` sends `{ [field.key]: value }` and DRF's `ModelSerializer` expects those names.
+**Key principle:** Slot **`key`** values in the generated registry **must exactly match** Django model field names because `OntologyForm` sends `{ [field.key]: value }` and DRF's `ModelSerializer` expects those names.
 
 ---
 
@@ -93,21 +86,26 @@ HeritageGraph uses a **registry-driven** pattern. A single TypeScript file defin
 
 | File | Purpose |
 |------|---------|
-| `src/lib/ontology/types.ts` | TypeScript interfaces: `OntologyField`, `OntologyColumn`, `OntologyClass` |
-| `src/lib/ontology/enums.ts` | Controlled vocabularies (dropdown options for `select` fields) |
-| `src/lib/ontology/registry.ts` | **THE registry** — all 13 entity class definitions |
+| `ontology/HeritageGraph.yaml` | LinkML schema: classes, slots, enums, URIs |
+| `tools/ui-classmap.yaml` | Maps LinkML classes → UI key, `/cidoc/...` endpoint, icon, category |
+| `tools/contribute-hub.yaml` | Contribute dashboard: hub categories, intents, quick start |
+| `heritage_graph/apps/cidoc_data/ontology_builder.py` | Builds registry payload for API + generator |
+| `tools/linkml_generate_registry.py` | Writes `registry.generated.json` / `.ts` (run `make ontology`) |
+| `src/lib/ontology/registry.generated.ts` | Committed snapshot; offline / pre-auth baseline |
+| `src/lib/ontology/types.ts` | TypeScript interfaces: `OntologyField`, `OntologyColumn`, `OntologyClass`, `ContributeHubPayload` |
+| `src/lib/ontology/enums.ts` | Legacy TS enums (optional reference; **select options** come from generated `enums` + inlined `options`) |
 | `src/lib/ontology/index.ts` | Barrel re-export |
 
 ### Currently Registered Classes
 
 | Key | Label | Category | API Endpoint |
 |-----|-------|----------|-------------|
-| `person` | Person | social | `/cidoc/persons/` |
-| `location` | Place | spatiotemporal | `/cidoc/locations/` |
-| `event` | Event | event | `/cidoc/events/` |
+| `person` | Historical Person | social | `/cidoc/persons/` |
+| `location` | Place / Location | spatiotemporal | `/cidoc/locations/` |
+| `event` | Historical Event | event | `/cidoc/events/` |
 | `period` | Historical Period | spatiotemporal | `/cidoc/historical_periods/` |
 | `tradition` | Tradition | conceptual | `/cidoc/traditions/` |
-| `source` | Source | provenance | `/cidoc/sources/` |
+| `source` | Source / Document | provenance | `/cidoc/sources/` |
 | `deity` | Deity | conceptual | `/cidoc/deities/` |
 | `guthi` | Guthi | social | `/cidoc/guthis/` |
 | `structure` | Architectural Structure | tangible | `/cidoc/structures/` |
@@ -120,41 +118,16 @@ HeritageGraph uses a **registry-driven** pattern. A single TypeScript file defin
 
 ## 4. How to Add a New Field to an Existing Form
 
-### Step 1 — Edit the registry (Frontend)
+### Step 1 — Edit LinkML (schema)
 
-Open `src/lib/ontology/registry.ts`, find the entity definition, and add to its `fields` array:
+1. Add a slot under `slots:` in `ontology/HeritageGraph.yaml` (with `range`, `description`, `slot_uri` as appropriate).
+2. Add the slot name to `classes.<YourLinkMLClass>.slots` (or `slot_usage` for overrides).
+3. Optionally set slot annotations `ui_section`, `ui_order`, `ui_placeholder`, `ui_widget` (see `ontology_builder._slot_ui_overrides`).
+4. Run `make ontology` and commit `registry.generated.json` / `.ts`.
 
-```typescript
-// Example: adding "restoration_date" to architecturalStructure
-const architecturalStructure: OntologyClass = {
-  // ...existing properties...
-  fields: [
-    // ...existing fields...
-    
-    // ➕ ADD THIS:
-    { 
-      key: "restoration_date",       // Must match Django field name
-      label: "Last Restoration",
-      type: "text",
-      section: "status",             // Groups into the "Status & Condition" section
-      order: 3,                      // After "condition" (order: 2)
-      placeholder: "e.g., 2015 CE, after 2015 earthquake",
-      description: "Date of most recent restoration"
-    },
-  ],
-};
-```
+### Step 2 — Columns (optional)
 
-### Step 2 — Add to columns (Optional)
-
-If you want it visible in the knowledge data table, add to the `columns` array:
-
-```typescript
-columns: [
-  // ...existing columns...
-  { key: "restoration_date", label: "Restored", sortable: true, visible: true },
-],
-```
+By default the builder emits columns from the first fields. To override, use a **class annotation** `ui_columns` (JSON string) on the LinkML class — see `ontology_builder._class_ui_overrides`.
 
 ### Step 3 — Add Django model field (Backend)
 
@@ -184,36 +157,17 @@ python manage.py migrate
 
 ## 5. How to Add a New Enum (Dropdown Options)
 
-### Step 1 — Define the enum in `enums.ts`
+### Step 1 — Define the enum in LinkML
 
-Open `src/lib/ontology/enums.ts` and add:
+In `ontology/HeritageGraph.yaml`, under `enums:`, add `permissible_values` with optional `title` / `description` per value. Set the slot’s `range` to that enum name.
 
-```typescript
-export const ontologyEnums = {
-  // ...existing enums...
+### Step 2 — Regenerate
 
-  // ➕ ADD THIS:
-  CalendarSystemEnum: [
-    { value: "Nepal_Sambat", label: "Nepal Sambat", description: "Nepal's indigenous calendar" },
-    { value: "Bikram_Sambat", label: "Bikram Sambat", description: "Vikrama calendar used in Nepal" },
-    { value: "CE", label: "Common Era (CE)", description: "Gregorian calendar" },
-    { value: "Buddhist", label: "Buddhist Calendar" },
-  ],
-} as const;
+```bash
+make ontology
 ```
 
-### Step 2 — Use it in a field definition
-
-```typescript
-{ 
-  key: "calendar_system",
-  label: "Calendar System",
-  type: "select",                              // ← Must be "select" for dropdowns
-  options: ontologyEnums.CalendarSystemEnum,    // ← Reference the enum
-  section: "temporal",
-  order: 4,
-},
-```
+The builder emits the enum under `registry.enums` and inlines **`options`** on each `select` field whose range is that enum.
 
 ### Step 3 — Add Django model choices (Backend)
 
@@ -240,31 +194,11 @@ class YourModel(MetaData):
 
 ## 6. How to Add a New Form Section
 
-Sections group related fields under collapsible accordion headers. To add one:
+Sections group related fields under collapsible accordion headers.
 
-### Edit the entity definition in `registry.ts`:
-
-```typescript
-const architecturalStructure: OntologyClass = {
-  // ...
-  sections: [
-    { key: "basic", label: "Basic Information" },
-    { key: "architecture", label: "Architecture" },
-    { key: "status", label: "Status & Condition" },
-    { key: "location", label: "Location" },
-    
-    // ➕ ADD THIS:
-    { key: "cultural", label: "Cultural Significance", description: "Associations with deities and rituals" },
-  ],
-  fields: [
-    // ...existing fields...
-    
-    // ➕ Fields in the new section:
-    { key: "primary_deity", label: "Primary Deity", type: "text", section: "cultural", order: 1 },
-    { key: "ritual_significance", label: "Ritual Significance", type: "textarea", section: "cultural", order: 2 },
-  ],
-};
-```
+1. Prefer **slot annotations** `ui_section` and `ui_order` on each slot in LinkML (see `ontology_builder`).
+2. Alternatively set a **class annotation** `ui_sections` (JSON array) on the LinkML class for full control.
+3. Run `make ontology`.
 
 The `OntologyForm` renders each section as an `AccordionItem`. Sections with no fields are automatically hidden.
 
@@ -274,60 +208,16 @@ The `OntologyForm` renders each section as an `AccordionItem`. Sections with no 
 
 This is the most involved task. Here's the full checklist:
 
-### Step 1 — Define the OntologyClass (Frontend)
+### Step 1 — LinkML + UI classmap
 
-Add to `src/lib/ontology/registry.ts`:
+1. Add a **class** (and its slots) in `ontology/HeritageGraph.yaml`.
+2. Add a row to **`tools/ui-classmap.yaml`**: `linkml`, `key` (URL route segment / registry key), `apiEndpoint` (must match `heritage_graph/apps/cidoc_data/urls.py`), `label`, `category`, `icon`, `navigable`.
+3. Optionally add **intents** to `tools/contribute-hub.yaml` if the type should appear on the contribute dashboard.
+4. Run `make ontology`.
 
-```typescript
-const inscription: OntologyClass = {
-  key: "inscription",                              // URL-safe key (used in routes)
-  label: "Inscription",                            // Singular label
-  labelPlural: "Inscriptions",                     // Plural label
-  description: "Ancient stone or copper inscriptions recording historical events",
-  classUri: "crm:E34_Inscription",                 // CIDOC-CRM class (optional)
-  icon: "file-text",                               // Lucide icon name
-  apiEndpoint: "/cidoc/inscriptions/",             // Must match Django URL
-  category: "tangible",                            // For sidebar grouping
-  navigable: true,                                 // Show in navigation
-  sections: [
-    { key: "basic", label: "Basic Information" },
-    { key: "content", label: "Content & Language" },
-    { key: "location", label: "Location" },
-  ],
-  fields: [
-    nameField("Inscription Name"),
-    descriptionField(),
-    { key: "inscription_type", label: "Type", type: "select", section: "basic", order: 3, required: true, options: [
-      { value: "Stone", label: "Stone Inscription" },
-      { value: "Copper", label: "Copper Plate" },
-      { value: "PalmLeaf", label: "Palm Leaf" },
-    ]},
-    { key: "language", label: "Language", type: "text", section: "content", order: 1, placeholder: "e.g., Sanskrit, Newari" },
-    { key: "script", label: "Script", type: "text", section: "content", order: 2, placeholder: "e.g., Lichhavi, Ranjana" },
-    { key: "date_text", label: "Date on Inscription", type: "text", section: "content", order: 3 },
-    { key: "location_name", label: "Current Location", type: "text", section: "location", order: 1 },
-    { key: "coordinates", label: "Coordinates", type: "coordinates", section: "location", order: 2, placeholder: "Lat, Long" },
-    noteField(),
-  ],
-  columns: [
-    { key: "name", label: "Name", sortable: true, visible: true },
-    { key: "inscription_type", label: "Type", sortable: true, visible: true, format: "badge" },
-    { key: "language", label: "Language", sortable: true, visible: true },
-    { key: "location_name", label: "Location", sortable: true, visible: true },
-  ],
-};
-```
+### Step 2 — Django
 
-### Step 2 — Register it in the export
-
-In the same file, add to the `ontologyClasses` object:
-
-```typescript
-export const ontologyClasses: Record<string, OntologyClass> = {
-  // ...existing entries...
-  inscription,     // ➕ ADD
-};
-```
+Add `Model`, `Serializer`, `ViewSet`, `router.register(...)`, and migrations.
 
 ### Step 3 — Create page stubs (Frontend)
 
@@ -521,30 +411,11 @@ Each field maps to:
 
 ---
 
-## 11. Custom Wizard Forms vs Auto-Generated Forms
+## 11. Registry-driven forms vs optional custom wizards
 
-HeritageGraph has **two form systems**:
+**Current default:** Structure, Ritual, and all other CIDOC entity contribute routes use **`ContributeOntologyForm` → `OntologyForm`**, driven by the generated registry (`ontology/HeritageGraph.yaml` + `tools/ui-classmap.yaml`). Multi-section types use the built-in step navigation inside `OntologyForm` when a class defines multiple `sections`.
 
-### A) Auto-Generated Forms (`OntologyForm`)
-
-- Used by most entity types (Person, Location, Event, Period, etc.)
-- Reads from the registry, renders all fields in accordion sections
-- Single-page form with one Submit button
-- Page stub is 3 lines of code
-
-**Good for:** Simple entity types with flat fields.
-
-### B) Custom Wizard Forms (Step-by-step)
-
-- Used by Structure (`contribute/structure/page.tsx`) and Ritual (`contribute/ritual/page.tsx`)
-- Multi-step wizards with progressive disclosure
-- Use `StepWizard`, `TypePicker`, `AssertionWrapper`, `EntitySearch` components
-- Handcrafted UI with step validation
-- Support provenance (assertion) data on submit
-
-**Good for:** Complex entities that benefit from guided, step-by-step input.
-
-### Shared Wizard Components
+**Optional building blocks** for bespoke flows (new features, not used by default routes today):
 
 | Component | File | Purpose |
 |-----------|------|---------|
@@ -554,13 +425,9 @@ HeritageGraph has **two form systems**:
 | `AssertionWrapper` | `src/components/contribute/assertion-wrapper.tsx` | Source + confidence fields |
 | `EntitySearch` | `src/components/contribute/entity-search.tsx` | Search-and-link for relations |
 
-### When to use which?
+Use these when you need provenance-heavy or highly custom UX; keep field definitions in LinkML so the registry remains the contract for validation and API shape.
 
-| Scenario | Use |
-|----------|-----|
-| Simple entity, flat fields, quick contribution | `OntologyForm` (auto-generated) |
-| Complex entity, many sections, relational fields, provenance tracking | Custom wizard |
-| Quick prototyping of a new entity type | `OntologyForm` first, then upgrade to wizard |
+**Cultural entities** (`contribute/entity`) use the same `OntologyForm` with the `entity` class from the registry (`CulturalEntity` in LinkML, API `/data/api/cultural-entities/`).
 
 ---
 
@@ -587,7 +454,7 @@ Every registry field needs a corresponding Django model field. Here's the sync c
 
 When adding a field, verify:
 
-1. ✅ `field.key` in `registry.ts` matches `field_name` in Django model
+1. ✅ Slot / field `key` in the generated registry matches `field_name` in Django model
 2. ✅ `select` options `value` strings match Django `choices` first-element strings
 3. ✅ `required: true` fields have `blank=False` (or no `blank=True`) in Django
 4. ✅ Run `makemigrations` + `migrate` after model changes
@@ -615,7 +482,7 @@ python manage.py migrate
 |------|------|
 | `src/lib/ontology/types.ts` | TypeScript interfaces for the ontology type system |
 | `src/lib/ontology/enums.ts` | Controlled vocabularies (dropdown options) |
-| `src/lib/ontology/registry.ts` | **Single source of truth** — all entity class definitions |
+| `ontology/HeritageGraph.yaml` + `tools/ui-classmap.yaml` | **Single source of truth** for generated registry |
 | `src/lib/ontology/index.ts` | Barrel re-exports |
 | `src/components/ontology-form.tsx` | Generic auto-generated contribute form |
 | `src/components/ontology-data-table.tsx` | Generic auto-generated knowledge data table |
@@ -730,11 +597,11 @@ When a user uploads a document alongside a contribution form:
 
 | I want to... | Do this |
 |--------------|---------|
-| Add a text field | Add to `fields[]` in `registry.ts` + Django model |
+| Add a text field | Add LinkML slot + class slots; `make ontology`; Django model |
 | Add a dropdown | Add enum to `enums.ts`, reference in field's `options` |
 | Add a form section | Add to `sections[]` in the class definition |
 | Add a new entity type | Follow [Section 7](#7-how-to-add-a-completely-new-entity-type) (8 steps) |
-| See all entity types | Check `ontologyClasses` export in `registry.ts` |
+| See all entity types | Inspect `registry.generated.json` or `tools/ui-classmap.yaml` |
 | Change form layout | Edit `sections` and field `order` values |
 | Add table column | Add to `columns[]` in the class definition |
 | Build a complex wizard | Use `StepWizard` + `TypePicker` components |

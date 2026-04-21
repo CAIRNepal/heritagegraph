@@ -66,6 +66,7 @@ import {
 
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { useOntology } from "@/lib/ontology";
 
 const data = {
   user: {
@@ -391,24 +392,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [showScrollTop, setShowScrollTop] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const { isModerator, isReviewer, isPlatformAdmin } = useSidebarRoles();
+  const { registry } = useOntology();
 
   const knowledgeBrowseItems = React.useMemo(
-    () => [
-      { title: t('person'), url: '/knowledge/person', icon: IconUser },
-      { title: t('location'), url: '/knowledge/location', icon: IconMapPin },
-      { title: t('event'), url: '/knowledge/event', icon: IconCalendarEvent },
-      { title: t('historicalPeriod'), url: '/knowledge/period', icon: IconClock },
-      { title: t('traditionPractice'), url: '/knowledge/tradition', icon: IconFlame },
-      { title: t('source'), url: '/knowledge/source', icon: IconInvoice },
-      { title: t('deity'), url: '/knowledge/deity', icon: IconMoodSmile },
-      { title: t('guthi'), url: '/knowledge/guthi', icon: IconHomeCog },
-      { title: t('structure'), url: '/knowledge/structure', icon: IconBuildingArch },
-      { title: t('ritual'), url: '/knowledge/ritual', icon: IconCandle },
-      { title: t('festival'), url: '/knowledge/festival', icon: IconConfetti },
-      { title: t('iconography'), url: '/knowledge/iconography', icon: IconPalette },
-      { title: t('monument'), url: '/knowledge/monument', icon: IconColumns },
-    ],
-    [t],
+    () => {
+      const iconMap: Record<string, unknown> = {
+        user: IconUser,
+        "map-pin": IconMapPin,
+        calendar: IconCalendarEvent,
+        clock: IconClock,
+        flame: IconFlame,
+        "book-open": IconInvoice,
+        sun: IconMoodSmile,
+        users: IconUsers,
+        landmark: IconBuildingArch,
+        "flame-kindling": IconCandle,
+        "party-popper": IconConfetti,
+        image: IconPalette,
+        columns: IconColumns,
+        shuffle: IconGitFork,
+        "badge-check": IconShield,
+        database: IconInvoice,
+      };
+
+      return Object.values(registry.classes)
+        .filter((c) => c.navigable)
+        .slice()
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .map((c) => ({
+          title: c.label,
+          url: `/knowledge/${c.key}`,
+          icon: c.icon ? iconMap[c.icon] : undefined,
+        }));
+    },
+    [registry.classes],
   );
 
   React.useEffect(() => {

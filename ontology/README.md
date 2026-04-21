@@ -9,6 +9,6 @@
 make ontology
 ```
 
-The Django schema endpoint (`GET /api/v1/cidoc/schema/registry/`) and the Next.js app merge these semantics into the hand-tuned baseline in `heritage_graph_ui/src/lib/ontology/registry.ts`.
+The Django schema endpoint (`GET /api/v1/cidoc/schema/registry/`) and the Next.js app consume the materialized registry (`registry.generated.*` as fallback), built from this YAML plus `tools/ui-classmap.yaml` and `tools/contribute-hub.yaml`.
 
-If you maintain a duplicate `Heritagegraph.yaml` at the repository root for tooling compatibility, treat **`ontology/HeritageGraph.yaml`** as authoritative and sync copies deliberately.
+The repository must not contain a second copy at the repo root (`Heritagegraph.yaml`). CI runs `make ontology-check`, which fails if that file exists.
