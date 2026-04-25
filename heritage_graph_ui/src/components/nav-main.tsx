@@ -26,6 +26,8 @@ export function NavMain({
 }) {
   const pathname = usePathname();
 
+  if (items.length === 0) return null;
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-1">
@@ -35,7 +37,10 @@ export function NavMain({
           </SidebarGroupLabel>
 
           {items.map((item) => {
-            const isActive = pathname === item.url || pathname.startsWith(item.url + '/');
+            const isActive =
+              item.url === '/'
+                ? pathname === '/'
+                : pathname === item.url || pathname.startsWith(item.url + '/');
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>

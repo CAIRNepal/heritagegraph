@@ -37,11 +37,11 @@ export function NavKnowledgebase({
   items: KnowledgeNavItem[];
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
   const itemsRef = React.useRef(items);
   itemsRef.current = items;
 
-  const hubActive = pathname === hubUrl || pathname.startsWith(`${hubUrl}/`);
+  const hubActive = pathname === hubUrl;
 
   React.useEffect(() => {
     const inNested = itemsRef.current.some(

@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 
 import {
-  IconCamera,
   IconChartBar,
   IconLayoutDashboard,
   IconTrophy,
@@ -20,13 +19,11 @@ import {
   IconCalendarEvent,
   IconClock,
   IconFlame,
-  IconFileAi,
   IconInvoice,
   IconFileDescription,
   IconUsers,
   IconBuilding,
   IconMoodSmile,
-  IconHomeCog,
   IconBuildingArch,
   IconCandle,
   IconConfetti,
@@ -34,7 +31,6 @@ import {
   IconColumns,
   IconShield,
   IconScale,
-  IconAlertTriangle,
   IconDashboard,
   IconGraph,
   IconQrcode,
@@ -45,6 +41,7 @@ import {
   IconSettings,
   IconListCheck,
 } from '@tabler/icons-react';
+import type { Icon } from '@tabler/icons-react';
 
 // import { useSidebar } from '@/components/ui/sidebar';
 // import { NavDocuments } from '@/components/nav-documents';
@@ -55,283 +52,16 @@ import { NavKnowledgebase } from '@/components/nav-knowledgebase';
 import {
   Sidebar,
   SidebarContent,
-  // SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
-  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 
-import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { apiFetchJson } from '@/lib/api-client';
 import { getPublicApiUrl } from '@/lib/api-base';
 import { useOntology } from "@/lib/ontology";
-
-const data = {
-  user: {
-    name: 'nabin2004',
-    email: 'nabin.oli@cair-nepal.org',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  // navMain: [
-  //   {
-  //     title: 'Dashboard',
-  //     url: '/dashboard',
-  //     icon: IconLayoutDashboard,
-  //   },
-  //   {
-  //     title: 'Leaderboard',
-  //     url: '/leaderboard',
-  //     icon: IconTrophy,
-  //   },
-  //   {
-  //     title: 'Contribute',
-  //     url: '/contribute',
-  //     icon: IconPlus,
-  //   },
-  //   {
-  //     title: 'Notification',
-  //     url: '/notification',
-  //     icon: IconBell,
-  //   },
-  //   {
-  //     title: 'team',
-  //     url: '/team',
-  //     icon: IconUsersGroup,
-  //   },
-  //   // {
-  //   //   title: "Team",
-  //   //   url: "#",
-  //   //   icon: IconUsers,
-  //   // },
-  // ],
-  navClouds: [
-    {
-      title: 'Capture',
-      icon: IconCamera,
-      isActive: true,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Proposal',
-      icon: IconFileDescription,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-    {
-      title: 'Prompts',
-      icon: IconFileAi,
-      url: '#',
-      items: [
-        {
-          title: 'Active Proposals',
-          url: '#',
-        },
-        {
-          title: 'Archived',
-          url: '#',
-        },
-      ],
-    },
-  ],
-  navSecondary: [
-    // {
-    //   title: "Settings",
-    //   url: "#",
-    //   icon: IconSettings,
-    // },
-    // {
-    //   title: "Get Help",
-    //   url: "#",
-    //   icon: IconHelp,
-    // },
-    // {
-    //   title: "Search",
-    //   url: "#",
-    //   icon: IconSearch,
-    // },
-  ],
-  // data: [
-  //   {
-  //     name: "Graph Library",
-  //     url: "#",
-  //     icon: IconDatabase,
-  //   },
-  //   {
-  //     name: "Graph Explore",
-  //     url: "#",
-  //     icon: IconReport,
-  //   },
-  //   {
-  //     name: "SPARQL",
-  //     url: "#",
-  //     icon: IconFileWord,
-  //   },
-  // ],
-
-  navKnowledgebase: [
-    {
-      title: 'Cultural Entity',
-      url: '/knowledge/entity',
-      icon: IconBuildingCommunity,
-    },
-    {
-      title: 'Person',
-      url: '/knowledge/person',
-      icon: IconUser,
-    },
-    {
-      title: 'Location',
-      url: '/knowledge/location',
-      icon: IconMapPin,
-    },
-    // {
-    //   title: 'Object Attributes',
-    //   url: '/knowledge/performing-arts',
-    //   icon: IconMusic,
-    // },
-    {
-      title: 'Event',
-      url: '/knowledge/event',
-      icon: IconCalendarEvent,
-    },
-    {
-      title: 'Historical Period',
-      url: '/knowledge/period',
-      icon: IconClock,
-    },
-    {
-      title: 'Tradition / Practice',
-      url: '/knowledge/tradition',
-      icon: IconFlame
-    },
-    {
-      title: 'Source',
-      url: '/knowledge/source',
-      icon: IconInvoice,
-    },
-    {
-      title: 'Deity',
-      url: '/knowledge/deity',
-      icon: IconMoodSmile,
-    },
-    {
-      title: 'Guthi',
-      url: '/knowledge/guthi',
-      icon: IconHomeCog,
-    },
-    {
-      title: 'Structure',
-      url: '/knowledge/structure',
-      icon: IconBuildingArch,
-    },
-    {
-      title: 'Ritual',
-      url: '/knowledge/ritual',
-      icon: IconCandle,
-    },
-    {
-      title: 'Festival',
-      url: '/knowledge/festival',
-      icon: IconConfetti,
-    },
-    {
-      title: 'Iconography',
-      url: '/knowledge/iconography',
-      icon: IconPalette,
-    },
-    {
-      title: 'Monument',
-      url: '/knowledge/monument',
-      icon: IconColumns,
-    },
-  ],
-
-  navCuration: [
-    {
-      title: 'Reviewer Dashboard',
-      url: '/curation/dashboard',
-      icon: IconDashboard,
-    },
-    {
-      title: 'Review Queue',
-      url: '/curation/review',
-      icon: IconShield,
-    },
-    {
-      title: 'Conflicts',
-      url: '/curation/conflicts',
-      icon: IconScale,
-    },
-    {
-      title: 'Fork Viewer',
-      url: '/curation/forks',
-      icon: IconGitFork,
-    },
-    {
-      title: 'Contributions Queue',
-      url: '/curation/contributions',
-      icon: IconFileDescription,
-    },
-    {
-      title: 'Activity Log',
-      url: '/curation/activity',
-      icon: IconChartBar,
-    },
-    {
-      title: 'QR Contributions',
-      url: '/curation/qr-contributions',
-      icon: IconQrcode,
-    },
-  ],
-
-  navCommunity: [
-    {
-      title: 'Contributors',
-      url: '/community/contributors',
-      icon: IconUsers,
-    },
-    {
-      title: 'Organizations',
-      url: '/community/organizations',
-      icon: IconBuilding,
-    },
-    // { name: "Leaderboard", url: "/community/leaderboard", icon: IconListDetails },
-  ],
-
-  navResources: [
-    // { name: 'Data Releases', url: '/resources/releases', icon: IconDatabase },
-    // { name: 'Data Licensing', url: '/resources/licensing', icon: IconFileWord },
-    // { name: 'APIs & Tools', url: '/resources/apis', icon: IconFileAi },
-  ],
-
-  navAbout: [
-    // { name: 'About', url: '/about', icon: IconHelp },
-    // { name: 'Documentation', url: '/docs', icon: IconFileDescription },
-    // { name: 'Contact', url: '/contact', icon: IconSearch },
-  ],
-};
 
 const API_BASE = getPublicApiUrl();
 
@@ -397,7 +127,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const knowledgeBrowseItems = React.useMemo(
     () => {
-      const iconMap: Record<string, unknown> = {
+      const iconMap: Record<string, Icon> = {
         user: IconUser,
         "map-pin": IconMapPin,
         calendar: IconCalendarEvent,
@@ -489,7 +219,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           items={[
             { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
             { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
-            { title: t('knowledgeHub'), url: '/knowledge/entity', icon: IconBuildingCommunity },
             ...(showAuthedNav
               ? [{ title: t('progression'), url: '/progression', icon: IconMedal }]
               : []),
@@ -516,9 +245,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <NavMain navtitle={t('claim')} items={[
           ...(isReviewer ? [
-            { title: 'Identity queue', url: '/curation/identity', icon: IconGitFork },
+            { title: t('identityQueue'), url: '/curation/identity', icon: IconGitFork },
             { title: t('conflicts'), url: '/curation/conflicts', icon: IconScale },
-            { title: 'Truth Claims', url: '/knowledge/assertion', icon: IconShield },
+            { title: t('truthClaims'), url: '/knowledge/assertion', icon: IconShield },
           ] : []),
         ]} />
 
@@ -526,7 +255,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ...(isModerator ? [{ title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard }] : []),
           ...(isReviewer ? [
             { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
-            { title: 'Review workspace', url: '/review', icon: IconListCheck },
+            { title: t('reviewWorkspace'), url: '/review', icon: IconListCheck },
           ] : []),
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
