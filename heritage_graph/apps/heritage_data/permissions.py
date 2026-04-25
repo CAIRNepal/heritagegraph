@@ -94,3 +94,17 @@ class IsStaffOrExpertCurator(permissions.BasePermission):
             return False
         rr = request.user.reviewer_role
         return rr.is_active and rr.role == 'expert_curator'
+
+
+class IsSchemaExtensionModerator(permissions.BasePermission):
+    """
+    Moderators Django group or staff — approve/reject/publish schema extension proposals.
+    Staff is included for operational parity with other moderator gates in the codebase.
+    """
+
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.user.is_staff:
+            return True
+        return request.user.groups.filter(name="Moderators").exists()

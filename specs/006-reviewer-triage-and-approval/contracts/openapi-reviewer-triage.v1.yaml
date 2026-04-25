@@ -1,0 +1,163 @@
+# Contract sketch: Review queue triage extensions
+# Align with heritage_graph urls: /api/v1/data/review-queue/
+openapi: 3.0.3
+info:
+  title: HeritageGraph — Review queue triage
+  version: 1.0.0
+  description: |
+    Extensions to the existing ReadOnlyModelViewSet `ReviewQueueViewSet`.
+    Authentication: Bearer (Google ID token) required; community reviewer permission.
+
+servers:
+  - url: /api/v1/data
+    description: Heritage data API prefix
+
+paths:
+  /review-queue/:
+    get:
+      summary: List review queue with triage fields
+      operationId: listReviewQueueTriage
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: queue_type
+          in: query
+          schema:
+            type: string
+            enum: [all, new_claims, conflicts, flagged, expiring]
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: my_domain
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+        - name: ordering
+          in: query
+          description: Sort order; add triage_priority
+          schema:
+            type: string
+            enum:
+              - triage_priority
+              - -triage_priority
+              - created_at
+              - -created_at
+              - updated_at
+              - -updated_at
+        - name: stale_days
+          in: query
+          description: When set, only entities with days_in_review >= stale_days
+          schema:
+            type: integer
+            minimum: 1
+        - name: max_trust_tier_rank
+          in: query
+          description: Inclusive upper bound on worst-tier rank (implementation-defined 0=worst)
+          schema:
+            type: integer
+            minimum: 0
+        - name: contradictions_only
+          in: query
+          schema:
+            type: string
+            enum: ["true", "false"]
+      responses:
+        "200":
+          description: Paginated or list response per existing API
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Existing list envelope; each result item MAY include triage_* fields below
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /review-queue/triage-policy/:
+    get:
+      summary: Active triage weights and tier map (read-only for reviewers)
+      operationId: getTriagePolicy
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Active policy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriagePolicy"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+    Forbidden:
+      description: Not a reviewer
+
+  schemas:
+    TriageBreakdown:
+      type: object
+      properties:
+        age_component:
+          type: number
+        flags_component:
+          type: number
+        conflict_component:
+          type: number
+        source_component:
+          type: number
+        weights:
+          type: object
+          additionalProperties: true
+        tie_breakers:
+          type: object
+          additionalProperties: true
+
+    QueueItemTriage:
+      type: object
+      properties:
+        triage_priority:
+          type: integer
+          description: Higher = sooner (per implementation contract)
+        triage_breakdown:
+          $ref: "#/components/schemas/TriageBreakdown"
+        worst_source_tier:
+          type: string
+        worst_source_type:
+          type: string
+          nullable: true
+
+    TriagePolicy:
+      type: object
+      properties:
+        w_age:
+          type: number
+        w_flags:
+          type: number
+        w_conflict:
+          type: number
+        w_source:
+          type: number
+        s_max_days:
+          type: integer
+        f_max_flags:
+          type: integer
+        tier_rank:
+          type: array
+          items:
+            type: string

@@ -48,6 +48,19 @@ interface ForkContext {
   parent_current_revision: Revision | null; parent_comments?: ParentComment[];
   created_at: string;
 }
+interface TriageBreakdown {
+  age_norm: number;
+  flags_norm: number;
+  conflict_boost: number;
+  source_penalty: number;
+  weights: Record<string, number>;
+  days_in_review: number;
+  unresolved_flag_count: number;
+  has_contradiction: boolean;
+  worst_tier_label: string;
+  worst_source_type: string | null;
+}
+
 interface ReviewWorkspaceData {
   entity_id: string; name: string; description: string; category: string; status: string;
   contributor: UserInfo; current_revision: Revision | null; created_at: string; updated_at: string;
@@ -55,6 +68,10 @@ interface ReviewWorkspaceData {
   flags: ReviewFlagItem[]; contributor_stats: ContributorStats;
   is_fork?: boolean; fork_context?: ForkContext | null;
   root_entity?: string | null; parent_entity?: string | null; fork_depth?: number;
+  triage_priority?: number;
+  triage_breakdown?: TriageBreakdown;
+  worst_source_tier?: string;
+  worst_source_type?: string | null;
 }
 
 type Verdict = 'accept' | 'accept_with_edits' | 'request_changes' | 'reject' | 'escalate';
@@ -250,6 +267,43 @@ export default function ReviewWorkspacePage() {
             </div>
           </motion.div>
         </motion.div>
+
+        {workspace.triage_breakdown != null && (
+          <motion.div variants={fadeInUp} initial="hidden" animate="show" className={glassCard}>
+            <div className="p-4 border-b border-blue-200 dark:border-gray-700 flex flex-wrap items-center gap-2">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-blue-900 dark:text-blue-100">
+                <Scale className="h-4 w-4 text-blue-500" /> Queue triage
+              </h3>
+              <Badge variant="secondary" className="font-mono text-xs">
+                priority {typeof workspace.triage_priority === 'number'
+                  ? workspace.triage_priority.toFixed(3)
+                  : workspace.triage_priority ?? '—'}
+              </Badge>
+              {workspace.worst_source_tier && (
+                <Badge variant="outline" className="text-xs">worst tier: {workspace.worst_source_tier}</Badge>
+              )}
+              {workspace.worst_source_type != null && workspace.worst_source_type !== '' && (
+                <Badge variant="outline" className="text-xs">source: {workspace.worst_source_type}</Badge>
+              )}
+            </div>
+            <div className="p-4 text-xs text-blue-800 dark:text-blue-200">
+              <details className="group">
+                <summary className="cursor-pointer font-medium text-blue-900 dark:text-blue-100 list-none flex items-center gap-1">
+                  <span className="group-open:rotate-90 transition-transform inline-block">▸</span>
+                  Score breakdown (same logic as review queue)
+                </summary>
+                <dl className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 border-t border-blue-100 dark:border-gray-700 pt-3">
+                  <div><dt className="text-muted-foreground">Age (norm)</dt><dd className="font-mono">{workspace.triage_breakdown.age_norm?.toFixed?.(3)}</dd></div>
+                  <div><dt className="text-muted-foreground">Flags (norm)</dt><dd className="font-mono">{workspace.triage_breakdown.flags_norm?.toFixed?.(3)}</dd></div>
+                  <div><dt className="text-muted-foreground">Conflict</dt><dd className="font-mono">{workspace.triage_breakdown.conflict_boost?.toFixed?.(3)}</dd></div>
+                  <div><dt className="text-muted-foreground">Source penalty</dt><dd className="font-mono">{workspace.triage_breakdown.source_penalty?.toFixed?.(3)}</dd></div>
+                  <div><dt className="text-muted-foreground">Days in review</dt><dd>{workspace.triage_breakdown.days_in_review}</dd></div>
+                  <div><dt className="text-muted-foreground">Open flags</dt><dd>{workspace.triage_breakdown.unresolved_flag_count}</dd></div>
+                </dl>
+              </details>
+            </div>
+          </motion.div>
+        )}
 
         {/* Three-Panel Layout */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className="grid grid-cols-1 lg:grid-cols-12 gap-4">

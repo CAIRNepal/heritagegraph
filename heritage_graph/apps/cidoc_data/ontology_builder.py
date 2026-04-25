@@ -86,7 +86,11 @@ def build_registry_jsonschema_blob(classes: dict[str, Any]) -> dict[str, Any]:
         if ft == "select":
             opts = field.get("options") or []
             if isinstance(opts, list) and opts:
-                enum_vals = [o.get("value") for o in opts if isinstance(o, dict) and o.get("value") is not None]
+                enum_vals = [
+                    o.get("value")
+                    for o in opts
+                    if isinstance(o, dict) and o.get("value") is not None
+                ]
                 if enum_vals:
                     # Required selects must match vocabulary; optional may be blank/null.
                     if field.get("required"):
@@ -108,7 +112,11 @@ def build_registry_jsonschema_blob(classes: dict[str, Any]) -> dict[str, Any]:
         ):
             if field.get(src) is not None:
                 try:
-                    ps[dst] = int(field[src]) if dst in ("minLength", "maxLength") else field[src]
+                    ps[dst] = (
+                        int(field[src])
+                        if dst in ("minLength", "maxLength")
+                        else field[src]
+                    )
                 except (TypeError, ValueError):
                     ps[dst] = field[src]
 
@@ -230,7 +238,9 @@ def _slot_def(schema: dict[str, Any], slot_name: str) -> dict[str, Any]:
     return ((schema.get("slots") or {}).get(slot_name)) or {}
 
 
-def _range_to_field_type(range_name: str | None, *, enum_names: set[str], sv: SchemaView) -> str:
+def _range_to_field_type(
+    range_name: str | None, *, enum_names: set[str], sv: SchemaView
+) -> str:
     if not range_name:
         return "text"
     if range_name in enum_names:
@@ -422,7 +432,11 @@ def build_classes(
 
             min_c = getattr(slot, "minimum_cardinality", None)
             max_c = getattr(slot, "maximum_cardinality", None)
-            if linkml_cls and linkml_cls.slot_usage and slot.name in linkml_cls.slot_usage:
+            if (
+                linkml_cls
+                and linkml_cls.slot_usage
+                and slot.name in linkml_cls.slot_usage
+            ):
                 su = linkml_cls.slot_usage[slot.name]
                 if getattr(su, "minimum_cardinality", None) is not None:
                     min_c = su.minimum_cardinality
@@ -532,11 +546,18 @@ def build_classes(
             slot_pattern = getattr(slot, "pattern", None)
             if slot_pattern and "pattern" not in field:
                 field["pattern"] = str(slot_pattern)
-            for s_attr, f_key in (("minimum_value", "minimum"), ("maximum_value", "maximum")):
+            for s_attr, f_key in (
+                ("minimum_value", "minimum"),
+                ("maximum_value", "maximum"),
+            ):
                 raw_sv = getattr(slot, s_attr, None)
                 if raw_sv is not None and f_key not in field:
                     try:
-                        field[f_key] = float(raw_sv) if isinstance(raw_sv, str) and "." in str(raw_sv) else raw_sv
+                        field[f_key] = (
+                            float(raw_sv)
+                            if isinstance(raw_sv, str) and "." in str(raw_sv)
+                            else raw_sv
+                        )
                     except (TypeError, ValueError):
                         field[f_key] = raw_sv
 
@@ -564,14 +585,22 @@ def build_classes(
         all_of_parts: list[Any] = []
         raw_class_all = ui_cls.get("ui_json_schema_allOf")
         if raw_class_all is not None:
-            parsed_ca = _maybe_parse_json(raw_class_all) if isinstance(raw_class_all, str) else raw_class_all
+            parsed_ca = (
+                _maybe_parse_json(raw_class_all)
+                if isinstance(raw_class_all, str)
+                else raw_class_all
+            )
             if isinstance(parsed_ca, list):
                 all_of_parts.extend(parsed_ca)
         all_of_parts.extend(json_schema_all_of_extra)
 
         cls_entry: dict[str, Any] = {
             "key": key,
-            "label": str(ui_cls.get("ui_label") or meta.get("label") or key.replace("_", " ").title()),
+            "label": str(
+                ui_cls.get("ui_label")
+                or meta.get("label")
+                or key.replace("_", " ").title()
+            ),
             "labelPlural": str(
                 ui_cls.get("ui_labelPlural")
                 or meta.get("labelPlural")
@@ -710,10 +739,15 @@ def build_classes_pyyaml(
                     field["placeholder"] = str(file_slot["ui_placeholder"])
                 if file_slot.get("ui_widget") is not None:
                     field["type"] = str(file_slot["ui_widget"])
-                    _maybe_attach_enum_options(field, range_name=range_name, enums=enums)
+                    _maybe_attach_enum_options(
+                        field, range_name=range_name, enums=enums
+                    )
                 if file_slot.get("ui_pattern") is not None:
                     field["pattern"] = str(file_slot["ui_pattern"])
-                for fk_yaml, fk_field in (("ui_min_length", "minLength"), ("ui_max_length", "maxLength")):
+                for fk_yaml, fk_field in (
+                    ("ui_min_length", "minLength"),
+                    ("ui_max_length", "maxLength"),
+                ):
                     if file_slot.get(fk_yaml) is not None:
                         try:
                             field[fk_field] = int(file_slot[fk_yaml])
@@ -721,12 +755,16 @@ def build_classes_pyyaml(
                             pass
                 if file_slot.get("ui_minimum") is not None:
                     try:
-                        field["minimum"] = _parse_number_token(str(file_slot["ui_minimum"]))
+                        field["minimum"] = _parse_number_token(
+                            str(file_slot["ui_minimum"])
+                        )
                     except (TypeError, ValueError):
                         pass
                 if file_slot.get("ui_maximum") is not None:
                     try:
-                        field["maximum"] = _parse_number_token(str(file_slot["ui_maximum"]))
+                        field["maximum"] = _parse_number_token(
+                            str(file_slot["ui_maximum"])
+                        )
                     except (TypeError, ValueError):
                         pass
                 if file_slot.get("ui_weight") is not None:
@@ -735,7 +773,9 @@ def build_classes_pyyaml(
                     except (TypeError, ValueError):
                         pass
                 if file_slot.get("ui_json_schema_extras") is not None:
-                    parsed_ex = _maybe_parse_json(str(file_slot["ui_json_schema_extras"]))
+                    parsed_ex = _maybe_parse_json(
+                        str(file_slot["ui_json_schema_extras"])
+                    )
                     if isinstance(parsed_ex, dict):
                         field["jsonSchemaExtras"] = parsed_ex
 
@@ -763,7 +803,8 @@ def build_classes_pyyaml(
         classes_out[key] = {
             "key": key,
             "label": meta.get("label") or key.replace("_", " ").title(),
-            "labelPlural": meta.get("labelPlural") or f"{key.replace('_', ' ').title()}s",
+            "labelPlural": meta.get("labelPlural")
+            or f"{key.replace('_', ' ').title()}s",
             "description": str(class_def.get("description") or ""),
             "classUri": str(class_uri) if class_uri else None,
             "icon": meta.get("icon"),
@@ -777,24 +818,94 @@ def build_classes_pyyaml(
     return classes_out
 
 
-def build_registry_document(schema_path: Path) -> dict[str, Any]:
-    """Return { 'classes': {...}, 'enums': {...} } from LinkML YAML."""
+def _deep_merge_class_registry(
+    b_cls: dict[str, Any], o_cls: dict[str, Any]
+) -> dict[str, Any]:
+    """Merge two UI registry class dicts (extension overlay wins on conflicts)."""
+    out = dict(b_cls)
+    for k, v in o_cls.items():
+        if (
+            k == "fields"
+            and isinstance(out.get("fields"), list)
+            and isinstance(v, list)
+        ):
+            by_key: dict[str, Any] = {}
+            for f in out["fields"]:
+                if isinstance(f, dict) and f.get("key"):
+                    by_key[str(f["key"])] = f
+            for f in v:
+                if isinstance(f, dict) and f.get("key"):
+                    by_key[str(f["key"])] = f
+            out["fields"] = list(by_key.values())
+        elif isinstance(out.get(k), dict) and isinstance(v, dict):
+            merged = dict(out[k])
+            merged.update(v)
+            out[k] = merged
+        else:
+            out[k] = v
+    return out
+
+
+def merge_extension_registry_overlay(
+    doc: dict[str, Any], extension_path: Path | None
+) -> dict[str, Any]:
+    """
+    Merge a YAML registry overlay (classes/enums) from extension_path into doc.
+    Overlay file uses the same shape as registry fragments (classes/enums dicts).
+    """
+    if extension_path is None or not extension_path.is_file():
+        return doc
+    try:
+        overlay = yaml.safe_load(extension_path.read_text())
+    except Exception:
+        return doc
+    if not isinstance(overlay, dict):
+        return doc
+    classes = dict(doc.get("classes") or {})
+    enums = dict(doc.get("enums") or {})
+    if isinstance(overlay.get("classes"), dict):
+        for ck, cv in overlay["classes"].items():
+            if ck not in classes:
+                classes[ck] = cv
+            elif isinstance(classes[ck], dict) and isinstance(cv, dict):
+                classes[ck] = _deep_merge_class_registry(classes[ck], cv)
+            else:
+                classes[ck] = cv
+    if isinstance(overlay.get("enums"), dict):
+        for ek, ev in overlay["enums"].items():
+            if ek not in enums:
+                enums[ek] = ev
+            elif isinstance(enums[ek], dict) and isinstance(ev, dict):
+                enums[ek] = {**enums[ek], **ev}
+            else:
+                enums[ek] = ev
+    return {"classes": classes, "enums": enums}
+
+
+def build_registry_document(
+    schema_path: Path, extension_path: Path | None = None
+) -> dict[str, Any]:
+    """Return { 'classes': {...}, 'enums': {...} } from LinkML YAML, optional registry overlay merge."""
     ui_classmap_path = schema_path.parent.parent / "tools" / "ui-classmap.yaml"
     if _HAS_LINKML and SchemaView is not None:
         sv = SchemaView(str(schema_path))
         enums = _enum_payload(sv)
-        return {
-            "classes": build_classes(sv=sv, ui_classmap_path=ui_classmap_path, enums=enums),
+        doc = {
+            "classes": build_classes(
+                sv=sv, ui_classmap_path=ui_classmap_path, enums=enums
+            ),
             "enums": enums,
         }
-    schema = _load_schema(schema_path)
-    enums = _enum_payload_pyyaml(schema)
-    return {
-        "classes": build_classes_pyyaml(
-            schema=schema, ui_classmap_path=ui_classmap_path, enums=enums
-        ),
-        "enums": enums,
-    }
+    else:
+        schema = _load_schema(schema_path)
+        enums = _enum_payload_pyyaml(schema)
+        doc = {
+            "classes": build_classes_pyyaml(
+                schema=schema, ui_classmap_path=ui_classmap_path, enums=enums
+            ),
+            "enums": enums,
+        }
+    return merge_extension_registry_overlay(doc, extension_path)
 
 
 def compute_schema_version(

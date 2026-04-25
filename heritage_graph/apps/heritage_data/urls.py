@@ -24,6 +24,11 @@ router.register(
     views.PlatformAdminUserViewSet,
     basename='platform-admin-user',
 )
+router.register(
+    r'schema-extension-proposals',
+    views.SchemaExtensionProposalViewSet,
+    basename='schemaextensionproposal',
+)
 
 # Organizations
 router.register(r'organizations', views.OrganizationViewSet, basename='organization')
