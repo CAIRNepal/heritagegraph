@@ -28,6 +28,7 @@ DJANGO_MODEL_TO_REGISTRY_CLASS_KEY: dict[str, str] = {
     "CasteGroup": "caste_group",
     "CalendarSystem": "calendar",
     "HeritageAssertion": "assertion",
+    "EntityCluster": "entity_cluster",
     "DataSource": "data_source",
 }
 

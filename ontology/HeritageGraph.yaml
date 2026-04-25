@@ -812,6 +812,18 @@ classes:
       - asserted_property
       - asserted_value
       - supersedes_assertion
+      - entity_cluster
+
+  EntityCluster:
+    class_uri: heritageGraph:EntityCluster
+    description: >-
+      Stable identity anchor for heritage records that share the same real-world referent.
+      Membership is expressed only via HeritageAssertion rows with asserted_property identity.same_referent.
+    slots:
+      - canonical_label
+      - type_scope
+      - locked
+      - note
 
   DataSource:
     class_uri: crm:E73_Information_Object
@@ -1913,6 +1925,27 @@ slots:
     range: string
     required: true
     description: "The value claimed for this property (e.g., 'Lost', 'Handigaun', '598 CE')"
+
+  canonical_label:
+    slot_uri: heritageGraph:canonical_label
+    range: string
+    description: "Human-readable display label for an identity cluster"
+
+  type_scope:
+    slot_uri: heritageGraph:type_scope
+    range: string
+    description: "Django model name for subjects in this cluster (e.g. person, location)"
+
+  locked:
+    slot_uri: heritageGraph:cluster_locked
+    range: boolean
+    description: "When true, merge-in requires moderator override"
+
+  entity_cluster:
+    slot_uri: heritageGraph:entity_cluster
+    range: EntityCluster
+    description: >-
+      Target cluster for same-referent membership assertions (asserted_property identity.same_referent).
 
   supersedes_assertion:
     slot_uri: prov:invalidated
