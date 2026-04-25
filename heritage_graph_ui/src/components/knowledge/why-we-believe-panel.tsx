@@ -9,6 +9,14 @@ import { djangoModelNameFromOntologyKey } from "@/lib/knowledge/cidoc-api-path";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  IconInfoCircle,
+  IconClock,
+  IconShieldCheck,
+  IconAlertCircle,
+  IconSearch,
+  IconGitFork,
+} from "@tabler/icons-react";
+import {
   CompetingIdentitiesPanel,
   type IdentitySummaryPayload,
 } from "@/components/knowledge/competing-identities-panel";
@@ -151,27 +159,41 @@ export function WhyWeBelievePanel({
         </p>
       </div>
       {summary && hasIdentityBlock ? (
-        <div className="rounded-md border bg-muted/20 p-3 text-sm space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Identity (same referent)
+        <div className="relative overflow-hidden rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/50 to-white p-4 shadow-sm dark:border-blue-900/30 dark:from-blue-950/20 dark:to-background">
+          <div className="absolute -right-4 -top-4 text-blue-500/10">
+            <IconGitFork size={80} />
           </div>
-          {summary.canonical_label ? (
-            <p>
-              <span className="text-muted-foreground">Canonical label: </span>
-              <span className="font-medium">{summary.canonical_label}</span>
-            </p>
-          ) : null}
-          {summary.alias_titles?.length ? (
-            <p className="text-xs text-muted-foreground">
-              Aliases in cluster: {summary.alias_titles.join(", ")}
-            </p>
-          ) : null}
-          {summary.primary_cluster_id ? (
-            <p className="text-[10px] text-muted-foreground font-mono">
-              Cluster {summary.primary_cluster_id}
-            </p>
-          ) : null}
-          {summary.competing ? <CompetingIdentitiesPanel summary={summary} /> : null}
+          <div className="relative space-y-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-blue-100 text-[10px] uppercase tracking-wider text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                Identity Cluster
+              </Badge>
+              {summary.primary_cluster_id ? (
+                <span className="font-mono text-[10px] text-muted-foreground opacity-70">
+                  #{summary.primary_cluster_id.slice(0, 8)}
+                </span>
+              ) : null}
+            </div>
+            
+            <div className="space-y-1">
+              {summary.canonical_label ? (
+                <h4 className="text-base font-bold text-foreground">
+                  {summary.canonical_label}
+                </h4>
+              ) : null}
+              {summary.alias_titles?.length ? (
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Known aliases: <span className="text-foreground/80">{summary.alias_titles.join(", ")}</span>
+                </p>
+              ) : null}
+            </div>
+
+            {summary.competing ? (
+              <div className="mt-2 border-t border-blue-100/50 pt-3 dark:border-blue-900/20">
+                <CompetingIdentitiesPanel summary={summary} />
+              </div>
+            ) : null}
+          </div>
         </div>
       ) : null}
       <div className="space-y-4 max-h-[32rem] overflow-y-auto pr-1">
