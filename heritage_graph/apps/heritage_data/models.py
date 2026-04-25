@@ -1324,6 +1324,132 @@ class Fork(models.Model):
 # =====================================================================
 
 # =====================================================================
+# TRIAGE POLICY + SCHEMA EXTENSION PROPOSALS (006-reviewer-triage-and-approval)
+# =====================================================================
+
+
+class TriagePolicy(models.Model):
+    """
+    Active weights and caps for review-queue triage scoring (single-tenant).
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    is_active = models.BooleanField(default=True, db_index=True)
+    w_age = models.DecimalField(max_digits=6, decimal_places=3, default=2.5)
+    w_flags = models.DecimalField(max_digits=6, decimal_places=3, default=1.5)
+    w_conflict = models.DecimalField(max_digits=6, decimal_places=3, default=3.0)
+    w_source = models.DecimalField(max_digits=6, decimal_places=3, default=1.0)
+    s_max_days = models.PositiveIntegerField(default=30)
+    f_max_flags = models.PositiveIntegerField(default=10)
+    tier_rank_json = models.JSONField(
+        default=list,
+        help_text="Ordered source_type values best→worst for trust (see spec assumptions).",
+    )
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="triage_policy_updates",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "triage_policies"
+        verbose_name = "Triage policy"
+        verbose_name_plural = "Triage policies"
+
+    def __str__(self):
+        return f"TriagePolicy(active={self.is_active})"
+
+
+class SchemaExtensionProposal(models.Model):
+    """Moderator-gated LinkML / registry overlay change proposal."""
+
+    STATUS_DRAFT = "draft"
+    STATUS_SUBMITTED = "submitted"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+    STATUS_PUBLISHED = "published"
+    STATUS_WITHDRAWN = "withdrawn"
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, "Draft"),
+        (STATUS_SUBMITTED, "Submitted"),
+        (STATUS_APPROVED, "Approved"),
+        (STATUS_REJECTED, "Rejected"),
+        (STATUS_PUBLISHED, "Published"),
+        (STATUS_WITHDRAWN, "Withdrawn"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="schema_extension_proposals",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_DRAFT,
+        db_index=True,
+    )
+    base_schema_version = models.CharField(max_length=128, blank=True)
+    proposed_yaml = models.TextField(help_text="YAML overlay or LinkML fragment")
+    conflict_keys = models.JSONField(default=list, blank=True)
+    moderator_comment = models.TextField(blank=True)
+    published_schema_version = models.CharField(max_length=128, blank=True)
+    published_extension_hash = models.CharField(max_length=128, blank=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "schema_extension_proposals"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "submitted_at"]),
+            models.Index(fields=["author", "status"]),
+        ]
+
+    def __str__(self):
+        return f"{self.title} ({self.status})"
+
+
+class SchemaExtensionAuditEvent(models.Model):
+    """Append-only audit row for proposal lifecycle."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    proposal = models.ForeignKey(
+        SchemaExtensionProposal,
+        on_delete=models.CASCADE,
+        related_name="audit_events",
+    )
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="schema_extension_audit_actions",
+    )
+    action = models.CharField(max_length=40, db_index=True)
+    from_status = models.CharField(max_length=20, blank=True)
+    to_status = models.CharField(max_length=20, blank=True)
+    comment = models.TextField(blank=True)
+    schema_version_snapshot = models.CharField(max_length=128, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "schema_extension_audit_events"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.action} @ {self.created_at}"
+
+
+# =====================================================================
 # PUBLIC CONTRIBUTION MODEL (QR SCAN CONTRIBUTIONS)
 # =====================================================================
 

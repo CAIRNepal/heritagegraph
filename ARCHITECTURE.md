@@ -369,6 +369,10 @@ Contribution submitted (CulturalEntity → pending_review)
 └─────────────────────┘
 ```
 
+### Schema extension approval & registry merge
+
+Moderators manage `SchemaExtensionProposal` rows (draft → submitted → approved → published). **Publish** validates LinkML YAML, checks overlapping `conflict_keys` against other active proposals, writes bytes to `HERITAGEGRAPH_SCHEMA_EXTENSION_PATH`, appends `SchemaExtensionAuditEvent`, and triggers `cidoc_data.linkml_loader` cache refresh so `get_effective_registry_payload` reflects the merged extension overlay (`ontology_builder.merge_extension_registry_overlay`).
+
 ---
 
 ## 🐳 Docker Architecture

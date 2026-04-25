@@ -21,10 +21,13 @@ from .models import (
     ReviewerApplication,
     ReviewFlag,
     Revision,
+    SchemaExtensionAuditEvent,
+    SchemaExtensionProposal,
     Share,
     Submission,
     SubmissionEditSuggestion,
     SubmissionVersion,
+    TriagePolicy,
     UserProfile,
     UserStats,
 )
@@ -783,6 +786,39 @@ class PublicContributionAdmin(admin.ModelAdmin):
     def mark_rejected(self, request, queryset):
         from django.utils import timezone
         queryset.update(status='rejected', reviewed_by=request.user, reviewed_at=timezone.now())
+
+
+# =====================================================================
+# TRIAGE + SCHEMA EXTENSION PROPOSALS (006)
+# =====================================================================
+
+
+@admin.register(TriagePolicy)
+class TriagePolicyAdmin(admin.ModelAdmin):
+    list_display = ("id", "is_active", "w_age", "w_flags", "w_conflict", "w_source", "updated_at")
+    list_filter = ("is_active",)
+
+
+class SchemaExtensionAuditInline(admin.TabularInline):
+    model = SchemaExtensionAuditEvent
+    extra = 0
+    readonly_fields = ("id", "actor", "action", "from_status", "to_status", "comment", "created_at")
+    can_delete = False
+
+
+@admin.register(SchemaExtensionProposal)
+class SchemaExtensionProposalAdmin(admin.ModelAdmin):
+    list_display = ("title", "status", "author", "created_at", "submitted_at")
+    list_filter = ("status",)
+    search_fields = ("title", "description")
+    readonly_fields = ("id", "created_at", "updated_at")
+    inlines = (SchemaExtensionAuditInline,)
+
+
+@admin.register(SchemaExtensionAuditEvent)
+class SchemaExtensionAuditEventAdmin(admin.ModelAdmin):
+    list_display = ("proposal", "action", "actor", "created_at")
+    list_filter = ("action",)
 
 
 # =====================================================================

@@ -52,7 +52,7 @@ def build_fresh_payload() -> dict[str, Any]:
     if not schema_path.is_file():
         raise FileNotFoundError(f"HeritageGraph schema not found: {schema_path}")
     ext = _extension_path()
-    doc = build_registry_document(schema_path)
+    doc = build_registry_document(schema_path, extension_path=ext)
     classes = doc["classes"]
     enums = doc["enums"]
     version = compute_schema_version(schema_path, ext, classes, enums)

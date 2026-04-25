@@ -178,13 +178,20 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/data/revisions/` — revision history
 
 **Epistemic Review (prefix: `/data/`):**
-- `/data/review-queue/` — triaged queue (filterable: all, new_claims, conflicts, flagged, expiring)
+- `/data/review-queue/` — triaged queue (filterable: all, new_claims, conflicts, flagged, expiring); supports `ordering`, `stale_days`, `contradictions_only`, `max_trust_tier_rank`, `min_worst_source_rank`, `my_domain`; each row includes `triage_priority`, `triage_breakdown`, `worst_source_tier`, `worst_source_type`
+- `/data/review-queue/triage-policy/` — active `TriagePolicy` weights (JSON) for UI parity with scoring
 - `/data/review-queue/queue_counts/` — count per queue type
-- `GET /data/api/review-workspace/<uuid>/` — three-panel workspace data
+- `GET /data/api/review-workspace/<uuid>/` — three-panel workspace data (includes the same triage fields as the queue row when the entity is in scope)
 - `POST /data/api/review-workspace/<uuid>/decide/` — submit review decision
 - `/data/review-flags/` — CRUD + resolve action
 - `/data/reviewer-roles/` — role management + my_role/assign actions
 - `GET /data/api/reviewer-dashboard/` — reviewer stats and metrics
+
+**Schema extension proposals (prefix: `/data/`; see spec 006):**
+- `/data/schema-extension-proposals/` — list/create proposals (authors see their own; staff and `Moderators` see all)
+- `/data/schema-extension-proposals/<uuid>/submit/`, `withdraw/`, `approve/`, `reject/`, `publish/`, `audit/` — lifecycle + append-only audit trail
+- Env: `HERITAGEGRAPH_SCHEMA_EXTENSION_PATH` — writable LinkML overlay path for publish (documented in `heritage_graph/.env.example`)
+- Ops: `python manage.py seed_triage_policy` — ensure default active `TriagePolicy` row exists after migrate
 
 **OCR / Document processing (prefix: `/data/`, also available under `/api/v1/data/`):**
 - `POST /data/ocr-documents/upload/` — multipart upload: creates `heritage_data.Media` and enqueues `document_processing.UploadedDocument` processing
@@ -211,7 +218,8 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/curation/contributions` — moderation queue
 - `/curation/activity` — activity log
 - `/curation/review` — triaged epistemic review queue
-- `/curation/review/<id>` — three-panel review workspace
+- `/curation/review/<id>` — three-panel review workspace (triage strip uses workspace payload)
+- `/curation/schema-extensions` — schema extension proposals (authors + moderators)
 - `/curation/conflicts` — conflict resolution queue
 - `/curation/dashboard` — reviewer dashboard
 - `/community/contributors` — contributor list

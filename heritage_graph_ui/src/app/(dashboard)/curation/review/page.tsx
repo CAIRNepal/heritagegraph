@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -25,27 +27,54 @@ import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { AccessDenied } from '@/components/access-denied';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 
 interface UserInfo { id: number; username: string; email: string; first_name: string; last_name: string; }
 interface Revision { revision_id: string; revision_number: number; data: Record<string, unknown>; created_by: UserInfo; created_at: string; }
+interface TriageBreakdown {
+  age_norm: number;
+  flags_norm: number;
+  conflict_boost: number;
+  source_penalty: number;
+  weights: Record<string, number>;
+  days_in_review: number;
+  unresolved_flag_count: number;
+  has_contradiction: boolean;
+  worst_tier_label: string;
+  worst_source_type: string | null;
+}
+
 interface Contribution {
   entity_id: string; name: string; description: string; category: string;
   status: 'draft' | 'pending_review' | 'accepted' | 'rejected' | 'pending_revision';
   contributor: UserInfo; created_at: string; current_revision: Revision | null;
   latest_revision: Revision | null; activity_count: number; flag_count: number;
   has_conflicts: boolean; days_in_review: number;
+  triage_priority?: number;
+  triage_breakdown?: TriageBreakdown;
+  worst_source_tier?: string;
+  worst_source_type?: string | null;
 }
 interface ContributionsResponse { count: number; next: string | null; previous: string | null; results: Contribution[]; }
 interface QueueCounts { new_claims: number; conflicts: number; flagged: number; expiring: number; total: number; }
 type QueueTab = 'all' | 'new_claims' | 'conflicts' | 'flagged' | 'expiring';
 type CategoryType = 'all' | 'monument' | 'artifact' | 'ritual' | 'festival' | 'tradition' | 'document' | 'other';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
 export default function ReviewQueuePage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading queue…</div>}>
+      <ReviewQueuePageInner />
+    </Suspense>
+  );
+}
+
+function ReviewQueuePageInner() {
   const { data: session } = useSession();
-  const { isReviewer } = useUserRoles();
+  const { isReviewer, isModerator } = useUserRoles();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const API_BASE = useMemo(() => getPublicApiUrl(), []);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +91,36 @@ export default function ReviewQueuePage() {
   const [appliedSearch, setAppliedSearch] = useState('');
   const [queueCounts, setQueueCounts] = useState<QueueCounts>({ new_claims: 0, conflicts: 0, flagged: 0, expiring: 0, total: 0 });
   const pageSize = 10;
+
+  const [ordering, setOrdering] = useState('-triage_priority');
+  const [staleDays, setStaleDays] = useState('');
+  const [contradictionsOnly, setContradictionsOnly] = useState(false);
+  const [minWorstSourceRank, setMinWorstSourceRank] = useState('');
+  const [myDomainOnly, setMyDomainOnly] = useState(false);
+
+  const pushQuery = useCallback(
+    (next: Record<string, string | undefined>) => {
+      const q = new URLSearchParams(searchParams.toString());
+      Object.entries(next).forEach(([k, v]) => {
+        if (v === undefined || v === '') q.delete(k);
+        else q.set(k, v);
+      });
+      router.replace(`${pathname}?${q.toString()}`, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  useEffect(() => {
+    const qt = (searchParams.get('queue_type') || 'all') as QueueTab;
+    if (['all', 'new_claims', 'conflicts', 'flagged', 'expiring'].includes(qt)) setActiveTab(qt);
+    setOrdering(searchParams.get('ordering') || '-triage_priority');
+    setStaleDays(searchParams.get('stale_days') || '');
+    setContradictionsOnly(searchParams.get('contradictions_only') === 'true');
+    setMinWorstSourceRank(searchParams.get('min_worst_source_rank') || '');
+    setMyDomainOnly(searchParams.get('my_domain') === 'true');
+    const p = parseInt(searchParams.get('page') || '1', 10);
+    if (!Number.isNaN(p) && p >= 1) setCurrentPage(p);
+  }, [searchParams]);
 
   const categoryOptions: { value: CategoryType; label: string }[] = [
     { value: 'all', label: 'All Categories' }, { value: 'monument', label: 'Monument' },
@@ -89,29 +148,56 @@ export default function ReviewQueuePage() {
     }
   }, [getHeaders]);
 
-  const fetchContributions = useCallback(async (page = 1, queueType: QueueTab = 'all', category: CategoryType = 'all', search = '') => {
+  const fetchContributions = useCallback(async (
+    page = 1,
+    queueType: QueueTab = 'all',
+    category: CategoryType = 'all',
+    search = '',
+    opts?: {
+      ordering?: string;
+      staleDays?: string;
+      contradictionsOnly?: boolean;
+      minWorstSourceRank?: string;
+      myDomain?: boolean;
+    },
+  ) => {
     try {
       setIsLoading(true); setError(null);
+      if (!API_BASE) {
+        setError('API URL is not configured (NEXT_PUBLIC_API_URL).');
+        return;
+      }
+      const o = opts ?? {};
       let url = `${API_BASE}/data/api/review-queue/?page=${page}&limit=${pageSize}`;
       if (queueType !== 'all') url += `&queue_type=${queueType}`;
       if (category !== 'all') url += `&category=${category}`;
       if (search) url += `&search=${encodeURIComponent(search)}`;
+      const ord = o.ordering ?? ordering;
+      url += `&ordering=${encodeURIComponent(ord)}`;
+      if (o.staleDays ?? staleDays) url += `&stale_days=${encodeURIComponent((o.staleDays ?? staleDays).trim())}`;
+      if ((o.contradictionsOnly ?? contradictionsOnly)) url += '&contradictions_only=true';
+      const m = (o.minWorstSourceRank ?? minWorstSourceRank).trim();
+      if (m) url += `&min_worst_source_rank=${encodeURIComponent(m)}`;
+      if ((o.myDomain ?? myDomainOnly)) url += '&my_domain=true';
       const data = await apiFetchJson<ContributionsResponse>(url, { headers: getHeaders() });
       setContributions(data.results); setTotalCount(data.count);
-      setTotalPages(Math.ceil(data.count / pageSize)); setCurrentPage(page);
+      setTotalPages(Math.max(1, Math.ceil(data.count / pageSize))); setCurrentPage(page);
     } catch (err) {
       const message = getApiErrorMessage(err, 'Could not load the review queue.');
       setError(message); toast.error(message);
     } finally { setIsLoading(false); }
-  }, [getHeaders]);
+  }, [API_BASE, contradictionsOnly, getHeaders, minWorstSourceRank, myDomainOnly, ordering, staleDays]);
 
   useEffect(() => {
     if (!session) return;
     fetchContributions(currentPage, activeTab, selectedCategory, appliedSearch);
     fetchQueueCounts();
-  }, [session, currentPage, activeTab, selectedCategory, appliedSearch, fetchContributions, fetchQueueCounts]);
+  }, [session, currentPage, activeTab, selectedCategory, appliedSearch, ordering, staleDays, contradictionsOnly, minWorstSourceRank, myDomainOnly, fetchContributions, fetchQueueCounts]);
 
-  const handleTabChange = (tab: string) => { setActiveTab(tab as QueueTab); setCurrentPage(1); };
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as QueueTab); setCurrentPage(1);
+    pushQuery({ queue_type: tab === 'all' ? undefined : tab, page: '1' });
+  };
   const handleCategoryChange = (value: CategoryType) => { setSelectedCategory(value); setCurrentPage(1); };
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,7 +209,36 @@ export default function ReviewQueuePage() {
     fetchQueueCounts();
   };
   const handleOpenReview = (c: Contribution) => { router.push(`/curation/review/${c.entity_id}`); };
-  const handlePageChange = (page: number) => { setCurrentPage(page); };
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    pushQuery({ page: String(page) });
+  };
+
+  const copyShareLink = () => {
+    if (appliedSearch.trim()) {
+      toast.message('Search is active — share link omits search text for privacy. Copy anyway?', {
+        action: {
+          label: 'Copy',
+          onClick: () => {
+            const q = new URLSearchParams();
+            q.set('queue_type', activeTab);
+            q.set('ordering', ordering);
+            if (staleDays) q.set('stale_days', staleDays);
+            if (contradictionsOnly) q.set('contradictions_only', 'true');
+            if (minWorstSourceRank) q.set('min_worst_source_rank', minWorstSourceRank);
+            if (myDomainOnly) q.set('my_domain', 'true');
+            void navigator.clipboard.writeText(`${window.location.origin}${pathname}?${q.toString()}`);
+            toast.success('Link copied');
+          },
+        },
+      });
+      return;
+    }
+    const q = new URLSearchParams(searchParams.toString());
+    q.delete('search');
+    void navigator.clipboard.writeText(`${window.location.origin}${pathname}?${q.toString()}`);
+    toast.success('Share link copied');
+  };
 
   const getCategoryBadge = (category: string) => {
     const colors: Record<string, string> = {
@@ -160,8 +275,13 @@ export default function ReviewQueuePage() {
               </h1>
               <p className="text-blue-100 max-w-lg">Evaluate claims, resolve conflicts, maintain provenance</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button onClick={() => router.push('/curation/dashboard')} variant="outline" className="border-white/30 text-white hover:bg-white/20">Dashboard</Button>
+              {(isModerator || isReviewer) && (
+                <Button onClick={() => router.push('/curation/schema-extensions')} variant="outline" className="border-white/30 text-white hover:bg-white/20">
+                  Schema extensions
+                </Button>
+              )}
               <Button onClick={handleRefresh} variant="outline" className="border-white/30 text-white hover:bg-white/20 gap-2"><RefreshCw className="h-4 w-4" /> Refresh</Button>
             </div>
           </motion.div>
@@ -204,6 +324,92 @@ export default function ReviewQueuePage() {
                 <SelectTrigger className="w-48 border-blue-200 dark:border-gray-600"><SelectValue placeholder="Category" /></SelectTrigger>
                 <SelectContent>{categoryOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
               </Select>
+            </div>
+
+            <div className="flex flex-col gap-3 mt-4 p-4 rounded-xl border border-blue-200/60 dark:border-gray-700 bg-white/40 dark:bg-gray-900/40">
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Sort</Label>
+                  <Select
+                    value={ordering}
+                    onValueChange={(v) => {
+                      setOrdering(v);
+                      setCurrentPage(1);
+                      pushQuery({ ordering: v, page: '1' });
+                    }}
+                  >
+                    <SelectTrigger className="w-[200px] border-blue-200 dark:border-gray-600"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="-triage_priority">Triage priority (high first)</SelectItem>
+                      <SelectItem value="triage_priority">Triage priority (low first)</SelectItem>
+                      <SelectItem value="-created_at">Newest first</SelectItem>
+                      <SelectItem value="created_at">Oldest first</SelectItem>
+                      <SelectItem value="-updated_at">Recently updated</SelectItem>
+                      <SelectItem value="updated_at">Least recently updated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Stale (days in review ≥)</Label>
+                  <Input
+                    className="w-28 border-blue-200 dark:border-gray-600"
+                    inputMode="numeric"
+                    placeholder="e.g. 7"
+                    value={staleDays}
+                    onChange={(e) => setStaleDays(e.target.value.replace(/\D/g, ''))}
+                    onBlur={() => {
+                      pushQuery({ stale_days: staleDays || undefined, page: '1' });
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Min worst source rank</Label>
+                  <Input
+                    className="w-28 border-blue-200 dark:border-gray-600"
+                    inputMode="numeric"
+                    placeholder="0–6"
+                    value={minWorstSourceRank}
+                    onChange={(e) => setMinWorstSourceRank(e.target.value.replace(/\D/g, ''))}
+                    onBlur={() => {
+                      pushQuery({ min_worst_source_rank: minWorstSourceRank || undefined, page: '1' });
+                      setCurrentPage(1);
+                    }}
+                  />
+                </div>
+                <div className="flex items-center gap-2 pt-6">
+                  <Switch
+                    id="contradictions-only"
+                    checked={contradictionsOnly}
+                    onCheckedChange={(c) => {
+                      setContradictionsOnly(c);
+                      setCurrentPage(1);
+                      pushQuery({ contradictions_only: c ? 'true' : undefined, page: '1' });
+                    }}
+                  />
+                  <Label htmlFor="contradictions-only" className="text-sm cursor-pointer">Contradictions only</Label>
+                </div>
+                <div className="flex items-center gap-2 pt-6">
+                  <Switch
+                    id="my-domain"
+                    checked={myDomainOnly}
+                    onCheckedChange={(c) => {
+                      setMyDomainOnly(c);
+                      setCurrentPage(1);
+                      pushQuery({ my_domain: c ? 'true' : undefined, page: '1' });
+                    }}
+                  />
+                  <Label htmlFor="my-domain" className="text-sm cursor-pointer">My domain only</Label>
+                </div>
+                <Button type="button" variant="outline" className="mt-5 border-blue-200" onClick={copyShareLink}>
+                  Copy share link
+                </Button>
+              </div>
+              {myDomainOnly && (
+                <p className="text-xs text-muted-foreground">
+                  &quot;My domain&quot; uses your reviewer profile expertise areas — each reviewer sees their own domain when opening a shared link.
+                </p>
+              )}
             </div>
 
             {['all', 'new_claims', 'conflicts', 'flagged', 'expiring'].map((tab) => (
@@ -303,6 +509,26 @@ function QueueRow({ contribution, onReview, getCategoryBadge, formatDate, format
               <Badge variant="outline" className="flex items-center gap-1 text-xs text-red-600 border-red-300">
                 <Clock className="h-3 w-3" /> {contribution.days_in_review}d in review
               </Badge>
+            )}
+            {typeof contribution.triage_priority === 'number' && (
+              <Tooltip>
+                <TooltipTrigger>
+                  <Badge variant="secondary" className="text-xs">Triage {contribution.triage_priority}</Badge>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs text-xs">
+                  {contribution.worst_source_tier && (
+                    <span>Source tier: {contribution.worst_source_tier}</span>
+                  )}
+                  {contribution.triage_breakdown && (
+                    <pre className="mt-1 whitespace-pre-wrap text-[10px] opacity-90">
+                      {JSON.stringify(contribution.triage_breakdown.weights, null, 0)}
+                    </pre>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {contribution.worst_source_tier && (
+              <Badge variant="outline" className="text-xs capitalize">{contribution.worst_source_tier}</Badge>
             )}
           </div>
           {contribution.description && <p className="text-sm text-blue-700 dark:text-blue-300 line-clamp-1">{contribution.description}</p>}
