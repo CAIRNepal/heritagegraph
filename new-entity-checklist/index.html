@@ -2123,9 +2123,12 @@ permission gating and the LinkML JSON Schema validation hook.</p>
 </code></pre>
 <hr />
 <h2 id="10-regenerate-ontology-assets">10. Regenerate ontology assets</h2>
-<pre><code class="language-bash">make ontology
+<pre><code class="language-bash">make generate
 </code></pre>
-<p>This regenerates <code>registry.generated.json</code> and <code>registry.generated.ts</code> used by the frontend.</p>
+<p>This runs the full pipeline: ontology → serializers → entityrefs → schema-rebuild. It regenerates <code>registry.generated.json</code>/<code>.ts</code>, <code>serializers.generated.py</code>, and persists the DB snapshot.</p>
+<blockquote>
+<p><strong>CI enforcement</strong>: GitHub Actions runs <code>make check</code> on any ontology or serializer file change to ensure generated files stay in sync.</p>
+</blockquote>
 <hr />
 <h2 id="11-admin-registration">11. Admin registration</h2>
 <p>Register the model in <code>heritage_graph/apps/cidoc_data/admin.py</code>:</p>
