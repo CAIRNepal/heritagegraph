@@ -4,7 +4,7 @@
 # Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: ontology ontology-check \
+.PHONY: ontology ontology-check serializers serializers-check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
         reset-dev-db migrate migrations shell seed seed-reset \
         docs-build docs-serve docs-clean \
@@ -40,6 +40,12 @@ ontology-check:
 	@test ! -f "$(CURDIR)/Heritagegraph.yaml" || (echo "ERROR: Remove repo-root Heritagegraph.yaml — canonical ontology is ontology/HeritageGraph.yaml" >&2 && exit 1)
 	python3 tools/linkml_generate_registry.py --check
 
+serializers: ## Regenerate serializers.generated.py from HeritageGraph.yaml
+	python3 tools/generate_serializers.py
+
+serializers-check: ## CI: fail if serializers.generated.py is out of date
+	python3 tools/generate_serializers.py --check
+
 # ================================================================
 # HELP
 # ================================================================
@@ -55,6 +61,8 @@ help:
 	@echo "  \033[1mDAILY USE\033[0m  (local dev — open one terminal per service)"
 	@echo "    make ontology       Regenerate registry.generated.* from ontology/HeritageGraph.yaml"
 	@echo "    make ontology-check Fail if registry.generated.* is out of date (CI)"
+	@echo "    make serializers    Regenerate serializers.generated.py from HeritageGraph.yaml"
+	@echo "    make serializers-check Fail if serializers.generated.py is out of date (CI)"
 	@echo "    make backend        Django API        →  http://localhost:8000"
 	@echo "    make frontend       Main app (UI)     →  http://localhost:3000"
 	@echo "    make landing        Marketing site    →  http://localhost:3001"

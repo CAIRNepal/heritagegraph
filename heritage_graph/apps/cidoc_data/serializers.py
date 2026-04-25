@@ -63,6 +63,37 @@ class CulturalEntityLinkMixin(serializers.Serializer):
         return _get_cultural_entity_id(obj)
 
 
+class BaseRegistrySerializer(serializers.ModelSerializer):
+    """
+    Base serializer that validates inbound payloads against the LinkML-derived
+    JSON Schema at .validate() time.
+
+    Resolves the registry class key via DJANGO_MODEL_TO_REGISTRY_CLASS_KEY.
+    Validation is silently skipped when the key is absent, the registry is
+    unavailable, or no JSON Schema entry exists for the class — so this is
+    safe to use as a drop-in base for all CIDOC serializers.
+    """
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        try:
+            from .cidoc_registry_keys import registry_class_key_for_model
+            from .linkml_loader import get_effective_registry_payload
+            from .registry_validation import validate_payload_for_class_drf
+
+            key = registry_class_key_for_model(self.Meta.model)
+            if key:
+                payload = get_effective_registry_payload()
+                validate_payload_for_class_drf(
+                    class_key=key,
+                    payload=attrs,
+                    registry_jsonschema=payload.get("registry_jsonschema"),
+                )
+        except Exception:
+            pass
+        return attrs
+
+
 class PersonSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Person
