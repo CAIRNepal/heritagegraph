@@ -485,46 +485,61 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         )}
 
         <NavMain
-          navtitle={t('navigation')}
+          navtitle={t('describe')}
           items={[
             { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
             { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
-            { title: t('contribute'), url: '/contribute', icon: IconPlus },
+            { title: t('knowledgeHub'), url: '/knowledge/entity', icon: IconBuildingCommunity },
             ...(showAuthedNav
               ? [{ title: t('progression'), url: '/progression', icon: IconMedal }]
               : []),
             { title: t('leaderboard'), url: '/leaderboard', icon: IconTrophy },
-            ...(showAuthedNav
-              ? [{ title: t('notifications'), url: '/notification', icon: IconBell }]
-              : []),
-            { title: t('team'), url: '/team', icon: IconUsersGroup },
-            { title: t('about'), url: '/about', icon: IconInfoCircle },
           ]}
         />
 
         <NavKnowledgebase
-          sectionTitle={t('knowledgebase')}
+          sectionTitle={t('browseByType')}
           hubTitle={t('knowledgeHub')}
           hubUrl="/knowledge/entity"
           hubIcon={IconBuildingCommunity}
           browseLabel={t('browseByType')}
           items={knowledgeBrowseItems}
         />
-        <NavMain navtitle={t('curation')} items={[
+
+        <NavMain
+          navtitle={t('record')}
+          items={[
+            { title: t('contribute'), url: '/contribute', icon: IconPlus },
+            { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },
+          ]}
+        />
+
+        <NavMain navtitle={t('claim')} items={[
+          ...(isReviewer ? [
+            { title: 'Identity queue', url: '/curation/identity', icon: IconGitFork },
+            { title: t('conflicts'), url: '/curation/conflicts', icon: IconScale },
+            { title: 'Truth Claims', url: '/knowledge/assertion', icon: IconShield },
+          ] : []),
+        ]} />
+
+        <NavMain navtitle={t('verify')} items={[
           ...(isModerator ? [{ title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard }] : []),
           ...(isReviewer ? [
             { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
-            { title: 'Identity queue', url: '/curation/identity', icon: IconGitFork },
             { title: 'Review workspace', url: '/review', icon: IconListCheck },
-            { title: t('conflicts'), url: '/curation/conflicts', icon: IconScale },
           ] : []),
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
-          { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },
         ]} />
+
         <NavMain navtitle={t('community')} items={[
           { title: t('contributors'), url: '/community/contributors', icon: IconUsers },
           { title: t('organizations'), url: '/community/organizations', icon: IconBuilding },
+          { title: t('team'), url: '/team', icon: IconUsersGroup },
+          { title: t('about'), url: '/about', icon: IconInfoCircle },
+          ...(showAuthedNav
+            ? [{ title: t('notifications'), url: '/notification', icon: IconBell }]
+            : []),
         ]} />
         {isPlatformAdmin ? (
           <NavMain

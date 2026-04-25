@@ -18,6 +18,8 @@ import { AlertCircle } from "lucide-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { ContributeHubIntentRow } from "@/lib/ontology/types";
+import { useContributorMode } from "@/hooks/use-contributor-mode";
+import { ContributorModeToggle } from "@/components/contribute/contributor-mode-toggle";
 
 interface ContributionIntent {
   key: string;
@@ -29,6 +31,74 @@ interface ContributionIntent {
   categoryKey: string;
   route: string;
   difficulty: "beginner" | "intermediate" | "advanced";
+  journey: "describe" | "record" | "claim" | "verify";
+}
+
+const journeyMeta: Record<
+  "describe" | "record" | "claim" | "verify",
+  { label: string; icon: string; description: string }
+> = {
+  describe: {
+    label: "Describe",
+    icon: "🧭",
+    description: "Capture what this heritage item is and where it exists.",
+  },
+  record: {
+    label: "Record",
+    icon: "📝",
+    description: "Document events, ritual cycles, tenures, and timelines.",
+  },
+  claim: {
+    label: "Claim",
+    icon: "⚖️",
+    description: "State relationships or assertions that need verification.",
+  },
+  verify: {
+    label: "Verify",
+    icon: "🔎",
+    description: "Attach evidence and sources to support what we publish.",
+  },
+};
+
+const journeyByRegistryKey: Record<
+  string,
+  "describe" | "record" | "claim" | "verify"
+> = {
+  structure: "describe",
+  iconography: "describe",
+  monument: "describe",
+  deity: "describe",
+  tradition: "describe",
+  person: "describe",
+  caste_group: "describe",
+  guthi: "describe",
+  location: "describe",
+  ritual: "record",
+  festival: "record",
+  event: "record",
+  period: "record",
+  calendar: "record",
+  kumari_tenure: "record",
+  kumari_selection: "record",
+  kumari_retirement: "record",
+  assertion: "claim",
+  syncretism: "claim",
+  source: "verify",
+};
+
+function journeyFromIntent(
+  key: string,
+  categoryKey: string
+): "describe" | "record" | "claim" | "verify" {
+  const mapped = journeyByRegistryKey[key];
+  if (mapped) return mapped;
+  if (categoryKey === "events" || categoryKey === "kumari" || categoryKey === "spatiotemporal") {
+    return "record";
+  }
+  if (categoryKey === "provenance") {
+    return "verify";
+  }
+  return "describe";
 }
 
 const difficultyConfig: Record<
@@ -71,6 +141,7 @@ function buildIntents(
       categoryKey: row.hubCategory,
       route: row.route,
       difficulty: row.difficulty,
+      journey: journeyFromIntent(row.registryKey, row.hubCategory),
     });
   }
   return out;
@@ -136,6 +207,7 @@ function ContributionCard({
 
 export default function ContributeDashboard() {
   const { registry, reload, degradedReason } = useOntology();
+  const contributorMode = useContributorMode();
   const hub = registry.contribute_hub ?? {
     hubCategories: [],
     intents: [],
@@ -182,7 +254,9 @@ export default function ContributeDashboard() {
   const quickStartKeys = hub.quickStart;
 
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeJourney, setActiveJourney] = useState<
+    "describe" | "record" | "claim" | "verify"
+  >("describe");
 
   const filteredIntents = useMemo(() => {
     if (!search.trim()) return contributionIntents;
@@ -196,10 +270,26 @@ export default function ContributeDashboard() {
     );
   }, [search, contributionIntents]);
 
-  const tabIntents = useMemo(() => {
-    if (activeTab === "all") return filteredIntents;
-    return filteredIntents.filter((i) => i.categoryKey === activeTab);
-  }, [activeTab, filteredIntents]);
+  const journeyIntents = useMemo(
+    () => filteredIntents.filter((i) => i.journey === activeJourney),
+    [activeJourney, filteredIntents]
+  );
+
+  const journeyCategoryGroups = useMemo(() => {
+    const grouped: Record<string, ContributionIntent[]> = {};
+    for (const intent of journeyIntents) {
+      if (!grouped[intent.categoryKey]) grouped[intent.categoryKey] = [];
+      grouped[intent.categoryKey].push(intent);
+    }
+    return categoryOrder
+      .filter((k) => grouped[k]?.length)
+      .map((k) => ({
+        categoryKey: k,
+        categoryLabel: categoryMeta[k]?.label ?? k,
+        categoryIcon: categoryMeta[k]?.icon ?? "📂",
+        intents: grouped[k],
+      }));
+  }, [categoryMeta, categoryOrder, journeyIntents]);
 
   const isSearching = search.trim().length > 0;
 
@@ -271,8 +361,8 @@ export default function ContributeDashboard() {
             Preserve Nepal&apos;s Cultural Heritage
           </h1>
           <p className="text-blue-100 max-w-lg mx-auto text-sm">
-            Choose what you&apos;d like to contribute. Every entry is reviewed
-            by experts before publication.
+            Navigate contribution journeys as Describe, Record, Claim, and Verify.
+            Every entry is reviewed by experts before publication.
           </p>
         </div>
       </motion.div>
@@ -301,6 +391,15 @@ export default function ContributeDashboard() {
         )}
       </motion.div>
 
+      <ContributorModeToggle
+        mode={contributorMode.mode}
+        isLoading={contributorMode.isLoading}
+        isSaving={contributorMode.isSaving}
+        onModeChange={(next) => {
+          void contributorMode.setMode(next);
+        }}
+      />
+
       {isSearching ? (
         <motion.div
           initial="hidden"
@@ -309,15 +408,15 @@ export default function ContributeDashboard() {
           className="space-y-3"
         >
           <p className="text-sm text-muted-foreground">
-            {tabIntents.length} result{tabIntents.length !== 1 ? "s" : ""} for
+            {filteredIntents.length} result{filteredIntents.length !== 1 ? "s" : ""} for
             &ldquo;{search}&rdquo;
           </p>
           <AnimatePresence mode="popLayout">
-            {tabIntents.map((intent) => (
+            {filteredIntents.map((intent) => (
               <ContributionCard key={intent.key} intent={intent} />
             ))}
           </AnimatePresence>
-          {tabIntents.length === 0 && (
+          {filteredIntents.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <p className="text-lg">No matching contribution types</p>
               <p className="text-sm mt-1">
@@ -367,32 +466,31 @@ export default function ContributeDashboard() {
             variants={fadeInUp}
           >
             <h2 className="text-base font-semibold text-blue-900 dark:text-blue-100 mb-3">
-              Browse by Category
+              Browse by Workflow
             </h2>
             <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
+              value={activeJourney}
+              onValueChange={(value) =>
+                setActiveJourney(value as "describe" | "record" | "claim" | "verify")
+              }
               className="space-y-4"
             >
               <TabsList className="flex-wrap h-auto gap-1 p-1 bg-blue-50/80 dark:bg-gray-800/80">
-                <TabsTrigger value="all" className="text-xs px-3">
-                  All
-                </TabsTrigger>
-                {categoryOrder.map((catKey) => {
-                  const meta = categoryMeta[catKey];
-                  if (!meta) return null;
+                {(Object.keys(journeyMeta) as Array<
+                  "describe" | "record" | "claim" | "verify"
+                >).map((journeyKey) => {
+                  const meta = journeyMeta[journeyKey];
                   const count = contributionIntents.filter(
-                    (i) => i.categoryKey === catKey
+                    (i) => i.journey === journeyKey
                   ).length;
                   return (
                     <TabsTrigger
-                      key={catKey}
-                      value={catKey}
+                      key={journeyKey}
+                      value={journeyKey}
                       className="text-xs px-3 gap-1"
                     >
                       <span>{meta.icon}</span>
-                      <span className="hidden sm:inline">{meta.label}</span>
-                      <span className="sm:hidden">{meta.label.split(" ")[0]}</span>
+                      <span>{meta.label}</span>
                       <span className="text-[10px] text-muted-foreground">
                         {count}
                       </span>
@@ -401,25 +499,37 @@ export default function ContributeDashboard() {
                 })}
               </TabsList>
 
-              <TabsContent value={activeTab} className="mt-0">
+              <TabsContent value={activeJourney} className="mt-0 space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  {journeyMeta[activeJourney].description}
+                </p>
                 <motion.div
-                  key={activeTab}
+                  key={activeJourney}
                   initial="hidden"
                   animate="show"
                   variants={staggerContainer}
-                  className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                  className="space-y-4"
                 >
-                  {tabIntents.map((intent) => (
-                    <ContributionCard
-                      key={intent.key}
-                      intent={intent}
-                      compact
-                    />
+                  {journeyCategoryGroups.map((group) => (
+                    <div key={group.categoryKey} className="space-y-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-blue-800/90 dark:text-blue-200/90">
+                        {group.categoryIcon} {group.categoryLabel}
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {group.intents.map((intent) => (
+                          <ContributionCard
+                            key={intent.key}
+                            intent={intent}
+                            compact
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </motion.div>
-                {tabIntents.length === 0 && (
+                {journeyIntents.length === 0 && (
                   <p className="text-center py-8 text-muted-foreground text-sm">
-                    No contributions in this category yet
+                    No contributions in this workflow yet
                   </p>
                 )}
               </TabsContent>

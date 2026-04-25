@@ -376,7 +376,11 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
         serializer.save(**extra)
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().select_related(
+            "source",
+            "entity_cluster",
+            "content_type",
+        )
         # Filter by entity type and ID
         entity_type = self.request.query_params.get("entity_type")
         entity_id = self.request.query_params.get("entity_id")

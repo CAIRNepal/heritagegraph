@@ -2,36 +2,47 @@
 # Keys in `intents.registryKey` must match `key` in tools/ui-classmap.yaml.
 
 hubCategories:
+  - key: general
+    label: General Heritage
+    icon: "🏮"
+    order: 0
   - key: tangible
     label: Tangible Heritage
     icon: "🏛️"
-    order: 0
+    order: 1
   - key: events
     label: Events & Rituals
     icon: "🔥"
-    order: 1
+    order: 2
   - key: kumari
     label: Living Goddess
     icon: "👑"
-    order: 2
+    order: 3
   - key: conceptual
     label: Conceptual
     icon: "✨"
-    order: 3
+    order: 4
   - key: social
     label: Social & People
     icon: "👥"
-    order: 4
+    order: 5
   - key: spatiotemporal
     label: Spaces & Time
     icon: "🗺️"
-    order: 5
+    order: 6
   - key: provenance
     label: Sources
     icon: "📚"
-    order: 6
+    order: 7
 
 intents:
+  - registryKey: cultural_entity
+    hubCategory: general
+    route: /contribute/cultural-entity
+    emoji: "🏮"
+    shortDescription: "General heritage, artifacts, or mixed assets"
+    description: "Document a heritage item that doesn't fit specific categories, with its own history and significance."
+    difficulty: beginner
   - registryKey: structure
     hubCategory: tangible
     route: /contribute/structure
@@ -178,3 +189,4 @@ quickStart:
   - source
   - location
   - person
+  - cultural_entity

@@ -217,6 +217,9 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
 class HeritageAssertionSerializer(serializers.ModelSerializer):
     content_type_name = serializers.SerializerMethodField()
+    source_type = serializers.SerializerMethodField()
+    source_name = serializers.SerializerMethodField()
+    source_rank = serializers.SerializerMethodField()
 
     class Meta:
         model = HeritageAssertion
@@ -225,6 +228,22 @@ class HeritageAssertionSerializer(serializers.ModelSerializer):
 
     def get_content_type_name(self, obj):
         return obj.content_type.model if obj.content_type else None
+
+    def get_source_type(self, obj):
+        if obj.source_id and obj.source:
+            return obj.source.source_type
+        return None
+
+    def get_source_name(self, obj):
+        if obj.source_id and obj.source:
+            return obj.source.name
+        return None
+
+    def get_source_rank(self, obj):
+        from .identity_services import source_type_rank
+
+        source_type = self.get_source_type(obj)
+        return source_type_rank(source_type)
 
     def create(self, validated_data):
         instance = HeritageAssertion(**validated_data)

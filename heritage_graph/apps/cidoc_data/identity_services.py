@@ -133,6 +133,22 @@ def build_identity_summary(content_type: ContentType, object_id: int) -> dict[st
 
     memberships.sort(key=sort_key)
 
+    def _membership_payload(m: HeritageAssertion) -> dict[str, Any]:
+        st = m.source.source_type if m.source_id else None
+        source_name = m.source.name if m.source_id else None
+        return {
+            "assertion_id": str(m.id),
+            "source_type": st,
+            "source_name": source_name,
+            "source_rank": source_type_rank(st),
+            "confidence": m.confidence,
+            "reconciliation_status": m.reconciliation_status,
+            "contributed_by": m.contributed_by,
+            "source_citation": m.source_citation,
+            "assertion_content": m.assertion_content,
+            "created_at": m.created_at.isoformat(),
+        }
+
     clusters_meta: list[dict[str, Any]] = []
     seen: set[uuid.UUID] = set()
     for m in memberships:
@@ -141,11 +157,18 @@ def build_identity_summary(content_type: ContentType, object_id: int) -> dict[st
             continue
         seen.add(cid)
         c = m.entity_cluster
+        cluster_memberships = [x for x in memberships if x.entity_cluster_id == cid]
+        evidence = [_membership_payload(x) for x in cluster_memberships]
+        best = evidence[0] if evidence else None
         clusters_meta.append(
             {
                 "cluster_id": str(c.id),
                 "canonical_label": c.canonical_label,
                 "locked": c.locked,
+                "evidence_count": len(evidence),
+                "best_source_type": best["source_type"] if best else None,
+                "best_source_rank": best["source_rank"] if best else None,
+                "subject_membership_chain": evidence,
                 "members": cluster_members_payload(c),
             }
         )
