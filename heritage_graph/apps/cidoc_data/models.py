@@ -4,7 +4,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
-from django.contrib.gis.db import models as gis_models
+try:
+    from django.contrib.gis.db import models as gis_models
+    GIS_AVAILABLE = True
+except ImportError:
+    GIS_AVAILABLE = False
 
 from .identity_constants import CLUSTER_AUDIT_ACTION_CHOICES
 from .edtf_field import validate_edtf
@@ -157,10 +161,16 @@ class Location(MetaData):
     coordinates_legacy = models.CharField(
         max_length=50, blank=True, help_text="Legacy 'Lat, Long' string — use point field instead"
     )
-    point = gis_models.PointField(
-        geography=True, srid=4326, null=True, blank=True,
-        help_text="Geographic point (longitude, latitude) — WGS84"
-    )
+    if GIS_AVAILABLE:
+        point = gis_models.PointField(
+            geography=True, srid=4326, null=True, blank=True,
+            help_text="Geographic point (longitude, latitude) — WGS84"
+        )
+    else:
+        point = models.CharField(
+            max_length=50, blank=True,
+            help_text="Geographic point (longitude, latitude) — requires GDAL for spatial queries"
+        )
     type = models.CharField(max_length=50, choices=LOCATION_TYPE_CHOICES)
     description = models.TextField(blank=True)
     current_status = models.CharField(max_length=20, choices=LOCATION_STATUS_CHOICES)
@@ -429,10 +439,16 @@ class ArchitecturalStructure(MetaData):
     coordinates_legacy = models.CharField(
         max_length=50, blank=True, help_text="Legacy 'Lat, Long' string — use point field instead"
     )
-    point = gis_models.PointField(
-        geography=True, srid=4326, null=True, blank=True,
-        help_text="Geographic point (longitude, latitude) — WGS84"
-    )
+    if GIS_AVAILABLE:
+        point = gis_models.PointField(
+            geography=True, srid=4326, null=True, blank=True,
+            help_text="Geographic point (longitude, latitude) — WGS84"
+        )
+    else:
+        point = models.CharField(
+            max_length=50, blank=True,
+            help_text="Geographic point (longitude, latitude) — requires GDAL for spatial queries"
+        )
     existence_status = models.CharField(
         max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
     )
@@ -508,10 +524,16 @@ class Monument(MetaData):
     coordinates_legacy = models.CharField(
         max_length=50, blank=True, help_text="Legacy 'Lat, Long' string — use point field instead"
     )
-    point = gis_models.PointField(
-        geography=True, srid=4326, null=True, blank=True,
-        help_text="Geographic point (longitude, latitude) — WGS84"
-    )
+    if GIS_AVAILABLE:
+        point = gis_models.PointField(
+            geography=True, srid=4326, null=True, blank=True,
+            help_text="Geographic point (longitude, latitude) — WGS84"
+        )
+    else:
+        point = models.CharField(
+            max_length=50, blank=True,
+            help_text="Geographic point (longitude, latitude) — requires GDAL for spatial queries"
+        )
     existence_status = models.CharField(
         max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
     )
