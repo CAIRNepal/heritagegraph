@@ -23,7 +23,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_extensions",
     "drf_spectacular",
-    # django.contrib.gis is added conditionally below (requires GDAL)
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -225,16 +224,6 @@ RDF_SYNC_ENABLED = os.environ.get("RDF_SYNC_ENABLED", "false").lower() in {
     "y",
     "on",
 }
-
-# ── PostGIS / GDAL (conditional for development on SQLite) ──
-try:
-    from django.contrib.gis import gdal  # noqa: F401
-    # GDAL is available: add django.contrib.gis to INSTALLED_APPS
-    INSTALLED_APPS.insert(INSTALLED_APPS.index("django.contrib.admin"), "django.contrib.gis")
-except ImportError:
-    # GDAL not installed: skip django.contrib.gis
-    # PointField models will not be usable for spatial queries but the app will start
-    pass
 
 GRAPH_MODELS = {
     "all_applications": True,

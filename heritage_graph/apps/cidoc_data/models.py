@@ -4,11 +4,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
-try:
-    from django.contrib.gis.db import models as gis_models
-    GIS_AVAILABLE = True
-except ImportError:
-    GIS_AVAILABLE = False
+# GIS support (PostGIS) - disabled for development on SQLite
+# To enable: install GDAL system library and python-gdal
+GIS_AVAILABLE = False
+gis_models = None  # type: ignore
 
 from .identity_constants import CLUSTER_AUDIT_ACTION_CHOICES
 from .edtf_field import validate_edtf

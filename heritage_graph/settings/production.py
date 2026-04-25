@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 from .base import *  # noqa: F403
 from .caching import build_caches_config
 
+# Add django.contrib.gis in production where GDAL/PostGIS is available
+INSTALLED_APPS.insert(INSTALLED_APPS.index("django.contrib.admin"), "django.contrib.gis")
+
 # --------------------------------------------------------------------
 # Load environment variables
 # --------------------------------------------------------------------
