@@ -53,6 +53,7 @@ heritagegraph/
 │   │   │   │   │   ├── activity/       # Activity log
 │   │   │   │   │   ├── review/         # Triaged review queue
 │   │   │   │   │   │   └── [id]/       # Three-panel review workspace
+│   │   │   │   │   ├── identity/       # Identity resolution queue + workspace
 │   │   │   │   │   ├── conflicts/      # Conflict resolution
 │   │   │   │   │   └── dashboard/      # Reviewer dashboard
 │   │   │   │   ├── community/   # Contributors & organizations
@@ -85,6 +86,14 @@ heritagegraph/
 ├── .env.example                 # Environment variable template
 └── DEPLOYMENT.md                # Full deployment guide
 ```
+
+---
+
+## Feature specifications (Spec Kit)
+
+Feature specs and design artifacts live under `specs/`. Example:
+
+- **Identity layer (claim-first)** — [`specs/005-identity-layer/spec.md`](specs/005-identity-layer/spec.md) (draft; ties together entity clusters, same-referent membership claims, merge/split audit, APIs, and reviewer workspace UI).
 
 ---
 

@@ -179,6 +179,13 @@ Source ──────┘
 - Each has its own ViewSet at `/cidoc/<model>/`
 - `PersonRevision` auto-tracks changes via `post_save` signal
 - Plans for revision models on all entities (currently commented out)
+- **Identity layer**: `EntityCluster` anchors referents per `type_scope`; same-referent
+  membership is stored on `HeritageAssertion` rows (`asserted_property=identity.same_referent`,
+  `entity_cluster` FK). Expert curators merge/split/lock clusters (optimistic `version`, append-only
+  `ClusterAuditEvent`). Reviewers triage `IdentityResolutionCandidate` via
+  `/api/v1/cidoc/identity-candidates/`; the Next.js queue lives at `/curation/identity`. Knowledge
+  entity pages call `GET /api/v1/cidoc/identity-summary/` for canonical labels and competing
+  clusters.
 
 ### Entity Relationship Map
 
