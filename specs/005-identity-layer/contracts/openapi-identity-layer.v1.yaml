@@ -1,0 +1,534 @@
+# Contract: Identity layer — EntityCluster, membership assertions, audit, workspace queue
+# Base URL: {API_ORIGIN}/api/v1/cidoc/ (see heritage_graph/urls.py)
+openapi: 3.0.3
+info:
+  title: HeritageGraph — Identity layer (EntityCluster + same-referent membership)
+  version: 1.0.0
+  description: |
+    REST surface for claim-first identity: cluster anchors, membership carried on
+    `HeritageAssertion` rows with `asserted_property=identity.same_referent` and
+    `entity_cluster` set (see data-model.md). Moderator actions merge/split/lock;
+    reviewers reconcile membership assertions.
+
+servers:
+  - url: /api/v1/cidoc
+    description: Versioned CIDOC API
+
+security:
+  - bearerAuth: []
+
+paths:
+  /entity-clusters/:
+    get:
+      summary: List entity clusters
+      operationId: listEntityClusters
+      security: []
+      parameters:
+        - name: type_scope
+          in: query
+          schema:
+            type: string
+          description: Filter by ContentType.model (e.g. person)
+        - name: locked
+          in: query
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Substring match on canonical_label
+      responses:
+        "200":
+          description: Paginated list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityClusterListResponse"
+    post:
+      summary: Create cluster (moderator)
+      operationId: createEntityCluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntityClusterWrite"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityCluster"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /entity-clusters/{clusterId}/:
+    parameters:
+      - $ref: "#/components/parameters/clusterId"
+    get:
+      summary: Get cluster
+      operationId: getEntityCluster
+      security: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityCluster"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      summary: Update cluster metadata (moderator; label/notes/lock rules)
+      operationId: patchEntityCluster
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntityClusterPatch"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityCluster"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Version conflict
+    delete:
+      summary: Soft-delete or forbid delete (implementation choice; prefer 405)
+      operationId: deleteEntityCluster
+      responses:
+        "405":
+          description: Clusters are retired via merge, not hard-deleted
+
+  /entity-clusters/{clusterId}/merge/:
+    parameters:
+      - $ref: "#/components/parameters/clusterId"
+    post:
+      summary: Merge another cluster into this cluster (moderator)
+      operationId: mergeEntityCluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MergeClusterRequest"
+      responses:
+        "200":
+          description: Merge completed; returns updated target cluster
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityCluster"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "409":
+          description: Locked or version mismatch
+
+  /entity-clusters/{clusterId}/split/:
+    parameters:
+      - $ref: "#/components/parameters/clusterId"
+    post:
+      summary: Split cluster per plan (moderator)
+      operationId: splitEntityCluster
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SplitClusterRequest"
+      responses:
+        "200":
+          description: Split completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SplitClusterResult"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /entity-clusters/{clusterId}/lock/:
+    parameters:
+      - $ref: "#/components/parameters/clusterId"
+    post:
+      summary: Lock cluster
+      operationId: lockEntityCluster
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityCluster"
+
+  /entity-clusters/{clusterId}/unlock/:
+    parameters:
+      - $ref: "#/components/parameters/clusterId"
+    post:
+      summary: Unlock cluster
+      operationId: unlockEntityCluster
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityCluster"
+
+  /entity-clusters/{clusterId}/members/:
+    parameters:
+      - $ref: "#/components/parameters/clusterId"
+    get:
+      summary: Derived members (entities) for cluster
+      operationId: listClusterMembers
+      security: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterMembersResponse"
+
+  /entity-clusters/{clusterId}/audit/:
+    parameters:
+      - $ref: "#/components/parameters/clusterId"
+    get:
+      summary: Append-only audit log entries touching this cluster
+      operationId: listClusterAudit
+      security: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClusterAuditListResponse"
+
+  /identity-candidates/:
+    get:
+      summary: List identity resolution candidates (reviewer workspace queue)
+      operationId: listIdentityCandidates
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, accepted, rejected, deferred]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandidateListResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /identity-candidates/{candidateId}/resolve/:
+    parameters:
+      - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+    post:
+      summary: Accept, reject, or defer a candidate
+      operationId: resolveIdentityCandidate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveCandidateRequest"
+      responses:
+        "200":
+          description: Updated candidate + optional created assertion ids
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResolveCandidateResponse"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /assertions/:
+    get:
+      summary: List assertions (existing); extended query filters for identity
+      description: |
+        Existing `HeritageAssertionViewSet` list. Implement optional filters:
+        `asserted_property=identity.same_referent`, `entity_cluster=<uuid>`,
+        `identity_conflict=true` (server-defined: competing accepted leaves).
+      operationId: listAssertionsWithIdentityFilters
+      security: []
+      parameters:
+        - name: asserted_property
+          in: query
+          schema:
+            type: string
+        - name: entity_cluster
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: entity_type
+          in: query
+          schema:
+            type: string
+        - name: entity_id
+          in: query
+          schema:
+            type: integer
+        - name: identity_conflict
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: DRF paginated or list shape as today
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Google ID token via NextAuth session.accessToken
+
+  parameters:
+    clusterId:
+      name: clusterId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    Forbidden:
+      description: Insufficient role
+    NotFound:
+      description: Resource not found
+
+  schemas:
+    EntityCluster:
+      type: object
+      required: [id, canonical_label, type_scope, locked, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        canonical_label:
+          type: string
+        type_scope:
+          type: string
+          description: Django model name for subject class
+        locked:
+          type: boolean
+        notes:
+          type: string
+        version:
+          type: integer
+          minimum: 0
+        merged_into:
+          type: string
+          format: uuid
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    EntityClusterWrite:
+      type: object
+      required: [canonical_label, type_scope]
+      properties:
+        canonical_label:
+          type: string
+        type_scope:
+          type: string
+        notes:
+          type: string
+
+    EntityClusterPatch:
+      type: object
+      properties:
+        canonical_label:
+          type: string
+        notes:
+          type: string
+        locked:
+          type: boolean
+        expected_version:
+          type: integer
+          description: Optimistic concurrency token
+
+    EntityClusterListResponse:
+      type: object
+      description: Align with DRF pagination envelope used elsewhere
+
+    MergeClusterRequest:
+      type: object
+      required: [source_cluster_id, reason, expected_version]
+      properties:
+        source_cluster_id:
+          type: string
+          format: uuid
+        reason:
+          type: string
+        expected_version:
+          type: integer
+        lock_override:
+          type: boolean
+          default: false
+          description: Moderator only — merge into locked target when true
+
+    SplitClusterRequest:
+      type: object
+      required: [reason, expected_version, groups]
+      properties:
+        reason:
+          type: string
+        expected_version:
+          type: integer
+        groups:
+          type: array
+          description: Each group is entity ids that share a new cluster after split
+          items:
+            type: array
+            items:
+              type: integer
+
+    SplitClusterResult:
+      type: object
+      properties:
+        new_cluster_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        audit_event_id:
+          type: string
+          format: uuid
+
+    ClusterMembersResponse:
+      type: object
+      properties:
+        cluster_id:
+          type: string
+          format: uuid
+        members:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClusterMember"
+
+    ClusterMember:
+      type: object
+      properties:
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
+        display_title:
+          type: string
+        membership_assertion_id:
+          type: string
+          format: uuid
+
+    ClusterAuditEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        actor_id:
+          type: integer
+        reason:
+          type: string
+        before_state:
+          type: object
+        after_state:
+          type: object
+        affected_cluster_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        affected_assertion_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+        created_at:
+          type: string
+          format: date-time
+
+    ClusterAuditListResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClusterAuditEvent"
+
+    IdentityCandidate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        left:
+          $ref: "#/components/schemas/EntityRef"
+        right:
+          $ref: "#/components/schemas/EntityRef"
+        signal_scores:
+          type: object
+        status:
+          type: string
+        notes:
+          type: string
+
+    EntityRef:
+      type: object
+      properties:
+        entity_type:
+          type: string
+        entity_id:
+          type: integer
+        title:
+          type: string
+
+    CandidateListResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/IdentityCandidate"
+
+    ResolveCandidateRequest:
+      type: object
+      required: [resolution]
+      properties:
+        resolution:
+          type: string
+          enum: [accept, reject, defer]
+        notes:
+          type: string
+        target_cluster_id:
+          type: string
+          format: uuid
+          description: Required for accept when attaching to existing cluster
+
+    ResolveCandidateResponse:
+      type: object
+      properties:
+        candidate:
+          $ref: "#/components/schemas/IdentityCandidate"
+        created_assertion_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
