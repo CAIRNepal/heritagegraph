@@ -23,46 +23,40 @@ Prioritized by **dependency** (foundational gates and data models before large U
 
 ## -[x] P0 — Identity layer (unblocks “PN Shah” scale)
 
-**Spec (draft):** [specs/005-identity-layer/spec.md](../specs/005-identity-layer/spec.md)
+**Spec:** [specs/005-identity-layer/spec.md](../specs/005-identity-layer/spec.md)
 
-- `**EntityCluster` (or equivalent) Django model** — canonical label, notes, audit fields, optional lock.  
-  - *Area:* Backend / Spec
-- **Link assertions and/or entities to clusters** — e.g. M2M, generic relations, or typed FKs as per final spec.  
-  - *Area:* Backend
-- `**IdentityResolutionAssertion` (or reuse `HeritageAssertion` with typed predicate)** — explicit “same referent” claims with provenance.  
-  - *Area:* Backend / Ontology
-- **Merge / split audit trail** (JSONField or append-only log).  
-  - *Area:* Backend
-- **API + permissions** for cluster CRUD and merge/split (reviewer vs moderator).  
-  - *Area:* Backend
-
----
-
-## -[X] P1 — Reviewer and moderator UX
-
-- **Review queue with triage tabs** (e.g. all / conflicts / forks) — dashboard review and curation pages.
-- **Three-panel review workspace + conflict handling fields** — curation review detail UI.
-- **Identity resolution workspace** — merge/split clusters, link aliases, queue unresolved identities.  
-  - *Why:* Depends on P0 identity models.  
+- [x] **`EntityCluster` Django model** — `canonical_label`, `type_scope`, `locked`, `version`, `merged_into`; in `cidoc_data/models.py`.
+- [x] **`HeritageAssertion` linked to clusters** — `entity_cluster` FK + `IDENTITY_SAME_REFERENT_PROPERTY` predicate; membership derived from assertions.
+- [x] **`IdentityResolutionCandidate`** — rule-based reviewer queue suggestions with `left`/`right` sides, status, and notes.
+- [x] **`ClusterAuditEvent`** — append-only audit trail for merge, split, lock, unlock, and lock-override actions.
+- [x] **API + permissions** — `EntityClusterViewSet` with `merge`, `split`, `lock`, `unlock` actions; `IsExpertCurator` gating; `IdentityCandidateViewSet` for queue.
+- [x] **Identity resolution workspace UI** — `/curation/identity/` (queue) + `/curation/identity/[candidateId]` (per-candidate workspace).  
   - *Area:* UI / Backend
-- **Reviewer triage scoring** (priority, age, conflict count, source tier).  
-  - *Area:* Backend / UI
-- **Moderator-only actions** — lock canonical cluster, schema extension approval, duplicate-cluster prevention (policy + UI).  
+
+---
+
+## -[x] P1 — Reviewer and moderator UX
+
+- [x] **Review queue with triage tabs** — `/curation/review/` with all / new_claims / conflicts / flagged / expiring filters; `TriagePolicy` weights; `triage_priority` + `triage_breakdown` per row.
+- [x] **Three-panel review workspace** — `/curation/review/[id]` with claim, source, and decision panels; `ReviewDecision` and `ReviewFlag` models.
+- [x] **Identity resolution workspace** — `/curation/identity/` + `/curation/identity/[candidateId]`; backed by `IdentityResolutionCandidate` + `identity_services`.
+- [x] **Reviewer triage scoring** — `review-queue/triage-policy/` endpoint exposes active `TriagePolicy` weights; `queue_counts` endpoint for badge counts.
+- [x] **Moderator-only actions** — cluster lock/unlock (`IsExpertCurator`), schema extension approval lifecycle (`SchemaExtensionProposal`: submit/withdraw/approve/reject/publish) at `/curation/schema-extensions/`.  
   - *Area:* Backend / UI
 
 ---
 
-## -[X] P1 — Contributor and knowledge UI
+## -[x] P1 — Contributor and knowledge UI
 
-- **Contribute hub YAML** — intents, categories, difficulty in `tools/contribute-hub.yaml`.
-- **Ontology-driven forms** — `OntologyForm` + registry (`FORMS.md`).
-- **“Why we believe” assertions panel** on knowledge views — `why-we-believe-panel.tsx`.
-- **Reframe navigation around Describe / Record / Claim / Verify** (copy + IA; may map to existing routes).  
+- [x] **Contribute hub YAML** — intents, categories, difficulty in `tools/contribute-hub.yaml`.
+- [x] **Ontology-driven forms** — `OntologyForm` + registry (`FORMS.md`); contribute routes for all 19 CIDOC entity types.
+- [x] **"Why we believe" assertions panel** on knowledge views — `why-we-believe-panel.tsx`.
+- [ ] **Reframe navigation around Describe / Record / Claim / Verify** (copy + IA; may map to existing routes).  
   - *Area:* UI / Content
-- **Contributor basic vs advanced mode** — hide optional slots, assertion jargon, and long sections until toggled.  
+- [ ] **Contributor basic vs advanced mode** — hide optional slots, assertion jargon, and long sections until toggled.  
   - *Note:* Intent `difficulty` exists but is not a global mode.  
   - *Area:* UI
-- **Competing truth view** — surface multiple clusters or conflicting assertion chains with source weighting (extends current panel).  
+- [ ] **Competing truth view** — surface multiple clusters or conflicting assertion chains with source weighting (extends current panel).  
   - *Depends on:* Identity layer + assertion UX design.  
   - *Area:* UI / Backend
 
@@ -79,16 +73,18 @@ Prioritized by **dependency** (foundational gates and data models before large U
 
 ## P2 — Data platform and scale
 
-- **Migrate coordinates to PostGIS (or typed geometry)** — replace string `coordinates` where still `CharField` in `cidoc_data` models.  
+*Plan:* [`/home/nabin2004/.windsurf/plans/p2-data-platform-scale-4dfc2f.md`](../../.windsurf/plans/p2-data-platform-scale-4dfc2f.md)*
+
+- [ ] **Migrate coordinates to PostGIS (`PointField`)** — replace `coordinates CharField` on `Location`, `ArchitecturalStructure`, `Monument`; keep `coordinates_legacy`; data migration; requires PostGIS + GDAL.  
   - *Area:* Backend / DB / UI (map widgets)
-- **EDTF-aware date storage** — beyond UI quick-picks; queryable ranges.  
+- [ ] **EDTF-aware date storage** — `EDTFSerializerField` validator + attach to key date CharFields (`birth_date`, `start_date`, `construction_date`, `date_earliest/latest`); no migration.  
   - *Area:* Backend / Ontology
-- **Standardize relations** — prefer FK / GenericFK patterns over legacy string relation columns where they remain.  
+- [ ] **Standardize relations via EntityRef** — `post_save` signals to keep `EntityRef` in sync automatically; `rebuild_entityrefs --check` for CI; `make entityrefs` target.  
   - *Area:* Backend / Migrations
-- **Graph / search performance pass** — indexes, N+1 audits on assertion and knowledge endpoints at 10k+ scale.  
+- [ ] **Graph / search performance pass** — migration `0010_perf_indexes.py` for high-traffic fields; N+1 fix on `IdentityCandidateViewSet`.  
   - *Area:* Backend
-- **Cluster merge conflict protocol** — when two reviewers disagree; escalate to moderator.  
-  - *Depends on:* Entity clusters.  
+- [ ] **Cluster merge conflict protocol** — `detect_merge_conflict()` in `identity_services.py`; auto-lock + create `IdentityResolutionCandidate` on conflict for non-curators; `GET conflict-check/` pre-flight action on `EntityClusterViewSet`.  
+  - *Depends on:* Entity clusters ✓  
   - *Area:* Product / Backend
 
 ---
