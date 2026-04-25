@@ -388,6 +388,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "university_school",
             "social_links",
             "website_link",
+            "contributor_mode",
             "score",
             "member_since",
             "profile_image",

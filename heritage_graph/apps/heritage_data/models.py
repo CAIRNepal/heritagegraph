@@ -928,6 +928,13 @@ class OrganizationMembership(models.Model):
 
 
 class UserProfile(models.Model):
+    CONTRIBUTOR_MODE_BASIC = "basic"
+    CONTRIBUTOR_MODE_ADVANCED = "advanced"
+    CONTRIBUTOR_MODE_CHOICES = [
+        (CONTRIBUTOR_MODE_BASIC, "Basic"),
+        (CONTRIBUTOR_MODE_ADVANCED, "Advanced"),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     slug = models.UUIDField(default=uuid.uuid4, unique=True, editable=False,
                             help_text="Public URL-safe identifier for profile pages")
@@ -957,6 +964,12 @@ class UserProfile(models.Model):
         "{'twitter': 'url', 'linkedin': 'url'}",
     )
     website_link = models.URLField(blank=True, null=True)
+    contributor_mode = models.CharField(
+        max_length=16,
+        choices=CONTRIBUTOR_MODE_CHOICES,
+        default=CONTRIBUTOR_MODE_BASIC,
+        help_text="Global contributor experience mode used by ontology forms.",
+    )
 
     score = models.IntegerField(
         default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]

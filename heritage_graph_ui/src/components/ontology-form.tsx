@@ -60,6 +60,8 @@ import { HeritageDocumentUpload } from "@/components/ocr/heritage-document-uploa
 import { OcrSuggestionBadge } from "@/components/ocr/ocr-suggestion-badge";
 import { GeoPointField } from "@/components/ontology-form/geo-point-field";
 import type { OcrFieldSuggestion } from "@/hooks/use-heritage-ocr-suggestions";
+import { ContributorModeToggle } from "@/components/contribute/contributor-mode-toggle";
+import type { ContributorMode } from "@/hooks/use-contributor-mode";
 
 /** Map `?step=` (section key or numeric index) to a valid section index and canonical URL key. */
 function resolveOntologyFormStep(
@@ -87,6 +89,25 @@ function resolveOntologyFormStep(
   return { index: 0, canonicalKey: sections[0].key };
 }
 
+function simplifyHelpTextForBasicMode(text?: string): string | undefined {
+  if (!text) return text;
+  // Remove technical ontology/RDF jargon that confuses non-experts
+  const normalized = text
+    .replace(/CIDOC-CRM|PROV-O|assertion|RDF|URI|namespace|predicate|ontology|triple|reification/gi, "")
+    .replace(/\(E\d+.*?\)/g, "") // Remove CIDOC class codes like (E22)
+    .replace(/\(P\d+.*?\)/g, "") // Remove CIDOC property codes like (P102)
+    .replace(/\s+/g, " ")
+    .trim();
+    
+  // Take only the first sentence for "Basic" mode to keep it readable
+  const firstSentence = normalized.split(/(?<=[.!?])\s+/)[0]?.trim();
+  if (!firstSentence) return undefined;
+  
+  return firstSentence.length > 150
+    ? `${firstSentence.slice(0, 147)}...`
+    : firstSentence;
+}
+
 function FieldRenderer({
   field,
   value,
@@ -97,6 +118,8 @@ function FieldRenderer({
   onAssistClick,
   assistPending,
   assistConfidence,
+  basicMode = false,
+  showOntologyHint = true,
 }: {
   field: OntologyField;
   value: any;
@@ -107,6 +130,8 @@ function FieldRenderer({
   onAssistClick?: () => void;
   assistPending?: boolean;
   assistConfidence?: number;
+  basicMode?: boolean;
+  showOntologyHint?: boolean;
 }) {
   const id = `field-${field.key}`;
   const errorRing = hasError
@@ -142,13 +167,17 @@ function FieldRenderer({
             <Sparkles className="h-4 w-4" />
           </Button>
         ) : null}
-        <CidocCrmHint slotUri={field.slot_uri} />
+        {showOntologyHint ? <CidocCrmHint slotUri={field.slot_uri} /> : null}
       </div>
     </div>
   );
 
-  const descEl = field.description ? (
-    <p className="text-xs text-muted-foreground mb-1.5">{field.description}</p>
+  const helpText = basicMode
+    ? simplifyHelpTextForBasicMode(field.description)
+    : field.description;
+
+  const descEl = helpText ? (
+    <p className="text-xs text-muted-foreground mb-1.5">{helpText}</p>
   ) : null;
 
   const errorFooter = errorMessage ? (
@@ -360,8 +389,9 @@ function FieldRenderer({
             className={errorRing}
           />
           <p className="text-xs text-muted-foreground">
-            Use EDTF-style strings for imprecise heritage dates (ISO 8601-2). Quick picks set
-            common patterns; refine in the field or use a NS↔BS converter in the docs.
+            {basicMode
+              ? "Use an approximate date expression when exact dates are unknown."
+              : "Use EDTF-style strings for imprecise heritage dates (ISO 8601-2). Quick picks set common patterns; refine in the field or use a NS↔BS converter in the docs."}
           </p>
           {errorFooter}
         </div>
@@ -601,6 +631,10 @@ export interface OntologyFormProps {
   onFormControl?: (api: OntologyFormControlApi) => void;
   /** When set, shows OCR upload that applies suggestions to empty fields (requires signed-in user). */
   ocrCulturalEntityId?: string | null;
+  contributorMode?: ContributorMode;
+  onContributorModeChange?: (mode: ContributorMode) => void | Promise<boolean>;
+  contributorModeLoading?: boolean;
+  contributorModeSaving?: boolean;
 }
 
 export type OntologyFormControlApi = {
@@ -616,6 +650,10 @@ export default function OntologyForm({
   description,
   onFormControl,
   ocrCulturalEntityId,
+  contributorMode = "basic",
+  onContributorModeChange,
+  contributorModeLoading = false,
+  contributorModeSaving = false,
 }: OntologyFormProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -647,6 +685,7 @@ export default function OntologyForm({
   const [suggestKey, setSuggestKey] = useState<string | null>(null);
   const [ocrFieldConfidence, setOcrFieldConfidence] = useState<Record<string, number>>({});
   const [lastOcrDocumentId, setLastOcrDocumentId] = useState<string | null>(null);
+  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
   /** Prevents double draft hydration (e.g. React StrictMode) for the same storage key. */
   const draftAppliedForKey = useRef<string | null>(null);
 
@@ -744,6 +783,14 @@ export default function OntologyForm({
     [ontologyClass.fields]
   );
 
+  const isBasicMode = contributorMode === "basic";
+
+  const visibleSortedFields = useMemo(() => {
+    if (!isBasicMode) return sortedFields;
+    if (showOptionalDetails) return sortedFields;
+    return sortedFields.filter((f) => Boolean(f.required));
+  }, [isBasicMode, showOptionalDetails, sortedFields]);
+
   const sections = ontologyClass.sections || [
     { key: "basic", label: "Information" },
   ];
@@ -751,12 +798,12 @@ export default function OntologyForm({
   const fieldsBySection = useMemo(() => {
     const grouped: Record<string, OntologyField[]> = {};
     for (const section of sections) {
-      grouped[section.key] = sortedFields.filter(
+      grouped[section.key] = visibleSortedFields.filter(
         (f) => (f.section || "basic") === section.key
       );
     }
     return grouped;
-  }, [sortedFields, sections]);
+  }, [visibleSortedFields, sections]);
 
   const hasSections = sections.length > 1;
 
@@ -764,6 +811,12 @@ export default function OntologyForm({
     if (!hasSections) return 0;
     return resolveOntologyFormStep(searchParams.get("step"), sections).index;
   }, [hasSections, searchParams, sections]);
+
+  useEffect(() => {
+    if (isBasicMode) {
+      setShowOptionalDetails(false);
+    }
+  }, [isBasicMode, currentSectionIndex]);
 
   useEffect(() => {
     if (!hasSections || !pathname) return;
@@ -1262,6 +1315,67 @@ export default function OntologyForm({
 
   const isLastStep = currentSectionIndex === sections.length - 1;
 
+  const currentOptionalHiddenCount = useMemo(() => {
+    if (!isBasicMode || showOptionalDetails) return 0;
+    const sectionKey = sections[currentSectionIndex]?.key || "basic";
+    return sortedFields.filter(
+      (f) => (f.section || "basic") === sectionKey && !f.required
+    ).length;
+  }, [
+    isBasicMode,
+    showOptionalDetails,
+    sections,
+    currentSectionIndex,
+    sortedFields,
+  ]);
+
+  const modeControls = (
+    <div className="space-y-2">
+      <ContributorModeToggle
+        mode={contributorMode}
+        isLoading={contributorModeLoading}
+        isSaving={contributorModeSaving}
+        onModeChange={(next) => {
+          if (!onContributorModeChange) return;
+          void onContributorModeChange(next);
+        }}
+      />
+      {isBasicMode && currentOptionalHiddenCount > 0 ? (
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-blue-100 bg-blue-50/30 px-4 py-2.5 text-[11px] text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/10 dark:text-blue-400">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-3 w-3 opacity-70" />
+            <p className="font-medium">
+              Summarized view: {currentOptionalHiddenCount} optional field
+              {currentOptionalHiddenCount === 1 ? " is" : "s are"} hidden.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="link"
+            className="h-auto px-0 py-0 text-[11px] font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            onClick={() => setShowOptionalDetails(true)}
+          >
+            Reveal all fields
+          </Button>
+        </div>
+      ) : null}
+      {isBasicMode && showOptionalDetails ? (
+        <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          Optional details are visible for this step.
+          <Button
+            type="button"
+            variant="link"
+            className="ml-2 h-auto px-0 py-0 text-xs"
+            onClick={() => setShowOptionalDetails(false)}
+          >
+            Hide again
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+  const showModeControls = Boolean(onContributorModeChange);
+
   if (sortedFields.length === 0) {
     return (
       <div className="container mx-auto max-w-2xl space-y-6 px-4 py-12">
@@ -1410,6 +1524,8 @@ export default function OntologyForm({
 
         <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
 
+        {showModeControls ? modeControls : null}
+
         {ocrCulturalEntityId ? (
           <HeritageDocumentUpload
             culturalEntityId={ocrCulturalEntityId}
@@ -1445,7 +1561,7 @@ export default function OntologyForm({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {sortedFields.map((field) => (
+            {visibleSortedFields.map((field) => (
               <FieldRenderer
                 key={field.key}
                 field={field}
@@ -1459,8 +1575,16 @@ export default function OntologyForm({
                 }
                 assistPending={suggestKey === field.key}
                 assistConfidence={ocrFieldConfidence[field.key]}
+                basicMode={isBasicMode}
+                showOntologyHint={!isBasicMode}
               />
             ))}
+            {visibleSortedFields.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No required fields are visible in basic mode for this form.
+                Use the optional-details toggle above or switch to advanced mode.
+              </p>
+            ) : null}
           </CardContent>
         </Card>
 
@@ -1516,6 +1640,8 @@ export default function OntologyForm({
       </div>
 
       <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
+
+      {showModeControls ? modeControls : null}
 
       {ocrCulturalEntityId ? (
         <HeritageDocumentUpload
@@ -1590,6 +1716,8 @@ export default function OntologyForm({
                   }
                   assistPending={suggestKey === field.key}
                   assistConfidence={ocrFieldConfidence[field.key]}
+                  basicMode={isBasicMode}
+                  showOntologyHint={!isBasicMode}
                 />
               ))}
               {currentSectionFields.length === 0 && (
