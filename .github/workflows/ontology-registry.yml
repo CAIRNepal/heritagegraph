@@ -8,9 +8,12 @@ on:
       - "tools/ui-presentation.yaml"
       - "tools/contribute-hub.yaml"
       - "tools/linkml_generate_registry.py"
+      - "tools/generate_serializers.py"
       - "heritage_graph/apps/cidoc_data/ontology_builder.py"
+      - "heritage_graph/apps/cidoc_data/cidoc_registry_keys.py"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+      - "heritage_graph/apps/cidoc_data/serializers.generated.py"
   pull_request:
     paths:
       - "ontology/**"
@@ -18,17 +21,22 @@ on:
       - "tools/ui-presentation.yaml"
       - "tools/contribute-hub.yaml"
       - "tools/linkml_generate_registry.py"
+      - "tools/generate_serializers.py"
       - "heritage_graph/apps/cidoc_data/ontology_builder.py"
+      - "heritage_graph/apps/cidoc_data/cidoc_registry_keys.py"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+      - "heritage_graph/apps/cidoc_data/serializers.generated.py"
 
 jobs:
-  check-generated-registry:
+  check-generated-artifacts:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Verify registry.generated.* matches ontology
-        run: make ontology-check
+      - name: Install LinkML dependencies for ontology-check
+        run: pip install linkml
+      - name: Verify all generated files are up to date
+        run: make check

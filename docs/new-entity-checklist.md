@@ -172,10 +172,12 @@ Add an entry to `tools/contribute-hub.yaml` so the entity appears in the Contrib
 ## 10. Regenerate ontology assets
 
 ```bash
-make ontology
+make generate
 ```
 
-This regenerates `registry.generated.json` and `registry.generated.ts` used by the frontend.
+This runs the full pipeline: ontology → serializers → entityrefs → schema-rebuild. It regenerates `registry.generated.json`/`.ts`, `serializers.generated.py`, and persists the DB snapshot.
+
+> **CI enforcement**: GitHub Actions runs `make check` on any ontology or serializer file change to ensure generated files stay in sync.
 
 ---
 

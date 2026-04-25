@@ -5,6 +5,8 @@
 # ================================================================
 
 .PHONY: ontology ontology-check serializers serializers-check entityrefs entityrefs-check \
+        schema-rebuild identity-candidates schema-diff \
+        generate check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
         reset-dev-db migrate migrations shell seed seed-reset \
         docs-build docs-serve docs-clean \
@@ -52,6 +54,25 @@ entityrefs: ## Rebuild EntityRef edges from legacy CharField relation columns
 entityrefs-check: ## CI: fail if any CharField relation values lack EntityRef rows
 	python3 heritage_graph/manage.py rebuild_entityrefs --check
 
+schema-rebuild: $(VENV_PY) ## Persist ontology registry snapshot to DB (SchemaRegistry)
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rebuild_schema_registry
+
+identity-candidates: $(VENV_PY) ## Refresh IdentityResolutionCandidate pairs from same-name heuristic
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py refresh_identity_candidates
+
+schema-diff: ## Compare two ontology YAML files: OLD=ontology/HeritageGraph.yaml NEW=/path/to/new.yaml
+	@if [ -z "$(OLD)" ] || [ -z "$(NEW)" ]; then \
+		echo "Usage: make schema-diff OLD=ontology/HeritageGraph.yaml NEW=/path/to/new.yaml"; \
+		exit 1; \
+	fi
+	python3 tools/schema_diff.py $(OLD) $(NEW)
+
+generate: ontology serializers entityrefs schema-rebuild ## Full pipeline: ontology → serializers → entityrefs → schema-rebuild
+	@echo "==> Full pipeline complete"
+
+check: ontology-check serializers-check entityrefs-check ## CI: verify all generated files are up to date (no side-effects)
+	@echo "==> All checks passed"
+
 # ================================================================
 # HELP
 # ================================================================
@@ -63,6 +84,13 @@ help:
 	@echo "  \033[1mFIRST TIME SETUP\033[0m"
 	@echo "    make setup          Install deps, venv and run migrations (run once)"
 	@echo "    make superuser      Create a Django admin login"
+	@echo ""
+	@echo "  \033[1mPIPELINE\033[0m  (schema-driven UI/DB — run after ontology changes)"
+	@echo "    make generate       Full pipeline: ontology → serializers → entityrefs → schema-rebuild"
+	@echo "    make check          CI: verify all generated files are up to date (no side-effects)"
+	@echo "    make schema-rebuild Persist ontology registry snapshot to DB (SchemaRegistry)"
+	@echo "    make identity-candidates Refresh IdentityResolutionCandidate pairs (same-name)"
+	@echo "    make schema-diff    Compare two ontology YAML files: OLD=... NEW=..."
 	@echo ""
 	@echo "  \033[1mDAILY USE\033[0m  (local dev — open one terminal per service)"
 	@echo "    make ontology       Regenerate registry.generated.* from ontology/HeritageGraph.yaml"
