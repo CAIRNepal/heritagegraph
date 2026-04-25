@@ -2,14 +2,21 @@ import json
 import os
 import re
 
+from apps.heritage_data.permissions import IsExpertCurator, IsReviewerOrAdmin
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
 from django.utils.cache import patch_cache_control
-from rest_framework import permissions, status as drf_status, viewsets
+from rest_framework import permissions, viewsets
+from rest_framework import status as drf_status
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.heritage_data.permissions import IsReviewerOrAdmin
+from . import identity_services
 
 User = get_user_model()
 from .cidoc_registry_keys import registry_class_key_for_model
@@ -131,11 +138,10 @@ class ContributionFlowMixin:
         # Create a CulturalEntity wrapper for the review queue
         try:
             from apps.heritage_data.models import (
-                CulturalEntity,
-                Revision,
                 Activity,
+                CulturalEntity,
                 Notification,
-                ReviewerRole,
+                Revision,
             )
 
             entity_name = (
@@ -399,7 +405,300 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
         if status:
             qs = qs.filter(reconciliation_status=status)
 
+        asserted_property = self.request.query_params.get("asserted_property")
+        if asserted_property:
+            qs = qs.filter(asserted_property=asserted_property)
+
+        entity_cluster = self.request.query_params.get("entity_cluster")
+        if entity_cluster:
+            qs = qs.filter(entity_cluster_id=entity_cluster)
+
+        ic = (self.request.query_params.get("identity_conflict") or "").lower()
+        if ic in ("true", "1", "yes"):
+            ids = identity_services.conflicting_subject_assertion_ids()
+            if not ids:
+                qs = qs.none()
+            else:
+                qs = qs.filter(id__in=ids)
+
         return qs
+
+
+def _version_conflict_response(exc: DRFValidationError) -> Response | None:
+    if isinstance(exc.detail, dict) and "expected_version" in exc.detail:
+        return Response(exc.detail, status=drf_status.HTTP_409_CONFLICT)
+    return None
+
+
+class EntityClusterViewSet(viewsets.ModelViewSet):
+    """
+    Identity cluster anchors (specs/005-identity-layer).
+
+    - Reads: public (AllowAny), consistent with other discovery-oriented CIDOC lists.
+    - Create: reviewers (form or join clusters for same-referent workflow).
+    - Update / delete: expert curators / staff (moderation).
+    """
+
+    queryset = EntityCluster.objects.all()
+    serializer_class = EntityClusterSerializer
+    search_fields = ["canonical_label", "type_scope"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        ts = self.request.query_params.get("type_scope")
+        if ts:
+            qs = qs.filter(type_scope=ts)
+        locked = self.request.query_params.get("locked")
+        if locked is not None and locked != "":
+            qs = qs.filter(locked=str(locked).lower() in ("1", "true", "yes"))
+        return qs
+
+    def get_permissions(self):
+        if self.action in (
+            "list",
+            "retrieve",
+            "members",
+            "audit",
+        ):
+            return [permissions.AllowAny()]
+        if self.action == "create":
+            return [permissions.IsAuthenticated(), IsReviewerOrAdmin()]
+        if self.action in (
+            "update",
+            "partial_update",
+            "destroy",
+            "merge",
+            "split",
+            "lock",
+            "unlock",
+        ):
+            return [permissions.IsAuthenticated(), IsExpertCurator()]
+        return [permissions.IsAuthenticated()]
+
+    def destroy(self, request, *args, **kwargs):
+        return Response(
+            {"detail": "Clusters are retired via merge, not hard-deleted."},
+            status=drf_status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="merge",
+        permission_classes=[permissions.IsAuthenticated, IsExpertCurator],
+    )
+    def merge(self, request, pk=None):
+        target = self.get_object()
+        ser = MergeClusterRequestSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        try:
+            source = EntityCluster.objects.get(pk=ser.validated_data["source_cluster_id"])
+        except EntityCluster.DoesNotExist:
+            return Response(
+                {"detail": "Source cluster not found."},
+                status=drf_status.HTTP_404_NOT_FOUND,
+            )
+        try:
+            identity_services.merge_clusters(
+                actor=request.user,
+                target=target,
+                source=source,
+                reason=ser.validated_data.get("reason") or "",
+                expected_version=ser.validated_data["expected_version"],
+                lock_override=ser.validated_data.get("lock_override") or False,
+                is_expert_curator=IsExpertCurator().has_permission(
+                    request,
+                    self,
+                ),
+            )
+        except DRFValidationError as e:
+            r = _version_conflict_response(e)
+            if r:
+                return r
+            raise
+        except PermissionDenied as e:
+            return Response({"detail": str(e)}, status=drf_status.HTTP_403_FORBIDDEN)
+        target.refresh_from_db()
+        return Response(EntityClusterSerializer(target).data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="split",
+        permission_classes=[permissions.IsAuthenticated, IsExpertCurator],
+    )
+    def split(self, request, pk=None):
+        cluster = self.get_object()
+        ser = SplitClusterRequestSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        try:
+            new_clusters, ev = identity_services.split_cluster_by_groups(
+                actor=request.user,
+                cluster=cluster,
+                reason=ser.validated_data.get("reason") or "",
+                expected_version=ser.validated_data["expected_version"],
+                groups=ser.validated_data["groups"],
+            )
+        except DRFValidationError as e:
+            r = _version_conflict_response(e)
+            if r:
+                return r
+            raise
+        except PermissionDenied as e:
+            return Response({"detail": str(e)}, status=drf_status.HTTP_403_FORBIDDEN)
+        return Response(
+            {
+                "new_cluster_ids": [str(c.id) for c in new_clusters],
+                "audit_event_id": str(ev.id),
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="lock",
+        permission_classes=[permissions.IsAuthenticated, IsExpertCurator],
+    )
+    def lock(self, request, pk=None):
+        cluster = self.get_object()
+        ser = LockClusterBodySerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        try:
+            identity_services.lock_cluster(
+                actor=request.user,
+                cluster=cluster,
+                reason=ser.validated_data.get("reason") or "",
+                expected_version=ser.validated_data["expected_version"],
+            )
+        except DRFValidationError as e:
+            r = _version_conflict_response(e)
+            if r:
+                return r
+            raise
+        cluster.refresh_from_db()
+        return Response(EntityClusterSerializer(cluster).data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="unlock",
+        permission_classes=[permissions.IsAuthenticated, IsExpertCurator],
+    )
+    def unlock(self, request, pk=None):
+        cluster = self.get_object()
+        ser = LockClusterBodySerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        try:
+            identity_services.unlock_cluster(
+                actor=request.user,
+                cluster=cluster,
+                reason=ser.validated_data.get("reason") or "",
+                expected_version=ser.validated_data["expected_version"],
+            )
+        except DRFValidationError as e:
+            r = _version_conflict_response(e)
+            if r:
+                return r
+            raise
+        cluster.refresh_from_db()
+        return Response(EntityClusterSerializer(cluster).data)
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="members",
+        permission_classes=[permissions.AllowAny],
+    )
+    def members(self, request, pk=None):
+        cluster = self.get_object()
+        return Response(
+            {
+                "cluster_id": str(cluster.id),
+                "members": identity_services.cluster_members_payload(cluster),
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="audit",
+        permission_classes=[permissions.AllowAny],
+    )
+    def audit(self, request, pk=None):
+        cluster = self.get_object()
+        cid = str(cluster.id)
+        audit_q = Q(related_cluster_id=cluster.id) | Q(
+            affected_cluster_ids__icontains=cid
+        )
+        qs = ClusterAuditEvent.objects.filter(audit_q).order_by("-created_at")[:200]
+        return Response({"results": ClusterAuditEventSerializer(qs, many=True).data})
+
+
+class EntityIdentitySummaryView(APIView):
+    """GET identity summary for a subject entity (knowledge UI)."""
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        entity_type = (request.query_params.get("entity_type") or "").strip()
+        entity_id = request.query_params.get("entity_id")
+        if not entity_type or entity_id is None:
+            return Response(
+                {"detail": "entity_type and entity_id are required."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            oid = int(entity_id)
+        except (TypeError, ValueError):
+            return Response(
+                {"detail": "entity_id must be an integer."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            ct = ContentType.objects.get(model=entity_type)
+        except ContentType.DoesNotExist:
+            return Response(
+                {"detail": f"Unknown entity_type {entity_type!r}."},
+                status=drf_status.HTTP_404_NOT_FOUND,
+            )
+        payload = identity_services.build_identity_summary(ct, oid)
+        return Response(payload)
+
+
+class IdentityCandidateViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = IdentityResolutionCandidate.objects.all().order_by("-created_at")
+    serializer_class = IdentityResolutionCandidateSerializer
+
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), IsReviewerOrAdmin()]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        st = self.request.query_params.get("status")
+        if st:
+            qs = qs.filter(status=st)
+        return qs
+
+    @action(detail=True, methods=["post"], url_path="resolve")
+    def resolve(self, request, pk=None):
+        candidate = self.get_object()
+        ser = ResolveCandidateRequestSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        tid = data.get("target_cluster_id")
+        cand, created_ids = identity_services.resolve_identity_candidate(
+            actor=request.user,
+            candidate=candidate,
+            resolution=data["resolution"],
+            notes=data.get("notes") or "",
+            target_cluster_id=tid,
+        )
+        return Response(
+            {
+                "candidate": IdentityResolutionCandidateSerializer(cand).data,
+                "created_assertion_ids": [str(x) for x in created_ids],
+            }
+        )
 
 
 class AssertionAwareStructureViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
@@ -444,36 +743,34 @@ class AssertionAwareGuthiViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
 
 #################################################################
 
+from apps.cidoc_data.models import (
+    ArchitecturalStructure,
+    Deity,
+    Event,
+    Festival,
+    Guthi,
+    Location,
+    Monument,
+    Person,
+    RitualEvent,
+    Tradition,
+)
+from apps.cidoc_data.serializers import (
+    ArchitecturalStructureSerializer,
+    DeitySerializer,
+    EventSerializer,
+    FestivalSerializer,
+    GuthiSerializer,
+    LocationSerializer,
+    MonumentSerializer,
+    PersonSerializer,
+    RitualEventSerializer,
+    TraditionSerializer,
+    _get_cultural_entity_id,
+)
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.db.models import Q
-
-from apps.cidoc_data.models import (
-    Person,
-    Location,
-    Event,
-    Tradition,
-    Deity,
-    Guthi,
-    ArchitecturalStructure,
-    RitualEvent,
-    Festival,
-    Monument,
-)
-from apps.cidoc_data.serializers import (
-    PersonSerializer,
-    LocationSerializer,
-    EventSerializer,
-    TraditionSerializer,
-    DeitySerializer,
-    GuthiSerializer,
-    ArchitecturalStructureSerializer,
-    RitualEventSerializer,
-    FestivalSerializer,
-    MonumentSerializer,
-    _get_cultural_entity_id,
-)
 
 
 @api_view(["GET"])
@@ -961,7 +1258,9 @@ class OntologySchemaRegistryView(APIView):
                     source = "yaml"
                 except Exception:
                     return Response(
-                        {"error": "Schema unavailable and no last-known-good cache exists."},
+                        {
+                            "error": "Schema unavailable and no last-known-good cache exists."
+                        },
                         status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
                     )
         version = payload["schema_version"]
@@ -999,10 +1298,11 @@ class SparqlProxyView(APIView):
 
     def get(self, request, *args, **kwargs):
         import requests
-
         from apps.cidoc_data.rdf_signals import is_readonly_sparql_query
 
-        q = (request.query_params.get("query") or request.query_params.get("q") or "").strip()
+        q = (
+            request.query_params.get("query") or request.query_params.get("q") or ""
+        ).strip()
         if not q:
             return Response(
                 {"error": "Missing query parameter `query` or `q`."},
@@ -1010,7 +1310,9 @@ class SparqlProxyView(APIView):
             )
         if not is_readonly_sparql_query(q):
             return Response(
-                {"error": "Only read-only SPARQL (SELECT / ASK / CONSTRUCT / DESCRIBE) is allowed."},
+                {
+                    "error": "Only read-only SPARQL (SELECT / ASK / CONSTRUCT / DESCRIBE) is allowed."
+                },
                 status=drf_status.HTTP_400_BAD_REQUEST,
             )
         endpoint = getattr(settings, "RDF_ENDPOINT_URL", "").strip()
@@ -1200,7 +1502,10 @@ class CidocRevertView(APIView):
         model_cls, serializer_cls = pair
         parsed_pk = _parse_cidoc_primary_key(pk)
         if parsed_pk is None:
-            return Response({"error": "Invalid primary key."}, status=drf_status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid primary key."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
 
         rev_num = request.data.get("revision_number")
         try:
@@ -1214,7 +1519,9 @@ class CidocRevertView(APIView):
         try:
             instance = model_cls.objects.get(pk=parsed_pk)
         except model_cls.DoesNotExist:
-            return Response({"error": "Record not found."}, status=drf_status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Record not found."}, status=drf_status.HTTP_404_NOT_FOUND
+            )
 
         target_rev = _find_revision_snapshot(
             model_cls=model_cls, cidoc_pk=parsed_pk, revision_number=rev_num

@@ -1,6 +1,7 @@
 # urls.py
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
 from .views import *
 
 router = DefaultRouter()
@@ -36,6 +37,10 @@ router.register(r'calendar_systems', CalendarSystemViewSet)
 # Provenance models
 router.register(r'data_sources', DataSourceViewSet)
 router.register(r'assertions', HeritageAssertionViewSet)
+router.register(r'entity-clusters', EntityClusterViewSet, basename='entity-cluster')
+router.register(
+    r'identity-candidates', IdentityCandidateViewSet, basename='identity-candidate'
+)
 
 # Assertion-aware endpoints (enhanced versions for contribution wizard)
 router.register(r'contribute/structures', AssertionAwareStructureViewSet, basename='contribute-structures')
@@ -76,6 +81,11 @@ router.register(r'person_revisions', PersonRevisionViewSet)
 # router.register(r'notifications', NotificationForUserViewSet)
 
 urlpatterns = [
+    path(
+        "identity-summary/",
+        EntityIdentitySummaryView.as_view(),
+        name="entity-identity-summary",
+    ),
     path(
         "schema/registry/",
         OntologySchemaRegistryView.as_view(),

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+
 from .models import *
 
 User = get_user_model()
@@ -13,31 +14,40 @@ def _get_cultural_entity_id(instance):
     """
     Look up the CulturalEntity UUID for a CIDOC record by searching
     revisions that have _cidoc_model and _cidoc_id in their data.
-    
+
     For PostgreSQL: uses efficient JSON contains lookup
     For SQLite: falls back to Python-based filtering
     """
     from apps.heritage_data.models import Revision
     from django.db import connection
-    
+
     model_name = instance.__class__.__name__
     cidoc_id = instance.pk
-    
+
     try:
         # Try PostgreSQL-compatible JSON contains lookup first
-        if connection.vendor == 'postgresql':
-            rev = Revision.objects.filter(
-                data__contains={'_cidoc_model': model_name, '_cidoc_id': cidoc_id},
-            ).select_related('entity').first()
+        if connection.vendor == "postgresql":
+            rev = (
+                Revision.objects.filter(
+                    data__contains={"_cidoc_model": model_name, "_cidoc_id": cidoc_id},
+                )
+                .select_related("entity")
+                .first()
+            )
             if rev:
                 return str(rev.entity.entity_id)
         else:
             # SQLite fallback: query limited set and filter in Python
             # Newer revisions are more likely to match, so order by creation
-            revs = Revision.objects.select_related('entity').order_by('-created_at')[:500]
+            revs = Revision.objects.select_related("entity").order_by("-created_at")[
+                :500
+            ]
             for rev in revs:
                 if isinstance(rev.data, dict):
-                    if rev.data.get('_cidoc_model') == model_name and rev.data.get('_cidoc_id') == cidoc_id:
+                    if (
+                        rev.data.get("_cidoc_model") == model_name
+                        and rev.data.get("_cidoc_id") == cidoc_id
+                    ):
                         return str(rev.entity.entity_id)
     except Exception:
         pass
@@ -46,6 +56,7 @@ def _get_cultural_entity_id(instance):
 
 class CulturalEntityLinkMixin(serializers.Serializer):
     """Mixin to add cultural_entity_id to CIDOC serializers."""
+
     cultural_entity_id = serializers.SerializerMethodField()
 
     def get_cultural_entity_id(self, obj):
@@ -55,7 +66,7 @@ class CulturalEntityLinkMixin(serializers.Serializer):
 class PersonSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Person
-        fields = '__all__'
+        fields = "__all__"
 
     def validate(self, attrs):
         allowed = set(self.fields)
@@ -66,118 +77,142 @@ class PersonSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
             )
         return attrs
 
+
 class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Location
-        fields = '__all__'
+        fields = "__all__"
+
 
 class EventSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = '__all__'
+        fields = "__all__"
 
 
 class HistoricalPeriodSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = HistoricalPeriod
-        fields = '__all__'
+        fields = "__all__"
 
 
 class TraditionSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Tradition
-        fields = '__all__'
+        fields = "__all__"
+
 
 class SourceSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Source
-        fields = '__all__'
+        fields = "__all__"
 
 
 # =====================================================================
 # NEW ONTOLOGY-DRIVEN SERIALIZERS
 # =====================================================================
 
+
 class DeitySerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Deity
-        fields = '__all__'
+        fields = "__all__"
+
 
 class GuthiSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Guthi
-        fields = '__all__'
+        fields = "__all__"
 
-class ArchitecturalStructureSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+
+class ArchitecturalStructureSerializer(
+    CulturalEntityLinkMixin, serializers.ModelSerializer
+):
     class Meta:
         model = ArchitecturalStructure
-        fields = '__all__'
+        fields = "__all__"
+
 
 class RitualEventSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = RitualEvent
-        fields = '__all__'
+        fields = "__all__"
+
 
 class FestivalSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Festival
-        fields = '__all__'
+        fields = "__all__"
 
-class IconographicObjectSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+
+class IconographicObjectSerializer(
+    CulturalEntityLinkMixin, serializers.ModelSerializer
+):
     class Meta:
         model = IconographicObject
-        fields = '__all__'
+        fields = "__all__"
+
 
 class MonumentSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = Monument
-        fields = '__all__'
+        fields = "__all__"
+
 
 class KumariTenureSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = KumariTenure
-        fields = '__all__'
+        fields = "__all__"
+
 
 class KumariSelectionSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = KumariSelection
-        fields = '__all__'
+        fields = "__all__"
+
 
 class KumariRetirementSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = KumariRetirement
-        fields = '__all__'
+        fields = "__all__"
 
-class SyncreticRelationshipSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+
+class SyncreticRelationshipSerializer(
+    CulturalEntityLinkMixin, serializers.ModelSerializer
+):
     class Meta:
         model = SyncreticRelationship
-        fields = '__all__'
+        fields = "__all__"
+
 
 class CasteGroupSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = CasteGroup
-        fields = '__all__'
+        fields = "__all__"
+
 
 class CalendarSystemSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
     class Meta:
         model = CalendarSystem
-        fields = '__all__'
+        fields = "__all__"
+
 
 class PersonRevisionSerializer(serializers.ModelSerializer):
     class Meta:
         model = PersonRevision
-        fields = '__all__'
+        fields = "__all__"
 
 
 # =====================================================================
 # PROVENANCE SERIALIZERS
 # =====================================================================
 
+
 class DataSourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DataSource
-        fields = '__all__'
-        read_only_fields = ['id', 'created_at']
+        fields = "__all__"
+        read_only_fields = ["id", "created_at"]
 
 
 class HeritageAssertionSerializer(serializers.ModelSerializer):
@@ -185,11 +220,140 @@ class HeritageAssertionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HeritageAssertion
-        fields = '__all__'
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_content_type_name(self, obj):
         return obj.content_type.model if obj.content_type else None
+
+    def create(self, validated_data):
+        instance = HeritageAssertion(**validated_data)
+        instance.full_clean()
+        instance.save()
+        return instance
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.full_clean()
+        instance.save()
+        return instance
+
+
+class EntityClusterSerializer(serializers.ModelSerializer):
+    expected_version = serializers.IntegerField(write_only=True, required=False)
+
+    class Meta:
+        model = EntityCluster
+        fields = "__all__"
+        read_only_fields = ["id", "created_at", "updated_at", "merged_into", "version"]
+
+    def validate(self, attrs):
+        if self.instance is not None and "type_scope" in attrs:
+            if attrs["type_scope"] != self.instance.type_scope:
+                raise serializers.ValidationError(
+                    {"type_scope": "type_scope cannot be changed after create."}
+                )
+        ev = attrs.get("expected_version")
+        if self.instance is not None and ev is not None and ev != self.instance.version:
+            raise serializers.ValidationError(
+                {"expected_version": "Cluster was modified; refresh and retry."}
+            )
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop("expected_version", None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("expected_version", None)
+        return super().update(instance, validated_data)
+
+
+class ClusterAuditEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClusterAuditEvent
+        fields = [
+            "id",
+            "action",
+            "actor_id",
+            "reason",
+            "before_state",
+            "after_state",
+            "affected_cluster_ids",
+            "affected_assertion_ids",
+            "related_cluster_id",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class IdentityResolutionCandidateSerializer(serializers.ModelSerializer):
+    left = serializers.SerializerMethodField()
+    right = serializers.SerializerMethodField()
+
+    class Meta:
+        model = IdentityResolutionCandidate
+        fields = [
+            "id",
+            "left",
+            "right",
+            "signal_scores",
+            "status",
+            "notes",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+    def _entity_ref(self, ct, oid):
+        from .identity_services import entity_display_title
+
+        title = ""
+        model = ct.model_class() if ct else None
+        if model:
+            try:
+                title = entity_display_title(model.objects.get(pk=oid))
+            except model.DoesNotExist:
+                title = "missing"
+        return {
+            "entity_type": ct.model if ct else "",
+            "entity_id": oid,
+            "title": title,
+        }
+
+    def get_left(self, obj):
+        return self._entity_ref(obj.left_content_type, obj.left_object_id)
+
+    def get_right(self, obj):
+        return self._entity_ref(obj.right_content_type, obj.right_object_id)
+
+
+class MergeClusterRequestSerializer(serializers.Serializer):
+    source_cluster_id = serializers.UUIDField()
+    reason = serializers.CharField(allow_blank=True, default="")
+    expected_version = serializers.IntegerField()
+    lock_override = serializers.BooleanField(default=False)
+
+
+class SplitClusterRequestSerializer(serializers.Serializer):
+    reason = serializers.CharField(allow_blank=True, default="")
+    expected_version = serializers.IntegerField()
+    groups = serializers.ListField(
+        child=serializers.ListField(child=serializers.IntegerField(min_value=1)),
+        allow_empty=False,
+    )
+
+
+class LockClusterBodySerializer(serializers.Serializer):
+    reason = serializers.CharField(allow_blank=True, default="")
+    expected_version = serializers.IntegerField()
+
+
+class ResolveCandidateRequestSerializer(serializers.Serializer):
+    resolution = serializers.ChoiceField(choices=["accept", "reject", "defer"])
+    notes = serializers.CharField(allow_blank=True, required=False, default="")
+    target_cluster_id = serializers.UUIDField(required=False, allow_null=True)
 
 
 class InlineAssertionSerializer(serializers.Serializer):
@@ -197,14 +361,15 @@ class InlineAssertionSerializer(serializers.Serializer):
     Lightweight serializer for assertion data submitted inline
     with an entity creation form. Used in the contribution wizard.
     """
+
     source_type = serializers.ChoiceField(
         choices=[
-            ('archival', 'Archival Record'),
-            ('field_survey', 'Field Survey'),
-            ('oral_history', 'Oral History'),
-            ('published', 'Published Source'),
-            ('inscription', 'Inscription'),
-            ('web', 'Web Resource'),
+            ("archival", "Archival Record"),
+            ("field_survey", "Field Survey"),
+            ("oral_history", "Oral History"),
+            ("published", "Published Source"),
+            ("inscription", "Inscription"),
+            ("web", "Web Resource"),
         ],
         required=False,
     )
@@ -212,12 +377,12 @@ class InlineAssertionSerializer(serializers.Serializer):
     source_url = serializers.URLField(required=False, allow_blank=True)
     confidence = serializers.ChoiceField(
         choices=[
-            ('certain', 'Certain'),
-            ('likely', 'Likely'),
-            ('uncertain', 'Uncertain'),
-            ('speculative', 'Speculative'),
+            ("certain", "Certain"),
+            ("likely", "Likely"),
+            ("uncertain", "Uncertain"),
+            ("speculative", "Speculative"),
         ],
-        default='likely',
+        default="likely",
     )
     data_quality_note = serializers.CharField(required=False, allow_blank=True)
 
@@ -227,35 +392,39 @@ class AssertionAwareStructureSerializer(serializers.ModelSerializer):
     Structure serializer that accepts inline assertion data on create
     and returns linked assertions on read.
     """
+
     assertion = InlineAssertionSerializer(write_only=True, required=False)
     assertions = HeritageAssertionSerializer(many=True, read_only=True)
 
     class Meta:
         model = ArchitecturalStructure
-        fields = '__all__'
+        fields = "__all__"
 
     def create(self, validated_data):
-        assertion_data = validated_data.pop('assertion', None)
+        assertion_data = validated_data.pop("assertion", None)
         structure = super().create(validated_data)
 
         if assertion_data:
             from django.contrib.contenttypes.models import ContentType
+
             ct = ContentType.objects.get_for_model(structure)
 
             # Create a DataSource if citation is provided
             source = None
-            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+            if assertion_data.get("source_citation") or assertion_data.get(
+                "source_url"
+            ):
                 source = DataSource.objects.create(
-                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
-                    source_type=assertion_data.get('source_type', 'published'),
-                    citation=assertion_data.get('source_citation', ''),
-                    url=assertion_data.get('source_url', ''),
+                    name=assertion_data.get("source_citation", "Untitled source")[:300],
+                    source_type=assertion_data.get("source_type", "published"),
+                    citation=assertion_data.get("source_citation", ""),
+                    url=assertion_data.get("source_url", ""),
                 )
 
             # Get contributor from request context
-            request = self.context.get('request')
-            contributed_by = ''
-            if request and hasattr(request, 'user') and request.user.is_authenticated:
+            request = self.context.get("request")
+            contributed_by = ""
+            if request and hasattr(request, "user") and request.user.is_authenticated:
                 contributed_by = request.user.email or request.user.username
 
             HeritageAssertion.objects.create(
@@ -263,10 +432,10 @@ class AssertionAwareStructureSerializer(serializers.ModelSerializer):
                 object_id=structure.id,
                 assertion_content=f"Created record for {structure.name}",
                 source=source,
-                source_citation=assertion_data.get('source_citation', ''),
+                source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get('confidence', 'likely'),
-                data_quality_note=assertion_data.get('data_quality_note', ''),
+                confidence=assertion_data.get("confidence", "likely"),
+                data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 
         return structure
@@ -274,33 +443,37 @@ class AssertionAwareStructureSerializer(serializers.ModelSerializer):
 
 class AssertionAwareRitualSerializer(serializers.ModelSerializer):
     """Ritual serializer with inline assertion support."""
+
     assertion = InlineAssertionSerializer(write_only=True, required=False)
     assertions = HeritageAssertionSerializer(many=True, read_only=True)
 
     class Meta:
         model = RitualEvent
-        fields = '__all__'
+        fields = "__all__"
 
     def create(self, validated_data):
-        assertion_data = validated_data.pop('assertion', None)
+        assertion_data = validated_data.pop("assertion", None)
         ritual = super().create(validated_data)
 
         if assertion_data:
             from django.contrib.contenttypes.models import ContentType
+
             ct = ContentType.objects.get_for_model(ritual)
 
             source = None
-            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+            if assertion_data.get("source_citation") or assertion_data.get(
+                "source_url"
+            ):
                 source = DataSource.objects.create(
-                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
-                    source_type=assertion_data.get('source_type', 'published'),
-                    citation=assertion_data.get('source_citation', ''),
-                    url=assertion_data.get('source_url', ''),
+                    name=assertion_data.get("source_citation", "Untitled source")[:300],
+                    source_type=assertion_data.get("source_type", "published"),
+                    citation=assertion_data.get("source_citation", ""),
+                    url=assertion_data.get("source_url", ""),
                 )
 
-            request = self.context.get('request')
-            contributed_by = ''
-            if request and hasattr(request, 'user') and request.user.is_authenticated:
+            request = self.context.get("request")
+            contributed_by = ""
+            if request and hasattr(request, "user") and request.user.is_authenticated:
                 contributed_by = request.user.email or request.user.username
 
             HeritageAssertion.objects.create(
@@ -308,10 +481,10 @@ class AssertionAwareRitualSerializer(serializers.ModelSerializer):
                 object_id=ritual.id,
                 assertion_content=f"Created record for {ritual.name}",
                 source=source,
-                source_citation=assertion_data.get('source_citation', ''),
+                source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get('confidence', 'likely'),
-                data_quality_note=assertion_data.get('data_quality_note', ''),
+                confidence=assertion_data.get("confidence", "likely"),
+                data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 
         return ritual
@@ -319,33 +492,37 @@ class AssertionAwareRitualSerializer(serializers.ModelSerializer):
 
 class AssertionAwareDeitySerializer(serializers.ModelSerializer):
     """Deity serializer with inline assertion support."""
+
     assertion = InlineAssertionSerializer(write_only=True, required=False)
     assertions = HeritageAssertionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Deity
-        fields = '__all__'
+        fields = "__all__"
 
     def create(self, validated_data):
-        assertion_data = validated_data.pop('assertion', None)
+        assertion_data = validated_data.pop("assertion", None)
         deity = super().create(validated_data)
 
         if assertion_data:
             from django.contrib.contenttypes.models import ContentType
+
             ct = ContentType.objects.get_for_model(deity)
 
             source = None
-            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+            if assertion_data.get("source_citation") or assertion_data.get(
+                "source_url"
+            ):
                 source = DataSource.objects.create(
-                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
-                    source_type=assertion_data.get('source_type', 'published'),
-                    citation=assertion_data.get('source_citation', ''),
-                    url=assertion_data.get('source_url', ''),
+                    name=assertion_data.get("source_citation", "Untitled source")[:300],
+                    source_type=assertion_data.get("source_type", "published"),
+                    citation=assertion_data.get("source_citation", ""),
+                    url=assertion_data.get("source_url", ""),
                 )
 
-            request = self.context.get('request')
-            contributed_by = ''
-            if request and hasattr(request, 'user') and request.user.is_authenticated:
+            request = self.context.get("request")
+            contributed_by = ""
+            if request and hasattr(request, "user") and request.user.is_authenticated:
                 contributed_by = request.user.email or request.user.username
 
             HeritageAssertion.objects.create(
@@ -353,10 +530,10 @@ class AssertionAwareDeitySerializer(serializers.ModelSerializer):
                 object_id=deity.id,
                 assertion_content=f"Created record for {deity.name}",
                 source=source,
-                source_citation=assertion_data.get('source_citation', ''),
+                source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get('confidence', 'likely'),
-                data_quality_note=assertion_data.get('data_quality_note', ''),
+                confidence=assertion_data.get("confidence", "likely"),
+                data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 
         return deity
@@ -364,33 +541,37 @@ class AssertionAwareDeitySerializer(serializers.ModelSerializer):
 
 class AssertionAwareGuthiSerializer(serializers.ModelSerializer):
     """Guthi serializer with inline assertion support."""
+
     assertion = InlineAssertionSerializer(write_only=True, required=False)
     assertions = HeritageAssertionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Guthi
-        fields = '__all__'
+        fields = "__all__"
 
     def create(self, validated_data):
-        assertion_data = validated_data.pop('assertion', None)
+        assertion_data = validated_data.pop("assertion", None)
         guthi = super().create(validated_data)
 
         if assertion_data:
             from django.contrib.contenttypes.models import ContentType
+
             ct = ContentType.objects.get_for_model(guthi)
 
             source = None
-            if assertion_data.get('source_citation') or assertion_data.get('source_url'):
+            if assertion_data.get("source_citation") or assertion_data.get(
+                "source_url"
+            ):
                 source = DataSource.objects.create(
-                    name=assertion_data.get('source_citation', 'Untitled source')[:300],
-                    source_type=assertion_data.get('source_type', 'published'),
-                    citation=assertion_data.get('source_citation', ''),
-                    url=assertion_data.get('source_url', ''),
+                    name=assertion_data.get("source_citation", "Untitled source")[:300],
+                    source_type=assertion_data.get("source_type", "published"),
+                    citation=assertion_data.get("source_citation", ""),
+                    url=assertion_data.get("source_url", ""),
                 )
 
-            request = self.context.get('request')
-            contributed_by = ''
-            if request and hasattr(request, 'user') and request.user.is_authenticated:
+            request = self.context.get("request")
+            contributed_by = ""
+            if request and hasattr(request, "user") and request.user.is_authenticated:
                 contributed_by = request.user.email or request.user.username
 
             HeritageAssertion.objects.create(
@@ -398,22 +579,16 @@ class AssertionAwareGuthiSerializer(serializers.ModelSerializer):
                 object_id=guthi.id,
                 assertion_content=f"Created record for {guthi.name}",
                 source=source,
-                source_citation=assertion_data.get('source_citation', ''),
+                source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get('confidence', 'likely'),
-                data_quality_note=assertion_data.get('data_quality_note', ''),
+                confidence=assertion_data.get("confidence", "likely"),
+                data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 
         return guthi
 
 
 #########################################
-
-
-
-
-
-
 
 
 # # --- User Serializer ---
