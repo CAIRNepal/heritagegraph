@@ -4,76 +4,80 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
+from .identity_constants import CLUSTER_AUDIT_ACTION_CHOICES
+
 User = get_user_model()
 
 # Choice constants
 ARTIFACT_CONDITION_CHOICES = [
-    ('excellent', 'Excellent'),
-    ('good', 'Good'),
-    ('fair', 'Fair'),
-    ('deteriorating', 'Deteriorating'),
-    ('ruined', 'Ruined'),
+    ("excellent", "Excellent"),
+    ("good", "Good"),
+    ("fair", "Fair"),
+    ("deteriorating", "Deteriorating"),
+    ("ruined", "Ruined"),
 ]
 
 ARTIFACT_STATUS_CHOICES = [
-    ('on_display', 'On Display'),
-    ('in_storage', 'In Storage'),
-    ('on_loan', 'On Loan'),
-    ('lost', 'Lost'),
-    ('destroyed', 'Destroyed'),
+    ("on_display", "On Display"),
+    ("in_storage", "In Storage"),
+    ("on_loan", "On Loan"),
+    ("lost", "Lost"),
+    ("destroyed", "Destroyed"),
 ]
 
 LOCATION_TYPE_CHOICES = [
-    ('temple', 'Temple'),
-    ('monument', 'Monument'),
-    ('city', 'City'),
-    ('museum', 'Museum'),
-    ('region', 'Region'),
-    ('archaeological_site', 'Archaeological Site'),
+    ("temple", "Temple"),
+    ("monument", "Monument"),
+    ("city", "City"),
+    ("museum", "Museum"),
+    ("region", "Region"),
+    ("archaeological_site", "Archaeological Site"),
 ]
 
 LOCATION_STATUS_CHOICES = [
-    ('preserved', 'Preserved'),
-    ('partially_ruined', 'Partially Ruined'),
-    ('ruined', 'Ruined'),
-    ('rebuilt', 'Rebuilt'),
+    ("preserved", "Preserved"),
+    ("partially_ruined", "Partially Ruined"),
+    ("ruined", "Ruined"),
+    ("rebuilt", "Rebuilt"),
 ]
 
 EVENT_TYPE_CHOICES = [
-    ('festival', 'Festival'),
-    ('ritual', 'Ritual'),
-    ('historical', 'Historical Event'),
-    ('ceremony', 'Ceremony'),
+    ("festival", "Festival"),
+    ("ritual", "Ritual"),
+    ("historical", "Historical Event"),
+    ("ceremony", "Ceremony"),
 ]
 
 EVENT_RECURRENCE_CHOICES = [
-    ('annual', 'Annual'),
-    ('biennial', 'Biennial'),
-    ('monthly', 'Monthly'),
-    ('one_time', 'One-time'),
+    ("annual", "Annual"),
+    ("biennial", "Biennial"),
+    ("monthly", "Monthly"),
+    ("one_time", "One-time"),
 ]
 
 TRADITION_TYPE_CHOICES = [
-    ('ritual', 'Ritual'),
-    ('dance', 'Dance'),
-    ('storytelling', 'Storytelling'),
-    ('craft', 'Craft'),
-    ('music', 'Music'),
+    ("ritual", "Ritual"),
+    ("dance", "Dance"),
+    ("storytelling", "Storytelling"),
+    ("craft", "Craft"),
+    ("music", "Music"),
 ]
 
 SOURCE_TYPE_CHOICES = [
-    ('book', 'Book'),
-    ('journal', 'Journal Article'),
-    ('archive', 'Archive Document'),
-    ('thesis', 'Thesis'),
-    ('web', 'Web Resource'),
-    ('field_note', 'Field Notes'),
+    ("book", "Book"),
+    ("journal", "Journal Article"),
+    ("archive", "Archive Document"),
+    ("thesis", "Thesis"),
+    ("web", "Web Resource"),
+    ("field_note", "Field Notes"),
 ]
+
 
 class MetaData(models.Model):
     """
     Shared metadata fields for all models.
     """
+
     title = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     contributor = models.CharField(max_length=255, blank=True, null=True)
@@ -83,13 +87,17 @@ class MetaData(models.Model):
     class Meta:
         abstract = True
 
+
 class Person(MetaData):
     """
     this class is supposed to take Actors class of CIDOC-CRM. Like Kings, Monks and others.
     """
+
     id = models.AutoField(primary_key=True)  # Added unique ID
     name = models.CharField(max_length=200)
-    aliases = models.TextField(blank=True, help_text="Comma-separated alternative names")
+    aliases = models.TextField(
+        blank=True, help_text="Comma-separated alternative names"
+    )
     birth_date = models.CharField(max_length=50, blank=True)
     death_date = models.CharField(max_length=50, blank=True)
     occupation = models.CharField(max_length=100, blank=True)
@@ -107,29 +115,32 @@ class Person(MetaData):
 
     def __str__(self):
         return self.name
-    
-from django.utils import timezone
-class PersonRevision(models.Model):
-    ACTION_CHOICES = [
-    ('create', 'Create'),
-    ('update', 'Update'),
-    ('delete', 'Delete')
-    ]
 
-    revision_id = models.AutoField(primary_key=True) 
-    person = models.ForeignKey('Person', on_delete=models.CASCADE, related_name='revisions') 
-    snapshot = models.JSONField(help_text="JSON snapshot of the Person object at this revision") 
-    # user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text="User who made the change") 
+
+from django.utils import timezone
+
+
+class PersonRevision(models.Model):
+    ACTION_CHOICES = [("create", "Create"), ("update", "Update"), ("delete", "Delete")]
+
+    revision_id = models.AutoField(primary_key=True)
+    person = models.ForeignKey(
+        "Person", on_delete=models.CASCADE, related_name="revisions"
+    )
+    snapshot = models.JSONField(
+        help_text="JSON snapshot of the Person object at this revision"
+    )
+    # user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, help_text="User who made the change")
     user = models.CharField(max_length=255, blank=True, null=True)
-    action = models.CharField(max_length=10, choices=ACTION_CHOICES) 
-    timestamp = models.DateTimeField(default=timezone.now) 
-    
-    class Meta: 
-        ordering = ['-timestamp'] 
-        verbose_name = "Person Revision" 
-        verbose_name_plural = "Person Revisions" 
-    
-    def __str__(self): 
+    action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-timestamp"]
+        verbose_name = "Person Revision"
+        verbose_name_plural = "Person Revisions"
+
+    def __str__(self):
         return f"Revision {self.revision_id} for {self.person.name} ({self.action})"
 
 
@@ -137,9 +148,12 @@ class Location(MetaData):
     """
     This class is supposed to take the locations
     """
-    id = models.AutoField(primary_key=True) 
+
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
-    coordinates = models.CharField(max_length=50, blank=True, help_text="Lat, Long format")
+    coordinates = models.CharField(
+        max_length=50, blank=True, help_text="Lat, Long format"
+    )
     type = models.CharField(max_length=50, choices=LOCATION_TYPE_CHOICES)
     description = models.TextField(blank=True)
     current_status = models.CharField(max_length=20, choices=LOCATION_STATUS_CHOICES)
@@ -157,19 +171,23 @@ class Location(MetaData):
     def __str__(self):
         return self.name
 
+
 class Event(MetaData):
     """
     Event happened in particular timeframe.
     For eg: Kot Parva, Royal Massacre and others.
     """
+
     id = models.AutoField(primary_key=True)  # Added unique ID
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
     description = models.TextField()
-    start_date = models.CharField(max_length=100, blank=True, help_text="e.g., 'Baisakh 15'")
+    start_date = models.CharField(
+        max_length=100, blank=True, help_text="e.g., 'Baisakh 15'"
+    )
     end_date = models.CharField(max_length=100, blank=True)
     recurrence = models.CharField(max_length=20, choices=EVENT_RECURRENCE_CHOICES)
-    
+
     ## Relationships
 
     # location = models.ForeignKey(
@@ -200,32 +218,40 @@ class Event(MetaData):
     def __str__(self):
         return self.name
 
+
 class HistoricalPeriod(MetaData):
     """
     Historical Period, For eg: Lichhavi Era, Unification of Nepal period.
     """
+
     id = models.AutoField(primary_key=True)  # Added unique ID
     name = models.CharField(max_length=100, unique=True)
-    start_year = models.CharField(max_length=20, help_text="e.g., 'c. 1200 BCE' or '1768'")
+    start_year = models.CharField(
+        max_length=20, help_text="e.g., 'c. 1200 BCE' or '1768'"
+    )
     end_year = models.CharField(max_length=20, help_text="e.g., '1482 CE' or 'present'")
     description = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.start_year} - {self.end_year})"
 
+
 class Tradition(MetaData):
     """
     Particular tradition followed at some period.
     For eg: Sati Pratha, Kamaiya Pratha
     """
-    id = models.AutoField(primary_key=True) 
+
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     type = models.CharField(max_length=20, choices=TRADITION_TYPE_CHOICES)
     description = models.TextField()
-    associated_materials = models.TextField(blank=True, help_text="Tools, garments, instruments used")
+    associated_materials = models.TextField(
+        blank=True, help_text="Tools, garments, instruments used"
+    )
 
     ## Relationships
-    
+
     # practitioners = models.ManyToManyField(
     #     Person,
     #     blank=True,
@@ -258,7 +284,9 @@ class Source(MetaData):
     publication_year = models.CharField(max_length=20, blank=True)
     type = models.CharField(max_length=20, choices=SOURCE_TYPE_CHOICES)
     digital_link = models.URLField(max_length=500, blank=True)
-    archive_location = models.CharField(max_length=200, blank=True, help_text="Physical archive location")
+    archive_location = models.CharField(
+        max_length=200, blank=True, help_text="Physical archive location"
+    )
 
     def __str__(self):
         return self.title
@@ -269,85 +297,86 @@ class Source(MetaData):
 # =====================================================================
 
 STRUCTURE_TYPE_CHOICES = [
-    ('Temple', 'Temple'),
-    ('Stupa', 'Stupa'),
-    ('Chaitya', 'Chaitya'),
-    ('Pati', 'Pati (Open Pavilion)'),
-    ('Sattal', 'Sattal (Multi-story Rest House)'),
-    ('Dharmashala', 'Dharmashala (Pilgrim Lodge)'),
-    ('DhungeDhara', 'Dhunge Dhara (Stone Spout)'),
-    ('Pokhari', 'Pokhari (Pond/Tank)'),
-    ('Other', 'Other'),
+    ("Temple", "Temple"),
+    ("Stupa", "Stupa"),
+    ("Chaitya", "Chaitya"),
+    ("Pati", "Pati (Open Pavilion)"),
+    ("Sattal", "Sattal (Multi-story Rest House)"),
+    ("Dharmashala", "Dharmashala (Pilgrim Lodge)"),
+    ("DhungeDhara", "Dhunge Dhara (Stone Spout)"),
+    ("Pokhari", "Pokhari (Pond/Tank)"),
+    ("Other", "Other"),
 ]
 
 ARCHITECTURAL_STYLE_CHOICES = [
-    ('Pagoda', 'Pagoda'),
-    ('Shikhara', 'Shikhara'),
-    ('Stupa', 'Stupa'),
-    ('Dome', 'Dome'),
-    ('Mughal', 'Mughal'),
-    ('Rana_Neoclassical', 'Rana Neoclassical'),
-    ('Mixed', 'Mixed'),
-    ('Other', 'Other'),
+    ("Pagoda", "Pagoda"),
+    ("Shikhara", "Shikhara"),
+    ("Stupa", "Stupa"),
+    ("Dome", "Dome"),
+    ("Mughal", "Mughal"),
+    ("Rana_Neoclassical", "Rana Neoclassical"),
+    ("Mixed", "Mixed"),
+    ("Other", "Other"),
 ]
 
 EXISTENCE_STATUS_CHOICES = [
-    ('Extant', 'Extant'),
-    ('Destroyed', 'Destroyed'),
-    ('Damaged', 'Damaged'),
-    ('Restored', 'Restored'),
-    ('Partially_Extant', 'Partially Extant'),
-    ('Relocated', 'Relocated'),
-    ('Unknown', 'Unknown'),
+    ("Extant", "Extant"),
+    ("Destroyed", "Destroyed"),
+    ("Damaged", "Damaged"),
+    ("Restored", "Restored"),
+    ("Partially_Extant", "Partially Extant"),
+    ("Relocated", "Relocated"),
+    ("Unknown", "Unknown"),
 ]
 
 CONDITION_TYPE_CHOICES = [
-    ('Excellent', 'Excellent'),
-    ('Good', 'Good'),
-    ('Fair', 'Fair'),
-    ('Poor', 'Poor'),
-    ('Very_Poor', 'Very Poor'),
-    ('Ruinous', 'Ruinous'),
+    ("Excellent", "Excellent"),
+    ("Good", "Good"),
+    ("Fair", "Fair"),
+    ("Poor", "Poor"),
+    ("Very_Poor", "Very Poor"),
+    ("Ruinous", "Ruinous"),
 ]
 
 GUTHI_TYPE_CHOICES = [
-    ('SiGuthi', 'Si Guthi (Funeral Trust)'),
-    ('JatraGuthi', 'Jatra Guthi (Festival Organization)'),
-    ('PujaGuthi', 'Puja Guthi (Daily Worship)'),
-    ('TempleGuthi', 'Temple Guthi (Temple Maintenance)'),
-    ('NashaGuthi', 'Nasha Guthi (Music and Dance)'),
-    ('SanaGuthi', 'Sana Guthi (Agricultural Cooperative)'),
-    ('SanGuthi', 'San Guthi (Life-cycle Ritual)'),
-    ('RajGuthi', 'Raj Guthi (Royal Endowment)'),
-    ('Other', 'Other'),
+    ("SiGuthi", "Si Guthi (Funeral Trust)"),
+    ("JatraGuthi", "Jatra Guthi (Festival Organization)"),
+    ("PujaGuthi", "Puja Guthi (Daily Worship)"),
+    ("TempleGuthi", "Temple Guthi (Temple Maintenance)"),
+    ("NashaGuthi", "Nasha Guthi (Music and Dance)"),
+    ("SanaGuthi", "Sana Guthi (Agricultural Cooperative)"),
+    ("SanGuthi", "San Guthi (Life-cycle Ritual)"),
+    ("RajGuthi", "Raj Guthi (Royal Endowment)"),
+    ("Other", "Other"),
 ]
 
 RITUAL_TYPE_CHOICES = [
-    ('NityaPuja', 'Nitya Puja (Daily Worship)'),
-    ('NaimittikaPuja', 'Naimittika Puja (Festival Worship)'),
-    ('KamyaPuja', 'Kamya Puja (Desire-based Worship)'),
-    ('Abhisheka', 'Abhisheka (Ritual Bathing)'),
-    ('Homa', 'Homa (Fire Ritual)'),
-    ('Bhajan', 'Bhajan (Devotional Singing)'),
-    ('Yagna', 'Yagna (Vedic Sacrifice)'),
-    ('Vrata', 'Vrata (Vow Observance)'),
-    ('Jatra', 'Jatra (Festival Procession)'),
-    ('ChariotProcession', 'Chariot Procession'),
-    ('MaskedPerformance', 'Masked Performance'),
-    ('RitualConsecration', 'Ritual Consecration'),
-    ('ProcessionRitual', 'Procession Ritual'),
-    ('InstallationRitual', 'Installation Ritual'),
-    ('DeinstallationRitual', 'Deinstallation Ritual'),
-    ('ReturningRitual', 'Returning Ritual'),
-    ('Circumambulation', 'Circumambulation'),
-    ('RelicTour', 'Relic Tour'),
-    ('ProcessionalMovement', 'Processional Movement'),
-    ('Other', 'Other'),
+    ("NityaPuja", "Nitya Puja (Daily Worship)"),
+    ("NaimittikaPuja", "Naimittika Puja (Festival Worship)"),
+    ("KamyaPuja", "Kamya Puja (Desire-based Worship)"),
+    ("Abhisheka", "Abhisheka (Ritual Bathing)"),
+    ("Homa", "Homa (Fire Ritual)"),
+    ("Bhajan", "Bhajan (Devotional Singing)"),
+    ("Yagna", "Yagna (Vedic Sacrifice)"),
+    ("Vrata", "Vrata (Vow Observance)"),
+    ("Jatra", "Jatra (Festival Procession)"),
+    ("ChariotProcession", "Chariot Procession"),
+    ("MaskedPerformance", "Masked Performance"),
+    ("RitualConsecration", "Ritual Consecration"),
+    ("ProcessionRitual", "Procession Ritual"),
+    ("InstallationRitual", "Installation Ritual"),
+    ("DeinstallationRitual", "Deinstallation Ritual"),
+    ("ReturningRitual", "Returning Ritual"),
+    ("Circumambulation", "Circumambulation"),
+    ("RelicTour", "Relic Tour"),
+    ("ProcessionalMovement", "Processional Movement"),
+    ("Other", "Other"),
 ]
 
 
 class Deity(MetaData):
     """Divine conceptual entity — Hindu, Buddhist, or syncretic."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     religious_tradition = models.CharField(max_length=100, blank=True)
@@ -363,6 +392,7 @@ class Deity(MetaData):
 
 class Guthi(MetaData):
     """Endowed trust organization managing temples, rituals, and land."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     guthi_type = models.CharField(max_length=30, choices=GUTHI_TYPE_CHOICES)
@@ -379,15 +409,22 @@ class Guthi(MetaData):
 
 class ArchitecturalStructure(MetaData):
     """Physical heritage structure — temple, stupa, dhara, etc."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     structure_type = models.CharField(max_length=30, choices=STRUCTURE_TYPE_CHOICES)
-    architectural_style = models.CharField(max_length=30, choices=ARCHITECTURAL_STYLE_CHOICES, blank=True)
+    architectural_style = models.CharField(
+        max_length=30, choices=ARCHITECTURAL_STYLE_CHOICES, blank=True
+    )
     construction_date = models.CharField(max_length=100, blank=True)
     location_name = models.CharField(max_length=200, blank=True)
     coordinates = models.CharField(max_length=50, blank=True, help_text="Lat, Long")
-    existence_status = models.CharField(max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True)
-    condition = models.CharField(max_length=20, choices=CONDITION_TYPE_CHOICES, blank=True)
+    existence_status = models.CharField(
+        max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
+    )
+    condition = models.CharField(
+        max_length=20, choices=CONDITION_TYPE_CHOICES, blank=True
+    )
     note = models.TextField(blank=True)
 
     def __str__(self):
@@ -396,6 +433,7 @@ class ArchitecturalStructure(MetaData):
 
 class RitualEvent(MetaData):
     """Intentional ritual activity — puja, homa, jatra, etc."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     ritual_type = models.CharField(max_length=30, choices=RITUAL_TYPE_CHOICES)
@@ -415,6 +453,7 @@ class RitualEvent(MetaData):
 
 class Festival(MetaData):
     """Large-scale community ritual — Jatra, chariot festival, masked dance."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     festival_type = models.CharField(max_length=30, blank=True)
@@ -430,6 +469,7 @@ class Festival(MetaData):
 
 class IconographicObject(MetaData):
     """Sacred visual art — Paubha, Murti, etc."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     object_type = models.CharField(max_length=30, blank=True)
@@ -445,13 +485,16 @@ class IconographicObject(MetaData):
 
 class Monument(MetaData):
     """Buddhist sacred structure — Stupa, Chaitya."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     monument_type = models.CharField(max_length=30, blank=True)
     construction_date = models.CharField(max_length=100, blank=True)
     location_name = models.CharField(max_length=200, blank=True)
     coordinates = models.CharField(max_length=50, blank=True, help_text="Lat, Long")
-    existence_status = models.CharField(max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True)
+    existence_status = models.CharField(
+        max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
+    )
     note = models.TextField(blank=True)
 
     def __str__(self):
@@ -463,15 +506,16 @@ class Monument(MetaData):
 # =====================================================================
 
 SYNCRETIC_TYPE_CHOICES = [
-    ('Equivalence', 'Equivalence'),
-    ('Appropriation', 'Appropriation'),
-    ('Fusion', 'Fusion'),
-    ('Historical', 'Historical'),
+    ("Equivalence", "Equivalence"),
+    ("Appropriation", "Appropriation"),
+    ("Fusion", "Fusion"),
+    ("Historical", "Historical"),
 ]
 
 
 class KumariTenure(MetaData):
     """Time-bounded role where a person embodies a deity as Living Goddess."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     had_participant = models.CharField(max_length=200, blank=True)
@@ -492,6 +536,7 @@ class KumariTenure(MetaData):
 
 class KumariSelection(MetaData):
     """Tantric ritual process of selecting a new Living Goddess."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     selected_person = models.CharField(max_length=200, blank=True)
@@ -510,6 +555,7 @@ class KumariSelection(MetaData):
 
 class KumariRetirement(MetaData):
     """Ritual event that formally ends a Living Goddess tenure."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     ended_tenure_of = models.CharField(max_length=200, blank=True)
@@ -527,11 +573,14 @@ class KumariRetirement(MetaData):
 
 class SyncreticRelationship(MetaData):
     """Syncretic equivalence between divine entities across traditions."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     assigned_to_deity = models.CharField(max_length=200, blank=True)
     assigned_equivalent = models.TextField(blank=True)
-    syncretic_type = models.CharField(max_length=30, choices=SYNCRETIC_TYPE_CHOICES, blank=True)
+    syncretic_type = models.CharField(
+        max_length=30, choices=SYNCRETIC_TYPE_CHOICES, blank=True
+    )
     documented_in_source = models.CharField(max_length=200, blank=True)
     note = models.TextField(blank=True)
 
@@ -544,6 +593,7 @@ class SyncreticRelationship(MetaData):
 
 class CasteGroup(MetaData):
     """Hereditary social group (Jati) with specific ritual roles."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     traditional_role = models.CharField(max_length=200, blank=True)
@@ -559,6 +609,7 @@ class CasteGroup(MetaData):
 
 class CalendarSystem(MetaData):
     """Calendar reckoning system with conversion rules."""
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     epoch_date_gregorian = models.CharField(max_length=100, blank=True)
@@ -579,26 +630,26 @@ class CalendarSystem(MetaData):
 # =====================================================================
 
 CONFIDENCE_CHOICES = [
-    ('certain', 'Certain'),
-    ('likely', 'Likely'),
-    ('uncertain', 'Uncertain'),
-    ('speculative', 'Speculative'),
+    ("certain", "Certain"),
+    ("likely", "Likely"),
+    ("uncertain", "Uncertain"),
+    ("speculative", "Speculative"),
 ]
 
 RECONCILIATION_STATUS_CHOICES = [
-    ('pending', 'Pending Review'),
-    ('accepted', 'Accepted'),
-    ('disputed', 'Disputed'),
-    ('superseded', 'Superseded'),
+    ("pending", "Pending Review"),
+    ("accepted", "Accepted"),
+    ("disputed", "Disputed"),
+    ("superseded", "Superseded"),
 ]
 
 SOURCE_CATEGORY_CHOICES = [
-    ('archival', 'Archival Record'),
-    ('field_survey', 'Field Survey'),
-    ('oral_history', 'Oral History'),
-    ('published', 'Published Source'),
-    ('inscription', 'Inscription'),
-    ('web', 'Web Resource'),
+    ("archival", "Archival Record"),
+    ("field_survey", "Field Survey"),
+    ("oral_history", "Oral History"),
+    ("published", "Published Source"),
+    ("inscription", "Inscription"),
+    ("web", "Web Resource"),
 ]
 
 
@@ -607,47 +658,161 @@ class DataSource(models.Model):
     Original source from which heritage information was derived.
     CIDOC: E73_Information_Object | PROV-O: prov:Entity
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=300, help_text="Title of the source")
     source_type = models.CharField(
         max_length=30,
         choices=SOURCE_CATEGORY_CHOICES,
-        help_text="Category of this source"
+        help_text="Category of this source",
     )
-    citation = models.TextField(
-        blank=True,
-        help_text="Formal citation text"
-    )
+    citation = models.TextField(blank=True, help_text="Formal citation text")
     url = models.URLField(
-        max_length=500,
-        blank=True,
-        help_text="Digital location of source"
+        max_length=500, blank=True, help_text="Digital location of source"
     )
     author = models.CharField(
-        max_length=300,
-        blank=True,
-        help_text="Author(s) of the source"
+        max_length=300, blank=True, help_text="Author(s) of the source"
     )
     publication_year = models.CharField(
-        max_length=20,
-        blank=True,
-        help_text="Year of publication"
+        max_length=20, blank=True, help_text="Year of publication"
     )
     language = models.CharField(
         max_length=50,
         blank=True,
-        help_text="Language of the source (e.g., Nepali, Newari, English)"
+        help_text="Language of the source (e.g., Nepali, Newari, English)",
     )
     note = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         verbose_name = "Data Source"
         verbose_name_plural = "Data Sources"
 
     def __str__(self):
         return self.name
+
+
+class EntityCluster(models.Model):
+    """
+    Stable identity anchor: one cluster per real-world referent within a type_scope
+    (Django ContentType.model string). Membership is derived from HeritageAssertion
+    rows with asserted_property identity.same_referent and entity_cluster set.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    canonical_label = models.CharField(max_length=500)
+    type_scope = models.CharField(
+        max_length=100,
+        help_text="Django model name for subjects (e.g. person, location)",
+    )
+    locked = models.BooleanField(default=False)
+    note = models.TextField(blank=True)
+    version = models.PositiveIntegerField(default=0)
+    merged_into = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="merged_from_clusters",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "entity_cluster"
+        indexes = [
+            models.Index(fields=["type_scope", "locked"]),
+            models.Index(fields=["merged_into"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.canonical_label} ({self.type_scope})"
+
+
+class ClusterAuditEvent(models.Model):
+    """Append-only audit trail for merge, split, lock, unlock, and override actions."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    action = models.CharField(max_length=40, choices=CLUSTER_AUDIT_ACTION_CHOICES)
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="cluster_audit_events",
+    )
+    reason = models.TextField(blank=True)
+    before_state = models.JSONField(default=dict)
+    after_state = models.JSONField(default=dict)
+    affected_cluster_ids = models.JSONField(default=list)
+    affected_assertion_ids = models.JSONField(default=list)
+    related_cluster = models.ForeignKey(
+        EntityCluster,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="audit_events",
+        help_text="Primary cluster this audit row is anchored to (for list filtering).",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "cluster_audit_event"
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.action} @ {self.created_at:%Y-%m-%d}"
+
+
+IDENTITY_CANDIDATE_STATUS_CHOICES = [
+    ("open", "Open"),
+    ("accepted", "Accepted"),
+    ("rejected", "Rejected"),
+    ("deferred", "Deferred"),
+]
+
+
+class IdentityResolutionCandidate(models.Model):
+    """Rule-based suggestion for reviewer identity workspace (US4)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    left_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        related_name="identity_candidates_left",
+    )
+    left_object_id = models.PositiveIntegerField()
+    right_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        related_name="identity_candidates_right",
+    )
+    right_object_id = models.PositiveIntegerField()
+    signal_scores = models.JSONField(default=dict, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=IDENTITY_CANDIDATE_STATUS_CHOICES,
+        default="open",
+    )
+    notes = models.TextField(blank=True)
+    resolved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="resolved_identity_candidates",
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "identity_resolution_candidate"
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"Candidate {self.left_object_id}/{self.right_object_id} ({self.status})"
 
 
 class HeritageAssertion(models.Model):
@@ -661,6 +826,7 @@ class HeritageAssertion(models.Model):
 
     CIDOC: crminf:I2_Belief | PROV-O: prov:Entity
     """
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     # What entity is this assertion about? (generic FK, nullable for standalone assertions)
@@ -669,28 +835,31 @@ class HeritageAssertion(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        help_text="Type of the entity this assertion is about"
+        help_text="Type of the entity this assertion is about",
     )
     object_id = models.PositiveIntegerField(
+        null=True, blank=True, help_text="ID of the entity this assertion is about"
+    )
+    asserts_about = GenericForeignKey("content_type", "object_id")
+
+    entity_cluster = models.ForeignKey(
+        EntityCluster,
+        on_delete=models.PROTECT,
         null=True,
         blank=True,
-        help_text="ID of the entity this assertion is about"
+        related_name="membership_assertions",
+        help_text="Set for identity.same_referent membership rows",
     )
-    asserts_about = GenericForeignKey('content_type', 'object_id')
 
     # What property/value is being asserted
     asserted_property = models.CharField(
         max_length=100,
         blank=True,
-        help_text="The property being asserted (e.g., 'construction_date')"
+        help_text="The property being asserted (e.g., 'construction_date')",
     )
-    asserted_value = models.TextField(
-        blank=True,
-        help_text="The value being asserted"
-    )
+    asserted_value = models.TextField(blank=True, help_text="The value being asserted")
     assertion_content = models.TextField(
-        blank=True,
-        help_text="Free-text description of the assertion"
+        blank=True, help_text="Free-text description of the assertion"
     )
 
     # Provenance
@@ -699,61 +868,66 @@ class HeritageAssertion(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='assertions',
-        help_text="Source supporting this assertion"
+        related_name="assertions",
+        help_text="Source supporting this assertion",
     )
     source_citation = models.TextField(
-        blank=True,
-        help_text="Inline citation if no separate DataSource record"
+        blank=True, help_text="Inline citation if no separate DataSource record"
     )
     contributed_by = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text="Email or name of the contributor"
+        max_length=255, blank=True, help_text="Email or name of the contributor"
     )
     confidence = models.CharField(
         max_length=20,
         choices=CONFIDENCE_CHOICES,
-        default='likely',
-        help_text="Contributor's confidence in this claim"
+        default="likely",
+        help_text="Contributor's confidence in this claim",
     )
     data_quality_note = models.TextField(
-        blank=True,
-        help_text="Notes on data quality or limitations"
+        blank=True, help_text="Notes on data quality or limitations"
     )
 
     # Moderation
     reconciliation_status = models.CharField(
         max_length=20,
         choices=RECONCILIATION_STATUS_CHOICES,
-        default='pending',
-        help_text="Review status of this assertion"
+        default="pending",
+        help_text="Review status of this assertion",
     )
     supersedes = models.ForeignKey(
-        'self',
+        "self",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='superseded_by',
-        help_text="Previous assertion this one replaces"
+        related_name="superseded_by",
+        help_text="Previous assertion this one replaces",
     )
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def clean(self) -> None:
+        super().clean()
+        from .identity_validation import validate_membership_assertion
+
+        validate_membership_assertion(self)
+
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         verbose_name = "Heritage Assertion"
         verbose_name_plural = "Heritage Assertions"
         indexes = [
-            models.Index(fields=['content_type', 'object_id']),
-            models.Index(fields=['reconciliation_status']),
-            models.Index(fields=['confidence']),
+            models.Index(fields=["content_type", "object_id"]),
+            models.Index(fields=["reconciliation_status"]),
+            models.Index(fields=["confidence"]),
+            models.Index(fields=["asserted_property", "entity_cluster"]),
         ]
 
     def __str__(self):
-        return f"Assertion on {self.content_type.model}#{self.object_id}: {self.asserted_property}"
+        if self.content_type_id:
+            return f"Assertion on {self.content_type.model}#{self.object_id}: {self.asserted_property}"
+        return f"Assertion {self.pk}: {self.asserted_property}"
 
 
 class EntityRef(models.Model):
@@ -894,17 +1068,32 @@ class DynamicOntologyEntity(models.Model):
 
 # Patch assertions onto all heritage models
 for _model in [
-    ArchitecturalStructure, RitualEvent, Festival, IconographicObject,
-    Monument, Deity, Guthi, Person, Location, Event, HistoricalPeriod,
-    Tradition, Source, KumariTenure, KumariSelection, KumariRetirement,
-    SyncreticRelationship, CasteGroup, CalendarSystem,
+    ArchitecturalStructure,
+    RitualEvent,
+    Festival,
+    IconographicObject,
+    Monument,
+    Deity,
+    Guthi,
+    Person,
+    Location,
+    Event,
+    HistoricalPeriod,
+    Tradition,
+    Source,
+    KumariTenure,
+    KumariSelection,
+    KumariRetirement,
+    SyncreticRelationship,
+    CasteGroup,
+    CalendarSystem,
 ]:
-    if not hasattr(_model, 'assertions'):
+    if not hasattr(_model, "assertions"):
         GenericRelation(
             HeritageAssertion,
-            content_type_field='content_type',
-            object_id_field='object_id',
-        ).contribute_to_class(_model, 'assertions')
+            content_type_field="content_type",
+            object_id_field="object_id",
+        ).contribute_to_class(_model, "assertions")
 
 
 # class Artifact(models.Model):
@@ -919,7 +1108,7 @@ for _model in [
 #     condition = models.CharField(max_length=20, choices=ARTIFACT_CONDITION_CHOICES)
 #     status = models.CharField(max_length=20, choices=ARTIFACT_STATUS_CHOICES)
 #     digital_representation = models.URLField(max_length=500, blank=True, help_text="Link to image/3D model")
-    
+
 #     creator = models.ForeignKey(
 #         Person,
 #         on_delete=models.SET_NULL,
@@ -954,7 +1143,6 @@ for _model in [
 
 #     def __str__(self):
 #         return self.name
-
 
 
 # # Revision tables
@@ -1262,7 +1450,7 @@ for _model in [
 #         ('system', 'System Notification'),
 #         ('reminder', 'Reminder'),
 #     ]
-    
+
 #     notification_id = models.AutoField(primary_key=True)
 #     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="User receiving the notification")
 #     notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES, help_text="Type of notification")
