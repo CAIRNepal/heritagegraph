@@ -33,10 +33,10 @@ Want to add a "Commissioner" field to the Structure form?
 3. **Regenerate** — From repo root:
 
 ```bash
-make ontology
+make generate
 ```
 
-That updates `heritage_graph_ui/src/lib/ontology/registry.generated.json` (and `.ts`) with the new field. Forms and tables that use `OntologyProvider` / `OntologyForm` pick it up after refresh (and after `rebuild_schema_registry` on the server if you rely on the DB snapshot).
+That runs the full pipeline: ontology → serializers → entityrefs → schema-rebuild. It updates `registry.generated.json`/`.ts`, `serializers.generated.py`, and persists the DB snapshot. Forms and tables that use `OntologyProvider` / `OntologyForm` pick it up after refresh.
 
 Optional: use **slot annotations** (`ui_section`, `ui_order`, etc.) in LinkML for layout; see `heritage_graph/apps/cidoc_data/ontology_builder.py`.
 
@@ -124,7 +124,7 @@ The UI reads the effective registry via **`OntologyProvider`** and auto-generate
 1. Add a slot under `slots:` in `ontology/HeritageGraph.yaml` (with `range`, `description`, `slot_uri` as appropriate).
 2. Add the slot name to `classes.<YourLinkMLClass>.slots` (or `slot_usage` for overrides).
 3. Optionally set slot annotations `ui_section`, `ui_order`, `ui_placeholder`, `ui_widget` (see `ontology_builder._slot_ui_overrides`).
-4. Run `make ontology` and commit `registry.generated.json` / `.ts`.
+4. Run `make generate` and commit the generated files.
 
 ### Step 2 — Columns (optional)
 
@@ -165,7 +165,7 @@ In `ontology/HeritageGraph.yaml`, under `enums:`, add `permissible_values` with 
 ### Step 2 — Regenerate
 
 ```bash
-make ontology
+make generate
 ```
 
 The builder emits the enum under `registry.enums` and inlines **`options`** on each `select` field whose range is that enum.
@@ -199,7 +199,7 @@ Sections group related fields under collapsible accordion headers.
 
 1. Prefer **slot annotations** `ui_section` and `ui_order` on each slot in LinkML (see `ontology_builder`).
 2. Alternatively set a **class annotation** `ui_sections` (JSON array) on the LinkML class for full control.
-3. Run `make ontology`.
+3. Run `make generate`.
 
 When a class has **more than one** section, `OntologyForm` renders a **multi-step flow** (one section per step): progress, step navigation, Next/Previous, and a single Submit on the last step.
 
@@ -227,7 +227,7 @@ This is the most involved task. Here's the full checklist:
 1. Add a **class** (and its slots) in `ontology/HeritageGraph.yaml`.
 2. Add a row to **`tools/ui-classmap.yaml`**: `linkml`, `key` (URL route segment / registry key), `apiEndpoint` (must match `heritage_graph/apps/cidoc_data/urls.py`), `label`, `category`, `icon`, `navigable`.
 3. Optionally add **intents** to `tools/contribute-hub.yaml` if the type should appear on the contribute dashboard.
-4. Run `make ontology`.
+4. Run `make generate`.
 
 ### Step 2 — Django
 

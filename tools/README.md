@@ -1,5 +1,25 @@
 # HeritageGraph tools
 
+## Full pipeline
+
+Run `make generate` to regenerate all schema-driven artifacts in one command:
+
+```bash
+make generate
+```
+
+This runs: ontology → serializers → entityrefs → schema-rebuild.
+
+For CI verification (no side-effects):
+
+```bash
+make check
+```
+
+This runs all `*-check` gates: ontology-check, serializers-check, entityrefs-check.
+
+---
+
 ## `linkml_generate_registry.py`
 
 Regenerates:
@@ -12,7 +32,7 @@ from `ontology/HeritageGraph.yaml`, `tools/ui-classmap.yaml`, `tools/ui-presenta
 ```bash
 # From repo root
 python3 tools/linkml_generate_registry.py
-# or
+# or (part of make generate)
 make ontology
 # or (from heritage_graph_ui/)
 npm run generate:ontology
