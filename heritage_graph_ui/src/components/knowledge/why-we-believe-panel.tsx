@@ -8,6 +8,10 @@ import { getPublicApiUrl } from "@/lib/api-base";
 import { djangoModelNameFromOntologyKey } from "@/lib/knowledge/cidoc-api-path";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  CompetingIdentitiesPanel,
+  type IdentitySummaryPayload,
+} from "@/components/knowledge/competing-identities-panel";
 
 type HeritageAssertionRow = {
   id: string;
@@ -32,17 +36,23 @@ export function WhyWeBelievePanel({
   const { data: session } = useSession();
   const token = (session as { accessToken?: string } | null)?.accessToken;
   const [rows, setRows] = useState<HeritageAssertionRow[]>([]);
+  const [summary, setSummary] = useState<IdentitySummaryPayload | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     const base = getPublicApiUrl();
     const ct = djangoModelNameFromOntologyKey(domain);
     setLoading(true);
+    setSummary(null);
     try {
       const headers: Record<string, string> = {
         Accept: "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
+      const sumPromise = apiFetchJson<IdentitySummaryPayload>(
+        `${base}/api/v1/cidoc/identity-summary/?entity_type=${encodeURIComponent(ct)}&entity_id=${encodeURIComponent(cidocRecordId)}`,
+        { headers }
+      ).catch(() => null);
       const bySubject = await apiFetchJson<{ results?: HeritageAssertionRow[] } | HeritageAssertionRow[]>(
         `${base}/api/v1/cidoc/assertions/?entity_type=${encodeURIComponent(ct)}&entity_id=${encodeURIComponent(cidocRecordId)}`,
         { headers }
@@ -64,9 +74,12 @@ export function WhyWeBelievePanel({
         }
       }
       setRows(merged);
+      const sum = await sumPromise;
+      setSummary(sum);
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Could not load assertions."));
       setRows([]);
+      setSummary(null);
     } finally {
       setLoading(false);
     }
@@ -113,7 +126,13 @@ export function WhyWeBelievePanel({
     );
   }
 
-  if (!rows.length) {
+  const hasIdentityBlock =
+    summary &&
+    (summary.competing ||
+      summary.canonical_label ||
+      (summary.membership_assertion_ids && summary.membership_assertion_ids.length > 0));
+
+  if (!rows.length && !hasIdentityBlock) {
     return (
       <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
         No structured assertions are recorded for this record yet. Contributions and OCR runs will
@@ -131,7 +150,34 @@ export function WhyWeBelievePanel({
           sources disagree.
         </p>
       </div>
+      {summary && hasIdentityBlock ? (
+        <div className="rounded-md border bg-muted/20 p-3 text-sm space-y-2">
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Identity (same referent)
+          </div>
+          {summary.canonical_label ? (
+            <p>
+              <span className="text-muted-foreground">Canonical label: </span>
+              <span className="font-medium">{summary.canonical_label}</span>
+            </p>
+          ) : null}
+          {summary.alias_titles?.length ? (
+            <p className="text-xs text-muted-foreground">
+              Aliases in cluster: {summary.alias_titles.join(", ")}
+            </p>
+          ) : null}
+          {summary.primary_cluster_id ? (
+            <p className="text-[10px] text-muted-foreground font-mono">
+              Cluster {summary.primary_cluster_id}
+            </p>
+          ) : null}
+          {summary.competing ? <CompetingIdentitiesPanel summary={summary} /> : null}
+        </div>
+      ) : null}
       <div className="space-y-4 max-h-[32rem] overflow-y-auto pr-1">
+        {!rows.length ? (
+          <p className="text-xs text-muted-foreground">No additional assertion rows for this view.</p>
+        ) : null}
         {Object.entries(grouped).map(([prop, list]) => (
           <div key={prop} className="rounded-md border bg-muted/20 p-3">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
