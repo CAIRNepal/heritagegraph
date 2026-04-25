@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
+from .edtf_field import EDTFSerializerField
 from .models import *
 
 User = get_user_model()
@@ -95,6 +96,9 @@ class BaseRegistrySerializer(serializers.ModelSerializer):
 
 
 class PersonSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    birth_date = EDTFSerializerField(required=False, allow_blank=True)
+    death_date = EDTFSerializerField(required=False, allow_blank=True)
+
     class Meta:
         model = Person
         fields = "__all__"
@@ -110,12 +114,38 @@ class PersonSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
 
 
 class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+
     class Meta:
         model = Location
         fields = "__all__"
 
+    def get_latitude(self, obj):
+        return obj.point.y if obj.point else None
+
+    def get_longitude(self, obj):
+        return obj.point.x if obj.point else None
+
+    def to_internal_value(self, data):
+        lat = data.pop("latitude", None)
+        lng = data.pop("longitude", None)
+        ret = super().to_internal_value(data)
+        if lat is not None and lng is not None:
+            from django.contrib.gis.geos import Point
+            try:
+                ret["point"] = Point(float(lng), float(lat), srid=4326)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError(
+                    {"latitude": "Must be a valid float."}
+                )
+        return ret
+
 
 class EventSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    start_date = EDTFSerializerField(required=False, allow_blank=True)
+    end_date = EDTFSerializerField(required=False, allow_blank=True)
+
     class Meta:
         model = Event
         fields = "__all__"
@@ -159,9 +189,33 @@ class GuthiSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
 class ArchitecturalStructureSerializer(
     CulturalEntityLinkMixin, serializers.ModelSerializer
 ):
+    construction_date = EDTFSerializerField(required=False, allow_blank=True)
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+
     class Meta:
         model = ArchitecturalStructure
         fields = "__all__"
+
+    def get_latitude(self, obj):
+        return obj.point.y if obj.point else None
+
+    def get_longitude(self, obj):
+        return obj.point.x if obj.point else None
+
+    def to_internal_value(self, data):
+        lat = data.pop("latitude", None)
+        lng = data.pop("longitude", None)
+        ret = super().to_internal_value(data)
+        if lat is not None and lng is not None:
+            from django.contrib.gis.geos import Point
+            try:
+                ret["point"] = Point(float(lng), float(lat), srid=4326)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError(
+                    {"latitude": "Must be a valid float."}
+                )
+        return ret
 
 
 class RitualEventSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
@@ -185,24 +239,54 @@ class IconographicObjectSerializer(
 
 
 class MonumentSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    latitude = serializers.SerializerMethodField()
+    longitude = serializers.SerializerMethodField()
+
     class Meta:
         model = Monument
         fields = "__all__"
 
+    def get_latitude(self, obj):
+        return obj.point.y if obj.point else None
+
+    def get_longitude(self, obj):
+        return obj.point.x if obj.point else None
+
+    def to_internal_value(self, data):
+        lat = data.pop("latitude", None)
+        lng = data.pop("longitude", None)
+        ret = super().to_internal_value(data)
+        if lat is not None and lng is not None:
+            from django.contrib.gis.geos import Point
+            try:
+                ret["point"] = Point(float(lng), float(lat), srid=4326)
+            except (TypeError, ValueError):
+                raise serializers.ValidationError(
+                    {"latitude": "Must be a valid float."}
+                )
+        return ret
+
 
 class KumariTenureSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    date_earliest = EDTFSerializerField(required=False, allow_blank=True)
+    date_latest = EDTFSerializerField(required=False, allow_blank=True)
+
     class Meta:
         model = KumariTenure
         fields = "__all__"
 
 
 class KumariSelectionSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    date_earliest = EDTFSerializerField(required=False, allow_blank=True)
+
     class Meta:
         model = KumariSelection
         fields = "__all__"
 
 
 class KumariRetirementSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    date_earliest = EDTFSerializerField(required=False, allow_blank=True)
+
     class Meta:
         model = KumariRetirement
         fields = "__all__"

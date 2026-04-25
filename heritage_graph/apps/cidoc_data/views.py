@@ -610,6 +610,38 @@ class EntityClusterViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=["get"],
+        url_path="conflict-check",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def conflict_check(self, request, pk=None):
+        """
+        Pre-flight conflict check before submitting a merge.
+
+        GET /cidoc/entity-clusters/{id}/conflict-check/?source_cluster_id=<uuid>
+
+        Returns:
+            {"conflicts": [...], "can_merge": bool}
+        """
+        source_id = request.query_params.get("source_cluster_id")
+        if not source_id:
+            return Response(
+                {"detail": "source_cluster_id query param is required."},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            source = EntityCluster.objects.get(pk=source_id)
+        except EntityCluster.DoesNotExist:
+            return Response(
+                {"detail": f"Cluster {source_id!r} not found."},
+                status=drf_status.HTTP_404_NOT_FOUND,
+            )
+        target = self.get_object()
+        conflicts = identity_services.detect_merge_conflict(target, source)
+        return Response({"conflicts": conflicts, "can_merge": len(conflicts) == 0})
+
+    @action(
+        detail=True,
+        methods=["get"],
         url_path="members",
         permission_classes=[permissions.AllowAny],
     )
@@ -670,7 +702,9 @@ class EntityIdentitySummaryView(APIView):
 
 
 class IdentityCandidateViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = IdentityResolutionCandidate.objects.all().order_by("-created_at")
+    queryset = IdentityResolutionCandidate.objects.select_related(
+        "left_content_type", "right_content_type"
+    ).order_by("-created_at")
     serializer_class = IdentityResolutionCandidateSerializer
 
     def get_permissions(self):

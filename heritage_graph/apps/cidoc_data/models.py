@@ -4,7 +4,10 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
+from django.contrib.gis.db import models as gis_models
+
 from .identity_constants import CLUSTER_AUDIT_ACTION_CHOICES
+from .edtf_field import validate_edtf
 
 User = get_user_model()
 
@@ -98,8 +101,8 @@ class Person(MetaData):
     aliases = models.TextField(
         blank=True, help_text="Comma-separated alternative names"
     )
-    birth_date = models.CharField(max_length=50, blank=True)
-    death_date = models.CharField(max_length=50, blank=True)
+    birth_date = models.CharField(max_length=50, blank=True, validators=[validate_edtf])
+    death_date = models.CharField(max_length=50, blank=True, validators=[validate_edtf])
     occupation = models.CharField(max_length=100, blank=True)
     biography = models.TextField(blank=True)
 
@@ -151,8 +154,12 @@ class Location(MetaData):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
-    coordinates = models.CharField(
-        max_length=50, blank=True, help_text="Lat, Long format"
+    coordinates_legacy = models.CharField(
+        max_length=50, blank=True, help_text="Legacy 'Lat, Long' string — use point field instead"
+    )
+    point = gis_models.PointField(
+        geography=True, srid=4326, null=True, blank=True,
+        help_text="Geographic point (longitude, latitude) — WGS84"
     )
     type = models.CharField(max_length=50, choices=LOCATION_TYPE_CHOICES)
     description = models.TextField(blank=True)
@@ -183,9 +190,10 @@ class Event(MetaData):
     type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
     description = models.TextField()
     start_date = models.CharField(
-        max_length=100, blank=True, help_text="e.g., 'Baisakh 15'"
+        max_length=100, blank=True, help_text="e.g., 'Baisakh 15' or EDTF like '1934~'",
+        validators=[validate_edtf],
     )
-    end_date = models.CharField(max_length=100, blank=True)
+    end_date = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
     recurrence = models.CharField(max_length=20, choices=EVENT_RECURRENCE_CHOICES)
 
     ## Relationships
@@ -416,9 +424,15 @@ class ArchitecturalStructure(MetaData):
     architectural_style = models.CharField(
         max_length=30, choices=ARCHITECTURAL_STYLE_CHOICES, blank=True
     )
-    construction_date = models.CharField(max_length=100, blank=True)
+    construction_date = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
     location_name = models.CharField(max_length=200, blank=True)
-    coordinates = models.CharField(max_length=50, blank=True, help_text="Lat, Long")
+    coordinates_legacy = models.CharField(
+        max_length=50, blank=True, help_text="Legacy 'Lat, Long' string — use point field instead"
+    )
+    point = gis_models.PointField(
+        geography=True, srid=4326, null=True, blank=True,
+        help_text="Geographic point (longitude, latitude) — WGS84"
+    )
     existence_status = models.CharField(
         max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
     )
@@ -491,7 +505,13 @@ class Monument(MetaData):
     monument_type = models.CharField(max_length=30, blank=True)
     construction_date = models.CharField(max_length=100, blank=True)
     location_name = models.CharField(max_length=200, blank=True)
-    coordinates = models.CharField(max_length=50, blank=True, help_text="Lat, Long")
+    coordinates_legacy = models.CharField(
+        max_length=50, blank=True, help_text="Legacy 'Lat, Long' string — use point field instead"
+    )
+    point = gis_models.PointField(
+        geography=True, srid=4326, null=True, blank=True,
+        help_text="Geographic point (longitude, latitude) — WGS84"
+    )
     existence_status = models.CharField(
         max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
     )
@@ -521,8 +541,8 @@ class KumariTenure(MetaData):
     had_participant = models.CharField(max_length=200, blank=True)
     embodied_deity = models.CharField(max_length=200, blank=True)
     residence_structure = models.CharField(max_length=200, blank=True)
-    date_earliest = models.CharField(max_length=100, blank=True)
-    date_latest = models.CharField(max_length=100, blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    date_latest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
     supported_by_institution = models.TextField(blank=True)
     note = models.TextField(blank=True)
 
@@ -542,7 +562,7 @@ class KumariSelection(MetaData):
     selected_person = models.CharField(max_length=200, blank=True)
     initiated_tenure = models.CharField(max_length=200, blank=True)
     selection_criteria_met = models.TextField(blank=True)
-    date_earliest = models.CharField(max_length=100, blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
     took_place_at = models.CharField(max_length=200, blank=True)
     note = models.TextField(blank=True)
 
@@ -560,7 +580,7 @@ class KumariRetirement(MetaData):
     name = models.CharField(max_length=200)
     ended_tenure_of = models.CharField(max_length=200, blank=True)
     carried_out_by = models.CharField(max_length=200, blank=True)
-    date_earliest = models.CharField(max_length=100, blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
     took_place_at = models.CharField(max_length=200, blank=True)
     note = models.TextField(blank=True)
 

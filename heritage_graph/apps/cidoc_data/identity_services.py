@@ -319,6 +319,57 @@ def unlock_cluster(
     return cluster
 
 
+def detect_merge_conflict(
+    target: EntityCluster, source: EntityCluster
+) -> list[str]:
+    """
+    Return a list of human-readable conflict reason strings.
+    An empty list means no conflicts were detected — safe to merge.
+
+    Checks:
+    1. Either cluster has disputed HeritageAssertion rows (active disagreement).
+    2. Any subject entity is linked to BOTH clusters via accepted same-referent
+       assertions (competing identity claims for the same referent).
+    """
+    conflicts: list[str] = []
+
+    disputed_in_target = HeritageAssertion.objects.filter(
+        entity_cluster=target, reconciliation_status="disputed"
+    ).exclude(id__in=_superseded_assertion_ids()).count()
+    if disputed_in_target:
+        conflicts.append(
+            f"Target cluster has {disputed_in_target} disputed assertion(s)."
+        )
+
+    disputed_in_source = HeritageAssertion.objects.filter(
+        entity_cluster=source, reconciliation_status="disputed"
+    ).exclude(id__in=_superseded_assertion_ids()).count()
+    if disputed_in_source:
+        conflicts.append(
+            f"Source cluster has {disputed_in_source} disputed assertion(s)."
+        )
+
+    competing_rows = (
+        HeritageAssertion.objects.filter(
+            asserted_property=IDENTITY_SAME_REFERENT_PROPERTY,
+            reconciliation_status="accepted",
+            entity_cluster__in=[target, source],
+        )
+        .exclude(id__in=_superseded_assertion_ids())
+        .values("content_type_id", "object_id")
+        .annotate(n_clusters=Count("entity_cluster_id", distinct=True))
+        .filter(n_clusters__gt=1)
+    )
+    if competing_rows.exists():
+        n = competing_rows.count()
+        conflicts.append(
+            f"{n} subject entity/entities have competing same-referent claims "
+            "across both clusters."
+        )
+
+    return conflicts
+
+
 @transaction.atomic
 def merge_clusters(
     *,
@@ -345,6 +396,33 @@ def merge_clusters(
     if target.locked and lock_override and not is_expert_curator:
         raise PermissionDenied("lock_override requires expert curator or staff.")
 
+    conflict_reasons = detect_merge_conflict(target, source)
+    if conflict_reasons and not is_expert_curator:
+        target.locked = True
+        target.save(update_fields=["locked", "updated_at"])
+        from django.contrib.contenttypes.models import ContentType
+        cluster_ct = ContentType.objects.get_for_model(EntityCluster)
+        IdentityResolutionCandidate.objects.get_or_create(
+            left_content_type=cluster_ct,
+            left_object_id=target.pk,
+            right_content_type=cluster_ct,
+            right_object_id=source.pk,
+            defaults={
+                "signal_scores": {"conflict_reasons": conflict_reasons},
+                "status": "open",
+            },
+        )
+        raise ValidationError(
+            {
+                "conflict_detected": True,
+                "conflicts": conflict_reasons,
+                "detail": (
+                    "Merge blocked: conflicting assertions detected. "
+                    "Target cluster locked and escalated for moderator review."
+                ),
+            }
+        )
+
     action = (
         CLUSTER_AUDIT_ACTION_LOCK_OVERRIDE_MERGE
         if target.locked and lock_override
@@ -358,6 +436,7 @@ def merge_clusters(
         "source": str(source.id),
         "target_version": expected_version,
         "source_memberships": [str(r.id) for r in old_rows],
+        "conflict_reasons_overridden": conflict_reasons,
     }
     actor_label = ""
     if hasattr(actor, "email") and actor.email:

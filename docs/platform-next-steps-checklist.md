@@ -75,15 +75,15 @@ Prioritized by **dependency** (foundational gates and data models before large U
 
 *Plan:* [`/home/nabin2004/.windsurf/plans/p2-data-platform-scale-4dfc2f.md`](../../.windsurf/plans/p2-data-platform-scale-4dfc2f.md)*
 
-- [ ] **Migrate coordinates to PostGIS (`PointField`)** — replace `coordinates CharField` on `Location`, `ArchitecturalStructure`, `Monument`; keep `coordinates_legacy`; data migration; requires PostGIS + GDAL.  
+- [x] **Migrate coordinates to PostGIS (`PointField`)** — `coordinates` renamed to `coordinates_legacy`; `point = PointField(geography=True, srid=4326)` added to `Location`, `ArchitecturalStructure`, `Monument`; migration `0010_postgis_point_fields.py` with data migration parsing legacy strings; `latitude`/`longitude` serializer fields; `django.contrib.gis` in `INSTALLED_APPS`; PostGIS note in `.env.example`.  
   - *Area:* Backend / DB / UI (map widgets)
-- [ ] **EDTF-aware date storage** — `EDTFSerializerField` validator + attach to key date CharFields (`birth_date`, `start_date`, `construction_date`, `date_earliest/latest`); no migration.  
+- [x] **EDTF-aware date storage** — `cidoc_data/edtf_field.py`: `validate_edtf` + `EDTFSerializerField`; attached to `birth_date`, `death_date` (Person), `start_date`, `end_date` (Event), `construction_date` (ArchitecturalStructure), `date_earliest/latest` (KumariTenure/Selection/Retirement).  
   - *Area:* Backend / Ontology
-- [ ] **Standardize relations via EntityRef** — `post_save` signals to keep `EntityRef` in sync automatically; `rebuild_entityrefs --check` for CI; `make entityrefs` target.  
+- [x] **Standardize relations via EntityRef** — `post_save` signals in `signals.py` for 5 relation models; `rebuild_entityrefs --check` CI flag; `make entityrefs` + `make entityrefs-check` Makefile targets.  
   - *Area:* Backend / Migrations
-- [ ] **Graph / search performance pass** — migration `0010_perf_indexes.py` for high-traffic fields; N+1 fix on `IdentityCandidateViewSet`.  
+- [x] **Graph / search performance pass** — migration `0009_perf_indexes.py`: 8 new indexes on Location, Person, Deity, ArchitecturalStructure, HeritageAssertion, EntityCluster; `select_related` N+1 fix on `IdentityCandidateViewSet`.  
   - *Area:* Backend
-- [ ] **Cluster merge conflict protocol** — `detect_merge_conflict()` in `identity_services.py`; auto-lock + create `IdentityResolutionCandidate` on conflict for non-curators; `GET conflict-check/` pre-flight action on `EntityClusterViewSet`.  
+- [x] **Cluster merge conflict protocol** — `detect_merge_conflict()` in `identity_services.py`; `merge_clusters()` auto-locks target and creates `IdentityResolutionCandidate` on conflict for non-curators; `GET /cidoc/entity-clusters/{id}/conflict-check/` pre-flight action.  
   - *Depends on:* Entity clusters ✓  
   - *Area:* Product / Backend
 

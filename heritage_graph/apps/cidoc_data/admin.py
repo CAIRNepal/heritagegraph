@@ -93,13 +93,13 @@ class LocationAdmin(MetaDataMixin, admin.ModelAdmin):
         "name",
         "type",
         "current_status",
-        "coordinates",
+        "coordinates_legacy",
         "status_colored",
         "contributor_short",
         "created_at",
     )
     list_filter = ("type", "current_status", "status", "created_at")
-    search_fields = ("name", "description", "coordinates")
+    search_fields = ("name", "description", "coordinates_legacy")
     ordering = ("-created_at",)
     list_per_page = 25
 

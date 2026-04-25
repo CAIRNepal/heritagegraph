@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_extensions",
     "drf_spectacular",
+    "django.contrib.gis",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",

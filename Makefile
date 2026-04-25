@@ -4,7 +4,7 @@
 # Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: ontology ontology-check serializers serializers-check \
+.PHONY: ontology ontology-check serializers serializers-check entityrefs entityrefs-check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
         reset-dev-db migrate migrations shell seed seed-reset \
         docs-build docs-serve docs-clean \
@@ -46,6 +46,12 @@ serializers: ## Regenerate serializers.generated.py from HeritageGraph.yaml
 serializers-check: ## CI: fail if serializers.generated.py is out of date
 	python3 tools/generate_serializers.py --check
 
+entityrefs: ## Rebuild EntityRef edges from legacy CharField relation columns
+	python3 heritage_graph/manage.py rebuild_entityrefs
+
+entityrefs-check: ## CI: fail if any CharField relation values lack EntityRef rows
+	python3 heritage_graph/manage.py rebuild_entityrefs --check
+
 # ================================================================
 # HELP
 # ================================================================
@@ -63,6 +69,8 @@ help:
 	@echo "    make ontology-check Fail if registry.generated.* is out of date (CI)"
 	@echo "    make serializers    Regenerate serializers.generated.py from HeritageGraph.yaml"
 	@echo "    make serializers-check Fail if serializers.generated.py is out of date (CI)"
+	@echo "    make entityrefs     Rebuild EntityRef edges from legacy CharField columns"
+	@echo "    make entityrefs-check Fail if any relation CharField values lack EntityRef rows (CI)"
 	@echo "    make backend        Django API        →  http://localhost:8000"
 	@echo "    make frontend       Main app (UI)     →  http://localhost:3000"
 	@echo "    make landing        Marketing site    →  http://localhost:3001"
