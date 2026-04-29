@@ -26,11 +26,37 @@ import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
  * `profileUrl` links to the member's CAIR-Nepal profile page — rendered as
  * a semantic <a> tag for SEO crawlability.
  */
-const teamMembers = [
-  { name: 'Dr. Tek Raj Chhetri', role: 'Project Lead | Researcher in AI and Digital Heritage', image: '/cair-logo/tekraj.jpeg', profileUrl: 'http://www.cair-nepal.org/team/members/tek-raj-chhetri/' },
+const teamMembers: Array<{
+  name: string;
+  role: string;
+  image: string;
+  profileUrl: string;
+  githubLogin?: string;
+  githubLogins?: string[];
+}> = [
+  {
+    name: 'Dr. Tek Raj Chhetri',
+    role: 'Project Lead | Researcher in AI and Digital Heritage',
+    image: '/cair-logo/tekraj.jpeg',
+    profileUrl: 'http://www.cair-nepal.org/team/members/tek-raj-chhetri/',
+    githubLogins: ['tekrajchhetri'],
+  },
   { name: 'Dr. Semih Yumusak', role: 'Advisor | Semantic Web and Knowledge Graph Expert', image: '/cair-logo/semih.jpeg', profileUrl: 'http://www.cair-nepal.org/team/members/dr-semih-yumusak/' },
-  { name: 'Nabin Oli', role: 'Machine Learning Researcher | Data & Graph Modeling', image: '/cair-logo/nabin.jpeg', profileUrl: 'http://www.cair-nepal.org/team/members/nabin-oli/' },
-  { name: 'Niraj Karki', role: 'Software Engineer | Backend & Infrastructure', image: '/cair-logo/niraj.jpeg', profileUrl: 'http://www.cair-nepal.org/team/members/niraj-karki/' },
+  {
+    name: 'Nabin Oli',
+    role: 'Machine Learning Researcher | Data & Graph Modeling',
+    image: '/cair-logo/nabin.jpeg',
+    profileUrl: 'http://www.cair-nepal.org/team/members/nabin-oli/',
+    githubLogins: ['nabin2004'],
+  },
+  {
+    name: 'Niraj Karki',
+    role: 'Software Engineer | Backend & Infrastructure',
+    image: '/cair-logo/niraj.jpeg',
+    profileUrl: 'http://www.cair-nepal.org/team/members/niraj-karki/',
+    githubLogin: 'nirajkarki',
+    githubLogins: ['nirajkark'],
+  },
   { name: 'Anu Sapkota', role: 'Researcher | Cultural Heritage & Knowledge Systems', image: '/cair-logo/anu_sapkota.jpeg', profileUrl: 'http://www.cair-nepal.org/team/members/anu-sapkota/' },
 ];
 
@@ -46,6 +72,25 @@ export default function OurTeam() {
   // Drives the loading spinner while the fetch is in-flight.
   const [loadingContributors, setLoadingContributors] = useState(true);
   const [contributorsError, setContributorsError] = useState<string | null>(null);
+
+  const coreTeamLogins = new Set(
+    teamMembers.flatMap((member) => {
+      const aliases = member.githubLogins ?? [];
+      const primary = member.githubLogin ? [member.githubLogin] : [];
+      return [...primary, ...aliases]
+        .map((login) => login.trim().toLowerCase())
+        .filter(Boolean);
+    })
+  );
+
+  const flaggedContributors = contributors.map((c) => ({
+    ...c,
+    isCoreTeam: coreTeamLogins.has(c.login.toLowerCase()),
+  }));
+
+  const visibleContributors = flaggedContributors.filter((c) => !c.isCoreTeam);
+
+  const coreTeamContributorCount = flaggedContributors.filter((c) => c.isCoreTeam).length;
 
   useEffect(() => {
     /**
@@ -154,15 +199,29 @@ export default function OurTeam() {
         </div>
       </motion.div>
 
-      {/* ── GitHub Contributors — full list from the API ── */}
+      {/* ── GitHub Contributors — filtered list from the API ── */}
       {(loadingContributors || contributors.length > 0 || contributorsError) && (
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}>
-        <motion.div variants={fadeInUp} className="flex items-center gap-3 mb-6">
-          <IconBrandGithub className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
-            GitHub{' '}
-            <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Contributors</span>
-          </h2>
+        <motion.div variants={fadeInUp} className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <IconBrandGithub className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+              GitHub{' '}
+              <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Contributors</span>
+            </h2>
+          </div>
+
+          {!loadingContributors && !contributorsError && contributors.length > 0 && (
+            <div className="text-xs text-muted-foreground hidden sm:block">
+              Showing <span className="font-medium text-foreground">{visibleContributors.length}</span> non-core contributors
+              {' '}of <span className="font-medium text-foreground">{contributors.length}</span> total
+              {coreTeamContributorCount > 0 && (
+                <>
+                  {' '}· <span className="font-medium text-foreground">{coreTeamContributorCount}</span> core team hidden
+                </>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {loadingContributors ? (
@@ -180,7 +239,7 @@ export default function OurTeam() {
         ) : (
           /* Contributor grid */
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {contributors.map((contributor) => (
+            {visibleContributors.map((contributor) => (
               <motion.a
                 key={contributor.login}
                 variants={scaleIn}
@@ -191,6 +250,13 @@ export default function OurTeam() {
               >
                 <div className={`relative p-5 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.03] overflow-hidden hover:shadow-xl`}>
                   <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl" />
+                  {'isCoreTeam' in contributor && contributor.isCoreTeam && (
+                    <div className="absolute top-3 right-3">
+                      <span className="inline-flex items-center rounded-full border border-blue-200/60 bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-blue-700 backdrop-blur-sm dark:border-blue-500/30 dark:bg-gray-950/50 dark:text-blue-300">
+                        Core team
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-4">
                     <div className="relative flex-shrink-0">
                       <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-full blur-sm opacity-40" />
