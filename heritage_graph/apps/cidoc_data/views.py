@@ -1330,6 +1330,9 @@ class SparqlProxyView(APIView):
     """
     Read-only SPARQL proxy to RDF_ENDPOINT_URL.
     GET …/sparql/?query=SELECT …
+
+    If RDF_ENDPOINT_URL is not configured, fallback to a local on-disk Oxigraph
+    store at `oxigraph_db/` using `pyoxigraph`.
     """
 
     permission_classes = [permissions.AllowAny]
@@ -1355,10 +1358,49 @@ class SparqlProxyView(APIView):
             )
         endpoint = getattr(settings, "RDF_ENDPOINT_URL", "").strip()
         if not endpoint:
-            return Response(
-                {"error": "RDF endpoint not configured (RDF_ENDPOINT_URL)."},
-                status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
+            try:
+                from pyoxigraph import Store
+            except ImportError:
+                return Response(
+                    {
+                        "error": "RDF endpoint not configured (RDF_ENDPOINT_URL) and local Oxigraph is unavailable (pyoxigraph not installed)."
+                    },
+                    status=drf_status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
+
+            try:
+                store_path = getattr(settings, "OXIGRAPH_STORE_PATH", "oxigraph_db")
+                store = Store(store_path)
+                result = store.query(q)
+            except Exception as exc:
+                return Response(
+                    {"error": f"Local Oxigraph query failed: {exc}"},
+                    status=drf_status.HTTP_502_BAD_GATEWAY,
+                )
+
+            try:
+                # pyoxigraph query results are JSON-serializable by `dict(...)` on each row.
+                bindings = []
+                for row in result:
+                    bindings.append(
+                        {
+                            k: {
+                                "type": "uri" if getattr(v, "type", None) == "namedNode" else "literal",
+                                "value": getattr(v, "value", lambda: str(v))(),
+                            }
+                            for k, v in dict(row).items()
+                        }
+                    )
+                response_payload = {
+                    "head": {"vars": list(bindings[0].keys()) if bindings else []},
+                    "results": {"bindings": bindings},
+                }
+            except Exception:
+                response_payload = {"result": str(result)}
+
+            resp = Response(response_payload)
+            resp["X-HG-SPARQL-Source"] = "local-oxigraph"
+            return resp
         try:
             r = requests.get(
                 endpoint,
@@ -1374,10 +1416,14 @@ class SparqlProxyView(APIView):
         ct = (r.headers.get("Content-Type") or "").lower()
         if "json" in ct:
             try:
-                return Response(r.json())
+                resp = Response(r.json())
+                resp["X-HG-SPARQL-Source"] = "remote-endpoint"
+                return resp
             except Exception:
                 return Response({"result": r.text})
-        return Response({"result": r.text})
+        resp = Response({"result": r.text})
+        resp["X-HG-SPARQL-Source"] = "remote-endpoint"
+        return resp
 
 
 class AssistSuggestFieldView(APIView):
