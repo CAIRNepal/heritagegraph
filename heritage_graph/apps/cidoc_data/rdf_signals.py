@@ -3,6 +3,9 @@ RDF / triplestore projection hooks (MR3).
 
 When RDF_SYNC_ENABLED and RDF_ENDPOINT_URL are set, POST SPARQL UPDATE
 to the configured store on save/delete of CIDOC MetaData models.
+
+When RDF_SYNC_ENABLED is enabled but RDF_ENDPOINT_URL is empty, we fall back to a
+local on-disk Oxigraph store at `oxigraph_db/` using `pyoxigraph`.
 """
 
 from __future__ import annotations
@@ -25,6 +28,10 @@ def rdf_sync_enabled() -> bool:
     return bool(getattr(settings, "RDF_SYNC_ENABLED", False))
 
 
+def _oxigraph_store_path() -> str:
+    return str(getattr(settings, "OXIGRAPH_STORE_PATH", "oxigraph_db") or "oxigraph_db")
+
+
 def _resource_uri(instance: Any) -> str:
     base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
     name = instance.__class__.__name__.lower()
@@ -43,9 +50,51 @@ def _escape_literal(s: str) -> str:
     return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
+def _local_oxigraph_available() -> bool:
+    try:
+        import pyoxigraph  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
+def _local_upsert_label(*, uri: str, label: str) -> None:
+    try:
+        from pyoxigraph import Literal, NamedNode, Quad, Store
+    except ImportError:
+        return
+    store = Store(_oxigraph_store_path())
+    subj = NamedNode(uri)
+    pred = NamedNode("http://www.w3.org/2000/01/rdf-schema#label")
+
+    # Remove previous labels to avoid duplicates.
+    try:
+        for q in store.quads_for_pattern(subj, pred, None, None):
+            store.remove(q)
+    except Exception:
+        # Best-effort cleanup; continue with insert.
+        pass
+
+    store.add(Quad(subj, pred, Literal(label), None))
+
+
+def _local_delete_subject(*, uri: str) -> None:
+    try:
+        from pyoxigraph import NamedNode, Store
+    except ImportError:
+        return
+    store = Store(_oxigraph_store_path())
+    subj = NamedNode(uri)
+    try:
+        for q in store.quads_for_pattern(subj, None, None, None):
+            store.remove(q)
+    except Exception as exc:
+        logger.warning("Local Oxigraph delete failed: %s", exc)
+
+
 def _sparql_update(update: str) -> None:
     endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
-    if not endpoint or not rdf_sync_enabled():
+    if not rdf_sync_enabled() or not endpoint:
         return
     try:
         r = requests.post(
@@ -64,10 +113,19 @@ def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> N
     if not rdf_sync_enabled() or instance is None:
         return
     uri = _resource_uri(instance)
-    label = _escape_literal(_label_for(instance))
+    label = _label_for(instance)
+
+    endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
+    if not endpoint:
+        if not _local_oxigraph_available():
+            return
+        _local_upsert_label(uri=uri, label=label)
+        return
+
+    escaped = _escape_literal(label)
     update = (
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n"
-        f"INSERT DATA {{ <{uri}> rdfs:label \"{label}\" . }}\n"
+        f"INSERT DATA {{ <{uri}> rdfs:label \"{escaped}\" . }}\n"
     )
     _sparql_update(update)
 
@@ -76,6 +134,14 @@ def _delete_projection(instance: Any) -> None:
     if not rdf_sync_enabled() or instance is None:
         return
     uri = _resource_uri(instance)
+
+    endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
+    if not endpoint:
+        if not _local_oxigraph_available():
+            return
+        _local_delete_subject(uri=uri)
+        return
+
     update = f"DELETE WHERE {{ <{uri}> ?p ?o . }}\n"
     _sparql_update(update)
 
