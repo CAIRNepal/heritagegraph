@@ -32,7 +32,6 @@ class Command(BaseCommand):
 
         checks: list[tuple[str, bool, str]] = []
 
-        # 1) Basic rdfs:Class presence (from schema seeding)
         q_classes = """
         SELECT (COUNT(?c) AS ?count)
         WHERE {
@@ -47,7 +46,6 @@ class Command(BaseCommand):
         except Exception as exc:
             checks.append(("schema seeded (rdfs:Class)", False, f"query failed: {exc}"))
 
-        # 2) Minimal projection presence (rdfs:label) – may be 0 if no CIDOC rows yet
         q_labels = """
         SELECT (COUNT(?s) AS ?count)
         WHERE {

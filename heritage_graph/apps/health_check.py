@@ -99,10 +99,11 @@ def health_check_detailed(request):
         "service": "heritage-backend",
         "version": "1.0.0",
         "database": check_database(),
+        "oxigraph": check_oxigraph(),
     }
 
     # Determine overall status
-    if not checks["database"]["healthy"]:
+    if not checks["database"]["healthy"] or not checks["oxigraph"]["healthy"]:
         checks["status"] = "degraded"
 
     status_code = 200 if checks["status"] == "healthy" else 503
@@ -123,6 +124,16 @@ def check_database():
             "healthy": False,
             "message": f"Database connection failed: {str(e)}",
         }
+
+
+def check_oxigraph():
+    try:
+        from apps.graph.client import graph_client
+
+        ok = graph_client.health()
+        return {"healthy": ok, "message": "Oxigraph reachable" if ok else "Oxigraph unreachable"}
+    except Exception as e:
+        return {"healthy": False, "message": f"Oxigraph health check failed: {str(e)}"}
 
 
 @require_http_methods(["GET"])

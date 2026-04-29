@@ -41,9 +41,7 @@ class Command(BaseCommand):
         prefixes: dict[str, str] = schema.get("prefixes") or {}
         default_prefix = (schema.get("default_prefix") or "").strip()
         if not default_prefix or default_prefix not in prefixes:
-            raise CommandError(
-                "Schema missing default_prefix or its mapping in prefixes."
-            )
+            raise CommandError("Schema missing default_prefix or its mapping in prefixes.")
 
         base = prefixes[default_prefix].rstrip("/") + "/"
         xsd = "http://www.w3.org/2001/XMLSchema#"
@@ -55,7 +53,16 @@ class Command(BaseCommand):
 
         def range_uri(range_key: str) -> str:
             primitive = range_key.strip()
-            if primitive in {"string", "integer", "float", "double", "boolean", "datetime", "date", "uri"}:
+            if primitive in {
+                "string",
+                "integer",
+                "float",
+                "double",
+                "boolean",
+                "datetime",
+                "date",
+                "uri",
+            }:
                 mapped = {
                     "string": "string",
                     "integer": "integer",
@@ -104,7 +111,6 @@ class Command(BaseCommand):
                 )
                 inserted += 1
 
-        # Minimal dataset metadata for debugging
         dataset_node = NamedNode(uri("dataset"))
         store.add(Quad(dataset_node, NamedNode(f"{rdf}type"), NamedNode(uri("Dataset")), None))
         store.add(
@@ -118,8 +124,6 @@ class Command(BaseCommand):
         inserted += 2
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Seeded local Oxigraph store at {store_path!r} with ~{inserted} quads."
-            )
+            self.style.SUCCESS(f"Seeded local Oxigraph store at {store_path!r} with ~{inserted} quads.")
         )
 

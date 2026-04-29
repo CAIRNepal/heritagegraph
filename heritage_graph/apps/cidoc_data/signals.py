@@ -1,6 +1,7 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from apps.cidoc_data.models import (
+    ArchitecturalStructure,
     IconographicObject,
     KumariRetirement,
     KumariSelection,
@@ -30,6 +31,32 @@ def create_person_revision(sender, instance, created, **kwargs):
         user=instance.contributor, 
         action=action
     )
+
+
+@receiver(post_save, sender=Person)
+def sync_person_to_graph(sender, instance, **kwargs):
+    try:
+        from apps.graph.client import graph_client
+        from apps.graph.serializers import person_to_triples, triples_to_nt
+
+        _uri, triples = person_to_triples(instance)
+        graph_client.insert_data(triples_to_nt(triples))
+    except Exception:
+        # Graph sync must never break the main DB write path.
+        pass
+
+
+@receiver(post_save, sender=ArchitecturalStructure)
+def sync_structure_to_graph(sender, instance, **kwargs):
+    try:
+        from apps.graph.client import graph_client
+        from apps.graph.serializers import architectural_structure_to_triples, triples_to_nt
+
+        _uri, triples = architectural_structure_to_triples(instance)
+        graph_client.insert_data(triples_to_nt(triples))
+    except Exception:
+        # Graph sync must never break the main DB write path.
+        pass
 
 
 def _backfill_entityrefs_for_instance(instance):

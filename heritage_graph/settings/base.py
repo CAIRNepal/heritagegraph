@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "apps.cidoc_data",
     "apps.document_processing",
     "apps.assistant",
+    "apps.graph",
 
     "django_prometheus",
     # "djoser",
@@ -213,9 +214,20 @@ HERITAGEGRAPH_SCHEMA_CACHE_TTL = int(os.environ.get("HERITAGEGRAPH_SCHEMA_CACHE_
 HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH = os.environ.get(
     "HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH", "false"
 ).lower() in {"1", "true", "yes", "y", "on"}
+
+# ── Oxigraph / RDF graph store ────────────────────────────────────────────────
+# Canonical namespaces must match published ontology and resolvers.
+OXIGRAPH_URL = os.environ.get("OXIGRAPH_URL", "http://localhost:7878")
+HERITAGE_NAMESPACE = os.environ.get("HERITAGE_NAMESPACE", "https://w3id.org/heritagegraph/")
+HERITAGE_RESOURCE_NS = os.environ.get(
+    "HERITAGE_RESOURCE_NS",
+    "https://w3id.org/heritagegraph/resource/",
+)
+
 RDF_ENDPOINT_URL = os.environ.get("RDF_ENDPOINT_URL", "")
 RDF_RESOURCE_BASE_URI = os.environ.get(
-    "RDF_RESOURCE_BASE_URI", "https://heritagegraph.local/resource/"
+    "RDF_RESOURCE_BASE_URI",
+    HERITAGE_RESOURCE_NS,
 )
 RDF_SYNC_ENABLED = os.environ.get("RDF_SYNC_ENABLED", "false").lower() in {
     "1",
