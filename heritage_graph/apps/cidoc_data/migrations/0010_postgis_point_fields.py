@@ -1,25 +1,28 @@
 """
-Migration: add PostGIS PointField to Location, ArchitecturalStructure, Monument.
+Migration: add `point` to Location, ArchitecturalStructure, Monument.
 
 Schema changes:
-  - Rename 'coordinates' → 'coordinates_legacy' on all three models (preserves data)
-  - Add 'point' PointField (geography=True, srid=4326, null=True) to all three models
+  - Rename coordinates to coordinates_legacy (preserves data).
+  - Add point as CharField (matches GIS_AVAILABLE=False; no GDAL import).
 
-Data migration (forward only):
-  - Parse 'coordinates_legacy' values in "lat, lng" or "lat lng" format and populate 'point'.
-  - Values that cannot be parsed are silently skipped (point stays NULL).
+Later, a follow-up migration may alter columns to geography PointField on
+PostgreSQL + PostGIS when GIS is enabled.
 
-Prerequisites:
-  - PostgreSQL with PostGIS extension: CREATE EXTENSION IF NOT EXISTS postgis;
-  - GDAL and GEOS system libraries installed on the server.
+Data migration:
+  - Parse coordinates_legacy as lat/lng; store point as "lat, lng" text.
+  - Unparseable values are skipped (point stays empty).
 """
 
-from django.contrib.gis.geos import Point
-from django.db import migrations
+from django.db import migrations, models
+
+_POINT_HELP = (
+    "Geographic point (longitude, latitude). "
+    "Requires GDAL for spatial queries."
+)
 
 
 def _parse_lat_lng(raw: str):
-    """Return (longitude, latitude) floats from 'lat, lng' or 'lat lng' string, or None."""
+    """Parse legacy coordinate string; return (longitude, latitude) or None."""
     if not raw or not raw.strip():
         return None
     s = raw.strip().replace(",", " ")
@@ -37,18 +40,17 @@ def _parse_lat_lng(raw: str):
 
 def _populate_points(apps, schema_editor):
     db_alias = schema_editor.connection.alias
-    db_vendor = schema_editor.connection.vendor
-    if db_vendor != "postgresql":
-        return
 
     for model_name in ("location", "architecturalstructure", "monument"):
         Model = apps.get_model("cidoc_data", model_name)
         to_update = []
-        for obj in Model.objects.using(db_alias).exclude(coordinates_legacy="").iterator():
+        qs = Model.objects.using(db_alias).exclude(coordinates_legacy="")
+        for obj in qs.iterator():
             result = _parse_lat_lng(obj.coordinates_legacy)
             if result is None:
                 continue
-            obj.point = Point(*result, srid=4326)
+            lng, lat = result
+            obj.point = f"{lat}, {lng}"
             to_update.append(obj)
         if to_update:
             Model.objects.using(db_alias).bulk_update(to_update, ["point"])
@@ -58,7 +60,7 @@ def _clear_points(apps, schema_editor):
     """Reverse migration: clear all point values."""
     for model_name in ("location", "architecturalstructure", "monument"):
         Model = apps.get_model("cidoc_data", model_name)
-        Model.objects.all().update(point=None)
+        Model.objects.all().update(point="")
 
 
 class Migration(migrations.Migration):
@@ -86,34 +88,31 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="location",
             name="point",
-            field=__import__("django.contrib.gis.db", fromlist=["models"]).models.PointField(
-                geography=True,
-                srid=4326,
-                null=True,
+            field=models.CharField(
+                max_length=50,
                 blank=True,
-                help_text="Geographic point (longitude, latitude) — WGS84",
+                default="",
+                help_text=_POINT_HELP,
             ),
         ),
         migrations.AddField(
             model_name="architecturalstructure",
             name="point",
-            field=__import__("django.contrib.gis.db", fromlist=["models"]).models.PointField(
-                geography=True,
-                srid=4326,
-                null=True,
+            field=models.CharField(
+                max_length=50,
                 blank=True,
-                help_text="Geographic point (longitude, latitude) — WGS84",
+                default="",
+                help_text=_POINT_HELP,
             ),
         ),
         migrations.AddField(
             model_name="monument",
             name="point",
-            field=__import__("django.contrib.gis.db", fromlist=["models"]).models.PointField(
-                geography=True,
-                srid=4326,
-                null=True,
+            field=models.CharField(
+                max_length=50,
                 blank=True,
-                help_text="Geographic point (longitude, latitude) — WGS84",
+                default="",
+                help_text=_POINT_HELP,
             ),
         ),
         migrations.RunPython(_populate_points, _clear_points),

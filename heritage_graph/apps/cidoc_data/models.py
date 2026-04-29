@@ -167,8 +167,13 @@ class Location(MetaData):
         )
     else:
         point = models.CharField(
-            max_length=50, blank=True,
-            help_text="Geographic point (longitude, latitude) — requires GDAL for spatial queries"
+            max_length=50,
+            blank=True,
+            default="",
+            help_text=(
+                "Geographic point (longitude, latitude). "
+                "Requires GDAL for spatial queries."
+            ),
         )
     type = models.CharField(max_length=50, choices=LOCATION_TYPE_CHOICES)
     description = models.TextField(blank=True)
@@ -445,8 +450,13 @@ class ArchitecturalStructure(MetaData):
         )
     else:
         point = models.CharField(
-            max_length=50, blank=True,
-            help_text="Geographic point (longitude, latitude) — requires GDAL for spatial queries"
+            max_length=50,
+            blank=True,
+            default="",
+            help_text=(
+                "Geographic point (longitude, latitude). "
+                "Requires GDAL for spatial queries."
+            ),
         )
     existence_status = models.CharField(
         max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
@@ -530,8 +540,13 @@ class Monument(MetaData):
         )
     else:
         point = models.CharField(
-            max_length=50, blank=True,
-            help_text="Geographic point (longitude, latitude) — requires GDAL for spatial queries"
+            max_length=50,
+            blank=True,
+            default="",
+            help_text=(
+                "Geographic point (longitude, latitude). "
+                "Requires GDAL for spatial queries."
+            ),
         )
     existence_status = models.CharField(
         max_length=30, choices=EXISTENCE_STATUS_CHOICES, blank=True
