@@ -80,6 +80,8 @@ heritagegraph/
 ├── docker-compose-dokploy.yml   # Dokploy (same + MIGRATION_AUTO_REPAIR, landing build args)
 ├── DOKPLOY.md                   # Dokploy checklist and env notes
 ├── docker-compose.prod.yml      # Production override (HTTPS, Let's Encrypt)
+├── docker-compose.fuseki.yml    # Optional: Apache Jena Fuseki only (SPARQL UI)
+├── FUSEKI.md                    # Runbook for standalone Fuseki
 ├── Dockerfile.backend           # Backend multi-stage build
 ├── Dockerfile.frontend          # Frontend multi-stage build (root-level, legacy)
 ├── Makefile                     # Convenience commands
@@ -238,6 +240,8 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | `frontend` | custom (heritage_graph_ui/Dockerfile) | 3000 | `frontend.localhost` |
 | `landing` | custom (heritage_graph_landing/Dockerfile) | 3000 | `landing.localhost` |
 | `ocr-worker` | custom (Dockerfile.backend, ocr-worker target) | — | — (background, OCR processing) |
+
+**Optional triplestore (not part of the main compose file):** Apache Jena Fuseki via [`docker-compose.fuseki.yml`](docker-compose.fuseki.yml) — see [`FUSEKI.md`](FUSEKI.md) (browser UI at `http://localhost:3030/` by default).
 
 ---
 

@@ -1,0 +1,31 @@
+# Apache Jena Fuseki only — SPARQL 1.1 server + web UI (TDB).
+# Image: https://hub.docker.com/r/stain/jena-fuseki
+#
+# Run: docker compose -f docker-compose.fuseki.yml up -d
+# UI:  http://localhost:3030/
+#
+# Stop without removing data: docker compose -f docker-compose.fuseki.yml stop
+# Remove containers (keep volume): docker compose -f docker-compose.fuseki.yml down
+# Wipe data: docker compose -f docker-compose.fuseki.yml down -v
+#
+# Optional (avoid empty env vars): merge a second file, e.g.
+#   docker compose -f docker-compose.fuseki.yml -f docker-compose.fuseki.local.yml up -d
+# with docker-compose.fuseki.local.yml containing extra `environment:` keys such as
+# ADMIN_PASSWORD, TDB: "2", or FUSEKI_DATASET_2 — see FUSEKI.md.
+
+services:
+  fuseki:
+    image: stain/jena-fuseki
+    container_name: heritage-fuseki
+    restart: unless-stopped
+    ports:
+      - "${FUSEKI_PORT:-3030}:3030"
+    environment:
+      JVM_ARGS: ${FUSEKI_JVM_ARGS:--Xmx1200m}
+      FUSEKI_DATASET_1: ${FUSEKI_DATASET_1:-heritage}
+    volumes:
+      - fuseki-data:/fuseki
+
+volumes:
+  fuseki-data:
+    name: heritage-fuseki-data
