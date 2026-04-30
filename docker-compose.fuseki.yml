@@ -8,10 +8,8 @@
 # Remove containers (keep volume): docker compose -f docker-compose.fuseki.yml down
 # Wipe data: docker compose -f docker-compose.fuseki.yml down -v
 #
-# Optional (avoid empty env vars): merge a second file, e.g.
-#   docker compose -f docker-compose.fuseki.yml -f docker-compose.fuseki.local.yml up -d
-# with docker-compose.fuseki.local.yml containing extra `environment:` keys such as
-# ADMIN_PASSWORD, TDB: "2", or FUSEKI_DATASET_2 — see FUSEKI.md.
+# Web UI login: user `admin`, password from ADMIN_PASSWORD below (override with
+# FUSEKI_ADMIN_PASSWORD in `.env` or the shell — do not use the dev default off localhost).
 
 services:
   fuseki:
@@ -21,6 +19,7 @@ services:
     ports:
       - "${FUSEKI_PORT:-3030}:3030"
     environment:
+      ADMIN_PASSWORD: ${FUSEKI_ADMIN_PASSWORD:-heritage_dev_admin}
       JVM_ARGS: ${FUSEKI_JVM_ARGS:--Xmx1200m}
       FUSEKI_DATASET_1: ${FUSEKI_DATASET_1:-heritage}
     volumes:

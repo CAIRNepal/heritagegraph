@@ -17,34 +17,19 @@ Open the UI: **http://localhost:3030/**
 - Default host port is **3030**. Override with `FUSEKI_PORT` (e.g. `FUSEKI_PORT=8080 docker compose -f docker-compose.fuseki.yml up -d`).
 - The stack creates an empty dataset named **`heritage`** on first run (`FUSEKI_DATASET_1`, overridable via env).
 
-### Admin password
+### Admin login
 
-- **If you do not set `ADMIN_PASSWORD`:** on the first run with an empty `/fuseki` volume, Fuseki generates a random admin password and prints it in the container logs:
-
-  ```bash
-  docker logs heritage-fuseki
-  ```
-
-- **Fixed password:** do not rely on Compose passing an empty variable. Merge a small override (recommended) so the key is only present when you mean it:
-
-  **`docker-compose.fuseki.local.yml`** (gitignored locally; do not commit secrets):
-
-  ```yaml
-  services:
-    fuseki:
-      environment:
-        ADMIN_PASSWORD: "choose-a-strong-secret"
-  ```
+- **Username:** `admin` (Fuseki default).
+- **Password:** set in [docker-compose.fuseki.yml](docker-compose.fuseki.yml) via `ADMIN_PASSWORD`, which reads **`FUSEKI_ADMIN_PASSWORD`** from the environment if set, otherwise falls back to **`heritage_dev_admin`** for local development.
 
   ```bash
-  docker compose -f docker-compose.fuseki.yml -f docker-compose.fuseki.local.yml up -d
+  # Example: stronger password without editing the compose file
+  FUSEKI_ADMIN_PASSWORD='your-secret' docker compose -f docker-compose.fuseki.yml up -d
   ```
 
-  Equivalent one-off (no override file):
+  If you **omit** `ADMIN_PASSWORD` in Compose entirely and use a plain `docker run` of the image, a random password may be generated on first start — see `docker logs` in that case.
 
-  ```bash
-  docker run -p 3030:3030 -e ADMIN_PASSWORD=pw123 stain/jena-fuseki
-  ```
+  **Production or shared hosts:** always set `FUSEKI_ADMIN_PASSWORD` (or edit the compose default) — never rely on the checked-in dev default outside your machine.
 
 ### Stop and data lifecycle
 
