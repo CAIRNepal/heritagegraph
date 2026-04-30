@@ -3,6 +3,7 @@ import type { IconProps } from "@tabler/icons-react";
 import {
   IconPlus,
   IconGraph,
+  IconWorld,
   IconMedal,
   IconBooks,
   IconBuildingCommunity,
@@ -30,6 +31,13 @@ export const dashboardQuickActions: DashboardLinkItem[] = [
     icon: IconGraph,
     href: "/graphview",
     gradient: "from-violet-500 to-blue-500",
+  },
+  {
+    title: "Heritage Atlas",
+    desc: "3D globe of heritage sites with timeline (preview).",
+    icon: IconWorld,
+    href: "/atlas",
+    gradient: "from-cyan-500 to-blue-600",
   },
   {
     title: "New Contribution",

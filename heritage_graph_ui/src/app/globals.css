@@ -289,4 +289,110 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
+  /*
+   * Atlas spotlight disc + dock gutters: tuned in JS from
+   * src/app/(dashboard)/atlas/lib/atlas-spotlight-config.ts (single source of truth).
+   * Fallbacks below apply before hydration / outside Globe view.
+   * --atlas-gutter-l / --atlas-gutter-r are overwritten with real measured values
+   * by the SpotlightDisc ResizeObserver once the page has painted.
+   */
+  .atlas-shell-grid {
+    --atlas-bar-h: 40px;
+    --atlas-dock-h: 80px;
+    --atlas-radius: 10px;
+    --atlas-gap: 8px;
+    --atlas-pad: 8px;
+    --atlas-card-bg: color-mix(in srgb, var(--background) 72%, transparent);
+    --atlas-card-border: color-mix(in srgb, var(--border) 55%, transparent);
+    --atlas-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.18),
+      0 0 0 1px color-mix(in srgb, var(--border) 25%, transparent) inset;
+    --atlas-spot-d: 560px;
+    --atlas-gutter-l: 0px;
+    --atlas-gutter-r: 0px;
+    --atlas-gutter-b: 0px;
+  }
+
+  /* GPU compositing layer — promotes disc to its own layer without pixelated rendering.
+     NOTE: will-change:transform is intentionally absent; it creates a compositor layer
+     conflict with the WebGL canvas (globe goes blank on Chrome/Safari). */
+  .atlas-gpu-layer {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Legacy alias kept so any lingering references don't hard-break. */
+  .atlas-pixel-snap {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Circular clip mask for the disc viewport. Tight 1px feather gives a crisp edge. */
+  .atlas-spot-mask {
+    mask-image: radial-gradient(
+      circle at 50% 50%,
+      black calc(50% - 1.5px),
+      transparent calc(50% + 0.5px)
+    );
+    -webkit-mask-image: radial-gradient(
+      circle at 50% 50%,
+      black calc(50% - 1.5px),
+      transparent calc(50% + 0.5px)
+    );
+  }
+
+  /* Shared card shell used by every atlas panel. */
+  .atlas-card {
+    border-radius: var(--atlas-radius, 10px);
+    border: 1px solid var(--atlas-card-border);
+    background: var(--atlas-card-bg);
+    box-shadow: var(--atlas-card-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Standard card header row (title + action button). */
+  .atlas-card-header {
+    height: 36px;
+    min-height: 36px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+    flex-shrink: 0;
+  }
+
+  /* Named-area grid for the 3×3 atlas workspace (lg+).
+     Defined WITHOUT an outer @media wrapper so Tailwind v4 can generate
+     the correct responsive variant when used as lg:atlas-grid-areas. */
+  .atlas-grid-areas {
+    grid-template-columns: minmax(304px, 1fr) minmax(200px, 2.1fr) minmax(304px, 1fr);
+    grid-template-rows: minmax(132px, 1fr) minmax(320px, 2.2fr) minmax(132px, 1fr);
+    grid-template-areas:
+      'graph . search'
+      'leftDock disc rightDock'
+      'time . ai';
+  }
+
+  .atlas-shell-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Reduce motion — snap framer animations to instant */
+  @media (prefers-reduced-motion: reduce) {
+    .atlas-shell-grid * {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
 }
