@@ -29,6 +29,7 @@ const apiMediaPattern = apiMediaRemotePattern();
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'standalone',
+  transpilePackages: ['cesium', 'resium'],
   experimental: {
     optimizePackageImports: [
       'lucide-react',
