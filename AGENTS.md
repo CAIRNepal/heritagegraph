@@ -226,6 +226,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/curation/dashboard` — reviewer dashboard
 - `/community/contributors` — contributor list
 - `/graphview` — graph visualization
+- `/atlas` — Heritage Atlas command center (Cesium globe + Esri imagery, ontology-linked dummy corpus): globe disc with FX/city docks and surrounding panels for Graph, Documents, Time, Search, AI stub, and Ops; panels can maximize over the disc; CommandBar toggles transparent vs opaque disc backdrop; provenance badges + `ontology/HeritageGraph.yaml`-aligned types
 
 ---
 
