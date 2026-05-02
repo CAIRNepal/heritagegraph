@@ -31,13 +31,24 @@ function snapEvenDiameter(n: number): number {
   return rounded % 2 === 0 ? rounded : rounded + 1;
 }
 
-/** Compute snapped disc diameter from the center grid cell and current viewport. */
-export function computeSpotlightDiameterPx(cellWidth: number, cellHeight: number): number {
+/**
+ * Compute snapped disc diameter from the center grid cell and current viewport.
+ * @param userScale - Additional multiplier (e.g. user spotlight slider), clamped by caller.
+ */
+export function computeSpotlightDiameterPx(
+  cellWidth: number,
+  cellHeight: number,
+  userScale = 1,
+): number {
   const cfg = ATLAS_SPOTLIGHT;
+  const scale = Math.max(0.01, userScale);
   const cell = Math.min(cellWidth, cellHeight);
   if (typeof window === 'undefined') {
     return snapEvenDiameter(
-      Math.min(Math.max(cell * cfg.sizeMultiplier, cfg.minDiameterPx), cfg.maxDiameterPx),
+      Math.min(
+        Math.max(cell * cfg.sizeMultiplier * scale, cfg.minDiameterPx),
+        cfg.maxDiameterPx,
+      ),
     );
   }
 
@@ -45,7 +56,7 @@ export function computeSpotlightDiameterPx(cellWidth: number, cellHeight: number
   const vhCap = Math.max(0, window.innerHeight - cfg.viewportInsetVerticalPx);
   const upper = Math.min(cfg.maxDiameterPx, vwCap, vhCap);
 
-  let raw = Math.min(cell * cfg.sizeMultiplier, upper);
+  let raw = Math.min(cell * cfg.sizeMultiplier * scale, upper);
   raw = Math.max(cfg.minDiameterPx, raw);
   raw = Math.min(raw, upper);
 

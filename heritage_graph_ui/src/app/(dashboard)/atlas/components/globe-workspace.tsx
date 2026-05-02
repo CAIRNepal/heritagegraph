@@ -3,7 +3,7 @@
 import type { RefObject } from 'react';
 import dynamic from 'next/dynamic';
 import { AnimatePresence, motion } from 'framer-motion';
-import { IconMaximize, IconMinimize } from '@tabler/icons-react';
+import { IconChevronDown, IconChevronUp, IconMaximize, IconMinimize } from '@tabler/icons-react';
 import { useTranslations } from 'next-intl';
 
 import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
@@ -15,7 +15,7 @@ import { AtlasGlobe } from './globe';
 import { CityJumpBar } from './city-jump-bar';
 import { FxControls } from './fx-controls';
 import { SpotlightDisc } from './spotlight-frame';
-import { useAtlasStore } from '../hooks/use-atlas-store';
+import { useAtlasStore, type AtlasSidebarPanelId } from '../hooks/use-atlas-store';
 import { AiReasoningView } from '../views/ai-view';
 import { DocumentsView } from '../views/documents-view';
 import { OpsDashboardView } from '../views/ops-view';
@@ -53,42 +53,60 @@ interface GlobeWorkspaceProps {
   shellRef: RefObject<HTMLElement | null>;
 }
 
-function MiniPanel({
-  viewId,
-  className,
+function SidebarAccordionItem({
+  panelId,
+  title,
+  canMaximize = false,
+  onMaximize,
   children,
 }: {
-  viewId: AtlasPanelId;
-  className?: string;
+  panelId: AtlasSidebarPanelId;
+  title: string;
+  canMaximize?: boolean;
+  onMaximize?: () => void;
   children: React.ReactNode;
 }) {
   const t = useTranslations('Atlas');
-  const focusView = useAtlasStore((s) => s.focusView);
+  const activeSidebarPanel = useAtlasStore((s) => s.activeSidebarPanel);
+  const toggleSidebarPanel = useAtlasStore((s) => s.toggleSidebarPanel);
+  const active = activeSidebarPanel === panelId;
 
   return (
-    <div
-      className={cn(
-        'atlas-card flex min-h-0 flex-col overflow-hidden',
-        className,
-      )}
-    >
+    <div className="atlas-card flex min-h-0 flex-col overflow-hidden">
       <div className="atlas-card-header shrink-0">
         <span className="truncate font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-          {t(PANEL_TITLE[viewId])}
+          {title}
         </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 shrink-0 rounded-md"
-          onClick={() => focusView(viewId)}
-          aria-label={t('maximizePanel')}
-          title={t('maximizePanel')}
-        >
-          <IconMaximize className="h-3.5 w-3.5" />
-        </Button>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 rounded-md"
+            onClick={() => toggleSidebarPanel(panelId)}
+            aria-label={active ? t('collapsePanel') : t('expandPanel')}
+            title={active ? t('collapsePanel') : t('expandPanel')}
+          >
+            {active ?
+              <IconChevronUp className="h-3.5 w-3.5" />
+            : <IconChevronDown className="h-3.5 w-3.5" />}
+          </Button>
+          {canMaximize && onMaximize ?
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 rounded-md"
+              onClick={onMaximize}
+              aria-label={t('maximizePanel')}
+              title={t('maximizePanel')}
+            >
+              <IconMaximize className="h-3.5 w-3.5" />
+            </Button>
+          : null}
+        </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+      {active ? <div className="h-[min(42vh,360px)] min-h-[170px] overflow-hidden">{children}</div> : null}
     </div>
   );
 }
@@ -164,85 +182,93 @@ export function FocusedShellOverlay() {
 }
 
 export function GlobeWorkspace({ globeHandlesRef, shellRef }: GlobeWorkspaceProps) {
+  const t = useTranslations('Atlas');
+  const focusView = useAtlasStore((s) => s.focusView);
+
   return (
     <div
       className={cn(
-        'pointer-events-none absolute inset-0 z-0 grid min-h-0 gap-2 px-2 pb-2 pt-[calc(0.25rem+var(--atlas-bar-h,40px))]',
-        'grid-cols-1 auto-rows-auto',
-        'lg:atlas-grid-areas',
+        'pointer-events-none absolute inset-0 z-0 flex min-h-0 gap-2 px-2 pb-2 pt-[calc(0.25rem+var(--atlas-bar-h,40px))]',
       )}
     >
-      {/* Row 1 — top: graph (left) · [gap center] · search (right) */}
-      <div
-        className="pointer-events-auto order-2 min-h-[140px] lg:order-none lg:min-h-0"
-        style={{ gridArea: 'graph' }}
-      >
-        <MiniPanel viewId="graph" className="h-full min-h-[140px] lg:min-h-[120px]">
-          <GraphView compact className="[filter:var(--atlas-fx-filter)]" />
-        </MiniPanel>
-      </div>
-
-      <div
-        className="pointer-events-auto order-3 min-h-[160px] lg:order-none"
-        style={{ gridArea: 'search' }}
-      >
-        <MiniPanel viewId="search" className="h-full min-h-[160px]">
-          <SearchView compact />
-        </MiniPanel>
-      </div>
-
-      {/* Row 2 — middle: left dock · disc · right dock */}
-      <div
-        className="pointer-events-auto order-4 flex min-h-0 flex-col gap-2 lg:order-none"
-        style={{ gridArea: 'leftDock' }}
-      >
-        <div className="atlas-card max-h-[38vh] min-h-0 shrink-0 overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
-          <FxControls variant="dock" className="!max-h-none shrink-0" />
-        </div>
-        <MiniPanel viewId="documents" className="min-h-[160px] flex-1 lg:min-h-[140px]">
-          <DocumentsView compact />
-        </MiniPanel>
-      </div>
-
-      <div
-        className="pointer-events-auto relative order-1 min-h-[260px] lg:order-none lg:min-h-0"
-        style={{ gridArea: 'disc' }}
-      >
+      <div className="pointer-events-auto relative min-w-0 flex-1">
         <SpotlightDisc shellRef={shellRef} globeFxClassName="[filter:var(--atlas-fx-filter)]">
           <AtlasGlobe globeHandlesRef={globeHandlesRef} />
         </SpotlightDisc>
       </div>
 
-      <div
-        className="pointer-events-auto order-5 flex min-h-0 flex-col gap-2 lg:order-none"
-        style={{ gridArea: 'rightDock' }}
-      >
-        <div className="atlas-card max-h-[38vh] min-h-0 shrink-0 overflow-y-auto lg:max-h-none lg:min-h-0 lg:flex-1">
-          <CityJumpBar globeHandlesRef={globeHandlesRef} />
+      <aside className="pointer-events-auto atlas-card hidden h-full w-[min(27rem,36vw)] min-w-[19rem] max-w-[28rem] flex-col overflow-hidden lg:flex">
+        <div className="atlas-card-header">
+          <span className="truncate font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+            {t('statusStripWorkspace')}
+          </span>
         </div>
-        <MiniPanel viewId="ops" className="min-h-[160px] flex-1">
-          <OpsDashboardView compact />
-        </MiniPanel>
-      </div>
+        <div className="atlas-sidebar-scroll min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
+          <SidebarAccordionItem panelId="fx" title={t('fxTitle')}>
+            <FxControls variant="dock" className="!max-h-none h-full p-2" />
+          </SidebarAccordionItem>
 
-      {/* Row 3 — bottom: time (left) · [gap center] · ai (right) */}
-      <div
-        className="pointer-events-auto order-6 min-h-[140px] lg:order-none lg:min-h-0"
-        style={{ gridArea: 'time' }}
-      >
-        <MiniPanel viewId="time" className="h-full min-h-[140px]">
-          <TimeView compact />
-        </MiniPanel>
-      </div>
+          <SidebarAccordionItem panelId="city" title={t('cityJumpTitle')}>
+            <div className="h-full overflow-auto">
+              <CityJumpBar globeHandlesRef={globeHandlesRef} />
+            </div>
+          </SidebarAccordionItem>
 
-      <div
-        className="pointer-events-auto order-7 min-h-[160px] lg:order-none lg:min-h-0"
-        style={{ gridArea: 'ai' }}
-      >
-        <MiniPanel viewId="ai" className="h-full min-h-[160px]">
-          <AiReasoningView compact />
-        </MiniPanel>
-      </div>
+          <SidebarAccordionItem
+            panelId="search"
+            title={t(PANEL_TITLE.search)}
+            canMaximize
+            onMaximize={() => focusView('search')}
+          >
+            <SearchView compact />
+          </SidebarAccordionItem>
+
+          <SidebarAccordionItem
+            panelId="graph"
+            title={t(PANEL_TITLE.graph)}
+            canMaximize
+            onMaximize={() => focusView('graph')}
+          >
+            <GraphView compact className="h-full [filter:var(--atlas-fx-filter)]" />
+          </SidebarAccordionItem>
+
+          <SidebarAccordionItem
+            panelId="documents"
+            title={t(PANEL_TITLE.documents)}
+            canMaximize
+            onMaximize={() => focusView('documents')}
+          >
+            <DocumentsView compact />
+          </SidebarAccordionItem>
+
+          <SidebarAccordionItem
+            panelId="time"
+            title={t(PANEL_TITLE.time)}
+            canMaximize
+            onMaximize={() => focusView('time')}
+          >
+            <TimeView compact />
+          </SidebarAccordionItem>
+
+          <SidebarAccordionItem
+            panelId="ai"
+            title={t(PANEL_TITLE.ai)}
+            canMaximize
+            onMaximize={() => focusView('ai')}
+          >
+            <AiReasoningView compact />
+          </SidebarAccordionItem>
+
+          <SidebarAccordionItem
+            panelId="ops"
+            title={t(PANEL_TITLE.ops)}
+            canMaximize
+            onMaximize={() => focusView('ops')}
+          >
+            <OpsDashboardView compact />
+          </SidebarAccordionItem>
+        </div>
+      </aside>
     </div>
   );
 }

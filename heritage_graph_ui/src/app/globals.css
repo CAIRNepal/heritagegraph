@@ -364,9 +364,11 @@
     flex-shrink: 0;
   }
 
-  /* Named-area grid for the 3×3 atlas workspace (lg+).
-     Defined WITHOUT an outer @media wrapper so Tailwind v4 can generate
-     the correct responsive variant when used as lg:atlas-grid-areas. */
+  .atlas-sidebar-scroll {
+    scrollbar-gutter: stable both-edges;
+  }
+
+  /* Legacy named-area grid class kept for compatibility with prior layouts. */
   .atlas-grid-areas {
     grid-template-columns: minmax(304px, 1fr) minmax(200px, 2.1fr) minmax(304px, 1fr);
     grid-template-rows: minmax(132px, 1fr) minmax(320px, 2.2fr) minmax(132px, 1fr);

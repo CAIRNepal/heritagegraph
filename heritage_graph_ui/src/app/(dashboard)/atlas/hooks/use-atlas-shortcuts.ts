@@ -7,7 +7,7 @@ import { ATLAS_VIEW_IDS } from '@/types/atlas';
 
 import type { AtlasGlobeHandles } from '../globe-handles';
 import { CURATED_CITY_ORDER } from '../lib/atlas-cities';
-import { useAtlasStore } from './use-atlas-store';
+import { ATLAS_SPOTLIGHT_SCALE_STEP, useAtlasStore } from './use-atlas-store';
 
 /** Keys 1–6 maximize these panels (excludes `globe`). */
 const ATLAS_WORKSPACE_PANELS = ATLAS_VIEW_IDS.slice(1);
@@ -223,14 +223,28 @@ export function useAtlasShortcuts(options: UseAtlasShortcutsOptions): void {
           break;
         }
         case '[':
+        case '{':
           prevent();
-          atlasSound.play('tick');
-          cycleReliabilityFloor(-1);
+          if (e.key === '{' || e.shiftKey) {
+            useAtlasStore.getState().setSpotlightScale(
+              useAtlasStore.getState().spotlightScale - ATLAS_SPOTLIGHT_SCALE_STEP,
+            );
+          } else {
+            atlasSound.play('tick');
+            cycleReliabilityFloor(-1);
+          }
           break;
         case ']':
+        case '}':
           prevent();
-          atlasSound.play('tick');
-          cycleReliabilityFloor(1);
+          if (e.key === '}' || e.shiftKey) {
+            useAtlasStore.getState().setSpotlightScale(
+              useAtlasStore.getState().spotlightScale + ATLAS_SPOTLIGHT_SCALE_STEP,
+            );
+          } else {
+            atlasSound.play('tick');
+            cycleReliabilityFloor(1);
+          }
           break;
         case ',':
           prevent();

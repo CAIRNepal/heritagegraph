@@ -44,6 +44,7 @@ export function ShortcutHelpOverlay() {
     { keys: ', .', label: 'skConfidence' },
     { keys: 'G', label: 'skSearchFocus' },
     { keys: 'T', label: 'skDiscTransparent' },
+    { keys: '⇧[ ⇧]', label: 'skSpotlightNudge' },
     { keys: 'Esc', label: 'skEsc' },
     { keys: '?', label: 'skHelp' },
     { keys: 'M', label: 'skMute' },

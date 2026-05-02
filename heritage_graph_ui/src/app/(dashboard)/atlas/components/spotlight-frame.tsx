@@ -1,7 +1,7 @@
 'use client';
 
 import type { RefObject } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -20,6 +20,7 @@ export function SpotlightDisc({ shellRef, children, globeFxClassName }: Spotligh
   const discRef = useRef<HTMLDivElement>(null);
   const [showGrid, setShowGrid] = useState(false);
   const discTransparent = useAtlasStore((s) => s.discTransparent);
+  const spotlightScale = useAtlasStore((s) => s.spotlightScale);
 
   const discStyle = useMemo(
     () =>
@@ -29,6 +30,26 @@ export function SpotlightDisc({ shellRef, children, globeFxClassName }: Spotligh
       }) as const,
     [],
   );
+
+  const applyShellSpotlight = useCallback(() => {
+    const shell = shellRef.current;
+    const disc = discRef.current;
+    if (!shell || !disc) return;
+
+    const discRect = disc.getBoundingClientRect();
+    const shellRect = shell.getBoundingClientRect();
+
+    const d = computeSpotlightDiameterPx(discRect.width, discRect.height, spotlightScale);
+
+    const gutterL = Math.max(0, Math.round(discRect.left - shellRect.left));
+    const gutterR = Math.max(0, Math.round(shellRect.right - discRect.right));
+    const { gutterBottomPx } = ATLAS_SPOTLIGHT;
+
+    shell.style.setProperty('--atlas-spot-d', `${String(d)}px`);
+    shell.style.setProperty('--atlas-gutter-l', `${String(gutterL)}px`);
+    shell.style.setProperty('--atlas-gutter-r', `${String(gutterR)}px`);
+    shell.style.setProperty('--atlas-gutter-b', `${String(Math.round(gutterBottomPx))}px`);
+  }, [shellRef, spotlightScale]);
 
   useEffect(() => {
     setShowGrid(new URLSearchParams(window.location.search).get('atlas') === 'grid');
@@ -40,27 +61,14 @@ export function SpotlightDisc({ shellRef, children, globeFxClassName }: Spotligh
     if (!shell || !disc) return;
 
     const ro = new ResizeObserver(() => {
-      const discRect = disc.getBoundingClientRect();
-      const shellRect = shell.getBoundingClientRect();
-
-      const d = computeSpotlightDiameterPx(discRect.width, discRect.height);
-
-      // Measure actual gutter widths from the real DOM layout instead of static config
-      const gutterL = Math.max(0, Math.round(discRect.left - shellRect.left));
-      const gutterR = Math.max(0, Math.round(shellRect.right - discRect.right));
-      const { gutterBottomPx } = ATLAS_SPOTLIGHT;
-
-      shell.style.setProperty('--atlas-spot-d', `${String(d)}px`);
-      shell.style.setProperty('--atlas-gutter-l', `${String(gutterL)}px`);
-      shell.style.setProperty('--atlas-gutter-r', `${String(gutterR)}px`);
-      shell.style.setProperty('--atlas-gutter-b', `${String(Math.round(gutterBottomPx))}px`);
+      applyShellSpotlight();
     });
 
     ro.observe(disc);
-    // Also observe the shell so we recalculate on any layout shift
     ro.observe(shell);
+    applyShellSpotlight();
     return () => ro.disconnect();
-  }, [shellRef]);
+  }, [shellRef, applyShellSpotlight]);
 
   return (
     <div

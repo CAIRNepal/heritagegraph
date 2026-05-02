@@ -28,6 +28,12 @@ import { computeAtlasTimelineExtents } from '../atlas-time-extents';
 const ATLAS_FX_STORAGE_KEY = 'atlas:fx';
 const ATLAS_CITY_STORAGE_KEY = 'atlas:city';
 
+/** User-facing globe disc size (multiplier on layout cell). */
+export const ATLAS_SPOTLIGHT_SCALE_MIN = 0.55;
+export const ATLAS_SPOTLIGHT_SCALE_MAX = 1;
+/** Keyboard nudge step for `[` / `]`. */
+export const ATLAS_SPOTLIGHT_SCALE_STEP = 0.04;
+
 export type AtlasFlirPolarity = 'whot' | 'bhot';
 
 /** Persisted FX snapshot (subset of store). */
@@ -39,6 +45,14 @@ interface AtlasFxPersisted {
   fxFlirPolarity: AtlasFlirPolarity;
   fxEcoQuality: boolean;
   discTransparent: boolean;
+  spotlightScale: number;
+}
+
+export function clampAtlasSpotlightScale(n: number): number {
+  return Math.min(
+    ATLAS_SPOTLIGHT_SCALE_MAX,
+    Math.max(ATLAS_SPOTLIGHT_SCALE_MIN, n),
+  );
 }
 
 function readFxPersisted(): Partial<AtlasFxPersisted> | null {
@@ -91,6 +105,15 @@ export type EraEnabledRecord = Record<AtlasEra, boolean>;
 export type ClassEnabledRecord = Record<OntologyClass, boolean>;
 
 export type GraphEdgeSlice = 'all' | 'ritual_structure' | 'guthi_structure';
+export type AtlasSidebarPanelId =
+  | 'fx'
+  | 'city'
+  | 'graph'
+  | 'documents'
+  | 'time'
+  | 'search'
+  | 'ai'
+  | 'ops';
 
 export const ATLAS_ERAS_ORDER: AtlasEra[] = ['ancient', 'medieval', 'early_modern', 'modern'];
 
@@ -174,6 +197,8 @@ interface AtlasState {
   focusedView: AtlasViewId | null;
   /** Globe disc backdrop transparency. */
   discTransparent: boolean;
+  /** Globe spotlight diameter scale vs layout cell (clamped). */
+  spotlightScale: number;
   graphEdgeSlice: GraphEdgeSlice;
 
   selectedId: string | null;
@@ -196,6 +221,8 @@ interface AtlasState {
   fxEcoQuality: boolean;
   selectedCityId: string | null;
   cityPaletteOpen: boolean;
+  /** One-at-a-time accordion panel in right sidebar. */
+  activeSidebarPanel: AtlasSidebarPanelId | null;
 
   getFilteredEntities: () => AtlasEntity[];
   getGlobeEntities: () => AtlasEntity[];
@@ -206,6 +233,8 @@ interface AtlasState {
 
   focusView: (v: AtlasViewId | null) => void;
   toggleDiscTransparent: () => void;
+  setDiscTransparent: (v: boolean) => void;
+  setSpotlightScale: (n: number, options?: { withSound?: boolean }) => void;
   setGraphEdgeSlice: (s: GraphEdgeSlice) => void;
   toggleEra: (era: AtlasEra) => void;
   toggleClass: (c: OntologyClass) => void;
@@ -237,6 +266,22 @@ interface AtlasState {
   cycleFxPreset: (dir: -1 | 1) => void;
   selectCity: (id: string | null) => void;
   setCityPaletteOpen: (open: boolean) => void;
+  openSidebarPanel: (id: AtlasSidebarPanelId) => void;
+  toggleSidebarPanel: (id: AtlasSidebarPanelId) => void;
+  closeSidebarPanel: () => void;
+}
+
+function snapshotFxPersist(st: AtlasState): AtlasFxPersisted {
+  return {
+    fxPreset: st.fxPreset,
+    fxSensitivity: st.fxSensitivity,
+    fxBloom: st.fxBloom,
+    fxPixelation: st.fxPixelation,
+    fxFlirPolarity: st.fxFlirPolarity,
+    fxEcoQuality: st.fxEcoQuality,
+    discTransparent: st.discTransparent,
+    spotlightScale: st.spotlightScale,
+  };
 }
 
 const CONFIDENCE_STEPS = [0, 0.35, 0.55, 0.72, 0.85];
@@ -254,6 +299,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
 
   focusedView: null,
   discTransparent: fxSeed?.discTransparent ?? false,
+  spotlightScale: clampAtlasSpotlightScale(fxSeed?.spotlightScale ?? 1),
   graphEdgeSlice: 'all',
 
   selectedId: null,
@@ -276,6 +322,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   fxEcoQuality: fxSeed?.fxEcoQuality ?? false,
   selectedCityId: citySeed,
   cityPaletteOpen: false,
+  activeSidebarPanel: null,
 
   getFilteredEntities() {
     const st = get();
@@ -361,16 +408,26 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
     const discTransparent = !get().discTransparent;
     set({ discTransparent });
     atlasSound.play('click');
-    const st = get();
-    writeFxPersisted({
-      fxPreset: st.fxPreset,
-      fxSensitivity: st.fxSensitivity,
-      fxBloom: st.fxBloom,
-      fxPixelation: st.fxPixelation,
-      fxFlirPolarity: st.fxFlirPolarity,
-      fxEcoQuality: st.fxEcoQuality,
-      discTransparent: st.discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
+  },
+
+  setDiscTransparent(v) {
+    if (get().discTransparent === v) return;
+    set({ discTransparent: v });
+    atlasSound.play('click');
+    writeFxPersisted(snapshotFxPersist(get()));
+  },
+
+  setSpotlightScale(n, options) {
+    const withSound = options?.withSound ?? true;
+    const spotlightScale = clampAtlasSpotlightScale(n);
+    if (spotlightScale === get().spotlightScale) {
+      if (withSound) atlasSound.play('tick');
+      return;
+    }
+    set({ spotlightScale });
+    if (withSound) atlasSound.play('click');
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   setGraphEdgeSlice(s) {
@@ -443,6 +500,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
       hoverScreenPos: null,
       cityPaletteOpen: false,
       focusedView: null,
+      activeSidebarPanel: null,
     });
   },
 
@@ -508,6 +566,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
       fxFlirPolarity: fx?.fxFlirPolarity ?? 'whot',
       fxEcoQuality: fx?.fxEcoQuality ?? false,
       discTransparent: fx?.discTransparent ?? false,
+      spotlightScale: clampAtlasSpotlightScale(fx?.spotlightScale ?? 1),
       selectedCityId: city,
     });
   },
@@ -515,86 +574,38 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   setFxPreset(p) {
     set({ fxPreset: p });
     atlasSound.play('click');
-    writeFxPersisted({
-      fxPreset: p,
-      fxSensitivity: get().fxSensitivity,
-      fxBloom: get().fxBloom,
-      fxPixelation: get().fxPixelation,
-      fxFlirPolarity: get().fxFlirPolarity,
-      fxEcoQuality: get().fxEcoQuality,
-      discTransparent: get().discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   setFxSensitivity(n) {
     const fxSensitivity = Math.min(2.4, Math.max(0.35, n));
     set({ fxSensitivity });
-    writeFxPersisted({
-      fxPreset: get().fxPreset,
-      fxSensitivity,
-      fxBloom: get().fxBloom,
-      fxPixelation: get().fxPixelation,
-      fxFlirPolarity: get().fxFlirPolarity,
-      fxEcoQuality: get().fxEcoQuality,
-      discTransparent: get().discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   setFxBloom(n) {
     const fxBloom = Math.min(1, Math.max(0, n));
     set({ fxBloom });
-    writeFxPersisted({
-      fxPreset: get().fxPreset,
-      fxSensitivity: get().fxSensitivity,
-      fxBloom,
-      fxPixelation: get().fxPixelation,
-      fxFlirPolarity: get().fxFlirPolarity,
-      fxEcoQuality: get().fxEcoQuality,
-      discTransparent: get().discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   setFxPixelation(n) {
     const fxPixelation = Math.min(144, Math.max(4, Math.round(n)));
     set({ fxPixelation });
-    writeFxPersisted({
-      fxPreset: get().fxPreset,
-      fxSensitivity: get().fxSensitivity,
-      fxBloom: get().fxBloom,
-      fxPixelation,
-      fxFlirPolarity: get().fxFlirPolarity,
-      fxEcoQuality: get().fxEcoQuality,
-      discTransparent: get().discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   toggleFlirPolarity() {
     const fxFlirPolarity = get().fxFlirPolarity === 'whot' ? 'bhot' : 'whot';
     set({ fxFlirPolarity });
     atlasSound.play('tick');
-    writeFxPersisted({
-      fxPreset: get().fxPreset,
-      fxSensitivity: get().fxSensitivity,
-      fxBloom: get().fxBloom,
-      fxPixelation: get().fxPixelation,
-      fxFlirPolarity,
-      fxEcoQuality: get().fxEcoQuality,
-      discTransparent: get().discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   setFxEcoQuality(eco) {
     set({ fxEcoQuality: eco });
     atlasSound.play('click');
-    writeFxPersisted({
-      fxPreset: get().fxPreset,
-      fxSensitivity: get().fxSensitivity,
-      fxBloom: get().fxBloom,
-      fxPixelation: get().fxPixelation,
-      fxFlirPolarity: get().fxFlirPolarity,
-      fxEcoQuality: eco,
-      discTransparent: get().discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   cycleFxPreset(dir) {
@@ -604,15 +615,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
     const next = order[ni] ?? 'normal';
     set({ fxPreset: next });
     atlasSound.play('tick');
-    writeFxPersisted({
-      fxPreset: next,
-      fxSensitivity: get().fxSensitivity,
-      fxBloom: get().fxBloom,
-      fxPixelation: get().fxPixelation,
-      fxFlirPolarity: get().fxFlirPolarity,
-      fxEcoQuality: get().fxEcoQuality,
-      discTransparent: get().discTransparent,
-    });
+    writeFxPersisted(snapshotFxPersist(get()));
   },
 
   selectCity(id) {
@@ -628,6 +631,24 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
       }
       return { cityPaletteOpen: open };
     });
+  },
+
+  openSidebarPanel(id) {
+    set({ activeSidebarPanel: id });
+    atlasSound.play('uiOpen');
+  },
+
+  toggleSidebarPanel(id) {
+    set((s) => {
+      const activeSidebarPanel = s.activeSidebarPanel === id ? null : id;
+      atlasSound.play(activeSidebarPanel ? 'uiOpen' : 'uiClose');
+      return { activeSidebarPanel };
+    });
+  },
+
+  closeSidebarPanel() {
+    set({ activeSidebarPanel: null });
+    atlasSound.play('uiClose');
   },
 }));
 

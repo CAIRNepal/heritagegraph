@@ -12,6 +12,7 @@ import {
   Color,
   DistanceDisplayCondition,
   EasingFunction,
+  EllipsoidTerrainProvider,
   HorizontalOrigin,
   Ion,
   LabelStyle,
@@ -41,7 +42,12 @@ import {
   getCityById,
 } from '../lib/atlas-cities';
 
-Ion.defaultAccessToken = '';
+// Suppress Ion service requests — we use Esri tiles directly.
+// A real token can be supplied via NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN if needed.
+Ion.defaultAccessToken =
+  process.env.NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS0zMzI3MzM2NTY4ZjgiLCJpZCI6NTkyMTMsImlhdCI6MTYyNzE0NDYyMn0.XcKpgANiY19MC4bdFUXMVEBToBmqS8kuYpUlxJHYZxk';
+
+const ellipsoidTerrain = new EllipsoidTerrainProvider();
 
 /** Aligns with UrlTemplateImageryProvider maximumLevel — avoid Esri "no data" tiles at extreme zoom. */
 const ESRI_IMAGERY_MAX_LEVEL = 18;
@@ -358,6 +364,7 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
         <Viewer
           full
           creditContainer={creditHostElement}
+          terrainProvider={ellipsoidTerrain}
           baseLayerPicker={false}
           geocoder={false}
           homeButton={false}
