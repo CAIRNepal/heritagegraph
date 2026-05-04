@@ -108,6 +108,68 @@ def _sparql_update(update: str) -> None:
         logger.warning("RDF SPARQL update failed: %s", exc)
 
 
+def _uri_for_generic(content_type, object_id) -> str | None:
+    if content_type is None or object_id is None:
+        return None
+    model = content_type.model_class()
+    if model is None:
+        return None
+    try:
+        obj = model.objects.get(pk=object_id)
+    except model.DoesNotExist:
+        return None
+    return _resource_uri(obj)
+
+
+def queue_relationship_assertion_projection(
+    instance: Any | None = None, **_kwargs: object
+) -> None:
+    """Emit one triple for accepted relationship.* assertions (007)."""
+    if not rdf_sync_enabled() or instance is None:
+        return
+    from apps.cidoc_data.assertion_validation import is_relationship_property
+
+    if instance.reconciliation_status != "accepted":
+        return
+    if not is_relationship_property(instance.asserted_property):
+        return
+
+    subj_uri = _uri_for_generic(instance.content_type, instance.object_id)
+    obj_uri = _uri_for_generic(
+        instance.object_content_type, instance.object_object_id
+    )
+    if not subj_uri or not obj_uri:
+        return
+
+    raw_prop = instance.asserted_property or ""
+    prop_suffix = raw_prop[len("relationship.") :] if "relationship." in raw_prop else raw_prop
+    base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
+    pred_uri = f"{base}/property/{prop_suffix}"
+
+    endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
+    if not endpoint:
+        if not _local_oxigraph_available():
+            return
+        try:
+            from pyoxigraph import NamedNode, Quad, Store
+        except ImportError:
+            return
+        store = Store(_oxigraph_store_path())
+        s_n = NamedNode(subj_uri)
+        p_n = NamedNode(pred_uri)
+        o_n = NamedNode(obj_uri)
+        try:
+            for q in store.quads_for_pattern(s_n, p_n, o_n, None):
+                store.remove(q)
+        except Exception:
+            pass
+        store.add(Quad(s_n, p_n, o_n, None))
+        return
+
+    update = f"INSERT DATA {{ <{subj_uri}> <{pred_uri}> <{obj_uri}> . }}\n"
+    _sparql_update(update)
+
+
 def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> None:
     """Upsert minimal triples for one CIDOC record (stub → rdfs:label)."""
     if not rdf_sync_enabled() or instance is None:
@@ -164,6 +226,10 @@ def _on_instance_deleted(sender, instance, **kwargs: object) -> None:
     _delete_projection(instance)
 
 
+def _on_assertion_saved(sender, instance, **kwargs: object) -> None:
+    queue_relationship_assertion_projection(instance)
+
+
 def connect_signals() -> None:
     """Register RDF hooks once (idempotent). Handlers no-op unless RDF_SYNC_ENABLED."""
     global _CONNECTED
@@ -177,6 +243,11 @@ def connect_signals() -> None:
         seen.add(model)
         post_save.connect(_on_instance_saved, sender=model, weak=False)
         post_delete.connect(_on_instance_deleted, sender=model, weak=False)
+
+    from apps.cidoc_data.models import HeritageAssertion
+
+    post_save.connect(_on_assertion_saved, sender=HeritageAssertion, weak=False)
+
     _CONNECTED = True
 
 

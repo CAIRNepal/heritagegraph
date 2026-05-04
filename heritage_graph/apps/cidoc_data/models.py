@@ -749,6 +749,24 @@ class DataSource(models.Model):
         return self.name
 
 
+class RelationshipPredicate(models.Model):
+    """Controlled vocabulary for relationship.* assertions (spec 007)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.SlugField(max_length=64, unique=True, db_index=True)
+    label = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    active = models.BooleanField(default=True)
+    sort_order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        db_table = "relationship_predicate"
+        ordering = ["sort_order", "label"]
+
+    def __str__(self) -> str:
+        return self.label
+
+
 class EntityCluster(models.Model):
     """
     Stable identity anchor: one cluster per real-world referent within a type_scope
@@ -771,6 +789,16 @@ class EntityCluster(models.Model):
         null=True,
         blank=True,
         related_name="merged_from_clusters",
+    )
+    curated_aliases = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Curated surface aliases (not membership claims; see HeritageAssertion identity.same_referent).",
+    )
+    external_identifiers = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="LOD map e.g. {'wikidata': 'Q123'} — informational unless validated downstream.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -898,6 +926,21 @@ class HeritageAssertion(models.Model):
     )
     asserts_about = GenericForeignKey("content_type", "object_id")
 
+    object_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="For relationship.* assertions: type of the object entity",
+    )
+    object_object_id = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="For relationship.* assertions: PK of the object entity",
+    )
+    asserts_object = GenericForeignKey("object_content_type", "object_object_id")
+
     entity_cluster = models.ForeignKey(
         EntityCluster,
         on_delete=models.PROTECT,
@@ -929,6 +972,17 @@ class HeritageAssertion(models.Model):
     )
     source_citation = models.TextField(
         blank=True, help_text="Inline citation if no separate DataSource record"
+    )
+    temporal_scope_edtf = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Optional EDTF or human-readable temporal scope for relationship rows",
+    )
+    supporting_sources = models.ManyToManyField(
+        DataSource,
+        blank=True,
+        related_name="supporting_for_assertions",
+        help_text="Additional sources beyond primary `source` FK",
     )
     contributed_by = models.CharField(
         max_length=255, blank=True, help_text="Email or name of the contributor"
@@ -965,9 +1019,11 @@ class HeritageAssertion(models.Model):
 
     def clean(self) -> None:
         super().clean()
+        from .assertion_validation import validate_relationship_assertion
         from .identity_validation import validate_membership_assertion
 
         validate_membership_assertion(self)
+        validate_relationship_assertion(self)
 
     class Meta:
         ordering = ["-created_at"]
@@ -975,6 +1031,7 @@ class HeritageAssertion(models.Model):
         verbose_name_plural = "Heritage Assertions"
         indexes = [
             models.Index(fields=["content_type", "object_id"]),
+            models.Index(fields=["object_content_type", "object_object_id"]),
             models.Index(fields=["reconciliation_status"]),
             models.Index(fields=["confidence"]),
             models.Index(fields=["asserted_property", "entity_cluster"]),

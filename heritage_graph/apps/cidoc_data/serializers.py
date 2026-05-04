@@ -330,11 +330,20 @@ class DataSourceSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at"]
 
 
+class RelationshipPredicateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RelationshipPredicate
+        fields = "__all__"
+        read_only_fields = ["id"]
+
+
 class HeritageAssertionSerializer(serializers.ModelSerializer):
     content_type_name = serializers.SerializerMethodField()
     source_type = serializers.SerializerMethodField()
     source_name = serializers.SerializerMethodField()
     source_rank = serializers.SerializerMethodField()
+    object_entity_type = serializers.SerializerMethodField()
+    object_entity_id = serializers.SerializerMethodField()
 
     class Meta:
         model = HeritageAssertion
@@ -359,6 +368,12 @@ class HeritageAssertionSerializer(serializers.ModelSerializer):
 
         source_type = self.get_source_type(obj)
         return source_type_rank(source_type)
+
+    def get_object_entity_type(self, obj):
+        return obj.object_content_type.model if obj.object_content_type_id else None
+
+    def get_object_entity_id(self, obj):
+        return obj.object_object_id
 
     def create(self, validated_data):
         instance = HeritageAssertion(**validated_data)

@@ -24,6 +24,7 @@ from .models import (
     Person,
     PersonRevision,
     RitualEvent,
+    RelationshipPredicate,
     Source,
     SyncreticRelationship,
     Tradition,
@@ -473,6 +474,14 @@ class HeritageAssertionAdmin(admin.ModelAdmin):
         )
 
     reconciliation_colored.short_description = "Status"
+
+
+@admin.register(RelationshipPredicate)
+class RelationshipPredicateAdmin(admin.ModelAdmin):
+    list_display = ("code", "label", "active", "sort_order")
+    list_filter = ("active",)
+    search_fields = ("code", "label")
+    ordering = ("sort_order", "label")
 
 
 @admin.register(EntityCluster)

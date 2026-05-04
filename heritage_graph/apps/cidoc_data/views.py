@@ -356,6 +356,16 @@ class DataSourceViewSet(viewsets.ModelViewSet):
     search_fields = ["name", "author", "citation"]
 
 
+class RelationshipPredicateViewSet(viewsets.ReadOnlyModelViewSet):
+    """Controlled vocabulary for relationship proposals (007)."""
+
+    queryset = RelationshipPredicate.objects.filter(active=True).order_by(
+        "sort_order", "label"
+    )
+    serializer_class = RelationshipPredicateSerializer
+    permission_classes = [permissions.AllowAny]
+
+
 class HeritageAssertionViewSet(viewsets.ModelViewSet):
     queryset = HeritageAssertion.objects.all()
     serializer_class = HeritageAssertionSerializer
@@ -477,7 +487,39 @@ class EntityClusterViewSet(viewsets.ModelViewSet):
             "unlock",
         ):
             return [permissions.IsAuthenticated(), IsExpertCurator()]
+        if self.action == "suggest_duplicates":
+            return [permissions.IsAuthenticated()]
         return [permissions.IsAuthenticated()]
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="suggest-duplicates",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def suggest_duplicates(self, request):
+        """Substring match on canonical_label for contributor duplicate hints (007)."""
+        q = (request.query_params.get("q") or "").strip()
+        type_scope = (request.query_params.get("type_scope") or "").strip().lower()
+        if len(q) < 2:
+            return Response({"results": []})
+        qs = EntityCluster.objects.filter(merged_into__isnull=True).filter(
+            canonical_label__icontains=q
+        )
+        if type_scope:
+            qs = qs.filter(type_scope=type_scope)
+        qs = qs.order_by("canonical_label")[:20]
+        results = [
+            {
+                "id": str(c.id),
+                "canonical_label": c.canonical_label,
+                "type_scope": c.type_scope,
+                "curated_aliases": c.curated_aliases or [],
+                "external_identifiers": c.external_identifiers or {},
+            }
+            for c in qs
+        ]
+        return Response({"results": results})
 
     def destroy(self, request, *args, **kwargs):
         return Response(

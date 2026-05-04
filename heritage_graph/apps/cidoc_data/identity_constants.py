@@ -5,6 +5,9 @@ from __future__ import annotations
 # asserted_property for cluster membership rows (005-identity-layer).
 IDENTITY_SAME_REFERENT_PROPERTY = "identity.same_referent"
 
+# Binary relationship assertions (007): asserted_property == f"{RELATIONSHIP_PROPERTY_PREFIX}{code}"
+RELATIONSHIP_PROPERTY_PREFIX = "relationship."
+
 # Lower index = higher trust when ordering competing identity evidence (FR-017 v1).
 # Aligns with DataSource.source_type choices in models.py SOURCE_CATEGORY_CHOICES.
 SOURCE_TYPE_CONFLICT_ORDER: tuple[str, ...] = (

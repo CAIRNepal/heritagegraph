@@ -36,6 +36,11 @@ router.register(r'calendar_systems', CalendarSystemViewSet)
 
 # Provenance models
 router.register(r'data_sources', DataSourceViewSet)
+router.register(
+    r'relationship-predicates',
+    RelationshipPredicateViewSet,
+    basename='relationship-predicate',
+)
 router.register(r'assertions', HeritageAssertionViewSet)
 router.register(r'entity-clusters', EntityClusterViewSet, basename='entity-cluster')
 router.register(
