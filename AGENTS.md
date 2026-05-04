@@ -195,6 +195,12 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - Env: `HERITAGEGRAPH_SCHEMA_EXTENSION_PATH` — writable LinkML overlay path for publish (documented in `heritage_graph/.env.example`)
 - Ops: `python manage.py seed_triage_policy` — ensure default active `TriagePolicy` row exists after migrate
 
+**Knowledge graph proposals (prefix: `/data/` and `/cidoc/`; see spec 007 and [`specs/007-entity-relationship-proposals/README.md`](specs/007-entity-relationship-proposals/README.md)):**
+- `/data/entity-proposals/` and `/data/relationship-proposals/` — moderator-gated drafts (`Moderators` or staff approve/reject; authors see own rows); lifecycle actions `submit/`, `withdraw/`, `approve/`, `reject/`, `audit/`
+- `/cidoc/relationship-predicates/` — controlled vocabulary for `relationship.*` assertions (public read)
+- `GET /cidoc/entity-clusters/suggest-duplicates/` — canonical-label substring hints (`q`, optional `type_scope`; authenticated)
+- Ops: `python manage.py seed_relationship_predicates` — seed predicate rows after migrate
+
 **OCR / Document processing (prefix: `/data/`, also available under `/api/v1/data/`):**
 - `POST /data/ocr-documents/upload/` — multipart upload: creates `heritage_data.Media` and enqueues `document_processing.UploadedDocument` processing
 - `GET /data/ocr-documents/<uuid>/` — OCR run status
@@ -222,6 +228,9 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/curation/review` — triaged epistemic review queue
 - `/curation/review/<id>` — three-panel review workspace (triage strip uses workspace payload)
 - `/curation/schema-extensions` — schema extension proposals (authors + moderators)
+- `/contribute/entity-proposal` — propose canonical identity clusters (contributors)
+- `/contribute/relationship-proposal` — propose binary relationship assertions (contributors)
+- `/curation/kg-proposals` — moderate submitted entity and relationship proposals (moderators)
 - `/curation/conflicts` — conflict resolution queue
 - `/curation/dashboard` — reviewer dashboard
 - `/community/contributors` — contributor list
@@ -366,5 +375,6 @@ HeritageGraph uses **Celery + Redis** for async task processing:
 | `TROUBLESHOOTING.md` | Known issues, gotchas, and their fixes |
 | `TRANSLATION.md` | **i18n guide** — how to translate pages to Nepali or add new languages |
 | `DEPLOYMENT.md` | Production deployment guide |
+| [`specs/007-entity-relationship-proposals/README.md`](specs/007-entity-relationship-proposals/README.md) | **Entity & relationship proposals (007)** — overview, links to spec kit and related docs |
 | `OCR_INTEGRATION_SUMMARY.md` | **OCR pipeline details** — architecture, implementation guide, phase tracking |
 | `contributing.md` | Contributor instructions |

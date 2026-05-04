@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: HeritageGraph Knowledge Graph Proposals API (007)
+  version: "1.0.0"
+  description: >
+    Draft sketch mirroring DRF routes under /data/entity-proposals/ and
+    /data/relationship-proposals/. Aligns with Schema Extension proposals pattern.
+
+paths:
+  /data/entity-proposals/:
+    get:
+      summary: List proposals (author sees own; moderator/staff sees all)
+      security: [{ bearerAuth: [] }]
+    post:
+      summary: Create draft entity proposal
+      security: [{ bearerAuth: [] }]
+  /data/entity-proposals/{id}/submit/:
+    post:
+      summary: Submit draft for moderation
+      security: [{ bearerAuth: [] }]
+  /data/entity-proposals/{id}/approve/:
+    post:
+      summary: Approve submitted proposal (moderator)
+      security: [{ bearerAuth: [] }]
+  /data/relationship-proposals/:
+    get:
+      summary: List relationship proposals
+      security: [{ bearerAuth: [] }]
+    post:
+      summary: Create draft relationship proposal
+      security: [{ bearerAuth: [] }]
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
