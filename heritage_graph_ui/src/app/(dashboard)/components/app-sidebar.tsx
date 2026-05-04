@@ -41,6 +41,8 @@ import {
   IconGitFork,
   IconSettings,
   IconListCheck,
+  IconFingerprint,
+  IconLink,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -241,6 +243,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           navtitle={t('record')}
           items={[
             { title: t('contribute'), url: '/contribute', icon: IconPlus },
+            ...(showAuthedNav
+              ? [
+                  {
+                    title: 'Entity proposal',
+                    url: '/contribute/entity-proposal',
+                    icon: IconFingerprint,
+                  },
+                  {
+                    title: 'Relationship proposal',
+                    url: '/contribute/relationship-proposal',
+                    icon: IconLink,
+                  },
+                ]
+              : []),
             { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },
           ]}
         />
@@ -259,6 +275,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
             { title: t('reviewWorkspace'), url: '/review', icon: IconListCheck },
           ] : []),
+          ...(isModerator
+            ? [{ title: 'KG proposals', url: '/curation/kg-proposals', icon: IconLink }]
+            : []),
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
         ]} />

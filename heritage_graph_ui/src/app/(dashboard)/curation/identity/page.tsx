@@ -24,7 +24,7 @@ type CandidateRow = {
 
 export default function IdentityQueuePage() {
   const { data: session } = useSession();
-  const { isReviewer, isLoading } = useUserRoles();
+  const { isReviewer, isModerator, isLoading } = useUserRoles();
   const token = (session as { accessToken?: string } | null)?.accessToken;
   const [tab, setTab] = useState('open');
   const [rows, setRows] = useState<CandidateRow[]>([]);
@@ -76,6 +76,22 @@ export default function IdentityQueuePage() {
           membership assertions.
         </p>
       </div>
+
+      {isModerator ? (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base">Knowledge graph proposals</CardTitle>
+            <CardDescription>
+              Moderate contributor-submitted entity clusters and relationship assertions.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/curation/kg-proposals">Open KG proposal queue</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
