@@ -17,6 +17,7 @@ from .models import (
 )
 
 User = get_user_model()
+from apps.cidoc_data.models import EntityCluster
 from .models import (
     CulturalEntity,
     Revision,
@@ -31,6 +32,10 @@ from .models import (
     Share,
     SchemaExtensionAuditEvent,
     SchemaExtensionProposal,
+    EntityProposal,
+    EntityProposalAuditEvent,
+    RelationshipProposal,
+    RelationshipProposalAuditEvent,
 )
 
 
@@ -1793,5 +1798,242 @@ class SchemaExtensionProposalPatchSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         inst = self.instance
         if inst and inst.status != SchemaExtensionProposal.STATUS_DRAFT:
+            raise ValidationError("Only draft proposals can be edited.")
+        return attrs
+
+
+# =====================================================================
+# ENTITY / RELATIONSHIP PROPOSALS (007)
+# =====================================================================
+
+
+class EntityProposalAuditEventSerializer(serializers.ModelSerializer):
+    actor_username = serializers.CharField(
+        source="actor.username", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = EntityProposalAuditEvent
+        fields = [
+            "id",
+            "action",
+            "from_status",
+            "to_status",
+            "comment",
+            "actor_username",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class RelationshipProposalAuditEventSerializer(serializers.ModelSerializer):
+    actor_username = serializers.CharField(
+        source="actor.username", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = RelationshipProposalAuditEvent
+        fields = [
+            "id",
+            "action",
+            "from_status",
+            "to_status",
+            "comment",
+            "actor_username",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class EntityProposalSerializer(serializers.ModelSerializer):
+    author_username = serializers.CharField(source="author.username", read_only=True)
+
+    class Meta:
+        model = EntityProposal
+        fields = [
+            "id",
+            "author",
+            "author_username",
+            "status",
+            "canonical_label",
+            "aliases",
+            "type_scope",
+            "anchor_records",
+            "supporting_source_ids",
+            "contributor_note",
+            "external_identifiers",
+            "resolution_mode",
+            "existing_cluster",
+            "moderator_comment",
+            "materialized_cluster",
+            "submitted_at",
+            "resolved_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "author",
+            "author_username",
+            "status",
+            "moderator_comment",
+            "materialized_cluster",
+            "submitted_at",
+            "resolved_at",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class EntityProposalCreateSerializer(serializers.ModelSerializer):
+    existing_cluster = serializers.PrimaryKeyRelatedField(
+        queryset=EntityCluster.objects.filter(merged_into__isnull=True),
+        required=False,
+        allow_null=True,
+    )
+
+    class Meta:
+        model = EntityProposal
+        fields = [
+            "canonical_label",
+            "aliases",
+            "type_scope",
+            "anchor_records",
+            "supporting_source_ids",
+            "contributor_note",
+            "external_identifiers",
+            "resolution_mode",
+            "existing_cluster",
+        ]
+
+    def validate(self, attrs):
+        mode = attrs.get("resolution_mode", EntityProposal.RESOLUTION_NEW)
+        existing = attrs.get("existing_cluster")
+        if mode == EntityProposal.RESOLUTION_LINK and existing is None:
+            raise ValidationError(
+                {"existing_cluster": "Required when resolution_mode is link_existing."}
+            )
+        return attrs
+
+
+class EntityProposalPatchSerializer(serializers.ModelSerializer):
+    existing_cluster = serializers.PrimaryKeyRelatedField(
+        queryset=EntityCluster.objects.filter(merged_into__isnull=True),
+        required=False,
+        allow_null=True,
+    )
+
+    class Meta:
+        model = EntityProposal
+        fields = [
+            "canonical_label",
+            "aliases",
+            "type_scope",
+            "anchor_records",
+            "supporting_source_ids",
+            "contributor_note",
+            "external_identifiers",
+            "resolution_mode",
+            "existing_cluster",
+        ]
+
+    def validate(self, attrs):
+        if self.instance and self.instance.status != EntityProposal.STATUS_DRAFT:
+            raise ValidationError("Only draft proposals can be edited.")
+        mode = attrs.get("resolution_mode")
+        if mode is None and self.instance:
+            mode = self.instance.resolution_mode
+        existing = attrs.get("existing_cluster")
+        if existing is None and self.instance:
+            existing = self.instance.existing_cluster
+        if mode == EntityProposal.RESOLUTION_LINK and existing is None:
+            raise ValidationError(
+                {"existing_cluster": "Required when resolution_mode is link_existing."}
+            )
+        return attrs
+
+
+class RelationshipProposalSerializer(serializers.ModelSerializer):
+    author_username = serializers.CharField(source="author.username", read_only=True)
+    predicate_code = serializers.CharField(source="predicate.code", read_only=True)
+    predicate_label = serializers.CharField(source="predicate.label", read_only=True)
+
+    class Meta:
+        model = RelationshipProposal
+        fields = [
+            "id",
+            "author",
+            "author_username",
+            "status",
+            "predicate",
+            "predicate_code",
+            "predicate_label",
+            "subject_entity_type",
+            "subject_entity_id",
+            "object_entity_type",
+            "object_entity_id",
+            "primary_source",
+            "supporting_source_ids",
+            "temporal_scope_edtf",
+            "confidence",
+            "interpretation_note",
+            "moderator_comment",
+            "materialized_assertion",
+            "submitted_at",
+            "resolved_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "author",
+            "author_username",
+            "status",
+            "predicate_code",
+            "predicate_label",
+            "moderator_comment",
+            "materialized_assertion",
+            "submitted_at",
+            "resolved_at",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class RelationshipProposalCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RelationshipProposal
+        fields = [
+            "predicate",
+            "subject_entity_type",
+            "subject_entity_id",
+            "object_entity_type",
+            "object_entity_id",
+            "primary_source",
+            "supporting_source_ids",
+            "temporal_scope_edtf",
+            "confidence",
+            "interpretation_note",
+        ]
+
+
+class RelationshipProposalPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RelationshipProposal
+        fields = [
+            "predicate",
+            "subject_entity_type",
+            "subject_entity_id",
+            "object_entity_type",
+            "object_entity_id",
+            "primary_source",
+            "supporting_source_ids",
+            "temporal_scope_edtf",
+            "confidence",
+            "interpretation_note",
+        ]
+
+    def validate(self, attrs):
+        if self.instance and self.instance.status != RelationshipProposal.STATUS_DRAFT:
             raise ValidationError("Only draft proposals can be edited.")
         return attrs

@@ -27,6 +27,8 @@ from .models import (
     ReviewerApplication,
     SchemaExtensionAuditEvent,
     SchemaExtensionProposal,
+    EntityProposal,
+    RelationshipProposal,
 )
 from .models import Organization, OrganizationMembership
 from .models import Notification, Reaction, Fork, Share
@@ -2100,6 +2102,333 @@ class SchemaExtensionProposalViewSet(viewsets.ModelViewSet):
         proposal = self.get_object()
         rows = proposal.audit_events.all()
         return Response(SchemaExtensionAuditEventSerializer(rows, many=True).data)
+
+
+class EntityProposalViewSet(viewsets.ModelViewSet):
+    """Contributor entity proposals; moderator approval materializes EntityCluster (007)."""
+
+    queryset = EntityProposal.objects.select_related(
+        "author",
+        "existing_cluster",
+        "materialized_cluster",
+    ).all()
+    http_method_names = ["get", "post", "patch", "head", "options"]
+    pagination_class = None
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return EntityProposalCreateSerializer
+        if self.action in ("partial_update", "update"):
+            return EntityProposalPatchSerializer
+        return EntityProposalSerializer
+
+    def get_permissions(self):
+        if self.action in ("approve", "reject"):
+            return [permissions.IsAuthenticated(), IsSchemaExtensionModerator()]
+        return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by("-created_at")
+        user = self.request.user
+        if user.is_staff or user.groups.filter(name="Moderators").exists():
+            return qs
+        return qs.filter(author=user)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        proposal = serializer.instance
+        if (
+            proposal.author_id != self.request.user.id
+            and not self.request.user.is_staff
+        ):
+            raise PermissionDenied()
+        if proposal.status != EntityProposal.STATUS_DRAFT:
+            raise ValidationError("Only draft proposals can be edited.")
+        serializer.save()
+
+    @action(detail=True, methods=["post"], url_path="submit")
+    def submit(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.author_id != request.user.id and not request.user.is_staff:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        if proposal.status != EntityProposal.STATUS_DRAFT:
+            return Response(
+                {"detail": "Not a draft"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        from apps.heritage_data.services import kg_proposals as kg
+
+        try:
+            kg.validate_entity_proposal_ready(proposal)
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        old = proposal.status
+        proposal.status = EntityProposal.STATUS_SUBMITTED
+        proposal.submitted_at = timezone.now()
+        proposal.save(update_fields=["status", "submitted_at", "updated_at"])
+        kg.append_entity_audit(
+            proposal,
+            actor=request.user,
+            action="submitted",
+            from_status=old,
+            to_status=EntityProposal.STATUS_SUBMITTED,
+        )
+        return Response(EntityProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["post"], url_path="withdraw")
+    def withdraw(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.author_id != request.user.id and not request.user.is_staff:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        if proposal.status not in (
+            EntityProposal.STATUS_DRAFT,
+            EntityProposal.STATUS_SUBMITTED,
+        ):
+            return Response(
+                {"detail": "Cannot withdraw"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        old = proposal.status
+        proposal.status = EntityProposal.STATUS_WITHDRAWN
+        proposal.resolved_at = timezone.now()
+        proposal.save(update_fields=["status", "resolved_at", "updated_at"])
+        from apps.heritage_data.services import kg_proposals as kg
+
+        kg.append_entity_audit(
+            proposal,
+            actor=request.user,
+            action="withdrawn",
+            from_status=old,
+            to_status=EntityProposal.STATUS_WITHDRAWN,
+        )
+        return Response(EntityProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.status != EntityProposal.STATUS_SUBMITTED:
+            return Response(
+                {"detail": "Not submitted"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        comment = (request.data.get("comment") or "").strip()
+        from apps.heritage_data.services import kg_proposals as kg
+
+        try:
+            kg.materialize_entity_proposal(proposal, request.user)
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        proposal.refresh_from_db()
+        kg.append_entity_audit(
+            proposal,
+            actor=request.user,
+            action="approved",
+            from_status=EntityProposal.STATUS_SUBMITTED,
+            to_status=EntityProposal.STATUS_APPROVED,
+            comment=comment,
+        )
+        proposal.moderator_comment = comment
+        proposal.save(update_fields=["moderator_comment", "updated_at"])
+        return Response(EntityProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.status != EntityProposal.STATUS_SUBMITTED:
+            return Response(
+                {"detail": "Not submitted"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        comment = (request.data.get("comment") or "").strip()
+        if not comment:
+            return Response(
+                {"detail": "comment required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        proposal.status = EntityProposal.STATUS_REJECTED
+        proposal.moderator_comment = comment
+        proposal.resolved_at = timezone.now()
+        proposal.save(
+            update_fields=["status", "moderator_comment", "resolved_at", "updated_at"]
+        )
+        from apps.heritage_data.services import kg_proposals as kg
+
+        kg.append_entity_audit(
+            proposal,
+            actor=request.user,
+            action="rejected",
+            from_status=EntityProposal.STATUS_SUBMITTED,
+            to_status=EntityProposal.STATUS_REJECTED,
+            comment=comment,
+        )
+        return Response(EntityProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["get"], url_path="audit")
+    def audit(self, request, pk=None):
+        proposal = self.get_object()
+        rows = proposal.audit_events.all()
+        return Response(EntityProposalAuditEventSerializer(rows, many=True).data)
+
+
+class RelationshipProposalViewSet(viewsets.ModelViewSet):
+    """Relationship proposals; moderator approval creates HeritageAssertion (007)."""
+
+    queryset = RelationshipProposal.objects.select_related(
+        "author",
+        "predicate",
+        "primary_source",
+        "materialized_assertion",
+    ).all()
+    http_method_names = ["get", "post", "patch", "head", "options"]
+    pagination_class = None
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return RelationshipProposalCreateSerializer
+        if self.action in ("partial_update", "update"):
+            return RelationshipProposalPatchSerializer
+        return RelationshipProposalSerializer
+
+    def get_permissions(self):
+        if self.action in ("approve", "reject"):
+            return [permissions.IsAuthenticated(), IsSchemaExtensionModerator()]
+        return [permissions.IsAuthenticated()]
+
+    def get_queryset(self):
+        qs = super().get_queryset().order_by("-created_at")
+        user = self.request.user
+        if user.is_staff or user.groups.filter(name="Moderators").exists():
+            return qs
+        return qs.filter(author=user)
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        proposal = serializer.instance
+        if (
+            proposal.author_id != self.request.user.id
+            and not self.request.user.is_staff
+        ):
+            raise PermissionDenied()
+        if proposal.status != RelationshipProposal.STATUS_DRAFT:
+            raise ValidationError("Only draft proposals can be edited.")
+        serializer.save()
+
+    @action(detail=True, methods=["post"], url_path="submit")
+    def submit(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.author_id != request.user.id and not request.user.is_staff:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        if proposal.status != RelationshipProposal.STATUS_DRAFT:
+            return Response(
+                {"detail": "Not a draft"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        from apps.heritage_data.services import kg_proposals as kg
+
+        try:
+            kg.validate_relationship_proposal_ready(proposal)
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        old = proposal.status
+        proposal.status = RelationshipProposal.STATUS_SUBMITTED
+        proposal.submitted_at = timezone.now()
+        proposal.save(update_fields=["status", "submitted_at", "updated_at"])
+        kg.append_relationship_audit(
+            proposal,
+            actor=request.user,
+            action="submitted",
+            from_status=old,
+            to_status=RelationshipProposal.STATUS_SUBMITTED,
+        )
+        return Response(RelationshipProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["post"], url_path="withdraw")
+    def withdraw(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.author_id != request.user.id and not request.user.is_staff:
+            return Response({"detail": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
+        if proposal.status not in (
+            RelationshipProposal.STATUS_DRAFT,
+            RelationshipProposal.STATUS_SUBMITTED,
+        ):
+            return Response(
+                {"detail": "Cannot withdraw"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        old = proposal.status
+        proposal.status = RelationshipProposal.STATUS_WITHDRAWN
+        proposal.resolved_at = timezone.now()
+        proposal.save(update_fields=["status", "resolved_at", "updated_at"])
+        from apps.heritage_data.services import kg_proposals as kg
+
+        kg.append_relationship_audit(
+            proposal,
+            actor=request.user,
+            action="withdrawn",
+            from_status=old,
+            to_status=RelationshipProposal.STATUS_WITHDRAWN,
+        )
+        return Response(RelationshipProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.status != RelationshipProposal.STATUS_SUBMITTED:
+            return Response(
+                {"detail": "Not submitted"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        comment = (request.data.get("comment") or "").strip()
+        from apps.heritage_data.services import kg_proposals as kg
+
+        try:
+            kg.materialize_relationship_proposal(proposal, request.user)
+        except ValidationError as exc:
+            return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+        proposal.refresh_from_db()
+        kg.append_relationship_audit(
+            proposal,
+            actor=request.user,
+            action="approved",
+            from_status=RelationshipProposal.STATUS_SUBMITTED,
+            to_status=RelationshipProposal.STATUS_APPROVED,
+            comment=comment,
+        )
+        proposal.moderator_comment = comment
+        proposal.save(update_fields=["moderator_comment", "updated_at"])
+        return Response(RelationshipProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, pk=None):
+        proposal = self.get_object()
+        if proposal.status != RelationshipProposal.STATUS_SUBMITTED:
+            return Response(
+                {"detail": "Not submitted"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        comment = (request.data.get("comment") or "").strip()
+        if not comment:
+            return Response(
+                {"detail": "comment required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        proposal.status = RelationshipProposal.STATUS_REJECTED
+        proposal.moderator_comment = comment
+        proposal.resolved_at = timezone.now()
+        proposal.save(
+            update_fields=["status", "moderator_comment", "resolved_at", "updated_at"]
+        )
+        from apps.heritage_data.services import kg_proposals as kg
+
+        kg.append_relationship_audit(
+            proposal,
+            actor=request.user,
+            action="rejected",
+            from_status=RelationshipProposal.STATUS_SUBMITTED,
+            to_status=RelationshipProposal.STATUS_REJECTED,
+            comment=comment,
+        )
+        return Response(RelationshipProposalSerializer(proposal).data)
+
+    @action(detail=True, methods=["get"], url_path="audit")
+    def audit(self, request, pk=None):
+        proposal = self.get_object()
+        rows = proposal.audit_events.all()
+        return Response(RelationshipProposalAuditEventSerializer(rows, many=True).data)
 
 
 class ReviewWorkspaceView(generics.RetrieveAPIView):

@@ -1463,6 +1463,212 @@ class SchemaExtensionAuditEvent(models.Model):
 
 
 # =====================================================================
+# KNOWLEDGE GRAPH PROPOSALS (spec 007)
+# =====================================================================
+
+
+class EntityProposal(models.Model):
+    """Contributor entity/cluster proposal; moderator approval materializes EntityCluster."""
+
+    STATUS_DRAFT = "draft"
+    STATUS_SUBMITTED = "submitted"
+    STATUS_APPROVED = "approved"
+    STATUS_REJECTED = "rejected"
+    STATUS_WITHDRAWN = "withdrawn"
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, "Draft"),
+        (STATUS_SUBMITTED, "Submitted"),
+        (STATUS_APPROVED, "Approved"),
+        (STATUS_REJECTED, "Rejected"),
+        (STATUS_WITHDRAWN, "Withdrawn"),
+    ]
+
+    RESOLUTION_NEW = "new_cluster"
+    RESOLUTION_LINK = "link_existing"
+    RESOLUTION_CHOICES = [
+        (RESOLUTION_NEW, "Create new cluster"),
+        (RESOLUTION_LINK, "Link anchors to existing cluster"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="entity_proposals",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_DRAFT,
+        db_index=True,
+    )
+    canonical_label = models.CharField(max_length=500)
+    aliases = models.JSONField(default=list, blank=True)
+    type_scope = models.CharField(max_length=100)
+    anchor_records = models.JSONField(
+        default=list,
+        help_text='[{"entity_type":"person","entity_id":123}, …] CIDOC rows',
+    )
+    supporting_source_ids = models.JSONField(default=list, blank=True)
+    contributor_note = models.TextField(blank=True)
+    external_identifiers = models.JSONField(default=dict, blank=True)
+    resolution_mode = models.CharField(
+        max_length=32,
+        choices=RESOLUTION_CHOICES,
+        default=RESOLUTION_NEW,
+    )
+    existing_cluster = models.ForeignKey(
+        "cidoc_data.EntityCluster",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="entity_proposals_linking",
+    )
+    moderator_comment = models.TextField(blank=True)
+    materialized_cluster = models.ForeignKey(
+        "cidoc_data.EntityCluster",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="entity_proposals_materialized",
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "entity_proposals"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "submitted_at"]),
+            models.Index(fields=["author", "status"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"EntityProposal {self.canonical_label!r} ({self.status})"
+
+
+class RelationshipProposal(models.Model):
+    """Binary relationship proposal; approval creates HeritageAssertion (relationship.*)."""
+
+    STATUS_DRAFT = EntityProposal.STATUS_DRAFT
+    STATUS_SUBMITTED = EntityProposal.STATUS_SUBMITTED
+    STATUS_APPROVED = EntityProposal.STATUS_APPROVED
+    STATUS_REJECTED = EntityProposal.STATUS_REJECTED
+    STATUS_WITHDRAWN = EntityProposal.STATUS_WITHDRAWN
+    STATUS_CHOICES = EntityProposal.STATUS_CHOICES
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="relationship_proposals",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_DRAFT,
+        db_index=True,
+    )
+    predicate = models.ForeignKey(
+        "cidoc_data.RelationshipPredicate",
+        on_delete=models.PROTECT,
+        related_name="relationship_proposals",
+    )
+    subject_entity_type = models.CharField(max_length=100)
+    subject_entity_id = models.PositiveIntegerField()
+    object_entity_type = models.CharField(max_length=100)
+    object_entity_id = models.PositiveIntegerField()
+    primary_source = models.ForeignKey(
+        "cidoc_data.DataSource",
+        on_delete=models.PROTECT,
+        related_name="relationship_proposals_primary",
+    )
+    supporting_source_ids = models.JSONField(default=list, blank=True)
+    temporal_scope_edtf = models.CharField(max_length=255, blank=True)
+    confidence = models.CharField(max_length=20, default="likely")
+    interpretation_note = models.TextField(blank=True)
+    moderator_comment = models.TextField(blank=True)
+    materialized_assertion = models.ForeignKey(
+        "cidoc_data.HeritageAssertion",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="relationship_proposals_materialized",
+    )
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "relationship_proposals"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "submitted_at"]),
+            models.Index(fields=["author", "status"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"RelationshipProposal ({self.status})"
+
+
+class EntityProposalAuditEvent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    proposal = models.ForeignKey(
+        EntityProposal,
+        on_delete=models.CASCADE,
+        related_name="audit_events",
+    )
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="entity_proposal_audit_actions",
+    )
+    action = models.CharField(max_length=40, db_index=True)
+    from_status = models.CharField(max_length=20, blank=True)
+    to_status = models.CharField(max_length=20, blank=True)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "entity_proposal_audit_events"
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.action} @ {self.created_at}"
+
+
+class RelationshipProposalAuditEvent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    proposal = models.ForeignKey(
+        RelationshipProposal,
+        on_delete=models.CASCADE,
+        related_name="audit_events",
+    )
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="relationship_proposal_audit_actions",
+    )
+    action = models.CharField(max_length=40, db_index=True)
+    from_status = models.CharField(max_length=20, blank=True)
+    to_status = models.CharField(max_length=20, blank=True)
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "relationship_proposal_audit_events"
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.action} @ {self.created_at}"
+
+
+# =====================================================================
 # PUBLIC CONTRIBUTION MODEL (QR SCAN CONTRIBUTIONS)
 # =====================================================================
 

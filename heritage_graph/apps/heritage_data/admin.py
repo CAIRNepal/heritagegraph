@@ -23,6 +23,10 @@ from .models import (
     Revision,
     SchemaExtensionAuditEvent,
     SchemaExtensionProposal,
+    EntityProposal,
+    EntityProposalAuditEvent,
+    RelationshipProposal,
+    RelationshipProposalAuditEvent,
     Share,
     Submission,
     SubmissionEditSuggestion,
@@ -813,6 +817,21 @@ class SchemaExtensionProposalAdmin(admin.ModelAdmin):
     search_fields = ("title", "description")
     readonly_fields = ("id", "created_at", "updated_at")
     inlines = (SchemaExtensionAuditInline,)
+
+
+@admin.register(EntityProposal)
+class EntityProposalAdmin(admin.ModelAdmin):
+    list_display = ("canonical_label", "status", "type_scope", "author", "created_at")
+    list_filter = ("status", "type_scope")
+    search_fields = ("canonical_label", "contributor_note")
+    readonly_fields = ("id", "created_at", "updated_at", "materialized_cluster")
+
+
+@admin.register(RelationshipProposal)
+class RelationshipProposalAdmin(admin.ModelAdmin):
+    list_display = ("id", "status", "predicate", "author", "created_at")
+    list_filter = ("status",)
+    readonly_fields = ("id", "created_at", "updated_at", "materialized_assertion")
 
 
 @admin.register(SchemaExtensionAuditEvent)

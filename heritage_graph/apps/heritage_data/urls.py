@@ -29,6 +29,16 @@ router.register(
     views.SchemaExtensionProposalViewSet,
     basename='schemaextensionproposal',
 )
+router.register(
+    r'entity-proposals',
+    views.EntityProposalViewSet,
+    basename='entityproposal',
+)
+router.register(
+    r'relationship-proposals',
+    views.RelationshipProposalViewSet,
+    basename='relationshipproposal',
+)
 
 # Organizations
 router.register(r'organizations', views.OrganizationViewSet, basename='organization')
