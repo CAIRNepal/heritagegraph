@@ -1,5 +1,5 @@
 {
-  "schema_version": "cb1906f2ee91238c191d0f60c44f67d2847535050f85624aec9757d92d2705c2",
+  "schema_version": "d1faa72d3331e644e6f41912187eb805d37e1d7cd7541d4b43126a82643cdd3e",
   "tenant_id": null,
   "degraded": false,
   "classes": {
@@ -5303,49 +5303,64 @@
   "contribute_hub": {
     "hubCategories": [
       {
+        "key": "general",
+        "label": "General Heritage",
+        "icon": "\ud83c\udfee",
+        "order": 0
+      },
+      {
         "key": "tangible",
         "label": "Tangible Heritage",
         "icon": "\ud83c\udfdb\ufe0f",
-        "order": 0
+        "order": 1
       },
       {
         "key": "events",
         "label": "Events & Rituals",
         "icon": "\ud83d\udd25",
-        "order": 1
+        "order": 2
       },
       {
         "key": "kumari",
         "label": "Living Goddess",
         "icon": "\ud83d\udc51",
-        "order": 2
+        "order": 3
       },
       {
         "key": "conceptual",
         "label": "Conceptual",
         "icon": "\u2728",
-        "order": 3
+        "order": 4
       },
       {
         "key": "social",
         "label": "Social & People",
         "icon": "\ud83d\udc65",
-        "order": 4
+        "order": 5
       },
       {
         "key": "spatiotemporal",
         "label": "Spaces & Time",
         "icon": "\ud83d\uddfa\ufe0f",
-        "order": 5
+        "order": 6
       },
       {
         "key": "provenance",
         "label": "Sources",
         "icon": "\ud83d\udcda",
-        "order": 6
+        "order": 7
       }
     ],
     "intents": [
+      {
+        "registryKey": "cultural_entity",
+        "hubCategory": "general",
+        "route": "/contribute/cultural-entity",
+        "emoji": "\ud83c\udfee",
+        "shortDescription": "General heritage, artifacts, or mixed assets",
+        "description": "Document a heritage item that doesn't fit specific categories, with its own history and significance.",
+        "difficulty": "beginner"
+      },
       {
         "registryKey": "structure",
         "hubCategory": "tangible",
@@ -5531,9 +5546,555 @@
       "structure",
       "source",
       "location",
-      "person"
+      "person",
+      "cultural_entity"
     ]
   },
+  "semantic_patterns": [
+    {
+      "key": "restoration_and_site_link",
+      "userLabel": "Document a restoration and link it to a site",
+      "userDescription": "Record what happened during a restoration project as a dated event, then propose a moderator-reviewed relationship tying that event to an architectural site or monument. Uses normal CIDOC-aligned forms\u2014no RDF editing.",
+      "hubCategory": "events",
+      "emoji": "\ud83d\udd27",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Describe the restoration",
+          "detail": "Capture dates, narratives, agents, or sources inside the Heritage Event record. Use type \u201cHistorical Event\u201d for repairs, rebuilds, and conservation milestones.",
+          "ctaRoute": "/contribute/event",
+          "ctaLabel": "Open event form"
+        },
+        {
+          "order": 2,
+          "title": "Propose how the event touches a site",
+          "detail": "Submit a relationship proposal (subject = site or monument, object = event, or the reverse) so curators can align it with the controlled predicate vocabulary.",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=architecturalstructure&objectType=event"
+        }
+      ]
+    },
+    {
+      "key": "ritual_with_performer",
+      "userLabel": "Record a ritual and its performers",
+      "userDescription": "Start from the ritual form, then connect people or deities with a separate relationship proposal.",
+      "hubCategory": "events",
+      "emoji": "\ud83e\ude94",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Describe the ritual",
+          "ctaRoute": "/contribute/ritual",
+          "ctaLabel": "Open ritual form"
+        },
+        {
+          "order": 2,
+          "title": "Link performers or deities",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Propose relationships",
+          "linkQuery": "subjectType=ritualevent&objectType=person"
+        }
+      ]
+    },
+    {
+      "key": "place_then_structure_link",
+      "userLabel": "Place a site on the map, then link it to architecture",
+      "userDescription": "Capture the heritage location, describe the architectural structure that stands there, then propose a moderated relationship between place and building.",
+      "hubCategory": "tangible",
+      "emoji": "\ud83d\uddfa\ufe0f",
+      "difficulty": "beginner",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the place or site",
+          "detail": "Capture coordinates, toponyms, and context so the structure can be grounded spatially.",
+          "ctaRoute": "/contribute/location",
+          "ctaLabel": "Open location form"
+        },
+        {
+          "order": 2,
+          "title": "Describe the architectural structure",
+          "detail": "For stupas, chaityas, or dedicated sacred architecture you can use the Monument form instead (/contribute/monument) before the relationship step.",
+          "ctaRoute": "/contribute/structure",
+          "ctaLabel": "Open structure form"
+        },
+        {
+          "order": 3,
+          "title": "Propose place\u2013structure link",
+          "detail": "Pick subject/object to match your narrative (e.g. structure \u2194 place). Curators align predicates with the controlled vocabulary.",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=architecturalstructure&objectType=location"
+        }
+      ]
+    },
+    {
+      "key": "place_then_monument_link",
+      "userLabel": "Place a monument, then tie it to its geography",
+      "userDescription": "Start from the map, record a Buddhist sacred structure, then propose how it sits in that place.",
+      "hubCategory": "tangible",
+      "emoji": "\u26e9\ufe0f",
+      "difficulty": "beginner",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the location",
+          "ctaRoute": "/contribute/location",
+          "ctaLabel": "Open location form"
+        },
+        {
+          "order": 2,
+          "title": "Describe the monument",
+          "ctaRoute": "/contribute/monument",
+          "ctaLabel": "Open monument form"
+        },
+        {
+          "order": 3,
+          "title": "Propose monument\u2013place link",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=monument&objectType=location"
+        }
+      ]
+    },
+    {
+      "key": "deity_sacred_art_and_site",
+      "userLabel": "Deity, sacred art, then link the deity to built heritage",
+      "userDescription": "Register the deity, document iconography, then relate the art to built heritage using supported proposal types (the iconography record itself is not a proposal endpoint type yet).",
+      "hubCategory": "tangible",
+      "emoji": "\ud83c\udfa8",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Describe the deity",
+          "ctaRoute": "/contribute/deity",
+          "ctaLabel": "Open deity form"
+        },
+        {
+          "order": 2,
+          "title": "Document the iconographic object",
+          "ctaRoute": "/contribute/iconography",
+          "ctaLabel": "Open iconography form"
+        },
+        {
+          "order": 3,
+          "title": "Link deity to site or monument",
+          "detail": "Relate the deity to architecture you already recorded (adjust subject/object as needed). Keep notes referencing the iconography record from step 2.",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=deity&objectType=architecturalstructure"
+        }
+      ]
+    },
+    {
+      "key": "festival_with_component_rituals",
+      "userLabel": "Festival with its component rituals",
+      "userDescription": "Outline the festival, capture the rituals that compose it, then propose how they connect.",
+      "hubCategory": "events",
+      "emoji": "\ud83c\udfaa",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Describe the festival",
+          "ctaRoute": "/contribute/festival",
+          "ctaLabel": "Open festival form"
+        },
+        {
+          "order": 2,
+          "title": "Record a component ritual",
+          "detail": "Repeat this step from the hub if multiple rituals belong to the same festival.",
+          "ctaRoute": "/contribute/ritual",
+          "ctaLabel": "Open ritual form"
+        },
+        {
+          "order": 3,
+          "title": "Propose festival\u2013ritual link",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=festival&objectType=ritualevent"
+        }
+      ]
+    },
+    {
+      "key": "historic_event_affected_site",
+      "userLabel": "Historic shock or change, then tie it to built heritage",
+      "userDescription": "Log earthquakes, fires, conflicts, or political transitions as events, document affected sites, then propose moderated relationships.",
+      "hubCategory": "events",
+      "emoji": "\u26a1",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Describe the historic event",
+          "ctaRoute": "/contribute/event",
+          "ctaLabel": "Open event form"
+        },
+        {
+          "order": 2,
+          "title": "Update or add the affected structure",
+          "detail": "Use Structure or Monument depending on the asset type; note damage or change in the form.",
+          "ctaRoute": "/contribute/structure",
+          "ctaLabel": "Open structure form"
+        },
+        {
+          "order": 3,
+          "title": "Propose event \u2194 site relationship",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=event&objectType=architecturalstructure"
+        }
+      ]
+    },
+    {
+      "key": "kumari_lifecycle",
+      "userLabel": "Kumari selection, tenure, and retirement",
+      "userDescription": "Walk the Living Goddess workflow end-to-end: examination and selection, embodiment period, then the formal return to secular life.",
+      "hubCategory": "kumari",
+      "emoji": "\ud83d\udc51",
+      "difficulty": "advanced",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the selection ritual",
+          "ctaRoute": "/contribute/kumari-selection",
+          "ctaLabel": "Open Kumari selection form"
+        },
+        {
+          "order": 2,
+          "title": "Document the tenure",
+          "ctaRoute": "/contribute/kumari-tenure",
+          "ctaLabel": "Open Kumari tenure form"
+        },
+        {
+          "order": 3,
+          "title": "Record retirement",
+          "ctaRoute": "/contribute/kumari-retirement",
+          "ctaLabel": "Open Kumari retirement form"
+        }
+      ]
+    },
+    {
+      "key": "guthi_and_managed_site",
+      "userLabel": "Guthi trust and the site it stewards",
+      "userDescription": "Register the endowed trust, describe the structure it cares for, then propose the stewardship link.",
+      "hubCategory": "social",
+      "emoji": "\ud83c\udfd8\ufe0f",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Describe the Guthi",
+          "ctaRoute": "/contribute/guthi",
+          "ctaLabel": "Open Guthi form"
+        },
+        {
+          "order": 2,
+          "title": "Describe the managed structure",
+          "ctaRoute": "/contribute/structure",
+          "ctaLabel": "Open structure form"
+        },
+        {
+          "order": 3,
+          "title": "Propose Guthi \u2194 site relationship",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=guthi&objectType=architecturalstructure"
+        }
+      ]
+    },
+    {
+      "key": "person_and_guthi_affiliation",
+      "userLabel": "Person and Guthi membership",
+      "userDescription": "Capture a historical person and the Guthi they belonged to, then propose the moderated tie.",
+      "hubCategory": "social",
+      "emoji": "\ud83d\udc65",
+      "difficulty": "beginner",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the person",
+          "ctaRoute": "/contribute/person",
+          "ctaLabel": "Open person form"
+        },
+        {
+          "order": 2,
+          "title": "Record the Guthi",
+          "ctaRoute": "/contribute/guthi",
+          "ctaLabel": "Open Guthi form"
+        },
+        {
+          "order": 3,
+          "title": "Propose person \u2194 Guthi link",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=guthi&objectType=person"
+        }
+      ]
+    },
+    {
+      "key": "caste_ritual_specialists",
+      "userLabel": "Hereditary group and the ritual they carry",
+      "userDescription": "Document a Jati or ritual specialist group, describe the ritual they perform, then connect them.",
+      "hubCategory": "social",
+      "emoji": "\ud83e\ude94",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the caste or social group",
+          "ctaRoute": "/contribute/caste-group",
+          "ctaLabel": "Open caste group form"
+        },
+        {
+          "order": 2,
+          "title": "Describe the ritual",
+          "ctaRoute": "/contribute/ritual",
+          "ctaLabel": "Open ritual form"
+        },
+        {
+          "order": 3,
+          "title": "Propose group \u2194 ritual link",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=castegroup&objectType=ritualevent"
+        }
+      ]
+    },
+    {
+      "key": "period_context_for_events",
+      "userLabel": "Historical period, then events inside it",
+      "userDescription": "Define the era, log events that belong to it, and propose period\u2013event relationships for curators.",
+      "hubCategory": "spatiotemporal",
+      "emoji": "\u23f3",
+      "difficulty": "beginner",
+      "journey": "describe",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Define the historical period",
+          "ctaRoute": "/contribute/period",
+          "ctaLabel": "Open period form"
+        },
+        {
+          "order": 2,
+          "title": "Record events in that period",
+          "ctaRoute": "/contribute/event",
+          "ctaLabel": "Open event form"
+        },
+        {
+          "order": 3,
+          "title": "Propose period \u2194 event link",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=historicalperiod&objectType=event"
+        }
+      ]
+    },
+    {
+      "key": "ritual_geography",
+      "userLabel": "Place, ritual route, then spatial link",
+      "userDescription": "Anchor a ritual in geography: place first, ritual second, then a moderated place\u2013ritual proposal.",
+      "hubCategory": "spatiotemporal",
+      "emoji": "\ud83d\uddd3\ufe0f",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the location",
+          "ctaRoute": "/contribute/location",
+          "ctaLabel": "Open location form"
+        },
+        {
+          "order": 2,
+          "title": "Describe the ritual",
+          "ctaRoute": "/contribute/ritual",
+          "ctaLabel": "Open ritual form"
+        },
+        {
+          "order": 3,
+          "title": "Propose location \u2194 ritual link",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=location&objectType=ritualevent"
+        }
+      ]
+    },
+    {
+      "key": "tradition_in_practice",
+      "userLabel": "Tradition and the ritual that enacts it",
+      "userDescription": "Capture the tradition, document a concrete ritual instance, then propose how they relate.",
+      "hubCategory": "conceptual",
+      "emoji": "\ud83d\udd6f\ufe0f",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the tradition",
+          "ctaRoute": "/contribute/tradition",
+          "ctaLabel": "Open tradition form"
+        },
+        {
+          "order": 2,
+          "title": "Describe the ritual",
+          "ctaRoute": "/contribute/ritual",
+          "ctaLabel": "Open ritual form"
+        },
+        {
+          "order": 3,
+          "title": "Propose tradition \u2194 ritual link",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=tradition&objectType=ritualevent"
+        }
+      ]
+    },
+    {
+      "key": "cross_tradition_deity_mapping",
+      "userLabel": "Mapping deities across traditions",
+      "userDescription": "Start from one deity identity, record syncretic or equivalence claims, then propose a second deity node and a moderated relationship between them.",
+      "hubCategory": "conceptual",
+      "emoji": "\ud83d\udd17",
+      "difficulty": "advanced",
+      "journey": "claim",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the primary deity",
+          "ctaRoute": "/contribute/deity",
+          "ctaLabel": "Open deity form"
+        },
+        {
+          "order": 2,
+          "title": "Document syncretism or equivalence",
+          "ctaRoute": "/contribute/syncretism",
+          "ctaLabel": "Open syncretism form"
+        },
+        {
+          "order": 3,
+          "title": "Propose relationship between deities",
+          "detail": "Register the counterpart deity if needed, then align subject/object with your narrative.",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=deity&objectType=deity"
+        }
+      ]
+    },
+    {
+      "key": "source_to_assertion",
+      "userLabel": "Source first, then a sourced assertion",
+      "userDescription": "Register the documentary source, then record a factual claim that cites it with confidence.",
+      "hubCategory": "provenance",
+      "emoji": "\ud83d\udcda",
+      "difficulty": "intermediate",
+      "journey": "verify",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Add the source record",
+          "ctaRoute": "/contribute/source",
+          "ctaLabel": "Open source form"
+        },
+        {
+          "order": 2,
+          "title": "Record the assertion",
+          "detail": "Link the same source metadata you captured in step 1 when the assertion form asks for it.",
+          "ctaRoute": "/contribute/assertion",
+          "ctaLabel": "Open assertion form"
+        }
+      ]
+    },
+    {
+      "key": "document_then_bio",
+      "userLabel": "Document, then biographical subject",
+      "userDescription": "Catalog the witness record, capture the person's biography, then optionally propose a person\u2013source graph link for moderators.",
+      "hubCategory": "provenance",
+      "emoji": "\ud83d\udc64",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Register the source",
+          "ctaRoute": "/contribute/source",
+          "ctaLabel": "Open source form"
+        },
+        {
+          "order": 2,
+          "title": "Record the historical person",
+          "ctaRoute": "/contribute/person",
+          "ctaLabel": "Open person form"
+        },
+        {
+          "order": 3,
+          "title": "Propose person \u2194 source link",
+          "detail": "Choose the predicate that best matches how the source attests to the person.",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal",
+          "linkQuery": "subjectType=person&objectType=source"
+        }
+      ]
+    },
+    {
+      "key": "propose_identity_cluster",
+      "userLabel": "Propose a canonical identity cluster",
+      "userDescription": "Submit moderator-gated entity-cluster drafts when the same real-world referent might be split across records.",
+      "hubCategory": "general",
+      "emoji": "\ud83d\udd0e",
+      "difficulty": "advanced",
+      "journey": "claim",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Open entity cluster proposal",
+          "detail": "Describe the cluster intent and evidence; curators review alongside other KG proposals.",
+          "ctaRoute": "/contribute/entity-proposal",
+          "ctaLabel": "Open entity proposal"
+        }
+      ]
+    },
+    {
+      "key": "cultural_entity_then_link",
+      "userLabel": "General heritage record, then graph links",
+      "userDescription": "Use the flexible cultural-entity form, then propose relationships once canonical CIDOC rows exist. Pick entity types manually on the proposal form\u2014hints are not yet scoped to cultural entities.",
+      "hubCategory": "general",
+      "emoji": "\ud83c\udfee",
+      "difficulty": "intermediate",
+      "journey": "record",
+      "steps": [
+        {
+          "order": 1,
+          "title": "Record the cultural entity",
+          "ctaRoute": "/contribute/cultural-entity",
+          "ctaLabel": "Open cultural entity form"
+        },
+        {
+          "order": 2,
+          "title": "Propose relationships to other records",
+          "detail": "Choose subject and object types from the proposal picker; align with predicates from the controlled list.",
+          "ctaRoute": "/contribute/relationship-proposal",
+          "ctaLabel": "Open relationship proposal"
+        }
+      ]
+    }
+  ],
   "registry_jsonschema": {
     "version": 1,
     "byClassKey": {
