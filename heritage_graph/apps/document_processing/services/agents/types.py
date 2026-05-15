@@ -33,3 +33,36 @@ class DocumentIntelligenceResult:
     chunks: list[DocumentChunk]
     ontology_snippet: dict
     agent_version: str = "1.0"
+
+
+# ── Agent 2 types ─────────────────────────────────────────────────────────────
+
+@dataclass
+class Triple:
+    subject: str
+    subject_type: str       # CIDOC class label, e.g. "E22_Human-Made_Object"
+    predicate: str          # ontology property or field key
+    object: str
+    object_type: str        # CIDOC class label or "literal"
+
+
+@dataclass
+class CandidateAssertion:
+    """In-memory output of Agent 2; written to DB by Agent 5 after resolution."""
+    triple: Triple
+    confidence_score: float         # dual-temperature agreement, 0.0–1.0
+    source_chunk_id: str
+    char_start: int
+    char_end: int
+    extraction_model: str           # e.g. "llama3.1:70b"
+    page_number: int | None = None
+    # raw responses kept for audit / retraining dataset
+    raw_low_temp: str = ""
+    raw_high_temp: str = ""
+
+
+@dataclass
+class ExtractionResult:
+    candidates: list[CandidateAssertion]
+    rejected_count: int             # triples that failed JSON parse or were empty
+    agent_version: str = "2.0"

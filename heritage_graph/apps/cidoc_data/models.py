@@ -997,6 +997,20 @@ class HeritageAssertion(models.Model):
         blank=True, help_text="Notes on data quality or limitations"
     )
 
+    # Agent pipeline fields (populated by Agent 2; null for human contributions)
+    confidence_score = models.DecimalField(
+        max_digits=4,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Numeric confidence from dual-temperature extraction (0.000–1.000)",
+    )
+    attributed_to_agent = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="LLM agent identifier that produced this assertion (e.g. 'ollama/llama3.1:70b')",
+    )
+
     # Moderation
     reconciliation_status = models.CharField(
         max_length=20,
