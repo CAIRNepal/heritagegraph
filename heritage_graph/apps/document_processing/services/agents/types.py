@@ -66,3 +66,27 @@ class ExtractionResult:
     candidates: list[CandidateAssertion]
     rejected_count: int             # triples that failed JSON parse or were empty
     agent_version: str = "2.0"
+
+
+# ── Agent 3 types ─────────────────────────────────────────────────────────────
+
+@dataclass
+class ValidatedAssertion:
+    candidate: CandidateAssertion
+    checks_passed: list[str]        # names of validation checks that passed
+    corrected: bool = False         # True if predicate/direction was auto-corrected
+    correction_note: str = ""
+
+
+@dataclass
+class RejectedAssertion:
+    candidate: CandidateAssertion
+    reason: str                     # human-readable error
+    violation_type: str             # "domain_range" | "node_kind" | "cross_class" | "unknown_predicate"
+
+
+@dataclass
+class ShaclValidationResult:
+    validated: list[ValidatedAssertion]
+    rejected: list[RejectedAssertion]
+    agent_version: str = "3.0"
