@@ -90,3 +90,23 @@ class ShaclValidationResult:
     validated: list[ValidatedAssertion]
     rejected: list[RejectedAssertion]
     agent_version: str = "3.0"
+
+
+# ── Agent 4 types ─────────────────────────────────────────────────────────────
+
+@dataclass
+class ResolvedAssertion:
+    """ValidatedAssertion with canonical URIs minted or looked up from Oxigraph."""
+    validated: ValidatedAssertion
+    subject_uri: str                     # canonical URI in hg: namespace (new or existing)
+    object_uri: str | None               # canonical URI, or None if object is a literal
+    subject_is_new: bool                 # True → URI was freshly minted (not found in graph)
+    object_is_new: bool                  # True → URI was freshly minted
+    resolution_notes: list[str] = field(default_factory=list)
+
+
+@dataclass
+class EntityResolutionResult:
+    resolved: list[ResolvedAssertion]
+    skipped_count: int = 0               # assertions skipped due to irresolvable errors
+    agent_version: str = "4.0"
