@@ -1,7 +1,7 @@
 # HeritageGraph — Agentic KG Ingestion Pipeline
 
 **Location:** `heritage_graph/apps/document_processing/services/agents/`  
-**Status:** Agents 1–4 implemented · Agent 5 pending  
+**Status:** All 5 agents implemented — pipeline complete  
 **LLM backend:** Ollama (Llama 3.1 70B) with Claude fallback where already integrated
 
 ---
@@ -39,7 +39,7 @@ PDF / Archival Document
   Mint canonical_uri or link existing node
         │  ResolvedAssertion
         ▼
-[Agent 5 — Epistemic Router]     ← PENDING
+[Agent 5 — Epistemic Router]     epistemic_router_agent.py
   confidence_score thresholds → AUTO-ACCEPT / REVIEW / REJECT
   kumari_flag → expert_curator queue
   Conflict detection → ReviewFlag
@@ -69,6 +69,9 @@ AUTO-ACCEPT  REVIEW    REJECTED
 | `ShaclValidationResult` | Agent 3 | `list[ValidatedAssertion]` + `list[RejectedAssertion]` |
 | `ResolvedAssertion` | Agent 4 | ValidatedAssertion + `subject_uri` + `object_uri` + `subject_is_new` + `object_is_new` + `resolution_notes` |
 | `EntityResolutionResult` | Agent 4 | `list[ResolvedAssertion]` + `skipped_count` |
+| `RouteDecision` | Agent 5 | Enum: `auto_accept / community_review / expert_review / expert_curator / conflict / reject` |
+| `RoutedAssertion` | Agent 5 | ResolvedAssertion + `route` + `db_assertion_id` + `conflict_detected` + `kumari_flagged` + `oxigraph_written` |
+| `EpistemicRoutingResult` | Agent 5 | `list[RoutedAssertion]` + `counts` dict |
 
 ---
 
@@ -281,16 +284,94 @@ The `oxigraph_url` kwarg overrides the env var for testing.
 
 ---
 
-## Pending: Agent 5 — Epistemic Router
+## Agent 5 — Epistemic Router (`epistemic_router_agent.py`)
 
-**Planned inputs:** `list[ResolvedAssertion]`  
-**Planned outputs:** writes `HeritageAssertion` to DB or routes to `ReviewDecision`
+**Entry point:** `run_epistemic_routing(resolution_result, *, document_id, agent_label, oxigraph_url)`
 
-| Condition | Route |
-|---|---|
-| `confidence_score ≥ 0.90` + no conflict | AUTO-ACCEPT → Oxigraph SPARQL INSERT |
-| `confidence_score 0.70–0.89` + no conflict | COMMUNITY REVIEW queue |
-| `confidence_score 0.50–0.69` | DOMAIN EXPERT review queue |
-| `confidence_score < 0.50` | REJECT → logged for retraining dataset |
-| any conflict detected | CONFLICT queue (coexist / supersede decision) |
-| `kumari_flag` set | ALWAYS → `expert_curator` queue |
+> **Note:** This agent writes to the Django ORM (`HeritageAssertion`) and to Oxigraph via
+> SPARQL UPDATE. It must be called from within a running Django application context.
+
+### What it does
+
+Receives `EntityResolutionResult` from Agent 4 and makes the final routing decision for
+each `ResolvedAssertion`. Two pre-flight checks run before the confidence threshold is applied:
+
+1. **Kumari-flag check** — if `"kumari_flag"` is in `ValidatedAssertion.checks_passed`
+   (stamped by Agent 3 for any LivingGoddess / KumariTenure triple), the assertion is
+   unconditionally routed to `expert_curator` regardless of confidence.
+
+2. **Conflict detection** — queries Oxigraph:
+   ```sparql
+   SELECT ?obj WHERE { <subject_uri> <pred_uri> ?obj . }
+   ```
+   If existing values differ from the incoming value → `CONFLICT` route.
+
+3. **Confidence routing** — thresholds applied to `CandidateAssertion.confidence_score`:
+
+| Condition | Route | `reconciliation_status` |
+|---|---|---|
+| `kumari_flag` set | `expert_curator` | `pending` |
+| Conflict detected | `conflict` | `disputed` |
+| score ≥ 0.90 | `auto_accept` | `accepted` |
+| score 0.70–0.89 | `community_review` | `pending` |
+| score 0.50–0.69 | `expert_review` | `pending` |
+| score < 0.50 | `reject` | *(no DB write)* |
+
+4. **DB write** — creates a `HeritageAssertion` record for every non-rejected route:
+   - `asserted_property` — the CIDOC predicate
+   - `asserted_value` — the object literal or entity name
+   - `assertion_content` — human-readable triple summary
+   - `confidence` — categorical label (`certain / likely / uncertain / speculative`)
+   - `confidence_score` — numeric from Agent 2
+   - `attributed_to_agent` — `"pipeline/5.0/<model>"`
+   - `reconciliation_status` — per routing table above
+   - `source_citation` — `"chunk:<id> page:<n>"`
+   - `data_quality_note` — queue assignment, kumari flag, conflict details, resolution notes
+
+5. **Oxigraph INSERT** — for `auto_accept` only, inserts the canonical RDF triple plus
+   `rdfs:label` and `rdf:type` stubs for any freshly minted entities.
+
+### Routing priority
+
+```
+kumari_flag → expert_curator
+conflict    → conflict (disputed)
+≥ 0.90      → auto_accept (accepted + Oxigraph INSERT)
+0.70–0.89   → community_review (pending)
+0.50–0.69   → expert_review (pending)
+< 0.50      → reject (logged only)
+```
+
+### Configuration
+
+| Variable | Default | Description |
+|---|---|---|
+| `OXIGRAPH_URL` | `http://localhost:7878` | Oxigraph base URL (env var) |
+
+---
+
+## Full Pipeline
+
+```
+UploadedDocument.raw_text
+        │
+        ▼
+run_doc_intelligence()     → DocumentIntelligenceResult
+        │
+        ▼
+run_extraction()           → ExtractionResult
+        │
+        ▼
+run_shacl_validation()     → ShaclValidationResult
+        │
+        ▼
+run_entity_resolution()    → EntityResolutionResult
+        │
+        ▼
+run_epistemic_routing()    → EpistemicRoutingResult
+        │
+   ┌────┴──────┬──────────┬──────────────┬────────┐
+   ▼           ▼          ▼              ▼        ▼
+auto_accept  community  expert_review  expert_  reject
+→ Oxigraph   _review    (domain exp)   curator  (logged)
+  INSERT      pending     pending       pending

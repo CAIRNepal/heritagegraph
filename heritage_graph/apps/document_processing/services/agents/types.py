@@ -110,3 +110,32 @@ class EntityResolutionResult:
     resolved: list[ResolvedAssertion]
     skipped_count: int = 0               # assertions skipped due to irresolvable errors
     agent_version: str = "4.0"
+
+
+# ── Agent 5 types ─────────────────────────────────────────────────────────────
+
+class RouteDecision(str, Enum):
+    AUTO_ACCEPT      = "auto_accept"       # confidence ≥ 0.90, no conflict → Oxigraph INSERT + DB accepted
+    COMMUNITY_REVIEW = "community_review"  # 0.70–0.89, no conflict → pending, community queue
+    EXPERT_REVIEW    = "expert_review"     # 0.50–0.69 → pending, domain expert queue
+    EXPERT_CURATOR   = "expert_curator"    # kumari_flag set → always expert curator, regardless of score
+    CONFLICT         = "conflict"          # existing graph triple disagrees → disputed
+    REJECT           = "reject"            # confidence < 0.50 → logged only, no DB write
+
+
+@dataclass
+class RoutedAssertion:
+    resolved: ResolvedAssertion
+    route: RouteDecision
+    db_assertion_id: str | None            # UUID of created HeritageAssertion; None if rejected
+    conflict_detected: bool
+    kumari_flagged: bool
+    routing_reason: str
+    oxigraph_written: bool = False         # True if triple was INSERT'd to Oxigraph
+
+
+@dataclass
+class EpistemicRoutingResult:
+    routed: list[RoutedAssertion]
+    counts: dict[str, int] = field(default_factory=dict)   # RouteDecision.value → count
+    agent_version: str = "5.0"
