@@ -6,6 +6,7 @@ import pytesseract
 from django.utils import timezone
 
 from ..models import ExtractedField, UploadedDocument
+from .agents.doc_intelligence import run_doc_intelligence
 from .classifier import classify_media_file
 from .htr import extract_handwritten
 from .ner import extract_structured_fields
@@ -115,8 +116,21 @@ def process_uploaded_document(*, document_id: str) -> None:
             raise RuntimeError("No text could be extracted from this document.")
 
         doc.raw_text = raw
-        ontology_key = None
-        if getattr(doc, "cultural_entity_id", None):
+
+        # Agent 1: Document Intelligence
+        di_result = run_doc_intelligence(text=raw, use_ollama=True)
+        doc.metadata = getattr(doc, "metadata", {}) or {}
+        doc.metadata.update({
+            "heritage_doc_type": di_result.heritage_doc_type.value,
+            "heritage_doc_type_confidence": di_result.heritage_doc_type_confidence,
+            "detected_language": di_result.detected_language,
+            "chunk_count": len(di_result.chunks),
+            "ontology_class_keys": list(di_result.ontology_snippet.keys()),
+        })
+
+        # Carry forward the first matched ontology key into the NER step
+        ontology_key = (list(di_result.ontology_snippet.keys()) or [None])[0]
+        if ontology_key is None and getattr(doc, "cultural_entity_id", None):
             try:
                 ce = doc.cultural_entity
                 cat = getattr(ce, "category", None) or ""
@@ -130,6 +144,7 @@ def process_uploaded_document(*, document_id: str) -> None:
                 }.get(str(cat))
             except Exception:
                 ontology_key = None
+
         items = extract_structured_fields(text=raw, ontology_class_key=ontology_key)
         for it in items:
             ExtractedField.objects.create(
@@ -143,7 +158,7 @@ def process_uploaded_document(*, document_id: str) -> None:
         doc.status = "completed"
         doc.processing_finished = timezone.now()
         doc.save(
-            update_fields=["raw_text", "status", "processing_finished", "updated_at"]
+            update_fields=["raw_text", "metadata", "status", "processing_finished", "updated_at"]
         )
     except pytesseract.TesseractNotFoundError as exc:
         logger.exception("Tesseract is not available on this runtime")

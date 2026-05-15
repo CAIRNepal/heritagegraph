@@ -85,6 +85,11 @@ class UploadedDocument(models.Model):
         default=0,
         help_text="Count of Claude Vision (or other vision-rescue) invocations for cost control/audit"
     )
+    metadata = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Agent pipeline metadata (heritage_doc_type, detected_language, chunk_count, etc.)"
+    )
     
     # Link to contributions
     submission = models.ForeignKey(
