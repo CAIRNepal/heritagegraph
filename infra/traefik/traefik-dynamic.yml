@@ -88,6 +88,14 @@ http:
       middlewares:
         - securityHeaders
 
+    # Knowledge Graph (semantic backend) router
+    graph-api:
+      rule: Host(`graph.localhost`)
+      service: graph-api-service
+      middlewares:
+        - securityHeaders
+        - compression
+
   # ================================================================
   # Services (backend targets)
   # ================================================================
@@ -103,3 +111,9 @@ http:
       loadBalancer:
         servers:
           - url: http://frontend:3000
+
+    # Knowledge Graph semantic backend
+    graph-api-service:
+      loadBalancer:
+        servers:
+          - url: http://graph-api:8001
