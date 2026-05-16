@@ -34,6 +34,7 @@ import {
   IconDashboard,
   IconGraph,
   IconWorld,
+  IconBuildingMonument,
   IconQrcode,
   IconMedal,
   IconInfoCircle,
@@ -224,6 +225,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
             { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
             { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
+            { title: t('heritageMuseum'), url: '/heritage-museum', icon: IconBuildingMonument },
             ...(showAuthedNav
               ? [{ title: t('progression'), url: '/progression', icon: IconMedal }]
               : []),

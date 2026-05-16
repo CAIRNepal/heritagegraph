@@ -1,0 +1,1404 @@
+{
+  "@context": {
+    "@vocab": "http://schema.org/",
+    "kg": "http://visual-story-museum.org/kg/",
+    "heritage": "http://visual-story-museum.org/heritage/",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "geo": "http://www.w3.org/2003/01/geo/wgs84_pos#",
+    "label": "rdfs:label",
+    "description": "dcterms:description",
+    "locatedIn": {
+      "@id": "kg:locatedIn",
+      "@type": "@id"
+    },
+    "partOf": {
+      "@id": "kg:partOf",
+      "@type": "@id"
+    },
+    "associatedWith": {
+      "@id": "kg:associatedWith",
+      "@type": "@id"
+    },
+    "dedicatedTo": {
+      "@id": "kg:dedicatedTo",
+      "@type": "@id"
+    },
+    "celebratedAt": {
+      "@id": "kg:celebratedAt",
+      "@type": "@id"
+    },
+    "builtDuring": {
+      "@id": "kg:builtDuring",
+      "@type": "@id"
+    },
+    "influencedBy": {
+      "@id": "kg:influencedBy",
+      "@type": "@id"
+    },
+    "hasArtifact": {
+      "@id": "kg:hasArtifact",
+      "@type": "@id"
+    },
+    "worships": {
+      "@id": "kg:worships",
+      "@type": "@id"
+    },
+    "lat": "geo:lat",
+    "long": "geo:long",
+    "inceptionYear": {
+      "@id": "dcterms:created",
+      "@type": "xsd:gYear"
+    },
+    "period": {
+      "@id": "kg:period",
+      "@type": "@id"
+    },
+    "nodeType": "kg:nodeType",
+    "imageUrl": {
+      "@id": "kg:imageUrl",
+      "@type": "xsd:anyURI"
+    },
+    "images": {
+      "@id": "kg:images",
+      "@container": "@list"
+    },
+    "storyText": "kg:storyText",
+    "significance": "kg:significance",
+    "tags": "kg:tags",
+    "dynasty": "kg:dynasty",
+    "unescoStatus": "kg:unescoStatus",
+    "ethnicity": "kg:ethnicity",
+    "religion": "kg:religion",
+    "wikipediaTitle": "kg:wikipediaTitle",
+    "keyFacts": {
+      "@id": "kg:keyFacts",
+      "@container": "@list"
+    },
+    "rituals": {
+      "@id": "kg:rituals",
+      "@container": "@list"
+    },
+    "architecture": "kg:architecture",
+    "history": "kg:history",
+    "culturalRole": "kg:culturalRole",
+    "visitNote": "kg:visitNote"
+  },
+  "@graph": [
+    {
+      "@id": "heritage:KathmanduValley",
+      "@type": [
+        "Place",
+        "kg:CulturalRegion"
+      ],
+      "label": "Kathmandu Valley",
+      "nodeType": "region",
+      "description": "A sacred valley in the Himalayas, cradle of Nepalese civilization, home to seven UNESCO World Heritage Sites and centuries of living culture.",
+      "storyText": "Nestled among the Himalayas at 1,400 metres, the Kathmandu Valley has been the heart of Nepal's civilisation for over two millennia. Three ancient cities — Kathmandu, Bhaktapur, and Patan — rose here, each ruled by rival Malla kings who competed in erecting ever more magnificent temples, palaces, and art. Today the valley breathes with living traditions: priests chant at dawn, festivals explode in colour without warning, and ancient iconography adorns every courtyard.",
+      "lat": "27.7172",
+      "long": "85.3240",
+      "unescoStatus": "World Heritage Zone (1979)",
+      "wikipediaTitle": "Kathmandu Valley",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Kathmandu_valley_from_Phulchowki.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Kathmandu_valley_from_Phulchowki.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Kathmandu_Durbar_Square.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Kathmandu_valley.jpg"
+      ],
+      "significance": "UNESCO Heritage Zone",
+      "tags": [
+        "valley",
+        "civilization",
+        "heritage",
+        "urban"
+      ],
+      "keyFacts": [
+        {
+          "label": "Area",
+          "value": "570 sq km"
+        },
+        {
+          "label": "Altitude",
+          "value": "1,400 m above sea level"
+        },
+        {
+          "label": "UNESCO Sites",
+          "value": "7 World Heritage Sites"
+        },
+        {
+          "label": "Historic cities",
+          "value": "Kathmandu, Patan, Bhaktapur"
+        },
+        {
+          "label": "Population",
+          "value": "~3 million"
+        }
+      ],
+      "history": "Formed, according to legend, from an ancient glacial lake drained by the bodhisattva Manjushri who cut the Chobar Gorge. Archaeological evidence supports habitation from at least 5,000 years ago. The valley flourished as a trans-Himalayan trade corridor between India and Tibet, hosting the Licchavi (400-750 CE), Malla (1200-1769), and Shah (1769-2008) dynasties.",
+      "culturalRole": "Nepal's cultural, political, and religious heartland. The valley is a living synthesis of Hinduism and Buddhism found nowhere else on Earth. Its seven UNESCO sites represent 2,000 years of unbroken artistic and spiritual tradition.",
+      "rituals": [
+        "Indra Jatra - valley's greatest street festival (Aug/Sep)",
+        "Kumari puja - daily worship of the living goddess at Basantapur",
+        "Evening aarti at Pashupatinath ghats",
+        "Kora (circumambulation) at Boudhanath and Swayambhunath",
+        "Losar - Tibetan Buddhist New Year at Boudhanath"
+      ],
+      "visitNote": "Best October-April (dry season, Himalayan views). The 7 UNESCO sites can be linked on a Heritage Walk in 2-3 days. Hire a Newari guide for the stories behind every stone. Avoid June-August (monsoon, overcast)."
+    },
+    {
+      "@id": "heritage:PashupatinathTemple",
+      "@type": [
+        "LandmarksOrHistoricalBuildings",
+        "kg:Temple"
+      ],
+      "label": "Pashupatinath Temple",
+      "nodeType": "temple",
+      "description": "The most sacred Hindu temple in Nepal, dedicated to Lord Shiva as Pashupati, Lord of Animals. A UNESCO World Heritage Site on the banks of the Bagmati River.",
+      "storyText": "On the banks of the holy Bagmati River, Pashupatinath has stood since at least the 5th century CE. The golden pagoda rises over two tiers, its roof gleaming above ghats where Hindu cremation rites are performed continuously. Sadhus smeared in ash meditate in its courtyards; pilgrims travel for weeks to bathe in the sacred Bagmati. The Licchavi kings first built a shrine here; the Mallas amplified it. During Maha Shivaratri, a million devotees converge, transforming the hillside into a sea of orange marigolds and flickering oil lamps.",
+      "lat": "27.7105",
+      "long": "85.3487",
+      "inceptionYear": "400",
+      "dynasty": "Licchavi",
+      "unescoStatus": "World Heritage Site (1979)",
+      "religion": "Hinduism",
+      "dedicatedTo": [
+        "heritage:ShivaLord"
+      ],
+      "locatedIn": "heritage:KathmanduValley",
+      "builtDuring": "heritage:LicchaviPeriod",
+      "associatedWith": [
+        "heritage:BagmatiRiver"
+      ],
+      "wikipediaTitle": "Pashupatinath Temple",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Pashupatinath_Temple.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Pashupatinath_Temple.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Pashupatinath_ghats.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Pashupatinath_sadhus.jpg"
+      ],
+      "significance": "Holiest Hindu site in Nepal; cremation ghats; Shiva lingam",
+      "tags": [
+        "temple",
+        "shiva",
+        "cremation",
+        "licchavi",
+        "pilgrim",
+        "bagmati"
+      ],
+      "keyFacts": [
+        {
+          "label": "Founded",
+          "value": "c. 400 CE (rebuilt 1697)"
+        },
+        {
+          "label": "UNESCO",
+          "value": "World Heritage Site since 1979"
+        },
+        {
+          "label": "Height",
+          "value": "23.6 m"
+        },
+        {
+          "label": "Style",
+          "value": "Double-roofed pagoda, gilded copper"
+        },
+        {
+          "label": "Location",
+          "value": "Banks of Bagmati River, 5 km from center"
+        }
+      ],
+      "architecture": "A double-roofed pagoda clad in gilded copper with silver-plated entrance doors. The inner sanctum houses the four-faced Pashupati Shiva lingam (chaturmukha). The outer complex holds 500+ subsidiary shrines, a sacred Nandi bull statue, and the revered Arya Ghat cremation steps descending to the Bagmati River.",
+      "history": "Dating to at least 400 CE, King Mandev erected the first stone structure during the Licchavi period. The current pagoda was rebuilt in 1697 by King Bhupatindra Malla after the original was destroyed by white ants. It has been a pilgrimage destination for over 1,600 years, described as one of the four most sacred Shiva temples in the Indian subcontinent.",
+      "culturalRole": "Nepal's holiest Hindu temple and the nation's most important cremation site. Hindus believe being cremated here, in sight of the Bagmati, ensures moksha (liberation from rebirth). During Maha Shivaratri, over one million pilgrims arrive including sadhus from across India who cover themselves in ash and meditate here.",
+      "rituals": [
+        "Rudrabhishek - daily Shiva puja at 5 AM with milk, honey, bilva leaves",
+        "Maha Shivaratri (Feb/Mar) - half a million sadhus gather",
+        "Teej festival - women fast and pray at the temple",
+        "Bala Chaturdashi - all-night vigil with lamps on the Bagmati",
+        "Cremation rituals at Arya and Ram Ghats (daily)"
+      ],
+      "visitNote": "Non-Hindus cannot enter the inner sanctum but can explore all outer courtyards, shrines, and ghats. Best at sunrise or sunset for atmosphere. Cremations visible from the west bank bridge - observe respectfully and never photograph mourners. The sadhu colony is photogenic; tips are expected."
+    },
+    {
+      "@id": "heritage:BoudhanathStupa",
+      "@type": [
+        "LandmarksOrHistoricalBuildings",
+        "kg:Stupa"
+      ],
+      "label": "Boudhanath Stupa",
+      "nodeType": "stupa",
+      "description": "One of the largest stupas in the world and the most important Tibetan Buddhist monument outside Tibet. The all-seeing eyes of Buddha watch over the valley.",
+      "storyText": "Boudhanath's massive white dome rises like a full moon above the valley floor. The all-seeing eyes of the Buddha — painted in gold on each of its four faces — scan the horizon in eternal vigilance. Built in the 5th century along the ancient trade route to Tibet, the stupa became a refuge for Tibetan Buddhist culture after 1959. Every evening, thousands of monks and pilgrims circumambulate clockwise, spinning prayer wheels and murmuring mantras. The air smells of butter lamps and juniper incense. Around its base, over 50 Tibetan monasteries crowd close, making Boudhanath the living heart of Tibetan Buddhism outside Tibet.",
+      "lat": "27.7215",
+      "long": "85.3620",
+      "inceptionYear": "600",
+      "religion": "Tibetan Buddhism",
+      "unescoStatus": "World Heritage Site (1979)",
+      "locatedIn": "heritage:KathmanduValley",
+      "builtDuring": "heritage:LicchaviPeriod",
+      "dedicatedTo": [
+        "heritage:BuddhaLord"
+      ],
+      "wikipediaTitle": "Boudhanath",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Boudhanath.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Boudhanath.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Boudhanath_stupa.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Boudhanath_eyes.jpg"
+      ],
+      "significance": "Largest stupa in Nepal; center of Tibetan Buddhism",
+      "tags": [
+        "stupa",
+        "buddhism",
+        "tibetan",
+        "pilgrimage",
+        "mandala"
+      ],
+      "keyFacts": [
+        {
+          "label": "Height",
+          "value": "36 m - Asia's largest stupa"
+        },
+        {
+          "label": "Dome diameter",
+          "value": "~100 m"
+        },
+        {
+          "label": "UNESCO",
+          "value": "World Heritage Site since 1979"
+        },
+        {
+          "label": "Prayer niches",
+          "value": "108 Buddha-image niches at base"
+        },
+        {
+          "label": "Nearby gompas",
+          "value": "50+ Tibetan monasteries surrounding it"
+        }
+      ],
+      "architecture": "Mandala-shaped: a massive whitewashed dome (anda) on three decreasing square terraces symbolizing Earth, realms, and sky. A 13-tiered gilt spire (harmika) rises above, topped by a gilt umbrella. The all-seeing eyes of Buddha are painted on all four cardinal faces of the harmika cube. A continuous ring of 108 prayer wheels lines the base.",
+      "history": "Legend holds that a poultry-woman and her sons built the stupa by royal petition. It became Nepal's center of Tibetan Buddhism after 1950 when thousands of Tibetan refugees settled around it. Severely damaged in the 2015 earthquake, it was fully restored by 2016 through community fundraising.",
+      "culturalRole": "The spiritual heart of Tibetan Buddhism outside Tibet. The surrounding ring of 50+ monasteries from all four Tibetan Buddhist schools makes it a living center of tantric practice. Losar (Tibetan New Year) celebrations here are the largest outside Lhasa.",
+      "rituals": [
+        "Kora - clockwise circumambulation at dawn and dusk (daily)",
+        "Butter lamp offerings (chamar) - especially on full moon days",
+        "Losar (Tibetan New Year, Feb/Mar) - monastery dances and lantern lighting",
+        "Saga Dawa (Buddha Purnima) - thousand-lamp offerings",
+        "Prayer flag raising on New Year morning"
+      ],
+      "visitNote": "Most atmospheric at dawn (6-8 AM) and dusk when monks and devotees fill the kora path. Climb to a rooftop restaurant for the mandala bird's-eye view. Surrounding monastery lanes reward wandering. Combine with a morning meditation session at any open gompa."
+    },
+    {
+      "@id": "heritage:SwayambhunathStupa",
+      "@type": [
+        "LandmarksOrHistoricalBuildings",
+        "kg:Stupa"
+      ],
+      "label": "Swayambhunath Stupa",
+      "nodeType": "stupa",
+      "description": "The self-arisen stupa atop a hill west of Kathmandu, venerated equally by Buddhists and Hindus. Known as the Monkey Temple.",
+      "storyText": "According to legend, the Kathmandu Valley was once a primordial lake. A lotus arose from its depths and blazed with a self-manifested flame — Swayambhu, the self-existent one. The great Bodhisattva Manjushri sliced through the valley rim to drain the lake, allowing humans to settle. The hill on which the flame burned became Swayambhunath. Atop 365 stone steps — one for each day of the year — the stupa commands a panoramic view of the valley. Rhesus macaque monkeys race across its walls, considered holy as descendants of Manjushri's lice, an auspicious nuisance beloved by tourists and monastics alike.",
+      "lat": "27.7149",
+      "long": "85.2904",
+      "inceptionYear": "460",
+      "religion": "Buddhism and Hinduism",
+      "unescoStatus": "World Heritage Site (1979)",
+      "locatedIn": "heritage:KathmanduValley",
+      "builtDuring": "heritage:LicchaviPeriod",
+      "dedicatedTo": [
+        "heritage:BuddhaLord"
+      ],
+      "wikipediaTitle": "Swayambhunath",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Swayambhunath.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Swayambhunath.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Swayambhunath_stupa.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Swayambhunath_panorama.jpg"
+      ],
+      "significance": "Self-arisen stupa; syncretic Hindu-Buddhist site",
+      "tags": [
+        "stupa",
+        "buddhism",
+        "hinduism",
+        "monkey temple",
+        "licchavi"
+      ],
+      "keyFacts": [
+        {
+          "label": "Age",
+          "value": "2,000+ years - one of Nepal's oldest"
+        },
+        {
+          "label": "Altitude",
+          "value": "1,336 m - 77 m above Kathmandu"
+        },
+        {
+          "label": "Steps",
+          "value": "365 stone steps to the summit"
+        },
+        {
+          "label": "UNESCO",
+          "value": "World Heritage Site since 1979"
+        },
+        {
+          "label": "Nickname",
+          "value": "Monkey Temple - hundreds of resident macaques"
+        }
+      ],
+      "architecture": "A hilltop complex with a whitewashed dome stupa bearing all-seeing eyes of Buddha on four faces. Surrounding the main stupa are a Tibetan Buddhist monastery, Hindu shrines including the Harati Devi smallpox goddess temple, the Dewa Dharma Mahavihara, and a National Museum. The mandala design is a model of the Buddhist cosmos.",
+      "history": "According to legend, the hill rose from the primordial lake when Manjushri knelt before the self-arising (swayambhu) flame. The site has been sacred since at least 460 CE (inscription evidence). Tibetan chronicles credit Emperor Ashoka with a visit c. 250 BCE. The all-seeing eyes stare at you from every angle - an effect the architects designed deliberately.",
+      "culturalRole": "Nepal's most visible symbol of religious synthesis: Hindus and Buddhists worship side by side in a single hilltop complex. The all-seeing eyes have become Nepal's global cultural icon. Resident sacred monkeys (Rhesus macaques) are considered descendants of the saint Manjushri's lice - they are never harmed.",
+      "rituals": [
+        "Dawn kora - circumambulation spinning prayer wheels at the base",
+        "Losar Tibetan New Year - monastery dances and butter lamp offerings",
+        "Buddha Jayanti (May) - Buddha's birthday pilgrimage",
+        "Puja at Harati Devi shrine - offerings to the goddess of children",
+        "Daily aarti at the Hindu shrines within the complex"
+      ],
+      "visitNote": "Climb 365 steps from the east (panoramic Kathmandu views) or drive to the west entrance. Visit at sunrise or sunset. Monkeys are bold - hold bags and food tightly. Combine with the nearby National Museum (10-min walk). The climb takes about 15 minutes at a comfortable pace."
+    },
+    {
+      "@id": "heritage:NyatapolaTempel",
+      "@type": [
+        "LandmarksOrHistoricalBuildings",
+        "kg:Temple"
+      ],
+      "label": "Nyatapola Temple",
+      "nodeType": "temple",
+      "description": "Nepal's tallest pagoda temple, built in 1702 CE by King Bhupatindra Malla in Bhaktapur. A masterpiece of Newari architecture rising five tiers.",
+      "storyText": "Nyatapola means 'five storeys' in Newari, and the temple earns its name — five gleaming pagoda roofs stack toward the sky, visible from across the valley. Built in just seven months by King Bhupatindra Malla, the feat required 25 years' worth of resources. On each platform of the wide staircase stand pairs of guardians, each ten times stronger than the pair below: athletes, elephants, lions, griffins, and at the base the most powerful of all — the wrathful goddess Bhairavnath and her consort. The secret deity at the apex is Siddhi Lakshmi, who is so powerful that her name may not be spoken aloud.",
+      "lat": "27.6722",
+      "long": "85.4298",
+      "inceptionYear": "1702",
+      "dynasty": "Malla",
+      "unescoStatus": "World Heritage Site (1979)",
+      "religion": "Hinduism",
+      "locatedIn": "heritage:BhaktapurCity",
+      "builtDuring": "heritage:MallaPeriod",
+      "dedicatedTo": [
+        "heritage:SiddhiLakshmi"
+      ],
+      "wikipediaTitle": "Nyatapola Temple",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Nyatapola.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Nyatapola.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Nyatapola_Temple_Bhaktapur.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Nyatapola_temple_detail.jpg"
+      ],
+      "significance": "Tallest pagoda in Nepal; five tiers of guardian statues",
+      "tags": [
+        "temple",
+        "pagoda",
+        "bhaktapur",
+        "malla",
+        "newari",
+        "architecture"
+      ],
+      "keyFacts": [
+        {
+          "label": "Built",
+          "value": "1702 CE by King Bhupatindra Malla"
+        },
+        {
+          "label": "Height",
+          "value": "30 m - tallest pagoda in Nepal"
+        },
+        {
+          "label": "Storeys",
+          "value": "5 terraced plinths + 5-storey tower"
+        },
+        {
+          "label": "Construction time",
+          "value": "7 months"
+        },
+        {
+          "label": "Deity inside",
+          "value": "Siddhi Lakshmi - never publicly revealed"
+        }
+      ],
+      "architecture": "Five terraced plinths each bear two stone guardians of ascending mythic power: wrestlers (10x), elephants (100x), lions (1,000x), griffins (10,000x), and the goddesses Baghini and Singhini (100,000x). The five-storey tower rises above them. Each roof tier is supported by carved wooden struts depicting erotic scenes - believed to ward off lightning.",
+      "history": "Commissioned in 1702 CE by King Bhupatindra Malla to counterbalance the destructive energy of the fierce god Bhairav whose nearby temple was reportedly destabilizing the city. Built in just seven months - a remarkable feat for a 30 m structure. It survived the 1934 and 2015 earthquakes largely intact, a testament to Malla engineering mastery.",
+      "culturalRole": "The supreme architectural achievement of the Malla period. The five terraces symbolize the five elements and five senses. The deity inside (Siddhi Lakshmi) is so esoteric that only hereditary Kumale priests know her form - she has never been publicly displayed in over 300 years.",
+      "rituals": [
+        "Bisket Jatra - New Year chariot festival centered around this temple",
+        "Hereditary Kumale priest puja - secret daily worship of Siddhi Lakshmi",
+        "Flower and incense offerings at the base terraces by devotees",
+        "Vijaya Dashami (10th day of Dashain) worship",
+        "Oil lamp lighting on all major festival evenings"
+      ],
+      "visitNote": "Best appreciated from cafe terraces of Taumadhi Square - sit with a coffee and study all five tiers. Interior is permanently closed. The nearby Bhairabnath Temple is the architecturally contrasting pair. Entry to Bhaktapur city includes both squares. Allow at least 30 min just to look upward."
+    },
+    {
+      "@id": "heritage:PatanDurbarSquare",
+      "@type": [
+        "LandmarksOrHistoricalBuildings",
+        "kg:DurbarSquare"
+      ],
+      "label": "Patan Durbar Square",
+      "nodeType": "palace",
+      "description": "The ancient royal palace complex of Patan (Lalitpur), considered one of the finest examples of Newari art and architecture in the world.",
+      "storyText": "Patan — the city of fine arts — was the jewel of the Malla kingdoms. Its Durbar Square is an open-air museum of the medieval Newari world. The Royal Palace's golden gate (Sun Dhoka) is considered the finest piece of craftsmanship in all of Nepal: its gilded door frame teems with deities, serpents, and celestial beings, crowned by Garuda. In the courtyards beyond lie erotic carvings on roof struts — said to both ward off lightning (which Kumari the virgin goddess would never strike) and to instruct young Newars entering adult life. The square breathes with life: flower sellers, pigeons, and devotees from dawn to dusk.",
+      "lat": "27.6733",
+      "long": "85.3251",
+      "inceptionYear": "1200",
+      "dynasty": "Malla",
+      "unescoStatus": "World Heritage Site (1979)",
+      "religion": "Hinduism and Buddhism",
+      "locatedIn": "heritage:KathmanduValley",
+      "builtDuring": "heritage:MallaPeriod",
+      "associatedWith": [
+        "heritage:NewariCulture"
+      ],
+      "wikipediaTitle": "Patan Durbar Square",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Patan_Durbar_Square.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Patan_Durbar_Square.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Patan_golden_gate.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Patan_museum.jpg"
+      ],
+      "significance": "Finest Newari art and architecture; living museum",
+      "tags": [
+        "durbar",
+        "palace",
+        "patan",
+        "malla",
+        "newari",
+        "sculpture"
+      ],
+      "keyFacts": [
+        {
+          "label": "City name",
+          "value": "Lalitpur - City of Fine Arts"
+        },
+        {
+          "label": "Temples in square",
+          "value": "50+ temples and monuments"
+        },
+        {
+          "label": "UNESCO",
+          "value": "World Heritage Site since 1979"
+        },
+        {
+          "label": "Key structure",
+          "value": "Krishna Mandir (stone shikhara, 1637)"
+        },
+        {
+          "label": "Museum",
+          "value": "Patan Museum - South Asia's finest Nepali art museum"
+        }
+      ],
+      "architecture": "The royal palace (Mul Chowk) contains three inner courtyards including the Sundari Chowk royal bath. The Krishna Mandir (1637) is unique - a stone shikhara (North Indian style) temple with 21 pinnacles and carved friezes depicting the Mahabharata and Ramayana, contrasting with Nepal's usual pagoda style.",
+      "history": "Lalitpur is Nepal's oldest city, inhabited since the 3rd century BCE. The Durbar Square took its current form during the Malla period. King Siddhinarsingh Malla built the Krishna Mandir in 1637 after reportedly having a vision of Krishna and Radha. The Patan Museum, opened in 1997 inside the restored palace, is considered one of South Asia's finest museums.",
+      "culturalRole": "Nepal's artisan capital - Patan Newar craftspeople are the masters of lost-wax bronze casting, repousse metalwork, pauabha scroll painting, and woodcarving. The city's network of bahals (monastery courtyards) keeps medieval Buddhist ritual alive. Patan has the highest density of temples per square kilometer in Nepal.",
+      "rituals": [
+        "Rato Machhendranath chariot festival - 4-month chariot procession (unique in Nepal)",
+        "Krishna Janmashtami at Krishna Mandir - thousands celebrate Krishna's birth",
+        "Samyak feast - grand Buddhist ceremony held once every 5 years",
+        "Pancha Dan (five-grain) offering ceremony",
+        "Kumari puja at the Patan Kumari's residence"
+      ],
+      "visitNote": "Patan Museum is unmissable - best Hindu and Buddhist metalwork collection in existence. The surrounding artisan workshops in bahals (courtyards) are active - look for live bronze-casters and pauabha painters. Best combined with a morning Rato Machhendranath visit (April-June) or during Tihar for the lit-up square."
+    },
+    {
+      "@id": "heritage:BhaktapurCity",
+      "@type": [
+        "City",
+        "kg:HistoricalCity"
+      ],
+      "label": "Bhaktapur",
+      "nodeType": "city",
+      "description": "The City of Devotees — the best preserved medieval town in Nepal, where Newari culture thrives largely unchanged since the Malla era.",
+      "storyText": "Bhaktapur (Khwopa in Newari — 'city of devotees') was the last capital of the Malla dynasty. When the Shah kings unified Nepal in 1769, Bhaktapur was eclipsed politically but preserved culturally. Its narrow brick lanes, still paved with traditional handmade bricks, wind past 172 different temples and courtyards. Women dry their rice on bamboo mats; men shape pottery in the potters' square as they have for 800 years. Even today electricity was late to arrive, and the town retains an atmosphere that the other valley cities have largely lost to modernisation.",
+      "lat": "27.6710",
+      "long": "85.4298",
+      "inceptionYear": "1200",
+      "dynasty": "Malla",
+      "unescoStatus": "World Heritage Site (1979)",
+      "locatedIn": "heritage:KathmanduValley",
+      "partOf": "heritage:KathmanduValley",
+      "builtDuring": "heritage:MallaPeriod",
+      "associatedWith": [
+        "heritage:BisketJatra",
+        "heritage:NewariCulture"
+      ],
+      "wikipediaTitle": "Bhaktapur",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Bhaktapur_Durbar_Square.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bhaktapur_Durbar_Square.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bhaktapur_pottery_square.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bhaktapur_streets.jpg"
+      ],
+      "significance": "Best-preserved medieval Newari city",
+      "tags": [
+        "city",
+        "medieval",
+        "newari",
+        "bhaktapur",
+        "malla",
+        "pottery"
+      ],
+      "keyFacts": [
+        {
+          "label": "Meaning",
+          "value": "City of Devotees (Sanskrit: bhakta + pur)"
+        },
+        {
+          "label": "Population",
+          "value": "~83,000"
+        },
+        {
+          "label": "UNESCO",
+          "value": "World Heritage City since 1979"
+        },
+        {
+          "label": "Founded",
+          "value": "9th century CE"
+        },
+        {
+          "label": "Entry fee",
+          "value": "NPR 1,500 (funds conservation)"
+        }
+      ],
+      "architecture": "Nepal's most complete medieval city - no concrete buildings in the heritage zone. Three interlocking squares: Durbar Square (55-window palace, Golden Gate), Taumadhi Square (Nyatapola, Bhairabnath), and Dattatreya Square (Pujari Math, Peacock Window). The 55-window palace (1427, King Yaksha Malla) is a masterpiece of carved wood set into brick.",
+      "history": "Founded in the 9th century CE, Bhaktapur became an independent kingdom in 1482 after the Malla succession crisis. It was the last of the three Malla kingdoms to fall to Prithvi Narayan Shah (1769). After unification, the city retained its medieval character more completely than Kathmandu or Patan. Both the 1934 and 2015 earthquakes caused damage; both times the community rebuilt.",
+      "culturalRole": "The most completely preserved medieval city in South Asia - a living open-air museum where potters work in Pottery Square, woodcarvers line the streets, and the festival calendar runs nearly every week. Famous for juju dhau (king curd - Nepal's richest yogurt) and the finest masks and thangkas in Nepal.",
+      "rituals": [
+        "Bisket Jatra - Nepal's most visceral New Year festival (mid-April), chariot tug-of-war",
+        "Gai Jatra - cow procession honoring the deceased (August)",
+        "Indrayani Jatra - chariot procession of the city goddess",
+        "Sindoor Jatra - vermillion-smearing festival at Thimi (same week as Bisket)",
+        "Ghanta Karna - demon effigy burning festival"
+      ],
+      "visitNote": "Entry fee is charged at city gates and directly funds UNESCO-mandated conservation. Explore all three squares - hire a local guide for the woodcarving iconography. Buy Bhaktapur pottery, local thangka, and taste juju dhau (king curd). Entirely walkable - no vehicles in the historic core. Allow a full day minimum."
+    },
+    {
+      "@id": "heritage:ShivaLord",
+      "@type": [
+        "kg:Deity"
+      ],
+      "label": "Shiva / Pashupati",
+      "nodeType": "deity",
+      "description": "The supreme deity of the Himalayan world — destroyer, transformer, ascetic, and lord of all living beings. Worshipped in Nepal as Pashupati, the patron of the nation.",
+      "storyText": "In Nepal, Shiva wears many faces. As Pashupati he is the gentle lord of animals and protector of all creatures. As Bhairava he is terrifying — a skull-garlanded guardian whose image stands at every major crossroads to ward off evil. As the great Yogi he sits in eternal meditation on Mount Kailash. Shiva's sacred symbol, the lingam, represents the primordial creative force. Nepal's national deity is Pashupatinath — Shiva in his most compassionate form — and the king once bore the title 'Incarnation of Vishnu' but sought Shiva's blessing most of all.",
+      "religion": "Hinduism",
+      "associatedWith": [
+        "heritage:PashupatinathTemple"
+      ],
+      "wikipediaTitle": "Shiva",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Shiva_Parvati_Kangra.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Shiva_Parvati_Kangra.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Shiva_meditating.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Lord_Shiva.jpg"
+      ],
+      "significance": "National deity of Nepal; patron of Pashupatinath",
+      "tags": [
+        "deity",
+        "shiva",
+        "hinduism",
+        "lingam",
+        "pashupati",
+        "bhairava"
+      ],
+      "keyFacts": [
+        {
+          "label": "Role",
+          "value": "One of the Hindu Trinity - Destroyer and Renewer"
+        },
+        {
+          "label": "Nepal form",
+          "value": "Pashupati - Lord of All Animals"
+        },
+        {
+          "label": "Symbol",
+          "value": "Shiva lingam (cylindrical stone)"
+        },
+        {
+          "label": "Vehicle (vahana)",
+          "value": "Nandi the sacred bull"
+        },
+        {
+          "label": "Attributes",
+          "value": "Third eye, trident (trishul), cobra, crescent moon, Ganga in hair"
+        }
+      ],
+      "history": "Shiva is among South Asia's most ancient deities, with antecedents in the proto-Shiva figure on Indus Valley seals (c. 2500 BCE). In Nepal, Shiva as Pashupati (Lord of Beasts) is described in the Atharva Veda. The earliest Pashupatinath Temple inscription dates to 400 CE, but worship at the site is believed far older. Nepal's unique claim - the country is described as Shiva's own earthly domain - is stated in the Skanda Purana.",
+      "culturalRole": "Nepal is uniquely the Kingdom of Shiva - virtually every village, crossroads, and river confluence has a Shiva lingam. Shiva's paradox (creator, destroyer, ascetic, householder) mirrors Nepal's landscape and history of earthquakes, monsoons, and renewal. Nepal has more Shiva temples per capita than any country outside India.",
+      "rituals": [
+        "Maha Shivaratri (Feb/Mar) - the Great Night of Shiva; fasting, all-night worship, a million pilgrims",
+        "Rudrabhishek - daily ritual bathing of the lingam with milk, honey, ghee, and sacred water",
+        "Monday puja - Shiva worshipped every Monday; Shrawan Mondays most auspicious",
+        "Bilva patra offering - bilva leaves (Lord Shiva's favorite), bel fruit, and white flowers",
+        "Panchamrit abhishek - five-nectars ritual bathing of the lingam"
+      ],
+      "visitNote": "Shiva shrines (lingams) are everywhere - even tiny roadside stones under neem trees. The most powerful experience is Maha Shivaratri at Pashupatinath (Feb/Mar). The month of Shrawan (July-Aug) sees extraordinary Monday-morning devotion at all Shiva temples. Sadhus are most visible during Shivaratri."
+    },
+    {
+      "@id": "heritage:BuddhaLord",
+      "@type": [
+        "kg:Deity"
+      ],
+      "label": "Gautama Buddha",
+      "nodeType": "deity",
+      "description": "The Awakened One, born in Lumbini, Nepal. Founder of Buddhism, whose teachings spread from the Terai foothills to encompass half of Asia.",
+      "storyText": "Siddhartha Gautama was born under a sal tree in Lumbini, in the flat southern Terai of Nepal, around 563 BCE. A prince of the Shakya clan, he renounced his palace life after witnessing old age, sickness, and death. After years of ascetic practice and deep meditation under a Bodhi tree in Bodh Gaya, he awakened and became the Buddha — the Fully Awakened One. His first sermon set the Wheel of Dharma turning. His birthplace at Lumbini is a UNESCO World Heritage Site and a destination for Buddhist pilgrims from across the world.",
+      "religion": "Buddhism",
+      "associatedWith": [
+        "heritage:BoudhanathStupa",
+        "heritage:SwayambhunathStupa",
+        "heritage:Lumbini"
+      ],
+      "wikipediaTitle": "Gautama Buddha",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Buddha_in_Sarnath_Museum_(Dhammajak_Mutra).jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Buddha_in_Sarnath_Museum_(Dhammajak_Mutra).jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/BuddhaStatue.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Standing_Buddha_Gandhara.jpg"
+      ],
+      "significance": "Founder of Buddhism; born in Nepal at Lumbini",
+      "tags": [
+        "deity",
+        "buddha",
+        "buddhism",
+        "lumbini",
+        "enlightenment"
+      ],
+      "keyFacts": [
+        {
+          "label": "Born",
+          "value": "c. 563 BCE at Lumbini, Nepal"
+        },
+        {
+          "label": "Enlightened",
+          "value": "c. 528 BCE at Bodh Gaya, India"
+        },
+        {
+          "label": "Teaching",
+          "value": "4 Noble Truths, Eightfold Path, Dharma"
+        },
+        {
+          "label": "Global followers",
+          "value": "~535 million Buddhists worldwide"
+        },
+        {
+          "label": "Nepal traditions",
+          "value": "Newar Vajrayana, Tibetan Buddhism, Theravada"
+        }
+      ],
+      "history": "Siddhartha Gautama, born a Shakya prince at Lumbini c. 563 BCE, renounced palace life at 29 upon witnessing suffering. After six years of practice and meditation under the Bodhi tree at Bodh Gaya, he attained Nirvana (enlightenment). He taught for 45 years establishing the Sangha. His birth in Nepal is confirmed by Emperor Ashoka's pillar inscription at Lumbini (249 BCE) - the oldest Buddhist inscription in Nepal.",
+      "culturalRole": "Nepal is the birthplace of the Buddha - one of the most significant facts in world religious history. The unique Newar Buddhism practiced in the Kathmandu Valley predates Tibetan Buddhism by centuries and preserves texts and rituals lost elsewhere. Uniquely in Nepal, Hindus worship the Buddha as an avatar of Vishnu - a living example of Nepal's syncretic faith.",
+      "rituals": [
+        "Buddha Jayanti / Saga Dawa (May full moon) - celebrates birth, enlightenment, and passing",
+        "Pancha Dan - five-grain offering to Buddhist monks by Newar families",
+        "Kora - circumambulation of stupas (Boudhanath, Swayambhunath) at dawn and dusk",
+        "Losar - Tibetan New Year with monastery dances and merit-making",
+        "Vipassana retreats - 10-day silent meditation courses across Nepal",
+        "Puja on full moon (purnima) at all Buddhist pilgrimage sites"
+      ],
+      "visitNote": "Three great Nepal Buddhist destinations: Lumbini (birthplace), Boudhanath (Tibetan Buddhism center), Swayambhunath (oldest). Buddha Purnima in May is the most powerful time to visit all three. The Namobuddha monastery (3 hrs from Kathmandu) is the most atmospheric Tibetan gompa for overnight retreat."
+    },
+    {
+      "@id": "heritage:KumariGoddess",
+      "@type": [
+        "kg:Deity",
+        "kg:LivingGoddess"
+      ],
+      "label": "Kumari — The Living Goddess",
+      "nodeType": "deity",
+      "description": "A pre-pubescent girl selected through rigorous ritual to embody the goddess Taleju, worshipped as a living divinity until her first menstruation.",
+      "storyText": "Nepal's most extraordinary living tradition: a young girl, usually between four and seven years old, selected from the Shakya goldsmith caste through a series of rituals to become the Kumari — the royal living goddess. She must pass 32 perfections of beauty, endure a terrifying selection ceremony in a room filled with buffalo heads, and show no fear. Once installed in her golden house in Kathmandu's Durbar Square, she rarely walks on unpolluted ground — devotees carry her, or she is brought in a golden palanquin. Even the President of Nepal bows before her. When she menstruates, she returns to ordinary life, and the search for her successor begins.",
+      "religion": "Hinduism and Buddhism",
+      "associatedWith": [
+        "heritage:IndraJatra"
+      ],
+      "wikipediaTitle": "Kumari (Nepal)",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Kumari.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Kumari.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Kumari_house_kathmandu.jpg"
+      ],
+      "significance": "Living goddess; unique to Nepal; syncretic Hindu-Buddhist tradition",
+      "tags": [
+        "deity",
+        "kumari",
+        "living goddess",
+        "taleju",
+        "newari",
+        "syncretic"
+      ],
+      "keyFacts": [
+        {
+          "label": "Age at selection",
+          "value": "4-7 years old"
+        },
+        {
+          "label": "Caste",
+          "value": "Shakya (goldsmith) caste only"
+        },
+        {
+          "label": "Residence",
+          "value": "Kumari Ghar, Basantapur Square, Kathmandu"
+        },
+        {
+          "label": "Active Kumaris",
+          "value": "3 simultaneously - Kathmandu, Patan, Bhaktapur"
+        },
+        {
+          "label": "32 perfections",
+          "value": "Physical and behavioral attributes required at selection"
+        },
+        {
+          "label": "Post-retirement",
+          "value": "Government pension; returns to family life"
+        }
+      ],
+      "history": "The tradition dates to the Malla period (12th-18th centuries). The founding myth: King Trailokya Malla played dice with the goddess Taleju; after he offended her, she agreed to continue protecting Kathmandu only by incarnating in a pure virgin Shakya girl. The Kumari Ghar (goddess house) in Basantapur was built in 1757. Historical records confirm the Kathmandu Kumari from the 17th century.",
+      "culturalRole": "Unique to Nepal: a living child embodies the supreme goddess Taleju (a form of Durga), worshipped by both Hindus and Buddhists. Even the President and Prime Minister receive tika (blessing) from the Kumari during Dashain - a ritual that spiritually legitimizes the government since the Malla period. The welfare and social reintegration of retired Kumaris is an ongoing human rights discussion.",
+      "rituals": [
+        "Daily darshan - devotees gather at Kumari Ghar; the goddess appears briefly at her carved window",
+        "Indra Jatra chariot procession - Kumari rides a wooden rath through the old city (September)",
+        "Presidential tika - Nepal's head of state receives blessing from the Kumari during Dashain",
+        "Selection ceremony - candidates spend a night with 108 buffalo heads; the chosen shows no fear",
+        "32-perfection examination - attributes from eye color and tooth shape to voice pitch and walk",
+        "Nava Durga puja - secret tantric worship by hereditary priests"
+      ],
+      "visitNote": "Visit Kumari Ghar in Basantapur Square (adjacent to Hanuman Dhoka). The goddess appears at her first-floor carved window during daylight - no fixed schedule; wait quietly with other devotees. Photography of the Kumari herself is strictly prohibited (considered soul-stealing). Best experience: Indra Jatra (September) when she rides the golden chariot."
+    },
+    {
+      "@id": "heritage:IndraJatra",
+      "@type": [
+        "kg:Festival",
+        "Event"
+      ],
+      "label": "Indra Jatra",
+      "nodeType": "festival",
+      "description": "Kathmandu's greatest festival — eight days of processions, masked dances, and the chariot procession of the Living Goddess Kumari through the old city.",
+      "storyText": "In August or September, Kathmandu erupts into Indra Jatra — the festival of the rain god Indra. The story goes that Indra himself came to earth disguised as a human to steal a sacred flower for his mother, was captured by the valley's inhabitants, and had to be ransomed by his mother. To honour both his son's release and the dead of the past year, Indra allows the dead to roam freely for eight days. The highlight is the chariot procession of the Living Goddess Kumari, preceded by the terrifying masked gods Bhairava and Kumari's attendant demons. The President of Nepal receives a ceremonial tika from the Kumari, a tradition that stretches back to the Malla kings.",
+      "religion": "Hinduism and Buddhism",
+      "period": "August–September",
+      "locatedIn": "heritage:KathmanduValley",
+      "associatedWith": [
+        "heritage:KumariGoddess"
+      ],
+      "celebratedAt": [
+        "heritage:KathmanduValley"
+      ],
+      "wikipediaTitle": "Indra Jatra",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Indra_Jatra_Kathmandu.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Indra_Jatra_Kathmandu.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Indra_Jatra_chariot.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Indra_Jatra_mask.jpg"
+      ],
+      "significance": "Greatest festival of Kathmandu; Kumari's annual procession",
+      "tags": [
+        "festival",
+        "indra",
+        "kumari",
+        "chariot",
+        "mask",
+        "newari"
+      ],
+      "keyFacts": [
+        {
+          "label": "Duration",
+          "value": "8 days"
+        },
+        {
+          "label": "Month",
+          "value": "August/September (Bhadra Shukla)"
+        },
+        {
+          "label": "Location",
+          "value": "Hanuman Dhoka and old Kathmandu streets"
+        },
+        {
+          "label": "Central event",
+          "value": "Living Goddess Kumari's chariot procession"
+        },
+        {
+          "label": "State significance",
+          "value": "President receives Kumari's tika (legitimizing ritual)"
+        }
+      ],
+      "history": "Commemorates the rain-god Indra's capture by Kathmandu mortals who found him stealing parijat flowers for his mother. When she came searching, she offered a boon: all who die during the festival would be taken to Indra's heaven. The modern festival fuses Vedic, Tantric, and Buddhist elements that crystallized during the Malla period and has been observed for at least 700 years.",
+      "culturalRole": "Kathmandu's greatest annual festival - an 8-day carnival filling the old city with costumed deities, torchlit processions, and the divine appearance of the living goddess. The Kumari's chariot procession is one of the most photographed events in South Asia. The ritual also serves a state function: the President receives tika from the Kumari in a ceremony that has legitimized rulers since the Malla kings.",
+      "rituals": [
+        "Raising the Indra dhvaja pole - the festival's official start at Hanuman Dhoka",
+        "Kumari chariot procession - the living goddess rides a wooden rath drawn by devotees",
+        "Devi and Bhairab chariot processions through the old city lanes",
+        "Lakhe (demon) masked dance - performed by youth in giant demon costume",
+        "Devi dance (charya nritya) - ritual performance by trained community dancers",
+        "Presidential tika ceremony - head of state bows to the child goddess",
+        "Indra display - statue of the bound god Indra shown at Hanuman Dhoka"
+      ],
+      "visitNote": "Held late August or September (check Nepali calendar). The chariot route runs through Indra Chowk, Kel Tole, and Basantapur - arrive at Durbar Square before 10 AM. Rooftop cafe seats available for a fee. The 8-day festival rewards 2-3 visits to catch different events including the Lakhe dance and Kumari procession on separate days."
+    },
+    {
+      "@id": "heritage:Dashain",
+      "@type": [
+        "kg:Festival",
+        "Event"
+      ],
+      "label": "Dashain",
+      "nodeType": "festival",
+      "description": "Nepal's longest and most important festival — 15 days celebrating the victory of goddess Durga over the demon Mahishasura, marked by family reunions and animal sacrifice.",
+      "storyText": "Dashain is the Nepali autumn of homecoming. For fifteen days in October, the whole country moves in one direction: home. Flights are full, buses overflow, and mountain trails fill with people returning to villages. The festival honours Durga's ten-day battle against the buffalo-demon Mahishasura. On the ninth day, Navami, hundreds of thousands of animals — goats, buffalo, ducks — are sacrificed at temples across the country. The tenth day, Vijaya Dashami, the Day of Victory, is the most joyful: elders press a mixture of scarlet powder and yoghurt rice (tika) onto the foreheads of juniors, while marigold garlands are placed around their necks. Families forbidden from meeting all year are brought together.",
+      "religion": "Hinduism",
+      "period": "October (15 days)",
+      "locatedIn": "heritage:KathmanduValley",
+      "wikipediaTitle": "Dashain",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Dashain_festival_nepal.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Dashain_festival_nepal.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Dashain_tika.jpg"
+      ],
+      "significance": "Nepal's most important festival; national holiday; family reunion",
+      "tags": [
+        "festival",
+        "dashain",
+        "durga",
+        "tika",
+        "family",
+        "sacrifice",
+        "national"
+      ],
+      "keyFacts": [
+        {
+          "label": "Duration",
+          "value": "15 days"
+        },
+        {
+          "label": "Month",
+          "value": "September/October (Ashwin-Kartik)"
+        },
+        {
+          "label": "Holiday length",
+          "value": "10-15 days of government and school closure"
+        },
+        {
+          "label": "Key day",
+          "value": "Vijaya Dashami (10th day) - tika and jamara blessing"
+        },
+        {
+          "label": "Scale",
+          "value": "Tens of thousands of animal sacrifices on Maha Ashtami"
+        }
+      ],
+      "history": "Dashain celebrates the goddess Durga's victory over the demon Mahishasura - the triumph of good over evil - based on the Devi Mahatmya (4th-6th century CE Sanskrit text). Malla and Shah kings used Dashain to bless weapons and demonstrate military supremacy. The tika-giving ceremony (elders blessing juniors) reinforces family bonds and social hierarchy in a way unique to Nepal.",
+      "culturalRole": "Nepal's most important festival - the equivalent of Christmas, Eid, and Thanksgiving combined. The entire diaspora returns home. Cities empty. Elders give tika (red rice, yogurt, kumkum) and jamara (barley sprouts germinated for 9 days) to younger family members. The buffalo sacrifice at Hanuman Dhoka involving the army is one of Nepal's most dramatic public ceremonies.",
+      "rituals": [
+        "Navaratri (nine nights) - daily Durga puja in homes and temples",
+        "Phulpati (7th day) - sacred flowers carried from Gorkha to Hanuman Dhoka",
+        "Maha Ashtami - army weapon blessing; mass animal sacrifice at Durga temples",
+        "Kalaratri (9th night) - midnight mass sacrifice at all major Devi temples",
+        "Vijaya Dashami - family tika and jamara blessing; elders to juniors down the age ladder",
+        "Dashain swings (ping) - community bamboo swings erected across all of Nepal",
+        "Kite flying - Nepal's skies fill with kites throughout the Dashain season"
+      ],
+      "visitNote": "Book all transport 3-4 weeks in advance - overwhelmed before Dashain. Kathmandu quiets as residents return to villages. Non-Hindus are welcome at public ceremonies (Hanuman Dhoka). The most powerful experience is a home invitation for tika on Vijaya Dashami - any Nepali friend will likely extend this. Most shops close for 5+ days."
+    },
+    {
+      "@id": "heritage:Tihar",
+      "@type": [
+        "kg:Festival",
+        "Event"
+      ],
+      "label": "Tihar — Festival of Lights",
+      "nodeType": "festival",
+      "description": "Nepal's festival of lights — five days honouring crows, dogs, cows, oxen, and the self, culminating in the sisterly blessing ceremony Bhai Tika.",
+      "storyText": "Tihar — Nepal's answer to Diwali — is five consecutive days of honouring the creatures that carry the messages of Yama, lord of death: crows on day one, dogs on day two, cows on day three, oxen on day four. Houses are strung with oil lamps and coloured lights; the scent of incense fills the air. On the third day (Laxmi Puja), the goddess of wealth is invited into every home by an elaborate rangoli pathway of flowers and coloured powder. The fifth and final day is Bhai Tika: sisters perform an elaborate ritual to protect their brothers from Yama's rope, threading a garland of seven colours around their necks and pressing a rainbow tika onto their foreheads.",
+      "religion": "Hinduism",
+      "period": "October–November (5 days)",
+      "locatedIn": "heritage:KathmanduValley",
+      "wikipediaTitle": "Tihar",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Tihar_festival_Nepal.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Tihar_festival_Nepal.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Tihar_lamps.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Tihar_rangoli.jpg"
+      ],
+      "significance": "Festival of lights; five days honouring animals and deity Laxmi",
+      "tags": [
+        "festival",
+        "tihar",
+        "laxmi",
+        "lights",
+        "diwali",
+        "dogs",
+        "sisters"
+      ],
+      "keyFacts": [
+        {
+          "label": "Duration",
+          "value": "5 days"
+        },
+        {
+          "label": "Month",
+          "value": "October/November (Kartik)"
+        },
+        {
+          "label": "Also called",
+          "value": "Deepawali / Festival of Lights"
+        },
+        {
+          "label": "Day 3 (Laxmi Puja)",
+          "value": "Oil lamps illuminate the entire Kathmandu Valley"
+        },
+        {
+          "label": "Unique element",
+          "value": "Mha Puja - Newari self-worship ceremony (unique globally)"
+        }
+      ],
+      "history": "Tihar's five days each honor a different being: crow (Kag Tihar), dog (Kukur Tihar), cow and Laxmi (Gai Tihar/Laxmi Puja), ox and self (Goru Tihar/Mha Puja), and brothers (Bhai Tika). It parallels India's Diwali but adds uniquely Nepali layers: dog-worship day is globally unique, and the Newari Mha Puja (self-worship) on day 4, celebrating the Newari New Year, is practiced nowhere else on Earth.",
+      "culturalRole": "Nepal's second most important festival. Kathmandu transforms on Laxmi Puja night - every doorstep is carpeted in marigold rangoli and glowing with oil lamps. The Mha Puja ceremony involves worshipping one's own soul as a divine entity. Bhai Tika (brothers' day) sees sisters apply elaborate seven-color tika and tie life-thread bracelets on brothers, praying for their longevity.",
+      "rituals": [
+        "Kag Tihar (Day 1) - garlands placed for crows (Yama's messengers) at dawn",
+        "Kukur Tihar (Day 2) - dogs worshipped with marigold garlands, tika dot, and food feast",
+        "Gai Tihar (Day 3 morning) - cows honored with garlands and treats",
+        "Laxmi Puja (Day 3 evening) - oil lamps lit on every doorstep to welcome the goddess",
+        "Mha Puja (Day 4) - Newari self-worship ritual; also Govardhan Puja",
+        "Bhai Tika (Day 5) - sisters bless brothers with seven-color tika and tying life thread",
+        "Deusi-bhailo - youth groups singing door-to-door for donations (like caroling)"
+      ],
+      "visitNote": "Stay near Patan or old Kathmandu for Laxmi Puja night - the streets are carpeted in marigold and glowing from 6 PM onward. Bring a jacket (October nights are cool). Gambling (cards, dice) is traditionally auspicious - join in. Bhai Tika is a beautiful ceremony - any Nepali friend will likely invite you home."
+    },
+    {
+      "@id": "heritage:BisketJatra",
+      "@type": [
+        "kg:Festival",
+        "Event"
+      ],
+      "label": "Bisket Jatra",
+      "nodeType": "festival",
+      "description": "Bhaktapur's chaotic New Year festival — the chariot battle of two rival halves of the city, culminating in the erection of a 25-metre pole and the serpent slaying.",
+      "storyText": "Every April in Bhaktapur, the city tears itself apart in joyful battle. Bisket Jatra celebrates the Newari New Year with a chariot race between the two halves of the city — upper and lower town — each pulling massive wooden chariots of Bhairava and Bhadrakali through narrow streets. Ropes are pulled in a frenzied tug-of-war; the victorious half earns pride and blessing for the year. On the final night, a 25-metre pole (lingo) is erected in the riverbank, hung with two long cloth snakes. At the exact moment of the New Year, the pole is yanked down and the two snakes — representing two demons slain by the god Bhairava — are torn apart. The crowd erupts.",
+      "religion": "Hinduism and Buddhism",
+      "period": "April (Nepali New Year)",
+      "locatedIn": "heritage:BhaktapurCity",
+      "celebratedAt": [
+        "heritage:BhaktapurCity"
+      ],
+      "wikipediaTitle": "Bisket Jatra",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Bisket_Jatra.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bisket_Jatra.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bisket_Jatra_chariot.jpg"
+      ],
+      "significance": "Bhaktapur's New Year festival; chariot race; pole ceremony",
+      "tags": [
+        "festival",
+        "bhaktapur",
+        "new year",
+        "chariot",
+        "bhairava",
+        "newari"
+      ],
+      "keyFacts": [
+        {
+          "label": "Location",
+          "value": "Bhaktapur city exclusively"
+        },
+        {
+          "label": "Duration",
+          "value": "9 days"
+        },
+        {
+          "label": "Date",
+          "value": "Nepali New Year (Baishak 1, mid-April)"
+        },
+        {
+          "label": "Chariots",
+          "value": "Bhairab and Bhadrakali wooden chariots"
+        },
+        {
+          "label": "Lingo pole",
+          "value": "25 m wooden pole raised then toppled at New Year moment"
+        }
+      ],
+      "history": "Bisket derives from the Newari 'Bi + syakah' (snake killed) - celebrating a prince's victory over serpent demons that nightly emerged from a princess's nostrils, killing her suitors. The brave prince slew the snakes and married her. Dating to at least the 14th century Malla period, the festival marks Nepali New Year and features a competitive tug-of-war between upper city (Thane) and lower city (Kone) factions.",
+      "culturalRole": "The most physically intense festival in Nepal. The chariot tug-of-war between city halves represents a cosmological battle; the winning side is believed to have good fortune in the coming year. The erection and toppling of the 25 m lingo pole marks the exact second of Nepali New Year. Simultaneously in nearby Thimi, the Sindoor Jatra (vermillion-smearing) festival runs - smearing red powder on the face of anyone you meet.",
+      "rituals": [
+        "Chariot procession of Bhairab and Bhadrakali through Taumadhi and Dattatreya squares",
+        "Chariot tug-of-war - upper city (Thane) vs lower city (Kone) teams, can last days",
+        "Lingo pole raising in Khalna Tole - a 25 m wooden pole festooned with cloth snakes",
+        "Lingo pole toppling - at the precise New Year moment (cheered by the entire crowd)",
+        "Sindoor Jatra at Thimi - people smear vermillion on each other in joyous excess",
+        "Night processions with torches through the medieval streets",
+        "Sacrifice at Indrayani temple"
+      ],
+      "visitNote": "Held mid-April (Baishak 1 week - check exact date). Stay in Bhaktapur or day-trip from Kathmandu (30 min). The chariot tug is breathtaking but enormous - arrive early, secure an elevated viewing spot, hold all valuables. The Lingo pole toppling at the New Year moment is the climax - join the crowd in cheering."
+    },
+    {
+      "@id": "heritage:LicchaviPeriod",
+      "@type": [
+        "kg:HistoricalPeriod"
+      ],
+      "label": "Licchavi Period",
+      "nodeType": "period",
+      "description": "Nepal's classical age (c. 400–750 CE) — the first great dynasty of the valley, which established Hindu-Buddhist civilisation and built the earliest monuments.",
+      "storyText": "The Licchavi era is Nepal's classical age — the foundation upon which all later culture was built. Arriving in the Kathmandu Valley around the 4th century CE, the Licchavi kings were fervent patrons of both Hinduism and Buddhism, endowing temples and stupas with equal generosity. They established the valley's sacred geography: Pashupatinath on the Bagmati, Boudhanath and Swayambhunath on their hills, and dozens of smaller shrines at every water source and crossroads. Licchavi inscriptions, carved in Sanskrit on stone pillars, are the oldest written records of the valley. Their art — graceful stone sculptures of gods and goddesses — set the aesthetic standard that Newari artists would refine for the next fifteen centuries.",
+      "inceptionYear": "400",
+      "associatedWith": [
+        "heritage:PashupatinathTemple",
+        "heritage:BoudhanathStupa",
+        "heritage:SwayambhunathStupa"
+      ],
+      "wikipediaTitle": "Licchavi kingdom",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Changu_Narayan_temple.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Changu_Narayan_temple.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Licchavi_sculpture.jpg"
+      ],
+      "significance": "Classical foundation of Nepalese civilization",
+      "tags": [
+        "period",
+        "licchavi",
+        "classical",
+        "dynasty",
+        "foundational"
+      ],
+      "keyFacts": [
+        {
+          "label": "Duration",
+          "value": "c. 400-750 CE"
+        },
+        {
+          "label": "Capital",
+          "value": "Deopatan (near modern Pashupatinath)"
+        },
+        {
+          "label": "Religion",
+          "value": "Shaiva Hinduism; early Buddhism"
+        },
+        {
+          "label": "Key king",
+          "value": "Amsuvarman (r. 595-621 CE)"
+        },
+        {
+          "label": "Historical record",
+          "value": "100+ Sanskrit stone inscriptions survive"
+        }
+      ],
+      "architecture": "Early Licchavi temples show North Indian Gupta-period influence: stone temples with brick towers, river-side bathing ghats, and free-standing Shiva lingams. Changu Narayan temple (375 CE, UNESCO) is the oldest surviving Licchavi structure with extraordinary stone carvings of Vishnu's avatars - among the finest examples of early medieval South Asian sculpture.",
+      "history": "The Licchavi dynasty is Nepal's earliest historically documented ruling house. Under Amsuvarman, Nepal became a diplomatic bridge between India's Gupta Empire and the emerging Tibetan kingdom. His daughter Bhrikuti Devi married Tibetan King Songtsen Gampo (630 CE) and is credited in Tibetan tradition with introducing Buddhism to Tibet. The Licchavi stone inscriptions are Nepal's oldest primary historical sources.",
+      "culturalRole": "The Licchavis laid Nepal's foundational structures: statehood, temple-building, religious patronage, Sanskrit scholarship, and diplomatic connections to China and India. The earliest Pashupatinath temple, the first Changu Narayan, and Nepal's first historical records all come from this period. Without the Licchavis, there would be no heritage for the Mallas to build upon.",
+      "visitNote": "Visit Changu Narayan temple (25 km from Kathmandu, UNESCO) for Nepal's finest Licchavi stone carvings - the 5th-century Vishnu Vikrantha panel is extraordinary. Patan Museum has a dedicated Licchavi room with inscriptions. Stone inscriptions from this period are scattered throughout the valley - look for them embedded in temple walls."
+    },
+    {
+      "@id": "heritage:MallaPeriod",
+      "@type": [
+        "kg:HistoricalPeriod"
+      ],
+      "label": "Malla Period",
+      "nodeType": "period",
+      "description": "Nepal's golden age of art and architecture (c. 1200–1768 CE) — three rival Malla kingdoms produced the valley's greatest palaces, temples, and artistic achievements.",
+      "storyText": "The Malla era is the golden age of Newari civilisation. For over five centuries, three rival Malla kingdoms — Kathmandu, Patan, and Bhaktapur — competed in a magnificent artistic arms race. Each king tried to outdo the others with grander temples, finer sculpture, more elaborate festivals. The result is the extraordinary density of monuments we see today: Nyatapola's five storeys, Patan's golden gate, Bhaktapur's 55-window palace. The Malla era also codified Nepal's festival calendar, established the Living Goddess Kumari tradition, and produced the finest examples of woodcarving, stone sculpture, and gilded bronze in the Himalayan world.",
+      "inceptionYear": "1200",
+      "associatedWith": [
+        "heritage:NyatapolaTempel",
+        "heritage:PatanDurbarSquare",
+        "heritage:BhaktapurCity",
+        "heritage:KumariGoddess"
+      ],
+      "influencedBy": "heritage:LicchaviPeriod",
+      "wikipediaTitle": "Malla dynasty (Nepal)",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Golden_Gate_Bhaktapur.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Golden_Gate_Bhaktapur.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Malla_dynasty_art.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bhaktapur_55_window_palace.jpg"
+      ],
+      "significance": "Golden age of Nepalese art and architecture",
+      "tags": [
+        "period",
+        "malla",
+        "golden age",
+        "art",
+        "architecture",
+        "newari"
+      ],
+      "keyFacts": [
+        {
+          "label": "Duration",
+          "value": "c. 1200-1769 CE"
+        },
+        {
+          "label": "Capitals",
+          "value": "Kathmandu, Patan, Bhaktapur (three rival kingdoms from 1482)"
+        },
+        {
+          "label": "Religion",
+          "value": "Tantric Shaivism + Vajrayana Buddhism"
+        },
+        {
+          "label": "Key achievement",
+          "value": "All major UNESCO Heritage temples and palaces"
+        },
+        {
+          "label": "End",
+          "value": "1769 - Prithvi Narayan Shah conquers all three kingdoms"
+        }
+      ],
+      "architecture": "The Malla canon: multi-tiered pagoda temples (2-5 storeys) with carved wood torana gateways, brick plinths, bronze finials, and copper-gilded roofs. Elaborately carved wooden struts (tunala) support each roof tier. Erotic carvings on lower struts are believed to deter lightning. Stone sculpture and bronze casting reached their apex - the Patan Museum's Malla bronzes are world-class.",
+      "history": "Beginning as a unified kingdom, the Mallas split into three rival city-states in 1482 after Yaksha Malla divided his kingdom among his sons. A 300-year competition between Kathmandu, Patan, and Bhaktapur produced the valley's greatest art. The Bhaktapur king Bhupatindra Malla (1696-1722) alone built Nyatapola, the 55-window palace, the Golden Gate, and Dattatreya Square in one extraordinary reign.",
+      "culturalRole": "Every temple, palace, and artistic tradition in the Kathmandu Valley UNESCO zones was created during the Malla period. The Malla kings were themselves scholars - composing plays (still performed), writing music, and commissioning the greatest art the Himalayas have ever seen. They codified the Kumari tradition, institutionalized Indra Jatra and Bisket Jatra, and established the caste organizations that kept festivals alive for centuries.",
+      "visitNote": "The entire Kathmandu Valley UNESCO zone is a Malla outdoor museum. The Patan Museum (inside the Malla royal palace) is the best introduction. For Bhaktapur's peak Malla achievement, hire a specialist guide who can decode the iconography of every carved wooden window. The competitive rivalry between three kings produced a legacy that benefits every visitor today."
+    },
+    {
+      "@id": "heritage:ShahPeriod",
+      "@type": [
+        "kg:HistoricalPeriod"
+      ],
+      "label": "Shah Period",
+      "nodeType": "period",
+      "description": "The unification of Nepal under Prithvi Narayan Shah (1768 CE) and the creation of the modern Nepali state — a kingdom that survived until the republic was declared in 2008.",
+      "storyText": "Prithvi Narayan Shah, king of the small hill state of Gorkha, spent twenty years unifying the divided Malla kingdoms into a single nation. In 1769 he conquered Kathmandu on the night of the Indra Jatra festival — the Malla king was so engrossed in the celebration he failed to notice the army at the gates. The Shah dynasty ruled Nepal as the world's only Hindu kingdom for 240 years, through a Rana oligarchy, the 1990 people's movement, and a brutal Maoist conflict, until the Constituent Assembly abolished the monarchy in 2008 and declared Nepal a federal democratic republic.",
+      "inceptionYear": "1768",
+      "influencedBy": "heritage:MallaPeriod",
+      "wikipediaTitle": "Prithvi Narayan Shah",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Prithvi_Narayan_Shah.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Prithvi_Narayan_Shah.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Gorkha_palace.jpg"
+      ],
+      "significance": "Unification of Nepal; 240-year monarchy",
+      "tags": [
+        "period",
+        "shah",
+        "gorkha",
+        "unification",
+        "modern",
+        "prithvi"
+      ],
+      "keyFacts": [
+        {
+          "label": "Founded",
+          "value": "1769 CE - unification by Prithvi Narayan Shah"
+        },
+        {
+          "label": "Origin kingdom",
+          "value": "Gorkha, 200 km west of Kathmandu"
+        },
+        {
+          "label": "Capital",
+          "value": "Kathmandu (moved from Gorkha in 1769)"
+        },
+        {
+          "label": "Key figure",
+          "value": "Prithvi Narayan Shah (1723-1775)"
+        },
+        {
+          "label": "End",
+          "value": "2008 - Nepal becomes Federal Democratic Republic"
+        }
+      ],
+      "history": "Prithvi Narayan Shah of Gorkha spent 27 years conquering the three Malla city-states: Kirtipur (1765), Bhaktapur (1765), Kathmandu (1768), Patan (1768). He described Nepal as 'a yam between two boulders' (India and China). His descendants ruled until 2008 when King Gyanendra was deposed after a decade-long Maoist insurgency and the royal massacre of 2001 that killed King Birendra and most of the royal family.",
+      "culturalRole": "The Shah period created modern Nepal as a nation-state with its current borders. It produced Nepal's military identity (the Gurkha regiments, prized by the British Army and the UN since 1815). Key reforms included ending the Rana oligarchy (1951), Nepal's first constitution (1959), and the democratic transition. The Shahs also preserved the Kathmandu Valley's heritage by maintaining the festival system.",
+      "visitNote": "Hanuman Dhoka palace was the Shah royal seat until Narayanhiti Palace was built. Visit Narayanhiti Palace Museum (now public) - the preserved rooms of the 2001 royal massacre are sobering. Gorkha Palace (3 hrs west by road) is the ancestral home - a dramatic hilltop fort with Himalayan views. The Prithvi Narayan Shah statue in Singha Durbar is the most visited memorial."
+    },
+    {
+      "@id": "heritage:NewariCulture",
+      "@type": [
+        "kg:Culture"
+      ],
+      "label": "Newari Culture",
+      "nodeType": "culture",
+      "description": "The indigenous culture of the Kathmandu Valley — the Newar people created Nepal's artistic, architectural, and culinary traditions over two millennia.",
+      "storyText": "The Newars are the original inhabitants of the Kathmandu Valley, a people whose civilisation produced every major monument, sculpture, painting, and festival in the valley. Newari culture is remarkable for being simultaneously Hindu and Buddhist: the same family may have a Buddhist name and a Hindu surname, worship at both stupas and temples, and follow a ritual calendar that blends both traditions seamlessly. The Newar social structure is organised into castes tied to specific crafts: goldsmiths (Shakya), farmers (Jyapu), merchants (Shrestha), and priests. Their cuisine — buffalo meat, fermented mustard greens, rice beer (chhaang), beaten rice — is unlike anything else in South Asia.",
+      "ethnicity": "Newar",
+      "associatedWith": [
+        "heritage:KathmanduValley",
+        "heritage:MallaPeriod"
+      ],
+      "wikipediaTitle": "Newar people",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Newar_people.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Newar_people.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Newari_architecture.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Newari_food.jpg"
+      ],
+      "significance": "Indigenous culture that created valley civilization",
+      "tags": [
+        "culture",
+        "newar",
+        "indigenous",
+        "art",
+        "architecture",
+        "syncretic"
+      ],
+      "keyFacts": [
+        {
+          "label": "People",
+          "value": "~1.5 million Newars in Nepal"
+        },
+        {
+          "label": "Language",
+          "value": "Nepal Bhasa (Newari) - Sino-Tibetan family"
+        },
+        {
+          "label": "Territory",
+          "value": "Kathmandu Valley (original homeland)"
+        },
+        {
+          "label": "Caste groups",
+          "value": "64+ distinct Newar castes"
+        },
+        {
+          "label": "Global export",
+          "value": "Arniko (1245-1306) - Newar architect built Beijing's White Stupa"
+        }
+      ],
+      "history": "The Newars are the original inhabitants of the Kathmandu Valley with a civilization over 2,000 years old. They were the master craftsmen of the entire Himalayan region - Newar artisans built not only the valley's temples but were exported to Tibet and China. The craftsman Arniko (Araniko) traveled to Kublai Khan's court in 1260 CE and designed the famous White Stupa (Miaoying Temple) in Beijing, still standing today.",
+      "culturalRole": "The living bearers of all Kathmandu Valley heritage. Newar civilization produced Nepal's classical music (dhimay, naumati baja), dance (charya nritya, lakhe), metalwork (lost-wax bronze casting), woodcarving, pauabha scroll painting, and the world's only syncretic Hindu-Buddhist religion. With 50+ festivals per year, the Newars keep the ancient temple traditions alive through hereditary priest castes and the guthi community system.",
+      "rituals": [
+        "Mha Puja - unique self-worship ceremony on Tihar Day 4 (Newari New Year)",
+        "Ihi ceremony - symbolic marriage of pre-pubescent girls to the bel fruit (immortality)",
+        "Bahra ceremony - coming-of-age seclusion ritual for girls",
+        "Gunla - month of daily Buddhist processions and naumati music through the valley",
+        "Samyak - grand Buddhist feast held once every 5 years for community merit",
+        "Guthi system - hereditary community associations maintaining temple ritual and festivals"
+      ],
+      "visitNote": "Patan (Lalitpur) is the best city for Newari culture: food (bara, chatamari, kwati, yomari), art, and the Patan Museum. Look for active bronze-casters and pauabha painters in bahal courtyards. A Newari home-visit meal through a cultural tour operator is the richest single experience - try raksi (millet wine), bara, and choila (spiced buffalo)."
+    },
+    {
+      "@id": "heritage:Lumbini",
+      "@type": [
+        "Place",
+        "kg:SacredSite"
+      ],
+      "label": "Lumbini — Birthplace of Buddha",
+      "nodeType": "sacred_site",
+      "description": "The birthplace of Siddhartha Gautama in the Terai plains of southern Nepal — a UNESCO World Heritage Site and one of Buddhism's four holiest pilgrimage sites.",
+      "storyText": "In the flat green plains of the Terai, where Nepal meets India, stands a grove of sal trees and the famous Ashoka Pillar — a column erected by the Mauryan emperor Ashoka in 249 BCE to mark the exact spot where Siddhartha Gautama was born. Queen Maya Devi had stopped here while travelling to give birth, and reached up to grasp a sal branch when labour began. The child stepped to the ground and took seven steps in each of the four directions, declaring himself the one who would end suffering. Today Lumbini's sacred garden is surrounded by a pilgrimage zone filled with monasteries built by Buddhist nations from Japan, China, Thailand, Korea, and beyond.",
+      "lat": "27.4833",
+      "long": "83.2761",
+      "unescoStatus": "World Heritage Site (1997)",
+      "religion": "Buddhism",
+      "dedicatedTo": [
+        "heritage:BuddhaLord"
+      ],
+      "associatedWith": [
+        "heritage:BuddhaLord"
+      ],
+      "wikipediaTitle": "Lumbini",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Lumbini_-_birthplace_of_the_Lord_Buddha.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Lumbini_-_birthplace_of_the_Lord_Buddha.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Ashoka_pillar_Lumbini.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Maya_Devi_temple_Lumbini.jpg"
+      ],
+      "significance": "Birthplace of the Buddha; UNESCO World Heritage Site",
+      "tags": [
+        "sacred",
+        "buddhism",
+        "birthplace",
+        "lumbini",
+        "terai",
+        "ashoka",
+        "pilgrimage"
+      ],
+      "keyFacts": [
+        {
+          "label": "Location",
+          "value": "Rupandehi District, Province 5, Nepal"
+        },
+        {
+          "label": "Distance",
+          "value": "280 km from Kathmandu (45-min flight or 6-hr drive)"
+        },
+        {
+          "label": "UNESCO",
+          "value": "World Heritage Site since 1997"
+        },
+        {
+          "label": "Ashokan Pillar",
+          "value": "249 BCE - oldest Buddhist inscription in Nepal"
+        },
+        {
+          "label": "Master plan",
+          "value": "Kenzo Tange (Japanese architect), 1978"
+        }
+      ],
+      "architecture": "The Lumbini Development Zone has three concentric zones: the Sacred Garden (Mayadevi Temple, Ashokan Pillar, Sacred Pond, nativity marker stone), the Central Canal Zone with 25+ international monasteries from 20 nations, and the outer visitor zone. Each national monastery is built in the architectural style of its home country - making Lumbini a world architecture tour in one afternoon.",
+      "history": "Siddhartha Gautama was born here c. 563 BCE under a sal tree as his mother Queen Mayadevi paused on her journey to her parents' home. Emperor Ashoka visited in 249 BCE and erected a sandstone pillar with the Brahmi inscription: 'Here the Blessed One was born.' The site fell into decline after the 7th century and was rediscovered by British archaeologist Alois Fuhrer and Khadga Shamsher Rana in 1896.",
+      "culturalRole": "One of the four holiest Buddhist pilgrimage sites globally (with Bodh Gaya, Sarnath, and Kushinagar). The birthplace of a religion followed by 535 million people. Nepal's only UNESCO World Heritage Site outside the Kathmandu Valley. The Eternal Flame at the center of the development zone was lit from the fire at the United Nations headquarters and symbolizes world peace.",
+      "rituals": [
+        "Buddha Purnima (May full moon) - the year's largest pilgrimage day; thousands of monks and laity",
+        "Meditation at the Sacred Garden - open daily, most powerful at dawn",
+        "Circumambulation of Mayadevi Temple",
+        "Monastery prayer cycles across the international zone",
+        "Peace Walk along the Central Canal",
+        "Butter lamp offerings at national monasteries on holy days"
+      ],
+      "visitNote": "Fly from Kathmandu to Bhairahawa airport (45 min) then 20-min taxi. Stay overnight - the Sacred Garden at dawn before tour groups is transcendent. Hire a bicycle for the international monastery zone. The Tibetan, Japanese, Thai, Chinese, and Sri Lankan monasteries are each architecturally extraordinary. The Ashokan Pillar and birth marker stone in Mayadevi Temple are the spiritual core of the entire site."
+    },
+    {
+      "@id": "heritage:BagmatiRiver",
+      "@type": [
+        "LakeBodyOfWater",
+        "kg:SacredRiver"
+      ],
+      "label": "Bagmati River",
+      "nodeType": "sacred_site",
+      "description": "The sacred river of Kathmandu — for Hindus as holy as the Ganges. Its banks host the valley's most important cremation ghats and ancient temples.",
+      "storyText": "The Bagmati is the Ganges of Nepal. Its waters are sacred to Hindus who believe bathing in it on auspicious days washes away sins, and dying on its banks — or having one's ashes scattered in it — guarantees liberation from the cycle of rebirth. At Pashupatinath the ghats line both banks: the upper ghats reserved for royalty and Brahmin priests, the lower for ordinary devotees. The smoke from the funeral pyres mingles with the smell of incense and marigolds in an atmosphere unlike anywhere else on earth — intensely alive and intensely mortal simultaneously.",
+      "lat": "27.7097",
+      "long": "85.3472",
+      "religion": "Hinduism",
+      "associatedWith": [
+        "heritage:PashupatinathTemple",
+        "heritage:ShivaLord"
+      ],
+      "wikipediaTitle": "Bagmati River",
+      "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Bagmati_River.jpg",
+      "images": [
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bagmati_River.jpg",
+        "https://en.wikipedia.org/wiki/Special:FilePath/Bagmati_ghats.jpg"
+      ],
+      "significance": "Sacred river; cremation ghats; as holy as the Ganges",
+      "tags": [
+        "river",
+        "sacred",
+        "cremation",
+        "hindu",
+        "bagmati",
+        "ghat"
+      ],
+      "keyFacts": [
+        {
+          "label": "Length",
+          "value": "163 km (source to Nepal border)"
+        },
+        {
+          "label": "Source",
+          "value": "Bagdwar spring, Shivapuri National Park, 1,640 m"
+        },
+        {
+          "label": "Sacred status",
+          "value": "As holy as the Ganges for Nepali Hindus"
+        },
+        {
+          "label": "Main cremation ghat",
+          "value": "Arya Ghat and Ram Ghat at Pashupatinath"
+        },
+        {
+          "label": "Restoration",
+          "value": "Major cleanup project underway since 2013"
+        }
+      ],
+      "history": "The Bagmati is described in the Skanda Purana (10th century CE) as equal in sanctity to the Ganges. Kathmandu's major settlements all arose on its banks or tributaries. The river has been the primary Hindu cremation site for over 1,600 years. The name may derive from Sanskrit 'Baga-mati' (tiger river). Rapid urbanization after 1970 turned it into a sewer; the Bagmati Civilization Integrated Development Committee has been leading dramatic restoration since 2013.",
+      "culturalRole": "Nepal's most sacred river - dying on its banks or being cremated in its waters is believed to guarantee moksha (liberation from rebirth). The Arya Ghat and Ram Ghat at Pashupatinath receive dozens to hundreds of cremations daily. The river connects Nepal's diverse peoples in a shared ritual identity. Its ongoing restoration has become a national cultural and environmental mission.",
+      "rituals": [
+        "Cremation at Arya Ghat and Ram Ghat (Pashupatinath) - every day, from dawn",
+        "Bala Chaturdashi - all-night vigil; oil lamps floated on the river to guide the departed",
+        "Maha Shivaratri bathing - pilgrims bathe to wash away sins",
+        "Chhath Puja - sun worship performed standing in the river at sunrise and sunset",
+        "Teej - women bathe while fasting for husbands' longevity",
+        "Madane Chaturdashi - floating of lit lamps downstream"
+      ],
+      "visitNote": "The most powerful experience is watching cremations from the west bank at Pashupatinath at dawn or dusk - maintain complete silence and never photograph mourning families. The restored river walk from Teku to Thapathali (2013+) is worth walking. The restoration is dramatic - a river that was an open sewer 10 years ago now supports fish and migratory birds again."
+    }
+  ]
+}
