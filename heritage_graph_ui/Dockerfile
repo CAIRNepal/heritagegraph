@@ -14,6 +14,9 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 # Copy package files
 COPY package.json package-lock.json* pnpm-lock.yaml* ./
 
+# Copy scripts needed for postinstall
+COPY scripts/ ./scripts/
+
 # Install production dependencies
 RUN npm ci --only=production 2>/dev/null || npm install --only=production
 
@@ -25,6 +28,7 @@ WORKDIR /app
 
 # Copy package files and install all deps (including dev)
 COPY package.json package-lock.json* pnpm-lock.yaml* ./
+COPY scripts/ ./scripts/
 RUN npm ci 2>/dev/null || npm install
 
 # Copy source code
