@@ -1030,7 +1030,18 @@ class Comments(models.Model):
         max_length=11, unique=True, blank=True, editable=False
     )
     submission = models.ForeignKey(
-        "CulturalEntity", on_delete=models.CASCADE, related_name="comments"
+        "CulturalEntity",
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
+    )
+    project = models.ForeignKey(
+        "Project",
+        on_delete=models.CASCADE,
+        related_name="comments",
+        null=True,
+        blank=True,
     )
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="user_comments"
@@ -1052,6 +1063,7 @@ class Comments(models.Model):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["submission", "created_at"]),
+            models.Index(fields=["project", "created_at"]),
         ]
 
     def save(self, *args, **kwargs):
@@ -1060,7 +1072,9 @@ class Comments(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"Comment by {self.user.username} on {self.submission.entity_id}"
+        if self.submission_id:
+            return f"Comment by {self.user.username} on entity {self.submission_id}"
+        return f"Comment by {self.user.username} on project {self.project_id}"
 
 
 class SubmissionVersion(models.Model):
@@ -1134,6 +1148,8 @@ class Notification(models.Model):
         ("reaction", "Reaction"),
         ("fork", "Fork"),
         ("general", "General"),
+        ("project_state_changed", "Project State Changed"),
+        ("project_comment", "Project Comment"),
     ]
 
     notification_id = models.CharField(
@@ -1162,6 +1178,13 @@ class Notification(models.Model):
     )
     entity = models.ForeignKey(
         CulturalEntity,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        null=True,
+        blank=True,
+    )
+    project = models.ForeignKey(
+        "Project",
         on_delete=models.CASCADE,
         related_name="notifications",
         null=True,
@@ -1836,3 +1859,324 @@ class Share(models.Model):
 
     def __str__(self):
         return f"Shared {self.entity} on {self.platform}"
+
+
+# =====================================================================
+# PROJECT-BASED CONTRIBUTION (final_plan.md §3)
+# =====================================================================
+#
+# A Project is an authoring/governance container for a contributor's
+# dossier on a single heritage subject. It references ontology
+# instances (CulturalEntity, Media, etc.) without being one itself.
+
+
+class Project(models.Model):
+    STATE_DRAFT = "draft"
+    STATE_IN_REVIEW = "in_review"
+    STATE_NEEDS_REVISION = "needs_revision"
+    STATE_APPROVED = "approved"
+    STATE_MERGED = "merged"
+    STATE_WITHDRAWN = "withdrawn"
+    STATE_CHOICES = [
+        (STATE_DRAFT, "Draft"),
+        (STATE_IN_REVIEW, "In Review"),
+        (STATE_NEEDS_REVISION, "Needs Revision"),
+        (STATE_APPROVED, "Approved"),
+        (STATE_MERGED, "Merged"),
+        (STATE_WITHDRAWN, "Withdrawn"),
+    ]
+
+    VISIBILITY_PRIVATE = "private"
+    VISIBILITY_ORG = "org"
+    VISIBILITY_PUBLIC = "public"
+    VISIBILITY_CHOICES = [
+        (VISIBILITY_PRIVATE, "Private"),
+        (VISIBILITY_ORG, "Organization"),
+        (VISIBILITY_PUBLIC, "Public"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    slug = models.SlugField(max_length=80, unique=True)
+    title = models.CharField(max_length=200)
+    abstract = models.TextField(blank=True)
+    intended_subject = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text="Free-text subject hint (e.g. 'temple', 'ritual'); guides class suggestions.",
+    )
+    languages = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of BCP-47 language tags this project authors in.",
+    )
+
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="owned_projects",
+    )
+    collaborators = models.ManyToManyField(
+        User,
+        through="ProjectMembership",
+        through_fields=("project", "user"),
+        related_name="projects",
+        blank=True,
+    )
+
+    visibility = models.CharField(
+        max_length=10,
+        choices=VISIBILITY_CHOICES,
+        default=VISIBILITY_PRIVATE,
+    )
+    state = models.CharField(
+        max_length=20,
+        choices=STATE_CHOICES,
+        default=STATE_DRAFT,
+    )
+
+    forked_from = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="forks",
+    )
+
+    schema_version = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text="Git SHA of ontology/HeritageGraph.yaml at project start.",
+    )
+    canvas_state = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Persistent node positions for the drag-and-arrow canvas.",
+    )
+
+    tags = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Free-form tags used by reviewer-queue filters.",
+    )
+
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    merged_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "projects"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["state"]),
+            models.Index(fields=["visibility"]),
+            models.Index(fields=["owner"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.title} ({self.get_state_display()})"
+
+
+class ProjectMembership(models.Model):
+    ROLE_OWNER = "owner"
+    ROLE_EDITOR = "editor"
+    ROLE_VIEWER = "viewer"
+    ROLE_DOMAIN_EXPERT = "domain_expert"
+    ROLE_CHOICES = [
+        (ROLE_OWNER, "Owner"),
+        (ROLE_EDITOR, "Editor"),
+        (ROLE_VIEWER, "Viewer"),
+        (ROLE_DOMAIN_EXPERT, "Domain Expert"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="project_memberships",
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default=ROLE_EDITOR,
+    )
+    invited_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="project_invitations_sent",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "project_memberships"
+        unique_together = [("project", "user")]
+        indexes = [
+            models.Index(fields=["project", "role"]),
+            models.Index(fields=["user"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} {self.role} on {self.project_id}"
+
+
+class ProjectAsset(models.Model):
+    ROLE_EVIDENCE = "evidence"
+    ROLE_PRIMARY = "primary"
+    ROLE_REFERENCE = "reference"
+    ROLE_CHOICES = [
+        (ROLE_EVIDENCE, "Evidence"),
+        (ROLE_PRIMARY, "Primary"),
+        (ROLE_REFERENCE, "Reference"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="assets",
+    )
+    media = models.ForeignKey(
+        Media,
+        on_delete=models.PROTECT,
+        related_name="project_assets",
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default=ROLE_EVIDENCE,
+    )
+    caption = models.CharField(max_length=255, blank=True)
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="project_assets_uploaded",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "project_assets"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "role"]),
+        ]
+
+    def __str__(self):
+        return f"Asset {self.media_id} on project {self.project_id}"
+
+
+class ProjectEntity(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="entities",
+    )
+    entity = models.ForeignKey(
+        CulturalEntity,
+        on_delete=models.CASCADE,
+        related_name="project_links",
+    )
+    role_in_project = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text="Free-text role, e.g. 'subject', 'context', 'reference'.",
+    )
+    added_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name="project_entities_added",
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "project_entities"
+        unique_together = [("project", "entity")]
+        ordering = ["-added_at"]
+        indexes = [
+            models.Index(fields=["project"]),
+            models.Index(fields=["entity"]),
+        ]
+
+    def __str__(self):
+        return f"Entity {self.entity_id} on project {self.project_id}"
+
+
+class ProjectActivity(models.Model):
+    """Scoped audit log for a project. Separate from the global ActivityLog."""
+
+    ACTION_CREATED = "created"
+    ACTION_UPDATED = "updated"
+    ACTION_STATE_CHANGED = "state_changed"
+    ACTION_MEMBER_ADDED = "member_added"
+    ACTION_MEMBER_REMOVED = "member_removed"
+    ACTION_ASSET_ADDED = "asset_added"
+    ACTION_ASSET_REMOVED = "asset_removed"
+    ACTION_ENTITY_LINKED = "entity_linked"
+    ACTION_ENTITY_UNLINKED = "entity_unlinked"
+    ACTION_SUBMITTED = "submitted"
+    ACTION_REVIEWED = "reviewed"
+    ACTION_MERGED = "merged"
+    ACTION_FORKED = "forked"
+    ACTION_COMMENTED = "commented"
+
+    ACTION_CHOICES = [
+        (ACTION_CREATED, "Created"),
+        (ACTION_UPDATED, "Updated"),
+        (ACTION_STATE_CHANGED, "State Changed"),
+        (ACTION_MEMBER_ADDED, "Member Added"),
+        (ACTION_MEMBER_REMOVED, "Member Removed"),
+        (ACTION_ASSET_ADDED, "Asset Added"),
+        (ACTION_ASSET_REMOVED, "Asset Removed"),
+        (ACTION_ENTITY_LINKED, "Entity Linked"),
+        (ACTION_ENTITY_UNLINKED, "Entity Unlinked"),
+        (ACTION_SUBMITTED, "Submitted"),
+        (ACTION_REVIEWED, "Reviewed"),
+        (ACTION_MERGED, "Merged"),
+        (ACTION_FORKED, "Forked"),
+        (ACTION_COMMENTED, "Commented"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="activities",
+    )
+    actor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="project_activities",
+    )
+    action = models.CharField(max_length=40, choices=ACTION_CHOICES)
+    target_kind = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text="Optional kind hint for the target (e.g. 'entity', 'asset', 'membership').",
+    )
+    target_id = models.CharField(max_length=64, blank=True)
+    payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "project_activities"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "created_at"]),
+            models.Index(fields=["actor"]),
+            models.Index(fields=["action"]),
+        ]
+
+    def __str__(self):
+        return f"{self.action} on project {self.project_id} by {self.actor_id}"

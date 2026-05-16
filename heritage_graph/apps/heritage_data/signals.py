@@ -108,3 +108,116 @@ def update_user_stats_from_submission(sender, instance, **kwargs):
 @receiver(post_save, sender=CulturalEntity)
 def update_user_stats_from_cultural_entity(sender, instance, **kwargs):
     refresh_user_stats(instance.contributor)
+
+
+# =====================================================================
+# PROJECT SIGNALS
+# =====================================================================
+
+def _notify_project_members(project, actor, notification_type, message, link=""):
+    """Create Notification rows for all active project members except the actor."""
+    from .models import Notification, ProjectMembership
+
+    recipients = set()
+    recipients.add(project.owner_id)
+    for uid in project.memberships.values_list("user_id", flat=True):
+        recipients.add(uid)
+
+    actor_id = actor.id if actor and actor.is_authenticated else None
+    for user_id in recipients:
+        if user_id == actor_id:
+            continue
+        Notification.objects.create(
+            user_id=user_id,
+            actor=actor if actor and actor.is_authenticated else None,
+            notification_type=notification_type,
+            project=project,
+            message=message,
+            link=link,
+        )
+
+
+@receiver(post_save, sender="heritage_data.ProjectActivity")
+def on_project_activity(sender, instance, created, **kwargs):
+    """Fire notifications when a project changes state."""
+    if not created:
+        return
+    from .models import Project
+
+    if instance.action != "state_changed":
+        return
+
+    project = instance.project
+    new_state = instance.payload.get("to_state", project.state)
+    human = {
+        Project.STATE_IN_REVIEW: "submitted for review",
+        Project.STATE_APPROVED: "approved",
+        Project.STATE_NEEDS_REVISION: "returned for revision",
+        Project.STATE_MERGED: "merged into the public graph",
+        Project.STATE_WITHDRAWN: "withdrawn",
+    }.get(new_state)
+    if not human:
+        return
+
+    _notify_project_members(
+        project=project,
+        actor=instance.actor,
+        notification_type="project_state_changed",
+        message=f'Project "{project.title}" has been {human}.',
+        link=f"/contribute/projects/{project.slug}",
+    )
+
+    # When merged, trigger RDF projection for all project entities.
+    if new_state == Project.STATE_MERGED:
+        _project_rdf_merge(project)
+
+
+@receiver(post_save, sender="heritage_data.Comments")
+def on_project_comment(sender, instance, created, **kwargs):
+    """Notify project members when a new comment is posted on a project."""
+    if not created or instance.project_id is None:
+        return
+
+    project = instance.project
+    actor = instance.user
+    _notify_project_members(
+        project=project,
+        actor=actor,
+        notification_type="project_comment",
+        message=f'{actor.username} commented on project "{project.title}".',
+        link=f"/contribute/projects/{project.slug}",
+    )
+
+
+def _project_rdf_merge(project):
+    """
+    Project has been merged: promote each linked CulturalEntity into the public
+    RDF named graph.  Runs inside transaction.on_commit so the Postgres rows are
+    visible before we touch the triplestore.
+    """
+    from django.conf import settings
+    from django.db import transaction
+
+    if not getattr(settings, "RDF_SYNC_ENABLED", False):
+        return
+
+    entity_ids = list(
+        project.entities.values_list("entity_id", flat=True)
+    )
+    if not entity_ids:
+        return
+
+    def _do_projection():
+        try:
+            from apps.cidoc_data.rdf_entity_projection import project_entity_to_rdf
+            from .models import CulturalEntity
+
+            for entity in CulturalEntity.objects.filter(id__in=entity_ids):
+                try:
+                    project_entity_to_rdf(entity)
+                except Exception:
+                    pass
+        except ImportError:
+            pass
+
+    transaction.on_commit(_do_projection)

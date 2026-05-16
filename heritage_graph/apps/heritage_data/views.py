@@ -4104,3 +4104,348 @@ class ProgressionView(APIView):
                 "leaderboard": leaderboard[:50],
             }
         )
+
+
+# =====================================================================
+# PROJECT-BASED CONTRIBUTION VIEWSETS (final_plan.md §3)
+# =====================================================================
+
+from django.db import transaction  # noqa: E402
+from django.db.models import Count  # noqa: E402
+from .models import (  # noqa: E402
+    Project,
+    ProjectActivity,
+    ProjectAsset,
+    ProjectEntity,
+    ProjectMembership,
+)
+
+
+class IsProjectOwnerOrReadOnly(permissions.BasePermission):
+    """Owner can mutate; collaborators with editor role can mutate; others read if visible."""
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return _user_can_view_project(request.user, obj)
+        return _user_can_edit_project(request.user, obj)
+
+
+def _user_can_view_project(user, project):
+    if project.visibility == Project.VISIBILITY_PUBLIC:
+        return True
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or project.owner_id == user.id:
+        return True
+    return project.memberships.filter(user=user).exists()
+
+
+def _user_can_edit_project(user, project):
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_staff or project.owner_id == user.id:
+        return True
+    return project.memberships.filter(
+        user=user,
+        role__in=[ProjectMembership.ROLE_OWNER, ProjectMembership.ROLE_EDITOR],
+    ).exists()
+
+
+def _log_project_activity(project, actor, action, *, target_kind="", target_id="", payload=None):
+    ProjectActivity.objects.create(
+        project=project,
+        actor=actor if actor and actor.is_authenticated else None,
+        action=action,
+        target_kind=target_kind,
+        target_id=str(target_id) if target_id else "",
+        payload=payload or {},
+    )
+
+
+# Allowed state transitions for the project lifecycle.
+# draft -> in_review -> {approved | needs_revision}
+# needs_revision -> in_review (after edits)
+# approved -> merged
+# any -> withdrawn (by owner)
+_PROJECT_TRANSITIONS = {
+    Project.STATE_DRAFT: {Project.STATE_IN_REVIEW, Project.STATE_WITHDRAWN},
+    Project.STATE_IN_REVIEW: {
+        Project.STATE_APPROVED,
+        Project.STATE_NEEDS_REVISION,
+        Project.STATE_WITHDRAWN,
+    },
+    Project.STATE_NEEDS_REVISION: {Project.STATE_IN_REVIEW, Project.STATE_WITHDRAWN},
+    Project.STATE_APPROVED: {Project.STATE_MERGED, Project.STATE_WITHDRAWN},
+    Project.STATE_MERGED: set(),
+    Project.STATE_WITHDRAWN: {Project.STATE_DRAFT},
+}
+
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    """CRUD + state machine for contributor projects."""
+
+    queryset = Project.objects.all()
+    permission_classes = [permissions.IsAuthenticated, IsProjectOwnerOrReadOnly]
+    lookup_field = "slug"
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["state", "visibility", "owner"]
+    search_fields = ["title", "abstract", "intended_subject"]
+    ordering_fields = ["created_at", "updated_at", "submitted_at", "merged_at"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = (
+            Project.objects.all()
+            .select_related("owner")
+            .annotate(
+                asset_count=Count("assets", distinct=True),
+                entity_count=Count("entities", distinct=True),
+                collaborator_count=Count("memberships", distinct=True),
+            )
+        )
+        if not user.is_authenticated:
+            return qs.filter(visibility=Project.VISIBILITY_PUBLIC)
+        if user.is_staff:
+            return qs
+        return qs.filter(
+            Q(visibility=Project.VISIBILITY_PUBLIC)
+            | Q(owner=user)
+            | Q(memberships__user=user)
+        ).distinct()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ProjectListSerializer
+        if self.action == "create":
+            return ProjectCreateSerializer
+        if self.action in {"update", "partial_update"}:
+            return ProjectUpdateSerializer
+        return ProjectDetailSerializer
+
+    def perform_create(self, serializer):
+        with transaction.atomic():
+            project = serializer.save(owner=self.request.user)
+            ProjectMembership.objects.create(
+                project=project,
+                user=self.request.user,
+                role=ProjectMembership.ROLE_OWNER,
+                invited_by=self.request.user,
+            )
+            _log_project_activity(
+                project, self.request.user, ProjectActivity.ACTION_CREATED
+            )
+
+    def perform_update(self, serializer):
+        project = serializer.save()
+        _log_project_activity(
+            project, self.request.user, ProjectActivity.ACTION_UPDATED
+        )
+
+    @action(detail=True, methods=["post"], url_path="transition")
+    def transition(self, request, slug=None):
+        project = self.get_object()
+        if not _user_can_edit_project(request.user, project):
+            raise PermissionDenied("Only project owners/editors can transition state.")
+
+        payload = ProjectStateTransitionSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+        target = payload.validated_data["target_state"]
+        comment = payload.validated_data.get("comment", "")
+
+        allowed = _PROJECT_TRANSITIONS.get(project.state, set())
+        if target not in allowed:
+            raise ValidationError(
+                f"Cannot transition from {project.state} to {target}."
+            )
+
+        with transaction.atomic():
+            previous = project.state
+            project.state = target
+            if target == Project.STATE_IN_REVIEW and not project.submitted_at:
+                project.submitted_at = timezone.now()
+            if target == Project.STATE_MERGED and not project.merged_at:
+                project.merged_at = timezone.now()
+            project.save(update_fields=["state", "submitted_at", "merged_at", "updated_at"])
+
+            _log_project_activity(
+                project,
+                request.user,
+                ProjectActivity.ACTION_STATE_CHANGED,
+                payload={"from": previous, "to": target, "comment": comment},
+            )
+
+        return Response(ProjectDetailSerializer(project, context={"request": request}).data)
+
+    @action(detail=True, methods=["get"], url_path="activity")
+    def activity(self, request, slug=None):
+        project = self.get_object()
+        qs = project.activities.select_related("actor").all()
+        page = self.paginate_queryset(qs)
+        serializer = ProjectActivitySerializer(page or qs, many=True)
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+
+class _ProjectScopedViewSet(viewsets.ModelViewSet):
+    """Base for viewsets that live under a single Project (resolved from URL kwarg)."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    project_url_kwarg = "project_slug"
+
+    def _get_project(self):
+        slug = self.kwargs.get(self.project_url_kwarg)
+        try:
+            project = Project.objects.get(slug=slug)
+        except Project.DoesNotExist as exc:
+            raise NotFound("Project not found.") from exc
+        return project
+
+    def _require_view(self, project):
+        if not _user_can_view_project(self.request.user, project):
+            raise PermissionDenied("You cannot view this project.")
+
+    def _require_edit(self, project):
+        if not _user_can_edit_project(self.request.user, project):
+            raise PermissionDenied("You cannot modify this project.")
+
+
+class ProjectMembershipViewSet(_ProjectScopedViewSet):
+    serializer_class = ProjectMembershipSerializer
+
+    def get_queryset(self):
+        project = self._get_project()
+        self._require_view(project)
+        return project.memberships.select_related("user", "invited_by")
+
+    def perform_create(self, serializer):
+        project = self._get_project()
+        self._require_edit(project)
+        membership = serializer.save(
+            project=project,
+            invited_by=self.request.user,
+        )
+        _log_project_activity(
+            project,
+            self.request.user,
+            ProjectActivity.ACTION_MEMBER_ADDED,
+            target_kind="membership",
+            target_id=membership.id,
+            payload={"user_id": str(membership.user_id), "role": membership.role},
+        )
+
+    def perform_destroy(self, instance):
+        project = self._get_project()
+        self._require_edit(project)
+        if instance.user_id == project.owner_id:
+            raise ValidationError("The project owner's membership cannot be removed.")
+        _log_project_activity(
+            project,
+            self.request.user,
+            ProjectActivity.ACTION_MEMBER_REMOVED,
+            target_kind="membership",
+            target_id=instance.id,
+            payload={"user_id": str(instance.user_id)},
+        )
+        instance.delete()
+
+
+class ProjectAssetViewSet(_ProjectScopedViewSet):
+    serializer_class = ProjectAssetSerializer
+
+    def get_queryset(self):
+        project = self._get_project()
+        self._require_view(project)
+        return project.assets.select_related("media", "uploaded_by")
+
+    def perform_create(self, serializer):
+        project = self._get_project()
+        self._require_edit(project)
+        asset = serializer.save(
+            project=project,
+            uploaded_by=self.request.user,
+        )
+        _log_project_activity(
+            project,
+            self.request.user,
+            ProjectActivity.ACTION_ASSET_ADDED,
+            target_kind="asset",
+            target_id=asset.id,
+            payload={"media_id": str(asset.media_id), "role": asset.role},
+        )
+
+    def perform_destroy(self, instance):
+        project = self._get_project()
+        self._require_edit(project)
+        _log_project_activity(
+            project,
+            self.request.user,
+            ProjectActivity.ACTION_ASSET_REMOVED,
+            target_kind="asset",
+            target_id=instance.id,
+        )
+        instance.delete()
+
+
+class ProjectEntityViewSet(_ProjectScopedViewSet):
+    serializer_class = ProjectEntitySerializer
+
+    def get_queryset(self):
+        project = self._get_project()
+        self._require_view(project)
+        return project.entities.select_related("entity", "added_by")
+
+    def perform_create(self, serializer):
+        project = self._get_project()
+        self._require_edit(project)
+        link = serializer.save(
+            project=project,
+            added_by=self.request.user,
+        )
+        _log_project_activity(
+            project,
+            self.request.user,
+            ProjectActivity.ACTION_ENTITY_LINKED,
+            target_kind="entity",
+            target_id=link.id,
+            payload={"entity_id": str(link.entity_id)},
+        )
+
+    def perform_destroy(self, instance):
+        project = self._get_project()
+        self._require_edit(project)
+        _log_project_activity(
+            project,
+            self.request.user,
+            ProjectActivity.ACTION_ENTITY_UNLINKED,
+            target_kind="entity",
+            target_id=instance.id,
+            payload={"entity_id": str(instance.entity_id)},
+        )
+        instance.delete()
+
+
+class ProjectCommentViewSet(_ProjectScopedViewSet):
+    """Threaded comments scoped to a project (final_plan.md §10.1)."""
+
+    serializer_class = ProjectCommentSerializer
+    lookup_field = "comment_id"
+
+    def get_queryset(self):
+        from .models import Comments
+        project = self._get_project()
+        self._require_view(project)
+        return Comments.objects.filter(project=project, parent__isnull=True).select_related("user")
+
+    def perform_create(self, serializer):
+        project = self._get_project()
+        self._require_view(project)
+        serializer.save(project=project, user=self.request.user)
+        _log_project_activity(
+            project,
+            self.request.user,
+            ProjectActivity.ACTION_COMMENTED,
+            target_kind="project",
+            target_id=project.id,
+        )

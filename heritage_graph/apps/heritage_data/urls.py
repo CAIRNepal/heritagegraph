@@ -57,6 +57,9 @@ router.register(r"submissions", views.SubmissionViewSet, basename="submission")
 router.register(r"comments", views.CommentViewSet, basename="comment")
 router.register(r"activity-logs", views.ActivityLogViewSet, basename="activity-log")
 
+# Project-based contribution (final_plan.md §3)
+router.register(r"projects", views.ProjectViewSet, basename="project")
+
 urlpatterns = [
     # Canonical API prefix for this app (kept for backwards compatibility)
     path("api/", include(router.urls)),
@@ -277,4 +280,55 @@ urlpatterns = [
     # ── i18n / Bikram Sambat endpoints ──────────────────────────────────────
     path("api/i18n/locale-info/", locale_info, name="locale-info"),
     path("api/i18n/convert-date/", convert_date, name="convert-date"),
+
+    # ── Project-scoped sub-resources (final_plan.md §3) ─────────────────────
+    path(
+        "projects/<slug:project_slug>/memberships/",
+        views.ProjectMembershipViewSet.as_view({"get": "list", "post": "create"}),
+        name="project-membership-list",
+    ),
+    path(
+        "projects/<slug:project_slug>/memberships/<uuid:pk>/",
+        views.ProjectMembershipViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+        ),
+        name="project-membership-detail",
+    ),
+    path(
+        "projects/<slug:project_slug>/assets/",
+        views.ProjectAssetViewSet.as_view({"get": "list", "post": "create"}),
+        name="project-asset-list",
+    ),
+    path(
+        "projects/<slug:project_slug>/assets/<uuid:pk>/",
+        views.ProjectAssetViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+        ),
+        name="project-asset-detail",
+    ),
+    path(
+        "projects/<slug:project_slug>/entities/",
+        views.ProjectEntityViewSet.as_view({"get": "list", "post": "create"}),
+        name="project-entity-list",
+    ),
+    path(
+        "projects/<slug:project_slug>/entities/<uuid:pk>/",
+        views.ProjectEntityViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+        ),
+        name="project-entity-detail",
+    ),
+    # ── Project comments (final_plan.md §10.1) ──────────────────────────────
+    path(
+        "projects/<slug:project_slug>/comments/",
+        views.ProjectCommentViewSet.as_view({"get": "list", "post": "create"}),
+        name="project-comment-list",
+    ),
+    path(
+        "projects/<slug:project_slug>/comments/<str:comment_id>/",
+        views.ProjectCommentViewSet.as_view(
+            {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
+        ),
+        name="project-comment-detail",
+    ),
 ]

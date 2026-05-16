@@ -45,6 +45,7 @@ import {
   IconFingerprint,
   IconLink,
   IconBrain,
+  IconFolders,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -248,6 +249,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             { title: t('contribute'), url: '/contribute', icon: IconPlus },
             ...(showAuthedNav
               ? [
+                  {
+                    title: 'My Projects',
+                    url: '/contribute/projects',
+                    icon: IconFolders,
+                  },
                   {
                     title: 'Entity proposal',
                     url: '/contribute/entity-proposal',

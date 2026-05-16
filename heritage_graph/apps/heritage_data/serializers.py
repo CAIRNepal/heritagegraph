@@ -2037,3 +2037,278 @@ class RelationshipProposalPatchSerializer(serializers.ModelSerializer):
         if self.instance and self.instance.status != RelationshipProposal.STATUS_DRAFT:
             raise ValidationError("Only draft proposals can be edited.")
         return attrs
+
+
+# =====================================================================
+# PROJECT-BASED CONTRIBUTION SERIALIZERS (final_plan.md §3)
+# =====================================================================
+
+from .models import (  # noqa: E402
+    Project,
+    ProjectActivity,
+    ProjectAsset,
+    ProjectEntity,
+    ProjectMembership,
+)
+
+
+class ProjectUserBriefSerializer(serializers.ModelSerializer):
+    """Compact user representation embedded in project payloads."""
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email"]
+        read_only_fields = fields
+
+
+class ProjectMembershipSerializer(serializers.ModelSerializer):
+    user = ProjectUserBriefSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source="user",
+        write_only=True,
+    )
+
+    class Meta:
+        model = ProjectMembership
+        fields = [
+            "id",
+            "project",
+            "user",
+            "user_id",
+            "role",
+            "invited_by",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "project", "invited_by", "created_at", "updated_at"]
+
+
+class ProjectAssetSerializer(serializers.ModelSerializer):
+    uploaded_by = ProjectUserBriefSerializer(read_only=True)
+    media_url = serializers.SerializerMethodField()
+    media_type = serializers.CharField(source="media.media_type", read_only=True)
+
+    class Meta:
+        model = ProjectAsset
+        fields = [
+            "id",
+            "project",
+            "media",
+            "media_url",
+            "media_type",
+            "role",
+            "caption",
+            "uploaded_by",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "project",
+            "uploaded_by",
+            "media_url",
+            "media_type",
+            "created_at",
+        ]
+
+    def get_media_url(self, obj):
+        if obj.media and obj.media.file:
+            request = self.context.get("request")
+            url = obj.media.file.url
+            return request.build_absolute_uri(url) if request else url
+        return None
+
+
+class ProjectEntitySerializer(serializers.ModelSerializer):
+    added_by = ProjectUserBriefSerializer(read_only=True)
+    entity_name = serializers.CharField(source="entity.name", read_only=True)
+    entity_category = serializers.CharField(source="entity.category", read_only=True)
+    entity_status = serializers.CharField(source="entity.status", read_only=True)
+
+    class Meta:
+        model = ProjectEntity
+        fields = [
+            "id",
+            "project",
+            "entity",
+            "entity_name",
+            "entity_category",
+            "entity_status",
+            "role_in_project",
+            "added_by",
+            "added_at",
+        ]
+        read_only_fields = [
+            "id",
+            "project",
+            "entity_name",
+            "entity_category",
+            "entity_status",
+            "added_by",
+            "added_at",
+        ]
+
+
+class ProjectActivitySerializer(serializers.ModelSerializer):
+    actor = ProjectUserBriefSerializer(read_only=True)
+
+    class Meta:
+        model = ProjectActivity
+        fields = [
+            "id",
+            "project",
+            "actor",
+            "action",
+            "target_kind",
+            "target_id",
+            "payload",
+            "created_at",
+        ]
+        read_only_fields = fields
+
+
+class ProjectListSerializer(serializers.ModelSerializer):
+    owner = ProjectUserBriefSerializer(read_only=True)
+    asset_count = serializers.IntegerField(read_only=True)
+    entity_count = serializers.IntegerField(read_only=True)
+    collaborator_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "slug",
+            "title",
+            "abstract",
+            "intended_subject",
+            "languages",
+            "owner",
+            "visibility",
+            "state",
+            "forked_from",
+            "tags",
+            "asset_count",
+            "entity_count",
+            "collaborator_count",
+            "submitted_at",
+            "merged_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = fields
+
+
+class ProjectDetailSerializer(serializers.ModelSerializer):
+    owner = ProjectUserBriefSerializer(read_only=True)
+    memberships = ProjectMembershipSerializer(many=True, read_only=True)
+    assets = ProjectAssetSerializer(many=True, read_only=True)
+    entities = ProjectEntitySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "slug",
+            "title",
+            "abstract",
+            "intended_subject",
+            "languages",
+            "owner",
+            "visibility",
+            "state",
+            "forked_from",
+            "schema_version",
+            "canvas_state",
+            "tags",
+            "memberships",
+            "assets",
+            "entities",
+            "submitted_at",
+            "merged_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "owner",
+            "state",
+            "schema_version",
+            "memberships",
+            "assets",
+            "entities",
+            "submitted_at",
+            "merged_at",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class ProjectCreateSerializer(serializers.ModelSerializer):
+    """Write serializer for POST /projects/. Owner and state are set server-side."""
+
+    class Meta:
+        model = Project
+        fields = [
+            "slug",
+            "title",
+            "abstract",
+            "intended_subject",
+            "languages",
+            "visibility",
+            "forked_from",
+            "tags",
+        ]
+
+    def validate_slug(self, value):
+        if Project.objects.filter(slug=value).exists():
+            raise ValidationError("A project with this slug already exists.")
+        return value
+
+
+class ProjectUpdateSerializer(serializers.ModelSerializer):
+    """Write serializer for PATCH /projects/<id>/. State is changed via dedicated action."""
+
+    class Meta:
+        model = Project
+        fields = [
+            "title",
+            "abstract",
+            "intended_subject",
+            "languages",
+            "visibility",
+            "tags",
+            "canvas_state",
+        ]
+
+
+class ProjectStateTransitionSerializer(serializers.Serializer):
+    """Payload for the /projects/<id>/transition/ action."""
+
+    target_state = serializers.ChoiceField(choices=Project.STATE_CHOICES)
+    comment = serializers.CharField(required=False, allow_blank=True, max_length=2000)
+
+
+class ProjectCommentSerializer(serializers.ModelSerializer):
+    """Comments scoped to a project (final_plan.md §10.1)."""
+
+    user = ProjectUserBriefSerializer(read_only=True)
+    replies = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import Comments
+        model = Comments
+        fields = [
+            "comment_id",
+            "project",
+            "user",
+            "comment",
+            "parent",
+            "replies",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["comment_id", "project", "user", "replies", "created_at", "updated_at"]
+
+    def get_replies(self, obj):
+        qs = obj.replies.order_by("created_at")
+        return ProjectCommentSerializer(qs, many=True, context=self.context).data
