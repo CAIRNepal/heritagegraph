@@ -40,6 +40,35 @@ def _slug(s: str) -> str:
     return s.lower().replace(" ", "_").replace("/", "_").replace("-", "_")
 
 
+# Architectural styles defined in Heritage.ttl via Getty AAT URIs (subClassOf crm:E55_Type).
+# Styles available as heritageGraph: classes are loaded via ont.cls(); the rest use AAT URIs.
+_AAT_STYLES: dict[str, str] = {
+    "pagoda":   "http://vocab.getty.edu/aat/300004829",
+    "shikhara": "http://vocab.getty.edu/aat/300446671",
+    "dome":     "http://vocab.getty.edu/aat/300001285",
+    "chaitya":  "http://vocab.getty.edu/aat/300007562",
+}
+
+
+def _arch_style(g: Graph, style_str: str) -> URIRef:
+    """Return the authoritative URI for an architectural style and label it."""
+    key = style_str.lower()
+    # heritageGraph: classes first (Stupa, Chaitya exist there)
+    try:
+        uri = ont.cls(style_str)
+        g.add((uri, RDFS.label, Literal(style_str)))
+        return uri
+    except KeyError:
+        pass
+    # Getty AAT URIs
+    if key in _AAT_STYLES:
+        uri = URIRef(_AAT_STYLES[key])
+    else:
+        uri = _uri("type", "style", _slug(style_str))
+    g.add((uri, RDFS.label, Literal(style_str)))
+    return uri
+
+
 def _to_date(value: str) -> str:
     """Coerce 'YYYY', 'YYYY-MM', or 'YYYY-MM-DD' → xsd:date ('YYYY-MM-DD')."""
     parts = value.split("-")
@@ -89,19 +118,23 @@ def _place(
     lang: str = "ne",
 ) -> URIRef:
     place = _uri("place", place_id)
-    g.add((place, RDF.type, ont.cls("Place")))
+    # Only assert type + name when content is provided.
+    # A bare ID reference (cross-graph link) must not be typed here or SHACL
+    # will fire a MinCount violation on heritageGraph:name in this partial graph.
     if name:
+        g.add((place, RDF.type, ont.cls("Place")))
         _label(g, place, name, lang)
-    if lat is not None and lon is not None:
-        g.add((place, ont.prop("place_coordinates"), Literal(_wkt(lat, lon))))
+        if lat is not None and lon is not None:
+            g.add((place, ont.prop("place_coordinates"), Literal(_wkt(lat, lon))))
     return place
 
 
 def _actor(g: Graph, actor_id: str, label: str | None = None) -> URIRef:
     a = _uri("actor", actor_id)
     g.add((a, RDF.type, ont.cls("Actor")))
-    if label:
-        g.add((a, RDFS.label, Literal(label)))
+    # Always provide a label — fall back to a humanised version of the ID so
+    # the ActorShape (sh:minCount 1 on rdfs:label) is satisfied.
+    g.add((a, RDFS.label, Literal(label or actor_id.replace("_", " ").title())))
     return a
 
 
@@ -125,10 +158,8 @@ def map_temple(p: dict[str, Any]) -> tuple[Graph, URIRef]:
 
     # Architectural style
     if p.get("architectural_style"):
-        style = _uri("type", "style", _slug(p["architectural_style"]))
-        g.add((style, RDF.type,   ont.cls("ArchitecturalStyleEnum")))
-        g.add((style, RDFS.label, Literal(p["architectural_style"])))
-        g.add((uri,   ont.prop("has_architectural_style"), style))
+        style = _arch_style(g, p["architectural_style"])
+        g.add((uri, ont.prop("has_architectural_style"), style))
 
     # Current location
     if p.get("place_id"):
@@ -179,10 +210,8 @@ def map_architectural_structure(p: dict[str, Any]) -> tuple[Graph, URIRef]:
         g.add((uri, ont.prop("note"), Literal(p["note"])))
 
     if p.get("architectural_style"):
-        style = _uri("type", "style", _slug(p["architectural_style"]))
-        g.add((style, RDF.type,   ont.cls("ArchitecturalStyleEnum")))
-        g.add((style, RDFS.label, Literal(p["architectural_style"])))
-        g.add((uri,   ont.prop("has_architectural_style"), style))
+        style = _arch_style(g, p["architectural_style"])
+        g.add((uri, ont.prop("has_architectural_style"), style))
 
     # Link as component of a parent temple
     if p.get("part_of_id"):
@@ -250,7 +279,6 @@ def map_ritual(p: dict[str, Any]) -> tuple[Graph, URIRef]:
 
     for deity_id in p.get("deity_ids", []):
         deity = _uri("deity", deity_id)
-        g.add((deity, RDF.type, ont.cls("Deity")))
         g.add((uri, ont.prop("invokes_deity"), deity))
 
     return g, uri
@@ -279,7 +307,8 @@ def map_festival(p: dict[str, Any]) -> tuple[Graph, URIRef]:
 
     if p.get("guthi_id"):
         guthi = _uri("guthi", p["guthi_id"])
-        g.add((guthi, RDF.type, ont.cls("Guthi")))
+        # Cross-graph reference only — don't type it here to avoid SHACL
+        # firing MinCount on heritageGraph:name in this partial graph.
         g.add((uri, ont.prop("managed_by_guthi"), guthi))
 
     for ritual_id in p.get("ritual_ids", []):
@@ -369,7 +398,7 @@ def map_custody_event(p: dict[str, Any]) -> tuple[Graph, URIRef]:
         g.add((uri, ont.prop("has_timespan"), ts))
 
     if p.get("object_id"):
-        obj = _uri("temple", p["object_id"])
+        obj = _uri("object", p["object_id"])
         g.add((obj, RDF.type, ont.cls("PhysicalHeritageThing")))
         g.add((uri, ont.prop("transferred_object"), obj))
 
@@ -443,7 +472,7 @@ def map_condition_assessment(p: dict[str, Any]) -> tuple[Graph, URIRef]:
         g.add((uri, ont.prop("has_timespan"), ts))
 
     if p.get("object_id"):
-        obj = _uri("temple", p["object_id"])
+        obj = _uri("object", p["object_id"])
         g.add((obj, RDF.type, ont.cls("PhysicalHeritageThing")))
         g.add((uri, ont.prop("assessed_object"), obj))
 

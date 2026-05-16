@@ -53,7 +53,6 @@ WHERE {{
     {{ ?activity a {p}:Festival .    BIND({p}:Festival    AS ?type) }}
     ?activity {p}:took_place_at <{place_uri}> ;
               {p}:name ?name .
-    OPTIONAL {{ ?activity {p}:has_type ?t . ?t rdfs:label ?typeLabel . }}
     OPTIONAL {{
       ?activity {p}:has_timespan ?ts .
       OPTIONAL {{ ?ts {p}:date_earliest ?begin . }}
@@ -115,10 +114,12 @@ def PROVENANCE_FOR_ENTITY(entity_uri: str) -> str:
     return _base_prefixes() + f"""
 SELECT ?graph ?activity ?agent ?generated ?source
 WHERE {{
-  ?graph prov:wasGeneratedBy  ?activity ;
-         prov:wasAttributedTo ?agent ;
-         prov:generatedAtTime ?generated .
-  OPTIONAL {{ ?graph prov:wasDerivedFrom ?source . }}
+  GRAPH ?prov_g {{
+    ?graph prov:wasGeneratedBy  ?activity ;
+           prov:wasAttributedTo ?agent ;
+           prov:generatedAtTime ?generated .
+    OPTIONAL {{ ?graph prov:wasDerivedFrom ?source . }}
+  }}
   FILTER EXISTS {{
     GRAPH ?graph {{ <{entity_uri}> ?p ?o . }}
   }}
@@ -192,11 +193,11 @@ def FESTIVAL_RITUALS(festival_uri: str) -> str:
     return _base_prefixes() + f"""
 SELECT ?ritual ?name ?ritualType ?begin
 WHERE {{
-  GRAPH ?g {{
-    <{festival_uri}> {p}:includes_ritual_event ?ritual .
-    OPTIONAL {{ ?ritual {p}:name ?name . }}
-    OPTIONAL {{ ?ritual {p}:ritual_type ?ritualType . }}
-    OPTIONAL {{
+  GRAPH ?gf {{ <{festival_uri}> {p}:includes_ritual_event ?ritual . }}
+  OPTIONAL {{ GRAPH ?gr {{ ?ritual {p}:name ?name . }} }}
+  OPTIONAL {{ GRAPH ?gr2 {{ ?ritual {p}:ritual_type ?ritualType . }} }}
+  OPTIONAL {{
+    GRAPH ?gr3 {{
       ?ritual {p}:has_timespan ?ts .
       ?ts {p}:date_earliest ?begin .
     }}
@@ -213,10 +214,8 @@ def FESTIVAL_DEITIES(festival_uri: str) -> str:
     return _base_prefixes() + f"""
 SELECT DISTINCT ?deity ?deityName
 WHERE {{
-  GRAPH ?g {{
-    <{festival_uri}> {p}:includes_ritual_event ?ritual .
-    ?ritual {p}:invokes_deity ?deity .
-    OPTIONAL {{ ?deity {p}:name ?deityName . }}
-  }}
+  GRAPH ?gf {{ <{festival_uri}> {p}:includes_ritual_event ?ritual . }}
+  GRAPH ?gr {{ ?ritual {p}:invokes_deity ?deity . }}
+  OPTIONAL {{ GRAPH ?gd {{ ?deity {p}:name ?deityName . }} }}
 }}
 """

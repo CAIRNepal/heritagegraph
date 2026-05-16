@@ -62,8 +62,7 @@ hgs:RitualEventShape
     sh:property [
         sh:path     heritageGraph:took_place_at ;
         sh:maxCount 1 ;
-        sh:class    heritageGraph:Place ;
-        sh:message  "heritageGraph:RitualEvent.took_place_at must point to a heritageGraph:Place." ;
+        sh:message  "heritageGraph:RitualEvent.took_place_at may have at most one location." ;
     ] .
 
 # ────────────────────────────────────────────────────────────────────────────

@@ -40,7 +40,7 @@ class OxigraphClient:
         accept: str = "application/sparql-results+json",
     ) -> Any:
         resp = await self._http.post(
-            "/",
+            "/sparql",
             content=query.encode(),
             headers={"Content-Type": "application/sparql-query", "Accept": accept},
         )
@@ -51,7 +51,7 @@ class OxigraphClient:
 
     async def sparql_update(self, update: str) -> None:
         resp = await self._http.post(
-            "/",
+            "/update",
             content=update.encode(),
             headers={"Content-Type": "application/sparql-update"},
         )

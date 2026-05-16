@@ -134,6 +134,8 @@ services:
       OCR_MAX_PAGES_PER_DOCUMENT: ${OCR_MAX_PAGES_PER_DOCUMENT:-100}
       OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
       OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
+      # Triplestore
+      OXIGRAPH_URL: http://oxigraph:7878
     depends_on:
       postgres:
         condition: service_healthy
@@ -179,6 +181,7 @@ services:
     environment:
       # Frontend configuration
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost/api}
+      NEXT_PUBLIC_GRAPH_URL: ${NEXT_PUBLIC_GRAPH_URL:-http://backend.localhost/graph}
       # NextAuth + Google OAuth
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://frontend.localhost}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-nextauth-secret-change-in-production}
@@ -309,10 +312,14 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
       OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
+      # Triplestore — pipeline writes auto-accepted triples here
+      OXIGRAPH_URL: http://oxigraph:7878
     depends_on:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      oxigraph:
         condition: service_healthy
     volumes:
       - ./heritage_graph:/app/heritage_graph
@@ -320,6 +327,80 @@ services:
     networks:
       - backend
     command: celery -A heritage_graph worker -l info --concurrency=2 --max-tasks-per-child=100
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Oxigraph Triplestore
+  # SPARQL 1.1 endpoint storing all knowledge graph triples
+  # ---------------------------------------------------------------
+  oxigraph:
+    image: ghcr.io/oxigraph/oxigraph:latest
+    container_name: heritage-oxigraph
+    restart: unless-stopped
+    command: serve --location /data --bind 0.0.0.0:7878
+    volumes:
+      - oxigraph-data:/data
+    networks:
+      - backend
+    expose:
+      - 7878
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7878/ | grep -q '' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Semantic Backend (FastAPI)
+  # SPARQL/RDF API layer for the knowledge graph (wraps Oxigraph)
+  # ---------------------------------------------------------------
+  graph-api:
+    build:
+      context: ./semantic_backend
+      dockerfile: Dockerfile
+    container_name: heritage-graph-api
+    restart: unless-stopped
+    environment:
+      OXIGRAPH_URL: http://oxigraph:7878
+      OXIGRAPH_TIMEOUT: "30.0"
+      ONTOLOGY_PATH: /app/Heritage.ttl
+      BASE_URI: ${BASE_URI:-https://heritagegraph.org/}
+      SHAPES_DIR: /app/shapes
+      VALIDATE_ON_INGEST: ${VALIDATE_ON_INGEST:-true}
+    depends_on:
+      oxigraph:
+        condition: service_healthy
+    volumes:
+      - ./Heritage.ttl:/app/Heritage.ttl:ro
+      - ./semantic_backend/shapes:/app/shapes:ro
+    networks:
+      - proxy
+      - backend
+    expose:
+      - 8001
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.graph-api.rule=Host(`backend.localhost`) && PathPrefix(`/graph`)"
+      - "traefik.http.routers.graph-api.entrypoints=web"
+      - "traefik.http.middlewares.graph-strip.stripprefix.prefixes=/graph"
+      - "traefik.http.routers.graph-api.middlewares=graph-strip"
+      - "traefik.http.services.graph-api.loadbalancer.server.port=8001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8001/health | grep -q 'ok' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     logging:
       driver: "json-file"
       options:
@@ -341,6 +422,8 @@ volumes:
   backend-media:
     driver: local
   traefik-logs:
+    driver: local
+  oxigraph-data:
     driver: local
 
 # ================================================================
