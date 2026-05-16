@@ -93,6 +93,20 @@ Each feature is listed with:
 | Traditions | `cidoc_data/models.py` → `Tradition` | `TraditionViewSet` | `knowledge/tradition/` | `contribute/tradition/` |
 | Sources | `cidoc_data/models.py` → `Source` | `SourceViewSet` | `knowledge/source/` | `contribute/source/` |
 
+### Semantic workflows & ontology registry — Working
+
+Guided contributor paths and the LinkML-driven **`OntologyForm`** share the **schema registry** API; optional **RDF projection** materializes slot-aligned triples.
+
+| Layer | Files |
+|-------|-------|
+| Canonical schema | `ontology/HeritageGraph.yaml`, `tools/ui-classmap.yaml`, `tools/ui-presentation.yaml`, `tools/contribute-hub.yaml`, **`tools/semantic-patterns.yaml`** |
+| Registry build | `heritage_graph/apps/cidoc_data/ontology_builder.py`, **`heritage_graph/apps/cidoc_data/linkml_loader.py`**, `tools/linkml_generate_registry.py` |
+| API | `GET /api/v1/cidoc/schema/registry/` → `OntologySchemaRegistryView` in `cidoc_data/views.py` |
+| Frontend provider | `heritage_graph_ui/src/lib/ontology/OntologyProvider.tsx`, `load-registry.ts`, **`types.ts`** (`SemanticPattern`) |
+| Forms | `heritage_graph_ui/src/components/ontology-form.tsx`, `contribute/page-client.tsx`, **`contribute/pattern/[slug]/page.tsx`** |
+| RDF sidecar (optional) | `heritage_graph/settings/base.py` → `RDF_SYNC_ENABLED`, `RDF_ENDPOINT_URL`, `OXIGRAPH_STORE_PATH`; **`cidoc_data/rdf_signals.py`**, **`cidoc_data/rdf_entity_projection.py`** |
+| SHACL (generated) | `tools/emit_minimal_shacl.py` → `ontology/shapes/generated-heritagegraph-minimal-shacl.ttl` |
+
 ### Cross-Model Search — Working
 
 | Layer | Files |

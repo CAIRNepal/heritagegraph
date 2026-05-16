@@ -31,14 +31,19 @@ interface EntitySearchProps {
   label: string;
   endpoint: string;
   backendUrl?: string;
+  /** Extra stable query pairs (ordering, pagination, filters) appended to search requests */
+  extraQuery?: Record<string, string>;
   value?: SearchResult | null;
   onSelect: (entity: SearchResult | null) => void;
   placeholder?: string;
+  /** @deprecated Stub name-only POST; prefer a full contribute form from the parent. */
   allowCreate?: boolean;
   onCreate?: (name: string) => void;
   disabled?: boolean;
   hasError?: boolean;
   className?: string;
+  /** Hint when search has no / few matches (e.g. point user to full-form create on parent). */
+  searchHint?: string;
 }
 
 const API_BASE = getPublicApiUrl();
@@ -47,6 +52,7 @@ export function EntitySearch({
   label,
   endpoint,
   backendUrl = API_BASE,
+  extraQuery,
   value,
   onSelect,
   placeholder = "Search existing records...",
@@ -55,6 +61,7 @@ export function EntitySearch({
   disabled = false,
   hasError = false,
   className,
+  searchHint,
 }: EntitySearchProps) {
   const { data: session } = useSession();
   const [query, setQuery] = useState("");
@@ -89,7 +96,11 @@ export function EntitySearch({
 
       setLoading(true);
       try {
-        const url = `${backendUrl}${endpoint}?search=${encodeURIComponent(q)}`;
+        const qp = new URLSearchParams({ search: q });
+        for (const [k, v] of Object.entries(extraQuery ?? {})) {
+          if (v) qp.set(k, v);
+        }
+        const url = `${backendUrl}${endpoint}?${qp.toString()}`;
         const res = await apiFetch(url, {
           headers: { Accept: "application/json" },
         });
@@ -117,7 +128,7 @@ export function EntitySearch({
         setLoading(false);
       }
     },
-    [backendUrl, endpoint]
+    [backendUrl, endpoint, extraQuery]
   );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,9 +252,9 @@ export function EntitySearch({
             )}
 
             {!loading && results.length === 0 && (
-              <div className="p-3 text-sm text-center">
+              <div className="p-3 text-sm text-center space-y-2">
                 <p className="text-muted-foreground">No results found.</p>
-                {allowCreate && (
+                {allowCreate ? (
                   <Button
                     variant="link"
                     size="sm"
@@ -252,7 +263,9 @@ export function EntitySearch({
                   >
                     + Create &quot;{query}&quot;
                   </Button>
-                )}
+                ) : searchHint ? (
+                  <p className="text-xs text-muted-foreground">{searchHint}</p>
+                ) : null}
               </div>
             )}
 
@@ -294,6 +307,12 @@ export function EntitySearch({
                 >
                   + Create new entry
                 </Button>
+              </div>
+            )}
+
+            {!loading && results.length > 0 && !allowCreate && searchHint && (
+              <div className="border-t px-3 py-2">
+                <p className="text-xs text-muted-foreground">{searchHint}</p>
               </div>
             )}
           </div>

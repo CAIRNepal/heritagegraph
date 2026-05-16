@@ -5,11 +5,19 @@ import { useSearchParams } from "next/navigation";
 import OntologyForm from "@/components/ontology-form";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import { OntologyUnavailablePanel } from "@/components/ontology/OntologyUnavailablePanel";
+import {
+  buildPatternCompletionUrl,
+  parseSemanticWorkflowParams,
+} from "@/lib/semantic-workflow-params";
 
 function ContributeEntityInner() {
   const searchParams = useSearchParams();
   /** `?id=` = CIDOC / cultural-entity record to edit; `?ce=` = cultural entity UUID for OCR uploads */
   const ocrCulturalEntityId = searchParams.get("ce")?.trim() || null;
+  const wf = parseSemanticWorkflowParams(searchParams);
+  const redirectTo = wf
+    ? buildPatternCompletionUrl(wf.patternKey, wf.stepOrder)
+    : "/knowledge/entity";
   const { getOntologyClass } = useOntology();
   const cls = getOntologyClass("entity");
 
@@ -20,7 +28,7 @@ function ContributeEntityInner() {
   return (
     <OntologyForm
       ontologyClass={cls}
-      redirectTo="/knowledge/entity"
+      redirectTo={redirectTo}
       ocrCulturalEntityId={ocrCulturalEntityId}
     />
   );

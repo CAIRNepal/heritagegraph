@@ -9,9 +9,11 @@ Models for OCR pipeline and document processing:
 """
 
 import uuid
+
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
-from apps.heritage_data.models import Media, Submission, CulturalEntity
+
+from apps.heritage_data.models import CulturalEntity, Media, Submission
 
 
 class UploadedDocument(models.Model):
@@ -63,6 +65,24 @@ class UploadedDocument(models.Model):
     raw_text = models.TextField(
         blank=True,
         help_text="Complete extracted text from all pages"
+    )
+
+    provenance = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Structured provenance from uploader (source institution, collection, languages, etc.)",
+    )
+
+    ingestion_review_state = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Contributor OCR/semantic review draft: field_decisions, block_corrections, ontology_handoff_key",
+    )
+
+    processing_progress = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Latest pipeline progress for SSE/UI: status, page, engine, message, percent",
     )
 
     # Processing metadata
@@ -299,4 +319,82 @@ class ExtractedField(models.Model):
 
     def __str__(self):
         return f"ExtractedField({self.document.id}, {self.field_name}={self.field_value[:50]})"
+
+
+class ChunkedMediaUpload(models.Model):
+    """
+    Server-assembled large uploads before Media / OCR pipeline creation.
+    Chunks are written to MEDIA_ROOT-relative path stored on this row.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    contributor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="chunked_media_uploads",
+    )
+    original_filename = models.CharField(max_length=512)
+    expected_bytes = models.PositiveBigIntegerField()
+    bytes_written = models.PositiveBigIntegerField(default=0)
+    relative_temp_path = models.CharField(max_length=1024, blank=True)
+    provenance = models.JSONField(default=dict, blank=True)
+    media_type = models.CharField(max_length=32, default="image")
+    description = models.CharField(max_length=2048, blank=True)
+    standalone_ingestion = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "document_processing_chunked_media_upload"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"ChunkedMediaUpload({self.id}, {self.bytes_written}/{self.expected_bytes})"
+
+
+class TabularImportJob(models.Model):
+    """CSV/Excel staged import with column mapping and per-row review state."""
+
+    STATUS_PENDING = "pending"
+    STATUS_PROCESSING = "processing"
+    STATUS_READY = "ready_review"
+    STATUS_FAILED = "failed"
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, "Pending"),
+        (STATUS_PROCESSING, "Processing"),
+        (STATUS_READY, "Ready for review"),
+        (STATUS_FAILED, "Failed"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    contributor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tabular_import_jobs",
+    )
+    status = models.CharField(max_length=32, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    source_filename = models.CharField(max_length=512, blank=True)
+    provenance = models.JSONField(default=dict, blank=True)
+    column_mapping = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Maps source column header -> registry field key or role label",
+    )
+    staged_rows = models.JSONField(default=list, blank=True)
+    row_review_state = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Per-row reconciliation: row_index -> { decisions... }",
+    )
+    validation_errors = models.JSONField(default=list, blank=True)
+    user_safe_error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "document_processing_tabular_import_job"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"TabularImportJob({self.id}, {self.status})"
 

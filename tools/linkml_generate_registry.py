@@ -33,6 +33,7 @@ def main() -> None:
         build_registry_jsonschema_blob,
         compute_schema_version,
         load_contribute_hub_payload,
+        load_semantic_patterns_payload,
     )
 
     schema_path = args.schema
@@ -46,6 +47,8 @@ def main() -> None:
     version = compute_schema_version(schema_path, None, classes, enums)
     contribute_hub_path = ROOT / "tools" / "contribute-hub.yaml"
     contribute_hub = load_contribute_hub_payload(contribute_hub_path)
+    semantic_patterns_path = ROOT / "tools" / "semantic-patterns.yaml"
+    semantic_patterns = load_semantic_patterns_payload(semantic_patterns_path)
     registry_jsonschema = build_registry_jsonschema_blob(classes)
     payload = {
         "schema_version": version,
@@ -54,6 +57,7 @@ def main() -> None:
         "classes": classes,
         "enums": enums,
         "contribute_hub": contribute_hub,
+        "semantic_patterns": semantic_patterns,
         "registry_jsonschema": registry_jsonschema,
     }
 

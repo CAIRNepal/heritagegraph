@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import { AccessDenied } from '@/components/access-denied';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
@@ -76,6 +77,21 @@ export default function IdentityQueuePage() {
           membership assertions.
         </p>
       </div>
+
+      <Alert className="border-muted">
+        <AlertTitle>For operators</AlertTitle>
+        <AlertDescription className="text-sm leading-relaxed">
+          This queue is filled mainly from heuristic jobs and merge escalations. In development you can seed
+          name-based duplicate pairs via{' '}
+          <code className="rounded bg-muted px-1 text-xs">manage.py refresh_identity_candidates</code> or{' '}
+          <code className="rounded bg-muted px-1 text-xs">make identity-candidates</code>.
+          Contributor duplicate suggestions use{' '}
+          <Link href="/contribute/entity-proposal" className="text-primary underline-offset-4 hover:underline">
+            entity proposals
+          </Link>
+          .
+        </AlertDescription>
+      </Alert>
 
       {isModerator ? (
         <Card>

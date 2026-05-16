@@ -17,6 +17,7 @@ import {
   IconArrowRight,
   IconSparkles,
   IconGraph,
+  IconPhotoScan,
 } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 import {
@@ -87,6 +88,16 @@ export default function Page() {
                 <IconGraph className="w-4 h-4 mr-2" />
                 Explore Knowledge Graph
                 <IconArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+            <Link href="/contribute/ingestion">
+              <Button
+                variant="outline"
+                size="lg"
+                className="bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white rounded-full font-semibold transition-all duration-300"
+              >
+                <IconPhotoScan className="w-4 h-4 mr-2" />
+                Document ingestion (OCR)
               </Button>
             </Link>
           </div>

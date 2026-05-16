@@ -46,6 +46,7 @@ def build_fresh_payload() -> dict[str, Any]:
         build_registry_jsonschema_blob,
         compute_schema_version,
         load_contribute_hub_payload,
+        load_semantic_patterns_payload,
     )
 
     schema_path = _schema_path()
@@ -66,8 +67,12 @@ def build_fresh_payload() -> dict[str, Any]:
     ui_pres_path = Path(settings.BASE_DIR).parent / "tools" / "ui-presentation.yaml"
     if ui_pres_path.is_file():
         core_parts.extend((b"\n", ui_pres_path.read_bytes()))
+    semantic_patterns_path = Path(settings.BASE_DIR).parent / "tools" / "semantic-patterns.yaml"
+    if semantic_patterns_path.is_file():
+        core_parts.extend((b"\n", semantic_patterns_path.read_bytes()))
     core_hash = hashlib.sha256(b"".join(core_parts)).hexdigest()[:64]
     contribute_hub = load_contribute_hub_payload(contribute_hub_path)
+    semantic_patterns = load_semantic_patterns_payload(semantic_patterns_path)
     registry_jsonschema = build_registry_jsonschema_blob(classes)
     return {
         "schema_version": version,
@@ -79,6 +84,7 @@ def build_fresh_payload() -> dict[str, Any]:
         "classes": classes,
         "enums": enums,
         "contribute_hub": contribute_hub,
+        "semantic_patterns": semantic_patterns,
         "registry_jsonschema": registry_jsonschema,
     }
 

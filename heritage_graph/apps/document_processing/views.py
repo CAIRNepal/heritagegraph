@@ -1,19 +1,50 @@
 # apps/document_processing/views.py
 from __future__ import annotations
 
-from django.db.models import Q
+import json
+import mimetypes
+import os
+import time
+import uuid
+from pathlib import Path
+
+from django.conf import settings
+from django.core.files import File
+from django.db.models import Prefetch, Q
+from django.http import FileResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, permissions, viewsets
+from django.utils import timezone
+from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 
-from .models import UploadedDocument
-from .permissions import CanRequeueOcrDocument, IsStaffOrDocumentOwner
+from .models import ChunkedMediaUpload, DocumentPage, TabularImportJob, UploadedDocument
+from .permissions import (
+    CanRequeueOcrDocument,
+    IsContributorOrStaffObject,
+    IsStaffOrDocumentOwner,
+)
 from .serializers import (
+    ChunkedUploadInitSerializer,
+    ChunkedUploadSerializer,
+    IngestionReviewStatePatchSerializer,
     OcrDocumentStatusSerializer,
     OcrDocumentUploadSerializer,
+    TabularImportCreateSerializer,
+    TabularImportJobPatchSerializer,
+    TabularImportJobSerializer,
+    build_review_payload,
+    save_standalone_ingestion_media,
     suggestions_for_document,
+    _merge_upload_provenance,
 )
+from .services.ingestion_compile import (
+    build_ingestion_compile_preview,
+    tabular_compile_preview,
+)
+from .services.review_state import merge_ingestion_review_state as merge_review_fn
+from .services.tabular_parse import parse_tabular_file
 from .tasks import classify_and_route_document, run_kg_pipeline
 
 
@@ -44,12 +75,100 @@ class UploadedDocumentViewSet(
             return UploadedDocument.objects.none()
         if not user.is_staff:
             qs = qs.filter(
-                Q(submission__contributor=user) | Q(cultural_entity__contributor=user)
+                Q(submission__contributor=user)
+                | Q(cultural_entity__contributor=user)
+                | Q(media__ingestion_contributor=user)
             )
         status = self.request.query_params.get("status", "").strip()
         if status:
             qs = qs.filter(status=status)
         return qs
+
+    @action(detail=True, methods=["get"], url_path="review")
+    def review(self, request, pk=None):
+        doc = UploadedDocument.objects.prefetch_related(
+            Prefetch(
+                "pages",
+                queryset=DocumentPage.objects.order_by("page_number").prefetch_related(
+                    "ocr_results",
+                ),
+            ),
+            "extracted_fields",
+        ).get(pk=self.get_object().pk)
+        return Response(build_review_payload(document=doc))
+
+    @action(detail=True, methods=["get", "patch"], url_path="review-state")
+    def review_state(self, request, pk=None):
+        doc = self.get_object()
+        if request.method == "GET":
+            return Response(doc.ingestion_review_state or {})
+        ser = IngestionReviewStatePatchSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        merged = merge_review_fn(doc.ingestion_review_state or {}, dict(ser.validated_data))
+        doc.ingestion_review_state = merged
+        doc.save(update_fields=["ingestion_review_state", "updated_at"])
+        return Response(merged)
+
+    @action(detail=True, methods=["post"], url_path="finalize-review")
+    def finalize_review(self, request, pk=None):
+        doc = self.get_object()
+        merged = merge_review_fn(
+            doc.ingestion_review_state or {},
+            {"finalized_at": timezone.now().isoformat()},
+        )
+        doc.ingestion_review_state = merged
+        doc.save(update_fields=["ingestion_review_state", "updated_at"])
+        return Response(
+            {"detail": "Review marked complete.", "ingestion_review_state": merged},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["get"], url_path="compile-preview")
+    def compile_preview(self, request, pk=None):
+        doc = UploadedDocument.objects.prefetch_related("extracted_fields").get(pk=self.get_object().pk)
+        return Response(build_ingestion_compile_preview(document=doc))
+
+    @action(detail=True, methods=["get"], url_path="events")
+    def events(self, request, pk=None):
+        doc = self.get_object()
+
+        def gen():
+            last_sent = None
+            while True:
+                doc.refresh_from_db(
+                    fields=["status", "processing_progress", "user_safe_error", "updated_at"],
+                )
+                payload = {
+                    "status": doc.status,
+                    "processing_progress": doc.processing_progress or {},
+                    "user_safe_error": doc.user_safe_error or "",
+                }
+                dumped = json.dumps(payload)
+                if dumped != last_sent:
+                    last_sent = dumped
+                    yield f"data: {dumped}\n\n"
+                if doc.status in ("completed", "failed"):
+                    yield "event: end\ndata: {}\n\n"
+                    break
+                time.sleep(0.45)
+
+        resp = StreamingHttpResponse(gen(), content_type="text/event-stream")
+        resp["Cache-Control"] = "no-cache"
+        resp["X-Accel-Buffering"] = "no"
+        return resp
+
+    @action(detail=True, methods=["get"], url_path="asset")
+    def asset(self, request, pk=None):
+        doc = self.get_object()
+        media_file = doc.media.file
+        name = (media_file.name or "document").rsplit("/", 1)[-1]
+        content_type, _ = mimetypes.guess_type(name)
+        if not content_type:
+            content_type = "application/octet-stream"
+        media_file.open("rb")
+        resp = FileResponse(media_file, content_type=content_type)
+        resp["Content-Disposition"] = f'inline; filename="{name}"'
+        return resp
 
     @action(
         detail=False,
@@ -201,3 +320,212 @@ class UploadedDocumentViewSet(
             OcrDocumentStatusSerializer(doc, context={"request": request}).data,
             status=202,
         )
+
+
+class ChunkedUploadViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [permissions.IsAuthenticated, IsContributorOrStaffObject]
+    serializer_class = ChunkedUploadSerializer
+
+    def get_queryset(self):
+        qs = ChunkedMediaUpload.objects.all()
+        if self.request.user.is_staff:
+            return qs
+        return qs.filter(contributor=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        ser = ChunkedUploadInitSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        uid = uuid.uuid4()
+        safe_name = os.path.basename(ser.validated_data["filename"])
+        rel = os.path.join("chunk_uploads", str(uid), safe_name)
+        root = Path(settings.MEDIA_ROOT)
+        abs_path = root / rel
+        abs_path.parent.mkdir(parents=True, exist_ok=True)
+        abs_path.write_bytes(b"")
+
+        prov_payload = _merge_upload_provenance(
+            {
+                "provenance": ser.validated_data.get("provenance"),
+                "source_institution": ser.validated_data.get("source_institution"),
+                "collection_name": ser.validated_data.get("collection_name"),
+                "language": ser.validated_data.get("language"),
+                "ocr_language": ser.validated_data.get("ocr_language"),
+                "copyright_note": ser.validated_data.get("copyright_note"),
+            },
+        )
+
+        session = ChunkedMediaUpload.objects.create(
+            contributor=request.user,
+            original_filename=safe_name,
+            expected_bytes=int(ser.validated_data["byte_size"]),
+            relative_temp_path=rel.replace("\\", "/"),
+            provenance=prov_payload,
+            media_type=ser.validated_data.get("media_type") or "image",
+            description=ser.validated_data.get("description") or "",
+            standalone_ingestion=True,
+        )
+        out = ChunkedUploadSerializer(session, context={"request": request}).data
+        return Response(out, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="append",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def append_chunk(self, request, pk=None):
+        session = self.get_object()
+        chunk = request.FILES.get("chunk") or request.FILES.get("file")
+        if not chunk:
+            return Response({"detail": "Missing chunk file."}, status=status.HTTP_400_BAD_REQUEST)
+        root = Path(settings.MEDIA_ROOT)
+        abs_path = root / session.relative_temp_path
+        data = chunk.read()
+        with abs_path.open("ab") as fh:
+            fh.write(data)
+        session.bytes_written = int(session.bytes_written) + len(data)
+        session.save(update_fields=["bytes_written"])
+        return Response(
+            ChunkedUploadSerializer(session, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"], url_path="complete")
+    def complete(self, request, pk=None):
+        session = self.get_object()
+        if session.bytes_written != session.expected_bytes:
+            return Response(
+                {
+                    "detail": "Incomplete upload.",
+                    "bytes_written": session.bytes_written,
+                    "expected_bytes": session.expected_bytes,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        root = Path(settings.MEDIA_ROOT)
+        abs_path = root / session.relative_temp_path
+        max_bytes = int(getattr(settings, "OCR_MAX_FILE_BYTES", 25 * 1024 * 1024))
+        if abs_path.stat().st_size > max_bytes:
+            abs_path.unlink(missing_ok=True)
+            session.delete()
+            return Response(
+                {"detail": "Assembled file exceeds server OCR limit."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with abs_path.open("rb") as fh:
+            django_file = File(fh, name=session.original_filename)
+            media = save_standalone_ingestion_media(
+                user=session.contributor,
+                django_file=django_file,
+                provenance=session.provenance,
+                media_type=session.media_type,
+                description=session.description,
+            )
+
+        doc = get_object_or_404(UploadedDocument, media=media)
+        abs_path.unlink(missing_ok=True)
+        session.delete()
+
+        return Response(
+            {
+                "media_id": media.id,
+                "uploaded_document_id": str(doc.id),
+                "status": doc.status,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class TabularImportJobViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [permissions.IsAuthenticated, IsContributorOrStaffObject]
+    serializer_class = TabularImportJobSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        qs = TabularImportJob.objects.all()
+        if self.request.user.is_staff:
+            return qs
+        return qs.filter(contributor=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "partial_update":
+            return TabularImportJobPatchSerializer
+        return TabularImportJobSerializer
+
+    def create(self, request, *args, **kwargs):
+        ser = TabularImportCreateSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        uploaded = ser.validated_data["file"]
+        content = uploaded.read()
+        rows, parse_msgs = parse_tabular_file(
+            content=content,
+            filename=getattr(uploaded, "name", "") or "upload.csv",
+        )
+        prov = _merge_upload_provenance(
+            {
+                "provenance": ser.validated_data.get("provenance"),
+                "source_institution": ser.validated_data.get("source_institution"),
+                "collection_name": ser.validated_data.get("collection_name"),
+                "language": ser.validated_data.get("language"),
+                "ocr_language": "",
+                "copyright_note": "",
+            },
+        )
+
+        job = TabularImportJob.objects.create(
+            contributor=request.user,
+            status=TabularImportJob.STATUS_READY if rows else TabularImportJob.STATUS_FAILED,
+            source_filename=getattr(uploaded, "name", "") or "",
+            provenance=prov,
+            staged_rows=rows,
+            validation_errors=parse_msgs,
+            user_safe_error="" if rows else "Could not parse tabular file.",
+        )
+
+        return Response(
+            TabularImportJobSerializer(job, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        job = self.get_object()
+        ser = TabularImportJobPatchSerializer(data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        patch = ser.validated_data
+        if "column_mapping" in patch:
+            cur = dict(job.column_mapping or {})
+            cur.update(patch["column_mapping"] or {})
+            job.column_mapping = cur
+        if "row_review_state" in patch:
+            cur_rs = dict(job.row_review_state or {})
+            for rk, rv in (patch["row_review_state"] or {}).items():
+                if rv is None:
+                    cur_rs.pop(str(rk), None)
+                elif isinstance(rv, dict):
+                    prev = dict(cur_rs.get(str(rk)) or {})
+                    prev.update(rv)
+                    cur_rs[str(rk)] = prev
+            job.row_review_state = cur_rs
+        if "provenance" in patch and isinstance(patch["provenance"], dict):
+            curp = dict(job.provenance or {})
+            curp.update(patch["provenance"])
+            job.provenance = curp
+        job.save()
+        return Response(TabularImportJobSerializer(job, context={"request": request}).data)
+
+    @action(detail=True, methods=["get"], url_path="compile-preview")
+    def compile_preview(self, request, pk=None):
+        job = self.get_object()
+        return Response(tabular_compile_preview(job=job))

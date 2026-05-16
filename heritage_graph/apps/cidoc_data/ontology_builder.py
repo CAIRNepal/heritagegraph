@@ -208,6 +208,21 @@ def load_contribute_hub_payload(path: Path) -> dict[str, Any]:
     }
 
 
+def load_semantic_patterns_payload(path: Path) -> list[dict[str, Any]]:
+    """Load semantic workflow patterns from tools/semantic-patterns.yaml."""
+    if not path.is_file():
+        return []
+    raw = _load_schema(path) or {}
+    patterns = raw.get("patterns") or []
+    if not isinstance(patterns, list):
+        raise ValueError("tools/semantic-patterns.yaml: 'patterns' must be a list")
+    out: list[dict[str, Any]] = []
+    for row in patterns:
+        if isinstance(row, dict) and row.get("key"):
+            out.append(row)
+    return out
+
+
 def _class_inheritance_chain(schema: dict[str, Any], class_name: str) -> list[str]:
     chain: list[str] = []
     seen: set[str] = set()
@@ -327,6 +342,7 @@ def _slot_ui_overrides(slot: Any) -> dict[str, Any]:
         "ui_order",
         "ui_placeholder",
         "ui_widget",
+        "ui_inline_authoring",
         "ui_pattern",
         "ui_min_length",
         "ui_max_length",
@@ -462,6 +478,9 @@ def build_classes(
                 related = linkml_to_ui.get(range_name)
                 if related and related.get("apiEndpoint"):
                     field["relationEndpoint"] = related["apiEndpoint"]
+                    rk = related.get("key")
+                    if rk:
+                        field["relationRegistryKey"] = str(rk)
 
             ui = _slot_ui_overrides(slot)
             file_slot = (pres.get("slots") or {}).get(slot.name) or {}
@@ -471,6 +490,7 @@ def build_classes(
                     "ui_order",
                     "ui_placeholder",
                     "ui_widget",
+                    "ui_inline_authoring",
                     "ui_pattern",
                     "ui_min_length",
                     "ui_max_length",
@@ -493,6 +513,9 @@ def build_classes(
                 field["placeholder"] = ui["ui_placeholder"]
             if "ui_widget" in ui:
                 field["type"] = ui["ui_widget"]
+            if ui.get("ui_inline_authoring"):
+                v = str(ui["ui_inline_authoring"]).lower()
+                field["inlineAuthoring"] = v in ("1", "true", "yes", "on")
 
             _maybe_attach_enum_options(field, range_name=range_name, enums=enums)
 
@@ -712,6 +735,9 @@ def build_classes_pyyaml(
                 related = linkml_to_ui.get(range_name)
                 if related and related.get("apiEndpoint"):
                     field["relationEndpoint"] = related["apiEndpoint"]
+                    rk = related.get("key")
+                    if rk:
+                        field["relationRegistryKey"] = str(rk)
 
             _maybe_attach_enum_options(field, range_name=range_name, enums=enums)
 
@@ -742,6 +768,9 @@ def build_classes_pyyaml(
                     _maybe_attach_enum_options(
                         field, range_name=range_name, enums=enums
                     )
+                if file_slot.get("ui_inline_authoring") is not None:
+                    v = str(file_slot["ui_inline_authoring"]).lower()
+                    field["inlineAuthoring"] = v in ("1", "true", "yes", "on")
                 if file_slot.get("ui_pattern") is not None:
                     field["pattern"] = str(file_slot["ui_pattern"])
                 for fk_yaml, fk_field in (

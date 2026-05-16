@@ -1,7 +1,7 @@
 # ONTOLOGY.md — HeritageGraph Ontology & Form System Guide
 
 > **Audience:** Developers, researchers, and AI agents who need to understand, modify, or extend the ontology-driven form system in HeritageGraph.  
-> **Last Updated:** April 2026 — **UI registry is generated** from LinkML + `tools/ui-classmap.yaml` (see `registry.generated.*`). Step-by-step form tasks: root **`FORMS.md`**. End-to-end pipeline: **`docs/en/guides/developers/yaml-schema-workflow.md`**.
+> **Last Updated:** May 2026 — **UI registry is generated** from LinkML + `tools/ui-classmap.yaml` + `tools/contribute-hub.yaml` + **`tools/semantic-patterns.yaml`** (semantic workflows; see `registry.generated.*`). Step-by-step form tasks: root **`FORMS.md`**. End-to-end pipeline: **`docs/en/guides/developers/yaml-schema-workflow.md`**.
 
 ---
 
@@ -34,7 +34,7 @@
 
 ## 1. Overview — How It All Connects
 
-HeritageGraph uses a **YAML-driven, registry-based UI**: LinkML (`ontology/HeritageGraph.yaml`) plus **`tools/ui-classmap.yaml`** (and optional **`tools/ui-presentation.yaml`**, **`tools/contribute-hub.yaml`**) materialize a JSON registry consumed by the Next.js app. Committed **`registry.generated.json`** / **`.ts`** provide an offline baseline; signed-in clients can refresh from **`GET /api/v1/cidoc/schema/registry/`**.
+HeritageGraph uses a **YAML-driven, registry-based UI**: LinkML (`ontology/HeritageGraph.yaml`) plus **`tools/ui-classmap.yaml`** (and optional **`tools/ui-presentation.yaml`**, **`tools/contribute-hub.yaml`**, **`tools/semantic-patterns.yaml`**) materialize a JSON registry consumed by the Next.js app. Committed **`registry.generated.json`** / **`.ts`** provide an offline baseline; signed-in clients can refresh from **`GET /api/v1/cidoc/schema/registry/`** (payload includes **`contribute_hub`**, **`semantic_patterns`**, **`registry_jsonschema`**, plus **classes** / **enums**).
 
 ```
 ontology/HeritageGraph.yaml (LinkML)   ← Canonical ontology (classes, slots, enums)
@@ -42,6 +42,7 @@ ontology/HeritageGraph.yaml (LinkML)   ← Canonical ontology (classes, slots, e
         ├── tools/ui-classmap.yaml     ← Registry keys, labels, apiEndpoint, nav
         ├── tools/ui-presentation.yaml ← Optional slot-level UI overrides
         ├── tools/contribute-hub.yaml  ← Contribute landing intents
+        ├── tools/semantic-patterns.yaml ← Guided semantic workflows (`semantic_patterns` in API)
         ▼
 tools/linkml_generate_registry.py  +  heritage_graph ... ontology_builder.py
         │
@@ -76,12 +77,14 @@ tools/linkml_generate_registry.py  +  heritage_graph ... ontology_builder.py
 ```
                     ┌──────────────────────────────┐
                     │  ontology/HeritageGraph.yaml  │
-                    │  LinkML + classmap + hub      │
+                    │  LinkML + classmap + hub +    │
+                    │   semantic_patterns.yaml      │
                     └───────────┬───────────────────┘
                                 │
                     ┌───────────▼───────────────────┐
                     │  registry.generated.* + API    │
-                    │  (classes, enums, jsonschema)  │
+                    │  (classes, enums, jsonschema,  │
+                    │   contribute_hub, semantic_patterns) │
                     └───────────┬───────────────────┘
                                 │
           ┌─────────────────────┼─────────────────────┐
@@ -106,9 +109,11 @@ tools/linkml_generate_registry.py  +  heritage_graph ... ontology_builder.py
 | **ui-classmap.yaml** | `tools/ui-classmap.yaml` | Maps each exposed LinkML class → registry `key`, `apiEndpoint`, labels |
 | **ui-presentation.yaml** | `tools/ui-presentation.yaml` | Optional per-slot UI overrides (`ui_section`, `ui_widget`, …) |
 | **contribute-hub.yaml** | `tools/contribute-hub.yaml` | Contribute landing intents and copy |
-| **registry.generated.*** | `heritage_graph_ui/src/lib/ontology/` | **Generated** registry + `registry_jsonschema` — run `make ontology` |
+| **semantic-patterns.yaml** | `tools/semantic-patterns.yaml` | Guided multi-step workflows; merged as `semantic_patterns` on registry API |
+| **registry.generated.*** | `heritage_graph_ui/src/lib/ontology/` | **Generated** registry + `registry_jsonschema` + embedded hub/patterns snapshot — run `make ontology` |
+| **minimal SHACL (generated)** | `ontology/shapes/generated-heritagegraph-minimal-shacl.ttl` | Optional QA shapes — run `python3 tools/emit_minimal_shacl.py` after registry regen |
 | **Heritage.ttl** | `ontology/Heritage.ttl` | OWL/Turtle for linked-data consumers (where maintained) |
-| **types.ts** | `heritage_graph_ui/src/lib/ontology/types.ts` | TypeScript interfaces for registry payloads |
+| **types.ts** | `heritage_graph_ui/src/lib/ontology/types.ts` | TypeScript interfaces for registry payloads (`SemanticPattern`, hub rows, …) |
 
 ### Relationship between ontology YAML and the registry
 
@@ -328,7 +333,9 @@ See **`FORMS.md` §6**. Prefer slot annotations **`ui_section`** / **`ui_order`*
 
 ### 7.6 Add to the Contribute Dashboard
 
-Intent cards and categories are driven by **`tools/contribute-hub.yaml`**. Edit that file, run **`make ontology`**, and deploy so the embedded hub payload matches the app. The runtime contribute landing page consumes this data via the ontology registry / provider — do not hand-edit a large `contributionIntents` array in a page file unless you are intentionally overriding the hub for a one-off experiment.
+**Intent cards and categories** are driven by **`tools/contribute-hub.yaml`**. Edit that file, run **`make ontology`** (or `python3 tools/linkml_generate_registry.py`), and deploy so the embedded hub payload matches the app. The runtime contribute landing page consumes this data via **`contribute_hub`** on the ontology registry — do not hand-edit a large `contributionIntents` array in a page file unless you are intentionally overriding the hub for a one-off experiment.
+
+**Semantic workflows (“patterns”)** are separate: define them in **`tools/semantic-patterns.yaml`** (see existing `patterns:` entries). They are merged server-side (`linkml_loader.build_fresh_payload`) into **`semantic_patterns`** on `GET /api/v1/cidoc/schema/registry/`, bundled in `registry.generated.*`, and rendered on **`/contribute`** plus detail pages **`/contribute/pattern/<key>`**. Steps usually deep-link into normal **`OntologyForm`** routes or **`/contribute/relationship-proposal`** (`linkQuery` on a step supplies URL hints for entity types / IDs).
 
 ---
 
@@ -582,7 +589,7 @@ heritage_graph_ui/
     │   └── contribute/              # EntitySearch, assertion wrapper, …
     │
     └── app/(dashboard)/
-        ├── contribute/              # OntologyForm routes (+ entity/ for cultural entities)
+        ├── contribute/              # OntologyForm routes + pattern/[slug]/ wizard
         └── knowledge/
             └── [domain]/            # Tables + generic record view
 
@@ -590,14 +597,20 @@ tools/
 ├── ui-classmap.yaml       # LinkML class → registry key, apiEndpoint, nav
 ├── ui-presentation.yaml   # Optional slot UI overrides
 ├── contribute-hub.yaml    # Contribute landing intents
-└── linkml_generate_registry.py
+├── semantic-patterns.yaml # Guided semantic workflows → registry.semantic_patterns
+├── linkml_generate_registry.py
+└── emit_minimal_shacl.py  # Writes ontology/shapes/generated-heritagegraph-minimal-shacl.ttl
 
 ontology/
 ├── HeritageGraph.yaml     # Canonical LinkML (source of truth)
+├── shapes/
+│   └── generated-heritagegraph-minimal-shacl.ttl  # Regenerate via emit_minimal_shacl.py
 └── Heritage.ttl           # OWL/Turtle (where maintained)
 
 heritage_graph/apps/cidoc_data/
-├── ontology_builder.py    # Registry payload + jsonschema blob
+├── ontology_builder.py    # Registry payload + jsonschema blob + semantic_patterns loader
+├── rdf_entity_projection.py  # Triple materialization from registry slots (optional RDF_SYNC)
+├── rdf_signals.py         # Signals → SPARQL / Oxigraph (+ spec 007 relationship edges)
 ├── models.py              # Django models (field keys match registry)
 ├── serializers.py
 ├── views.py               # ViewSets + OntologySchemaRegistryView

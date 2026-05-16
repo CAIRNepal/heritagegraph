@@ -28,6 +28,7 @@ const emptyContributeHub: ContributeHubPayload = {
 function normalizeRegistry(
   payload: Pick<OntologyRegistry, "classes" | "enums"> & {
     contribute_hub?: ContributeHubPayload;
+    semantic_patterns?: OntologyRegistry["semantic_patterns"];
     registry_jsonschema?: OntologyRegistry["registry_jsonschema"];
     schema_version?: string;
   }
@@ -37,6 +38,7 @@ function normalizeRegistry(
     classes: payload.classes,
     enums: payload.enums,
     contribute_hub: payload.contribute_hub ?? emptyContributeHub,
+    semantic_patterns: payload.semantic_patterns ?? [],
     registry_jsonschema: payload.registry_jsonschema,
   };
 }
@@ -67,12 +69,14 @@ const gen = generatedOntologyRegistry as unknown as {
   classes: OntologyRegistry["classes"];
   enums: OntologyRegistry["enums"];
   contribute_hub?: ContributeHubPayload;
+  semantic_patterns?: OntologyRegistry["semantic_patterns"];
 };
 
 const baseline: OntologyRegistry = normalizeRegistry({
   classes: gen.classes,
   enums: gen.enums,
   contribute_hub: gen.contribute_hub,
+  semantic_patterns: gen.semantic_patterns,
   registry_jsonschema: (gen as { registry_jsonschema?: OntologyRegistry["registry_jsonschema"] })
     .registry_jsonschema,
   schema_version: (gen as { schema_version?: string }).schema_version,
@@ -135,6 +139,7 @@ export function OntologyProvider({
             classes: gen.classes,
             enums: gen.enums,
             contribute_hub: gen.contribute_hub,
+            semantic_patterns: gen.semantic_patterns,
             registry_jsonschema: (gen as { registry_jsonschema?: OntologyRegistry["registry_jsonschema"] })
               .registry_jsonschema,
             schema_version: (gen as { schema_version?: string }).schema_version,

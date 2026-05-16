@@ -128,9 +128,21 @@ class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
         return obj.point.x if obj.point else None
 
     def to_internal_value(self, data):
-        lat = data.pop("latitude", None)
-        lng = data.pop("longitude", None)
-        ret = super().to_internal_value(data)
+        mutable = (
+            {k: v for k, v in data.items()}
+            if hasattr(data, "items")
+            else dict(data)
+        )
+        if mutable.get("place_type") not in (None, "") and not mutable.get("type"):
+            mutable["type"] = mutable.pop("place_type", None)
+        else:
+            mutable.pop("place_type", None)
+        pc = mutable.pop("place_coordinates", None)
+        if pc not in (None, "") and not mutable.get("coordinates_legacy"):
+            mutable["coordinates_legacy"] = str(pc).strip()
+        lat = mutable.pop("latitude", None)
+        lng = mutable.pop("longitude", None)
+        ret = super().to_internal_value(mutable)
         if lat is not None and lng is not None:
             from django.contrib.gis.geos import Point
             try:
@@ -139,6 +151,10 @@ class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"latitude": "Must be a valid float."}
                 )
+        if not ret.get("type"):
+            ret["type"] = "temple"
+        if not ret.get("current_status"):
+            ret["current_status"] = "preserved"
         return ret
 
 
@@ -196,6 +212,21 @@ class ArchitecturalStructureSerializer(
     class Meta:
         model = ArchitecturalStructure
         fields = "__all__"
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        raw_loc = data.get("has_current_location")
+        if raw_loc is None:
+            data["has_current_location"] = None
+        elif isinstance(raw_loc, dict):
+            pass
+        else:
+            try:
+                loc = Location.objects.only("id", "name").get(pk=raw_loc)
+                data["has_current_location"] = {"id": loc.id, "name": loc.name}
+            except Location.DoesNotExist:
+                data["has_current_location"] = {"id": raw_loc, "name": str(raw_loc)}
+        return data
 
     def get_latitude(self, obj):
         return obj.point.y if obj.point else None

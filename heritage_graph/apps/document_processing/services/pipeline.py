@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from ..models import ExtractedField, UploadedDocument
 from .agents.doc_intelligence import run_doc_intelligence
+from .progress import patch_processing_progress
 from .classifier import classify_media_file
 from .htr import extract_handwritten
 from .ner import extract_structured_fields
@@ -57,6 +58,10 @@ def process_uploaded_document(*, document_id: str) -> None:
     _reset_processing_state(doc)
     doc.status = "processing"
     doc.save(update_fields=["status", "updated_at"])
+    patch_processing_progress(
+        str(doc.id),
+        {"phase": "started", "message": "Processing started", "percent": 5},
+    )
 
     f = doc.media.file
     try:
@@ -78,6 +83,15 @@ def process_uploaded_document(*, document_id: str) -> None:
     doc.document_type = cls.document_type
     doc.classification_confidence = cls.confidence
     doc.save(update_fields=["document_type", "classification_confidence", "updated_at"])
+    patch_processing_progress(
+        str(doc.id),
+        {
+            "phase": "classified",
+            "document_type": doc.document_type,
+            "message": "Document classified",
+            "percent": 25,
+        },
+    )
 
     # Route
     try:
@@ -114,6 +128,11 @@ def process_uploaded_document(*, document_id: str) -> None:
 
         if not (raw or "").strip():
             raise RuntimeError("No text could be extracted from this document.")
+
+        patch_processing_progress(
+            str(doc.id),
+            {"phase": "ocr", "message": "Text extraction complete", "percent": 60},
+        )
 
         doc.raw_text = raw
 
@@ -159,6 +178,10 @@ def process_uploaded_document(*, document_id: str) -> None:
         doc.processing_finished = timezone.now()
         doc.save(
             update_fields=["raw_text", "metadata", "status", "processing_finished", "updated_at"]
+        )
+        patch_processing_progress(
+            str(doc.id),
+            {"phase": "completed", "message": "Done", "percent": 100},
         )
     except pytesseract.TesseractNotFoundError as exc:
         logger.exception("Tesseract is not available on this runtime")

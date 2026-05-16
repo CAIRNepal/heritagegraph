@@ -20,6 +20,8 @@ export type OcrDocumentStatus = {
   processing_finished?: string | null;
   user_safe_error?: string | null;
   raw_text?: string;
+  processing_progress?: Record<string, unknown>;
+  provenance?: Record<string, unknown>;
 };
 
 export function buildVersionedOcrBaseUrl() {
@@ -36,6 +38,13 @@ export async function uploadHeritageOcrDocument(args: {
   accessToken: string;
   mediaType?: string;
   description?: string;
+  provenance?: {
+    source_institution?: string;
+    collection_name?: string;
+    language?: string;
+    ocr_language?: string;
+    copyright_note?: string;
+  };
 }): Promise<{ media_id: number; uploaded_document_id: string; status: string }> {
   const base = buildVersionedOcrBaseUrl();
   const body = new FormData();
@@ -43,6 +52,12 @@ export async function uploadHeritageOcrDocument(args: {
   body.append("cultural_entity_id", args.culturalEntityId);
   if (args.mediaType) body.append("media_type", args.mediaType);
   if (args.description) body.append("description", args.description);
+  const pv = args.provenance;
+  if (pv?.source_institution) body.append("source_institution", pv.source_institution);
+  if (pv?.collection_name) body.append("collection_name", pv.collection_name);
+  if (pv?.language) body.append("language", pv.language);
+  if (pv?.ocr_language) body.append("ocr_language", pv.ocr_language);
+  if (pv?.copyright_note) body.append("copyright_note", pv.copyright_note);
 
   const res = await fetch(`${base}/ocr-documents/upload/`, {
     method: "POST",

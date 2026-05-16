@@ -14,6 +14,7 @@ import {
   IconFileDescription,
   IconChartBar,
   IconShield,
+  IconPhotoScan,
 } from "@tabler/icons-react";
 
 export interface DashboardLinkItem {
@@ -45,6 +46,13 @@ export const dashboardQuickActions: DashboardLinkItem[] = [
     icon: IconPlus,
     href: "/contribute",
     gradient: "from-blue-500 to-sky-500",
+  },
+  {
+    title: "Document ingestion (OCR)",
+    desc: "Bulk-upload PDFs or scans, review OCR, then merge into contribute forms.",
+    icon: IconPhotoScan,
+    href: "/contribute/ingestion",
+    gradient: "from-emerald-500 to-teal-600",
   },
   {
     title: "Knowledge Base",

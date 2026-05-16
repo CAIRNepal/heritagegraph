@@ -37,7 +37,7 @@ export function NavKnowledgebase({
   items: KnowledgeNavItem[];
 }) {
   const pathname = usePathname();
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
   const itemsRef = React.useRef(items);
   itemsRef.current = items;
 

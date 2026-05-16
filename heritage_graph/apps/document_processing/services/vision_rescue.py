@@ -60,7 +60,11 @@ def run_vision_rescue(*, document: UploadedDocument, django_file: File) -> str:
         pil = Image.open(io.BytesIO(raw)).convert("RGB")
 
     # If Tesseract is available, do a local pass for cheap text to warm-start the model prompt.
-    local_text, _local_conf = ocr_pil_image(pil=pil) if pil is not None else ("", 0.0)
+    local_blocks: list[dict] = []
+    if pil is not None:
+        local_text, _local_conf, local_blocks = ocr_pil_image(pil=pil)
+    else:
+        local_text = ""
 
     buf = io.BytesIO()
     if pil is None:
@@ -117,6 +121,12 @@ def run_vision_rescue(*, document: UploadedDocument, django_file: File) -> str:
         engine="claude_vision",
         text=out,
         confidence=0.75 if out else 0.1,
-        metadata={"model": "claude-3-5-sonnet-20241022", "prepass": local_text[:500]},
+        metadata={
+            "model": "claude-3-5-sonnet-20241022",
+            "prepass": local_text[:500],
+            "blocks": local_blocks,
+            "image_width": pil.width,
+            "image_height": pil.height,
+        },
     )
     return out

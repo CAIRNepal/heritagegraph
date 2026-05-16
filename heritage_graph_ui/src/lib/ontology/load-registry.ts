@@ -3,6 +3,7 @@ import type {
   ContributeHubPayload,
   OntologyClass,
   RegistryJsonSchemaBlob,
+  SemanticPattern,
 } from "./types";
 
 /** Payload matches specs/004-yaml-driven-schema/contracts/openapi-schema-registry.v1.yaml */
@@ -17,6 +18,7 @@ export type OntologyRegistryPayload = {
     readonly { readonly value: string; readonly label: string; readonly description?: string }[]
   >;
   contribute_hub?: ContributeHubPayload;
+  semantic_patterns?: readonly SemanticPattern[];
   registry_jsonschema?: RegistryJsonSchemaBlob;
 };
 

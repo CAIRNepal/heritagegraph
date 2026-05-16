@@ -465,6 +465,14 @@ class ArchitecturalStructure(MetaData):
         max_length=20, choices=CONDITION_TYPE_CHOICES, blank=True
     )
     note = models.TextField(blank=True)
+    has_current_location = models.ForeignKey(
+        "Location",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="structures_here",
+        help_text="Current place / location (registry: has_current_location / crm:P55)",
+    )
 
     def __str__(self):
         return self.name

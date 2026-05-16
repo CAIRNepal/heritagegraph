@@ -37,6 +37,13 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getPublicApiUrl } from "@/lib/api-base";
 import {
+  appendResumePickParams,
+  decodeResumeTarget,
+  encodeResumeTarget,
+  stripContributeFlowKeys,
+  stripResumePickKeys,
+} from "@/lib/contribute-resume";
+import {
   buildOntologyFormPayload,
   mapCidocRecordToFormData,
 } from "@/lib/ontology/ontology-edit-helpers";
@@ -52,6 +59,12 @@ import {
   loadOntologyFormDraft,
   saveOntologyFormDraft,
 } from "@/lib/ontology/form-drafts";
+import {
+  deriveFormGraph,
+  formGraphToJsonLd,
+  inferRootLabel,
+} from "@/lib/ontology/form-graph";
+import { OntologyFormGraphPreview } from "@/components/ontology-form/form-graph-preview";
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Sparkles } from "lucide-react";
@@ -59,9 +72,13 @@ import { CidocCrmHint } from "@/components/ontology/CidocCrmHint";
 import { HeritageDocumentUpload } from "@/components/ocr/heritage-document-upload";
 import { OcrSuggestionBadge } from "@/components/ocr/ocr-suggestion-badge";
 import { GeoPointField } from "@/components/ontology-form/geo-point-field";
+import Link from "next/link";
+import { getContributePathForRegistryKey } from "@/lib/ontology/contribute-intent-routes";
+import {
+  INGESTION_HANDOFF_STORAGE_KEY,
+  type IngestionHandoffPayload,
+} from "@/lib/ingestion-api";
 import type { OcrFieldSuggestion } from "@/hooks/use-heritage-ocr-suggestions";
-import { ContributorModeToggle } from "@/components/contribute/contributor-mode-toggle";
-import type { ContributorMode } from "@/hooks/use-contributor-mode";
 
 /** Map `?step=` (section key or numeric index) to a valid section index and canonical URL key. */
 function resolveOntologyFormStep(
@@ -89,25 +106,6 @@ function resolveOntologyFormStep(
   return { index: 0, canonicalKey: sections[0].key };
 }
 
-function simplifyHelpTextForBasicMode(text?: string): string | undefined {
-  if (!text) return text;
-  // Remove technical ontology/RDF jargon that confuses non-experts
-  const normalized = text
-    .replace(/CIDOC-CRM|PROV-O|assertion|RDF|URI|namespace|predicate|ontology|triple|reification/gi, "")
-    .replace(/\(E\d+.*?\)/g, "") // Remove CIDOC class codes like (E22)
-    .replace(/\(P\d+.*?\)/g, "") // Remove CIDOC property codes like (P102)
-    .replace(/\s+/g, " ")
-    .trim();
-    
-  // Take only the first sentence for "Basic" mode to keep it readable
-  const firstSentence = normalized.split(/(?<=[.!?])\s+/)[0]?.trim();
-  if (!firstSentence) return undefined;
-  
-  return firstSentence.length > 150
-    ? `${firstSentence.slice(0, 147)}...`
-    : firstSentence;
-}
-
 function FieldRenderer({
   field,
   value,
@@ -118,8 +116,10 @@ function FieldRenderer({
   onAssistClick,
   assistPending,
   assistConfidence,
-  basicMode = false,
   showOntologyHint = true,
+  getRelatedOntologyClass,
+  getFullFormRelationHref,
+  apiBaseUrl,
 }: {
   field: OntologyField;
   value: any;
@@ -130,8 +130,11 @@ function FieldRenderer({
   onAssistClick?: () => void;
   assistPending?: boolean;
   assistConfidence?: number;
-  basicMode?: boolean;
   showOntologyHint?: boolean;
+  getRelatedOntologyClass?: (f: OntologyField) => OntologyClass | undefined;
+  /** When inline authoring is on: URL to open the full contribute form for the related type (with resume). */
+  getFullFormRelationHref?: (f: OntologyField) => string | null;
+  apiBaseUrl?: string;
 }) {
   const id = `field-${field.key}`;
   const errorRing = hasError
@@ -172,9 +175,7 @@ function FieldRenderer({
     </div>
   );
 
-  const helpText = basicMode
-    ? simplifyHelpTextForBasicMode(field.description)
-    : field.description;
+  const helpText = field.description;
 
   const descEl = helpText ? (
     <p className="text-xs text-muted-foreground mb-1.5">{helpText}</p>
@@ -389,9 +390,8 @@ function FieldRenderer({
             className={errorRing}
           />
           <p className="text-xs text-muted-foreground">
-            {basicMode
-              ? "Use an approximate date expression when exact dates are unknown."
-              : "Use EDTF-style strings for imprecise heritage dates (ISO 8601-2). Quick picks set common patterns; refine in the field or use a NS↔BS converter in the docs."}
+            Use EDTF-style strings for imprecise heritage dates (ISO 8601-2). Quick picks set common
+            patterns; refine in the field or use a NS↔BS converter in the docs.
           </p>
           {errorFooter}
         </div>
@@ -505,6 +505,14 @@ function FieldRenderer({
       );
 
     case "relation": {
+      const childClass = getRelatedOntologyClass?.(field);
+      const showNested =
+        Boolean(field.inlineAuthoring) &&
+        Boolean(apiBaseUrl) &&
+        childClass != null &&
+        Boolean(field.relationEndpoint);
+      const fullFormHref = getFullFormRelationHref?.(field) ?? null;
+
       if (field.multivalued) {
         const items: SearchResult[] = Array.isArray(value)
           ? (value as SearchResult[])
@@ -560,44 +568,134 @@ function FieldRenderer({
               value={null}
               onSelect={handleAdd}
               placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
-              allowCreate
               disabled={disabled}
               hasError={hasError}
+              searchHint={
+                showNested
+                  ? "No match? Use the full form below to add a record, then return here."
+                  : undefined
+              }
             />
+            {showNested ? (
+              <div className="pt-2 space-y-2 border-t border-dashed border-border">
+                {fullFormHref ? (
+                  <>
+                    <p className="text-xs text-muted-foreground">
+                      Or add a new {childClass?.label ?? "record"} with the full contribution form (your draft
+                      here is kept in this browser).
+                    </p>
+                    {disabled ? (
+                      <Button type="button" variant="outline" size="sm" disabled>
+                        Add new {childClass?.label ?? "record"} (full form)
+                      </Button>
+                    ) : (
+                      <Button type="button" variant="outline" size="sm" asChild>
+                        <Link href={fullFormHref}>
+                          Add new {childClass?.label ?? "record"} (full form)
+                        </Link>
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Search and select existing records for this link.
+                  </p>
+                )}
+              </div>
+            ) : null}
             {errorFooter}
           </div>
         );
       }
 
-      const selectedEntity: SearchResult | null =
-        value && typeof value === "object" && value !== null && "name" in value
-          ? (value as SearchResult)
-          : value
-            ? {
-                id: 0,
-                name: typeof value === "string" ? value : String(value),
-              }
-            : null;
+      let selectedEntity: SearchResult | null = null;
+      if (value && typeof value === "object" && value !== null && "id" in value) {
+        const o = value as { id: unknown; name?: unknown };
+        selectedEntity = {
+          id: o.id as string | number,
+          name:
+            o.name != null && String(o.name).trim() !== ""
+              ? String(o.name)
+              : `Record ${String(o.id)}`,
+        };
+      } else if (value !== undefined && value !== null && value !== "") {
+        const idRaw =
+          typeof value === "number"
+            ? value
+            : /^\d+$/.test(String(value))
+              ? Number(value)
+              : value;
+        selectedEntity = {
+          id: idRaw as string | number,
+          name: `Record ${String(idRaw)}`,
+        };
+      }
+
+      const entitySearchEl = (
+        <EntitySearch
+          label=""
+          endpoint={field.relationEndpoint || ""}
+          value={selectedEntity}
+          onSelect={(entity) =>
+            onChange(
+              field.key,
+              entity ? { id: entity.id, name: entity.name } : ""
+            )
+          }
+          placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
+          disabled={disabled}
+          hasError={hasError}
+          searchHint={
+            showNested
+              ? "No match? Use the full form below to add a record, then return here."
+              : undefined
+          }
+        />
+      );
+
+      if (!showNested) {
+        return (
+          <div className="space-y-1">
+            {labelEl}
+            {descEl}
+            {entitySearchEl}
+            {errorFooter}
+          </div>
+        );
+      }
 
       return (
         <div className="space-y-1">
           {labelEl}
           {descEl}
-          <EntitySearch
-            label=""
-            endpoint={field.relationEndpoint || ""}
-            value={selectedEntity}
-            onSelect={(entity) =>
-              onChange(
-                field.key,
-                entity ? { id: entity.id, name: entity.name } : ""
-              )
-            }
-            placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
-            allowCreate
-            disabled={disabled}
-            hasError={hasError}
-          />
+          <div className="space-y-3">
+            {entitySearchEl}
+            <div className="space-y-2 border-t border-dashed border-border pt-3">
+              {fullFormHref ? (
+                <>
+                  <p className="text-xs text-muted-foreground">
+                    Or add a new {childClass?.label ?? "record"} with the full contribution form (your draft
+                    here is kept in this browser).
+                  </p>
+                  {disabled ? (
+                    <Button type="button" variant="outline" size="sm" disabled>
+                      Add new {childClass?.label ?? "record"} (full form)
+                    </Button>
+                  ) : (
+                    <Button type="button" variant="outline" size="sm" asChild>
+                      <Link href={fullFormHref}>
+                        Add new {childClass?.label ?? "record"} (full form)
+                      </Link>
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Search and select an existing record for this link.
+                </p>
+              )}
+            </div>
+          </div>
           {errorFooter}
         </div>
       );
@@ -625,16 +723,22 @@ function FieldRenderer({
 export interface OntologyFormProps {
   ontologyClass: OntologyClass;
   redirectTo?: string;
+  /** URL-encoded internal path (see `encodeResumeTarget`); after successful create, redirect with pick params */
+  resumeEncoded?: string | null;
+  resumePickRole?: "primary" | "supporting";
   apiBaseUrl?: string;
   title?: string;
   description?: string;
   onFormControl?: (api: OntologyFormControlApi) => void;
   /** When set, shows OCR upload that applies suggestions to empty fields (requires signed-in user). */
   ocrCulturalEntityId?: string | null;
-  contributorMode?: ContributorMode;
-  onContributorModeChange?: (mode: ContributorMode) => void | Promise<boolean>;
-  contributorModeLoading?: boolean;
-  contributorModeSaving?: boolean;
+  /**
+   * When true, ignores URL `?id=` so embedding under pages that reuse `id` (e.g. proposal drafts)
+   * never enters edit mode for this ontology endpoint.
+   */
+  embeddedCreateOnly?: boolean;
+  /** After successful POST: invoked instead of client navigation (modal flows). */
+  onContributionCreated?: (result: { id: string }) => void;
 }
 
 export type OntologyFormControlApi = {
@@ -645,23 +749,25 @@ export type OntologyFormControlApi = {
 export default function OntologyForm({
   ontologyClass,
   redirectTo,
+  resumeEncoded,
+  resumePickRole,
   apiBaseUrl,
   title,
   description,
   onFormControl,
   ocrCulturalEntityId,
-  contributorMode = "basic",
-  onContributorModeChange,
-  contributorModeLoading = false,
-  contributorModeSaving = false,
+  embeddedCreateOnly = false,
+  onContributionCreated,
 }: OntologyFormProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const recordId = searchParams.get("id")?.trim() || null;
+  const recordId = embeddedCreateOnly
+    ? null
+    : (searchParams.get("id")?.trim() || null);
   const isEditMode = Boolean(recordId);
   const { data: session, status } = useSession();
-  const { registry, schemaVersion } = useOntology();
+  const { registry, schemaVersion, getOntologyClass } = useOntology();
   const isSignedIn = status === "authenticated";
   const assistEnabled =
     Boolean((session as { accessToken?: string } | null)?.accessToken) &&
@@ -685,9 +791,20 @@ export default function OntologyForm({
   const [suggestKey, setSuggestKey] = useState<string | null>(null);
   const [ocrFieldConfidence, setOcrFieldConfidence] = useState<Record<string, number>>({});
   const [lastOcrDocumentId, setLastOcrDocumentId] = useState<string | null>(null);
-  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
   /** Prevents double draft hydration (e.g. React StrictMode) for the same storage key. */
   const draftAppliedForKey = useRef<string | null>(null);
+  const ingestionHandoffAppliedRef = useRef(false);
+  /** After IndexedDB draft load for new entries, so resume pick runs after draft merge. */
+  const [draftHydrated, setDraftHydrated] = useState(isEditMode);
+
+  const showFormGraphPreview =
+    typeof process.env.NEXT_PUBLIC_SHOW_FORM_GRAPH === "string" &&
+    process.env.NEXT_PUBLIC_SHOW_FORM_GRAPH === "true";
+  const [formGraphDraftId] = useState(() =>
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `draft-${typeof Date !== "undefined" ? Date.now() : "0"}`
+  );
 
   const userDraftKey = useMemo(() => {
     const u = session?.user as
@@ -707,11 +824,47 @@ export default function OntologyForm({
     [userDraftKey, ontologyClass.key, isEditMode, recordId]
   );
 
+  const resolveRelatedOntologyClass = useCallback(
+    (f: OntologyField) =>
+      f.relationRegistryKey
+        ? getOntologyClass(f.relationRegistryKey)
+        : undefined,
+    [getOntologyClass]
+  );
+
   const baseUrl = useMemo(
     () => apiBaseUrl || getPublicApiUrl(),
     [apiBaseUrl]
   );
   const endpoint = `${baseUrl}${ontologyClass.apiEndpoint}`;
+
+  const semanticFormGraphBundle = useMemo(() => {
+    if (!showFormGraphPreview) return null;
+    const rootLabel = inferRootLabel(ontologyClass, formData);
+    const graph = deriveFormGraph({
+      ontologyClass,
+      formData,
+      recordId,
+      draftLocalId: formGraphDraftId,
+      rootLabel,
+    });
+    const jsonLd = formGraphToJsonLd(graph, ontologyClass);
+    return { graph, jsonLd };
+  }, [
+    showFormGraphPreview,
+    ontologyClass,
+    formData,
+    recordId,
+    formGraphDraftId,
+  ]);
+
+  const formGraphPanel =
+    semanticFormGraphBundle !== null ? (
+      <OntologyFormGraphPreview
+        graph={semanticFormGraphBundle.graph}
+        jsonLd={semanticFormGraphBundle.jsonLd}
+      />
+    ) : null;
 
   useEffect(() => {
     if (!recordId) {
@@ -783,13 +936,7 @@ export default function OntologyForm({
     [ontologyClass.fields]
   );
 
-  const isBasicMode = contributorMode === "basic";
-
-  const visibleSortedFields = useMemo(() => {
-    if (!isBasicMode) return sortedFields;
-    if (showOptionalDetails) return sortedFields;
-    return sortedFields.filter((f) => Boolean(f.required));
-  }, [isBasicMode, showOptionalDetails, sortedFields]);
+  const visibleSortedFields = sortedFields;
 
   const sections = ontologyClass.sections || [
     { key: "basic", label: "Information" },
@@ -813,12 +960,6 @@ export default function OntologyForm({
   }, [hasSections, searchParams, sections]);
 
   useEffect(() => {
-    if (isBasicMode) {
-      setShowOptionalDetails(false);
-    }
-  }, [isBasicMode, currentSectionIndex]);
-
-  useEffect(() => {
     if (!hasSections || !pathname) return;
     const raw = searchParams.get("step");
     const { canonicalKey } = resolveOntologyFormStep(raw, sections);
@@ -835,26 +976,40 @@ export default function OntologyForm({
 
   useEffect(() => {
     if (isEditMode) return;
-    if (draftAppliedForKey.current === draftStorageKey) return;
+    if (draftAppliedForKey.current === draftStorageKey) {
+      setDraftHydrated(true);
+      return;
+    }
+    setDraftHydrated(false);
     draftAppliedForKey.current = draftStorageKey;
     let cancelled = false;
     void (async () => {
-      const draft = await loadOntologyFormDraft(draftStorageKey);
-      if (cancelled) return;
-      if (draft?.formData && typeof draft.formData === "object") {
-        const keys = Object.keys(draft.formData as object);
-        if (keys.length > 0) {
-          setFormData(draft.formData as Record<string, any>);
-          toast.info("Restored your draft from this browser.", {
-            id: `ontology-draft-${draftStorageKey}`,
-          });
+      try {
+        const draft = await loadOntologyFormDraft(draftStorageKey);
+        if (cancelled) return;
+        if (draft?.formData && typeof draft.formData === "object") {
+          const keys = Object.keys(draft.formData as object);
+          if (keys.length > 0) {
+            setFormData(draft.formData as Record<string, any>);
+            toast.info("Restored your draft from this browser.", {
+              id: `ontology-draft-${draftStorageKey}`,
+            });
+          }
         }
+      } finally {
+        if (!cancelled) setDraftHydrated(true);
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [draftStorageKey, isEditMode]);
+
+  useEffect(() => {
+    if (isEditMode) {
+      setDraftHydrated(true);
+    }
+  }, [isEditMode, draftStorageKey]);
 
   useEffect(() => {
     if (isEditMode) return;
@@ -1062,6 +1217,121 @@ export default function OntologyForm({
     []
   );
 
+  const getFullFormRelationHref = useCallback(
+    (field: OntologyField) => {
+      if (!pathname || !field.relationRegistryKey) return null;
+      const route = getContributePathForRegistryKey(
+        registry,
+        field.relationRegistryKey
+      );
+      if (!route) return null;
+      const cleaned = stripContributeFlowKeys(
+        new URLSearchParams(searchParams.toString())
+      );
+      cleaned.set("pickField", field.key);
+      const qs = cleaned.toString();
+      const target = qs ? `${pathname}?${qs}` : pathname;
+      const enc = encodeResumeTarget(target);
+      if (!enc) return null;
+      return `${route}?resume=${enc}`;
+    },
+    [pathname, registry, searchParams]
+  );
+
+  useEffect(() => {
+    if (!isEditMode && !draftHydrated) return;
+    if (isEditMode && editLoad === "loading") return;
+
+    const pickField = searchParams.get("pickField")?.trim();
+    const pickedOntology = searchParams.get("pickedOntology")?.trim();
+    const pickedId = searchParams.get("pickedId")?.trim();
+    if (!pickField || !pickedOntology || !pickedId || !pathname) return;
+
+    const relField = ontologyClass.fields.find((f) => f.key === pickField);
+    if (
+      !relField ||
+      relField.type !== "relation" ||
+      relField.relationRegistryKey !== pickedOntology
+    ) {
+      const next = stripResumePickKeys(
+        new URLSearchParams(searchParams.toString())
+      );
+      const q = next.toString();
+      router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const ep = relField.relationEndpoint;
+        if (!ep) throw new Error("missing endpoint");
+        const token = (session as { accessToken?: string } | null)?.accessToken;
+        const detailUrl = `${baseUrl}${ep}${encodeURIComponent(pickedId)}/`;
+        const data = await apiFetchJson<Record<string, unknown>>(detailUrl, {
+          headers: {
+            Accept: "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        if (cancelled) return;
+        const rawName =
+          (typeof data.name === "string" && data.name.trim()) ||
+          (typeof data.title === "string" && data.title.trim()) ||
+          "";
+        const name = rawName || `Record ${pickedId}`;
+        const entry = { id: pickedId, name };
+
+        if (relField.multivalued) {
+          setFormData((prev) => {
+            const cur = prev[pickField];
+            const items: SearchResult[] = Array.isArray(cur)
+              ? [...(cur as SearchResult[])]
+              : [];
+            if (!items.some((x) => String(x.id) === String(pickedId))) {
+              items.push(entry);
+            }
+            return { ...prev, [pickField]: items };
+          });
+        } else {
+          mergeValues({ [pickField]: entry } as Record<string, any>, {
+            onlyIfEmpty: false,
+          });
+        }
+
+        toast.success(`Linked ${relField.label}: ${name}`);
+        const next = stripResumePickKeys(
+          new URLSearchParams(searchParams.toString())
+        );
+        const q = next.toString();
+        router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+      } catch {
+        if (cancelled) return;
+        toast.error("Could not load the created record to link.");
+        const next = stripResumePickKeys(
+          new URLSearchParams(searchParams.toString())
+        );
+        const q = next.toString();
+        router.replace(q ? `${pathname}?${q}` : pathname, { scroll: false });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    baseUrl,
+    draftHydrated,
+    editLoad,
+    isEditMode,
+    mergeValues,
+    ontologyClass,
+    pathname,
+    router,
+    searchParams,
+    session,
+  ]);
+
   const onFieldSuggest = useCallback(
     async (field: OntologyField) => {
       const token = (session as { accessToken?: string } | null)?.accessToken;
@@ -1132,6 +1402,35 @@ export default function OntologyForm({
     },
     [mergeValues]
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (searchParams.get("ingestionHandoff") !== "1") return;
+    if (ingestionHandoffAppliedRef.current) return;
+    ingestionHandoffAppliedRef.current = true;
+    try {
+      const raw = sessionStorage.getItem(INGESTION_HANDOFF_STORAGE_KEY);
+      if (!raw) {
+        ingestionHandoffAppliedRef.current = false;
+        return;
+      }
+      const parsed = JSON.parse(raw) as IngestionHandoffPayload;
+      if (parsed.ontologyClassKey !== ontologyClass.key) {
+        ingestionHandoffAppliedRef.current = false;
+        return;
+      }
+      ocrApplyFromUpload(parsed.suggestions as Record<string, OcrFieldSuggestion>, {
+        uploadedDocumentId: parsed.uploadedDocumentId,
+      });
+      sessionStorage.removeItem(INGESTION_HANDOFF_STORAGE_KEY);
+      const p = new URLSearchParams(searchParams.toString());
+      p.delete("ingestionHandoff");
+      const qs = p.toString();
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+    } catch {
+      ingestionHandoffAppliedRef.current = false;
+    }
+  }, [ontologyClass.key, pathname, router, searchParams, ocrApplyFromUpload]);
 
   const getValues = useCallback(() => formData, [formData]);
 
@@ -1236,7 +1535,7 @@ export default function OntologyForm({
         return;
       }
 
-      await apiFetchJson(endpoint, {
+      const created = await apiFetchJson<Record<string, unknown>>(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1256,6 +1555,34 @@ export default function OntologyForm({
           duration: 5000,
         }
       );
+
+      const createdId = created?.id;
+      if (onContributionCreated && createdId != null) {
+        const idStr = String(createdId).trim();
+        if (idStr !== "") {
+          onContributionCreated({ id: idStr });
+          return;
+        }
+      }
+
+      const resumeRaw = resumeEncoded?.trim();
+      const resumeDecoded =
+        resumeRaw && resumeRaw.length > 0
+          ? decodeResumeTarget(resumeRaw)
+          : null;
+      if (resumeDecoded && createdId != null) {
+        const pickedId = String(createdId).trim();
+        if (pickedId !== "") {
+          const resumeDest = appendResumePickParams(resumeDecoded, {
+            pickedOntology: ontologyClass.key,
+            pickedId,
+            ...(resumePickRole ? { pickedRole: resumePickRole } : {}),
+          });
+          setTimeout(() => router.replace(resumeDest), 1500);
+          return;
+        }
+      }
+
       setTimeout(() => router.push(postSubmitPath), 1500);
     } catch (err) {
       toast.error(
@@ -1314,67 +1641,6 @@ export default function OntologyForm({
     fieldsBySection[sections[currentSectionIndex]?.key] || [];
 
   const isLastStep = currentSectionIndex === sections.length - 1;
-
-  const currentOptionalHiddenCount = useMemo(() => {
-    if (!isBasicMode || showOptionalDetails) return 0;
-    const sectionKey = sections[currentSectionIndex]?.key || "basic";
-    return sortedFields.filter(
-      (f) => (f.section || "basic") === sectionKey && !f.required
-    ).length;
-  }, [
-    isBasicMode,
-    showOptionalDetails,
-    sections,
-    currentSectionIndex,
-    sortedFields,
-  ]);
-
-  const modeControls = (
-    <div className="space-y-2">
-      <ContributorModeToggle
-        mode={contributorMode}
-        isLoading={contributorModeLoading}
-        isSaving={contributorModeSaving}
-        onModeChange={(next) => {
-          if (!onContributorModeChange) return;
-          void onContributorModeChange(next);
-        }}
-      />
-      {isBasicMode && currentOptionalHiddenCount > 0 ? (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-blue-100 bg-blue-50/30 px-4 py-2.5 text-[11px] text-blue-700 dark:border-blue-900/30 dark:bg-blue-950/10 dark:text-blue-400">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3 w-3 opacity-70" />
-            <p className="font-medium">
-              Summarized view: {currentOptionalHiddenCount} optional field
-              {currentOptionalHiddenCount === 1 ? " is" : "s are"} hidden.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="link"
-            className="h-auto px-0 py-0 text-[11px] font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            onClick={() => setShowOptionalDetails(true)}
-          >
-            Reveal all fields
-          </Button>
-        </div>
-      ) : null}
-      {isBasicMode && showOptionalDetails ? (
-        <div className="rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-          Optional details are visible for this step.
-          <Button
-            type="button"
-            variant="link"
-            className="ml-2 h-auto px-0 py-0 text-xs"
-            onClick={() => setShowOptionalDetails(false)}
-          >
-            Hide again
-          </Button>
-        </div>
-      ) : null}
-    </div>
-  );
-  const showModeControls = Boolean(onContributorModeChange);
 
   if (sortedFields.length === 0) {
     return (
@@ -1524,7 +1790,7 @@ export default function OntologyForm({
 
         <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
 
-        {showModeControls ? modeControls : null}
+        {formGraphPanel}
 
         {ocrCulturalEntityId ? (
           <HeritageDocumentUpload
@@ -1575,14 +1841,14 @@ export default function OntologyForm({
                 }
                 assistPending={suggestKey === field.key}
                 assistConfidence={ocrFieldConfidence[field.key]}
-                basicMode={isBasicMode}
-                showOntologyHint={!isBasicMode}
+                getRelatedOntologyClass={resolveRelatedOntologyClass}
+                getFullFormRelationHref={getFullFormRelationHref}
+                apiBaseUrl={baseUrl}
               />
             ))}
             {visibleSortedFields.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No required fields are visible in basic mode for this form.
-                Use the optional-details toggle above or switch to advanced mode.
+                No fields are configured for this form in the loaded schema.
               </p>
             ) : null}
           </CardContent>
@@ -1641,7 +1907,7 @@ export default function OntologyForm({
 
       <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
 
-      {showModeControls ? modeControls : null}
+      {formGraphPanel}
 
       {ocrCulturalEntityId ? (
         <HeritageDocumentUpload
@@ -1716,8 +1982,9 @@ export default function OntologyForm({
                   }
                   assistPending={suggestKey === field.key}
                   assistConfidence={ocrFieldConfidence[field.key]}
-                  basicMode={isBasicMode}
-                  showOntologyHint={!isBasicMode}
+                  getRelatedOntologyClass={resolveRelatedOntologyClass}
+                  getFullFormRelationHref={getFullFormRelationHref}
+                  apiBaseUrl={baseUrl}
                 />
               ))}
               {currentSectionFields.length === 0 && (

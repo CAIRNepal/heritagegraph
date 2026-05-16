@@ -4,7 +4,7 @@
 # Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: ontology ontology-check serializers serializers-check entityrefs entityrefs-check \
+.PHONY: ontology ontology-check serializers serializers-check entityrefs entityrefs-check contribute-routes-check \
         schema-rebuild identity-candidates schema-diff \
         generate check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
@@ -42,6 +42,9 @@ ontology-check:
 	@test ! -f "$(CURDIR)/Heritagegraph.yaml" || (echo "ERROR: Remove repo-root Heritagegraph.yaml — canonical ontology is ontology/HeritageGraph.yaml" >&2 && exit 1)
 	python3 tools/linkml_generate_registry.py --check
 
+contribute-routes-check: ## CI: contribute-hub intents map to Next.js pages
+	python3 tools/verify_contribute_intent_routes.py
+
 serializers: ## Regenerate serializers.generated.py from HeritageGraph.yaml
 	python3 tools/generate_serializers.py
 
@@ -70,7 +73,7 @@ schema-diff: ## Compare two ontology YAML files: OLD=ontology/HeritageGraph.yaml
 generate: ontology serializers entityrefs schema-rebuild ## Full pipeline: ontology → serializers → entityrefs → schema-rebuild
 	@echo "==> Full pipeline complete"
 
-check: ontology-check serializers-check entityrefs-check ## CI: verify all generated files are up to date (no side-effects)
+check: ontology-check serializers-check entityrefs-check contribute-routes-check ## CI: verify all generated files are up to date (no side-effects)
 	@echo "==> All checks passed"
 
 # ================================================================

@@ -176,6 +176,23 @@ intents:
     shortDescription: "Books, records, oral histories, inscriptions"
     description: "Add sources with DataCite identifiers, citation, and language."
     difficulty: beginner
+  - registryKey: data_source
+    hubCategory: provenance
+    route: /contribute/data-source
+    emoji: "🗂️"
+    shortDescription: "Evidence records for proposals & citations"
+    description: "Register a Data Source entry used when attaching evidence to relationship proposals and assertions—distinct from bibliography Source documents."
+    difficulty: beginner
+  - registryKey: entity_proposal
+    hubCategory: social
+    route: /contribute/entity-proposal
+    emoji: "🔗"
+    shortDescription: "Unify duplicates under one canonical identity cluster"
+    description: >-
+      Propose that two or more CIDOC rows refer to the same real-world entity.
+      Anchors attach to an EntityCluster (identity.same_referent assertions) after moderator approval at KG proposals.
+      Add supporting Data Sources and optional external IRIs for linked data identifiers.
+    difficulty: intermediate
   - registryKey: assertion
     hubCategory: provenance
     route: /contribute/assertion
@@ -190,3 +207,4 @@ quickStart:
   - location
   - person
   - cultural_entity
+  - entity_proposal

@@ -1,0 +1,431 @@
+"""
+Build RDF triple projections for CIDOC MetaData rows using the LinkML-derived registry.
+
+Each triple is justified by registry metadata (slot_uri / class_uri) and stored fields.
+Spec 007 moderated ``relationship.*`` edges live in another predicate namespace,
+so they survive slot-based refreshes.
+"""
+
+from __future__ import annotations
+
+import logging
+import re
+from dataclasses import dataclass
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+# Match ontology/HeritageGraph.yaml prefixes (subset for emitted triples).
+RDF_PREFIXES: dict[str, str] = {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "crm": "http://www.cidoc-crm.org/cidoc-crm/",
+    "heritageGraph": "https://w3id.org/heritagegraph/",
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "prov": "http://www.w3.org/ns/prov#",
+}
+
+RDF_TYPE_URI = RDF_PREFIXES["rdf"] + "type"
+OWL_SAME_AS_URI = RDF_PREFIXES["owl"] + "sameAs"
+
+INSERT_PREFIX_LINES = """PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+"""
+
+
+@dataclass(frozen=True)
+class _Triple:
+    subj: str
+    pred: str
+    obj_uri: str | None
+    literal: tuple[str, str] | None
+
+
+def iris_from_external_identifiers(data: dict | None) -> list[str]:
+    """
+    Harvest http(s) IRIs from EntityCluster.external_identifiers (flat dict).
+
+    Non-LOD values are skipped; RDF only emits well-formed http(s) IRIs.
+    """
+    if not isinstance(data, dict):
+        return []
+    out: set[str] = set()
+    for v in data.values():
+        if isinstance(v, str):
+            u = v.strip()
+            if u.startswith(("http://", "https://")):
+                out.add(u)
+    return sorted(out)
+
+
+def tripleset_from_owl_sameas(
+    subject_uri: str, object_iris: list[str]
+) -> list[_Triple]:
+    pred = OWL_SAME_AS_URI
+    return [
+        _Triple(subject_uri, pred, uri, None) for uri in sorted(set(object_iris))
+    ]
+
+
+def expand_curie(curie: str) -> str:
+    """Expand a CURIE like crm:P3_has_note or return a bare http(s) URI."""
+    raw = (curie or "").strip()
+    if not raw:
+        return raw
+    if raw.startswith(("http://", "https://")):
+        return raw
+    if ":" not in raw:
+        return (
+            RDF_PREFIXES.get("heritageGraph", "https://w3id.org/heritagegraph/") + raw
+        )
+    prefix, _, local = raw.partition(":")
+    base = RDF_PREFIXES.get(prefix)
+    if not base:
+        logger.debug("Unknown RDF prefix %r in CURIE %r", prefix, curie)
+        return RDF_PREFIXES["heritageGraph"] + local
+    return base + local
+
+
+def _escape_literal_lexical(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _parse_relation_scalar_or_list(raw: Any, *, multivalued: bool) -> list[int | str]:
+    if raw is None:
+        return []
+    if isinstance(raw, bool):
+        return []
+    if isinstance(raw, int):
+        return [raw]
+    if isinstance(raw, str):
+        s = raw.strip()
+        if not s:
+            return []
+        if multivalued:
+            out: list[int | str] = []
+            for part in s.replace(";", ",").split(","):
+                p = part.strip()
+                if not p:
+                    continue
+                try:
+                    out.append(int(p))
+                except ValueError:
+                    continue
+            return out
+        try:
+            return [int(s)]
+        except ValueError:
+            return []
+    if isinstance(raw, list):
+        parsed: list[int | str] = []
+        for item in raw:
+            if isinstance(item, dict):
+                pid = item.get("id")
+                if pid is not None:
+                    parsed.append(pid)  # type: ignore[arg-type]
+            elif isinstance(item, int):
+                parsed.append(item)
+            elif isinstance(item, str) and item.strip():
+                try:
+                    parsed.append(int(item.strip()))
+                except ValueError:
+                    pass
+        return parsed
+    return []
+
+
+def django_field_raw_value(instance: Any, field_key: str) -> Any:
+    try:
+        f = instance._meta.get_field(field_key)
+    except Exception:
+        return getattr(instance, field_key, None)
+
+    try:
+        if getattr(f, "many_to_many", False):
+            if instance.pk is None:
+                return []
+            return list(getattr(instance, field_key).values_list("pk", flat=True))
+
+        if getattr(f, "is_relation", False) and not getattr(f, "auto_created", False):
+            rel = getattr(instance, field_key, None)
+            if rel is not None:
+                return rel.pk
+            return getattr(instance, f"{field_key}_id", None)
+
+        return getattr(instance, field_key, None)
+    except Exception:
+        return getattr(instance, field_key, None)
+
+
+def _literal_for_registry_field(ft: str, value: Any) -> tuple[str, str] | None:
+    if value is None:
+        return None
+    if ft == "boolean":
+        xsd = RDF_PREFIXES["xsd"]
+        if isinstance(value, bool):
+            return ("true" if value else "false", xsd + "boolean")
+        if isinstance(value, str) and value.lower() in {"true", "false", "1", "0"}:
+            norm = value.lower() in {"true", "1"}
+            return ("true" if norm else "false", xsd + "boolean")
+        return (str(value), xsd + "boolean")
+    if ft in ("number", "float"):
+        xsd = RDF_PREFIXES["xsd"]
+        try:
+            if ft == "float":
+                fv = float(value)
+                sv = repr(fv) if isinstance(fv, float) else str(fv)
+                return (sv, xsd + "double")
+            iv = int(value)
+            return (str(iv), xsd + "integer")
+        except (TypeError, ValueError):
+            sv = str(value).strip()
+            return (sv, xsd + "string") if sv else None
+    if ft in ("multiselect",):
+        if isinstance(value, list):
+            s = "; ".join(str(x) for x in value if str(x).strip())
+            return (s, "") if s else None
+        s = str(value).strip()
+        return (s, "") if s else None
+
+    s = str(value).strip()
+    if not s:
+        return None
+
+    match = re.match(r"^SRID=\d+;(.*)$", s, re.DOTALL)
+    if match:
+        inner = match.group(1).strip().lstrip("(").rstrip(")")
+        coords = inner.split(",")
+        if len(coords) == 2:
+            try:
+                x_coord, y_coord = float(coords[0].strip()), float(coords[1].strip())
+                wkt = f"POINT({x_coord} {y_coord})"
+                return (wkt, RDF_PREFIXES["geo"] + "wktLiteral")
+            except ValueError:
+                pass
+
+    return (s, "")
+
+
+# LinkML class names used as relation ranges vs Django model class names.
+LINKML_RELATION_RANGE_TO_MODEL: dict[str, str] = {
+    "Place": "Location",
+    "HistoricalEvent": "Event",
+    "ReligiousTradition": "Tradition",
+    "InformationObject": "Source",
+}
+
+
+def _target_model_class(relation_to: str) -> Any:
+    from apps.cidoc_data import models as cidoc_models
+
+    model_name = LINKML_RELATION_RANGE_TO_MODEL.get(relation_to, relation_to)
+    return getattr(cidoc_models, model_name, None)
+
+
+def _triple_to_line(t: _Triple) -> str:
+    sub = f"<{t.subj}>"
+    pred = f"<{t.pred}>"
+    if t.obj_uri:
+        return f"  {sub} {pred} <{t.obj_uri}> ."
+    if t.literal:
+        lexical, datatype = t.literal
+        escaped = _escape_literal_lexical(lexical)
+        if not datatype:
+            return f'  {sub} {pred} "{escaped}" .'
+        geo_wkt = RDF_PREFIXES["geo"] + "wktLiteral"
+        if datatype == geo_wkt:
+            return f'  {sub} {pred} "{escaped}"^^geo:wktLiteral .'
+        xsd_dt = RDF_PREFIXES["xsd"]
+        if datatype.startswith(xsd_dt):
+            lt = datatype.removeprefix(xsd_dt)
+            return f'  {sub} {pred} "{escaped}"^^xsd:{lt} .'
+        return f'  {sub} {pred} "{escaped}"^^<{datatype}> .'
+    return ""
+
+
+def build_entity_projection(
+    *,
+    subject_uri: str,
+    label_text: str,
+    instance: Any,
+    registry_class_entry: dict[str, Any],
+    resource_uri_fn,
+) -> tuple[list[_Triple], set[str]]:
+    """
+    Produce RDF triples and the set of predicate IRIs OWNED by CIDOC-slot projection.
+
+    Relationship assertion predicates (007) MUST NOT appear in ``predicates`` —
+    callers must not DELETE those when clearing slot projection.
+    """
+    triples: list[_Triple] = []
+    predicates: set[str] = {RDF_PREFIXES["rdfs"] + "label", RDF_TYPE_URI}
+
+    if label_text.strip():
+        triples.append(
+            _Triple(subject_uri, RDF_PREFIXES["rdfs"] + "label", None, (label_text, ""))
+        )
+
+    curi_class = registry_class_entry.get("classUri")
+    if curi_class:
+        type_uri = expand_curie(str(curi_class))
+        triples.append(_Triple(subject_uri, RDF_TYPE_URI, type_uri, None))
+
+    for field in registry_class_entry.get("fields") or ():
+        slot_uri_curie = field.get("slot_uri")
+        if not slot_uri_curie:
+            continue
+
+        fk = field.get("key")
+        ft = field.get("type") or "text"
+
+        if ft in ("media",):
+            continue
+
+        slot_uri_full = expand_curie(str(slot_uri_curie))
+
+        raw = django_field_raw_value(instance, fk)
+        predicates.add(slot_uri_full)
+
+        if ft == "relation":
+            rel_to = field.get("relationTo") or ""
+            multivalued = bool(field.get("multivalued"))
+            tgt_model = _target_model_class(str(rel_to)) if rel_to else None
+
+            ids = _parse_relation_scalar_or_list(raw, multivalued=multivalued)
+            if not ids or tgt_model is None:
+                continue
+
+            for rid in ids:
+                try:
+                    obj = tgt_model.objects.get(pk=rid)
+                except Exception:
+                    continue
+                obj_uri = resource_uri_fn(obj)
+                triples.append(_Triple(subject_uri, slot_uri_full, obj_uri, None))
+            continue
+
+        lit = _literal_for_registry_field(str(ft), raw)
+        if not lit:
+            continue
+        triples.append(_Triple(subject_uri, slot_uri_full, None, lit))
+
+    return triples, predicates
+
+
+def sparql_insert_for_triples(triples: list[_Triple]) -> str:
+    if not triples:
+        lines = INSERT_PREFIX_LINES + "INSERT DATA { }\n"
+        return lines
+    inner_lines = [_triple_to_line(t) for t in triples]
+    inner_lines = [ln for ln in inner_lines if ln]
+    body = INSERT_PREFIX_LINES + "INSERT DATA {\n" + "\n".join(inner_lines) + "\n}\n"
+    return body
+
+
+def sparql_delete_subject_predicates(
+    subject_uri: str, predicates_iris: set[str]
+) -> str:
+    deletes: list[str] = []
+    for pred in sorted(predicates_iris):
+        deletes.append(f"DELETE WHERE {{ <{subject_uri}> <{pred}> ?o . }};\n")
+    return "".join(deletes)
+
+
+def tripleset_owl_sameas_for_metadata_instance(
+    instance: Any, *, resource_uri_fn
+) -> tuple[list[_Triple], set[str]]:
+    """
+    owl:sameAs triples from the single active identity cluster's external identifiers.
+    """
+    from apps.cidoc_data import identity_services
+    from apps.cidoc_data.models import EntityCluster
+    from django.contrib.contenttypes.models import ContentType
+
+    managed: set[str] = {OWL_SAME_AS_URI}
+    ct = ContentType.objects.get_for_model(instance.__class__, for_concrete_model=False)
+    cluster_ids = identity_services.cluster_distinct_ids_for_subject(ct, instance.pk)
+    subj_uri = resource_uri_fn(instance)
+
+    # Competing memberships: do not emit sameAs until resolved to one cluster.
+    if len(cluster_ids) != 1:
+        return tripleset_from_owl_sameas(subj_uri, []), managed
+
+    cluster = (
+        EntityCluster.objects.filter(pk=cluster_ids[0], merged_into__isnull=True)
+        .only("external_identifiers")
+        .first()
+    )
+    if cluster is None:
+        return tripleset_from_owl_sameas(subj_uri, []), managed
+
+    uris = iris_from_external_identifiers(cluster.external_identifiers)
+    return tripleset_from_owl_sameas(subj_uri, uris), managed
+
+
+def tripleset_for_metadata_instance(
+    instance: Any, *, resource_uri_fn, label_fn
+) -> tuple[list[_Triple], set[str]]:
+    """
+    Return (triples, managed_predicate_iris) for one MetaData row.
+
+    Used by SPARQL remote updates and by the local Oxigraph fast path.
+    """
+    from apps.cidoc_data.cidoc_registry_keys import registry_class_key_for_model
+    from apps.cidoc_data.linkml_loader import get_effective_registry_payload
+
+    subj_uri = resource_uri_fn(instance)
+    label = label_fn(instance)
+
+    triples: list[_Triple] = [
+        _Triple(subj_uri, RDF_PREFIXES["rdfs"] + "label", None, (label, ""))
+    ]
+    managed: set[str] = {RDF_PREFIXES["rdfs"] + "label"}
+
+    ck = registry_class_key_for_model(instance.__class__)
+
+    try:
+        payload = get_effective_registry_payload()
+    except Exception:
+        payload = {}
+
+    cls_def = (payload.get("classes") or {}).get(ck) if ck else None
+    if cls_def:
+        extra, preds = build_entity_projection(
+            subject_uri=subj_uri,
+            label_text=label,
+            instance=instance,
+            registry_class_entry=cls_def,
+            resource_uri_fn=resource_uri_fn,
+        )
+
+        extras_no_dup_label: list[_Triple] = []
+        for t in extra:
+            if t.pred == RDF_PREFIXES["rdfs"] + "label" and t.literal == (label, ""):
+                continue
+            extras_no_dup_label.append(t)
+
+        triples.extend(extras_no_dup_label)
+        managed = preds | managed
+
+    same_triples, same_managed = tripleset_owl_sameas_for_metadata_instance(
+        instance,
+        resource_uri_fn=resource_uri_fn,
+    )
+    triples.extend(same_triples)
+    managed |= same_managed
+
+    return triples, managed
+
+
+def projection_for_metadata_instance(
+    instance: Any, *, resource_uri_fn, label_fn
+) -> tuple[str, set[str]]:
+    """Return (sparql_update_document, managed_predicate_iris)."""
+    triples, managed = tripleset_for_metadata_instance(
+        instance, resource_uri_fn=resource_uri_fn, label_fn=label_fn
+    )
+    return sparql_insert_for_triples(triples), managed

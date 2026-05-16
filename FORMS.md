@@ -49,12 +49,14 @@ HeritageGraph uses a **YAML-driven registry** pattern:
 - **LinkML** (`ontology/HeritageGraph.yaml`) defines classes, slots, enums, and RDF URIs.
 - **`tools/ui-classmap.yaml`** maps LinkML classes to UI keys, API endpoints, icons, and nav categories.
 - **`tools/contribute-hub.yaml`** drives the contribute landing page (categories, copy, routes, quick start).
+- **`tools/semantic-patterns.yaml`** defines guided multi-step workflows surfaced as **`semantic_patterns`** alongside the hub on the registry API.
 - **`tools/linkml_generate_registry.py`** + `heritage_graph/apps/cidoc_data/ontology_builder.py` materialize a JSON/TS snapshot (`registry.generated.*`) and the same shape is served by `GET /api/v1/cidoc/schema/registry/`.
 
 The UI reads the effective registry via **`OntologyProvider`** and auto-generates forms, tables, and detail views.
 
 ```
    ontology/HeritageGraph.yaml  +  tools/ui-classmap.yaml  +  tools/contribute-hub.yaml
+                    +  tools/semantic-patterns.yaml
                     │
                     ▼
           ontology_builder.py  /  linkml_generate_registry.py
@@ -78,6 +80,25 @@ The UI reads the effective registry via **`OntologyProvider`** and auto-generate
 
 **Key principle:** Slot **`key`** values in the generated registry **must exactly match** Django model field names because `OntologyForm` sends `{ [field.key]: value }` and DRF's `ModelSerializer` expects those names.
 
+### RDF projection & semantic workflows (ResearchSpace-aligned)
+
+HeritageGraph stores **PostgreSQL/Django rows as canonical truth**. When `RDF_SYNC_ENABLED=true` (`heritage_graph/settings`), optional triple materialization runs from the **same ontology registry**:
+
+| Concern | Module / artefact |
+|--------|---------------------|
+| **Slot literals & object links** derived from persisted fields + registry `slot_uri` / `classUri` | `heritage_graph/apps/cidoc_data/rdf_entity_projection.py` (called by `rdf_signals.queue_entity_projection`) |
+| Moderated KG edges (`relationship.*` assertions, spec **007**) | `queue_relationship_assertion_projection` — predicates under `${RDF_RESOURCE_BASE_URI}/property/…`; **never** wiped when slot projection clears CRM predicates |
+| **Guided multi-step shells** (“semantic templates”) for contributors | `tools/semantic-patterns.yaml`, merged into `/api/v1/cidoc/schema/registry/` as `semantic_patterns`; UI at `/contribute` and `/contribute/pattern/<key>` |
+
+Re-generate offline SHACL QA shapes after `registry.generated.json` refreshes:
+
+```bash
+python3 tools/linkml_generate_registry.py
+python3 tools/emit_minimal_shacl.py
+```
+
+Output path: [`ontology/shapes/generated-heritagegraph-minimal-shacl.ttl`](ontology/shapes/generated-heritagegraph-minimal-shacl.ttl).
+
 ---
 
 ## 3. The Ontology Registry (Single Source of Truth)
@@ -89,10 +110,11 @@ The UI reads the effective registry via **`OntologyProvider`** and auto-generate
 | `ontology/HeritageGraph.yaml` | LinkML schema: classes, slots, enums, URIs |
 | `tools/ui-classmap.yaml` | Maps LinkML classes → UI key, `/cidoc/...` endpoint, icon, category |
 | `tools/contribute-hub.yaml` | Contribute dashboard: hub categories, intents, quick start |
+| `tools/semantic-patterns.yaml` | Semantic workflow patterns surfaced as `semantic_patterns` on the registry API + contribute UI |
 | `heritage_graph/apps/cidoc_data/ontology_builder.py` | Builds registry payload for API + generator |
 | `tools/linkml_generate_registry.py` | Writes `registry.generated.json` / `.ts` (run `make ontology`) |
 | `src/lib/ontology/registry.generated.ts` | Committed snapshot; offline / pre-auth baseline |
-| `src/lib/ontology/types.ts` | TypeScript interfaces: `OntologyField`, `OntologyColumn`, `OntologyClass`, `ContributeHubPayload` |
+| `src/lib/ontology/types.ts` | TypeScript interfaces: `OntologyField`, `OntologyColumn`, `OntologyClass`, `ContributeHubPayload`, `SemanticPattern` |
 | `src/lib/ontology/enums.ts` | Legacy TS enums (optional reference; **select options** come from generated `enums` + inlined `options`) |
 | `src/lib/ontology/index.ts` | Barrel re-export |
 
@@ -436,6 +458,8 @@ Each field maps to:
 
 **OCR on any contribute route:** append **`?ce=<cultural_entity_uuid>`** to a contribute URL (e.g. `/contribute/structure?ce=…`) to mount `HeritageDocumentUpload` inside `OntologyForm` and merge suggestions into empty fields. The **`/contribute/entity`** page uses **`?id=`** for edit mode (CIDOC / wrapper id) and **`?ce=`** specifically for the OCR cultural-entity UUID.
 
+**Semantic workflows:** Multi-step guided paths (human-facing “templates”) live in **`tools/semantic-patterns.yaml`**. They ride on the registry as **`semantic_patterns`** (`GET /api/v1/cidoc/schema/registry/`). The contribute hub lists them under “Semantic workflows”; each opens **`/contribute/pattern/<key>`** with step links to ordinary contribute routes (and optionally **`/contribute/relationship-proposal`** with hints: **`subjectType`**, **`objectType`**, **`subjectId`**, **`objectId`**, **`predicateCode`**, **`temporal`**).
+
 **Optional building blocks** for bespoke flows (new features, not used by default routes today):
 
 | Component | File | Purpose |
@@ -520,7 +544,8 @@ python manage.py migrate
 | `src/components/contribute/type-picker.tsx` | Visual type selector cards |
 | `src/components/contribute/assertion-wrapper.tsx` | Source + confidence provenance fields |
 | `src/components/contribute/entity-search.tsx` | Entity search-and-link component |
-| `src/app/(dashboard)/contribute/<domain>/page.tsx` | Per-domain contribute page stubs |
+| `src/app/(dashboard)/contribute/page-client.tsx` | Contribute hub (intents + **semantic workflows** cards) |
+| `src/app/(dashboard)/contribute/pattern/[slug]/page.tsx` | Guided semantic pattern steps |
 | `src/app/(dashboard)/knowledge/<domain>/page.tsx` | Per-domain knowledge table page stubs |
 | `src/app/(dashboard)/knowledge/[domain]/view/[id]/page.tsx` | Generic entity detail/record view |
 
@@ -532,7 +557,11 @@ python manage.py migrate
 | `heritage_graph/apps/cidoc_data/serializers.py` | DRF serializers for all entities |
 | `heritage_graph/apps/cidoc_data/views.py` | DRF ViewSets, SPARQL proxy, assist, **CIDOC revert** (`CidocRevertView`), registry validation mixin |
 | `heritage_graph/apps/cidoc_data/urls.py` | Router URL registration + `sparql/`, `assist/suggest-field/`, `<resource>/<pk>/revert/` |
-| `heritage_graph/apps/cidoc_data/rdf_signals.py` | Optional Oxigraph SPARQL Update on save |
+| `heritage_graph/apps/cidoc_data/rdf_signals.py` | RDF sidecar hooks: CIDOC slot triples (+ `rdfs:label`, `rdf:type`); moderated `relationship.*` edges (007) |
+| `heritage_graph/apps/cidoc_data/rdf_entity_projection.py` | Registry-driven triple materialization from `slot_uri` / `classUri` (+ relation targets) |
+| `heritage_graph/apps/cidoc_data/linkml_loader.py` | Builds effective registry payload (includes `semantic_patterns`) |
+| `tools/semantic-patterns.yaml` | Multi-step semantic workflow definitions for `/contribute` + `/contribute/pattern/<key>` |
+| `tools/emit_minimal_shacl.py` | Generates `ontology/shapes/generated-heritagegraph-minimal-shacl.ttl` from `registry.generated.json` |
 | `heritage_graph/apps/heritage_data/views.py` | `RevisionDiffView` (field diffs + metadata), `RevisionViewSet` (`?entity=` filter) |
 
 ---

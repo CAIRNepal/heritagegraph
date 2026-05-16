@@ -657,6 +657,14 @@ class Media(models.Model):
         null=True,
         blank=True,
     )
+    ingestion_contributor = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="ingestion_media_files",
+        null=True,
+        blank=True,
+        help_text="When set, this media file belongs to a standalone OCR ingestion upload (no CE/submission).",
+    )
     media_type = models.CharField(max_length=50, choices=MEDIA_TYPE_CHOICES)
     file = models.FileField(upload_to="heritage_media/")
     description = models.TextField(blank=True)
@@ -670,11 +678,12 @@ class Media(models.Model):
 
         has_submission = self.submission_id is not None
         has_entity = self.cultural_entity_id is not None
-
-        if has_submission and has_entity:
-            raise ValidationError("Media cannot be linked to both a Submission and a CulturalEntity.")
-        if not has_submission and not has_entity:
-            raise ValidationError("Media must be linked to a Submission or a CulturalEntity.")
+        has_ingestion = self.ingestion_contributor_id is not None
+        link_count = sum((has_submission, has_entity, has_ingestion))
+        if link_count != 1:
+            raise ValidationError(
+                "Media must be linked to exactly one of: Submission, CulturalEntity, or ingestion contributor."
+            )
 
 class Contributor(models.Model):
     user = models.ForeignKey(

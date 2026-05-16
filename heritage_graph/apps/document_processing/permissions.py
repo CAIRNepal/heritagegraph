@@ -26,6 +26,13 @@ def uploaded_document_owner(user, obj) -> bool:
         and obj.cultural_entity.contributor_id == user.id
     ):
         return True
+    media = getattr(obj, "media", None)
+    if (
+        media is not None
+        and getattr(media, "ingestion_contributor_id", None)
+        and media.ingestion_contributor_id == user.id
+    ):
+        return True
     return False
 
 
@@ -40,6 +47,17 @@ class IsStaffOrDocumentOwner(permissions.BasePermission):
         if request.user.is_staff:
             return True
         return uploaded_document_owner(request.user, obj)
+
+
+class IsContributorOrStaffObject(permissions.BasePermission):
+    """Owner contributor or Django staff for helper rows with `.contributor`."""
+
+    def has_object_permission(self, request, view, obj):
+        if not request.user.is_authenticated:
+            return False
+        if request.user.is_staff:
+            return True
+        return getattr(obj, "contributor_id", None) == request.user.id
 
 
 class CanRequeueOcrDocument(permissions.BasePermission):

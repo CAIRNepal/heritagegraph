@@ -40,6 +40,10 @@ export interface OntologyField {
   relationTo?: string;
   /** For relation fields: the API endpoint to search */
   relationEndpoint?: string;
+  /** UI registry key for the related class (LinkML class → tools/ui-classmap.yaml) */
+  relationRegistryKey?: string;
+  /** When true, contribute form may open a nested create panel for this relation */
+  inlineAuthoring?: boolean;
   /** Whether the field accepts multiple values */
   multivalued?: boolean;
   /** Section/group this field belongs to (for form layout) */
@@ -93,6 +97,29 @@ export interface ContributeHubPayload {
   hubCategories: ContributeHubCategoryRow[];
   intents: ContributeHubIntentRow[];
   quickStart: string[];
+}
+
+/** One guided step inside a semantic workflow pattern (ResearchSpace-style template). */
+export interface SemanticPatternStep {
+  readonly order: number;
+  readonly title: string;
+  readonly detail?: string;
+  readonly ctaRoute: string;
+  readonly ctaLabel: string;
+  /** Appended as query string after `?` when opening the step CTA. */
+  readonly linkQuery?: string;
+}
+
+/** Guided multi-form workflow surfaced on the contribute hub and /contribute/pattern/[slug]. */
+export interface SemanticPattern {
+  readonly key: string;
+  readonly userLabel: string;
+  readonly userDescription?: string;
+  readonly hubCategory?: string;
+  readonly emoji?: string;
+  readonly difficulty?: string;
+  readonly journey?: string;
+  readonly steps: readonly SemanticPatternStep[];
 }
 
 /** Column definition for knowledge data tables */
@@ -165,6 +192,8 @@ export interface OntologyRegistry {
   >;
   /** Contribute dashboard copy and grouping (from tools/contribute-hub.yaml) */
   contribute_hub?: ContributeHubPayload;
+  /** Semantic workflows (multi-step graph-oriented authoring shells). */
+  semantic_patterns?: readonly SemanticPattern[];
   /** Optional JSON Schema bundle for client-side validation */
   registry_jsonschema?: RegistryJsonSchemaBlob;
 }

@@ -14,12 +14,10 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, FileText } from "lucide-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { ContributeHubIntentRow } from "@/lib/ontology/types";
-import { useContributorMode } from "@/hooks/use-contributor-mode";
-import { ContributorModeToggle } from "@/components/contribute/contributor-mode-toggle";
 
 interface ContributionIntent {
   key: string;
@@ -64,6 +62,7 @@ const journeyByRegistryKey: Record<
   string,
   "describe" | "record" | "claim" | "verify"
 > = {
+  entity_proposal: "claim",
   structure: "describe",
   iconography: "describe",
   monument: "describe",
@@ -84,6 +83,7 @@ const journeyByRegistryKey: Record<
   assertion: "claim",
   syncretism: "claim",
   source: "verify",
+  data_source: "verify",
 };
 
 function journeyFromIntent(
@@ -206,8 +206,8 @@ function ContributionCard({
 }
 
 export default function ContributeDashboard() {
+  const router = useRouter();
   const { registry, reload, degradedReason } = useOntology();
-  const contributorMode = useContributorMode();
   const hub = registry.contribute_hub ?? {
     hubCategories: [],
     intents: [],
@@ -371,6 +371,36 @@ export default function ContributeDashboard() {
         initial="hidden"
         animate="show"
         variants={fadeInUp}
+        className={`${glassCard} p-5 md:p-6`}
+      >
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <FileText className="size-5" aria-hidden />
+            </span>
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold">Supervised document ingestion</h2>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Upload PDFs or scans, review OCR regions and extracted mentions, reconcile against the
+                knowledge graph, then merge hints into a contribute form—nothing is published
+                automatically.
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            className="shrink-0"
+            onClick={() => router.push("/contribute/ingestion")}
+          >
+            Start ingestion
+          </Button>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={fadeInUp}
         className="relative"
       >
         <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -391,14 +421,49 @@ export default function ContributeDashboard() {
         )}
       </motion.div>
 
-      <ContributorModeToggle
-        mode={contributorMode.mode}
-        isLoading={contributorMode.isLoading}
-        isSaving={contributorMode.isSaving}
-        onModeChange={(next) => {
-          void contributorMode.setMode(next);
-        }}
-      />
+      {!isSearching &&
+        (registry.semantic_patterns?.length ?? 0) > 0 ? (
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={staggerContainer}
+            className={`${glassCard} p-5 md:p-6 space-y-4`}
+          >
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold">
+                Semantic workflows
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Guided multi-step paths that combine ontology forms and moderated relationship
+                proposals so domain experts can assemble graph-shaped stories without writing RDF.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {(registry.semantic_patterns ?? []).map((p) => (
+                <button
+                  key={p.key}
+                  type="button"
+                  onClick={() => router.push(`/contribute/pattern/${encodeURIComponent(p.key)}`)}
+                  className={`text-left ${glassCard} p-4 hover:bg-white/70 dark:hover:bg-gray-900 transition-colors cursor-pointer rounded-xl border border-blue-100/60 dark:border-gray-800`}
+                >
+                  <div className="flex items-start gap-2">
+                    <span className="text-xl shrink-0" role="img">
+                      {p.emoji ?? "🧭"}
+                    </span>
+                    <div className="space-y-1 min-w-0">
+                      <div className="font-medium text-sm truncate">{p.userLabel}</div>
+                      {p.userDescription ? (
+                        <p className="text-xs text-muted-foreground line-clamp-3">
+                          {p.userDescription}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        ) : null}
 
       {isSearching ? (
         <motion.div

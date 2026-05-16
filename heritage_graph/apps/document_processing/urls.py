@@ -12,5 +12,15 @@ router.register(
     views.UploadedDocumentViewSet,
     basename="ocr-document",
 )
+router.register(
+    r"ocr-chunk-uploads",
+    views.ChunkedUploadViewSet,
+    basename="ocr-chunk-upload",
+)
+router.register(
+    r"tabular-import-jobs",
+    views.TabularImportJobViewSet,
+    basename="tabular-import-job",
+)
 
 urlpatterns = [path("", include(router.urls))]

@@ -203,9 +203,16 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 
 **OCR / Document processing (prefix: `/data/`, also available under `/api/v1/data/`):**
 - `POST /data/ocr-documents/upload/` — multipart upload: creates `heritage_data.Media` and enqueues `document_processing.UploadedDocument` processing
-- `GET /data/ocr-documents/<uuid>/` — OCR run status
+- `GET /data/ocr-documents/<uuid>/` — OCR run status (includes JSON `processing_progress` while jobs run)
 - `GET /data/ocr-documents/<uuid>/suggestions/` — JSON map of `ExtractedField` suggestions
+- `GET /data/ocr-documents/<uuid>/review/` — supervised ingestion bundle (pages + OCR blocks + extracted fields + `saved_review_state`)
+- `GET/PATCH /data/ocr-documents/<uuid>/review-state/` — persist contributor OCR / semantic draft (`field_decisions`, `block_corrections`, `ontology_handoff_key`)
+- `POST /data/ocr-documents/<uuid>/finalize-review/` — stamp review completion (`finalized_at`) on draft JSON
+- `GET /data/ocr-documents/<uuid>/compile-preview/` — server-side entity/relation sketch + `validation_errors` (no RDF in UI)
+- `GET /data/ocr-documents/<uuid>/events/` — SSE stream of `{status, processing_progress}` (browser clients without Bearer on EventSource typically rely on polling the detail endpoint instead)
 - `POST /data/ocr-documents/<uuid>/retry/` — staff-only requeue
+- Chunked uploads (standalone ingestion): `POST /data/ocr-chunk-uploads/` (init JSON body), `POST /data/ocr-chunk-uploads/<uuid>/append/` (multipart `chunk`), `POST /data/ocr-chunk-uploads/<uuid>/complete/` → creates `Media` + OCR job (same signal-driven pipeline as multipart upload)
+- Tabular (CSV / `.xlsx`): `POST /data/tabular-import-jobs/` (multipart file + provenance fields), `GET/PATCH /data/tabular-import-jobs/<uuid>/` (mapping + `row_review_state`), `GET /data/tabular-import-jobs/<uuid>/compile-preview/`
 
 **In-app assistant (prefix: `/api/v1/assistant/`, public; requires `OPENROUTER_API_KEY` on the server):**
 - `POST /api/v1/assistant/chat/` — grounded chat: `heritage_graph/apps/assistant/grounding/site.md` plus public discovery search excerpts (see `retrieval.py`). OpenAPI: `specs/003-grounded-chatbot/contracts/openapi-assistant-chat.v1.yaml`
@@ -223,13 +230,14 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/` — dashboard home (authenticated shell)
 - `/knowledge/<domain>` — knowledge base (entity, person, location, event, period, tradition, source)
 - `/contribute/<domain>` — contribution forms (add `?id=<recordId>` to edit an existing CIDOC record)
+- `/contribute/pattern/<slug>` — guided **semantic workflows** (`tools/semantic-patterns.yaml`; registry key as slug)
 - `/curation/contributions` — moderation queue
 - `/curation/activity` — activity log
 - `/curation/review` — triaged epistemic review queue
 - `/curation/review/<id>` — three-panel review workspace (triage strip uses workspace payload)
 - `/curation/schema-extensions` — schema extension proposals (authors + moderators)
 - `/contribute/entity-proposal` — propose canonical identity clusters (contributors)
-- `/contribute/relationship-proposal` — propose binary relationship assertions (contributors)
+- `/contribute/relationship-proposal` — propose binary relationship assertions (contributors); draft load via **`?id=<uuid>`**; optional URL hints **`subjectType`**, **`objectType`**, **`subjectId`**, **`objectId`**, **`predicateCode`**, **`temporal`** (for deep-links from semantic pattern steps)
 - `/curation/kg-proposals` — moderate submitted entity and relationship proposals (moderators)
 - `/curation/conflicts` — conflict resolution queue
 - `/curation/dashboard` — reviewer dashboard
@@ -363,7 +371,7 @@ HeritageGraph uses **Celery + Redis** for async task processing:
 
 | File | Purpose |
 |------|---------|
-| `FORMS.md` | **How forms work** — add fields/enums/sections/entities, registry-driven form system |
+| `FORMS.md` | **How forms work** — fields/enums/sections/entities; registry-driven **`OntologyForm`**; **`tools/semantic-patterns.yaml`**; optional RDF projection + SHACL (see RDF section) |
 | `AUTH.md` | Authentication system — NextAuth + Google OAuth + Django token verification; includes **Errors and Recovery** (`/auth/login` codes, `session.error`, `/auth/error`) |
 | `AUTH_GUIDE.md` | **How to add new auth providers** — step-by-step guide with templates |
 | `API_VERSIONING.md` | **API versioning** — `/api/v1/...` conventions and how to add `v2+` safely |

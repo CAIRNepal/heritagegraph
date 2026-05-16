@@ -373,6 +373,12 @@ Contribution submitted (CulturalEntity → pending_review)
 
 Moderators manage `SchemaExtensionProposal` rows (draft → submitted → approved → published). **Publish** validates LinkML YAML, checks overlapping `conflict_keys` against other active proposals, writes bytes to `HERITAGEGRAPH_SCHEMA_EXTENSION_PATH`, appends `SchemaExtensionAuditEvent`, and triggers `cidoc_data.linkml_loader` cache refresh so `get_effective_registry_payload` reflects the merged extension overlay (`ontology_builder.merge_extension_registry_overlay`).
 
+The **`GET /api/v1/cidoc/schema/registry/`** response includes **`classes`**, **`enums`**, **`contribute_hub`**, **`semantic_patterns`** (from `tools/semantic-patterns.yaml`), and **`registry_jsonschema`**.
+
+### RDF sidecar (optional)
+
+When **`RDF_SYNC_ENABLED`** is set, `cidoc_data/rdf_signals.py` projects CIDOC **`MetaData`** rows to Oxigraph (`OXIGRAPH_STORE_PATH`) or a SPARQL Update endpoint (`RDF_ENDPOINT_URL`). Slot-aligned triples (`classUri`, registry `slot_uri`, relation IRIs) are built in **`rdf_entity_projection.py`**; moderators’ accepted **`relationship.*`** assertions emit separate predicate IRIs (`…/property/…`) and are not erased when clearing CRM slot predicates.
+
 ---
 
 ## 🐳 Docker Architecture

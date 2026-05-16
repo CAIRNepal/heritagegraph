@@ -1,5 +1,5 @@
 {
-  "schema_version": "d1faa72d3331e644e6f41912187eb805d37e1d7cd7541d4b43126a82643cdd3e",
+  "schema_version": "ae0e918976f3d71df8eec836f2c6da8bb5a65ee3703912c6a68da943595833df",
   "tenant_id": null,
   "degraded": false,
   "classes": {
@@ -77,7 +77,8 @@
           "description": "Groups this person belongs to",
           "slot_uri": "crm:P107i_is_current_or_former_member_of",
           "relationTo": "Guthi",
-          "relationEndpoint": "/cidoc/guthis/"
+          "relationEndpoint": "/cidoc/guthis/",
+          "relationRegistryKey": "guthi"
         },
         {
           "key": "carried_out_activity",
@@ -90,7 +91,8 @@
           "description": "Activities performed by this actor",
           "slot_uri": "crm:P14i_performed",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "institutional_affiliation",
@@ -235,7 +237,8 @@
           "description": "Structures located in this place",
           "slot_uri": "crm:P53i_is_former_or_current_location_of",
           "relationTo": "ArchitecturalStructure",
-          "relationEndpoint": "/cidoc/structures/"
+          "relationEndpoint": "/cidoc/structures/",
+          "relationRegistryKey": "structure"
         }
       ],
       "columns": [
@@ -331,7 +334,8 @@
           "description": "Place Where event occurred",
           "slot_uri": "crm:P7_took_place_at",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "architectural_structures",
@@ -344,7 +348,8 @@
           "description": "Heritage structures affected by or present during this historical event",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
           "relationTo": "ArchitecturalStructure",
-          "relationEndpoint": "/cidoc/structures/"
+          "relationEndpoint": "/cidoc/structures/",
+          "relationRegistryKey": "structure"
         },
         {
           "key": "includes_ritual_event",
@@ -357,7 +362,8 @@
           "description": "Component rituals of festival",
           "slot_uri": "crm:P9_consists_of",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         }
       ],
       "columns": [
@@ -614,7 +620,8 @@
           "description": "Entity that this information object describes",
           "slot_uri": "crm:P129_is_about",
           "relationTo": "ArchitecturalStructure",
-          "relationEndpoint": "/cidoc/structures/"
+          "relationEndpoint": "/cidoc/structures/",
+          "relationRegistryKey": "structure"
         },
         {
           "key": "created_by_documentation",
@@ -639,7 +646,8 @@
           "description": "Event that this information object describes",
           "slot_uri": "crm:P129_is_about",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "was_documented_by",
@@ -763,7 +771,8 @@
           "description": "Religious tradition(s) within which this deity is venerated",
           "slot_uri": "crm:P2_has_type",
           "relationTo": "ReligiousTradition",
-          "relationEndpoint": "/cidoc/traditions/"
+          "relationEndpoint": "/cidoc/traditions/",
+          "relationRegistryKey": "tradition"
         },
         {
           "key": "is_depicted_in",
@@ -775,7 +784,8 @@
           "multivalued": true,
           "slot_uri": "crm:P62i_is_depicted_by",
           "relationTo": "IconographicObject",
-          "relationEndpoint": "/cidoc/iconographic_objects/"
+          "relationEndpoint": "/cidoc/iconographic_objects/",
+          "relationRegistryKey": "iconography"
         },
         {
           "key": "is_invoked_in_ritual",
@@ -788,7 +798,8 @@
           "description": "Rituals where this deity is invoked",
           "slot_uri": "crm:P12i_was_present_at",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "is_enshrined_through_event",
@@ -952,7 +963,8 @@
           "description": "Rituals performed by this Guthi",
           "slot_uri": "crm:P14i_performed",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "holds_custody_of",
@@ -965,7 +977,8 @@
           "description": "Structures under Guthi custodianship",
           "slot_uri": "crm:P50_has_current_keeper",
           "relationTo": "ArchitecturalStructure",
-          "relationEndpoint": "/cidoc/structures/"
+          "relationEndpoint": "/cidoc/structures/",
+          "relationRegistryKey": "structure"
         },
         {
           "key": "has_membership",
@@ -978,7 +991,8 @@
           "description": "Members of Guthi organization",
           "slot_uri": "crm:P107_has_current_or_former_member",
           "relationTo": "Person",
-          "relationEndpoint": "/cidoc/persons/"
+          "relationEndpoint": "/cidoc/persons/",
+          "relationRegistryKey": "person"
         }
       ],
       "columns": [
@@ -1066,8 +1080,10 @@
           "slot_uri": "crm:P55_has_current_location",
           "relationTo": "Place",
           "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location",
           "minimumCardinality": 1,
-          "maximumCardinality": 1
+          "maximumCardinality": 1,
+          "inlineAuthoring": true
         },
         {
           "key": "was_produced_by_event",
@@ -1104,7 +1120,8 @@
           "description": "Rituals in which this structure participates",
           "slot_uri": "crm:P12i_was_present_at",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "has_custody_event",
@@ -1270,7 +1287,8 @@
           "description": "Possible locations if the structure is lost",
           "slot_uri": "heritageGraph:hypothesized_location",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "documented_in_source",
@@ -1283,7 +1301,8 @@
           "description": "Sources that mention or document this entity",
           "slot_uri": "prov:wasDerivedFrom",
           "relationTo": "DataSource",
-          "relationEndpoint": "/cidoc/data_sources/"
+          "relationEndpoint": "/cidoc/data_sources/",
+          "relationRegistryKey": "data_source"
         },
         {
           "key": "has_provenance_assertion",
@@ -1296,7 +1315,8 @@
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
-          "relationEndpoint": "/cidoc/assertions/"
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
         }
       ],
       "columns": [
@@ -1563,7 +1583,8 @@
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "carried_out_by",
@@ -1599,7 +1620,8 @@
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
           "relationTo": "Festival",
-          "relationEndpoint": "/cidoc/festivals/"
+          "relationEndpoint": "/cidoc/festivals/",
+          "relationRegistryKey": "festival"
         },
         {
           "key": "managed_by_guthi",
@@ -1612,7 +1634,8 @@
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
           "relationTo": "Guthi",
-          "relationEndpoint": "/cidoc/guthis/"
+          "relationEndpoint": "/cidoc/guthis/",
+          "relationRegistryKey": "guthi"
         },
         {
           "key": "was_documented_by",
@@ -1637,7 +1660,8 @@
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
-          "relationEndpoint": "/cidoc/assertions/"
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
         },
         {
           "key": "occurs_before",
@@ -1650,7 +1674,8 @@
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "occurs_after",
@@ -1663,7 +1688,8 @@
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "used_materials",
@@ -1688,7 +1714,8 @@
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "start_place",
@@ -1701,7 +1728,8 @@
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "end_place",
@@ -1714,7 +1742,8 @@
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "route_description",
@@ -1992,7 +2021,8 @@
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "carried_out_by",
@@ -2028,7 +2058,8 @@
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
           "relationTo": "Festival",
-          "relationEndpoint": "/cidoc/festivals/"
+          "relationEndpoint": "/cidoc/festivals/",
+          "relationRegistryKey": "festival"
         },
         {
           "key": "managed_by_guthi",
@@ -2041,7 +2072,8 @@
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
           "relationTo": "Guthi",
-          "relationEndpoint": "/cidoc/guthis/"
+          "relationEndpoint": "/cidoc/guthis/",
+          "relationRegistryKey": "guthi"
         },
         {
           "key": "was_documented_by",
@@ -2066,7 +2098,8 @@
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
-          "relationEndpoint": "/cidoc/assertions/"
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
         },
         {
           "key": "occurs_before",
@@ -2079,7 +2112,8 @@
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "occurs_after",
@@ -2092,7 +2126,8 @@
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "used_materials",
@@ -2117,7 +2152,8 @@
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "start_place",
@@ -2130,7 +2166,8 @@
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "end_place",
@@ -2143,7 +2180,8 @@
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "route_description",
@@ -2167,7 +2205,8 @@
           "description": "Component rituals of festival",
           "slot_uri": "crm:P9_consists_of",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         }
       ],
       "columns": [
@@ -2268,7 +2307,9 @@
           "description": "Current location of object or structure",
           "slot_uri": "crm:P55_has_current_location",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location",
+          "inlineAuthoring": true
         },
         {
           "key": "was_produced_by_event",
@@ -2305,7 +2346,8 @@
           "description": "Rituals in which this structure participates",
           "slot_uri": "crm:P12i_was_present_at",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "has_custody_event",
@@ -2353,7 +2395,8 @@
           "description": "Deity depicted iconographically (not cultic presence)",
           "slot_uri": "crm:P62_depicts",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "used_by",
@@ -2466,7 +2509,9 @@
           "description": "Current location of object or structure",
           "slot_uri": "crm:P55_has_current_location",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location",
+          "inlineAuthoring": true
         },
         {
           "key": "was_produced_by_event",
@@ -2503,7 +2548,8 @@
           "description": "Rituals in which this structure participates",
           "slot_uri": "crm:P12i_was_present_at",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "has_custody_event",
@@ -2669,7 +2715,8 @@
           "description": "Possible locations if the structure is lost",
           "slot_uri": "heritageGraph:hypothesized_location",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "documented_in_source",
@@ -2682,7 +2729,8 @@
           "description": "Sources that mention or document this entity",
           "slot_uri": "prov:wasDerivedFrom",
           "relationTo": "DataSource",
-          "relationEndpoint": "/cidoc/data_sources/"
+          "relationEndpoint": "/cidoc/data_sources/",
+          "relationRegistryKey": "data_source"
         },
         {
           "key": "has_provenance_assertion",
@@ -2695,7 +2743,8 @@
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
-          "relationEndpoint": "/cidoc/assertions/"
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
         }
       ],
       "columns": [
@@ -2807,7 +2856,8 @@
           "description": "Deity role embodied by participant",
           "slot_uri": "crm:P14.1_in_the_role_of",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "residence_structure",
@@ -2820,7 +2870,8 @@
           "description": "Structure where a person resides during a specific period. For Living Goddess, this is typically a Kumari Ghar (god-house).",
           "slot_uri": "crm:P74_has_current_or_former_residence",
           "relationTo": "ArchitecturalStructure",
-          "relationEndpoint": "/cidoc/structures/"
+          "relationEndpoint": "/cidoc/structures/",
+          "relationRegistryKey": "structure"
         },
         {
           "key": "has_timespan",
@@ -2845,7 +2896,8 @@
           "description": "Institution(s) providing economic support (stipend, land endowment) or ritual support (priest salaries) for a Living Goddess during tenure. Extends Guthi role beyond structure management to person support.",
           "slot_uri": "heritageGraph:supported_by_institution",
           "relationTo": "Guthi",
-          "relationEndpoint": "/cidoc/guthis/"
+          "relationEndpoint": "/cidoc/guthis/",
+          "relationRegistryKey": "guthi"
         },
         {
           "key": "has_retirement_event",
@@ -2858,7 +2910,8 @@
           "description": "Retirement event that ended this Living Goddess tenure",
           "slot_uri": "heritageGraph:has_retirement_event",
           "relationTo": "LivingGoddessRetirement",
-          "relationEndpoint": "/cidoc/kumari_retirements/"
+          "relationEndpoint": "/cidoc/kumari_retirements/",
+          "relationRegistryKey": "kumari_retirement"
         },
         {
           "key": "was_documented_by",
@@ -3137,7 +3190,8 @@
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "carried_out_by",
@@ -3173,7 +3227,8 @@
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
           "relationTo": "Festival",
-          "relationEndpoint": "/cidoc/festivals/"
+          "relationEndpoint": "/cidoc/festivals/",
+          "relationRegistryKey": "festival"
         },
         {
           "key": "managed_by_guthi",
@@ -3186,7 +3241,8 @@
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
           "relationTo": "Guthi",
-          "relationEndpoint": "/cidoc/guthis/"
+          "relationEndpoint": "/cidoc/guthis/",
+          "relationRegistryKey": "guthi"
         },
         {
           "key": "was_documented_by",
@@ -3211,7 +3267,8 @@
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
-          "relationEndpoint": "/cidoc/assertions/"
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
         },
         {
           "key": "occurs_before",
@@ -3224,7 +3281,8 @@
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "occurs_after",
@@ -3237,7 +3295,8 @@
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "used_materials",
@@ -3262,7 +3321,8 @@
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "start_place",
@@ -3275,7 +3335,8 @@
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "end_place",
@@ -3288,7 +3349,8 @@
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "route_description",
@@ -3312,7 +3374,8 @@
           "description": "Person selected through a ritual selection process to assume a sacred role or office",
           "slot_uri": "heritageGraph:selected_person",
           "relationTo": "Person",
-          "relationEndpoint": "/cidoc/persons/"
+          "relationEndpoint": "/cidoc/persons/",
+          "relationRegistryKey": "person"
         },
         {
           "key": "initiated_tenure",
@@ -3325,7 +3388,8 @@
           "description": "Living Goddess tenure that was initiated by this selection event",
           "slot_uri": "heritageGraph:initiated_tenure",
           "relationTo": "LivingGoddessTenure",
-          "relationEndpoint": "/cidoc/kumari_tenures/"
+          "relationEndpoint": "/cidoc/kumari_tenures/",
+          "relationRegistryKey": "kumari_tenure"
         },
         {
           "key": "took_place_at",
@@ -3338,7 +3402,8 @@
           "description": "Place Where event occurred",
           "slot_uri": "crm:P7_took_place_at",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "selection_criteria_met",
@@ -3627,7 +3692,8 @@
           "description": "Deity invoked or made present through ritual",
           "slot_uri": "crm:P12_occurred_in_the_presence_of",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "carried_out_by",
@@ -3663,7 +3729,8 @@
           "description": "Larger festival this ritual is part of",
           "slot_uri": "crm:P9i_forms_part_of",
           "relationTo": "Festival",
-          "relationEndpoint": "/cidoc/festivals/"
+          "relationEndpoint": "/cidoc/festivals/",
+          "relationRegistryKey": "festival"
         },
         {
           "key": "managed_by_guthi",
@@ -3676,7 +3743,8 @@
           "description": "Guthi organization managing this structure or ritual",
           "slot_uri": "heritageGraph:managed_by_guthi",
           "relationTo": "Guthi",
-          "relationEndpoint": "/cidoc/guthis/"
+          "relationEndpoint": "/cidoc/guthis/",
+          "relationRegistryKey": "guthi"
         },
         {
           "key": "was_documented_by",
@@ -3701,7 +3769,8 @@
           "description": "All factual claims about this structure with full provenance",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
-          "relationEndpoint": "/cidoc/assertions/"
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
         },
         {
           "key": "occurs_before",
@@ -3714,7 +3783,8 @@
           "description": "Points to the next ritual in the canonical sequence.",
           "slot_uri": "crm:P120_occurs_before",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "occurs_after",
@@ -3727,7 +3797,8 @@
           "description": "Points to the prerequisite ritual.",
           "slot_uri": "crm:P120i_is_occurred_before_by",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "used_materials",
@@ -3752,7 +3823,8 @@
           "description": "Ordered list of places visited during movement ritual",
           "slot_uri": "crm:P7_took_place_at",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "start_place",
@@ -3765,7 +3837,8 @@
           "description": "Starting location of movement ritual",
           "slot_uri": "heritageGraph:start_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "end_place",
@@ -3778,7 +3851,8 @@
           "description": "Ending location of movement ritual",
           "slot_uri": "heritageGraph:end_place",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         },
         {
           "key": "route_description",
@@ -3802,7 +3876,8 @@
           "description": "Points from a LivingGoddessRetirement event to the tenure that it terminated. Enables reconstruction of complete Living Goddess lifecycle.",
           "slot_uri": "heritageGraph:ended_tenure_of",
           "relationTo": "LivingGoddessTenure",
-          "relationEndpoint": "/cidoc/kumari_tenures/"
+          "relationEndpoint": "/cidoc/kumari_tenures/",
+          "relationRegistryKey": "kumari_tenure"
         },
         {
           "key": "took_place_at",
@@ -3815,7 +3890,8 @@
           "description": "Place Where event occurred",
           "slot_uri": "crm:P7_took_place_at",
           "relationTo": "Place",
-          "relationEndpoint": "/cidoc/locations/"
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
         }
       ],
       "columns": [
@@ -3927,7 +4003,8 @@
           "description": "The deity instance that is the subject of the syncretic claim.",
           "slot_uri": "crm:P140_assigned_attribute_to",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "assigned_equivalent",
@@ -3940,7 +4017,8 @@
           "description": "The deity or sacred figure being identified as equivalent to the primary deity.",
           "slot_uri": "crm:P141_assigned",
           "relationTo": "Deity",
-          "relationEndpoint": "/cidoc/deities/"
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
         },
         {
           "key": "syncretic_type",
@@ -3987,7 +4065,8 @@
           "description": "Source(s) from which this assertion was derived",
           "slot_uri": "prov:wasDerivedFrom",
           "relationTo": "DataSource",
-          "relationEndpoint": "/cidoc/data_sources/"
+          "relationEndpoint": "/cidoc/data_sources/",
+          "relationRegistryKey": "data_source"
         },
         {
           "key": "was_documented_by",
@@ -4012,7 +4091,8 @@
           "description": "Sources that mention or document this entity",
           "slot_uri": "prov:wasDerivedFrom",
           "relationTo": "DataSource",
-          "relationEndpoint": "/cidoc/data_sources/"
+          "relationEndpoint": "/cidoc/data_sources/",
+          "relationRegistryKey": "data_source"
         }
       ],
       "columns": [
@@ -4199,7 +4279,8 @@
           "description": "Religious tradition(s) that primarily use this calendar system (e.g., Bikram Sambat for Hindu, Nepal Sambat for Newar Buddhist)",
           "slot_uri": "heritageGraph:is_primary_for_tradition",
           "relationTo": "ReligiousTradition",
-          "relationEndpoint": "/cidoc/traditions/"
+          "relationEndpoint": "/cidoc/traditions/",
+          "relationRegistryKey": "tradition"
         },
         {
           "key": "year_offset_from_gregorian",
@@ -4404,7 +4485,8 @@
           "multivalued": false,
           "slot_uri": "crm:P141_assigned",
           "relationTo": "RitualEvent",
-          "relationEndpoint": "/cidoc/rituals/"
+          "relationEndpoint": "/cidoc/rituals/",
+          "relationRegistryKey": "ritual"
         },
         {
           "key": "was_derived_from_source",
@@ -4417,7 +4499,8 @@
           "description": "Source(s) from which this assertion was derived",
           "slot_uri": "prov:wasDerivedFrom",
           "relationTo": "DataSource",
-          "relationEndpoint": "/cidoc/data_sources/"
+          "relationEndpoint": "/cidoc/data_sources/",
+          "relationRegistryKey": "data_source"
         },
         {
           "key": "was_attributed_to_agent",
@@ -4430,7 +4513,8 @@
           "description": "Person who made this assertion",
           "slot_uri": "prov:wasAttributedTo",
           "relationTo": "Person",
-          "relationEndpoint": "/cidoc/persons/"
+          "relationEndpoint": "/cidoc/persons/",
+          "relationRegistryKey": "person"
         },
         {
           "key": "generated_at_time",
@@ -4509,7 +4593,8 @@
           "description": " Previous version of this assertion (if this is an update). Creates version chain: A1 \u2192 A2 \u2192 A3 Query pattern: latest assertion = one with no incoming prov:invalidated",
           "slot_uri": "prov:invalidated",
           "relationTo": "HeritageAssertion",
-          "relationEndpoint": "/cidoc/assertions/"
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
         },
         {
           "key": "entity_cluster",
@@ -4522,7 +4607,8 @@
           "description": "Target cluster for same-referent membership assertions (asserted_property identity.same_referent).",
           "slot_uri": "heritageGraph:entity_cluster",
           "relationTo": "EntityCluster",
-          "relationEndpoint": "/cidoc/entity-clusters/"
+          "relationEndpoint": "/cidoc/entity-clusters/",
+          "relationRegistryKey": "entity_cluster"
         }
       ],
       "columns": [
@@ -5533,6 +5619,24 @@
         "difficulty": "beginner"
       },
       {
+        "registryKey": "data_source",
+        "hubCategory": "provenance",
+        "route": "/contribute/data-source",
+        "emoji": "\ud83d\uddc2\ufe0f",
+        "shortDescription": "Evidence records for proposals & citations",
+        "description": "Register a Data Source entry used when attaching evidence to relationship proposals and assertions\u2014distinct from bibliography Source documents.",
+        "difficulty": "beginner"
+      },
+      {
+        "registryKey": "entity_proposal",
+        "hubCategory": "social",
+        "route": "/contribute/entity-proposal",
+        "emoji": "\ud83d\udd17",
+        "shortDescription": "Unify duplicates under one canonical identity cluster",
+        "description": "Propose that two or more CIDOC rows refer to the same real-world entity. Anchors attach to an EntityCluster (identity.same_referent assertions) after moderator approval at KG proposals. Add supporting Data Sources and optional external IRIs for linked data identifiers.",
+        "difficulty": "intermediate"
+      },
+      {
         "registryKey": "assertion",
         "hubCategory": "provenance",
         "route": "/contribute/assertion",
@@ -5547,7 +5651,8 @@
       "source",
       "location",
       "person",
-      "cultural_entity"
+      "cultural_entity",
+      "entity_proposal"
     ]
   },
   "semantic_patterns": [
