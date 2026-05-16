@@ -43,6 +43,7 @@ import {
   IconListCheck,
   IconFingerprint,
   IconLink,
+  IconBrain,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -254,6 +255,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     title: 'Relationship proposal',
                     url: '/contribute/relationship-proposal',
                     icon: IconLink,
+                  },
+                  {
+                    title: t('aiPipeline'),
+                    url: '/contribute/pipeline',
+                    icon: IconBrain,
                   },
                 ]
               : []),

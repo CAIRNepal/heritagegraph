@@ -1,0 +1,144 @@
+@prefix sh:           <http://www.w3.org/ns/shacl#> .
+@prefix heritageGraph: <https://w3id.org/heritagegraph/> .
+@prefix hgs:          <https://heritagegraph.org/shape/> .
+@prefix rdfs:         <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:          <http://www.w3.org/2001/XMLSchema#> .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Temple — must have a name; location is strongly recommended
+# ────────────────────────────────────────────────────────────────────────────
+hgs:TempleShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:Temple ;
+    sh:property [
+        sh:path     heritageGraph:name ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message  "heritageGraph:Temple must carry at least one heritageGraph:name." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Place — must have a name
+# ────────────────────────────────────────────────────────────────────────────
+hgs:PlaceShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:Place ;
+    sh:property [
+        sh:path     heritageGraph:name ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:Place must carry at least one heritageGraph:name." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# TimeSpan — date_earliest must be xsd:date
+# ────────────────────────────────────────────────────────────────────────────
+hgs:TimeSpanShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:TimeSpan ;
+    sh:property [
+        sh:path     heritageGraph:date_earliest ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:message  "heritageGraph:TimeSpan.date_earliest must be an xsd:date." ;
+    ] ;
+    sh:property [
+        sh:path     heritageGraph:date_latest ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:date ;
+        sh:message  "heritageGraph:TimeSpan.date_latest must be an xsd:date." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# RitualEvent — must have a name; took_place_at is a Place
+# ────────────────────────────────────────────────────────────────────────────
+hgs:RitualEventShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:RitualEvent ;
+    sh:property [
+        sh:path     heritageGraph:name ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:RitualEvent must have at least one heritageGraph:name." ;
+    ] ;
+    sh:property [
+        sh:path     heritageGraph:took_place_at ;
+        sh:maxCount 1 ;
+        sh:class    heritageGraph:Place ;
+        sh:message  "heritageGraph:RitualEvent.took_place_at must point to a heritageGraph:Place." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Festival — must have a name
+# ────────────────────────────────────────────────────────────────────────────
+hgs:FestivalShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:Festival ;
+    sh:property [
+        sh:path     heritageGraph:name ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:Festival must have at least one heritageGraph:name." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Condition Assessment — must name the assessed object and its condition state
+# ────────────────────────────────────────────────────────────────────────────
+hgs:ConditionAssessmentShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:ConditionAssessment ;
+    sh:property [
+        sh:path     heritageGraph:assessed_object ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:ConditionAssessment must reference the assessed object." ;
+    ] ;
+    sh:property [
+        sh:path     heritageGraph:assessed_condition_state ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:ConditionAssessment must identify a condition state." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Transfer of Custody — must name the transferred object
+# ────────────────────────────────────────────────────────────────────────────
+hgs:TransferOfCustodyShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:TransferOfCustody ;
+    sh:property [
+        sh:path     heritageGraph:transferred_object ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:TransferOfCustody must name the transferred object." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Production — produced_object must be present
+# ────────────────────────────────────────────────────────────────────────────
+hgs:ProductionShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:Production ;
+    sh:property [
+        sh:path     heritageGraph:produced_object ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:Production must reference the produced object." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Actor — must have at least one rdfs:label
+# ────────────────────────────────────────────────────────────────────────────
+hgs:ActorShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:Actor ;
+    sh:property [
+        sh:path     rdfs:label ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:Actor must carry at least one rdfs:label." ;
+    ] .
+
+# ────────────────────────────────────────────────────────────────────────────
+# Guthi — must have a name
+# ────────────────────────────────────────────────────────────────────────────
+hgs:GuthiShape
+    a sh:NodeShape ;
+    sh:targetClass heritageGraph:Guthi ;
+    sh:property [
+        sh:path     heritageGraph:name ;
+        sh:minCount 1 ;
+        sh:message  "heritageGraph:Guthi must have at least one heritageGraph:name." ;
+    ] .

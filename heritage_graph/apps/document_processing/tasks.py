@@ -129,6 +129,159 @@ def map_fields_to_form(self, document_id: str, submission_type: str = 'cultural_
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# KG INGESTION PIPELINE TASK
+# ──────────────────────────────────────────────────────────────────────────────
+
+@shared_task(bind=True, max_retries=0)
+def run_kg_pipeline(self, document_id: str):
+    """
+    Run the 5-agent KG ingestion pipeline on an OCR-completed document.
+
+    Writes incremental progress to UploadedDocument.metadata so the frontend
+    can poll for per-agent status and final assertion results.
+    """
+    try:
+        doc = UploadedDocument.objects.get(pk=document_id)
+    except UploadedDocument.DoesNotExist:
+        logger.error("UploadedDocument %s not found for KG pipeline", document_id)
+        return
+
+    def _save_meta(update: dict):
+        meta = doc.metadata or {}
+        meta.update(update)
+        doc.metadata = meta
+        doc.save(update_fields=["metadata", "updated_at"])
+
+    def _set_agent(agent: str, status: str):
+        meta = doc.metadata or {}
+        meta.setdefault("agent_status", {})[agent] = status
+        doc.metadata = meta
+        doc.save(update_fields=["metadata", "updated_at"])
+
+    _save_meta({
+        "pipeline_status": "running",
+        "pipeline_started_at": timezone.now().isoformat(),
+        "pipeline_error": None,
+        "agent_status": {
+            "doc_intelligence": "pending",
+            "extraction": "pending",
+            "shacl_validation": "pending",
+            "entity_resolution": "pending",
+            "epistemic_routing": "pending",
+        },
+        "agent_results": {},
+        "assertions": [],
+    })
+
+    try:
+        from .services.agents.doc_intelligence import run_doc_intelligence
+        from .services.agents.extraction_agent import run_extraction
+        from .services.agents.shacl_agent import run_shacl_validation
+        from .services.agents.entity_resolution_agent import run_entity_resolution
+        from .services.agents.epistemic_router_agent import run_epistemic_routing
+
+        text = doc.raw_text
+        if not text:
+            raise ValueError("Document has no extracted text — run OCR first.")
+
+        meta = doc.metadata
+
+        # ── Agent 1 — Document Intelligence ────────────────────────────────────
+        _set_agent("doc_intelligence", "running")
+        di_result = run_doc_intelligence(text=text)
+        meta["agent_status"]["doc_intelligence"] = "complete"
+        meta.setdefault("agent_results", {})["doc_intelligence"] = {
+            "heritage_doc_type": di_result.heritage_doc_type.value,
+            "heritage_doc_type_confidence": di_result.heritage_doc_type_confidence,
+            "detected_language": di_result.detected_language,
+            "chunk_count": len(di_result.chunks),
+            "ontology_class_keys": list(di_result.ontology_snippet.keys()),
+        }
+        doc.save(update_fields=["metadata", "updated_at"])
+
+        # ── Agent 2 — Extraction ────────────────────────────────────────────────
+        _set_agent("extraction", "running")
+        ex_result = run_extraction(di_result)
+        meta["agent_status"]["extraction"] = "complete"
+        meta["agent_results"]["extraction"] = {
+            "candidate_count": len(ex_result.candidates),
+            "rejected_count": ex_result.rejected_count,
+        }
+        doc.save(update_fields=["metadata", "updated_at"])
+
+        # ── Agent 3 — SHACL Validation ──────────────────────────────────────────
+        _set_agent("shacl_validation", "running")
+        shacl_result = run_shacl_validation(ex_result.candidates)
+        meta["agent_status"]["shacl_validation"] = "complete"
+        meta["agent_results"]["shacl_validation"] = {
+            "validated_count": len(shacl_result.validated),
+            "rejected_count": len(shacl_result.rejected),
+            "rejection_reasons": [
+                {
+                    "subject": r.candidate.triple.subject,
+                    "predicate": r.candidate.triple.predicate,
+                    "reason": r.reason,
+                    "violation_type": r.violation_type,
+                }
+                for r in shacl_result.rejected[:20]
+            ],
+        }
+        doc.save(update_fields=["metadata", "updated_at"])
+
+        # ── Agent 4 — Entity Resolution ─────────────────────────────────────────
+        _set_agent("entity_resolution", "running")
+        er_result = run_entity_resolution(shacl_result)
+        meta["agent_status"]["entity_resolution"] = "complete"
+        meta["agent_results"]["entity_resolution"] = {
+            "resolved_count": len(er_result.resolved),
+            "skipped_count": er_result.skipped_count,
+        }
+        doc.save(update_fields=["metadata", "updated_at"])
+
+        # ── Agent 5 — Epistemic Router ──────────────────────────────────────────
+        _set_agent("epistemic_routing", "running")
+        routing_result = run_epistemic_routing(
+            er_result,
+            document_id=str(doc.id),
+            agent_label="pipeline/5.0/ollama",
+        )
+        meta["agent_status"]["epistemic_routing"] = "complete"
+        meta["agent_results"]["epistemic_routing"] = {
+            "counts": routing_result.counts,
+        }
+        meta["assertions"] = [
+            {
+                "subject": ra.resolved.validated.candidate.triple.subject,
+                "subject_type": ra.resolved.validated.candidate.triple.subject_type,
+                "predicate": ra.resolved.validated.candidate.triple.predicate,
+                "object": ra.resolved.validated.candidate.triple.object,
+                "object_type": ra.resolved.validated.candidate.triple.object_type,
+                "subject_uri": ra.resolved.subject_uri,
+                "object_uri": ra.resolved.object_uri,
+                "confidence_score": float(ra.resolved.validated.candidate.confidence_score),
+                "route": ra.route.value,
+                "kumari_flagged": ra.kumari_flagged,
+                "conflict_detected": ra.conflict_detected,
+                "db_assertion_id": str(ra.db_assertion_id) if ra.db_assertion_id else None,
+            }
+            for ra in routing_result.routed
+        ]
+        meta["pipeline_status"] = "complete"
+        meta["pipeline_finished_at"] = timezone.now().isoformat()
+        doc.save(update_fields=["metadata", "updated_at"])
+        logger.info("KG pipeline completed for %s", document_id)
+
+    except Exception as exc:
+        logger.error("KG pipeline failed for %s: %s", document_id, exc, exc_info=True)
+        meta = doc.metadata or {}
+        meta["pipeline_status"] = "failed"
+        meta["pipeline_error"] = str(exc)
+        doc.metadata = meta
+        doc.save(update_fields=["metadata", "updated_at"])
+        raise
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # UTILITY TASKS
 # ──────────────────────────────────────────────────────────────────────────────
 

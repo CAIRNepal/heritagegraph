@@ -68,7 +68,7 @@ into exactly one of these heritage document types:
 - oral_history : oral traditions, recorded interviews, folk narratives
 - gazette      : official government records, rajpatra, legal notifications
 
-Respond with a JSON object: {"type": "<one of the five>", "confidence": <0.0-1.0>}
+Respond with a JSON object: {{"type": "<one of the five>", "confidence": <0.0-1.0>}}
 No other text.
 
 Document excerpt (first 600 chars):

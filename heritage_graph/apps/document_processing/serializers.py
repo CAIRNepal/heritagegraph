@@ -22,6 +22,7 @@ class OcrDocumentStatusSerializer(serializers.ModelSerializer):
             "processing_finished",
             "user_safe_error",
             "raw_text",
+            "metadata",
         ]
         read_only_fields = fields
 

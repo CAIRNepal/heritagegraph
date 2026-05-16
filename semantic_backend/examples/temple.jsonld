@@ -1,0 +1,31 @@
+{
+  "@context": {
+    "heritageGraph": "https://w3id.org/heritagegraph/",
+    "hg":            "https://heritagegraph.org/",
+    "rdfs":          "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd":           "http://www.w3.org/2001/XMLSchema#"
+  },
+
+  "@id":   "hg:temple/pashupatinath",
+  "@type": "heritageGraph:Temple",
+
+  "heritageGraph:name": "पशुपतिनाथ मन्दिर",
+
+  "heritageGraph:has_current_location": {
+    "@id":   "hg:place/deopatan",
+    "@type": "heritageGraph:Place",
+    "heritageGraph:name": "Deopatan, Kathmandu",
+    "heritageGraph:place_coordinates": "POINT(85.348700 27.710800)"
+  },
+
+  "heritageGraph:was_produced_by_event": {
+    "@id":   "hg:production/pashupatinath",
+    "@type": "heritageGraph:Production",
+    "heritageGraph:has_timespan": {
+      "@id":   "hg:production/pashupatinath/timespan",
+      "@type": "heritageGraph:TimeSpan",
+      "heritageGraph:date_earliest": { "@value": "0400-01-01", "@type": "xsd:date" },
+      "heritageGraph:date_latest":   { "@value": "0600-12-31", "@type": "xsd:date" }
+    }
+  }
+}
