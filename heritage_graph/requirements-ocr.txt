@@ -24,7 +24,8 @@ surya-ocr==0.17.1
 
 # Handwritten Text Recognition (HTR)
 # TrOCR via transformers
-transformers==4.45.0
+# surya-ocr>=0.17 requires transformers>=4.56.1; pin to that floor so pip can resolve
+transformers>=4.56.1
 torch==2.7.1
 torchvision==0.20.1
 
