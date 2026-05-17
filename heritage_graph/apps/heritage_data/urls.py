@@ -300,11 +300,21 @@ urlpatterns = [
         name="project-asset-list",
     ),
     path(
+        "projects/<slug:project_slug>/assets/upload/",
+        views.ProjectAssetViewSet.as_view({"post": "upload"}),
+        name="project-asset-upload",
+    ),
+    path(
         "projects/<slug:project_slug>/assets/<uuid:pk>/",
         views.ProjectAssetViewSet.as_view(
             {"get": "retrieve", "patch": "partial_update", "delete": "destroy"}
         ),
         name="project-asset-detail",
+    ),
+    path(
+        "projects/<slug:project_slug>/assets/<uuid:pk>/start-ocr/",
+        views.ProjectAssetViewSet.as_view({"post": "start_ocr"}),
+        name="project-asset-start-ocr",
     ),
     path(
         "projects/<slug:project_slug>/entities/",

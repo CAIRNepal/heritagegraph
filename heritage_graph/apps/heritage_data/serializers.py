@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
@@ -2044,6 +2045,7 @@ class RelationshipProposalPatchSerializer(serializers.ModelSerializer):
 # =====================================================================
 
 from .models import (  # noqa: E402
+    Media,
     Project,
     ProjectActivity,
     ProjectAsset,
@@ -2067,7 +2069,9 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(),
         source="user",
         write_only=True,
+        required=False,
     )
+    username = serializers.CharField(write_only=True, required=False, allow_blank=True)
 
     class Meta:
         model = ProjectMembership
@@ -2076,6 +2080,7 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             "project",
             "user",
             "user_id",
+            "username",
             "role",
             "invited_by",
             "created_at",
@@ -2083,11 +2088,24 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "project", "invited_by", "created_at", "updated_at"]
 
+    def validate(self, attrs):
+        username = (attrs.pop("username", None) or "").strip()
+        if attrs.get("user") is None and username:
+            try:
+                attrs["user"] = User.objects.get(username=username)
+            except User.DoesNotExist as exc:
+                raise ValidationError({"username": "User not found."}) from exc
+        if attrs.get("user") is None:
+            raise ValidationError("Provide user_id or username.")
+        return attrs
+
 
 class ProjectAssetSerializer(serializers.ModelSerializer):
     uploaded_by = ProjectUserBriefSerializer(read_only=True)
     media_url = serializers.SerializerMethodField()
     media_type = serializers.CharField(source="media.media_type", read_only=True)
+    uploaded_document_id = serializers.SerializerMethodField()
+    ocr_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectAsset
@@ -2100,6 +2118,8 @@ class ProjectAssetSerializer(serializers.ModelSerializer):
             "role",
             "caption",
             "uploaded_by",
+            "uploaded_document_id",
+            "ocr_status",
             "created_at",
         ]
         read_only_fields = [
@@ -2108,6 +2128,8 @@ class ProjectAssetSerializer(serializers.ModelSerializer):
             "uploaded_by",
             "media_url",
             "media_type",
+            "uploaded_document_id",
+            "ocr_status",
             "created_at",
         ]
 
@@ -2117,6 +2139,40 @@ class ProjectAssetSerializer(serializers.ModelSerializer):
             url = obj.media.file.url
             return request.build_absolute_uri(url) if request else url
         return None
+
+    def get_uploaded_document_id(self, obj):
+        doc = getattr(obj.media, "ocr_document", None)
+        return str(doc.id) if doc else None
+
+    def get_ocr_status(self, obj):
+        from .project_services import get_asset_ocr_status
+
+        return get_asset_ocr_status(obj.media)
+
+
+class ProjectAssetUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+    role = serializers.ChoiceField(
+        choices=ProjectAsset.ROLE_CHOICES,
+        default=ProjectAsset.ROLE_EVIDENCE,
+    )
+    caption = serializers.CharField(required=False, allow_blank=True, default="")
+    media_type = serializers.ChoiceField(
+        choices=Media.MEDIA_TYPE_CHOICES,
+        required=False,
+    )
+    run_ocr = serializers.BooleanField(default=False)
+    source_institution = serializers.CharField(required=False, allow_blank=True, default="")
+    collection_name = serializers.CharField(required=False, allow_blank=True, default="")
+    language = serializers.CharField(required=False, allow_blank=True, default="")
+    ocr_language = serializers.CharField(required=False, allow_blank=True, default="")
+    copyright_note = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate_file(self, value):
+        max_bytes = int(getattr(settings, "OCR_MAX_FILE_BYTES", 25 * 1024 * 1024))
+        if hasattr(value, "size") and value.size and value.size > max_bytes:
+            raise ValidationError("File is too large to process (server limit).")
+        return value
 
 
 class ProjectEntitySerializer(serializers.ModelSerializer):
@@ -2203,6 +2259,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     memberships = ProjectMembershipSerializer(many=True, read_only=True)
     assets = ProjectAssetSerializer(many=True, read_only=True)
     entities = ProjectEntitySerializer(many=True, read_only=True)
+    allowed_transitions = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -2223,6 +2281,8 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "memberships",
             "assets",
             "entities",
+            "allowed_transitions",
+            "can_edit",
             "submitted_at",
             "merged_at",
             "created_at",
@@ -2236,11 +2296,27 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "memberships",
             "assets",
             "entities",
+            "allowed_transitions",
+            "can_edit",
             "submitted_at",
             "merged_at",
             "created_at",
             "updated_at",
         ]
+
+    def get_allowed_transitions(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        from .project_services import get_allowed_project_transitions
+
+        return get_allowed_project_transitions(user, obj)
+
+    def get_can_edit(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        from .project_services import user_can_edit_project
+
+        return user_can_edit_project(user, obj)
 
 
 class ProjectCreateSerializer(serializers.ModelSerializer):

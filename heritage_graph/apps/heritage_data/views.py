@@ -12,8 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from drf_yasg import openapi
 
 from django.db.models import Q
-from rest_framework import mixins, viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework import mixins, parsers, viewsets, status, permissions
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -4113,11 +4112,21 @@ class ProgressionView(APIView):
 from django.db import transaction  # noqa: E402
 from django.db.models import Count  # noqa: E402
 from .models import (  # noqa: E402
+    Media,
     Project,
     ProjectActivity,
     ProjectAsset,
     ProjectEntity,
     ProjectMembership,
+)
+from .project_services import (  # noqa: E402
+    assert_project_ocr_quota,
+    can_transition_project,
+    infer_media_type_from_filename,
+    is_document_media_file,
+    queue_ocr_for_media,
+    user_can_edit_project as _user_can_edit_project,
+    user_can_view_project as _user_can_view_project,
 )
 
 
@@ -4130,27 +4139,6 @@ class IsProjectOwnerOrReadOnly(permissions.BasePermission):
         return _user_can_edit_project(request.user, obj)
 
 
-def _user_can_view_project(user, project):
-    if project.visibility == Project.VISIBILITY_PUBLIC:
-        return True
-    if not user or not user.is_authenticated:
-        return False
-    if user.is_staff or project.owner_id == user.id:
-        return True
-    return project.memberships.filter(user=user).exists()
-
-
-def _user_can_edit_project(user, project):
-    if not user or not user.is_authenticated:
-        return False
-    if user.is_staff or project.owner_id == user.id:
-        return True
-    return project.memberships.filter(
-        user=user,
-        role__in=[ProjectMembership.ROLE_OWNER, ProjectMembership.ROLE_EDITOR],
-    ).exists()
-
-
 def _log_project_activity(project, actor, action, *, target_kind="", target_id="", payload=None):
     ProjectActivity.objects.create(
         project=project,
@@ -4160,25 +4148,6 @@ def _log_project_activity(project, actor, action, *, target_kind="", target_id="
         target_id=str(target_id) if target_id else "",
         payload=payload or {},
     )
-
-
-# Allowed state transitions for the project lifecycle.
-# draft -> in_review -> {approved | needs_revision}
-# needs_revision -> in_review (after edits)
-# approved -> merged
-# any -> withdrawn (by owner)
-_PROJECT_TRANSITIONS = {
-    Project.STATE_DRAFT: {Project.STATE_IN_REVIEW, Project.STATE_WITHDRAWN},
-    Project.STATE_IN_REVIEW: {
-        Project.STATE_APPROVED,
-        Project.STATE_NEEDS_REVISION,
-        Project.STATE_WITHDRAWN,
-    },
-    Project.STATE_NEEDS_REVISION: {Project.STATE_IN_REVIEW, Project.STATE_WITHDRAWN},
-    Project.STATE_APPROVED: {Project.STATE_MERGED, Project.STATE_WITHDRAWN},
-    Project.STATE_MERGED: set(),
-    Project.STATE_WITHDRAWN: {Project.STATE_DRAFT},
-}
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -4242,21 +4211,23 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project, self.request.user, ProjectActivity.ACTION_UPDATED
         )
 
-    @action(detail=True, methods=["post"], url_path="transition")
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="transition",
+        permission_classes=[permissions.IsAuthenticated],
+    )
     def transition(self, request, slug=None):
         project = self.get_object()
-        if not _user_can_edit_project(request.user, project):
-            raise PermissionDenied("Only project owners/editors can transition state.")
 
         payload = ProjectStateTransitionSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
         target = payload.validated_data["target_state"]
         comment = payload.validated_data.get("comment", "")
 
-        allowed = _PROJECT_TRANSITIONS.get(project.state, set())
-        if target not in allowed:
-            raise ValidationError(
-                f"Cannot transition from {project.state} to {target}."
+        if not can_transition_project(request.user, project, target):
+            raise PermissionDenied(
+                "You do not have permission to perform this state transition."
             )
 
         with transaction.atomic():
@@ -4357,7 +4328,153 @@ class ProjectAssetViewSet(_ProjectScopedViewSet):
     def get_queryset(self):
         project = self._get_project()
         self._require_view(project)
-        return project.assets.select_related("media", "uploaded_by")
+        return project.assets.select_related(
+            "media",
+            "media__ocr_document",
+            "uploaded_by",
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="upload",
+        parser_classes=[parsers.MultiPartParser, parsers.FormParser],
+    )
+    def upload(self, request, project_slug=None):
+        from .serializers import ProjectAssetUploadSerializer
+
+        project = self._get_project()
+        self._require_edit(project)
+        if project.state == Project.STATE_MERGED:
+            raise ValidationError("Cannot upload assets to a merged project.")
+
+        ser = ProjectAssetUploadSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        data = ser.validated_data
+        run_ocr = bool(data.get("run_ocr"))
+        upload_file = data["file"]
+        is_doc = is_document_media_file(upload_file)
+        media_type = data.get("media_type") or infer_media_type_from_filename(
+            upload_file.name
+        )
+
+        if run_ocr and is_doc:
+            assert_project_ocr_quota(project)
+
+        # Always defer auto-OCR on Media.save; start explicitly when run_ocr=True.
+        provenance = {
+            k: data.get(k) or ""
+            for k in (
+                "source_institution",
+                "collection_name",
+                "language",
+                "ocr_language",
+                "copyright_note",
+            )
+            if data.get(k)
+        }
+
+        with transaction.atomic():
+            media = Media(
+                ingestion_contributor=request.user,
+                media_type=media_type,
+                file=upload_file,
+                description=data.get("caption") or "",
+                ocr_deferred=is_doc,
+            )
+            media.full_clean()
+            media.save()
+
+            asset = ProjectAsset.objects.create(
+                project=project,
+                media=media,
+                role=data.get("role") or ProjectAsset.ROLE_EVIDENCE,
+                caption=data.get("caption") or "",
+                uploaded_by=request.user,
+            )
+
+            uploaded_document_id = None
+            ocr_status = "not_applicable"
+            if is_doc:
+                if run_ocr:
+                    uploaded_document_id = queue_ocr_for_media(
+                        media=media, project=project
+                    )
+                    ocr_status = "pending"
+                    if provenance:
+                        from apps.document_processing.models import UploadedDocument
+
+                        doc = UploadedDocument.objects.get(id=uploaded_document_id)
+                        doc.provenance = provenance
+                        doc.save(update_fields=["provenance", "updated_at"])
+                else:
+                    ocr_status = "not_started"
+
+            _log_project_activity(
+                project,
+                request.user,
+                ProjectActivity.ACTION_ASSET_ADDED,
+                target_kind="asset",
+                target_id=asset.id,
+                payload={
+                    "media_id": str(media.id),
+                    "role": asset.role,
+                    "run_ocr": run_ocr,
+                },
+            )
+
+        out = ProjectAssetSerializer(asset, context={"request": request}).data
+        out["uploaded_document_id"] = uploaded_document_id
+        out["ocr_status"] = ocr_status
+        return Response(out, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"], url_path="start-ocr")
+    def start_ocr(self, request, project_slug=None, pk=None):
+        from apps.document_processing.models import UploadedDocument
+        from apps.document_processing.services.ocr_settings import get_ocr_settings
+
+        project = self._get_project()
+        self._require_edit(project)
+        if project.state == Project.STATE_MERGED:
+            raise ValidationError("Cannot run OCR on a merged project.")
+
+        asset = self.get_object()
+        media = asset.media
+        if not is_document_media_file(media.file):
+            raise ValidationError("This asset is not eligible for text extraction.")
+
+        confirm_vision = str(request.data.get("confirm_vision", "")).lower() in (
+            "true",
+            "1",
+            "yes",
+        )
+        doc = UploadedDocument.objects.filter(media=media).first()
+        if doc and doc.claude_vision_invocations >= get_ocr_settings().max_vision_calls:
+            if not confirm_vision:
+                raise ValidationError(
+                    {
+                        "confirm_vision": (
+                            "Vision fallback was already used for this file. "
+                            "Set confirm_vision=true to run extraction again."
+                        )
+                    }
+                )
+
+        if doc and doc.status in ("pending", "processing"):
+            out = ProjectAssetSerializer(asset, context={"request": request}).data
+            return Response(out)
+
+        assert_project_ocr_quota(project)
+
+        with transaction.atomic():
+            media.ocr_deferred = False
+            media.save(update_fields=["ocr_deferred"])
+            doc_id = queue_ocr_for_media(media=media, project=project)
+
+        asset.refresh_from_db()
+        out = ProjectAssetSerializer(asset, context={"request": request}).data
+        out["uploaded_document_id"] = doc_id
+        return Response(out)
 
     def perform_create(self, serializer):
         project = self._get_project()
