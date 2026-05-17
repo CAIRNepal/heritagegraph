@@ -128,6 +128,14 @@ class UploadedDocument(models.Model):
         related_name='ocr_documents',
         help_text="New workflow: associated CulturalEntity (if any)"
     )
+    project = models.ForeignKey(
+        "heritage_data.Project",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ocr_documents",
+        help_text="Project workspace that owns this OCR run (if any).",
+    )
 
     class Meta:
         ordering = ["-created_at"]

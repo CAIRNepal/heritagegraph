@@ -199,6 +199,9 @@ OCR_MAX_FILE_BYTES = int(
         str(25 * 1024 * 1024),
     )
 )
+OCR_MAX_RUNS_PER_PROJECT_PER_DAY = int(
+    os.environ.get("OCR_MAX_RUNS_PER_PROJECT_PER_DAY", "10")
+)
 # Optional override for the Tesseract binary location (useful in containers)
 TESSERACT_PATH = os.environ.get("TESSERACT_PATH", "")
 

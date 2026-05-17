@@ -668,6 +668,10 @@ class Media(models.Model):
     media_type = models.CharField(max_length=50, choices=MEDIA_TYPE_CHOICES)
     file = models.FileField(upload_to="heritage_media/")
     description = models.TextField(blank=True)
+    ocr_deferred = models.BooleanField(
+        default=False,
+        help_text="When true, OCR is not auto-queued on upload; use project start-ocr or OCR upload.",
+    )
 
     def __str__(self):
         return f"{self.media_type}: {self.file.name}"

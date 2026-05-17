@@ -50,7 +50,11 @@ def on_media_upload(sender, instance, created, **kwargs):
     # Only process newly created media files, not updates
     if not created:
         return
-    
+
+    if getattr(instance, "ocr_deferred", False):
+        logger.debug(f"Media {instance.id} has ocr_deferred; skipping auto OCR")
+        return
+
     # Skip if not a document-type file
     if not is_document_type(instance.file):
         logger.debug(f"Media {instance.id} is not a document type, skipping OCR")
