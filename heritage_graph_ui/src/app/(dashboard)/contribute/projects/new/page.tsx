@@ -16,7 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fadeInUp, glassCard } from "@/lib/design";
-import { getPublicApiUrl } from "@/lib/api-base";
+import { getApiErrorMessage } from "@/lib/api-client";
+import { createProject } from "@/lib/projects-api";
 
 function slugify(s: string): string {
   return s
@@ -47,7 +48,8 @@ export default function NewProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!session?.accessToken) return;
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    if (!token) return;
     if (!title.trim() || !slug.trim()) {
       setError("Title and slug are required.");
       return;
@@ -62,41 +64,18 @@ export default function NewProjectPage() {
       .filter(Boolean);
 
     try {
-      const base = getPublicApiUrl();
-      const res = await fetch(`${base}/api/v1/data/projects/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: title.trim(),
-          slug: slug.trim(),
-          abstract: abstract.trim(),
-          intended_subject: intendedSubject.trim(),
-          visibility,
-          tags,
-          languages: [],
-        }),
+      const project = await createProject(token, {
+        title: title.trim(),
+        slug: slug.trim(),
+        abstract: abstract.trim(),
+        intended_subject: intendedSubject.trim(),
+        visibility,
+        tags,
+        languages: [],
       });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        const msg =
-          typeof data === "object"
-            ? Object.entries(data)
-                .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-                .join(" | ")
-            : "Failed to create project.";
-        setError(msg);
-        setSubmitting(false);
-        return;
-      }
-
-      const project = await res.json();
       router.push(`/contribute/projects/${project.slug}`);
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Failed to create project."));
       setSubmitting(false);
     }
   };
@@ -137,9 +116,6 @@ export default function NewProjectPage() {
             placeholder="auto-filled from title"
             required
           />
-          <p className="text-xs text-muted-foreground">
-            URL-friendly identifier. Must be unique.
-          </p>
         </div>
 
         <div className="space-y-1.5">
@@ -161,9 +137,6 @@ export default function NewProjectPage() {
             onChange={(e) => setIntendedSubject(e.target.value)}
             placeholder="e.g. temple, ritual, deity, person"
           />
-          <p className="text-xs text-muted-foreground">
-            Free-text hint — helps surface relevant ontology classes on the entity forms.
-          </p>
         </div>
 
         <div className="space-y-1.5">
@@ -200,11 +173,7 @@ export default function NewProjectPage() {
           <Button type="submit" disabled={submitting}>
             {submitting ? "Creating…" : "Create Project"}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => router.push("/contribute/projects")}
-          >
+          <Button type="button" variant="ghost" onClick={() => router.push("/contribute/projects")}>
             Cancel
           </Button>
         </div>

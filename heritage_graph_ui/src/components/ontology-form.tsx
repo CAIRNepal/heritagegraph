@@ -1556,7 +1556,8 @@ export default function OntologyForm({
         }
       );
 
-      const createdId = created?.id;
+      const createdId =
+        (created as { entity_id?: string; id?: string })?.entity_id ?? created?.id;
       if (onContributionCreated && createdId != null) {
         const idStr = String(createdId).trim();
         if (idStr !== "") {

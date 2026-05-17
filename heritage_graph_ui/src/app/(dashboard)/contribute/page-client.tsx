@@ -14,7 +14,7 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { AlertCircle, FileText } from "lucide-react";
+import { AlertCircle, FileText, FolderKanban } from "lucide-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { ContributeHubIntentRow } from "@/lib/ontology/types";
@@ -364,6 +364,36 @@ export default function ContributeDashboard() {
             Navigate contribution journeys as Describe, Record, Claim, and Verify.
             Every entry is reviewed by experts before publication.
           </p>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={fadeInUp}
+        className={`${glassCard} p-5 md:p-6`}
+      >
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600">
+              <FolderKanban className="size-5" aria-hidden />
+            </span>
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold">Contribution projects</h2>
+              <p className="text-sm text-muted-foreground max-w-xl">
+                Work in a project dossier: upload evidence, author entities, run OCR when you choose,
+                and submit for review.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 shrink-0">
+            <Button type="button" variant="outline" onClick={() => router.push("/contribute/projects")}>
+              My projects
+            </Button>
+            <Button type="button" onClick={() => router.push("/contribute/projects/new")}>
+              New project
+            </Button>
+          </div>
         </div>
       </motion.div>
 

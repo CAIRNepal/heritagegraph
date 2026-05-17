@@ -9,24 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { IconPlus, IconSearch, IconFolders, IconGitFork } from "@tabler/icons-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
-import { getPublicApiUrl } from "@/lib/api-base";
-
-interface ProjectSummary {
-  id: string;
-  slug: string;
-  title: string;
-  abstract: string;
-  state: string;
-  visibility: string;
-  owner: { id: string; username: string; email: string };
-  forked_from: string | null;
-  asset_count: number;
-  entity_count: number;
-  collaborator_count: number;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-}
+import { getApiErrorMessage } from "@/lib/api-client";
+import {
+  listProjects,
+  PROJECT_STATE_LABELS,
+  type ProjectSummary,
+} from "@/lib/projects-api";
 
 const STATE_COLORS: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
@@ -37,31 +25,29 @@ const STATE_COLORS: Record<string, string> = {
   withdrawn: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
 };
 
-const STATE_LABELS: Record<string, string> = {
-  draft: "Draft",
-  in_review: "In Review",
-  needs_revision: "Needs Revision",
-  approved: "Approved",
-  merged: "Merged",
-  withdrawn: "Withdrawn",
-};
-
 function ProjectCard({ project }: { project: ProjectSummary }) {
   const router = useRouter();
   const stateColor = STATE_COLORS[project.state] ?? STATE_COLORS.draft;
 
   return (
     <motion.div variants={scaleIn} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-      <div
+      <motion.div
+        role="button"
+        tabIndex={0}
         className={`${glassCard} p-5 cursor-pointer hover:shadow-xl transition-all duration-200`}
         onClick={() => router.push(`/contribute/projects/${project.slug}`)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            router.push(`/contribute/projects/${project.slug}`);
+          }
+        }}
       >
         <div className="flex items-start justify-between gap-3 mb-2">
           <h3 className="font-semibold text-blue-900 dark:text-blue-100 line-clamp-1 flex-1">
             {project.title}
           </h3>
           <Badge className={`${stateColor} text-[11px] px-2 py-0.5 shrink-0`}>
-            {STATE_LABELS[project.state] ?? project.state}
+            {PROJECT_STATE_LABELS[project.state] ?? project.state}
           </Badge>
         </div>
         {project.abstract && (
@@ -79,46 +65,37 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
             </span>
           )}
         </div>
-        {project.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-3">
-            {project.tags.slice(0, 4).map((tag) => (
-              <span
-                key={tag}
-                className="text-[10px] px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
 
 export default function ProjectsListPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status: authStatus } = useSession();
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
+  const load = () => {
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    if (!token) {
+      setLoading(authStatus === "loading");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    listProjects(token)
+      .then(setProjects)
+      .catch((e) => setError(getApiErrorMessage(e)))
+      .finally(() => setLoading(false));
+  };
+
   useEffect(() => {
-    if (!session?.accessToken) return;
-    const base = getPublicApiUrl();
-    fetch(`${base}/api/v1/data/projects/?ordering=-updated_at`, {
-      headers: {
-        Authorization: `Bearer ${session.accessToken}`,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        setProjects(Array.isArray(data) ? data : (data.results ?? []));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [session]);
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, authStatus]);
 
   const filtered = projects.filter(
     (p) =>
@@ -165,6 +142,15 @@ export default function ProjectsListPage() {
           className="pl-9 h-11 rounded-xl"
         />
       </motion.div>
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 p-4 flex items-center justify-between gap-3">
+          <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          <Button size="sm" variant="outline" onClick={load}>
+            Retry
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-16 text-muted-foreground text-sm">Loading projects…</div>
