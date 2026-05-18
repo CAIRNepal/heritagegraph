@@ -23,6 +23,7 @@ import { FilterBar } from './components/FilterBar';
 import { StoryPanel } from './components/StoryPanel';
 import { MandalaLoader } from './components/MandalaLoader';
 import { TimelineStrip } from './components/TimelineStrip';
+import { GraphLegend } from './components/GraphLegend';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
@@ -31,39 +32,147 @@ type ViewMode = '2d' | 'xr' | 'map';
 type DataSource = 'demo' | 'live';
 
 // ── Instance → museum node conversion ─────────────────────────────────────────
+//
+// Each backend InstanceCategory is mapped to the closest matching NodeType in
+// the generated ontology viz config. This is the SINGLE place where backend
+// taxonomy is translated to the visualization taxonomy.
 const INSTANCE_CAT_MAP: Record<InstanceCategory, NodeType> = {
   structure:   'ArchitecturalStructure',
   deity:       'Deity',
-  person:      'ArchitecturalStructure',
+  person:      'Person',
   location:    'Place',
-  event:       'Festival',
-  ritual:      'Festival',
+  event:       'HistoricalEvent',
+  ritual:      'Festival',          // No RitualEvent NodeType yet; Festival is the nearest analog
   festival:    'Festival',
-  guthi:       'ArchitecturalStructure',
+  guthi:       'Guthi',
   monument:    'BuddhistMonument',
-  iconography: 'ArchitecturalStructure',
-  period:      'TimeSpan',
+  iconography: 'IconographicObject',
+  period:      'HistoricalPeriod',
   tradition:   'ReligiousTradition',
-  source:      'Place',
+  source:      'Source',
 };
+
+// ── rawData → GraphNode field extractors ─────────────────────────────────────
+//
+// Per-category extractors that pull human-facing strings, coordinates, dates,
+// and tags from the DRF response shape. We never trust types here — every
+// access is defensive (typeof / Array.isArray).
+
+type Raw = Record<string, unknown>;
+
+function s(raw: Raw, ...keys: string[]): string | undefined {
+  for (const k of keys) {
+    const v = raw[k];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+  }
+  return undefined;
+}
+
+function pickLatLong(raw: Raw): { lat?: string; long?: string } {
+  // Direct lat/lng fields (Monument, Structure, Location serializers expose these)
+  const lat = s(raw, 'latitude', 'lat');
+  const long = s(raw, 'longitude', 'long', 'lng');
+  if (lat && long) return { lat, long };
+
+  // GeoJSON-ish "point" field: { type: 'Point', coordinates: [lng, lat] }
+  const point = raw.point as { coordinates?: [number, number] } | undefined;
+  if (point && Array.isArray(point.coordinates) && point.coordinates.length === 2) {
+    const [lngN, latN] = point.coordinates;
+    if (Number.isFinite(latN) && Number.isFinite(lngN)) {
+      return { lat: String(latN), long: String(lngN) };
+    }
+  }
+  return {};
+}
+
+function pickInceptionYear(raw: Raw): string | undefined {
+  // EDTF strings ("c.1200", "1768"): pull the first 4-digit run
+  const candidates = [
+    raw.inception_year, raw.construction_date, raw.start_year,
+    raw.founded_in, raw.start_date, raw.birth_date,
+  ];
+  for (const c of candidates) {
+    if (typeof c !== 'string') continue;
+    const m = c.match(/-?\d{3,4}/);
+    if (m) return m[0];
+  }
+  return undefined;
+}
+
+function pickImage(raw: Raw): string | undefined {
+  const direct = s(raw, 'image_url', 'imageUrl', 'image', 'thumbnail', 'photo_url');
+  if (direct && /^https?:\/\//.test(direct)) return direct;
+  return undefined;
+}
+
+function pickTags(raw: Raw): string[] | undefined {
+  const t = raw.tags;
+  if (Array.isArray(t)) return t.map(String).filter(Boolean);
+  if (typeof t === 'string' && t.trim()) {
+    return t.split(',').map((x) => x.trim()).filter(Boolean);
+  }
+  return undefined;
+}
 
 function instanceToGraphNode(n: InstanceNode): GraphNode {
   const nodeType = INSTANCE_CAT_MAP[n.category] ?? 'Place';
   const cfg = NODE_TYPE_CONFIG[nodeType];
+  const raw = n.rawData ?? {};
+  const { lat, long } = pickLatLong(raw);
+
   return {
     id: n.id,
     label: n.label,
     nodeType,
     cidocMapping: cfg.cidocMapping,
     hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
-    description: n.description,
-    storyText: n.description,
+    description: n.description || s(raw, 'note', 'description', 'biography') || '',
+    storyText: s(raw, 'story', 'narrative', 'story_text') || n.description || '',
+    imageUrl: pickImage(raw),
+    significance: s(raw, 'significance', 'cultural_significance'),
+    religion: s(raw, 'religion', 'religious_tradition', 'tradition'),
+    unescoStatus: s(raw, 'unesco_status', 'unescoStatus'),
+    inceptionYear: pickInceptionYear(raw),
+    dynasty: s(raw, 'dynasty', 'ruling_dynasty'),
+    ethnicity: s(raw, 'ethnicity', 'caste_group'),
+    period: s(raw, 'period', 'historical_period'),
+    lat,
+    long,
+    history: s(raw, 'history', 'historical_context'),
+    architecture: s(raw, 'architecture', 'architectural_style'),
+    culturalRole: s(raw, 'cultural_role'),
+    visitNote: s(raw, 'visit_note', 'visitor_information'),
+    tags: pickTags(raw),
     relations: [],
   };
 }
 
+// Live edge labels emitted by instance-graph.ts must use predicate keys that
+// match RELATION_LABELS (underscore-style). We pass them through as-is here;
+// the heritage-data RELATION_LABELS map covers the full set.
 function instanceEdgeToLink(e: InstanceEdge): GraphLink {
-  return { source: e.source, target: e.target, predicate: e.label || 'associated_with' };
+  const predicate = (e.label || 'associated_with').replace(/-/g, '_');
+  return { source: e.source, target: e.target, predicate };
+}
+
+// Build a HeritageRelation[] for every node from the edge list so the
+// StoryPanel's Connections section works for live data too.
+function attachRelations(nodes: GraphNode[], links: GraphLink[]): void {
+  const byId = new Map<string, GraphNode>();
+  for (const n of nodes) {
+    n.relations = [];
+    byId.set(n.id, n);
+  }
+  for (const l of links) {
+    const sourceId = typeof l.source === 'string' ? l.source : l.source.id;
+    const targetId = typeof l.target === 'string' ? l.target : l.target.id;
+    const src = byId.get(sourceId);
+    const tgt = byId.get(targetId);
+    if (src && tgt) {
+      src.relations.push({ predicate: l.predicate, targetId, targetLabel: tgt.label });
+    }
+  }
 }
 
 // ── Dynamic imports ────────────────────────────────────────────────────────────
@@ -145,10 +254,14 @@ export function HeritageMindMapClient() {
       const raw = await fetchInstanceGraphData(API_BASE, token);
       const nodes = raw.nodes.map(instanceToGraphNode);
       const links = raw.edges.map(instanceEdgeToLink);
+      // Populate node.relations so the StoryPanel "Connections" section
+      // and the neighbor-highlight logic both work for live data.
+      attachRelations(nodes, links);
       setLiveGraph({ nodes, links });
     } catch {
-      setLiveError('Could not reach the HeritageGraph API. Using demo data.');
-      setDataSource('demo');
+      setLiveError('Could not reach the HeritageGraph API.');
+      // Stay in 'live' mode so a Retry click is intuitive — the user sees the
+      // error banner and the toggle button switches back to demo if they want.
     } finally {
       setLiveLoading(false);
     }
@@ -163,6 +276,19 @@ export function HeritageMindMapClient() {
     }
     setSelectedNode(null);
   }, [dataSource, liveGraph, loadLiveData]);
+
+  const retryLiveData = useCallback(() => {
+    setLiveError(null);
+    loadLiveData();
+  }, [loadLiveData]);
+
+  const showAllCategories = useCallback(() => setActiveCats(new Set(ALL_CATS)), []);
+  const showAllTypes      = useCallback(() => setActiveTypes(new Set(ALL_TYPES)), []);
+  const resetFilters      = useCallback(() => {
+    setActiveCats(new Set(ALL_CATS));
+    setActiveTypes(new Set(ALL_TYPES));
+    setSearchQuery('');
+  }, []);
 
   // ── Active graph (demo vs live) ────────────────────────────────────────────
   const fullGraph = dataSource === 'live' ? liveGraph : demoGraph;
@@ -193,15 +319,21 @@ export function HeritageMindMapClient() {
   }, [fullGraph, activeTypes, activeCats, searchQuery]);
 
   // ── Neighbour highlight ────────────────────────────────────────────────────
+  // Important: read links from `fullGraph`, not `filteredGraph`. D3's
+  // forceLink() mutates `link.source` / `link.target` from string IDs to the
+  // GraphNode objects after the simulation runs — so comparing those to a
+  // string ID always returns false. `fullGraph` is the immutable source.
   const highlightedIds = useMemo<Set<string>>(() => {
-    if (!selectedNode || !filteredGraph) return new Set();
+    if (!selectedNode || !fullGraph) return new Set();
     const ids = new Set<string>([selectedNode.id]);
-    for (const l of filteredGraph.links) {
-      if (l.source === selectedNode.id) ids.add(l.target as string);
-      if (l.target === selectedNode.id) ids.add(l.source as string);
+    for (const l of fullGraph.links) {
+      const src = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
+      const tgt = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
+      if (src === selectedNode.id) ids.add(tgt);
+      if (tgt === selectedNode.id) ids.add(src);
     }
     return ids;
-  }, [selectedNode, filteredGraph]);
+  }, [selectedNode, fullGraph]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleNodeSelect = useCallback((node: GraphNode) => {
@@ -242,6 +374,16 @@ export function HeritageMindMapClient() {
 
   const nodeCount = filteredGraph?.nodes.length ?? 0;
   const linkCount = filteredGraph?.links.length ?? 0;
+
+  // Per-type counts for the legend
+  const typeCounts = useMemo<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    if (!filteredGraph) return counts;
+    for (const n of filteredGraph.nodes) {
+      counts[n.nodeType] = (counts[n.nodeType] || 0) + 1;
+    }
+    return counts;
+  }, [filteredGraph]);
 
   return (
     <div className="flex flex-col h-full bg-gray-950 text-white overflow-hidden">
@@ -302,29 +444,51 @@ export function HeritageMindMapClient() {
       </header>
 
       {/* ── Live data error ── */}
-      {liveError && dataSource === 'demo' && (
-        <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-orange-900/20 border-b border-orange-500/20 text-orange-400 text-xs z-20">
-          <span>⚠</span>{liveError}
-          <button onClick={() => setLiveError(null)} className="ml-auto text-orange-400 hover:text-orange-200">✕</button>
+      {liveError && (
+        <div
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-orange-900/20 border-b border-orange-500/20 text-orange-300 text-xs z-20"
+          role="alert"
+          aria-live="polite"
+        >
+          <span aria-hidden="true">⚠</span>
+          <span>{liveError}</span>
+          <button
+            onClick={retryLiveData}
+            disabled={liveLoading}
+            className="ml-auto px-2 py-0.5 rounded border border-orange-500/40 text-orange-200 hover:bg-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            type="button"
+          >
+            {liveLoading ? 'Retrying…' : 'Retry'}
+          </button>
+          <button
+            onClick={() => setLiveError(null)}
+            className="text-orange-400 hover:text-orange-200"
+            aria-label="Dismiss error"
+            type="button"
+          >
+            ✕
+          </button>
         </div>
       )}
 
       {/* ── 2D / Map modes ── */}
       {(viewMode === '2d' || viewMode === 'map') && (
         <>
-          {/* Filter bar — 2D only */}
-          {viewMode === '2d' && (
-            <div className="flex-shrink-0 z-10">
-              <FilterBar
-                activeTypes={activeTypes}
-                onToggle={toggleType}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                activeCategoryFilter={activeCats}
-                onCategoryToggle={toggleCategory}
-              />
-            </div>
-          )}
+          {/* Filter bar — visible in both 2D and Map modes */}
+          <div className="flex-shrink-0 z-10">
+            <FilterBar
+              activeTypes={activeTypes}
+              onToggle={toggleType}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeCategoryFilter={activeCats}
+              onCategoryToggle={toggleCategory}
+              onShowAllCategories={showAllCategories}
+              onShowAllTypes={showAllTypes}
+              totalNodes={fullGraph?.nodes.length}
+              visibleNodes={filteredGraph?.nodes.length}
+            />
+          </div>
 
           {/* Main area */}
           <div className="flex flex-1 min-h-0">
@@ -340,16 +504,48 @@ export function HeritageMindMapClient() {
 
               {loading && <div className="absolute inset-0"><MandalaLoader /></div>}
               {!loading && error && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center space-y-3 p-8">
-                    <p className="text-4xl">⚠️</p>
-                    <p className="text-gray-400 text-sm">{error}</p>
+                <div className="absolute inset-0 flex items-center justify-center" role="alert">
+                  <div className="text-center space-y-3 p-8 max-w-md">
+                    <p className="text-4xl" aria-hidden="true">⚠️</p>
+                    <p className="text-gray-300 text-sm font-medium">Unable to load heritage data</p>
+                    <p className="text-gray-500 text-xs">{error}</p>
+                    {dataSource === 'live' && (
+                      <button
+                        onClick={retryLiveData}
+                        disabled={liveLoading}
+                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 disabled:opacity-50"
+                        type="button"
+                      >
+                        {liveLoading ? 'Retrying…' : 'Retry'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty-state for filter-driven zero results */}
+              {!loading && !error && fullGraph && nodeCount === 0 && fullGraph.nodes.length > 0 && (
+                <div className="absolute inset-0 flex items-center justify-center" role="status">
+                  <div className="text-center space-y-3 p-8 max-w-md">
+                    <p className="text-4xl" aria-hidden="true">🔭</p>
+                    <p className="text-gray-300 text-sm font-medium">No heritage nodes match your filters</p>
+                    <p className="text-gray-500 text-xs">
+                      {fullGraph.nodes.length} node{fullGraph.nodes.length === 1 ? '' : 's'} in the graph, but none satisfy
+                      the active search and filter combination.
+                    </p>
+                    <button
+                      onClick={resetFilters}
+                      type="button"
+                      className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30"
+                    >
+                      Reset filters
+                    </button>
                   </div>
                 </div>
               )}
 
               {/* Force graph */}
-              {viewMode === '2d' && !loading && !error && (
+              {viewMode === '2d' && !loading && !error && nodeCount > 0 && (
                 <div className="absolute inset-0">
                   <ForceGraph
                     data={filteredGraph ?? EMPTY}
@@ -361,7 +557,7 @@ export function HeritageMindMapClient() {
               )}
 
               {/* Map */}
-              {viewMode === 'map' && !loading && !error && (
+              {viewMode === 'map' && !loading && !error && nodeCount > 0 && (
                 <div className="absolute inset-0">
                   <MapView
                     nodes={filteredGraph?.nodes ?? []}
@@ -406,13 +602,22 @@ export function HeritageMindMapClient() {
                   Live HeritageGraph KG
                 </div>
               )}
+
+              {/* Legend (2D + Map) */}
+              {!loading && !error && nodeCount > 0 && (
+                <GraphLegend
+                  typeCounts={typeCounts}
+                  activeTypes={activeTypes}
+                  onTypeClick={toggleType}
+                />
+              )}
             </div>
 
             {/* Desktop story sidebar */}
             <div className="hidden lg:flex flex-col w-96 min-h-0 border-l border-white/10 bg-gray-900/60 backdrop-blur-md overflow-hidden">
               <StoryPanel
                 node={selectedNode}
-                graphData={filteredGraph ?? EMPTY}
+                graphData={fullGraph ?? EMPTY}
                 onRelatedNodeClick={handleRelatedNodeClick}
               />
             </div>
@@ -431,7 +636,7 @@ export function HeritageMindMapClient() {
 
       {/* ── XR Mode ── */}
       {viewMode === 'xr' && (
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1 min-h-0 relative">
           <div className="w-52 flex-shrink-0">
             <PlaceNav
               nodes={filteredGraph?.nodes ?? []}
@@ -439,7 +644,7 @@ export function HeritageMindMapClient() {
               onSelect={handleNodeSelect}
             />
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 relative">
             {loading ? <MandalaLoader /> : (
               <ImmersiveScene
                 node={selectedNode}
@@ -447,6 +652,14 @@ export function HeritageMindMapClient() {
                 onSelect={handleNodeSelect}
               />
             )}
+            {/* Back-to-graph contextual button inside the 3D scene */}
+            <button
+              onClick={() => setViewMode('2d')}
+              type="button"
+              className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-900/80 backdrop-blur-md text-white border border-white/15 hover:bg-gray-900 transition-all"
+            >
+              ← Back to Graph
+            </button>
           </div>
         </div>
       )}
@@ -463,8 +676,11 @@ export function HeritageMindMapClient() {
             <div className="flex-1 overflow-hidden">
               <StoryPanel
                 node={selectedNode}
-                graphData={filteredGraph ?? EMPTY}
-                onRelatedNodeClick={handleRelatedNodeClick}
+                graphData={fullGraph ?? EMPTY}
+                onRelatedNodeClick={(id) => {
+                  handleRelatedNodeClick(id);
+                  setPanelOpen(true);
+                }}
               />
             </div>
           </div>

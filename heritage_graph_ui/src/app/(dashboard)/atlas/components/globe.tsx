@@ -32,6 +32,8 @@ import 'cesium/Build/Cesium/Widgets/widgets.css';
 
 import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
 import { colorForOntologyClass } from '@/lib/atlas-globe-colors';
+import { atlasPrefersReducedMotion } from '@/lib/atlas-motion';
+import { temporalGlobeAlpha } from '@/lib/atlas-temporal';
 import type { AtlasEntity } from '@/types/atlas';
 
 import { useAtlasStore } from '../hooks/use-atlas-store';
@@ -44,8 +46,7 @@ import {
 
 // Suppress Ion service requests — we use Esri tiles directly.
 // A real token can be supplied via NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN if needed.
-Ion.defaultAccessToken =
-  process.env.NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS0zMzI3MzM2NTY4ZjgiLCJpZCI6NTkyMTMsImlhdCI6MTYyNzE0NDYyMn0.XcKpgANiY19MC4bdFUXMVEBToBmqS8kuYpUlxJHYZxk';
+Ion.defaultAccessToken = process.env.NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN ?? '';
 
 const ellipsoidTerrain = new EllipsoidTerrainProvider();
 
@@ -70,12 +71,6 @@ function maxFlightHeight(distKm: number): number | undefined {
 
 const DEFAULT_PITCH_DEG = -52;
 const DEFAULT_HEADING_DEG = 12;
-
-/** Check user preference — skip animation when reduced-motion is requested. */
-function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
 
 // ─── Point sizing ──────────────────────────────────────────────────────────────
 
@@ -199,6 +194,8 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
   const selectedId = useAtlasStore((s) => s.selectedId);
   const hoveredEntityId = useAtlasStore((s) => s.hoveredEntityId);
   const currentYear = useAtlasStore((s) => s.currentYear);
+  const temporalFilterEnabled = useAtlasStore((s) => s.temporalFilterEnabled);
+  const fxEcoQuality = useAtlasStore((s) => s.fxEcoQuality);
 
   const viewerRef = useRef<CesiumViewerType | null>(null);
   const [viewerReady, setViewerReady] = useState(false);
@@ -241,7 +238,7 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
       const v = viewerRef.current;
       if (!v) return;
       const distKm = estimateKmBetweenCartesian(v.camera.position, dest);
-      const duration = prefersReducedMotion() ? 0 : flightDuration(distKm);
+      const duration = atlasPrefersReducedMotion() ? 0 : flightDuration(distKm);
       const maxH = maxFlightHeight(distKm);
       void v.camera.flyTo({
         destination: dest,
@@ -261,7 +258,7 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
       if (!v || !id) return;
       const entity = v.entities.getById(id);
       if (entity) {
-        void v.flyTo(entity, { duration: prefersReducedMotion() ? 0 : 1.45 });
+        void v.flyTo(entity, { duration: atlasPrefersReducedMotion() ? 0 : 1.45 });
         return;
       }
       const row = entities.find((s) => s.id === id);
@@ -314,6 +311,21 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
       v.scene.postProcessStages.fxaa.enabled = true;
     }
   }, []);
+
+  useEffect(() => {
+    const v = viewerRef.current;
+    if (!v?.scene) return;
+    const scene = v.scene;
+    if (fxEcoQuality) {
+      scene.requestRenderMode = true;
+      scene.maximumRenderTimeChange = Infinity;
+      v.targetFrameRate = 30;
+    } else {
+      scene.requestRenderMode = false;
+      scene.maximumRenderTimeChange = 0;
+    }
+    scene.requestRender();
+  }, [viewerReady, fxEcoQuality]);
 
   useEffect(() => {
     const cycleFxPreset = useAtlasStore.getState().cycleFxPreset;
@@ -391,18 +403,24 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
             const latestAssertion = [...row.assertions].sort((a, b) =>
               b.generatedAtTime.localeCompare(a.generatedAtTime),
             )[0];
-            const outline = reconciliationOutline(latestAssertion?.reconciliationStatus ?? 'confirmed');
-            const fill = Color.fromCssColorString(bright).withAlpha(
-              selectedId === row.id ? 0.92 : hoveredEntityId === row.id ? 0.85 : 0.72,
-            );
-
-            if (row.lat == null || row.lon == null) return null;
-
-            // Snapshot state refs into the callback — Cesium calls these synchronously
-            // during render so they always read the latest value.
+            const reconStatus = latestAssertion?.reconciliationStatus ?? 'confirmed';
+            const outline = reconciliationOutline(reconStatus);
+            const outlineWidth =
+              reconStatus === 'conflicting' ? 2.5
+              : selectedId === row.id ? 2
+              : hoveredEntityId === row.id ? 1.75
+              : 1.25;
             const sid = selectedId;
             const hid = hoveredEntityId;
             const yr = currentYear;
+            const temporalAlpha = temporalFilterEnabled ? temporalGlobeAlpha(row, yr) : 1;
+            if (temporalAlpha <= 0.02) return null;
+
+            const baseAlpha =
+              selectedId === row.id ? 0.92 : hoveredEntityId === row.id ? 0.85 : 0.72;
+            const fill = Color.fromCssColorString(bright).withAlpha(baseAlpha * temporalAlpha);
+
+            if (row.lat == null || row.lon == null) return null;
 
             return (
               <Entity
@@ -416,8 +434,7 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
                   ),
                   color: fill,
                   outlineColor: outline,
-                  outlineWidth:
-                    selectedId === row.id ? 2 : hoveredEntityId === row.id ? 1.75 : 1.25,
+                  outlineWidth,
                   heightReference: HeightReference.NONE,
                   // Keep points visible above terrain meshes
                   disableDepthTestDistance: Number.POSITIVE_INFINITY,
@@ -435,6 +452,10 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
                   pixelOffset: new Cartesian2(10, -6),
                   disableDepthTestDistance: Number.POSITIVE_INFINITY,
                   distanceDisplayCondition: new DistanceDisplayCondition(1200, 2.85e7),
+                  show:
+                    temporalFilterEnabled && temporalAlpha < 0.45
+                      ? selectedId === row.id || hoveredEntityId === row.id
+                      : true,
                   showBackground: true,
                   backgroundPadding: new Cartesian2(8, 4),
                 }}

@@ -21,7 +21,7 @@ export interface HeritageNode {
   label: string;
   nodeType: NodeType;
   cidocMapping: string;
-  hgCategory: 'tangible' | 'conceptual' | 'event' | 'spatial' | 'provenance';
+  hgCategory: HgCategory;
   description: string;
   storyText: string;
   imageUrl?: string;
@@ -120,7 +120,7 @@ function parseJsonLd(raw: any): HeritageNode[] {
       label: item['label'] || id,
       nodeType,
       cidocMapping: typeCfg?.cidocMapping ?? '',
-      hgCategory: (typeCfg?.hgCategory ?? 'tangible') as HeritageNode['hgCategory'],
+      hgCategory: (typeCfg?.hgCategory ?? 'tangible') as HgCategory,
       description: item['description'] || '',
       storyText: item['storyText'] || '',
       imageUrl: proxyImg(item['imageUrl']),

@@ -2,7 +2,7 @@
 
 import { rankItem } from '@tanstack/match-sorter-utils';
 import { useTranslations } from 'next-intl';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import { ONTOLOGY_CLASSES } from '@/types/atlas';
 
 import { cn } from '@/lib/utils';
 
+import { AtlasKnowledgeLink } from '../components/atlas-knowledge-link';
 import { ProvenanceBadge } from '../components/provenance-badge';
 import { tierFromAssertionSources } from '@/lib/atlas-provenance-helpers';
 import { ATLAS_ERAS_ORDER, useAtlasStore, useFilteredAtlasEntities } from '../hooks/use-atlas-store';
@@ -39,6 +40,13 @@ export function SearchView({ compact = false }: SearchViewProps) {
   const [query, setQuery] = useState('');
   const [eraFilter, setEraFilter] = useState<string>('any');
   const [classFilter, setClassFilter] = useState<string>('any');
+  const [visibleCount, setVisibleCount] = useState(24);
+
+  const SEARCH_PAGE = 24;
+
+  useEffect(() => {
+    setVisibleCount(SEARCH_PAGE);
+  }, [query, eraFilter, classFilter, base.length]);
 
   const results = useMemo(() => {
     const q = query.trim();
@@ -55,6 +63,9 @@ export function SearchView({ compact = false }: SearchViewProps) {
 
   const latestAssertion = (e: (typeof base)[0]) =>
     [...e.assertions].sort((a, b) => b.generatedAtTime.localeCompare(a.generatedAtTime))[0];
+
+  const visibleResults = results.slice(0, visibleCount);
+  const hasMore = visibleCount < results.length;
 
   return (
     <div
@@ -122,8 +133,14 @@ export function SearchView({ compact = false }: SearchViewProps) {
           compact ? 'min-h-0' : 'min-h-[320px]',
         )}
       >
+        <p className="border-b border-border/50 px-3 py-2 font-mono text-[10px] text-muted-foreground">
+          {t('searchResultCount', { count: results.length })}
+        </p>
+        {results.length === 0 ?
+          <p className="p-6 text-center text-sm text-muted-foreground">{t('searchNoResults')}</p>
+        : null}
         <div className={cn('grid gap-2', compact ? 'p-2 sm:grid-cols-1' : 'p-3 sm:grid-cols-2 lg:grid-cols-3')}>
-          {results.map((e) => {
+          {visibleResults.map((e) => {
             const la = latestAssertion(e);
             const tier = la ? tierFromAssertionSources(la, sources) : null;
             return (
@@ -140,6 +157,7 @@ export function SearchView({ compact = false }: SearchViewProps) {
                 </div>
                 <p className="line-clamp-3 text-muted-foreground">{e.summary}</p>
                 <div className="mt-auto flex flex-wrap gap-1">
+                  <AtlasKnowledgeLink entity={e} className="h-7 text-[11px]" />
                   <Button
                     type="button"
                     size="sm"
@@ -169,6 +187,19 @@ export function SearchView({ compact = false }: SearchViewProps) {
             );
           })}
         </div>
+        {hasMore ?
+          <div className="border-t border-border/50 p-2 text-center">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="h-8 text-[11px]"
+              onClick={() => setVisibleCount((n) => n + SEARCH_PAGE)}
+            >
+              {t('searchLoadMore', { remaining: results.length - visibleCount })}
+            </Button>
+          </div>
+        : null}
       </ScrollArea>
     </div>
   );

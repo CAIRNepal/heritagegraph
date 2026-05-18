@@ -18,6 +18,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 import { atlasSound } from '@/lib/atlas-sound';
 
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+
 import { FxControls } from './fx-controls';
 import { SpotlightControls } from './spotlight-controls';
 import type { AtlasFxPresetId } from '../lib/atlas-fx-presets';
@@ -55,6 +57,11 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
   const toggleShortcutHelp = useAtlasStore((s) => s.toggleShortcutHelp);
   const togglePanel = useAtlasStore((s) => s.togglePanel);
   const closeSidebarPanel = useAtlasStore((s) => s.closeSidebarPanel);
+  const dataSource = useAtlasStore((s) => s.dataSource);
+  const corpusStatus = useAtlasStore((s) => s.corpusStatus);
+  const corpusError = useAtlasStore((s) => s.corpusError);
+  const setDataSource = useAtlasStore((s) => s.setDataSource);
+  const loadLiveCorpus = useAtlasStore((s) => s.loadLiveCorpus);
 
   const visible = getFilteredEntities();
   const assertionCount = visible.reduce((n, e) => n + e.assertions.length, 0);
@@ -87,8 +94,34 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
           {t('topTitle')}
         </span>
         <span className="truncate text-[10px] leading-tight text-muted-foreground">
-          {t('topSubtitle')}
+          {dataSource === 'live' ? t('topSubtitleLive') : t('topSubtitle')}
         </span>
+      </div>
+
+      <div className="pointer-events-auto flex shrink-0 items-center">
+        <ToggleGroup
+          type="single"
+          value={dataSource}
+          onValueChange={(v) => {
+            if (v === 'demo' || v === 'live') {
+              atlasSound.init();
+              if (v === 'live' && dataSource !== 'live') loadLiveCorpus();
+              else setDataSource(v);
+            }
+          }}
+          className="h-7 gap-0.5"
+        >
+          <ToggleGroupItem value="demo" className="h-6 px-2 text-[9px] uppercase">
+            {t('dataDemo')}
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="live"
+            className="h-6 px-2 text-[9px] uppercase"
+            disabled={corpusStatus === 'loading'}
+          >
+            {corpusStatus === 'loading' ? t('dataLoading') : t('dataLive')}
+          </ToggleGroupItem>
+        </ToggleGroup>
       </div>
 
       <div className="pointer-events-none flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground md:flex-nowrap md:gap-x-3">
@@ -126,6 +159,11 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
           {t('conflicts')} {conflictCount}
         </span>
         <span className="hidden opacity-70 md:inline">1–6 · 7 · T</span>
+        {corpusStatus === 'error' && corpusError ?
+          <span className="max-w-[14rem] truncate text-destructive normal-case" title={corpusError}>
+            {corpusError}
+          </span>
+        : null}
       </div>
 
       <div className="pointer-events-auto flex shrink-0 items-center gap-0.5 border-l border-border/50 pl-1.5 md:pl-2">

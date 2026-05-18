@@ -7,8 +7,10 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { buildAtlasAssistantContext } from '@/lib/atlas-ai-context';
 import { postAssistantChat, type ApiChatMessage, type SourceAttribution } from '@/lib/chat/assistantClient';
 import { getApiErrorMessage } from '@/lib/api-client';
+import { useSession } from 'next-auth/react';
 
 import { useAtlasStore } from '../hooks/use-atlas-store';
 
@@ -32,7 +34,12 @@ interface AiReasoningViewProps {
 
 export function AiReasoningView({ compact = false }: AiReasoningViewProps) {
   const t = useTranslations('Atlas');
+  const { data: session } = useSession();
   const entities = useAtlasStore((s) => s.entities);
+  const selectedId = useAtlasStore((s) => s.selectedId);
+  const currentYear = useAtlasStore((s) => s.currentYear);
+  const dataSource = useAtlasStore((s) => s.dataSource);
+  const getEntityById = useAtlasStore((s) => s.getEntityById);
   const selectEntity = useAtlasStore((s) => s.selectEntity);
   const focusView = useAtlasStore((s) => s.focusView);
 
@@ -73,8 +80,17 @@ export function AiReasoningView({ compact = false }: AiReasoningViewProps) {
         content: m.content,
       }));
 
+      const focused = selectedId ? getEntityById(selectedId) : undefined;
+      const systemCtx = buildAtlasAssistantContext(focused, currentYear, dataSource);
+      const payload: ApiChatMessage[] =
+        systemCtx ? [{ role: 'system', content: systemCtx }, ...history] : history;
+
       try {
-        const res = await postAssistantChat({ messages: history, signal: ac.signal });
+        const res = await postAssistantChat({
+          messages: payload,
+          accessToken: (session as { accessToken?: string } | null)?.accessToken,
+          signal: ac.signal,
+        });
         const assistantMsg: ChatMessage = {
           id: nextMsgId(),
           role: 'assistant',
@@ -99,7 +115,17 @@ export function AiReasoningView({ compact = false }: AiReasoningViewProps) {
         scrollToBottom();
       }
     },
-    [loading, messages, scrollToBottom, t],
+    [
+      loading,
+      messages,
+      scrollToBottom,
+      t,
+      selectedId,
+      currentYear,
+      dataSource,
+      getEntityById,
+      session,
+    ],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -226,6 +252,11 @@ export function AiReasoningView({ compact = false }: AiReasoningViewProps) {
       </div>
 
       {/* Input row */}
+      {selectedId && getEntityById(selectedId) ?
+        <p className="rounded-lg border border-border/50 bg-muted/30 px-2 py-1 font-mono text-[10px] text-muted-foreground">
+          {t('aiContextHint')}
+        </p>
+      : null}
       <div
         className={cn(
           'shrink-0 rounded-xl border border-border/60 bg-background/75 backdrop-blur-md',

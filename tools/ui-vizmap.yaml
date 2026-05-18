@@ -97,7 +97,7 @@ node_types:
     color: "#6366f1"
     glow_color: "#818cf8"
     emoji: "\U0001F4DC"   # 📜
-    hg_category: spatial
+    hg_category: temporal
 
   - key: ReligiousTradition
     linkml_class: ReligiousTradition
@@ -115,6 +115,55 @@ node_types:
     glow_color: "#a3e635"
     emoji: "\U0001F33F"   # 🌿
     hg_category: tangible
+
+  - key: Person
+    linkml_class: Person
+    label: Person
+    color: "#22c55e"
+    glow_color: "#86efac"
+    emoji: "\U0001F464"   # 👤
+    hg_category: actor
+
+  - key: Guthi
+    linkml_class: Guthi
+    label: Guthi
+    color: "#0ea5e9"
+    glow_color: "#7dd3fc"
+    emoji: "\U0001F3D8"   # 🏘
+    hg_category: actor
+
+  - key: IconographicObject
+    linkml_class: IconographicObject
+    label: Iconographic Object
+    color: "#d946ef"
+    glow_color: "#f0abfc"
+    emoji: "\U0001F5BC"   # 🖼
+    hg_category: tangible
+
+  # HistoricalPeriod is a TimeSpan subtype for named historical periods
+  - key: HistoricalPeriod
+    linkml_class: TimeSpan
+    label: Historical Period
+    color: "#a3a3a3"
+    glow_color: "#d4d4d4"
+    emoji: "⏳"       # ⏳
+    hg_category: temporal
+
+  - key: Source
+    linkml_class: DataSource
+    label: Source
+    color: "#78716c"
+    glow_color: "#a8a29e"
+    emoji: "\U0001F4DA"   # 📚
+    hg_category: provenance
+
+  - key: HistoricalEvent
+    linkml_class: HistoricalEvent
+    label: Historical Event
+    color: "#facc15"
+    glow_color: "#fde68a"
+    emoji: "\U0001F4C5"   # 📅
+    hg_category: event
 
 
 # Domain category visual config.
@@ -137,6 +186,18 @@ hg_categories:
     color: "#06b6d4"
     border: "#0891b2"
     label: Spatiotemporal
+  temporal:
+    color: "#6366f1"
+    border: "#4f46e5"
+    label: Temporal
+  actor:
+    color: "#22c55e"
+    border: "#15803d"
+    label: Actors & Institutions
+  provenance:
+    color: "#78716c"
+    border: "#57534e"
+    label: Provenance
 
 
 # Slots from ontology/HeritageGraph.yaml that appear as edge labels in the
@@ -179,6 +240,90 @@ viz_predicates:
   - slot: carried_out_by
     label: carried out by
     # schema slot_uri: crm:P14_carried_out_by
+
+  # ── Live-data backend edge labels ──
+  # These are produced by heritage_graph_ui/src/lib/instance-graph.ts when
+  # building edges from CIDOC API rawData. They do not correspond to LinkML
+  # slots, so each carries a cidoc_note pointing to its nearest CIDOC analog.
+  - slot: located_at
+    label: located at
+    cidoc_note: "crm:P53_has_former_or_current_location"
+
+  - slot: co_located
+    label: co-located with
+    cidoc_note: "heritageGraph:co_located"
+
+  - slot: mentions
+    label: mentions
+    cidoc_note: "heritageGraph:mentions"
+
+  - slot: depicts
+    label: depicts
+    cidoc_note: "crm:P138_represents"
+
+  - slot: manages
+    label: manages
+    cidoc_note: "heritageGraph:manages"
+
+  - slot: tradition
+    label: tradition
+    cidoc_note: "heritageGraph:religious_tradition"
+
+  - slot: style
+    label: architectural style
+    cidoc_note: "heritageGraph:architectural_style"
+
+  - slot: type
+    label: type
+    cidoc_note: "crm:P2_has_type"
+
+  - slot: structure_type
+    label: structure type
+    cidoc_note: "heritageGraph:structure_type"
+
+  - slot: ritual_type
+    label: ritual type
+    cidoc_note: "heritageGraph:ritual_type"
+
+  - slot: festival_type
+    label: festival type
+    cidoc_note: "heritageGraph:festival_type"
+
+  - slot: guthi_type
+    label: guthi type
+    cidoc_note: "heritageGraph:guthi_type"
+
+  - slot: monument_type
+    label: monument type
+    cidoc_note: "heritageGraph:monument_type"
+
+  - slot: object_type
+    label: object type
+    cidoc_note: "heritageGraph:object_type"
+
+  - slot: event_type
+    label: event type
+    cidoc_note: "heritageGraph:event_type"
+
+  - slot: source_type
+    label: source type
+    cidoc_note: "heritageGraph:source_type"
+
+  - slot: tradition_type
+    label: tradition type
+    cidoc_note: "heritageGraph:tradition_type"
+
+  - slot: occupation
+    label: occupation
+    cidoc_note: "heritageGraph:occupation"
+
+  - slot: performed_by
+    label: performed by
+    cidoc_note: "crm:P14_carried_out_by"
+
+  - slot: technique
+    label: technique
+    cidoc_note: "crm:P32_used_general_technique"
 
 
 # Subset of schema prefixes to emit into TypeScript and Python.

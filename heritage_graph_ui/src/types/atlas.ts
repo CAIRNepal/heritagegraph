@@ -102,6 +102,10 @@ export interface AtlasEntity {
   anchorEntityIds?: string[];
   /** Ritual type enum label when class is RitualEvent */
   ritualType?: string;
+  /** Knowledge UI domain slug (`/knowledge/<domain>/view/...`) when backed by CIDOC */
+  knowledgeDomain?: string;
+  /** CIDOC record primary key for deep links */
+  cidocRecordId?: string;
 }
 
 export type AtlasViewId =

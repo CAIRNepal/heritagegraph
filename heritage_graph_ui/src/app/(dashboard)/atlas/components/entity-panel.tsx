@@ -17,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 import { useAtlasStore, useAtlasViewEdges, useFilteredAtlasEntities } from '../hooks/use-atlas-store';
+import { AtlasKnowledgeLink } from './atlas-knowledge-link';
 import { ProvenancePanel } from './provenance-panel';
 
 type DetailTab = 'overview' | 'provenance' | 'timeline' | 'relations' | 'sources';
@@ -205,6 +206,9 @@ export function EntityPanel() {
                           {entity.foundedYear}
                         </span>
                       : null}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <AtlasKnowledgeLink entity={entity} className="h-7 text-[11px]" />
                     </div>
                     <div className="grid grid-cols-4 gap-1 font-mono text-[9px] uppercase leading-none tracking-wide text-muted-foreground">
                       <span className="truncate rounded border border-border/40 bg-muted/25 px-1 py-1 text-center tabular-nums">

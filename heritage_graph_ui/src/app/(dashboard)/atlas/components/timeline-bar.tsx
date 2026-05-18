@@ -28,6 +28,8 @@ export function TimelineBar() {
   const focusedView = useAtlasStore((s) => s.focusedView);
   const graphEdgeSlice = useAtlasStore((s) => s.graphEdgeSlice);
   const setGraphEdgeSlice = useAtlasStore((s) => s.setGraphEdgeSlice);
+  const temporalFilterEnabled = useAtlasStore((s) => s.temporalFilterEnabled);
+  const setTemporalFilterEnabled = useAtlasStore((s) => s.setTemporalFilterEnabled);
 
   const entity = selectedId ? getEntityById(selectedId) : undefined;
   const span = maxYear - minYear || 1;
@@ -131,6 +133,18 @@ export function TimelineBar() {
         <div className="flex h-6 min-h-6 flex-wrap items-center gap-2 border-t border-border/40 pt-1">
           <EraFilter dense className="min-w-0 flex-1" />
           <OntologyClassFilter dense className="shrink-0" />
+          <Button
+            type="button"
+            variant={temporalFilterEnabled ? 'default' : 'outline'}
+            className="h-6 shrink-0 px-2 text-[10px] uppercase"
+            onClick={() => {
+              atlasSound.init();
+              setTemporalFilterEnabled(!temporalFilterEnabled);
+            }}
+            title={t('temporalFilterTitle')}
+          >
+            {t('temporalFilterShort')}
+          </Button>
           {focusedView === 'graph' ?
             <div className="flex shrink-0 items-center gap-1.5">
               <Label className="sr-only">{t('graphSlice')}</Label>

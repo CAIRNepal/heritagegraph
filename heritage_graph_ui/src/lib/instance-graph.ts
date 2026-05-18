@@ -92,8 +92,14 @@ interface EntityConfig {
   descriptionField: string;
   /** Fields that can create relation edges (name-matched to other entities) */
   relationFields: { field: string; label: string; targetCategory?: InstanceCategory }[];
-  /** Field holding a location name (creates edge to location nodes) */
+  /** Free-text location field (legacy / name-matched) */
   locationField?: string;
+  /**
+   * Resolved location FK field returned by DRF serializers as either a numeric ID
+   * or {id, name} dict (e.g. has_current_location). Far more reliable than name
+   * matching for live data.
+   */
+  locationFkField?: string;
 }
 
 const ENTITY_CONFIGS: EntityConfig[] = [
@@ -104,10 +110,11 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     nameField: 'name',
     descriptionField: 'note',
     relationFields: [
-      { field: 'structure_type', label: 'type' },
+      { field: 'structure_type', label: 'structure_type' },
       { field: 'architectural_style', label: 'style' },
     ],
     locationField: 'location_name',
+    locationFkField: 'has_current_location',
   },
   {
     endpoint: '/cidoc/deities/',
@@ -276,13 +283,21 @@ async function fetchAllPages(
 export async function fetchInstanceGraphData(
   apiBaseUrl: string,
   token?: string,
+  options?: { signal?: AbortSignal },
 ): Promise<InstanceGraphData> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = 'Bearer ' + token;
 
-  // AbortController with a 30s timeout
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30_000);
+  const external = options?.signal;
+  if (external) {
+    if (external.aborted) {
+      clearTimeout(timeout);
+      return { nodes: [], edges: [], isDemo: false };
+    }
+    external.addEventListener('abort', () => controller.abort(), { once: true });
+  }
 
   let results: PromiseSettledResult<{ config: EntityConfig; data: Record<string, unknown>[] }>[];
 
@@ -297,7 +312,10 @@ export async function fetchInstanceGraphData(
         return { config, data };
       }),
     );
-  } catch {
+  } catch (err) {
+    if (controller.signal.aborted || (err as Error).name === 'AbortError') {
+      return { nodes: [], edges: [], isDemo: false };
+    }
     return { nodes: [], edges: [], isDemo: false };
   } finally {
     clearTimeout(timeout);
@@ -392,7 +410,29 @@ export async function fetchInstanceGraphData(
     for (const item of data) {
       const sourceId = config.category + '_' + item.id;
 
-      // Location edges
+      // Strong location edge: serializer-resolved FK (numeric id or {id,name} dict)
+      if (config.locationFkField) {
+        const fk = item[config.locationFkField];
+        let targetLocationId: string | undefined;
+        if (typeof fk === 'number' || typeof fk === 'string') {
+          const id = 'location_' + fk;
+          if (nodeIdSet.has(id)) targetLocationId = id;
+        } else if (fk && typeof fk === 'object') {
+          const inner = (fk as { id?: number | string; name?: string }).id;
+          if (inner !== undefined) {
+            const id = 'location_' + inner;
+            if (nodeIdSet.has(id)) targetLocationId = id;
+          }
+          if (!targetLocationId && (fk as { name?: string }).name) {
+            targetLocationId = resolveNameToNode(String((fk as { name?: string }).name), 'location');
+          }
+        }
+        if (targetLocationId) {
+          addEdge(sourceId, targetLocationId, 'has_current_location', 'location');
+        }
+      }
+
+      // Weaker location edge: free-text name match (legacy fallback)
       if (config.locationField) {
         const loc = item[config.locationField];
         if (loc && typeof loc === 'string' && loc.trim()) {
@@ -445,38 +485,53 @@ export async function fetchInstanceGraphData(
     if (group.length < 2 || group.length > 6) continue;
     for (let i = 0; i < group.length; i++) {
       for (let j = i + 1; j < group.length; j++) {
-        addEdge(group[i], group[j], 'co-located', 'location');
+        addEdge(group[i], group[j], 'co_located', 'location');
       }
     }
   }
 
   // ── Semantic description-based edges (lightweight NLP) ──
-  const importantNames = new Map<string, { id: string; cat: InstanceCategory }>();
+  //
+  // Conservative inference: only emit a `mentions` edge when:
+  //  - description is rich (>= 30 chars after trim)
+  //  - target name is reasonably specific (>= 8 chars)
+  //  - target name appears as a whole-word match (no substring noise)
+  //  - source and target are not already connected
+  // This avoids the previous behavior where short common prefixes (e.g. "Patan")
+  // produced false-positive edges to every entity sharing the prefix.
+  const importantNames: { needle: string; id: string; cat: InstanceCategory }[] = [];
   for (const n of nodes) {
     const name = n.label.toLowerCase().trim();
-    if (name.length >= 4) {
-      importantNames.set(name, { id: n.id, cat: n.category });
-    }
+    if (name.length < 8) continue;
+    importantNames.push({ needle: name, id: n.id, cat: n.category });
   }
 
   const edgeKeySet = new Set(edges.map((e) => e.source + '→' + e.target));
 
+  // Pre-compile word-boundary regexes once (escape special chars)
+  function escapeRegex(s: string): string {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  const nameRegexes = importantNames.map((n) => ({
+    ...n,
+    re: new RegExp('\\b' + escapeRegex(n.needle) + '\\b', 'i'),
+  }));
+
   for (const node of nodes) {
-    const desc = (node.description || '').toLowerCase();
-    if (desc.length < 10) continue;
+    const desc = (node.description || '').trim();
+    if (desc.length < 30) continue;
 
-    for (const [name, target] of importantNames) {
-      if (target.id === node.id) continue;
+    for (const candidate of nameRegexes) {
+      if (candidate.id === node.id) continue;
       // Skip same-category unless location (avoids noisy same-type edges)
-      if (target.cat === node.category && target.cat !== 'location') continue;
-      if (name.length < 5) continue;
-      if (!desc.includes(name)) continue;
+      if (candidate.cat === node.category && candidate.cat !== 'location') continue;
+      if (!candidate.re.test(desc)) continue;
 
-      const key = node.id + '→' + target.id;
-      const rev = target.id + '→' + node.id;
+      const key = node.id + '→' + candidate.id;
+      const rev = candidate.id + '→' + node.id;
       if (edgeKeySet.has(key) || edgeKeySet.has(rev)) continue;
       edgeKeySet.add(key);
-      addEdge(node.id, target.id, 'mentions', 'relation');
+      addEdge(node.id, candidate.id, 'mentions', 'relation');
     }
   }
 
@@ -486,13 +541,6 @@ export async function fetchInstanceGraphData(
 /* ══════════════════════════════════════════════════════
  *  Fork edges: fetch CulturalEntity fork relationships
  * ══════════════════════════════════════════════════════ */
-
-const FORK_STATUS_COLORS: Record<string, string> = {
-  active: '#eab308',
-  merged: '#22c55e',
-  promoted: '#3b82f6',
-  rejected: '#ef4444',
-};
 
 export async function fetchForkEdges(
   apiBaseUrl: string,

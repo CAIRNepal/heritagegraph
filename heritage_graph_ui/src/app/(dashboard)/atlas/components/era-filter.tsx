@@ -15,6 +15,14 @@ const ERA_MSG_KEY: Record<AtlasEra, 'eraAncient' | 'eraMedieval' | 'eraEarlyMode
     modern: 'eraModern',
   };
 
+const ERA_NE_KEY: Record<AtlasEra, 'eraAncientNe' | 'eraMedievalNe' | 'eraEarlyModernNe' | 'eraModernNe'> =
+  {
+    ancient: 'eraAncientNe',
+    medieval: 'eraMedievalNe',
+    early_modern: 'eraEarlyModernNe',
+    modern: 'eraModernNe',
+  };
+
 const SHORT: Record<AtlasEra, string> = {
   ancient: 'A',
   medieval: 'M',
@@ -49,9 +57,15 @@ export function EraFilter({ className, dense = false }: EraFilterProps) {
           className={chipClass}
           onClick={() => toggleEra(era)}
           type="button"
-          title={t(ERA_MSG_KEY[era])}
+          title={`${t(ERA_MSG_KEY[era])} · ${t(ERA_NE_KEY[era])}`}
+          aria-label={`${t(ERA_MSG_KEY[era])}, ${t(ERA_NE_KEY[era])}`}
         >
-          <span className={dense ? 'inline' : 'hidden sm:inline'}>{t(ERA_MSG_KEY[era])}</span>
+          <span className="flex flex-col items-start leading-tight">
+            <span className={dense ? 'inline' : 'hidden sm:inline'}>{t(ERA_MSG_KEY[era])}</span>
+            <span className="hidden text-[9px] font-normal normal-case text-muted-foreground sm:inline">
+              {t(ERA_NE_KEY[era])}
+            </span>
+          </span>
           {!dense ?
             <span className="sm:hidden">{SHORT[era]}</span>
           : null}

@@ -8,6 +8,7 @@ import { ATLAS_DUMMY_ENTITIES } from '@/data/atlas-dummy';
 import { ATLAS_ONTOLOGY_EDGES } from '@/data/atlas-relationships';
 import { ATLAS_SOURCES } from '@/data/atlas-sources';
 import { atlasSound } from '@/lib/atlas-sound';
+import { atlasTrack } from '@/lib/atlas-telemetry';
 import type {
   Agent,
   AtlasEntity,
@@ -23,6 +24,8 @@ import { ONTOLOGY_CLASSES, RELIABILITY_ORDER, tierRank } from '@/types/atlas';
 
 import type { AtlasFxPresetId } from '../lib/atlas-fx-presets';
 import { ATLAS_FX_PRESET_ORDER } from '../lib/atlas-fx-presets';
+import { entityExistedAtYear } from '@/lib/atlas-temporal';
+
 import { computeAtlasTimelineExtents } from '../atlas-time-extents';
 
 const ATLAS_FX_STORAGE_KEY = 'atlas:fx';
@@ -104,6 +107,9 @@ export type EraEnabledRecord = Record<AtlasEra, boolean>;
 
 export type ClassEnabledRecord = Record<OntologyClass, boolean>;
 
+export type AtlasDataSource = 'demo' | 'live';
+export type AtlasCorpusStatus = 'idle' | 'loading' | 'ready' | 'error';
+
 export type GraphEdgeSlice = 'all' | 'ritual_structure' | 'guthi_structure';
 export type AtlasSidebarPanelId =
   | 'fx'
@@ -156,6 +162,8 @@ function deriveFilteredEntities(
   sources: DataSource[],
   confidenceFloor: number,
   reliabilityFloor: ReliabilityTier,
+  currentYear: number,
+  temporalFilterEnabled: boolean,
 ): AtlasEntity[] {
   const eraOn = ATLAS_ERAS_ORDER.filter((e) => eraEnabled[e]);
   const eraSet = eraOn.length === 0 || eraOn.length === ATLAS_ERAS_ORDER.length ? null : new Set(eraOn);
@@ -167,6 +175,7 @@ function deriveFilteredEntities(
   return entityList.filter((e) => {
     if (eraSet && !eraSet.has(e.era)) return false;
     if (classSet && !classSet.has(e.class)) return false;
+    if (temporalFilterEnabled && !entityExistedAtYear(e, currentYear)) return false;
     if (!passesConfidence(e.assertions, confidenceFloor)) return false;
     if (!passesReliability(e.assertions, sources, reliabilityFloor)) return false;
     return true;
@@ -187,6 +196,14 @@ interface AtlasState {
   sources: DataSource[];
   agents: Agent[];
   edges: OntologyEdge[];
+
+  dataSource: AtlasDataSource;
+  corpusStatus: AtlasCorpusStatus;
+  corpusError: string | null;
+  /** Increment to invalidate in-flight live corpus loads. */
+  liveLoadToken: number;
+  /** When true, timeline year hides entities outside their existence span. */
+  temporalFilterEnabled: boolean;
 
   eraEnabled: EraEnabledRecord;
   classEnabled: ClassEnabledRecord;
@@ -269,6 +286,11 @@ interface AtlasState {
   openSidebarPanel: (id: AtlasSidebarPanelId) => void;
   toggleSidebarPanel: (id: AtlasSidebarPanelId) => void;
   closeSidebarPanel: () => void;
+
+  setDataSource: (source: AtlasDataSource) => void;
+  setTemporalFilterEnabled: (enabled: boolean) => void;
+  resetDemoCorpus: () => void;
+  loadLiveCorpus: () => void;
 }
 
 function snapshotFxPersist(st: AtlasState): AtlasFxPersisted {
@@ -291,6 +313,12 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   sources: ATLAS_SOURCES,
   agents: ATLAS_AGENTS,
   edges: ATLAS_ONTOLOGY_EDGES,
+
+  dataSource: 'demo',
+  corpusStatus: 'ready',
+  corpusError: null,
+  liveLoadToken: 0,
+  temporalFilterEnabled: true,
 
   eraEnabled: allErasOn(),
   classEnabled: allClassesOn(),
@@ -333,6 +361,8 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
       st.sources,
       st.confidenceFloor,
       st.reliabilityFloor,
+      st.currentYear,
+      st.temporalFilterEnabled,
     );
   },
 
@@ -475,7 +505,10 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
 
   selectEntity(id, playTone = true) {
     set({ selectedId: id });
-    if (id && playTone) atlasSound.play('select');
+    if (id) {
+      atlasTrack('entity_select', { id });
+      if (playTone) atlasSound.play('select');
+    }
   },
 
   setHover(id, pos) {
@@ -650,11 +683,61 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
     set({ activeSidebarPanel: null });
     atlasSound.play('uiClose');
   },
+
+  setDataSource(source) {
+    if (source === get().dataSource) return;
+    if (source === 'demo') {
+      const extents = computeAtlasTimelineExtents(entitiesSeed);
+      set((s) => ({
+        liveLoadToken: s.liveLoadToken + 1,
+        dataSource: 'demo',
+        entities: entitiesSeed,
+        edges: ATLAS_ONTOLOGY_EDGES,
+        corpusStatus: 'ready',
+        corpusError: null,
+        minYear: extents.minYear,
+        maxYear: extents.maxYear,
+        selectedId: null,
+      }));
+      atlasTrack('corpus_mode', { mode: 'demo' });
+      atlasSound.play('click');
+      return;
+    }
+    set((s) => ({ dataSource: 'live', corpusStatus: 'idle', liveLoadToken: s.liveLoadToken + 1 }));
+    atlasTrack('corpus_mode', { mode: 'live' });
+    atlasSound.play('click');
+  },
+
+  setTemporalFilterEnabled(enabled) {
+    set({ temporalFilterEnabled: enabled });
+    atlasSound.play('tick');
+  },
+
+  resetDemoCorpus() {
+    get().setDataSource('demo');
+  },
+
+  loadLiveCorpus() {
+    set({ dataSource: 'live', corpusStatus: 'idle' });
+  },
 }));
 
-/** Subscribes to the filtered entity list; updates when era/class/floors change (stable function refs alone do not). */
+/** Subscribes to the filtered entity list; updates when era/class/floors/year change. */
 export function useFilteredAtlasEntities(): AtlasEntity[] {
-  return useAtlasStore(useShallow((s) => s.getFilteredEntities()));
+  return useAtlasStore(
+    useShallow((s) =>
+      deriveFilteredEntities(
+        s.eraEnabled,
+        s.classEnabled,
+        s.entities,
+        s.sources,
+        s.confidenceFloor,
+        s.reliabilityFloor,
+        s.currentYear,
+        s.temporalFilterEnabled,
+      ),
+    ),
+  );
 }
 
 /** Subscribes to ontology edges visible for the current graph slice and filtered nodes. */

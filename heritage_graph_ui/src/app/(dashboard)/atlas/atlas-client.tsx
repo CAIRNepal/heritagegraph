@@ -14,6 +14,7 @@ import { FocusedShellOverlay } from './components/globe-workspace';
 import { ShortcutHelpOverlay } from './components/shortcut-help';
 import { CommandBar } from './components/status-strip';
 import { TimelineBar } from './components/timeline-bar';
+import { useAtlasDataSource } from './hooks/use-atlas-data-source';
 import { useAtlasShortcuts } from './hooks/use-atlas-shortcuts';
 import { useAtlasStore } from './hooks/use-atlas-store';
 import { useFullscreen } from './hooks/use-fullscreen';
@@ -39,6 +40,7 @@ export default function AtlasClient() {
 
   const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
 
+  useAtlasDataSource();
   useAtlasShortcuts({ containerRef, globeHandlesRef });
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 
+import { AtlasKnowledgeLink } from './atlas-knowledge-link';
 import { useAtlasStore } from '../hooks/use-atlas-store';
 
 export function EntityHoverCard() {
@@ -83,6 +84,7 @@ export function EntityHoverCard() {
       )}
 
       <div className="mt-2 flex flex-wrap gap-1">
+        <AtlasKnowledgeLink entity={entity} className="h-7 text-xs" />
         <Button
           type="button"
           size="sm"
