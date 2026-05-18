@@ -104,9 +104,9 @@ services:
     container_name: heritage-backend
     restart: unless-stopped
     environment:
-      # Django settings
-      DJANGO_ENV: production
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.production}
+      # Django settings (pipeline_e2e: dev + Postgres, no GDAL)
+      DJANGO_ENV: ${DJANGO_ENV:-development}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.pipeline_e2e}
       DEBUG: ${DEBUG:-False}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key-change-in-production}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend.localhost}
@@ -137,6 +137,11 @@ services:
       # Triplestore
       OXIGRAPH_URL: http://oxigraph:7878
       HERITAGEGRAPH_SHACL_SHAPES_PATH: /app/ontology/shapes/generated-heritagegraph-minimal-shacl.ttl
+      # KG ingestion pipeline (Agent 2): host-side Ollama
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      HERITAGEGRAPH_OLLAMA_MODEL: ${HERITAGEGRAPH_OLLAMA_MODEL:-llama3:latest}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       postgres:
         condition: service_healthy
@@ -294,9 +299,9 @@ services:
     container_name: heritage-ocr-worker
     restart: unless-stopped
     environment:
-      # Django settings
-      DJANGO_ENV: ${DJANGO_ENV:-production}
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.production}
+      # Django settings (pipeline_e2e: dev + Postgres, no GDAL)
+      DJANGO_ENV: ${DJANGO_ENV:-development}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.pipeline_e2e}
       DEBUG: ${DEBUG:-False}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key-change-in-production}
       # Database

@@ -166,7 +166,7 @@ def extract_raster_ocr(
             tmp.write(raw)
             pdf_path = tmp.name
         try:
-            info = pdfinfo_from_path(pdf_path, user_pw=None, use_poppler=True)
+            info = pdfinfo_from_path(pdf_path)
             page_count = int(info.get("Pages", 0) or 0) or 1
             if page_count > s.max_pages:
                 raise ValueError("PDF has too many pages to process (server limit).")
