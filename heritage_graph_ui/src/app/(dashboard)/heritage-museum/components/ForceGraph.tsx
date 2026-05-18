@@ -57,9 +57,11 @@ function dataSignature(d: GraphData): string {
   return `${ns}|${ls}`;
 }
 
+type AnnotatedLink = GraphLink & { _idx: number; _total: number };
+
 // Compute edge index for parallel-edge offsets so multiple predicates between
 // the same node pair fan out as curves instead of overlapping straight lines.
-function annotateParallels(links: GraphLink[]): Array<GraphLink & { _idx: number; _total: number }> {
+function annotateParallels(links: GraphLink[]): AnnotatedLink[] {
   const groups = new Map<string, GraphLink[]>();
   for (const l of links) {
     const s = typeof l.source === 'string' ? l.source : l.source.id;
@@ -68,7 +70,7 @@ function annotateParallels(links: GraphLink[]): Array<GraphLink & { _idx: number
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(l);
   }
-  const out: Array<GraphLink & { _idx: number; _total: number }> = [];
+  const out: AnnotatedLink[] = [];
   for (const [, group] of groups) {
     group.forEach((l, i) => out.push({ ...l, _idx: i, _total: group.length }));
   }
@@ -94,7 +96,7 @@ export function ForceGraph({
   const lastSignatureRef = useRef<string>('');
   // Live node array used by the simulation (mutated by D3 in place).
   const simNodesRef = useRef<GraphNode[]>([]);
-  const simLinksRef = useRef<GraphLink[]>([]);
+  const simLinksRef = useRef<AnnotatedLink[]>([]);
 
   const handleClick = useCallback((node: GraphNode) => onNodeSelect(node), [onNodeSelect]);
 
@@ -210,8 +212,8 @@ export function ForceGraph({
     const nodeById = new Map(nextNodes.map((n) => [n.id, n]));
 
     // Resolve links to current node refs (drop dangling ones)
-    const nextLinks: GraphLink[] = annotatedLinks
-      .map((l) => {
+    const nextLinks: AnnotatedLink[] = annotatedLinks
+      .map((l): AnnotatedLink | null => {
         const sId = typeof l.source === 'string' ? l.source : (l.source as GraphNode).id;
         const tId = typeof l.target === 'string' ? l.target : (l.target as GraphNode).id;
         const s = nodeById.get(sId);
@@ -219,7 +221,7 @@ export function ForceGraph({
         if (!s || !t) return null;
         return { ...l, source: s, target: t };
       })
-      .filter((l): l is GraphLink => l !== null);
+      .filter((l): l is AnnotatedLink => l !== null);
 
     simNodesRef.current = nextNodes;
     simLinksRef.current = nextLinks;
