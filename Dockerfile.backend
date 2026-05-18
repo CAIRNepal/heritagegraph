@@ -45,67 +45,7 @@ COPY heritage_graph/requirements-ocr.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels -r requirements-ocr.txt
 
 # ================================================================
-# Stage 3: Lean runtime (main backend — no OCR)
-FROM python:3.12-slim as runtime-lean
-
-# Prevent Python from writing .pyc files and buffering stdout/stderr
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
-
-# Create non-root user for security
-RUN useradd -m -u 1000 django
-
-# Set working directory
-WORKDIR /app/heritage_graph
-
-# PYTHONPATH=/app so imports work
-ENV PYTHONPATH=/app
-
-# Install minimal runtime dependencies (no OCR, no Tesseract)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
-    curl \
-    postgresql-client \
-    tesseract-ocr \
-    tesseract-ocr-eng \
-    tesseract-ocr-nep \
-    tesseract-ocr-script-deva \
-    poppler-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy wheels from base-builder and install
-COPY --from=base-builder /build/wheels /wheels
-COPY heritage_graph/requirements.txt /tmp/requirements.txt
-RUN pip install --upgrade pip && \
-    pip install --no-cache /wheels/*
-
-# Copy application code
-COPY ./heritage_graph /app/heritage_graph
-
-# Create necessary directories
-RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media && \
-    chown -R django:django /app
-
-# Ensure entrypoint script is executable
-RUN chmod +x /app/heritage_graph/entrypoint.sh
-
-# Switch to non-root user
-USER django
-
-# Expose port
-EXPOSE 8000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/health/ || exit 1
-
-# Entrypoint
-ENTRYPOINT ["/app/heritage_graph/entrypoint.sh"]
-CMD ["gunicorn", "heritage_graph.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--worker-class", "sync", "--max-requests", "1000", "--max-requests-jitter", "100", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-"]
-
-# ================================================================
-# Stage 4: Full fat runtime (OCR worker — includes Tesseract, PyTorch, etc.)
+# Stage 3: Full fat runtime (OCR worker — includes Tesseract, PyTorch, etc.)
 # Use: docker build --target ocr-worker
 FROM python:3.12-slim as ocr-worker
 
@@ -170,3 +110,64 @@ EXPOSE 8000
 # Start Celery worker
 # Note: ENTRYPOINT is not used for worker; we use CMD directly
 CMD ["celery", "-A", "heritage_graph", "worker", "-l", "info", "--concurrency=2", "--max-tasks-per-child=100"]
+
+# ================================================================
+# Stage 4: Lean runtime (main backend — no PyTorch / heavy OCR wheels)
+# Default image when no --target is passed (safer for platform deploys).
+FROM python:3.12-slim as runtime-lean
+
+# Prevent Python from writing .pyc files and buffering stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+# Create non-root user for security
+RUN useradd -m -u 1000 django
+
+# Set working directory
+WORKDIR /app/heritage_graph
+
+# PYTHONPATH=/app so imports work
+ENV PYTHONPATH=/app
+
+# Install minimal runtime deps + Tesseract CLI (main image has pdf/pytesseract only; heavy OCR runs in ocr-worker)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    postgresql-client \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    tesseract-ocr-nep \
+    tesseract-ocr-script-deva \
+    poppler-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy wheels from base-builder and install
+COPY --from=base-builder /build/wheels /wheels
+COPY heritage_graph/requirements.txt /tmp/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache /wheels/*
+
+# Copy application code
+COPY ./heritage_graph /app/heritage_graph
+
+# Create necessary directories
+RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media && \
+    chown -R django:django /app
+
+# Ensure entrypoint script is executable
+RUN chmod +x /app/heritage_graph/entrypoint.sh
+
+# Switch to non-root user
+USER django
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health/ || exit 1
+
+# Entrypoint
+ENTRYPOINT ["/app/heritage_graph/entrypoint.sh"]
+CMD ["gunicorn", "heritage_graph.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--worker-class", "sync", "--max-requests", "1000", "--max-requests-jitter", "100", "--timeout", "60", "--access-logfile", "-", "--error-logfile", "-"]
