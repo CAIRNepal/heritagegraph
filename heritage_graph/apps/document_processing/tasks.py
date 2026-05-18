@@ -174,21 +174,28 @@ def run_kg_pipeline(self, document_id: str):
     })
 
     try:
-        from .services.agents.doc_intelligence import run_doc_intelligence
-        from .services.agents.extraction_agent import run_extraction
-        from .services.agents.shacl_agent import run_shacl_validation
-        from .services.agents.entity_resolution_agent import run_entity_resolution
-        from .services.agents.epistemic_router_agent import run_epistemic_routing
+        from .services.agents import (
+            run_doc_intelligence,
+            run_entity_resolution,
+            run_epistemic_routing,
+            run_extraction,
+            run_shacl_validation,
+        )
+        from .services.agents.provenance import mint_pipeline_run_id
 
         text = doc.raw_text
         if not text:
             raise ValueError("Document has no extracted text — run OCR first.")
 
         meta = doc.metadata
+        meta["pipeline_run_id"] = mint_pipeline_run_id()
 
         # ── Agent 1 — Document Intelligence ────────────────────────────────────
         _set_agent("doc_intelligence", "running")
-        di_result = run_doc_intelligence(text=text)
+        di_result = run_doc_intelligence(
+            text=text,
+            document_metadata=meta,
+        )
         meta["agent_status"]["doc_intelligence"] = "complete"
         meta.setdefault("agent_results", {})["doc_intelligence"] = {
             "heritage_doc_type": di_result.heritage_doc_type.value,
@@ -196,6 +203,7 @@ def run_kg_pipeline(self, document_id: str):
             "detected_language": di_result.detected_language,
             "chunk_count": len(di_result.chunks),
             "ontology_class_keys": list(di_result.ontology_snippet.keys()),
+            "ocr_quality_estimate": di_result.ocr_quality_estimate,
         }
         doc.save(update_fields=["metadata", "updated_at"])
 
@@ -243,7 +251,7 @@ def run_kg_pipeline(self, document_id: str):
         routing_result = run_epistemic_routing(
             er_result,
             document_id=str(doc.id),
-            agent_label="pipeline/5.0/ollama",
+            agent_label="pipeline/5.1/ollama",
         )
         meta["agent_status"]["epistemic_routing"] = "complete"
         meta["agent_results"]["epistemic_routing"] = {
@@ -259,10 +267,12 @@ def run_kg_pipeline(self, document_id: str):
                 "subject_uri": ra.resolved.subject_uri,
                 "object_uri": ra.resolved.object_uri,
                 "confidence_score": float(ra.resolved.validated.candidate.confidence_score),
+                "confidence_breakdown": ra.resolved.validated.candidate.confidence_breakdown,
                 "route": ra.route.value,
                 "kumari_flagged": ra.kumari_flagged,
                 "conflict_detected": ra.conflict_detected,
                 "db_assertion_id": str(ra.db_assertion_id) if ra.db_assertion_id else None,
+                "provenance_graph_uri": ra.provenance_graph_uri,
             }
             for ra in routing_result.routed
         ]

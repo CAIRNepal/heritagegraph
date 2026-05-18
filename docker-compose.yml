@@ -136,11 +136,14 @@ services:
       OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
       # Triplestore
       OXIGRAPH_URL: http://oxigraph:7878
+      HERITAGEGRAPH_SHACL_SHAPES_PATH: /app/ontology/shapes/generated-heritagegraph-minimal-shacl.ttl
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
       - ./heritage_graph:/app/heritage_graph
+      - ./ontology:/app/ontology
+      - ./tools:/app/tools
       - ./.cursor:/home/nabin/projects/heritagegraph/.cursor
       - backend-static:/app/heritage_graph/staticfiles
       - backend-media:/app/heritage_graph/media

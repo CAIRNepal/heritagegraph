@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class HeritageDocType(str, Enum):
@@ -23,6 +24,8 @@ class DocumentChunk:
     ontology_hint: list[str]
     token_count: int
     page_number: int | None = None
+    ocr_confidence: float | None = None
+    structural_label: str | None = None  # e.g. "citation", "verse", "paragraph"
 
 
 @dataclass
@@ -32,7 +35,8 @@ class DocumentIntelligenceResult:
     detected_language: str
     chunks: list[DocumentChunk]
     ontology_snippet: dict
-    agent_version: str = "1.0"
+    ocr_quality_estimate: float = 1.0
+    agent_version: str = "1.1"
 
 
 # ── Agent 2 types ─────────────────────────────────────────────────────────────
@@ -50,22 +54,23 @@ class Triple:
 class CandidateAssertion:
     """In-memory output of Agent 2; written to DB by Agent 5 after resolution."""
     triple: Triple
-    confidence_score: float         # dual-temperature agreement, 0.0–1.0
+    confidence_score: float         # calibrated composite, 0.0–1.0
     source_chunk_id: str
     char_start: int
     char_end: int
     extraction_model: str           # e.g. "llama3.1:70b"
     page_number: int | None = None
-    # raw responses kept for audit / retraining dataset
     raw_low_temp: str = ""
     raw_high_temp: str = ""
+    confidence_breakdown: dict[str, float] = field(default_factory=dict)
+    ontology_grounded: bool = True
 
 
 @dataclass
 class ExtractionResult:
     candidates: list[CandidateAssertion]
     rejected_count: int             # triples that failed JSON parse or were empty
-    agent_version: str = "2.0"
+    agent_version: str = "2.1"
 
 
 # ── Agent 3 types ─────────────────────────────────────────────────────────────
@@ -82,14 +87,14 @@ class ValidatedAssertion:
 class RejectedAssertion:
     candidate: CandidateAssertion
     reason: str                     # human-readable error
-    violation_type: str             # "domain_range" | "node_kind" | "cross_class" | "unknown_predicate"
+    violation_type: str             # domain_range | node_kind | cross_class | unknown_predicate | validator_error
 
 
 @dataclass
 class ShaclValidationResult:
     validated: list[ValidatedAssertion]
     rejected: list[RejectedAssertion]
-    agent_version: str = "3.0"
+    agent_version: str = "3.1"
 
 
 # ── Agent 4 types ─────────────────────────────────────────────────────────────
@@ -98,44 +103,62 @@ class ShaclValidationResult:
 class ResolvedAssertion:
     """ValidatedAssertion with canonical URIs minted or looked up from Oxigraph."""
     validated: ValidatedAssertion
-    subject_uri: str                     # canonical URI in hg: namespace (new or existing)
-    object_uri: str | None               # canonical URI, or None if object is a literal
-    subject_is_new: bool                 # True → URI was freshly minted (not found in graph)
-    object_is_new: bool                  # True → URI was freshly minted
+    subject_uri: str
+    object_uri: str | None
+    subject_is_new: bool
+    object_is_new: bool
     resolution_notes: list[str] = field(default_factory=list)
+    subject_resolution_score: float = 1.0
+    object_resolution_score: float = 1.0
 
 
 @dataclass
 class EntityResolutionResult:
     resolved: list[ResolvedAssertion]
-    skipped_count: int = 0               # assertions skipped due to irresolvable errors
-    agent_version: str = "4.0"
+    skipped_count: int = 0
+    agent_version: str = "4.1"
 
 
 # ── Agent 5 types ─────────────────────────────────────────────────────────────
 
 class RouteDecision(str, Enum):
-    AUTO_ACCEPT      = "auto_accept"       # confidence ≥ 0.90, no conflict → Oxigraph INSERT + DB accepted
-    COMMUNITY_REVIEW = "community_review"  # 0.70–0.89, no conflict → pending, community queue
-    EXPERT_REVIEW    = "expert_review"     # 0.50–0.69 → pending, domain expert queue
-    EXPERT_CURATOR   = "expert_curator"    # kumari_flag set → always expert curator, regardless of score
-    CONFLICT         = "conflict"          # existing graph triple disagrees → disputed
-    REJECT           = "reject"            # confidence < 0.50 → logged only, no DB write
+    AUTO_ACCEPT      = "auto_accept"
+    COMMUNITY_REVIEW = "community_review"
+    EXPERT_REVIEW    = "expert_review"
+    EXPERT_CURATOR   = "expert_curator"
+    CONFLICT         = "conflict"
+    REJECT           = "reject"
 
 
 @dataclass
 class RoutedAssertion:
     resolved: ResolvedAssertion
     route: RouteDecision
-    db_assertion_id: str | None            # UUID of created HeritageAssertion; None if rejected
+    db_assertion_id: str | None
     conflict_detected: bool
     kumari_flagged: bool
     routing_reason: str
-    oxigraph_written: bool = False         # True if triple was INSERT'd to Oxigraph
+    oxigraph_written: bool = False
+    provenance_graph_uri: str | None = None
 
 
 @dataclass
 class EpistemicRoutingResult:
     routed: list[RoutedAssertion]
-    counts: dict[str, int] = field(default_factory=dict)   # RouteDecision.value → count
-    agent_version: str = "5.0"
+    counts: dict[str, int] = field(default_factory=dict)
+    agent_version: str = "5.1"
+
+
+# ── Pipeline orchestration ────────────────────────────────────────────────────
+
+@dataclass
+class PipelineResult:
+    """Full pipeline output with per-stage results and telemetry."""
+    doc_intelligence: DocumentIntelligenceResult | None = None
+    extraction: ExtractionResult | None = None
+    shacl: ShaclValidationResult | None = None
+    entity_resolution: EntityResolutionResult | None = None
+    epistemic_routing: EpistemicRoutingResult | None = None
+    metrics: dict[str, Any] = field(default_factory=dict)
+    errors: list[str] = field(default_factory=list)
+    pipeline_run_id: str = ""

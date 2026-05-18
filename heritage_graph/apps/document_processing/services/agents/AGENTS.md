@@ -1,356 +1,691 @@
 # HeritageGraph — Agentic KG Ingestion Pipeline
 
 **Location:** `heritage_graph/apps/document_processing/services/agents/`  
-**Status:** All 5 agents implemented — pipeline complete  
-**LLM backend:** Ollama (Llama 3.1 70B) with Claude fallback where already integrated
+**Version:** 2.1 (scientific rigor upgrade)  
+**Purpose:** Transform OCR-extracted heritage documents into ontology-valid, provenance-rich knowledge graph assertions with epistemic routing for human curation.
 
 ---
 
-## Architecture Overview
+## Table of contents
+
+1. [System architecture](#system-architecture)
+2. [Module layout](#module-layout)
+3. [Data flow and contracts](#data-flow-and-contracts)
+4. [Shared infrastructure](#shared-infrastructure)
+5. [Agent reference](#agent-reference)
+6. [Confidence and epistemics](#confidence-and-epistemics)
+7. [Provenance and RDF](#provenance-and-rdf)
+8. [Integration points](#integration-points)
+9. [Configuration](#configuration)
+10. [Docker and deployment](#docker-and-deployment)
+11. [Testing](#testing)
+12. [Security](#security)
+13. [Known limitations and roadmap](#known-limitations-and-roadmap)
+
+---
+
+## System architecture
+
+### Design principles
+
+| Principle | Implementation |
+|-----------|----------------|
+| **Ontology-first** | CIDOC-CRM + HeritageGraph SHACL shapes constrain extraction and validation |
+| **Epistemic transparency** | Decomposed `confidence_breakdown`; every assertion traceable to chunk + agent |
+| **Fail-closed validation** | SHACL rejects unknown predicates by default; pySHACL errors reject unless `HERITAGEGRAPH_SHACL_FAIL_OPEN` |
+| **Human-in-the-loop** | Multi-tier review queues before Oxigraph auto-insert |
+| **Modularity** | Shared `ontology`, `sparql`, `confidence` modules; agents are thin orchestration layers |
+| **Failure isolation** | `orchestrator.py` catches per-stage errors; partial results returned |
+
+### Layered architecture
 
 ```
-PDF / Archival Document
-        │
-        ▼
-[Agent 1 — Doc Intelligence]     doc_intelligence.py
-  Heritage doc type classification
-  Language detection (langdetect)
-  Semantic chunking (chonkie / fallback)
-  Ontology snippet selection from schema registry
-        │  DocumentIntelligenceResult
-        ▼
-[Agent 2 — Extraction]           extraction_agent.py
-  Dual-temperature Ollama calls (temp 0.1 + 0.4)
-  (subject, predicate, object) triple parsing
-  Per-triple agreement scoring via rapidfuzz
-  CandidateAssertion with confidence_score
-        │  ExtractionResult
-        ▼
-[Agent 3 — SHACL Validator]      shacl_agent.py
-  Fast shapes-index lookup (generated-heritagegraph-minimal-shacl.ttl)
-  Inverse predicate auto-correction
-  pySHACL mini-graph validation (minCount filtered)
-  Kumari / SyncreticRelationship hard rules
-        │  ShaclValidationResult
-        ▼
-[Agent 4 — Entity Resolution]    entity_resolution_agent.py
-  SPARQL → Oxigraph (entity lookup)
-  rapidfuzz transliteration normalization
-  Mint canonical_uri or link existing node
-        │  ResolvedAssertion
-        ▼
-[Agent 5 — Epistemic Router]     epistemic_router_agent.py
-  confidence_score thresholds → AUTO-ACCEPT / REVIEW / REJECT
-  kumari_flag → expert_curator queue
-  Conflict detection → ReviewFlag
-  Writes HeritageAssertion to DB (or routes to ReviewDecision)
-        │
-   ┌────┴─────┬──────────┐
-   ▼          ▼          ▼
-AUTO-ACCEPT  REVIEW    REJECTED
-→ Oxigraph  → Review  → Logged
-             Decision   (retrain)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  INTEGRATION LAYER                                                          │
+│  tasks.run_kg_pipeline (Celery)  ·  views (API trigger)  ·  pipeline.py OCR │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  ORCHESTRATION LAYER                                                        │
+│  orchestrator.run_kg_ingestion_pipeline()  ·  telemetry.PipelineMetrics   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+        ┌─────────────┬───────────────┼───────────────┬─────────────┐
+        ▼             ▼               ▼               ▼             ▼
+   ┌─────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
+   │ Agent 1 │  │ Agent 2  │  │ Agent 3  │  │ Agent 4  │  │ Agent 5  │
+   │ Doc     │  │ Extract  │  │ SHACL    │  │ Entity   │  │ Epistemic│
+   │ Intel   │  │          │  │ Validate │  │ Resolve  │  │ Route    │
+   └─────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘
+        │             │               │               │             │
+        └─────────────┴───────────────┴───────────────┴─────────────┘
+                                      │
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  SHARED SERVICES LAYER                                                      │
+│  config · ontology · sparql · confidence · provenance · types                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                      │
+        ┌─────────────────────────────┼─────────────────────────────┐
+        ▼                             ▼                             ▼
+┌───────────────┐            ┌─────────────────┐            ┌─────────────────┐
+│ Ollama (LLM)  │            │ Oxigraph        │            │ PostgreSQL      │
+│ classification│            │ SPARQL SELECT/  │            │ HeritageAssertion│
+│ + extraction  │            │ UPDATE + named  │            │ UploadedDocument │
+│               │            │ graphs          │            │ .metadata       │
+└───────────────┘            └─────────────────┘            └─────────────────┘
+        ▲                             ▲
+┌───────────────┐            ┌─────────────────┐
+│ Schema        │            │ SHACL shapes    │
+│ registry      │            │ (minimal TTL)   │
+│ LinkML YAML   │            │                 │
+└───────────────┘            └─────────────────┘
 ```
 
+### Pipeline DAG (linear with optional skip)
+
+```mermaid
+flowchart TD
+    A[UploadedDocument.raw_text] --> B[Agent 1: Doc Intelligence]
+    B --> C[Agent 2: Extraction]
+    C --> D[Agent 3: SHACL Validation]
+    D --> E[Agent 4: Entity Resolution]
+    E --> F[Agent 5: Epistemic Router]
+
+    B --> B1[Classify doc type]
+    B --> B2[Detect language]
+    B --> B3[Structure-aware chunks]
+    B --> B4[Ontology snippet from registry]
+
+    C --> C1[Dual-temp Ollama per chunk]
+    C --> C2[Parse JSON triples]
+    C --> C3[Multi-factor confidence]
+
+    D --> D1[Inverse correction]
+    D --> D2[Shapes index lookup]
+    D --> D3[pySHACL mini-graph]
+    D --> D4[Kumari / syncretic rules]
+
+    E --> E1[Co-reference]
+    E --> E2[Transliteration]
+    E --> E3[SPARQL label lookup]
+    E --> E4[Mint URI if no match]
+
+    F --> F1{Kumari flag?}
+    F1 -->|yes| G1[expert_curator]
+    F1 -->|no| F2{Conflict?}
+    F2 -->|yes| G2[conflict]
+    F2 -->|no| F3{Confidence}
+    F3 -->|≥0.90| G3[auto_accept → Oxigraph]
+    F3 -->|0.70–0.89| G4[community_review]
+    F3 -->|0.50–0.69| G5[expert_review]
+    F3 -->|<0.50| G6[reject]
+```
+
+### Execution modes
+
+| Mode | Entry point | Django required | Oxigraph | Notes |
+|------|-------------|-----------------|----------|-------|
+| **Full pipeline** | `run_kg_ingestion_pipeline()` | Optional (`skip_epistemic_db`) | Yes (Agent 4–5) | Recommended for scripts |
+| **Celery task** | `tasks.run_kg_pipeline(document_id)` | Yes | Yes | Production; updates `metadata` |
+| **Per-agent** | `run_doc_intelligence`, etc. | Agent 5 only | Agents 4–5 | Testing / debugging |
+| **OCR-only** | `pipeline.process_uploaded_document` | Yes | No | Runs Agent 1 only today |
+
 ---
 
-## Shared Types (`types.py`)
+## Module layout
 
-| Type | Owner | Description |
-|---|---|---|
-| `HeritageDocType` | Agent 1 | Enum: inscription / chronicle / survey_report / oral_history / gazette / unknown |
-| `DocumentChunk` | Agent 1 | Chunk of text with `chunk_id`, `char_start/end`, `language`, `ontology_hint`, `token_count` |
-| `DocumentIntelligenceResult` | Agent 1 | Heritage doc type + language + chunks + ontology_snippet dict |
-| `Triple` | Agent 2 | `(subject, subject_type, predicate, object, object_type)` |
-| `CandidateAssertion` | Agent 2 | Triple + `confidence_score` + `source_chunk_id` + raw LLM responses |
-| `ExtractionResult` | Agent 2 | `list[CandidateAssertion]` + rejected_count |
-| `ValidatedAssertion` | Agent 3 | CandidateAssertion + `checks_passed` + `corrected` flag |
-| `RejectedAssertion` | Agent 3 | CandidateAssertion + `reason` + `violation_type` |
-| `ShaclValidationResult` | Agent 3 | `list[ValidatedAssertion]` + `list[RejectedAssertion]` |
-| `ResolvedAssertion` | Agent 4 | ValidatedAssertion + `subject_uri` + `object_uri` + `subject_is_new` + `object_is_new` + `resolution_notes` |
-| `EntityResolutionResult` | Agent 4 | `list[ResolvedAssertion]` + `skipped_count` |
-| `RouteDecision` | Agent 5 | Enum: `auto_accept / community_review / expert_review / expert_curator / conflict / reject` |
-| `RoutedAssertion` | Agent 5 | ResolvedAssertion + `route` + `db_assertion_id` + `conflict_detected` + `kumari_flagged` + `oxigraph_written` |
-| `EpistemicRoutingResult` | Agent 5 | `list[RoutedAssertion]` + `counts` dict |
+```
+agents/
+├── __init__.py              # Public API exports
+├── types.py                 # Dataclasses + enums (pipeline contracts)
+├── config.py                # PipelineConfig + env vars
+├── ontology.py              # CIDOC/HG URI maps, inverse map, minting
+├── sparql.py                # Injection-safe Oxigraph client
+├── confidence.py            # Multi-factor confidence calibration
+├── provenance.py            # PROV-O + named graph builders
+├── telemetry.py             # Stage timing metrics
+├── orchestrator.py          # Unified 5-agent runner
+├── doc_intelligence.py      # Agent 1
+├── extraction_agent.py      # Agent 2
+├── shacl_agent.py           # Agent 3
+├── entity_resolution_agent.py  # Agent 4
+├── epistemic_router_agent.py # Agent 5
+└── AGENTS.md                # This file
+```
+
+**Related (outside this package):**
+
+| Path | Role |
+|------|------|
+| `document_processing/tasks.py` | Celery `run_kg_pipeline` — production entry |
+| `document_processing/views.py` | Triggers `run_kg_pipeline.delay()` after OCR |
+| `document_processing/services/pipeline.py` | OCR routing; calls Agent 1 only |
+| `cidoc_data/models.py` | `HeritageAssertion` ORM target |
+| `cidoc_data/linkml_loader.py` | Schema registry for ontology snippets |
+| `ontology/shapes/generated-heritagegraph-minimal-shacl.ttl` | SHACL shapes |
+| `heritage_graph/settings/pipeline_e2e.py` | E2E test settings (no GDAL, Postgres) |
+| `heritage_graph/scripts/run_kg_e2e_test.py` | Full Docker E2E test script |
 
 ---
 
-## Agent 1 — Document Intelligence (`doc_intelligence.py`)
+## Data flow and contracts
 
-**Entry point:** `run_doc_intelligence(text, use_ollama, chunk_max_tokens)`
+### Type graph (agent hand-offs)
 
-### What it does
+```
+DocumentIntelligenceResult
+    └── chunks: list[DocumentChunk]
+            └── used by Agent 2
 
-1. **Heritage document type classification**
-   - Calls Ollama (Llama 3.1 70B, `temperature=0.1`) with a structured prompt
-   - Falls back to keyword heuristics if Ollama is unreachable
-   - Classes: `inscription | chronicle | survey_report | oral_history | gazette | unknown`
+ExtractionResult
+    └── candidates: list[CandidateAssertion]
+            ├── triple: Triple
+            ├── confidence_score: float          # composite after calibration
+            ├── confidence_breakdown: dict       # audit trail
+            └── source_chunk_id, char_start/end
 
-2. **Language detection**
-   - Uses `langdetect` to classify each document
-   - Maps codes → `Nepali / Sanskrit / English / Hindi / unknown`
+ShaclValidationResult
+    ├── validated: list[ValidatedAssertion]
+    │       ├── candidate: CandidateAssertion  # may be corrected
+    │       ├── checks_passed: list[str]       # e.g. "kumari_flag", "pyshacl_ok"
+    │       └── corrected, correction_note
+    └── rejected: list[RejectedAssertion]
+            └── violation_type: str
 
-3. **Semantic chunking**
-   - Uses `chonkie.SentenceChunker` if installed; falls back to sentence-batching
-   - Default `chunk_max_tokens=256`
-   - Each chunk carries `ontology_hint` (list of relevant CIDOC class keys)
+EntityResolutionResult
+    └── resolved: list[ResolvedAssertion]
+            ├── subject_uri, object_uri
+            ├── subject_is_new, object_is_new
+            └── subject_resolution_score, object_resolution_score
 
-4. **Ontology snippet selection**
-   - Maps doc type → CIDOC class keys via `_DOC_TYPE_ONTOLOGY_MAP`
-   - Pulls class definitions from the schema registry (`get_effective_registry_payload`)
+EpistemicRoutingResult
+    └── routed: list[RoutedAssertion]
+            ├── route: RouteDecision
+            ├── db_assertion_id: UUID | None
+            ├── oxigraph_written: bool
+            └── provenance_graph_uri: str | None
+```
 
-### Ontology mapping
+### `UploadedDocument.metadata` schema (Celery task)
 
-| Doc type | CIDOC class keys |
-|---|---|
-| inscription | structure, iconography |
-| chronicle | structure, ritual, festival, tradition |
-| survey_report | structure, iconography, tradition |
-| oral_history | ritual, festival, tradition |
-| gazette | structure, tradition |
+Written incrementally by `tasks.run_kg_pipeline`:
 
-### Pipeline integration
-
-Results are stored in `UploadedDocument.metadata` (JSONField, migration `0003`):
 ```json
 {
-  "heritage_doc_type": "inscription",
-  "heritage_doc_type_confidence": 0.85,
-  "detected_language": "Nepali",
-  "chunk_count": 12,
-  "ontology_class_keys": ["structure", "iconography"]
+  "pipeline_status": "running | complete | failed",
+  "pipeline_run_id": "uuid",
+  "pipeline_started_at": "ISO-8601",
+  "pipeline_finished_at": "ISO-8601",
+  "pipeline_error": null,
+  "agent_status": {
+    "doc_intelligence": "pending | running | complete",
+    "extraction": "complete",
+    "shacl_validation": "complete",
+    "entity_resolution": "complete",
+    "epistemic_routing": "complete"
+  },
+  "agent_results": {
+    "doc_intelligence": {
+      "heritage_doc_type": "inscription",
+      "heritage_doc_type_confidence": 0.9,
+      "detected_language": "Nepali",
+      "chunk_count": 12,
+      "ontology_class_keys": ["structure", "iconography"],
+      "ocr_quality_estimate": 1.0
+    },
+    "extraction": { "candidate_count": 5, "rejected_count": 0 },
+    "shacl_validation": {
+      "validated_count": 4,
+      "rejected_count": 1,
+      "rejection_reasons": [{ "subject": "...", "predicate": "...", "reason": "...", "violation_type": "..." }]
+    },
+    "entity_resolution": { "resolved_count": 4, "skipped_count": 0 },
+    "epistemic_routing": { "counts": { "auto_accept": 2, "community_review": 2 } }
+  },
+  "assertions": [
+    {
+      "subject": "Pashupatinath",
+      "predicate": "P108_was_produced_by",
+      "object": "King Manadeva",
+      "subject_uri": "https://w3id.org/heritagegraph/entity/...",
+      "confidence_score": 0.887,
+      "confidence_breakdown": { "extraction_agreement": 1.0, "composite": 0.887 },
+      "route": "community_review",
+      "kumari_flagged": false,
+      "conflict_detected": false,
+      "db_assertion_id": "uuid",
+      "provenance_graph_uri": "https://w3id.org/heritagegraph/graph/document/<doc_id>"
+    }
+  ]
 }
 ```
 
 ---
 
-## Agent 2 — Ontology-Grounded Extraction (`extraction_agent.py`)
+## Shared infrastructure
 
-**Entry point:** `run_extraction(di_result, min_confidence=0.0)`
+### `config.py` — `PipelineConfig`
 
-### What it does
+Central env-driven configuration. Access via `DEFAULT_CONFIG` or `PipelineConfig.from_env()`.
 
-1. **Dual-temperature Ollama calls** — for each `DocumentChunk`:
-   - Run 1: `temperature=0.1` (deterministic, high-precision)
-   - Run 2: `temperature=0.4` (exploratory, catches missed triples)
+All agents accept optional `config: PipelineConfig` kwarg; default is environment-based.
 
-2. **Triple parsing** — expects JSON array from Ollama:
-   ```json
-   [{"subject": "...", "subject_type": "E22_Human-Made_Object",
-     "predicate": "P108i_was_produced_by",
-     "object": "...", "object_type": "E12_Production"}]
-   ```
-   Strips markdown fences, finds first JSON array, validates required keys.
+### `ontology.py` — URI resolution
 
-3. **Agreement scoring** via `rapidfuzz.fuzz.ratio`:
-   - Exact match across both runs → `confidence_score = 1.0`
-   - Fuzzy match (≥ 82% ratio) across runs → `confidence_score = 1.0`
-   - Only in one run → `confidence_score = 0.5`
+| Export | Purpose |
+|--------|---------|
+| `CLASS_URI` | CIDOC + HeritageGraph class label → full URI |
+| `INVERSE_MAP` | Inverse CIDOC predicate → forward form |
+| `FORWARD_TO_INVERSE` | Forward → inverse (for SHACL index aliasing) |
+| `KUMARI_CLASSES`, `KUMARI_PREDICATES` | High-stakes routing flags |
+| `predicate_uri()`, `class_uri()` | Normalize LLM short forms |
+| `is_literal_type()` | Skip entity resolution for literals |
+| `mint_entity_uri()` | `hg:entity/<slug>-<uuid>` |
+| `default_shapes_path()` | Resolves SHACL TTL (env → repo → `/app/ontology`) |
+| `allowed_predicates_from_snippet()` | Predicate whitelist for extraction prompts |
 
-4. **CandidateAssertion output** — in-memory only, no DB writes. DB write happens in Agent 5 after entity resolution.
+**SHACL forward/inverse aliasing:** HeritageGraph shapes often declare inverse predicates (`P108i_was_produced_by`). The shapes index loader aliases each forward predicate (`P108_was_produced_by`) to the same constraint so LLM output in forward CIDOC form validates correctly.
 
-### Few-shot prompt
+### `sparql.py` — `SparqlClient`
 
-The extraction prompt includes three hardcoded Nepalese heritage examples covering inscription, land donation, and Kumari selection scenarios to guide the LLM toward CIDOC-CRM predicate usage.
+| Method | Purpose |
+|--------|---------|
+| `select(sparql)` | SPARQL SELECT → list of binding dicts |
+| `update(sparql)` | SPARQL UPDATE (INSERT) |
+| `exact_label_lookup(label, class_uri)` | Case-insensitive `rdfs:label` match |
+| `label_candidates(class_uri, limit)` | Fuzzy candidate pool |
+| `existing_objects(subject, pred)` | Conflict detection |
+| `insert_data(ntriples, graph_uri)` | Named-graph INSERT |
 
-### Model fields added
+**Security:** `escape_sparql_string()`, `validate_uri()` — rejects injection in dynamic IRIs.
 
-`HeritageAssertion` model gained two agent fields (migration `0012`):
-- `confidence_score` — `DecimalField(max_digits=4, decimal_places=3, null=True)` — numeric confidence from dual-temperature
-- `attributed_to_agent` — `CharField(max_length=200, blank=True)` — LLM identifier (e.g. `"ollama/llama3.1:70b"`)
+### `confidence.py` — calibration
+
+`ConfidenceBreakdown` fields (weighted geometric mean → `composite`):
+
+| Factor | Weight | Source |
+|--------|--------|--------|
+| `extraction_agreement` | 0.30 | Dual-temperature exact / fuzzy / single-run |
+| `ontology_grounding` | 0.15 | Predicate in snippet + known classes |
+| `shacl_validity` | 0.25 | Passed SHACL (0.92 if auto-corrected) |
+| `entity_resolution` | 0.20 | Exact / fuzzy / minted URI match |
+| `ocr_quality` | 0.10 | From `UploadedDocument.metadata` |
+
+Updated after Agents 3 and 4 mutate the candidate.
+
+### `provenance.py` — PROV-O
+
+| Function | Purpose |
+|----------|---------|
+| `document_graph_uri(doc_id)` | `hg:graph/document/<uuid>` named graph |
+| `assertion_activity_uri(assertion_id)` | `hg:activity/extraction/<uuid>` |
+| `build_prov_ntriples(...)` | PROV Activity + `used` document + `generated` triple |
+| `mint_pipeline_run_id()` | Correlates orchestrator telemetry |
+
+### `telemetry.py` — observability
+
+`stage_timer(metrics, name)` context manager logs:
+
+```
+pipeline.stage=extraction duration_ms=1234.5 in=12 out=5 errors=0
+```
+
+Returns `PipelineMetrics.to_dict()` on `PipelineResult.metrics`.
 
 ---
 
-## Agent 3 — SHACL Validator (`shacl_agent.py`)
+## Agent reference
 
-**Entry point:** `run_shacl_validation(candidates)`
+### Agent 1 — Document Intelligence (`doc_intelligence.py`)
 
-**Shapes file:** `ontology/shapes/generated-heritagegraph-minimal-shacl.ttl`  
-Loaded once at import time via `@lru_cache` into `{class_uri: {predicate_uri: _PropertyConstraint}}`.
+**Entry:** `run_doc_intelligence(text, *, use_ollama, chunk_max_tokens, chunk_overlap, ocr_quality_estimate, document_metadata, config)`
 
-### Validation layers (in order)
+| Step | Implementation |
+|------|----------------|
+| Classification | Ollama JSON `{"type", "confidence"}` or keyword heuristics |
+| Language | `langdetect` → Nepali / Sanskrit / English / Hindi / Newari |
+| Chunking | `chonkie.SentenceChunker` or structure-aware fallback (paragraph / citation boundaries) |
+| Ontology | `_DOC_TYPE_ONTOLOGY_MAP` → `get_effective_registry_payload()` snippet |
+| OCR quality | Propagates `ocr_confidence` from document metadata into chunks |
 
-**Layer 1 — Inverse predicate correction**
-- Detects CIDOC-CRM inverse predicates (e.g. `P12i_was_present_at`, `P108i_was_produced_by`)
-- Auto-swaps subject ↔ object and updates predicate to forward form
-- Marks `ValidatedAssertion.corrected = True`
+**Doc type → ontology keys:**
 
-**Layer 2 — Hard domain rules**
-- `LivingGoddessSelection / LivingGoddessRetirement / KumariTenure` subject types → stamps `kumari_flag` on the assertion (Agent 5 routes to `expert_curator` queue regardless of confidence score)
-- `E13_Attribute_Assignment` (SyncreticRelationship) without IRI objects on both P140/P141 → `RejectedAssertion(violation_type="cross_class")`
+| `HeritageDocType` | Registry class keys |
+|-------------------|---------------------|
+| inscription | structure, iconography |
+| chronicle | structure, ritual, festival, tradition |
+| survey_report | structure, iconography, tradition |
+| oral_history | ritual, festival, tradition |
+| gazette | structure, tradition |
+| unknown | all keys |
 
-**Layer 3 — Shapes-index lookup**
-- Predicate not found in shape for subject class → `RejectedAssertion(violation_type="unknown_predicate")`
-- `sh:nodeKind sh:IRI` but object is literal → `RejectedAssertion(violation_type="node_kind")`
-- `sh:nodeKind sh:Literal` but object is IRI → auto-corrects object_type to `"literal"`
-
-**Layer 4 — pySHACL mini-graph**
-- Mints a temporary RDF mini-graph `(hg:subject_tmp rdf:type <class> ; <pred> <obj_iri/lit>)`
-- Runs `pyshacl.validate()` against the shapes file
-- Walks the results graph via rdflib; filters out `sh:MinCountConstraintComponent` violations (expected for single-triple graphs)
-- Real violations → `RejectedAssertion(violation_type="domain_range")`
-- Fails open on pySHACL errors (does not reject on validator failure)
-
-### Violation types
-
-| `violation_type` | Meaning |
-|---|---|
-| `unknown_predicate` | Predicate not in SHACL shape for subject class |
-| `node_kind` | Object should be IRI but is literal (or vice versa) |
-| `cross_class` | Structural constraint violation (e.g. SyncreticRelationship missing both deities) |
-| `domain_range` | pySHACL structural violation beyond minCount |
+**Output:** `DocumentIntelligenceResult` (agent_version `1.1`)
 
 ---
 
-## Agent 4 — Entity Resolution (`entity_resolution_agent.py`)
+### Agent 2 — Ontology-Grounded Extraction (`extraction_agent.py`)
 
-**Entry point:** `run_entity_resolution(shacl_result, *, oxigraph_url=None)`
+**Entry:** `run_extraction(di_result, *, min_confidence, config)`
 
-### What it does
+| Step | Implementation |
+|------|----------------|
+| Per chunk | Build prompt with ontology snippet + **allowed predicate whitelist** |
+| LLM | Dual Ollama calls: `extraction_temp_low` (0.1) + `extraction_temp_high` (0.4) |
+| Parse | Strip fences; extract first JSON array; validate `subject/predicate/object` |
+| Agreement | `rapidfuzz` fuzzy match (threshold from config); partial credit 0.75+ for fuzzy |
+| Confidence | `calibrate()` with ontology grounding + OCR quality |
 
-Consumes `ShaclValidationResult.validated` and resolves every entity mention to a
-canonical URI, either found in the live Oxigraph graph or freshly minted.
+**Prompt constraints:** Explicit instruction to use only allowed predicates or standard CIDOC `P*` properties; three few-shot Nepalese heritage examples.
 
-1. **Co-reference resolution**
-   - Detects surface forms that refer back to a previously mentioned entity in the same
-     chunk (e.g. `"the temple"`, `"he"`, `"the king"`).
-   - Maintains a `coref_registry: {chunk_id → {class_label → last_uri}}` updated after
-     each resolved assertion so later triples in the same chunk reuse the right URI.
+**Output:** `ExtractionResult` (agent_version `2.1`)
 
-2. **Transliteration normalisation**
-   - Curated map of ~30 common Nepalese heritage name variants:
-     `"Swayambhu"` = `"Swayambhunath"` = `"स्वयम्भू"` → canonical display form.
-   - Applied before any SPARQL lookup so the graph is queried with the canonical label.
+---
 
-3. **Exact SPARQL label lookup**
-   - Queries Oxigraph: `?uri rdfs:label ?lbl FILTER(LCASE(?lbl) = LCASE("<name>"))`
-   - Optionally scoped to `rdf:type <class_uri>` when the CIDOC class is known.
-   - Falls back to untyped lookup if the typed query returns nothing.
+### Agent 3 — SHACL Validator (`shacl_agent.py`)
 
-4. **Fuzzy SPARQL lookup**
-   - Retrieves up to 500 `(uri, label)` pairs for the entity class from Oxigraph.
-   - Ranks by `rapidfuzz.fuzz.ratio`; accepts the best match if score ≥ 85.
+**Entry:** `run_shacl_validation(candidates, *, config)`
 
-5. **URI minting**
-   - If no match is found: mints `hg:entity/<class_slug>-<uuid4>`.
-   - `class_slug` is derived from the CIDOC label, e.g. `E22_Human-Made_Object` → `e22-human-made-object`.
-   - Sets `subject_is_new = True` / `object_is_new = True` so Agent 5 knows to INSERT
-     the new entity triples rather than just assert a property.
+**Shapes file:** `HERITAGEGRAPH_SHACL_SHAPES_PATH` or `ontology/shapes/generated-heritagegraph-minimal-shacl.ttl`
 
-6. **Literal objects skipped**
-   - When `object_type` is `"literal"`, `"xsd:string"`, `"date"`, etc., `object_uri` is
-     set to `None` — no URI resolution attempted.
+| Layer | Action |
+|-------|--------|
+| 1. Inverse correction | Swap subject/object; rewrite to forward predicate |
+| 2. Kumari / syncretic | Stamp `kumari_flag`; reject malformed `E13` |
+| 3. Shapes index | Unknown predicate → reject; nodeKind IRI/literal checks |
+| 4. pySHACL | Mini-graph per triple; filter `MinCountConstraintComponent` |
+| Fail mode | **Closed** by default; `HERITAGEGRAPH_SHACL_FAIL_OPEN=true` skips layer 4 errors |
 
-### Resolution priority
+**Violation types:** `unknown_predicate`, `node_kind`, `cross_class`, `domain_range`, `validator_error`
+
+**Output:** `ShaclValidationResult` (agent_version `3.1`)
+
+---
+
+### Agent 4 — Entity Resolution (`entity_resolution_agent.py`)
+
+**Entry:** `run_entity_resolution(shacl_result, *, oxigraph_url, config)`
+
+Uses shared `SparqlClient` (not inline HTTP).
+
+| Priority | Action |
+|----------|--------|
+| 1 | Co-reference (`"the temple"`, `"the king"`, …) → last URI in chunk |
+| 2 | Transliteration map (~30 Nepalese place/person variants) |
+| 3 | Exact `rdfs:label` SPARQL (typed, then untyped) |
+| 4 | Fuzzy match ≥ `entity_fuzzy_threshold` (default 85) |
+| 5 | Mint `hg:entity/<class_slug>-<uuid4>` |
+
+Updates `confidence_breakdown.entity_resolution` after resolution.
+
+**Output:** `EntityResolutionResult` (agent_version `4.1`)
+
+---
+
+### Agent 5 — Epistemic Router (`epistemic_router_agent.py`)
+
+**Entry:** `run_epistemic_routing(resolution_result, *, document_id, agent_label, oxigraph_url, config)`
+
+> Requires Django ORM (`HeritageAssertion.objects.create`).
+
+| Priority | Condition | Route | DB | Oxigraph |
+|----------|-----------|-------|-----|----------|
+| 1 | `kumari_flag` in checks | `expert_curator` | pending | — |
+| 2 | SPARQL conflict | `conflict` | disputed | — |
+| 3 | score ≥ 0.90 | `auto_accept` | accepted | INSERT + PROV |
+| 4 | score ≥ 0.70 | `community_review` | pending | — |
+| 5 | score ≥ 0.50 | `expert_review` | pending | — |
+| 6 | else | `reject` | — | — |
+
+**DB fields:** `assertion_content`, `asserted_property`, `asserted_value`, `confidence`, `confidence_score`, `attributed_to_agent`, `reconciliation_status`, `source_citation`, `data_quality_note` (includes confidence factors + resolution notes).
+
+**Oxigraph insert (auto_accept only):**
+
+- Named graph: `hg:graph/document/<document_id>`
+- Core triple + `rdfs:label` / `rdf:type` stubs for new entities
+- Optional PROV-O activity triples when `write_prov_triples=true`
+
+**Output:** `EpistemicRoutingResult` (agent_version `5.1`)
+
+---
+
+## Confidence and epistemics
+
+### Why not binary 0.5/1.0?
+
+Dual-temperature agreement alone is not epistemically calibrated — it conflates model stochasticity with factual certainty. The pipeline uses a **weighted geometric mean** so weak signals in any layer pull down the composite score conservatively.
+
+### Score propagation
 
 ```
-co-reference match
-  → exact label (class-typed SPARQL)
-    → exact label (untyped SPARQL)
-      → fuzzy match ≥ 85%
-        → mint new URI
+Agent 2: extraction_agreement + ontology_grounding + ocr_quality
+    → composite (initial)
+
+Agent 3: shacl_validity recalculated
+    → composite updated
+
+Agent 4: entity_resolution recalculated
+    → composite updated (used by Agent 5 routing)
 ```
 
-### Configuration
+### Routing vs categorical confidence
+
+| `confidence_score` | `HeritageAssertion.confidence` |
+|--------------------|-------------------------------|
+| ≥ 0.90 | `certain` |
+| ≥ 0.70 | `likely` |
+| ≥ 0.50 | `uncertain` |
+| < 0.50 | `speculative` (rejected — no DB row) |
+
+---
+
+## Provenance and RDF
+
+### Namespaces
+
+| Prefix | URI |
+|--------|-----|
+| `hg:` | `https://w3id.org/heritagegraph/` |
+| `crm:` | `http://www.cidoc-crm.org/cidoc-crm/` |
+| `prov:` | `http://www.w3.org/ns/prov#` |
+| `rdfs:` | `http://www.w3.org/2000/01/rdf-schema#` |
+
+### Named graph strategy
+
+Each uploaded document's accepted triples live in:
+
+```
+GRAPH <https://w3id.org/heritagegraph/graph/document/{document_uuid}>
+```
+
+This supports document-level retraction, versioning, and curator audit without polluting the global default graph.
+
+### PROV-O activity (auto_accept)
+
+```
+prov:Activity ─ prov:used ─▶ hg:document/{id}
+              ─ prov:generated ─▶ subject URI
+              ─ prov:wasAssociatedWith ─▶ agent label
+```
+
+---
+
+## Integration points
+
+### Celery task (`tasks.run_kg_pipeline`)
+
+```python
+# Triggered from views after OCR completes:
+run_kg_pipeline.delay(str(doc.id))
+
+# Synchronous (e.g. tests):
+run_kg_pipeline.run(document_id=str(doc.id))
+```
+
+Progress is pollable via `GET` on the OCR document detail endpoint → `metadata.agent_status`.
+
+### Orchestrator (library use)
+
+```python
+from apps.document_processing.services.agents import run_kg_ingestion_pipeline
+
+result = run_kg_ingestion_pipeline(
+    text=doc.raw_text,
+    document_id=str(doc.id),
+    document_metadata=doc.metadata,
+)
+# result.epistemic_routing, result.metrics, result.errors
+```
+
+### Public API (`__init__.py`)
+
+```python
+from apps.document_processing.services.agents import (
+    run_kg_ingestion_pipeline,
+    run_doc_intelligence,
+    run_extraction,
+    run_shacl_validation,
+    run_entity_resolution,
+    run_epistemic_routing,
+    PipelineConfig,
+    DEFAULT_CONFIG,
+)
+```
+
+---
+
+## Configuration
+
+### Environment variables
 
 | Variable | Default | Description |
-|---|---|---|
-| `OXIGRAPH_URL` | `http://localhost:7878` | Oxigraph base URL (env var) |
-
-The `oxigraph_url` kwarg overrides the env var for testing.
-
-### Transliteration map (selected entries)
-
-| Input variant | Canonical form |
-|---|---|
-| `swayambhu`, `swoyambhu`, `स्वयम्भू` | `Swayambhunath` |
-| `pashupati`, `पशुपतिनाथ` | `Pashupatinath` |
-| `boudha`, `bodhnath`, `bauddha`, `बौद्धनाथ` | `Boudhanath` |
-| `bhadgaon`, `भक्तपुर` | `Bhaktapur` |
-| `patan`, `ललितपुर` | `Lalitpur` |
-| `kantipur`, `काठमाडौँ` | `Kathmandu` |
-
----
-
-## Dependencies Added
-
-| Package | Version | Used by |
-|---|---|---|
-| `langdetect` | 1.0.9 | Agent 1 — language detection |
-| `chonkie` | ≥ 1.0.0 | Agent 1 — semantic chunking (optional; fallback available) |
-| `ollama` | 0.6.2 | Agent 1 (classification), Agent 2 (extraction) |
-| `rapidfuzz` | ≥ 3.0 | Agent 2 — fuzzy triple agreement scoring |
-| `pyshacl` | ≥ 0.25 | Agent 3 — RDF shape validation |
+|----------|---------|-------------|
+| `HERITAGEGRAPH_OLLAMA_MODEL` | `llama3.1:70b` | LLM for classification + extraction |
+| `OXIGRAPH_URL` | `http://localhost:7878` | Oxigraph SPARQL endpoint |
+| `HERITAGEGRAPH_SHACL_SHAPES_PATH` | auto-resolve | Path to minimal SHACL TTL |
+| `HERITAGEGRAPH_SHACL_FAIL_OPEN` | `false` | If `true`, pySHACL errors do not reject |
+| `HERITAGEGRAPH_THRESHOLD_AUTO_ACCEPT` | `0.90` | Auto-insert threshold |
+| `HERITAGEGRAPH_THRESHOLD_COMMUNITY_REVIEW` | `0.70` | Community queue lower bound |
+| `HERITAGEGRAPH_THRESHOLD_EXPERT_REVIEW` | `0.50` | Expert queue lower bound |
+| `HERITAGEGRAPH_FUZZY_AGREEMENT_THRESHOLD` | `82` | Extraction cross-run fuzzy match |
+| `HERITAGEGRAPH_ENTITY_FUZZY_THRESHOLD` | `85` | Entity resolution fuzzy match |
+| `HERITAGEGRAPH_ENTITY_LOOKUP_LIMIT` | `500` | Max labels fetched for fuzzy ER |
+| `HERITAGEGRAPH_CHUNK_MAX_TOKENS` | `256` | Chunk size |
+| `HERITAGEGRAPH_CHUNK_OVERLAP_TOKENS` | `20` | Chunk overlap |
+| `HERITAGEGRAPH_MIN_EXTRACTION_CONFIDENCE` | `0.0` | Pre-SHACL candidate filter |
+| `HERITAGEGRAPH_PROVENANCE_NAMED_GRAPH` | `true` | Use per-document named graphs |
+| `HERITAGEGRAPH_WRITE_PROV_TRIPLES` | `true` | Emit PROV-O on auto_accept |
+| `HERITAGEGRAPH_USE_OLLAMA_CLASSIFICATION` | `true` | LLM vs heuristic doc classification |
 
 ---
 
-## Agent 5 — Epistemic Router (`epistemic_router_agent.py`)
+## Docker and deployment
 
-**Entry point:** `run_epistemic_routing(resolution_result, *, document_id, agent_label, oxigraph_url)`
+### Required compose volumes (backend service)
 
-> **Note:** This agent writes to the Django ORM (`HeritageAssertion`) and to Oxigraph via
-> SPARQL UPDATE. It must be called from within a running Django application context.
-
-### What it does
-
-Receives `EntityResolutionResult` from Agent 4 and makes the final routing decision for
-each `ResolvedAssertion`. Two pre-flight checks run before the confidence threshold is applied:
-
-1. **Kumari-flag check** — if `"kumari_flag"` is in `ValidatedAssertion.checks_passed`
-   (stamped by Agent 3 for any LivingGoddess / KumariTenure triple), the assertion is
-   unconditionally routed to `expert_curator` regardless of confidence.
-
-2. **Conflict detection** — queries Oxigraph:
-   ```sparql
-   SELECT ?obj WHERE { <subject_uri> <pred_uri> ?obj . }
-   ```
-   If existing values differ from the incoming value → `CONFLICT` route.
-
-3. **Confidence routing** — thresholds applied to `CandidateAssertion.confidence_score`:
-
-| Condition | Route | `reconciliation_status` |
-|---|---|---|
-| `kumari_flag` set | `expert_curator` | `pending` |
-| Conflict detected | `conflict` | `disputed` |
-| score ≥ 0.90 | `auto_accept` | `accepted` |
-| score 0.70–0.89 | `community_review` | `pending` |
-| score 0.50–0.69 | `expert_review` | `pending` |
-| score < 0.50 | `reject` | *(no DB write)* |
-
-4. **DB write** — creates a `HeritageAssertion` record for every non-rejected route:
-   - `asserted_property` — the CIDOC predicate
-   - `asserted_value` — the object literal or entity name
-   - `assertion_content` — human-readable triple summary
-   - `confidence` — categorical label (`certain / likely / uncertain / speculative`)
-   - `confidence_score` — numeric from Agent 2
-   - `attributed_to_agent` — `"pipeline/5.0/<model>"`
-   - `reconciliation_status` — per routing table above
-   - `source_citation` — `"chunk:<id> page:<n>"`
-   - `data_quality_note` — queue assignment, kumari flag, conflict details, resolution notes
-
-5. **Oxigraph INSERT** — for `auto_accept` only, inserts the canonical RDF triple plus
-   `rdfs:label` and `rdf:type` stubs for any freshly minted entities.
-
-### Routing priority
-
-```
-kumari_flag → expert_curator
-conflict    → conflict (disputed)
-≥ 0.90      → auto_accept (accepted + Oxigraph INSERT)
-0.70–0.89   → community_review (pending)
-0.50–0.69   → expert_review (pending)
-< 0.50      → reject (logged only)
+```yaml
+volumes:
+  - ./heritage_graph:/app/heritage_graph
+  - ./ontology:/app/ontology      # SHACL shapes
+  - ./tools:/app/tools            # ui-classmap.yaml for schema registry
+environment:
+  OXIGRAPH_URL: http://oxigraph:7878
+  HERITAGEGRAPH_SHACL_SHAPES_PATH: /app/ontology/shapes/generated-heritagegraph-minimal-shacl.ttl
 ```
 
-### Configuration
+### Service dependencies
 
-| Variable | Default | Description |
-|---|---|---|
-| `OXIGRAPH_URL` | `http://localhost:7878` | Oxigraph base URL (env var) |
+| Service | Required for | Notes |
+|---------|--------------|-------|
+| **PostgreSQL** | Agent 5 (HeritageAssertion) | Migrations must be applied |
+| **Oxigraph** | Agents 4–5 | Internal network `http://oxigraph:7878` |
+| **Ollama** | Agents 1–2 (live extraction) | Not in compose by default; host or sidecar |
+| **Redis/Celery** | Async `run_kg_pipeline` | `CELERY_TASK_ALWAYS_EAGER=true` in dev |
+
+### Production checklist
+
+- [ ] Add `pyshacl` to `requirements.txt` (backend image currently may lack it)
+- [ ] Install GDAL or disable `django.contrib.gis` until PostGIS is ready
+- [ ] Mount `ontology/` and `tools/` volumes
+- [ ] Configure Ollama reachable from backend (or swap LLM backend)
+- [ ] Set `HERITAGEGRAPH_SHACL_FAIL_OPEN=false` in production
 
 ---
 
-## Full Pipeline
+## Testing
+
+### Unit tests (no external services)
+
+```bash
+cd heritage_graph
+PYTHONPATH=. python apps/document_processing/tests/test_agents.py
+```
+
+Covers: ontology URI resolution, confidence calibration, SPARQL escaping, parsing, transliteration.
+
+### Integration smoke (mocked LLM + Oxigraph)
+
+```bash
+PYTHONPATH=. python apps/document_processing/tests/test_pipeline_smoke.py
+```
+
+Exercises Agents 1–4 with mocked Ollama and `MockSparqlClient`.
+
+### Full E2E (Docker)
+
+```bash
+# Migrate DB first (once per fresh postgres volume)
+docker exec -e DJANGO_SETTINGS_MODULE=heritage_graph.settings.pipeline_e2e \
+  heritage-backend python /app/heritage_graph/manage.py migrate --noinput
+
+# Run full pipeline (mocked LLM, live Oxigraph + Postgres)
+docker exec \
+  -e HERITAGEGRAPH_SHACL_FAIL_OPEN=true \
+  heritage-backend python /app/heritage_graph/scripts/run_kg_e2e_test.py
+```
+
+Uses `heritage_graph/settings/pipeline_e2e.py` (development settings + Postgres, no GDAL).
+
+---
+
+## Security
+
+| Risk | Mitigation |
+|------|------------|
+| SPARQL injection | `escape_sparql_string()`, `validate_uri()` in `sparql.py` |
+| Malformed RDF | SHACL validation before insert |
+| Ontology poisoning | Predicate whitelist in extraction; shapes index rejection |
+| Hallucinated entities | Entity resolution + review queues; no auto_accept below 0.90 |
+| Prompt injection in OCR text | Constrained JSON output; no tool execution |
+
+---
+
+## Known limitations and roadmap
+
+### Current limitations
+
+| Area | Limitation |
+|------|------------|
+| **LLM** | Ollama-only; no RAG over existing graph during extraction |
+| **SHACL** | Single-triple mini-graphs miss cross-property constraints (`minCount` on full entity) |
+| **Entity resolution** | No Wikidata / authority file reconciliation; curated transliteration map only |
+| **Temporal** | No period-disambiguated entity resolution |
+| **Feedback loop** | Curator accept/reject does not retrain confidence weights |
+| **Transactions** | DB write and Oxigraph INSERT are not atomic |
+| **OCR pipeline** | `process_uploaded_document` runs Agent 1 only; full KG pipeline is separate Celery task |
+
+### Phase 2 roadmap
+
+1. Embedding-based entity linking (multilingual e5/bge-m3)
+2. Curator active learning → adjust confidence priors
+3. RAG extraction with validated triple retrieval per chunk
+4. Graph-level SHACL validation (full entity descriptions)
+5. Bayesian routing replacing fixed thresholds
+6. Wikidata reconciliation for authority control
+7. Celery chord for parallel per-chunk extraction
+
+---
+
+## Quick reference — full pipeline
 
 ```
 UploadedDocument.raw_text
@@ -374,4 +709,14 @@ run_epistemic_routing()    → EpistemicRoutingResult
    ▼           ▼          ▼              ▼        ▼
 auto_accept  community  expert_review  expert_  reject
 → Oxigraph   _review    (domain exp)   curator  (logged)
-  INSERT      pending     pending       pending
+  + PROV      pending     pending       pending
+  named graph
+```
+
+**Version history**
+
+| Version | Changes |
+|---------|---------|
+| 1.0 | Initial 5-agent linear pipeline |
+| 2.0 | Dual-temperature extraction, SHACL, entity resolution, epistemic router |
+| 2.1 | Shared modules, multi-factor confidence, PROV-O named graphs, orchestrator, fail-closed SHACL, forward/inverse alias fix, Docker E2E |
