@@ -153,7 +153,12 @@ export function HeritageMindMapClient() {
           </div>
           <div>
             <h1 className="font-bold text-sm leading-tight">Nepal Heritage Knowledge Graph</h1>
-            <p className="text-gray-500 text-xs">Immersive Cultural Story Museum</p>
+            <p className="text-gray-500 text-xs">
+              Immersive Story Museum · Ontology:{' '}
+              <span className="text-amber-500/80">CIDOC-CRM</span>
+              {' · '}
+              <span className="text-amber-500/80">hg:</span>
+            </p>
           </div>
         </div>
 
@@ -175,9 +180,13 @@ export function HeritageMindMapClient() {
           </ViewBtn>
         </div>
 
-        <span className="hidden lg:block text-xs px-2.5 py-1 rounded-full border border-green-500/30 bg-green-900/20 text-green-400">
-          ⬡ RDF / JSON-LD
-        </span>
+        <div className="hidden lg:flex items-center gap-1.5">
+          {(['CIDOC-CRM', 'hg:', 'PROV-O', 'JSON-LD'] as const).map((t) => (
+            <span key={t} className="text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 bg-green-900/20 text-green-400 font-mono">
+              {t}
+            </span>
+          ))}
+        </div>
       </header>
 
       {/* ── 2D Mode ── */}

@@ -1,49 +1,59 @@
 {
   "@context": {
-    "@vocab": "http://schema.org/",
-    "kg": "http://visual-story-museum.org/kg/",
-    "heritage": "http://visual-story-museum.org/heritage/",
+    "@vocab": "https://w3id.org/heritagegraph/",
+    "hg": "https://w3id.org/heritagegraph/",
+    "crm": "http://www.cidoc-crm.org/cidoc-crm/",
+    "heritage": "https://w3id.org/heritagegraph/instance/",
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
     "xsd": "http://www.w3.org/2001/XMLSchema#",
     "dcterms": "http://purl.org/dc/terms/",
     "geo": "http://www.w3.org/2003/01/geo/wgs84_pos#",
+    "prov": "http://www.w3.org/ns/prov#",
     "label": "rdfs:label",
     "description": "dcterms:description",
-    "locatedIn": {
-      "@id": "kg:locatedIn",
+    "has_current_location": {
+      "@id": "hg:has_current_location",
+      "@type": "@id",
+      "@comment": "crm:P53_has_former_or_current_location"
+    },
+    "is_component_of": {
+      "@id": "hg:is_component_of",
+      "@type": "@id",
+      "@comment": "crm:P46i_forms_part_of"
+    },
+    "associated_with": {
+      "@id": "hg:associated_with",
       "@type": "@id"
     },
-    "partOf": {
-      "@id": "kg:partOf",
-      "@type": "@id"
+    "invokes_deity": {
+      "@id": "hg:invokes_deity",
+      "@type": "@id",
+      "@comment": "crm:P141_assigned"
     },
-    "associatedWith": {
-      "@id": "kg:associatedWith",
-      "@type": "@id"
+    "took_place_at": {
+      "@id": "hg:took_place_at",
+      "@type": "@id",
+      "@comment": "crm:P7_took_place_at"
     },
-    "dedicatedTo": {
-      "@id": "kg:dedicatedTo",
-      "@type": "@id"
+    "was_produced_by_event": {
+      "@id": "hg:was_produced_by_event",
+      "@type": "@id",
+      "@comment": "crm:P108i_was_produced_by"
     },
-    "celebratedAt": {
-      "@id": "kg:celebratedAt",
-      "@type": "@id"
+    "was_derived_from_source": {
+      "@id": "hg:was_derived_from_source",
+      "@type": "@id",
+      "@comment": "crm:P17i_motivated"
     },
-    "builtDuring": {
-      "@id": "kg:builtDuring",
-      "@type": "@id"
+    "has_component": {
+      "@id": "hg:has_component",
+      "@type": "@id",
+      "@comment": "crm:P46_is_composed_of"
     },
-    "influencedBy": {
-      "@id": "kg:influencedBy",
-      "@type": "@id"
-    },
-    "hasArtifact": {
-      "@id": "kg:hasArtifact",
-      "@type": "@id"
-    },
-    "worships": {
-      "@id": "kg:worships",
-      "@type": "@id"
+    "carried_out_by": {
+      "@id": "hg:carried_out_by",
+      "@type": "@id",
+      "@comment": "crm:P14_carried_out_by"
     },
     "lat": "geo:lat",
     "long": "geo:long",
@@ -52,48 +62,48 @@
       "@type": "xsd:gYear"
     },
     "period": {
-      "@id": "kg:period",
+      "@id": "hg:period",
       "@type": "@id"
     },
-    "nodeType": "kg:nodeType",
+    "nodeType": "hg:nodeType",
     "imageUrl": {
-      "@id": "kg:imageUrl",
+      "@id": "hg:imageUrl",
       "@type": "xsd:anyURI"
     },
     "images": {
-      "@id": "kg:images",
+      "@id": "hg:images",
       "@container": "@list"
     },
-    "storyText": "kg:storyText",
-    "significance": "kg:significance",
-    "tags": "kg:tags",
-    "dynasty": "kg:dynasty",
-    "unescoStatus": "kg:unescoStatus",
-    "ethnicity": "kg:ethnicity",
-    "religion": "kg:religion",
-    "wikipediaTitle": "kg:wikipediaTitle",
+    "storyText": "hg:storyText",
+    "significance": "hg:significance",
+    "tags": "hg:tags",
+    "dynasty": "hg:dynasty",
+    "unescoStatus": "hg:unescoStatus",
+    "ethnicity": "hg:ethnicity",
+    "religion": "hg:religion",
+    "wikipediaTitle": "hg:wikipediaTitle",
     "keyFacts": {
-      "@id": "kg:keyFacts",
+      "@id": "hg:keyFacts",
       "@container": "@list"
     },
     "rituals": {
-      "@id": "kg:rituals",
+      "@id": "hg:rituals",
       "@container": "@list"
     },
-    "architecture": "kg:architecture",
-    "history": "kg:history",
-    "culturalRole": "kg:culturalRole",
-    "visitNote": "kg:visitNote"
+    "architecture": "hg:architecture",
+    "history": "hg:history",
+    "culturalRole": "hg:culturalRole",
+    "visitNote": "hg:visitNote"
   },
   "@graph": [
     {
       "@id": "heritage:KathmanduValley",
       "@type": [
         "Place",
-        "kg:CulturalRegion"
+        "hg:Place"
       ],
       "label": "Kathmandu Valley",
-      "nodeType": "region",
+      "nodeType": "Place",
       "description": "A sacred valley in the Himalayas, cradle of Nepalese civilization, home to seven UNESCO World Heritage Sites and centuries of living culture.",
       "storyText": "Nestled among the Himalayas at 1,400 metres, the Kathmandu Valley has been the heart of Nepal's civilisation for over two millennia. Three ancient cities — Kathmandu, Bhaktapur, and Patan — rose here, each ruled by rival Malla kings who competed in erecting ever more magnificent temples, palaces, and art. Today the valley breathes with living traditions: priests chant at dawn, festivals explode in colour without warning, and ancient iconography adorns every courtyard.",
       "lat": "27.7172",
@@ -150,10 +160,10 @@
       "@id": "heritage:PashupatinathTemple",
       "@type": [
         "LandmarksOrHistoricalBuildings",
-        "kg:Temple"
+        "hg:Temple"
       ],
       "label": "Pashupatinath Temple",
-      "nodeType": "temple",
+      "nodeType": "Temple",
       "description": "The most sacred Hindu temple in Nepal, dedicated to Lord Shiva as Pashupati, Lord of Animals. A UNESCO World Heritage Site on the banks of the Bagmati River.",
       "storyText": "On the banks of the holy Bagmati River, Pashupatinath has stood since at least the 5th century CE. The golden pagoda rises over two tiers, its roof gleaming above ghats where Hindu cremation rites are performed continuously. Sadhus smeared in ash meditate in its courtyards; pilgrims travel for weeks to bathe in the sacred Bagmati. The Licchavi kings first built a shrine here; the Mallas amplified it. During Maha Shivaratri, a million devotees converge, transforming the hillside into a sea of orange marigolds and flickering oil lamps.",
       "lat": "27.7105",
@@ -162,12 +172,12 @@
       "dynasty": "Licchavi",
       "unescoStatus": "World Heritage Site (1979)",
       "religion": "Hinduism",
-      "dedicatedTo": [
+      "invokes_deity": [
         "heritage:ShivaLord"
       ],
-      "locatedIn": "heritage:KathmanduValley",
-      "builtDuring": "heritage:LicchaviPeriod",
-      "associatedWith": [
+      "has_current_location": "heritage:KathmanduValley",
+      "was_produced_by_event": "heritage:LicchaviPeriod",
+      "associated_with": [
         "heritage:BagmatiRiver"
       ],
       "wikipediaTitle": "Pashupatinath Temple",
@@ -224,10 +234,10 @@
       "@id": "heritage:BoudhanathStupa",
       "@type": [
         "LandmarksOrHistoricalBuildings",
-        "kg:Stupa"
+        "hg:BuddhistMonument"
       ],
       "label": "Boudhanath Stupa",
-      "nodeType": "stupa",
+      "nodeType": "BuddhistMonument",
       "description": "One of the largest stupas in the world and the most important Tibetan Buddhist monument outside Tibet. The all-seeing eyes of Buddha watch over the valley.",
       "storyText": "Boudhanath's massive white dome rises like a full moon above the valley floor. The all-seeing eyes of the Buddha — painted in gold on each of its four faces — scan the horizon in eternal vigilance. Built in the 5th century along the ancient trade route to Tibet, the stupa became a refuge for Tibetan Buddhist culture after 1959. Every evening, thousands of monks and pilgrims circumambulate clockwise, spinning prayer wheels and murmuring mantras. The air smells of butter lamps and juniper incense. Around its base, over 50 Tibetan monasteries crowd close, making Boudhanath the living heart of Tibetan Buddhism outside Tibet.",
       "lat": "27.7215",
@@ -235,9 +245,9 @@
       "inceptionYear": "600",
       "religion": "Tibetan Buddhism",
       "unescoStatus": "World Heritage Site (1979)",
-      "locatedIn": "heritage:KathmanduValley",
-      "builtDuring": "heritage:LicchaviPeriod",
-      "dedicatedTo": [
+      "has_current_location": "heritage:KathmanduValley",
+      "was_produced_by_event": "heritage:LicchaviPeriod",
+      "invokes_deity": [
         "heritage:BuddhaLord"
       ],
       "wikipediaTitle": "Boudhanath",
@@ -293,10 +303,10 @@
       "@id": "heritage:SwayambhunathStupa",
       "@type": [
         "LandmarksOrHistoricalBuildings",
-        "kg:Stupa"
+        "hg:BuddhistMonument"
       ],
       "label": "Swayambhunath Stupa",
-      "nodeType": "stupa",
+      "nodeType": "BuddhistMonument",
       "description": "The self-arisen stupa atop a hill west of Kathmandu, venerated equally by Buddhists and Hindus. Known as the Monkey Temple.",
       "storyText": "According to legend, the Kathmandu Valley was once a primordial lake. A lotus arose from its depths and blazed with a self-manifested flame — Swayambhu, the self-existent one. The great Bodhisattva Manjushri sliced through the valley rim to drain the lake, allowing humans to settle. The hill on which the flame burned became Swayambhunath. Atop 365 stone steps — one for each day of the year — the stupa commands a panoramic view of the valley. Rhesus macaque monkeys race across its walls, considered holy as descendants of Manjushri's lice, an auspicious nuisance beloved by tourists and monastics alike.",
       "lat": "27.7149",
@@ -304,9 +314,9 @@
       "inceptionYear": "460",
       "religion": "Buddhism and Hinduism",
       "unescoStatus": "World Heritage Site (1979)",
-      "locatedIn": "heritage:KathmanduValley",
-      "builtDuring": "heritage:LicchaviPeriod",
-      "dedicatedTo": [
+      "has_current_location": "heritage:KathmanduValley",
+      "was_produced_by_event": "heritage:LicchaviPeriod",
+      "invokes_deity": [
         "heritage:BuddhaLord"
       ],
       "wikipediaTitle": "Swayambhunath",
@@ -362,10 +372,10 @@
       "@id": "heritage:NyatapolaTempel",
       "@type": [
         "LandmarksOrHistoricalBuildings",
-        "kg:Temple"
+        "hg:Temple"
       ],
       "label": "Nyatapola Temple",
-      "nodeType": "temple",
+      "nodeType": "Temple",
       "description": "Nepal's tallest pagoda temple, built in 1702 CE by King Bhupatindra Malla in Bhaktapur. A masterpiece of Newari architecture rising five tiers.",
       "storyText": "Nyatapola means 'five storeys' in Newari, and the temple earns its name — five gleaming pagoda roofs stack toward the sky, visible from across the valley. Built in just seven months by King Bhupatindra Malla, the feat required 25 years' worth of resources. On each platform of the wide staircase stand pairs of guardians, each ten times stronger than the pair below: athletes, elephants, lions, griffins, and at the base the most powerful of all — the wrathful goddess Bhairavnath and her consort. The secret deity at the apex is Siddhi Lakshmi, who is so powerful that her name may not be spoken aloud.",
       "lat": "27.6722",
@@ -374,9 +384,9 @@
       "dynasty": "Malla",
       "unescoStatus": "World Heritage Site (1979)",
       "religion": "Hinduism",
-      "locatedIn": "heritage:BhaktapurCity",
-      "builtDuring": "heritage:MallaPeriod",
-      "dedicatedTo": [
+      "has_current_location": "heritage:BhaktapurCity",
+      "was_produced_by_event": "heritage:MallaPeriod",
+      "invokes_deity": [
         "heritage:SiddhiLakshmi"
       ],
       "wikipediaTitle": "Nyatapola Temple",
@@ -433,10 +443,10 @@
       "@id": "heritage:PatanDurbarSquare",
       "@type": [
         "LandmarksOrHistoricalBuildings",
-        "kg:DurbarSquare"
+        "hg:ArchitecturalStructure"
       ],
       "label": "Patan Durbar Square",
-      "nodeType": "palace",
+      "nodeType": "ArchitecturalStructure",
       "description": "The ancient royal palace complex of Patan (Lalitpur), considered one of the finest examples of Newari art and architecture in the world.",
       "storyText": "Patan — the city of fine arts — was the jewel of the Malla kingdoms. Its Durbar Square is an open-air museum of the medieval Newari world. The Royal Palace's golden gate (Sun Dhoka) is considered the finest piece of craftsmanship in all of Nepal: its gilded door frame teems with deities, serpents, and celestial beings, crowned by Garuda. In the courtyards beyond lie erotic carvings on roof struts — said to both ward off lightning (which Kumari the virgin goddess would never strike) and to instruct young Newars entering adult life. The square breathes with life: flower sellers, pigeons, and devotees from dawn to dusk.",
       "lat": "27.6733",
@@ -445,9 +455,9 @@
       "dynasty": "Malla",
       "unescoStatus": "World Heritage Site (1979)",
       "religion": "Hinduism and Buddhism",
-      "locatedIn": "heritage:KathmanduValley",
-      "builtDuring": "heritage:MallaPeriod",
-      "associatedWith": [
+      "has_current_location": "heritage:KathmanduValley",
+      "was_produced_by_event": "heritage:MallaPeriod",
+      "associated_with": [
         "heritage:NewariCulture"
       ],
       "wikipediaTitle": "Patan Durbar Square",
@@ -504,10 +514,10 @@
       "@id": "heritage:BhaktapurCity",
       "@type": [
         "City",
-        "kg:HistoricalCity"
+        "hg:Settlement"
       ],
       "label": "Bhaktapur",
-      "nodeType": "city",
+      "nodeType": "Settlement",
       "description": "The City of Devotees — the best preserved medieval town in Nepal, where Newari culture thrives largely unchanged since the Malla era.",
       "storyText": "Bhaktapur (Khwopa in Newari — 'city of devotees') was the last capital of the Malla dynasty. When the Shah kings unified Nepal in 1769, Bhaktapur was eclipsed politically but preserved culturally. Its narrow brick lanes, still paved with traditional handmade bricks, wind past 172 different temples and courtyards. Women dry their rice on bamboo mats; men shape pottery in the potters' square as they have for 800 years. Even today electricity was late to arrive, and the town retains an atmosphere that the other valley cities have largely lost to modernisation.",
       "lat": "27.6710",
@@ -515,10 +525,10 @@
       "inceptionYear": "1200",
       "dynasty": "Malla",
       "unescoStatus": "World Heritage Site (1979)",
-      "locatedIn": "heritage:KathmanduValley",
-      "partOf": "heritage:KathmanduValley",
-      "builtDuring": "heritage:MallaPeriod",
-      "associatedWith": [
+      "has_current_location": "heritage:KathmanduValley",
+      "is_component_of": "heritage:KathmanduValley",
+      "was_produced_by_event": "heritage:MallaPeriod",
+      "associated_with": [
         "heritage:BisketJatra",
         "heritage:NewariCulture"
       ],
@@ -575,14 +585,14 @@
     {
       "@id": "heritage:ShivaLord",
       "@type": [
-        "kg:Deity"
+        "hg:Deity"
       ],
       "label": "Shiva / Pashupati",
-      "nodeType": "deity",
+      "nodeType": "Deity",
       "description": "The supreme deity of the Himalayan world — destroyer, transformer, ascetic, and lord of all living beings. Worshipped in Nepal as Pashupati, the patron of the nation.",
       "storyText": "In Nepal, Shiva wears many faces. As Pashupati he is the gentle lord of animals and protector of all creatures. As Bhairava he is terrifying — a skull-garlanded guardian whose image stands at every major crossroads to ward off evil. As the great Yogi he sits in eternal meditation on Mount Kailash. Shiva's sacred symbol, the lingam, represents the primordial creative force. Nepal's national deity is Pashupatinath — Shiva in his most compassionate form — and the king once bore the title 'Incarnation of Vishnu' but sought Shiva's blessing most of all.",
       "religion": "Hinduism",
-      "associatedWith": [
+      "associated_with": [
         "heritage:PashupatinathTemple"
       ],
       "wikipediaTitle": "Shiva",
@@ -637,14 +647,14 @@
     {
       "@id": "heritage:BuddhaLord",
       "@type": [
-        "kg:Deity"
+        "hg:Deity"
       ],
       "label": "Gautama Buddha",
-      "nodeType": "deity",
+      "nodeType": "Deity",
       "description": "The Awakened One, born in Lumbini, Nepal. Founder of Buddhism, whose teachings spread from the Terai foothills to encompass half of Asia.",
       "storyText": "Siddhartha Gautama was born under a sal tree in Lumbini, in the flat southern Terai of Nepal, around 563 BCE. A prince of the Shakya clan, he renounced his palace life after witnessing old age, sickness, and death. After years of ascetic practice and deep meditation under a Bodhi tree in Bodh Gaya, he awakened and became the Buddha — the Fully Awakened One. His first sermon set the Wheel of Dharma turning. His birthplace at Lumbini is a UNESCO World Heritage Site and a destination for Buddhist pilgrims from across the world.",
       "religion": "Buddhism",
-      "associatedWith": [
+      "associated_with": [
         "heritage:BoudhanathStupa",
         "heritage:SwayambhunathStupa",
         "heritage:Lumbini"
@@ -701,15 +711,15 @@
     {
       "@id": "heritage:KumariGoddess",
       "@type": [
-        "kg:Deity",
-        "kg:LivingGoddess"
+        "hg:Deity",
+        "hg:Deity"
       ],
       "label": "Kumari — The Living Goddess",
-      "nodeType": "deity",
+      "nodeType": "Deity",
       "description": "A pre-pubescent girl selected through rigorous ritual to embody the goddess Taleju, worshipped as a living divinity until her first menstruation.",
       "storyText": "Nepal's most extraordinary living tradition: a young girl, usually between four and seven years old, selected from the Shakya goldsmith caste through a series of rituals to become the Kumari — the royal living goddess. She must pass 32 perfections of beauty, endure a terrifying selection ceremony in a room filled with buffalo heads, and show no fear. Once installed in her golden house in Kathmandu's Durbar Square, she rarely walks on unpolluted ground — devotees carry her, or she is brought in a golden palanquin. Even the President of Nepal bows before her. When she menstruates, she returns to ordinary life, and the search for her successor begins.",
       "religion": "Hinduism and Buddhism",
-      "associatedWith": [
+      "associated_with": [
         "heritage:IndraJatra"
       ],
       "wikipediaTitle": "Kumari (Nepal)",
@@ -768,20 +778,20 @@
     {
       "@id": "heritage:IndraJatra",
       "@type": [
-        "kg:Festival",
+        "hg:Festival",
         "Event"
       ],
       "label": "Indra Jatra",
-      "nodeType": "festival",
+      "nodeType": "Festival",
       "description": "Kathmandu's greatest festival — eight days of processions, masked dances, and the chariot procession of the Living Goddess Kumari through the old city.",
       "storyText": "In August or September, Kathmandu erupts into Indra Jatra — the festival of the rain god Indra. The story goes that Indra himself came to earth disguised as a human to steal a sacred flower for his mother, was captured by the valley's inhabitants, and had to be ransomed by his mother. To honour both his son's release and the dead of the past year, Indra allows the dead to roam freely for eight days. The highlight is the chariot procession of the Living Goddess Kumari, preceded by the terrifying masked gods Bhairava and Kumari's attendant demons. The President of Nepal receives a ceremonial tika from the Kumari, a tradition that stretches back to the Malla kings.",
       "religion": "Hinduism and Buddhism",
       "period": "August–September",
-      "locatedIn": "heritage:KathmanduValley",
-      "associatedWith": [
+      "has_current_location": "heritage:KathmanduValley",
+      "associated_with": [
         "heritage:KumariGoddess"
       ],
-      "celebratedAt": [
+      "took_place_at": [
         "heritage:KathmanduValley"
       ],
       "wikipediaTitle": "Indra Jatra",
@@ -838,16 +848,16 @@
     {
       "@id": "heritage:Dashain",
       "@type": [
-        "kg:Festival",
+        "hg:Festival",
         "Event"
       ],
       "label": "Dashain",
-      "nodeType": "festival",
+      "nodeType": "Festival",
       "description": "Nepal's longest and most important festival — 15 days celebrating the victory of goddess Durga over the demon Mahishasura, marked by family reunions and animal sacrifice.",
       "storyText": "Dashain is the Nepali autumn of homecoming. For fifteen days in October, the whole country moves in one direction: home. Flights are full, buses overflow, and mountain trails fill with people returning to villages. The festival honours Durga's ten-day battle against the buffalo-demon Mahishasura. On the ninth day, Navami, hundreds of thousands of animals — goats, buffalo, ducks — are sacrificed at temples across the country. The tenth day, Vijaya Dashami, the Day of Victory, is the most joyful: elders press a mixture of scarlet powder and yoghurt rice (tika) onto the foreheads of juniors, while marigold garlands are placed around their necks. Families forbidden from meeting all year are brought together.",
       "religion": "Hinduism",
       "period": "October (15 days)",
-      "locatedIn": "heritage:KathmanduValley",
+      "has_current_location": "heritage:KathmanduValley",
       "wikipediaTitle": "Dashain",
       "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Dashain_festival_nepal.jpg",
       "images": [
@@ -902,16 +912,16 @@
     {
       "@id": "heritage:Tihar",
       "@type": [
-        "kg:Festival",
+        "hg:Festival",
         "Event"
       ],
       "label": "Tihar — Festival of Lights",
-      "nodeType": "festival",
+      "nodeType": "Festival",
       "description": "Nepal's festival of lights — five days honouring crows, dogs, cows, oxen, and the self, culminating in the sisterly blessing ceremony Bhai Tika.",
       "storyText": "Tihar — Nepal's answer to Diwali — is five consecutive days of honouring the creatures that carry the messages of Yama, lord of death: crows on day one, dogs on day two, cows on day three, oxen on day four. Houses are strung with oil lamps and coloured lights; the scent of incense fills the air. On the third day (Laxmi Puja), the goddess of wealth is invited into every home by an elaborate rangoli pathway of flowers and coloured powder. The fifth and final day is Bhai Tika: sisters perform an elaborate ritual to protect their brothers from Yama's rope, threading a garland of seven colours around their necks and pressing a rainbow tika onto their foreheads.",
       "religion": "Hinduism",
       "period": "October–November (5 days)",
-      "locatedIn": "heritage:KathmanduValley",
+      "has_current_location": "heritage:KathmanduValley",
       "wikipediaTitle": "Tihar",
       "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Tihar_festival_Nepal.jpg",
       "images": [
@@ -967,17 +977,17 @@
     {
       "@id": "heritage:BisketJatra",
       "@type": [
-        "kg:Festival",
+        "hg:Festival",
         "Event"
       ],
       "label": "Bisket Jatra",
-      "nodeType": "festival",
+      "nodeType": "Festival",
       "description": "Bhaktapur's chaotic New Year festival — the chariot battle of two rival halves of the city, culminating in the erection of a 25-metre pole and the serpent slaying.",
       "storyText": "Every April in Bhaktapur, the city tears itself apart in joyful battle. Bisket Jatra celebrates the Newari New Year with a chariot race between the two halves of the city — upper and lower town — each pulling massive wooden chariots of Bhairava and Bhadrakali through narrow streets. Ropes are pulled in a frenzied tug-of-war; the victorious half earns pride and blessing for the year. On the final night, a 25-metre pole (lingo) is erected in the riverbank, hung with two long cloth snakes. At the exact moment of the New Year, the pole is yanked down and the two snakes — representing two demons slain by the god Bhairava — are torn apart. The crowd erupts.",
       "religion": "Hinduism and Buddhism",
       "period": "April (Nepali New Year)",
-      "locatedIn": "heritage:BhaktapurCity",
-      "celebratedAt": [
+      "has_current_location": "heritage:BhaktapurCity",
+      "took_place_at": [
         "heritage:BhaktapurCity"
       ],
       "wikipediaTitle": "Bisket Jatra",
@@ -1033,14 +1043,14 @@
     {
       "@id": "heritage:LicchaviPeriod",
       "@type": [
-        "kg:HistoricalPeriod"
+        "hg:TimeSpan"
       ],
       "label": "Licchavi Period",
-      "nodeType": "period",
+      "nodeType": "TimeSpan",
       "description": "Nepal's classical age (c. 400–750 CE) — the first great dynasty of the valley, which established Hindu-Buddhist civilisation and built the earliest monuments.",
       "storyText": "The Licchavi era is Nepal's classical age — the foundation upon which all later culture was built. Arriving in the Kathmandu Valley around the 4th century CE, the Licchavi kings were fervent patrons of both Hinduism and Buddhism, endowing temples and stupas with equal generosity. They established the valley's sacred geography: Pashupatinath on the Bagmati, Boudhanath and Swayambhunath on their hills, and dozens of smaller shrines at every water source and crossroads. Licchavi inscriptions, carved in Sanskrit on stone pillars, are the oldest written records of the valley. Their art — graceful stone sculptures of gods and goddesses — set the aesthetic standard that Newari artists would refine for the next fifteen centuries.",
       "inceptionYear": "400",
-      "associatedWith": [
+      "associated_with": [
         "heritage:PashupatinathTemple",
         "heritage:BoudhanathStupa",
         "heritage:SwayambhunathStupa"
@@ -1089,20 +1099,20 @@
     {
       "@id": "heritage:MallaPeriod",
       "@type": [
-        "kg:HistoricalPeriod"
+        "hg:TimeSpan"
       ],
       "label": "Malla Period",
-      "nodeType": "period",
+      "nodeType": "TimeSpan",
       "description": "Nepal's golden age of art and architecture (c. 1200–1768 CE) — three rival Malla kingdoms produced the valley's greatest palaces, temples, and artistic achievements.",
       "storyText": "The Malla era is the golden age of Newari civilisation. For over five centuries, three rival Malla kingdoms — Kathmandu, Patan, and Bhaktapur — competed in a magnificent artistic arms race. Each king tried to outdo the others with grander temples, finer sculpture, more elaborate festivals. The result is the extraordinary density of monuments we see today: Nyatapola's five storeys, Patan's golden gate, Bhaktapur's 55-window palace. The Malla era also codified Nepal's festival calendar, established the Living Goddess Kumari tradition, and produced the finest examples of woodcarving, stone sculpture, and gilded bronze in the Himalayan world.",
       "inceptionYear": "1200",
-      "associatedWith": [
+      "associated_with": [
         "heritage:NyatapolaTempel",
         "heritage:PatanDurbarSquare",
         "heritage:BhaktapurCity",
         "heritage:KumariGoddess"
       ],
-      "influencedBy": "heritage:LicchaviPeriod",
+      "was_derived_from_source": "heritage:LicchaviPeriod",
       "wikipediaTitle": "Malla dynasty (Nepal)",
       "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Golden_Gate_Bhaktapur.jpg",
       "images": [
@@ -1149,14 +1159,14 @@
     {
       "@id": "heritage:ShahPeriod",
       "@type": [
-        "kg:HistoricalPeriod"
+        "hg:TimeSpan"
       ],
       "label": "Shah Period",
-      "nodeType": "period",
+      "nodeType": "TimeSpan",
       "description": "The unification of Nepal under Prithvi Narayan Shah (1768 CE) and the creation of the modern Nepali state — a kingdom that survived until the republic was declared in 2008.",
       "storyText": "Prithvi Narayan Shah, king of the small hill state of Gorkha, spent twenty years unifying the divided Malla kingdoms into a single nation. In 1769 he conquered Kathmandu on the night of the Indra Jatra festival — the Malla king was so engrossed in the celebration he failed to notice the army at the gates. The Shah dynasty ruled Nepal as the world's only Hindu kingdom for 240 years, through a Rana oligarchy, the 1990 people's movement, and a brutal Maoist conflict, until the Constituent Assembly abolished the monarchy in 2008 and declared Nepal a federal democratic republic.",
       "inceptionYear": "1768",
-      "influencedBy": "heritage:MallaPeriod",
+      "was_derived_from_source": "heritage:MallaPeriod",
       "wikipediaTitle": "Prithvi Narayan Shah",
       "imageUrl": "https://en.wikipedia.org/wiki/Special:FilePath/Prithvi_Narayan_Shah.jpg",
       "images": [
@@ -1201,14 +1211,14 @@
     {
       "@id": "heritage:NewariCulture",
       "@type": [
-        "kg:Culture"
+        "hg:ReligiousTradition"
       ],
       "label": "Newari Culture",
-      "nodeType": "culture",
+      "nodeType": "ReligiousTradition",
       "description": "The indigenous culture of the Kathmandu Valley — the Newar people created Nepal's artistic, architectural, and culinary traditions over two millennia.",
       "storyText": "The Newars are the original inhabitants of the Kathmandu Valley, a people whose civilisation produced every major monument, sculpture, painting, and festival in the valley. Newari culture is remarkable for being simultaneously Hindu and Buddhist: the same family may have a Buddhist name and a Hindu surname, worship at both stupas and temples, and follow a ritual calendar that blends both traditions seamlessly. The Newar social structure is organised into castes tied to specific crafts: goldsmiths (Shakya), farmers (Jyapu), merchants (Shrestha), and priests. Their cuisine — buffalo meat, fermented mustard greens, rice beer (chhaang), beaten rice — is unlike anything else in South Asia.",
       "ethnicity": "Newar",
-      "associatedWith": [
+      "associated_with": [
         "heritage:KathmanduValley",
         "heritage:MallaPeriod"
       ],
@@ -1266,20 +1276,20 @@
       "@id": "heritage:Lumbini",
       "@type": [
         "Place",
-        "kg:SacredSite"
+        "hg:ArchitecturalStructure"
       ],
       "label": "Lumbini — Birthplace of Buddha",
-      "nodeType": "sacred_site",
+      "nodeType": "SacredSite",
       "description": "The birthplace of Siddhartha Gautama in the Terai plains of southern Nepal — a UNESCO World Heritage Site and one of Buddhism's four holiest pilgrimage sites.",
       "storyText": "In the flat green plains of the Terai, where Nepal meets India, stands a grove of sal trees and the famous Ashoka Pillar — a column erected by the Mauryan emperor Ashoka in 249 BCE to mark the exact spot where Siddhartha Gautama was born. Queen Maya Devi had stopped here while travelling to give birth, and reached up to grasp a sal branch when labour began. The child stepped to the ground and took seven steps in each of the four directions, declaring himself the one who would end suffering. Today Lumbini's sacred garden is surrounded by a pilgrimage zone filled with monasteries built by Buddhist nations from Japan, China, Thailand, Korea, and beyond.",
       "lat": "27.4833",
       "long": "83.2761",
       "unescoStatus": "World Heritage Site (1997)",
       "religion": "Buddhism",
-      "dedicatedTo": [
+      "invokes_deity": [
         "heritage:BuddhaLord"
       ],
-      "associatedWith": [
+      "associated_with": [
         "heritage:BuddhaLord"
       ],
       "wikipediaTitle": "Lumbini",
@@ -1338,16 +1348,16 @@
       "@id": "heritage:BagmatiRiver",
       "@type": [
         "LakeBodyOfWater",
-        "kg:SacredRiver"
+        "hg:Place"
       ],
       "label": "Bagmati River",
-      "nodeType": "sacred_site",
+      "nodeType": "SacredSite",
       "description": "The sacred river of Kathmandu — for Hindus as holy as the Ganges. Its banks host the valley's most important cremation ghats and ancient temples.",
       "storyText": "The Bagmati is the Ganges of Nepal. Its waters are sacred to Hindus who believe bathing in it on auspicious days washes away sins, and dying on its banks — or having one's ashes scattered in it — guarantees liberation from the cycle of rebirth. At Pashupatinath the ghats line both banks: the upper ghats reserved for royalty and Brahmin priests, the lower for ordinary devotees. The smoke from the funeral pyres mingles with the smell of incense and marigolds in an atmosphere unlike anywhere else on earth — intensely alive and intensely mortal simultaneously.",
       "lat": "27.7097",
       "long": "85.3472",
       "religion": "Hinduism",
-      "associatedWith": [
+      "associated_with": [
         "heritage:PashupatinathTemple",
         "heritage:ShivaLord"
       ],

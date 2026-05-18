@@ -113,6 +113,41 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
       <div className="px-6 py-5 space-y-6">
         <p className="text-gray-300 text-sm leading-relaxed">{node.description}</p>
 
+        {/* ── Ontology Mapping (HeritageGraph / CIDOC-CRM) ── */}
+        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4 space-y-2.5">
+          <h3 className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ background: cfg.color }} />
+            Ontology Mapping
+          </h3>
+          <div className="space-y-1.5">
+            <div className="flex items-start gap-2 text-xs">
+              <span className="text-gray-500 shrink-0 w-24">HG Class</span>
+              <code className="text-[11px] px-1.5 py-0.5 rounded bg-white/[0.07] border border-white/10 font-mono break-all" style={{ color: cfg.glowColor }}>
+                hg:{node.nodeType}
+              </code>
+            </div>
+            <div className="flex items-start gap-2 text-xs">
+              <span className="text-gray-500 shrink-0 w-24">CIDOC-CRM</span>
+              <code className="text-[11px] px-1.5 py-0.5 rounded bg-white/[0.07] border border-white/10 font-mono break-all text-blue-300">
+                {node.cidocMapping}
+              </code>
+            </div>
+            <div className="flex items-start gap-2 text-xs">
+              <span className="text-gray-500 shrink-0 w-24">Category</span>
+              <span className="text-[11px] px-1.5 py-0.5 rounded border font-medium capitalize"
+                style={{ color: cfg.glowColor, borderColor: `${cfg.color}44`, background: `${cfg.color}11` }}>
+                {node.hgCategory}
+              </span>
+            </div>
+            <div className="flex items-start gap-2 text-xs">
+              <span className="text-gray-500 shrink-0 w-24">Namespace</span>
+              <code className="text-[11px] text-gray-500 font-mono break-all">
+                https://w3id.org/heritagegraph/
+              </code>
+            </div>
+          </div>
+        </div>
+
         <Divider color={cfg.color} />
 
         {node.keyFacts && node.keyFacts.length > 0 && (
