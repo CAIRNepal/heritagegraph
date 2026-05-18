@@ -2,7 +2,12 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
+import { IconX } from '@tabler/icons-react';
+
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
   fetchHeritageDemoData,
   NODE_TYPE_CONFIG,
@@ -24,12 +29,13 @@ import { StoryPanel } from './components/StoryPanel';
 import { MandalaLoader } from './components/MandalaLoader';
 import { TimelineStrip } from './components/TimelineStrip';
 import { GraphLegend } from './components/GraphLegend';
+import { MuseumToolbar, type MuseumDataSource, type MuseumViewMode } from './components/museum-toolbar';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 // ── View / data mode types ─────────────────────────────────────────────────────
-type ViewMode = '2d' | 'xr' | 'map';
-type DataSource = 'demo' | 'live';
+type ViewMode = MuseumViewMode;
+type DataSource = MuseumDataSource;
 
 // ── Instance → museum node conversion ─────────────────────────────────────────
 //
@@ -197,26 +203,10 @@ const MapView = dynamic(
   { ssr: false, loading: () => <div className="absolute inset-0 flex items-center justify-center"><MandalaLoader /></div> },
 );
 
-// ── Shared view-mode button ────────────────────────────────────────────────────
-function ViewBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
-  return (
-    <button
-      onClick={onClick}
-      className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-      style={
-        active
-          ? { background: 'rgba(245,158,11,0.2)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.4)' }
-          : { background: 'rgba(255,255,255,0.05)', color: '#6b7280', border: '1px solid rgba(255,255,255,0.1)' }
-      }
-    >
-      {children}
-    </button>
-  );
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 export function HeritageMindMapClient() {
   const { data: session } = useSession();
+  const t = useTranslations('heritageMuseum');
 
   // ── Demo data ──────────────────────────────────────────────────────────────
   const [demoGraph,   setDemoGraph]   = useState<GraphData | null>(null);
@@ -241,7 +231,7 @@ export function HeritageMindMapClient() {
   useEffect(() => {
     fetchHeritageDemoData()
       .then((d) => { setDemoGraph(d); setDemoLoading(false); })
-      .catch(() => { setDemoError('Could not load heritage data.'); setDemoLoading(false); });
+      .catch(() => { setDemoError('demo'); setDemoLoading(false); });
   }, []);
 
   // ── Load live data on demand ───────────────────────────────────────────────
@@ -259,7 +249,7 @@ export function HeritageMindMapClient() {
       attachRelations(nodes, links);
       setLiveGraph({ nodes, links });
     } catch {
-      setLiveError('Could not reach the HeritageGraph API.');
+      setLiveError('live');
       // Stay in 'live' mode so a Retry click is intuitive — the user sees the
       // error banner and the toggle button switches back to demo if they want.
     } finally {
@@ -337,8 +327,12 @@ export function HeritageMindMapClient() {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleNodeSelect = useCallback((node: GraphNode) => {
-    setSelectedNode(node);
-    setPanelOpen(true);
+    let deselecting = false;
+    setSelectedNode((prev) => {
+      deselecting = prev?.id === node.id;
+      return deselecting ? null : node;
+    });
+    setPanelOpen(!deselecting);
   }, []);
 
   const handleRelatedNodeClick = useCallback(
@@ -385,89 +379,51 @@ export function HeritageMindMapClient() {
     return counts;
   }, [filteredGraph]);
 
+  const errorMessage =
+    error === 'live' ? t('errors.liveLoad') : error === 'demo' ? t('errors.demoLoad') : null;
+
   return (
-    <div className="flex flex-col h-full bg-gray-950 text-white overflow-hidden">
+    <div className="flex flex-col h-full bg-background text-foreground overflow-hidden">
 
-      {/* ── Header ── */}
-      <header className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5 border-b border-white/10 bg-gray-950/95 backdrop-blur-md z-30">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-base shadow-lg shadow-amber-500/30">
-            🏔
-          </div>
-          <div>
-            <h1 className="font-bold text-sm leading-tight">Nepal Heritage Knowledge Graph</h1>
-            <p className="text-gray-500 text-xs">
-              Immersive Story Museum · Ontology:{' '}
-              <span className="text-amber-500/80">CIDOC-CRM</span>
-              {' · '}
-              <span className="text-amber-500/80">hg:</span>
-            </p>
-          </div>
-        </div>
+      <MuseumToolbar
+        viewMode={viewMode}
+        onViewModeChange={(mode) => (mode === 'xr' ? switchToXR() : setViewMode(mode))}
+        dataSource={dataSource}
+        liveLoading={liveLoading}
+        onToggleDataSource={toggleDataSource}
+        nodeCount={nodeCount}
+        linkCount={linkCount}
+        showStats={!loading}
+      />
 
-        <div className="flex-1" />
-
-        {!loading && (
-          <span className="hidden sm:block text-xs text-gray-600">
-            {nodeCount} nodes · {linkCount} relations
-          </span>
-        )}
-
-        {/* Data source toggle */}
-        <button
-          onClick={toggleDataSource}
-          disabled={liveLoading}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-          style={
-            dataSource === 'live'
-              ? { background: 'rgba(16,185,129,0.2)', color: '#34d399', border: '1px solid rgba(16,185,129,0.4)' }
-              : { background: 'rgba(255,255,255,0.05)', color: '#6b7280', border: '1px solid rgba(255,255,255,0.1)' }
-          }
-        >
-          {liveLoading ? '⟳ Loading…' : dataSource === 'live' ? '⬡ Live KG' : '⬡ Demo'}
-        </button>
-
-        {/* View mode toggle */}
-        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-white/5 border border-white/10">
-          <ViewBtn active={viewMode === '2d'}  onClick={() => setViewMode('2d')}>⬡ Graph</ViewBtn>
-          <ViewBtn active={viewMode === 'map'} onClick={() => setViewMode('map')}>📍 Map</ViewBtn>
-          <ViewBtn active={viewMode === 'xr'}  onClick={() => switchToXR()}>◈ XR</ViewBtn>
-        </div>
-
-        <div className="hidden lg:flex items-center gap-1.5">
-          {(['CIDOC-CRM', 'hg:', 'PROV-O', 'JSON-LD'] as const).map((t) => (
-            <span key={t} className="text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 bg-green-900/20 text-green-400 font-mono">
-              {t}
-            </span>
-          ))}
-        </div>
-      </header>
-
-      {/* ── Live data error ── */}
       {liveError && (
         <div
-          className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-orange-900/20 border-b border-orange-500/20 text-orange-300 text-xs z-20"
+          className="flex-shrink-0 flex items-center gap-2 px-4 py-2 bg-destructive/10 border-b border-destructive/20 text-destructive text-xs z-20"
           role="alert"
           aria-live="polite"
         >
           <span aria-hidden="true">⚠</span>
-          <span>{liveError}</span>
-          <button
+          <span>{t('errors.liveLoad')}</span>
+          <Button
             onClick={retryLiveData}
             disabled={liveLoading}
-            className="ml-auto px-2 py-0.5 rounded border border-orange-500/40 text-orange-200 hover:bg-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            variant="outline"
+            size="sm"
+            className="ml-auto h-7 text-xs"
             type="button"
           >
-            {liveLoading ? 'Retrying…' : 'Retry'}
-          </button>
-          <button
+            {liveLoading ? t('errors.retrying') : t('errors.retry')}
+          </Button>
+          <Button
             onClick={() => setLiveError(null)}
-            className="text-orange-400 hover:text-orange-200"
-            aria-label="Dismiss error"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 shrink-0"
+            aria-label={t('errors.dismiss')}
             type="button"
           >
-            ✕
-          </button>
+            <IconX className="w-4 h-4" />
+          </Button>
         </div>
       )}
 
@@ -507,17 +463,19 @@ export function HeritageMindMapClient() {
                 <div className="absolute inset-0 flex items-center justify-center" role="alert">
                   <div className="text-center space-y-3 p-8 max-w-md">
                     <p className="text-4xl" aria-hidden="true">⚠️</p>
-                    <p className="text-gray-300 text-sm font-medium">Unable to load heritage data</p>
-                    <p className="text-gray-500 text-xs">{error}</p>
+                    <p className="text-foreground text-sm font-medium">{t('errors.loadTitle')}</p>
+                    <p className="text-muted-foreground text-xs">{errorMessage}</p>
                     {dataSource === 'live' && (
-                      <button
+                      <Button
                         onClick={retryLiveData}
                         disabled={liveLoading}
-                        className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 disabled:opacity-50"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 text-xs"
                         type="button"
                       >
-                        {liveLoading ? 'Retrying…' : 'Retry'}
-                      </button>
+                        {liveLoading ? t('errors.retrying') : t('errors.retry')}
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -528,18 +486,11 @@ export function HeritageMindMapClient() {
                 <div className="absolute inset-0 flex items-center justify-center" role="status">
                   <div className="text-center space-y-3 p-8 max-w-md">
                     <p className="text-4xl" aria-hidden="true">🔭</p>
-                    <p className="text-gray-300 text-sm font-medium">No heritage nodes match your filters</p>
-                    <p className="text-gray-500 text-xs">
-                      {fullGraph.nodes.length} node{fullGraph.nodes.length === 1 ? '' : 's'} in the graph, but none satisfy
-                      the active search and filter combination.
-                    </p>
-                    <button
-                      onClick={resetFilters}
-                      type="button"
-                      className="mt-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30"
-                    >
-                      Reset filters
-                    </button>
+                    <p className="text-foreground text-sm font-medium">{t('empty.filtersTitle')}</p>
+                    <p className="text-muted-foreground text-xs">{t('empty.filtersBody', { total: fullGraph.nodes.length })}</p>
+                    <Button onClick={resetFilters} type="button" variant="outline" size="sm" className="mt-2 text-xs">
+                      {t('empty.resetFilters')}
+                    </Button>
                   </div>
                 </div>
               )}
@@ -570,14 +521,15 @@ export function HeritageMindMapClient() {
               {/* Hint */}
               {viewMode === '2d' && !loading && !error && !selectedNode && nodeCount > 0 && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none">
-                  <div className="text-xs text-gray-500 bg-gray-900/80 backdrop-blur-sm rounded-full px-4 py-2 border border-white/10 flex items-center gap-2">
+                  <div className="text-xs text-muted-foreground bg-card/90 backdrop-blur-sm rounded-full px-4 py-2 border border-border flex items-center gap-2 shadow-sm">
                     <span className="animate-bounce inline-block">👆</span>
-                    Click a node · Drag · Scroll to zoom ·{' '}
+                    {t('hints.graph')} ·{' '}
                     <button
-                      className="pointer-events-auto text-amber-400 hover:text-amber-300 underline underline-offset-2"
+                      className="pointer-events-auto text-primary hover:underline underline-offset-2"
                       onClick={() => switchToXR()}
+                      type="button"
                     >
-                      Switch to XR
+                      {t('switchToXr')}
                     </button>
                   </div>
                 </div>
@@ -586,21 +538,18 @@ export function HeritageMindMapClient() {
               {/* View in XR button */}
               {viewMode === '2d' && !loading && !error && selectedNode && (
                 <div className="absolute top-3 right-3">
-                  <button
-                    onClick={() => switchToXR(selectedNode)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition-all"
-                  >
-                    ◈ View in XR
-                  </button>
+                  <Button onClick={() => switchToXR(selectedNode)} size="sm" variant="secondary" className="text-xs gap-1.5">
+                    {t('viewInXr')}
+                  </Button>
                 </div>
               )}
 
               {/* Live data badge */}
               {dataSource === 'live' && !loading && (
-                <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-900/40 border border-emerald-500/30 text-emerald-400 text-[10px] font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live HeritageGraph KG
-                </div>
+                <Badge className="absolute top-3 left-3 gap-1.5 text-[10px] font-semibold shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" aria-hidden />
+                  {t('liveBadge')}
+                </Badge>
               )}
 
               {/* Legend (2D + Map) */}
@@ -614,7 +563,7 @@ export function HeritageMindMapClient() {
             </div>
 
             {/* Desktop story sidebar */}
-            <div className="hidden lg:flex flex-col w-96 min-h-0 border-l border-white/10 bg-gray-900/60 backdrop-blur-md overflow-hidden">
+            <div className="hidden lg:flex flex-col w-96 min-h-0 border-l border-border bg-card/80 backdrop-blur-md overflow-hidden">
               <StoryPanel
                 node={selectedNode}
                 graphData={fullGraph ?? EMPTY}
@@ -653,13 +602,15 @@ export function HeritageMindMapClient() {
               />
             )}
             {/* Back-to-graph contextual button inside the 3D scene */}
-            <button
+            <Button
               onClick={() => setViewMode('2d')}
               type="button"
-              className="absolute top-3 left-3 z-20 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-900/80 backdrop-blur-md text-white border border-white/15 hover:bg-gray-900 transition-all"
+              variant="secondary"
+              size="sm"
+              className="absolute top-3 left-3 z-20 text-xs"
             >
-              ← Back to Graph
-            </button>
+              {t('backToGraph')}
+            </Button>
           </div>
         </div>
       )}
@@ -667,11 +618,11 @@ export function HeritageMindMapClient() {
       {/* Mobile story drawer (2D only) */}
       {viewMode === '2d' && panelOpen && selectedNode && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
-          <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={() => setPanelOpen(false)} />
-          <div className="bg-gray-900 border-t border-white/10 h-3/4 rounded-t-2xl overflow-hidden flex flex-col relative">
-            <div className="flex items-center justify-center px-5 py-3 border-b border-white/10 flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
-              <button onClick={() => setPanelOpen(false)} className="absolute right-5 text-gray-400 hover:text-white">✕</button>
+          <div className="flex-1 bg-background/60 backdrop-blur-sm" onClick={() => setPanelOpen(false)} />
+          <div className="bg-card border-t border-border h-3/4 rounded-t-2xl overflow-hidden flex flex-col relative">
+            <div className="flex items-center justify-center px-5 py-3 border-b border-border flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-muted" />
+              <Button onClick={() => setPanelOpen(false)} className="absolute right-5" variant="ghost" size="icon" aria-label={t('errors.dismiss')}><IconX className="w-4 h-4" /></Button>
             </div>
             <div className="flex-1 overflow-hidden">
               <StoryPanel
