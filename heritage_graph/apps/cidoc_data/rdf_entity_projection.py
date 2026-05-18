@@ -15,17 +15,9 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# Match ontology/HeritageGraph.yaml prefixes (subset for emitted triples).
-RDF_PREFIXES: dict[str, str] = {
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "owl": "http://www.w3.org/2002/07/owl#",
-    "xsd": "http://www.w3.org/2001/XMLSchema#",
-    "crm": "http://www.cidoc-crm.org/cidoc-crm/",
-    "heritageGraph": "https://w3id.org/heritagegraph/",
-    "geo": "http://www.opengis.net/ont/geosparql#",
-    "prov": "http://www.w3.org/ns/prov#",
-}
+# Generated from ontology/HeritageGraph.yaml (prefixes section).
+# To change a namespace: edit the schema, run python3 tools/gen_heritage_viz_config.py.
+from apps.graph.ontology_config import RDF_PREFIXES  # noqa: E402
 
 RDF_TYPE_URI = RDF_PREFIXES["rdf"] + "type"
 OWL_SAME_AS_URI = RDF_PREFIXES["owl"] + "sameAs"

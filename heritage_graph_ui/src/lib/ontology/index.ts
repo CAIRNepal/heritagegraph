@@ -1,5 +1,5 @@
 // Barrel export for ontology module
-export { ontologyEnums, type OntologyEnumOption } from "./enums";
+export { ontologyEnums, type EnumKey } from "./enums";
 export {
   OntologyProvider,
   useOntology,

@@ -1,18 +1,14 @@
-// ── Types ─────────────────────────────────────────────────────────────────────
-// NodeType values are HeritageGraph ontology class identifiers aligned with
-// CIDOC-CRM. Namespace: https://w3id.org/heritagegraph/
+// ── Ontology config — generated from canonical schema ─────────────────────────
+// To change node types, predicates, colors, or enums:
+//   1. Edit ontology/HeritageGraph.yaml  (semantic definitions)
+//      or  tools/ui-vizmap.yaml          (visual config: colors, emojis, categories)
+//   2. Run: python3 tools/gen_heritage_viz_config.py
+//   3. Commit all changed files together.
+import type { NodeType, HgCategory } from '@/lib/ontology/__generated__/heritage-viz-config';
+import { NODE_TYPE_CONFIG, RELATION_LABELS, HG_CATEGORY_CONFIG } from '@/lib/ontology/__generated__/heritage-viz-config';
 
-export type NodeType =
-  | 'Place'                   // crm:E53_Place — geographic region
-  | 'Temple'                  // hg:Temple → crm:E22_Human-Made_Object
-  | 'BuddhistMonument'        // hg:BuddhistMonument → crm:E22_Human-Made_Object
-  | 'ArchitecturalStructure'  // crm:E22_Human-Made_Object
-  | 'Settlement'              // crm:E53_Place — urban settlement
-  | 'Deity'                   // crm:E28_Conceptual_Object
-  | 'Festival'                // hg:Festival → crm:E7_Activity
-  | 'TimeSpan'                // crm:E52_Time-Span
-  | 'ReligiousTradition'      // hg:ReligiousTradition → crm:E55_Type
-  | 'SacredSite';             // hg:ArchitecturalStructure → crm:E22_Human-Made_Object
+export type { NodeType, HgCategory };
+export { NODE_TYPE_CONFIG, RELATION_LABELS, HG_CATEGORY_CONFIG };
 
 export interface HeritageRelation {
   predicate: string;
@@ -72,47 +68,10 @@ export interface GraphData {
   links: GraphLink[];
 }
 
-// ── Node type visual config ────────────────────────────────────────────────────
-// Keys are HeritageGraph ontology class identifiers (namespace: https://w3id.org/heritagegraph/).
-// cidocMapping follows the CIDOC-CRM E-number notation.
-
-export const NODE_TYPE_CONFIG: Record<
-  NodeType,
-  { color: string; glowColor: string; emoji: string; label: string; cidocMapping: string; hgCategory: string }
-> = {
-  Place:                  { color: '#10b981', glowColor: '#34d399', emoji: '🏔', label: 'Place',                  cidocMapping: 'crm:E53_Place',                        hgCategory: 'spatial' },
-  Temple:                 { color: '#f59e0b', glowColor: '#fcd34d', emoji: '🛕', label: 'Temple',                 cidocMapping: 'hg:Temple → crm:E22_Human-Made_Object', hgCategory: 'tangible' },
-  BuddhistMonument:       { color: '#8b5cf6', glowColor: '#a78bfa', emoji: '☸',  label: 'Buddhist Monument',      cidocMapping: 'hg:BuddhistMonument → crm:E22',         hgCategory: 'tangible' },
-  ArchitecturalStructure: { color: '#ec4899', glowColor: '#f472b6', emoji: '🏛', label: 'Architectural Structure', cidocMapping: 'crm:E22_Human-Made_Object',             hgCategory: 'tangible' },
-  Settlement:             { color: '#06b6d4', glowColor: '#22d3ee', emoji: '🏙', label: 'Settlement',             cidocMapping: 'crm:E53_Place',                        hgCategory: 'spatial' },
-  Deity:                  { color: '#ef4444', glowColor: '#f87171', emoji: '✨', label: 'Deity',                  cidocMapping: 'crm:E28_Conceptual_Object',             hgCategory: 'conceptual' },
-  Festival:               { color: '#f97316', glowColor: '#fb923c', emoji: '🎉', label: 'Festival',               cidocMapping: 'hg:Festival → crm:E7_Activity',         hgCategory: 'event' },
-  TimeSpan:               { color: '#6366f1', glowColor: '#818cf8', emoji: '📜', label: 'Time-Span',              cidocMapping: 'crm:E52_Time-Span',                    hgCategory: 'spatial' },
-  ReligiousTradition:     { color: '#14b8a6', glowColor: '#2dd4bf', emoji: '🎨', label: 'Religious Tradition',    cidocMapping: 'hg:ReligiousTradition → crm:E55_Type',  hgCategory: 'conceptual' },
-  SacredSite:             { color: '#84cc16', glowColor: '#a3e635', emoji: '🌿', label: 'Sacred Site',            cidocMapping: 'hg:ArchitecturalStructure → crm:E22',   hgCategory: 'tangible' },
-};
-
-// Relation labels use HeritageGraph object property names (crm:P- properties noted).
-export const RELATION_LABELS: Record<string, string> = {
-  has_current_location:    'has current location',   // crm:P53
-  is_component_of:         'is component of',        // crm:P46i
-  associated_with:         'associated with',        // hg:associated_with
-  invokes_deity:           'invokes deity',           // crm:P141
-  took_place_at:           'took place at',           // crm:P7
-  was_produced_by_event:   'was produced by event',  // crm:P108i
-  was_derived_from_source: 'was derived from source', // crm:P17i
-  has_component:           'has component',           // crm:P46
-  carried_out_by:          'carried out by',          // crm:P14
-};
-
 // ── JSON-LD parser ─────────────────────────────────────────────────────────────
 
-// HeritageGraph object property IRIs used as JSON-LD predicate keys.
-const RELATION_PREDICATES = [
-  'has_current_location', 'is_component_of', 'associated_with', 'invokes_deity',
-  'took_place_at', 'was_produced_by_event', 'was_derived_from_source',
-  'has_component', 'carried_out_by',
-];
+// Derived from RELATION_LABELS so it stays in sync automatically.
+const RELATION_PREDICATES = Object.keys(RELATION_LABELS);
 
 function proxyImg(url: string | undefined): string | undefined {
   if (!url) return undefined;

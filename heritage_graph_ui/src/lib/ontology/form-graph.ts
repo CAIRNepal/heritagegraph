@@ -1,22 +1,14 @@
 /**
  * Derived graph view + JSON-LD preview for OntologyForm.
  * Subject URIs follow Django `rdf_signals._resource_uri`: `{base}/{model.__name__.lower()}/{pk}`.
- * Python source of truth for CURIE expansion: `apps.cidoc_data.rdf_entity_projection`.
  */
 
 import type { OntologyClass, OntologyField } from "./types";
 
-/** Subset of `RDF_PREFIXES` in rdf_entity_projection.py */
-export const RDF_PREFIXES: Readonly<Record<string, string>> = {
-  rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-  rdfs: "http://www.w3.org/2000/01/rdf-schema#",
-  owl: "http://www.w3.org/2002/07/owl#",
-  xsd: "http://www.w3.org/2001/XMLSchema#",
-  crm: "http://www.cidoc-crm.org/cidoc-crm/",
-  heritageGraph: "https://w3id.org/heritagegraph/",
-  geo: "http://www.opengis.net/ont/geosparql#",
-  prov: "http://www.w3.org/ns/prov#",
-};
+// RDF_PREFIXES is generated from ontology/HeritageGraph.yaml (prefixes section).
+// To change a namespace: edit the schema, run python3 tools/gen_heritage_viz_config.py.
+import { RDF_PREFIXES } from "./__generated__/heritage-viz-config";
+export { RDF_PREFIXES };
 
 const RDF_TYPE_IRI = RDF_PREFIXES.rdf + "type";
 const RDFS_LABEL_IRI = RDF_PREFIXES.rdfs + "label";

@@ -9,12 +9,18 @@ interface ForceGraphProps {
   selectedId: string | null;
   onNodeSelect: (node: GraphNode) => void;
   highlightedIds?: Set<string>;
+  pathHighlight?: { nodeIds: Set<string>; edgePairs: Set<string> };
+  pathPickMode?: boolean;
+  pathSource?: string | null;
 }
 
 const NODE_RADIUS = 28;
 const LINK_DISTANCE = 160;
 
-export function ForceGraph({ data, selectedId, onNodeSelect, highlightedIds }: ForceGraphProps) {
+export function ForceGraph({
+  data, selectedId, onNodeSelect, highlightedIds,
+  pathHighlight, pathPickMode, pathSource,
+}: ForceGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null);
 
@@ -194,15 +200,80 @@ export function ForceGraph({ data, selectedId, onNodeSelect, highlightedIds }: F
       .attr('opacity', (d) => (d.id === selectedId ? 1 : 0));
   }, [selectedId]);
 
-  // Dim non-highlighted nodes
+  // Dim non-highlighted nodes (neighbour highlight)
   useEffect(() => {
     if (!svgRef.current) return;
+    // Path highlight takes precedence
+    if (pathHighlight && pathHighlight.nodeIds.size > 0) return;
     d3.select(svgRef.current)
       .selectAll<SVGGElement, GraphNode>('.hm-node-group')
       .attr('opacity', (d) =>
         !highlightedIds || highlightedIds.size === 0 || highlightedIds.has(d.id) ? 1 : 0.25,
       );
-  }, [highlightedIds]);
+  }, [highlightedIds, pathHighlight]);
+
+  // Path highlight: gold rings on path nodes, dim everything else
+  useEffect(() => {
+    if (!svgRef.current) return;
+    const svg = d3.select(svgRef.current);
+
+    if (!pathHighlight || pathHighlight.nodeIds.size === 0) {
+      // Clear path styling
+      svg.selectAll<SVGGElement, GraphNode>('.hm-node-group').attr('opacity', 1);
+      svg.selectAll<SVGLineElement, GraphLink>('.hm-path-edge').attr('stroke', '#374151').attr('stroke-width', 1.5).attr('stroke-opacity', 0.6).classed('hm-path-edge', false);
+      svg.selectAll('.hm-path-ring').remove();
+      return;
+    }
+
+    const { nodeIds, edgePairs } = pathHighlight;
+
+    // Dim / brighten nodes
+    svg.selectAll<SVGGElement, GraphNode>('.hm-node-group')
+      .attr('opacity', (d) => (nodeIds.has(d.id) ? 1 : 0.12));
+
+    // Gold ring on path nodes
+    svg.selectAll('.hm-path-ring').remove();
+    svg.selectAll<SVGGElement, GraphNode>('.hm-node-group')
+      .filter((d) => nodeIds.has(d.id))
+      .append('circle')
+      .attr('class', 'hm-path-ring')
+      .attr('r', NODE_RADIUS + 11)
+      .attr('fill', 'none')
+      .attr('stroke', '#f59e0b')
+      .attr('stroke-width', 2.5)
+      .attr('stroke-dasharray', '5 3')
+      .style('animation', 'hm-spin 4s linear infinite');
+
+    // Colour path links gold
+    svg.selectAll<SVGLineElement, GraphLink>('line')
+      .each(function (d) {
+        const s = typeof d.source === 'string' ? d.source : (d.source as GraphNode).id;
+        const t = typeof d.target === 'string' ? d.target : (d.target as GraphNode).id;
+        const key1 = `${s}→${t}`;
+        const key2 = `${t}→${s}`;
+        if (edgePairs.has(key1) || edgePairs.has(key2)) {
+          d3.select(this).attr('stroke', '#f59e0b').attr('stroke-width', 3).attr('stroke-opacity', 1).classed('hm-path-edge', true);
+        } else {
+          d3.select(this).attr('stroke', '#374151').attr('stroke-width', 1.5).attr('stroke-opacity', 0.15);
+        }
+      });
+  }, [pathHighlight]);
+
+  // Path-pick mode: crosshair cursor + pulse on source node
+  useEffect(() => {
+    if (!svgRef.current) return;
+    d3.select(svgRef.current).style('cursor', pathPickMode ? 'crosshair' : 'default');
+    // Pulse ring on the first picked node
+    d3.select(svgRef.current)
+      .selectAll<SVGGElement, GraphNode>('.hm-node-group')
+      .select('.hm-selection-ring')
+      .attr('stroke', (d) =>
+        pathPickMode && pathSource && d.id === pathSource
+          ? '#f59e0b'
+          : (NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? '#fff'),
+      )
+      .attr('stroke-width', (d) => (pathPickMode && pathSource && d.id === pathSource ? 3 : 2));
+  }, [pathPickMode, pathSource]);
 
   return <svg ref={svgRef} className="w-full h-full" style={{ background: 'transparent' }} />;
 }

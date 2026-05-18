@@ -1,0 +1,196 @@
+# tools/ui-vizmap.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# Presentational metadata for the HeritageGraph network visualization.
+#
+# This file holds ONLY visual/display config (colors, emojis, hgCategory).
+# Semantic metadata (class_uri, slot_uri, CIDOC mappings) lives exclusively in
+# ontology/HeritageGraph.yaml — this file references it but never duplicates it.
+#
+# Consumed by:
+#   tools/gen_heritage_viz_config.py
+#
+# Outputs (do not edit by hand):
+#   heritage_graph_ui/src/lib/ontology/__generated__/heritage-viz-config.ts
+#   heritage_graph_ui/src/lib/ontology/__generated__/enums.ts
+#   heritage_graph/apps/graph/ontology_config.py
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# ADDING A NEW NODE TYPE
+#   1. Add / verify the class in ontology/HeritageGraph.yaml with a class_uri.
+#   2. Add a new entry in node_types below.
+#   3. Run: python3 tools/gen_heritage_viz_config.py
+#   4. Commit all three changed files together.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Each node_type entry:
+#   key          — TypeScript NodeType value (string key in generated config)
+#   linkml_class — class name in ontology/HeritageGraph.yaml; generator resolves
+#                  class_uri from there. Use an alias key when the VIZ type is a
+#                  subtype or grouping that doesn't have its own schema class.
+#   label        — Human-readable label for UI display
+#   color        — Hex color for node fill
+#   glow_color   — Hex color for node glow/highlight
+#   emoji        — Single emoji for node icon
+#   hg_category  — Graph domain category (must be a key in hg_categories below)
+
+node_types:
+  - key: Place
+    linkml_class: Place
+    label: Place
+    color: "#10b981"
+    glow_color: "#34d399"
+    emoji: "\U0001F3D4"   # 🏔
+    hg_category: spatial
+
+  - key: Temple
+    linkml_class: Temple
+    label: Temple
+    color: "#f59e0b"
+    glow_color: "#fcd34d"
+    emoji: "\U0001F6D5"   # 🛕
+    hg_category: tangible
+
+  - key: BuddhistMonument
+    linkml_class: BuddhistMonument
+    label: Buddhist Monument
+    color: "#8b5cf6"
+    glow_color: "#a78bfa"
+    emoji: "☸"       # ☸
+    hg_category: tangible
+
+  - key: ArchitecturalStructure
+    linkml_class: ArchitecturalStructure
+    label: Architectural Structure
+    color: "#ec4899"
+    glow_color: "#f472b6"
+    emoji: "\U0001F3DB"   # 🏛
+    hg_category: tangible
+
+  # Settlement is a Place subtype for urban settlements (no separate schema class)
+  - key: Settlement
+    linkml_class: Place
+    label: Settlement
+    color: "#06b6d4"
+    glow_color: "#22d3ee"
+    emoji: "\U0001F3D9"   # 🏙
+    hg_category: spatial
+
+  - key: Deity
+    linkml_class: Deity
+    label: Deity
+    color: "#ef4444"
+    glow_color: "#f87171"
+    emoji: "✨"       # ✨
+    hg_category: conceptual
+
+  - key: Festival
+    linkml_class: Festival
+    label: Festival
+    color: "#f97316"
+    glow_color: "#fb923c"
+    emoji: "\U0001F389"   # 🎉
+    hg_category: event
+
+  - key: TimeSpan
+    linkml_class: TimeSpan
+    label: Time-Span
+    color: "#6366f1"
+    glow_color: "#818cf8"
+    emoji: "\U0001F4DC"   # 📜
+    hg_category: spatial
+
+  - key: ReligiousTradition
+    linkml_class: ReligiousTradition
+    label: Religious Tradition
+    color: "#14b8a6"
+    glow_color: "#2dd4bf"
+    emoji: "\U0001F3A8"   # 🎨
+    hg_category: conceptual
+
+  # SacredSite is an ArchitecturalStructure subtype for consecrated sacred spaces
+  - key: SacredSite
+    linkml_class: ArchitecturalStructure
+    label: Sacred Site
+    color: "#84cc16"
+    glow_color: "#a3e635"
+    emoji: "\U0001F33F"   # 🌿
+    hg_category: tangible
+
+
+# Domain category visual config.
+# Keys are the allowed hg_category values referenced above.
+
+hg_categories:
+  tangible:
+    color: "#3b82f6"
+    border: "#2563eb"
+    label: Tangible Heritage
+  conceptual:
+    color: "#8b5cf6"
+    border: "#7c3aed"
+    label: Conceptual Entities
+  event:
+    color: "#f59e0b"
+    border: "#d97706"
+    label: Events
+  spatial:
+    color: "#06b6d4"
+    border: "#0891b2"
+    label: Spatiotemporal
+
+
+# Slots from ontology/HeritageGraph.yaml that appear as edge labels in the
+# graph visualization. The generator resolves slot_uri from the schema.
+# Add the cidoc_note field only for custom HG properties not yet in the schema.
+
+viz_predicates:
+  - slot: has_current_location
+    label: has current location
+    # schema slot_uri: crm:P55_has_current_location
+
+  - slot: is_component_of
+    label: is component of
+    # schema slot_uri: crm:P46i_forms_part_of
+
+  - slot: associated_with
+    label: associated with
+    cidoc_note: "heritageGraph:associated_with"   # custom HG property, not yet in schema
+
+  - slot: invokes_deity
+    label: invokes deity
+    # schema slot_uri: crm:P12_occurred_in_the_presence_of
+
+  - slot: took_place_at
+    label: took place at
+    # schema slot_uri: crm:P7_took_place_at
+
+  - slot: was_produced_by_event
+    label: was produced by event
+    # schema slot_uri: crm:P108i_was_produced_by
+
+  - slot: was_derived_from_source
+    label: was derived from source
+    # schema slot_uri: prov:wasDerivedFrom
+
+  - slot: has_component
+    label: has component
+    # schema slot_uri: crm:P46_is_composed_of
+
+  - slot: carried_out_by
+    label: carried out by
+    # schema slot_uri: crm:P14_carried_out_by
+
+
+# Subset of schema prefixes to emit into TypeScript and Python.
+# Must be a subset of the prefixes defined in ontology/HeritageGraph.yaml.
+# The generator validates this list against the schema and errors on unknown keys.
+
+core_prefixes:
+  - rdf
+  - rdfs
+  - owl
+  - xsd
+  - crm
+  - heritageGraph
+  - geo
+  - prov
