@@ -66,6 +66,8 @@ Once running, access:
 
 > 📖 **Full deployment guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production setup, SSL, backups, and more.
 
+> 📖 **Dokploy**: Compose stack (`docker-compose-dokploy.yml`) and automatic Dokploy redeploy when **`v1`** advances are documented in [DOKPLOY.md](DOKPLOY.md) (GitHub Actions hook + optional Git webhook).
+
 ### Useful Commands
 
 ```bash

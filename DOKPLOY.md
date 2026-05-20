@@ -22,7 +22,9 @@ Deploy hooks and branch selection are configured in **Dokploy** and your **Git h
 2. Set the Git **branch** to **`v1`** (production / build branch).
 3. Confirm the compose file path is **`docker-compose-dokploy.yml`** at the **repository root** and the build context is the **monorepo root** (see Quick checklist above).
 
-### 2. Git provider webhook (recommended)
+### 2. Git provider webhook (alternative on GitHub)
+
+If you prefer the Git host to call Dokploy directly (no Actions), use **only** this path on GitHub—not **also** Actions with **`DOKPLOY_WEBHOOK_URL`** (**double deploy**).
 
 In Dokploy, open **Deployments** and copy the **Webhook URL** for this compose app. It looks like:
 
@@ -42,9 +44,25 @@ Use that full URL (do **not** commit it into this repo):
 
 **Secrets:** The path token in the URL is a **secret**. Rotate it in Dokploy if it leaks, then update the Git webhook (and any CI secret).
 
-### 3. Optional: GitHub Actions (v1-only)
+### 3. GitHub Actions (recommended on GitHub: only `v1` pushes trigger)
 
-Alternatively (or for stricter “only `v1`” triggers), use [`.github/workflows/dokploy-deploy.yml`](.github/workflows/dokploy-deploy.yml). Add a repository secret **`DOKPLOY_WEBHOOK_URL`** with the **full** deploy hook URL from Dokploy.
+Workflow [`.github/workflows/dokploy-deploy.yml`](.github/workflows/dokploy-deploy.yml) runs on **`push` to branch `v1`** and **`workflow_dispatch`** (manual run may require that branch’s workflow on the repo’s default branch; prefer a **push** to **`v1`** for a reliable hook).
+
+**Operator checklist:**
+
+1. In Dokploy, copy the full **Deployments → Webhook URL** (`…/api/deploy/compose/<token>`). Treat the URL as **secret**; rotate the token if it leaked and update CI.
+2. In GitHub: **Repository → Settings → Secrets and variables → Actions → New repository secret** named **`DOKPLOY_WEBHOOK_URL`** with that URL — **do not commit** it to git.
+
+From a machine where [GitHub CLI](https://cli.github.com/) is logged in (`gh auth login`) and you have **`admin`/secrets permission** on the repo, you can set the secret without pasting into the GitHub UI (replace placeholders):
+
+```bash
+REPO_OWNER=CAIRNepal
+REPO_NAME=heritagegraph
+WEBHOOK_URL='https-or-http-url-from-dokploy-deployments'
+printf '%s' "$WEBHOOK_URL" | gh secret set DOKPLOY_WEBHOOK_URL --repo "$REPO_OWNER/$REPO_NAME"
+```
+
+3. In Dokploy, confirm **Compose → Source**: branch **`v1`**, file **`docker-compose-dokploy.yml`** at repo root, monorepo build context (**§ Quick checklist** above).
 
 **Do not use both** a repository webhook and this workflow with the secret set—you will trigger **two** deploys per push. Prefer either:
 
@@ -56,8 +74,9 @@ If the secret is not set, the workflow skips the POST (no failure) so you can re
 ### 4. Verify
 
 1. Note the last deployment in Dokploy **Deployments** (e.g. last 10 list).
-2. Push a commit to **`v1`** (e.g. merge or direct push).
-3. Confirm a **new** deployment appears and finishes; logs should show a clone/checkout of **`v1`**.
+2. Push a merge or commit to **`v1`** (or GitHub → **Actions** → **Dokploy deploy hook** → **Run workflow**) so the webhook POST runs.
+3. In GitHub **Actions**, open the **“Dokploy deploy hook”** run and confirm **“Trigger Dokploy webhook”** did not skip (if **`DOKPLOY_WEBHOOK_URL`** was set).
+4. In Dokploy, confirm a **new** deployment appears and finishes; logs should show a clone/checkout of **`v1`**.
 
 ## OCR and async tasks
 
