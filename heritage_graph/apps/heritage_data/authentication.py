@@ -65,6 +65,16 @@ class DevSessionAuthentication(authentication.SessionAuthentication):
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 
+def _email_verified_from_google_payload(payload: dict) -> bool:
+    """Whether Google claims mark the email verified (bool or string in payload)."""
+    raw = payload.get("email_verified", False)
+    if isinstance(raw, bool):
+        return raw
+    if isinstance(raw, str):
+        return raw.strip().lower() in ("true", "1", "yes")
+    return False
+
+
 class GoogleTokenAuthentication(authentication.BaseAuthentication):
     """
     Authenticate Bearer tokens from NextAuth + Google.
@@ -112,7 +122,7 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         if not email:
             raise exceptions.AuthenticationFailed("Token missing email claim.")
 
-        if not payload.get("email_verified", False):
+        if not _email_verified_from_google_payload(payload):
             raise exceptions.AuthenticationFailed("Google email not verified.")
 
         user, created = User.objects.get_or_create(
@@ -121,9 +131,13 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
 
         user.email = email
         if hasattr(user, "first_name"):
-            user.first_name = payload.get("given_name", getattr(user, "first_name", "")) or ""
+            user.first_name = (
+                payload.get("given_name", getattr(user, "first_name", "")) or ""
+            )
         if hasattr(user, "last_name"):
-            user.last_name = payload.get("family_name", getattr(user, "last_name", "")) or ""
+            user.last_name = (
+                payload.get("family_name", getattr(user, "last_name", "")) or ""
+            )
         user.save()
 
         if created:
@@ -270,7 +284,11 @@ class GitHubTokenAuthentication(authentication.BaseAuthentication):
         user.save()
 
         if created:
-            logger.info("Created new Django user from GitHub sign-in: %s (gh: %s)", email, github_login)
+            logger.info(
+                "Created new Django user from GitHub sign-in: %s (gh: %s)",
+                email,
+                github_login,
+            )
 
         # --- Sync UserProfile ---
         profile, _ = UserProfile.objects.get_or_create(user=user)

@@ -8,6 +8,7 @@ export type HeritageAuthErrorCode =
   | 'BACKEND_REJECTED'
   | 'BACKEND_UNAVAILABLE'
   | 'BACKEND_UNREACHABLE'
+  | 'BACKEND_HANDSHAKE_NOT_FOUND'
   | 'BACKEND_SYNC';
 
 const HERITAGE_AUTH_MESSAGES: Record<HeritageAuthErrorCode, string> = {
@@ -17,6 +18,8 @@ const HERITAGE_AUTH_MESSAGES: Record<HeritageAuthErrorCode, string> = {
     'The HeritageGraph API returned an error while signing you in. Please try again in a few minutes.',
   BACKEND_UNREACHABLE:
     'The app could not reach the HeritageGraph API during sign-in. If you use Docker, check INTERNAL_BACKEND_URL. Locally, ensure Django is running and reachable from the Next.js server.',
+  BACKEND_HANDSHAKE_NOT_FOUND:
+    'The sign-in handshake URL was not found on the API (404). Check deploy routing, that Django serves GET /data/api/testme/, and that INTERNAL_BACKEND_URL points at the API root without a wrong path prefix.',
   BACKEND_SYNC:
     'Sign-in with the provider worked, but the server rejected the follow-up request. Check API logs and OAuth configuration.',
 };

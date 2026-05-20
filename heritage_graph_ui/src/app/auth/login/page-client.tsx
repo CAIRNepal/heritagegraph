@@ -26,6 +26,8 @@ function safeCallbackUrl(raw: string | null): string {
 /**
  * Google-only sign-in. Preserves `callbackUrl`. Surfaces ?error= from NextAuth or
  * HeritageGraph backend handshake without silent failures.
+ *
+ * Uses full-page redirect to Google (no auto signIn) so the account chooser is reliable.
  */
 export default function LoginRedirectPageClient({
   googleOAuthConfigured,
@@ -34,7 +36,6 @@ export default function LoginRedirectPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [localError, setLocalError] = useState<string | null>(null);
-  const autoSignInStarted = useRef(false);
   const postAuthRedirectDone = useRef(false);
 
   const callbackUrl = safeCallbackUrl(searchParams.get('callbackUrl'));
@@ -54,52 +55,6 @@ export default function LoginRedirectPageClient({
     router.replace(callbackUrl);
   }, [status, router, callbackUrl]);
 
-  useEffect(() => {
-    if (!googleOAuthConfigured) return;
-    if (status !== 'unauthenticated') return;
-    if (errorParam) return;
-    if (autoSignInStarted.current) return;
-    autoSignInStarted.current = true;
-
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const res = await signIn('google', { callbackUrl, redirect: false });
-        if (cancelled) return;
-
-        if (!res?.ok && res?.error) {
-          setLocalError(
-            describeAuthUrlError(res.error) ??
-              'Sign-in could not start. Use the button below.',
-          );
-          return;
-        }
-
-        if (res?.url) {
-          window.location.href = res.url;
-          return;
-        }
-
-        setLocalError(
-          'Sign-in did not return a redirect URL. Check NextAuth and Google OAuth configuration.',
-        );
-      } catch (e) {
-        if (!cancelled) {
-          setLocalError(
-            e instanceof Error
-              ? e.message
-              : 'Sign-in failed to start. Check your network connection.',
-          );
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [status, callbackUrl, errorParam, googleOAuthConfigured]);
-
   if (status === 'loading' || status === 'authenticated') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -115,12 +70,14 @@ export default function LoginRedirectPageClient({
 
   const configMessage = !googleOAuthConfigured ? missingGoogleOAuthConfigMessage : null;
   const displayError = configMessage || urlMessage || localError;
-  const showBusySpinner =
-    googleOAuthConfigured && !displayError && !errorParam;
 
-  function tryGoogleAgain() {
+  function continueWithGoogle() {
     setLocalError(null);
-    signIn('google', { callbackUrl });
+    void signIn('google', { callbackUrl }).catch((e) => {
+      setLocalError(
+        e instanceof Error ? e.message : 'Sign-in could not start. Try again.',
+      );
+    });
   }
 
   return (
@@ -133,17 +90,10 @@ export default function LoginRedirectPageClient({
           </Alert>
         )}
 
-        {showBusySpinner && (
-          <div className="space-y-4">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
-            <p className="text-sm text-muted-foreground">Redirecting to Google…</p>
-          </div>
-        )}
-
         <div className="space-y-3">
-          {googleOAuthConfigured && !showBusySpinner ? (
+          {googleOAuthConfigured ? (
             <>
-              <Button className="w-full" type="button" onClick={tryGoogleAgain}>
+              <Button className="w-full" type="button" onClick={continueWithGoogle}>
                 {displayError ? 'Try again with Google' : 'Continue with Google'}
               </Button>
               <p className="text-xs text-muted-foreground text-center">
@@ -151,11 +101,11 @@ export default function LoginRedirectPageClient({
                 went wrong.
               </p>
             </>
-          ) : !googleOAuthConfigured ? (
+          ) : (
             <Button className="w-full" type="button" variant="outline" asChild>
               <a href="/">Back to home</a>
             </Button>
-          ) : null}
+          )}
         </div>
       </div>
     </div>

@@ -533,9 +533,10 @@ After OAuth, NextAuth verifies the token against Django (`GET /data/api/testme/`
 | `error` value | Typical cause |
 |---------------|----------------|
 | `BACKEND_REJECTED` | `401`/`403` from Django — mismatched `GOOGLE_CLIENT_ID` (frontend vs backend), wrong `DJANGO_ENV`, or backend not accepting the provider token |
-| `BACKEND_UNAVAILABLE` | Django returned `5xx` during the handshake |
+| `BACKEND_HANDSHAKE_NOT_FOUND` | `404` on `GET /data/api/testme/` — wrong internal API base URL, proxy routing, or path |
+| `BACKEND_UNAVAILABLE` | Django returned `5xx` during the handshake (retries apply to `502`/`503`/`504`/`429`) |
 | `BACKEND_UNREACHABLE` | Next.js could not reach `INTERNAL_BACKEND_URL` (Docker: use `http://backend:8000`, not `localhost`) |
-| `BACKEND_SYNC` | Other HTTP errors during the handshake |
+| `BACKEND_SYNC` | Other HTTP errors during the handshake (e.g. `400` **DisallowedHost**) — check API logs and Next.js server logs for `[next-auth] Django handshake non-OK response` |
 
 ### Session banner: “Session needs attention”
 

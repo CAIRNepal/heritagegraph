@@ -21,7 +21,7 @@ if (isGoogleOAuthConfigured()) {
       authorization: {
         params: {
           access_type: 'offline',
-          prompt: 'consent',
+          prompt: 'select_account',
           scope: 'openid email profile',
         },
       },
@@ -40,6 +40,58 @@ function jwtExpMs(jwt: string | undefined | null): number | null {
   } catch {
     return null;
   }
+}
+
+const HANDSHAKE_RETRYABLE = new Set([502, 503, 504, 429]);
+
+function logHandshakeFailure(url: string, status: number, bodySnippet: string): void {
+  const safeSnippet = bodySnippet.replace(/\bBearer\s+\S+/gi, 'Bearer [redacted]');
+  console.warn('[next-auth] Django handshake non-OK response', {
+    url,
+    status,
+    bodySnippet: safeSnippet.slice(0, 240),
+  });
+}
+
+/** Try access token first, then ID token — Django accepts both. */
+async function backendGet(
+  url: string,
+  accessToken: string | undefined,
+  idToken: string | undefined,
+): Promise<Response> {
+  const tryTokens = [accessToken, idToken].filter(
+    (t, i, arr): t is string => Boolean(t) && arr.indexOf(t) === i,
+  );
+  let last = new Response(null, { status: 401 });
+  for (const bearer of tryTokens) {
+    last = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${bearer}`,
+        Accept: 'application/json',
+      },
+    });
+    if (last.ok) return last;
+    if (last.status !== 401 && last.status !== 403) return last;
+  }
+  return last;
+}
+
+async function backendGetWithHandshakeRetry(
+  url: string,
+  accessToken: string | undefined,
+  idToken: string | undefined,
+): Promise<Response> {
+  const maxAttempts = 3;
+  let last: Response = new Response(null, { status: 503 });
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    last = await backendGet(url, accessToken, idToken);
+    if (last.ok || !HANDSHAKE_RETRYABLE.has(last.status)) {
+      return last;
+    }
+    await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+  }
+  return last;
 }
 
 async function refreshGoogleAccessToken(token: JWT): Promise<JWT> {
@@ -109,42 +161,30 @@ export const authOptions: NextAuthOptions = {
       ).replace(/\/$/, '');
       const testUrl = `${backendBase}/data/api/testme/`;
 
-      /** Try access token first, then ID token — Django accepts both. */
-      async function backendGet(url: string): Promise<Response> {
-        const tryTokens = [accessToken, idToken].filter(
-          (t, i, arr): t is string => Boolean(t) && arr.indexOf(t) === i,
-        );
-        let last = new Response(null, { status: 401 });
-        for (const bearer of tryTokens) {
-          last = await fetch(url, {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${bearer}`,
-              Accept: 'application/json',
-            },
-          });
-          if (last.ok) return last;
-          if (last.status !== 401 && last.status !== 403) return last;
-        }
-        return last;
-      }
-
       try {
-        const response = await backendGet(testUrl);
-        await response.text();
+        const response = await backendGetWithHandshakeRetry(testUrl, accessToken, idToken);
+        const bodyText = await response.text();
 
         if (!response.ok) {
+          logHandshakeFailure(testUrl, response.status, bodyText);
           if (response.status === 401 || response.status === 403) {
             return '/auth/login?error=BACKEND_REJECTED';
           }
           if (response.status >= 500) {
             return '/auth/login?error=BACKEND_UNAVAILABLE';
           }
+          if (response.status === 404) {
+            return '/auth/login?error=BACKEND_HANDSHAKE_NOT_FOUND';
+          }
           return '/auth/login?error=BACKEND_SYNC';
         }
 
         try {
-          const meResp = await backendGet(`${backendBase}/data/api/user/me/`);
+          const meResp = await backendGet(
+            `${backendBase}/data/api/user/me/`,
+            accessToken,
+            idToken,
+          );
           if (meResp.ok) {
             const meData = await meResp.json();
             if (meData.user_id) {

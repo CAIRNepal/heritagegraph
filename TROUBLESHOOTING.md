@@ -38,6 +38,16 @@
 
 ## ⚠️ Configuration Gotchas
 
+### Sign-in: `BACKEND_SYNC` / `BACKEND_HANDSHAKE_NOT_FOUND` after Google OAuth
+
+- **Where:** NextAuth `signIn` callback in `heritage_graph_ui/src/lib/auth.ts` calls Django `GET /data/api/testme/` with `Authorization: Bearer <Google access or ID token>`.
+- **Symptoms:** Google succeeds, then redirect to `/auth/login?error=BACKEND_SYNC` (or `BACKEND_HANDSHAKE_NOT_FOUND` for `404`).
+- **What to do:**
+  - Read **Django/API logs** for the HTTP status on `/data/api/testme/` (400 often means `DisallowedHost`; 404 means routing or wrong `INTERNAL_BACKEND_URL` path).
+  - On the **frontend** service, set `INTERNAL_BACKEND_URL` to an internal base URL the Node server can reach (e.g. `http://backend:8000` in Compose), not a public URL that redirects and strips `Authorization`.
+  - Ensure **`ALLOWED_HOSTS`** includes `backend` and **`GOOGLE_CLIENT_ID`** matches on Django and Next.js (`AUTH.md`, `DOKPLOY.md`).
+  - Next.js logs a snippet on failure: `[next-auth] Django handshake non-OK response`.
+
 ### 5. `ROOT_URLCONF` is `"urls"` not `"heritage_graph.urls"`
 - **Where:** `heritage_graph/settings/base.py`
 - **Problem:** Looks wrong but is correct — Django's working directory in Docker is `/app` (which is `heritage_graph/`), so `urls.py` is a top-level module.

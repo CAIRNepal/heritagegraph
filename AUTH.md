@@ -401,16 +401,33 @@ After Google returns tokens, NextAuth calls Django `GET /data/api/testme/` with 
 | Result | What the user sees |
 |--------|---------------------|
 | `401` / `403` | Redirect to `/auth/login?error=BACKEND_REJECTED` with guidance (matching OAuth client IDs, `DJANGO_ENV`, etc.) |
-| `5xx` | `?error=BACKEND_UNAVAILABLE` |
+| `404` | `?error=BACKEND_HANDSHAKE_NOT_FOUND` — routing or wrong `INTERNAL_BACKEND_URL` path (see below) |
+| `5xx` | `?error=BACKEND_UNAVAILABLE` (handshake retries a few times on `502` / `503` / `504` / `429`) |
 | Network failure from Next.js → Django | `?error=BACKEND_UNREACHABLE` (check `INTERNAL_BACKEND_URL` in Docker) |
-| Other non-success HTTP | `?error=BACKEND_SYNC` |
+| Other non-success HTTP (e.g. `400` **DisallowedHost**) | `?error=BACKEND_SYNC` — **check Django/API logs for the HTTP status**; the Next.js server also logs a short body snippet (`[next-auth] Django handshake non-OK response`). |
 
 Profile enrichment (`GET /data/api/user/me/`) is **best-effort**: if it fails, sign-in still succeeds and the failure is logged.
+
+#### Diagnosing `BACKEND_SYNC` and deploys (e.g. `dev.heritagegraph.xyz`)
+
+1. **grep API access logs** for `GET /data/api/testme/` at the time of sign-in and note the **status code** (400 from `DisallowedHost`, 404 from path/proxy, etc.).
+2. **`INTERNAL_BACKEND_URL`** on the **frontend** service must be reachable from the Next.js server process (in Docker Compose, typically `http://backend:8000` with **no** extra path prefix). Redirects that drop the `Authorization` header break the handshake.
+3. **`ALLOWED_HOSTS`** on Django must include `backend` (and your public API host). See `DOKPLOY.md`.
+4. **Bisect with curl** from the same host/container as Next.js (use a short-lived Google access token you trust):
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" \
+  -H "Authorization: Bearer YOUR_GOOGLE_ACCESS_TOKEN" \
+  -H "Accept: application/json" \
+  "${INTERNAL_BACKEND_URL%/}/data/api/testme/"
+```
+
+Expect `200` JSON when `GOOGLE_CLIENT_ID` matches on Django and the token is valid.
 
 ### NextAuth and configuration errors
 
 - Custom **`pages.error`** is `/auth/error`. Query param `error` uses [NextAuth’s documented values](https://next-auth.js.org/configuration/pages) (`Configuration`, `OAuthCallback`, …), mapped to readable text in `src/lib/auth-errors.ts`.
-- **`/auth/login`** reads the same `error` query param (HeritageGraph codes and NextAuth codes). If automatic redirect to Google fails, the page shows a **Try again** button and any message from `signIn(..., { redirect: false })`.
+- **`/auth/login`** uses **Continue with Google** with a full-page redirect to the provider (reliable account chooser). Use **Try again with Google** after an error.
 
 ### Session token refresh (Google)
 
