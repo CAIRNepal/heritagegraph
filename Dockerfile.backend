@@ -3,7 +3,7 @@
 # ================================================================
 
 # Stage 1: Base builder (common dependencies)
-FROM python:3.12-slim as base-builder
+FROM python:3.12-slim-bookworm AS base-builder
 
 # Prevent Python from writing .pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -28,7 +28,7 @@ RUN pip install --upgrade pip setuptools wheel && \
 
 # ================================================================
 # Stage 2: OCR builder (heavy dependencies for Tesseract, Torch, etc.)
-FROM base-builder as ocr-builder
+FROM base-builder AS ocr-builder
 
 # Install OCR system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -47,7 +47,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels -r requirements
 # ================================================================
 # Stage 3: Full fat runtime (OCR worker — includes Tesseract, PyTorch, etc.)
 # Use: docker build --target ocr-worker
-FROM python:3.12-slim as ocr-worker
+FROM python:3.12-slim-bookworm AS ocr-worker
 
 # Prevent Python from writing .pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -114,7 +114,7 @@ CMD ["celery", "-A", "heritage_graph", "worker", "-l", "info", "--concurrency=2"
 # ================================================================
 # Stage 4: Lean runtime (main backend — no PyTorch / heavy OCR wheels)
 # Default image when no --target is passed (safer for platform deploys).
-FROM python:3.12-slim as runtime-lean
+FROM python:3.12-slim-bookworm AS runtime-lean
 
 # Prevent Python from writing .pyc files and buffering stdout/stderr
 ENV PYTHONDONTWRITEBYTECODE=1 \
