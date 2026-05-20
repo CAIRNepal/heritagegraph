@@ -83,7 +83,7 @@ heritagegraph/
 ├── docker-compose.fuseki.yml    # Optional: Apache Jena Fuseki only (SPARQL UI)
 ├── FUSEKI.md                    # Runbook for standalone Fuseki
 ├── Dockerfile.backend           # Backend multi-stage build
-├── Dockerfile.frontend          # Frontend multi-stage build (root-level, legacy)
+├── Dockerfile.frontend          # Same as heritage_graph_ui/Dockerfile (repo-root `-f` alias)
 ├── Makefile                     # Convenience commands
 ├── .env.example                 # Environment variable template
 └── DEPLOYMENT.md                # Full deployment guide

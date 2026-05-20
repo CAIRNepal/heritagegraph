@@ -1,0 +1,29 @@
+# Trigger Dokploy compose redeploy on pushes to v1.
+#
+# Setup: add repository secret DOKPLOY_WEBHOOK_URL = full URL from Dokploy
+#   Deployments → Webhook URL (e.g. .../api/deploy/compose/<token>).
+#
+# If unset, this workflow skips the HTTP call (use a GitHub repo webhook instead).
+# Do not use BOTH a repo webhook to the same URL and this secret—double deploys.
+
+name: Dokploy deploy hook
+
+on:
+  push:
+    branches:
+      - v1
+  workflow_dispatch:
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Dokploy webhook
+        env:
+          DOKPLOY_WEBHOOK_URL: ${{ secrets.DOKPLOY_WEBHOOK_URL }}
+        run: |
+          if [ -z "${DOKPLOY_WEBHOOK_URL:-}" ]; then
+            echo "DOKPLOY_WEBHOOK_URL is not set; skipping POST (configure Git webhook in repo settings or add this secret)."
+            exit 0
+          fi
+          curl -fsS -X POST "$DOKPLOY_WEBHOOK_URL"

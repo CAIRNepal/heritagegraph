@@ -12,6 +12,53 @@ Use the repository file **`docker-compose-dokploy.yml`** as the Compose definiti
    (Omitting `backend` causes `400 Bad Request` / DisallowedHost on token exchange.)
 5. **Domains in Dokploy:** API → **backend** port **8000**; dashboard → **frontend** **3000**; landing → **landing** **3000**. Redis and **`ocr-worker`** are internal only (no public route).
 
+## Automatic redeploy on `v1`
+
+Deploy hooks and branch selection are configured in **Dokploy** and your **Git host**, not in `docker-compose-dokploy.yml`.
+
+### 1. Dokploy source
+
+1. Open the **Compose** application → **Settings** / **Source** (labels may vary by Dokploy version).
+2. Set the Git **branch** to **`v1`** (production / build branch).
+3. Confirm the compose file path is **`docker-compose-dokploy.yml`** at the **repository root** and the build context is the **monorepo root** (see Quick checklist above).
+
+### 2. Git provider webhook (recommended)
+
+In Dokploy, open **Deployments** and copy the **Webhook URL** for this compose app. It looks like:
+
+`http://<dokploy-host>:<port>/api/deploy/compose/<secret-token>`
+
+Use that full URL (do **not** commit it into this repo):
+
+- **GitHub:** **Settings → Webhooks → Add webhook**
+  - **Payload URL:** paste the URL from Dokploy.
+  - **Content type:** `application/json`.
+  - **Which events:** *Just the push event* (or push only).
+- **GitLab:** **Settings → Webhooks** — same URL and push events.
+
+**Network:** The Git host must reach your Dokploy instance (firewall / port open). Prefer **HTTPS** if Dokploy or your reverse proxy exposes it; some orgs disallow plain **HTTP** webhooks.
+
+**GitHub “every branch” pushes:** The webhook fires on all branch pushes; Dokploy should build only the branch configured in step 1 (`v1`). If your Dokploy build runs on every hook regardless of branch, avoid using the repo webhook for every branch push—use the optional GitHub Actions workflow below (it runs **only** on `v1`), or push only to `v1` for production.
+
+**Secrets:** The path token in the URL is a **secret**. Rotate it in Dokploy if it leaks, then update the Git webhook (and any CI secret).
+
+### 3. Optional: GitHub Actions (v1-only)
+
+Alternatively (or for stricter “only `v1`” triggers), use [`.github/workflows/dokploy-deploy.yml`](.github/workflows/dokploy-deploy.yml). Add a repository secret **`DOKPLOY_WEBHOOK_URL`** with the **full** deploy hook URL from Dokploy.
+
+**Do not use both** a repository webhook and this workflow with the secret set—you will trigger **two** deploys per push. Prefer either:
+
+- Repository webhook only, **or**
+- Actions workflow with `DOKPLOY_WEBHOOK_URL`, and **no** GitHub repository webhook to the same hook.
+
+If the secret is not set, the workflow skips the POST (no failure) so you can rely on a repo webhook only.
+
+### 4. Verify
+
+1. Note the last deployment in Dokploy **Deployments** (e.g. last 10 list).
+2. Push a commit to **`v1`** (e.g. merge or direct push).
+3. Confirm a **new** deployment appears and finishes; logs should show a clone/checkout of **`v1`**.
+
 ## OCR and async tasks
 
 The stack runs **`backend`** (lean API image) plus **`redis`** and **`ocr-worker`** (heavy image with PyTorch). Document uploads enqueue Celery tasks on Redis; the worker must be running for OCR to progress beyond `pending`.
