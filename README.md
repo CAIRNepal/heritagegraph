@@ -198,3 +198,6 @@ The license for this project is yet to be finalized. We’ll choose one that bot
 This repository contains the LinkML code for NCHLOD. It includes the following components:
 
 1. `schema.yaml`: Defines the schema for NCHLOD.
+
+
+docker build -f Dockerfile.backend --target ocr-worker -t heritagegraph-ocr-worker:test .

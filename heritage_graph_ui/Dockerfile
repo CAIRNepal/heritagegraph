@@ -1,38 +1,40 @@
 # ================================================================
 # Multi-stage build for Next.js Frontend (heritage_graph_ui)
+# Build context MUST be the repository root (see docker-compose files).
 # ================================================================
 
-# Stage 1: Dependencies
+# Stage 1: Dependencies (optional layer cache; runner uses builder standalone)
 FROM node:20-alpine AS dependencies
 
-WORKDIR /app
+WORKDIR /repo/heritage_graph_ui
 
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+COPY heritage_graph_ui/package.json heritage_graph_ui/package-lock.json* heritage_graph_ui/pnpm-lock.yaml* ./
+COPY heritage_graph_ui/scripts/ ./scripts/
 
-# Copy package files
-COPY package.json package-lock.json* pnpm-lock.yaml* ./
-
-# Copy scripts needed for postinstall
-COPY scripts/ ./scripts/
-
-# Install production dependencies
 RUN npm ci --only=production 2>/dev/null || npm install --only=production
 
 # ================================================================
 # Stage 2: Builder
 FROM node:20-alpine AS builder
 
-WORKDIR /app
+# prebuild runs: python3 ../tools/gen_heritage_viz_config.py (needs PyYAML + repo ontology/tools)
+RUN apk add --no-cache python3 py3-yaml
 
-# Copy package files and install all deps (including dev)
-COPY package.json package-lock.json* pnpm-lock.yaml* ./
-COPY scripts/ ./scripts/
-RUN npm ci 2>/dev/null || npm install
+WORKDIR /repo
 
-# Copy source code
-COPY . .
+# Install deps before full source copy (better layer cache)
+COPY heritage_graph_ui/package.json heritage_graph_ui/package-lock.json* heritage_graph_ui/pnpm-lock.yaml* heritage_graph_ui/
+COPY heritage_graph_ui/scripts/ heritage_graph_ui/scripts/
+RUN cd heritage_graph_ui && (npm ci 2>/dev/null || npm install)
+
+COPY ontology/ ontology/
+COPY tools/ tools/
+COPY heritage_graph_ui/ heritage_graph_ui/
+
+WORKDIR /repo/heritage_graph_ui
 
 # Build-time arguments (for Next.js to pick up env variables during build)
 ARG NEXTAUTH_URL
@@ -49,7 +51,6 @@ ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-build-placeholder}
 ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-build-placeholder}
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
 
-# Build Next.js app
 RUN npm run build
 
 # ================================================================
@@ -66,16 +67,15 @@ ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1
 
 # NextAuth / Google: set at container runtime (e.g. compose `environment:`), not baked here.
-# Internal backend URL for server-side calls (NextAuth callbacks)
+# Internal backend URL for server-side calls (NextAuth server-side)
 ENV INTERNAL_BACKEND_URL=http://backend:8000
 
-# Copy package.json
-COPY package.json ./
+COPY --from=builder /repo/heritage_graph_ui/package.json ./
 
 # Copy production dependencies from standalone output
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /repo/heritage_graph_ui/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /repo/heritage_graph_ui/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /repo/heritage_graph_ui/public ./public
 
 # Switch to non-root user
 USER nextjs

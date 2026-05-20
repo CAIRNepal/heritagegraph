@@ -456,18 +456,18 @@ Stage 4: ocr-worker (python:3.13-slim) ← CELERY WORKER IMAGE
 - Flexible scaling: run multiple generic backends, fewer expensive OCR workers
 - Development: both stages available for local testing
 
-**Frontend (`heritage_graph_ui/Dockerfile`):**
+**Frontend (`heritage_graph_ui/Dockerfile`):** Docker build context is the **repository root** (compose sets `context: .`) so `npm run build` can run `python3 ../tools/gen_heritage_viz_config.py` with `ontology/` and `tools/` present. Builder installs `python3` and `py3-yaml` on Alpine.
 ```
 dependencies (node:20-alpine)
-  └── npm ci --only=production
+  └── production npm install (optional cache stage)
 
-builder (node:20-alpine)
-  └── npm ci (all), npm run build
+builder (node:20-alpine + python3)
+  └── COPY ontology, tools, heritage_graph_ui → npm run build (prebuild runs codegen)
 
 runner (node:20-alpine)
-  └── copy prod node_modules + .next
+  └── copy .next/standalone + static + public
   └── non-root user: nextjs (1001)
-  └── CMD: npm run start
+  └── CMD: node server.js
 ```
 
 ---

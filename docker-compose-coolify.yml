@@ -239,8 +239,8 @@ services:
   # ---------------------------------------------------------------
   frontend:
     build:
-      context: ./heritage_graph_ui
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: heritage_graph_ui/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
         NEXTAUTH_URL: ${NEXTAUTH_URL:-}
