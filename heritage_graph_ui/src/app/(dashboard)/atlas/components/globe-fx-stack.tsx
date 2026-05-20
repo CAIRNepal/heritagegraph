@@ -59,12 +59,14 @@ export function GlobeFxStack() {
 
     const bloomStage = coll.bloom;
     const allowBloom = presetAllowsBloomSlider(preset) && bloom > 0.02;
-    bloomStage.enabled = allowBloom;
-    if (allowBloom && bloomStage.uniforms) {
-      bloomStage.uniforms.contrast = 105 + bloom * 100;
-      bloomStage.uniforms.brightness = -0.38 + bloom * 0.52;
-    } else {
-      bloomStage.enabled = false;
+    if (bloomStage) {
+      bloomStage.enabled = allowBloom;
+      if (allowBloom && bloomStage.uniforms) {
+        bloomStage.uniforms.contrast = 105 + bloom * 100;
+        bloomStage.uniforms.brightness = -0.38 + bloom * 0.52;
+      } else {
+        bloomStage.enabled = false;
+      }
     }
 
     scene.requestRender?.();
@@ -74,7 +76,9 @@ export function GlobeFxStack() {
         coll.remove(s);
       }
       addedRef.current = [];
-      bloomStage.enabled = false;
+      if (bloomStage) {
+        bloomStage.enabled = false;
+      }
       scene.requestRender?.();
     };
   }, [viewer, preset, sensitivity, bloom, pixelation, flirPolarity]);

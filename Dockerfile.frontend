@@ -52,6 +52,8 @@ ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-build-placeholder}
 ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-build-placeholder}
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
 
+# `npm run build` runs prebuild (copy-cesium-assets + viz config). Do not use plain `next build`
+# without copying Cesium into public/cesium — Heritage Atlas would fail at runtime.
 RUN npm run build
 
 # ================================================================

@@ -31,6 +31,20 @@ export const ATLAS_FX_PRESET_ORDER: AtlasFxPresetId[] = [
   'pixel',
 ];
 
+const PRESET_SET: ReadonlySet<string> = new Set(ATLAS_FX_PRESET_ORDER);
+
+/** Coerce persisted / unknown values to a valid preset id (localStorage, migrations). */
+export function normalizeAtlasFxPresetId(raw: unknown): AtlasFxPresetId {
+  if (typeof raw === 'string' && PRESET_SET.has(raw)) {
+    return raw as AtlasFxPresetId;
+  }
+  return 'normal';
+}
+
+export function normalizeAtlasFlirPolarity(raw: unknown): 'whot' | 'bhot' {
+  return raw === 'bhot' ? 'bhot' : 'whot';
+}
+
 export interface AtlasFxRuntimeParams {
   sensitivity: number;
   bloom: number;

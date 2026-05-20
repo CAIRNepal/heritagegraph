@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 
+import { AtlasErrorBoundary } from './components/atlas-error-boundary';
 import { AtlasShellLoading } from './components/atlas-loading-fallbacks';
 
 const AtlasLoader = dynamic(() => import('./atlas-client'), {
@@ -10,5 +11,9 @@ const AtlasLoader = dynamic(() => import('./atlas-client'), {
 });
 
 export function AtlasPageClient() {
-  return <AtlasLoader />;
+  return (
+    <AtlasErrorBoundary>
+      <AtlasLoader />
+    </AtlasErrorBoundary>
+  );
 }

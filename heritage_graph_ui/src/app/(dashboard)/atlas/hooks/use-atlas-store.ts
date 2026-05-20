@@ -22,8 +22,12 @@ import type {
 } from '@/types/atlas';
 import { ONTOLOGY_CLASSES, RELIABILITY_ORDER, tierRank } from '@/types/atlas';
 
-import type { AtlasFxPresetId } from '../lib/atlas-fx-presets';
-import { ATLAS_FX_PRESET_ORDER } from '../lib/atlas-fx-presets';
+import {
+  type AtlasFxPresetId,
+  ATLAS_FX_PRESET_ORDER,
+  normalizeAtlasFlirPolarity,
+  normalizeAtlasFxPresetId,
+} from '../lib/atlas-fx-presets';
 import { entityExistedAtYear } from '@/lib/atlas-temporal';
 
 import { computeAtlasTimelineExtents } from '../atlas-time-extents';
@@ -63,7 +67,14 @@ function readFxPersisted(): Partial<AtlasFxPersisted> | null {
   try {
     const raw = window.localStorage.getItem(ATLAS_FX_STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as Partial<AtlasFxPersisted>;
+    const parsed = JSON.parse(raw) as Partial<AtlasFxPersisted>;
+    if (parsed.fxPreset !== undefined) {
+      parsed.fxPreset = normalizeAtlasFxPresetId(parsed.fxPreset);
+    }
+    if (parsed.fxFlirPolarity !== undefined) {
+      parsed.fxFlirPolarity = normalizeAtlasFlirPolarity(parsed.fxFlirPolarity);
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -342,11 +353,11 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   hoveredEntityId: null,
   hoverScreenPos: null,
 
-  fxPreset: fxSeed?.fxPreset ?? 'normal',
+  fxPreset: normalizeAtlasFxPresetId(fxSeed?.fxPreset ?? 'normal'),
   fxSensitivity: fxSeed?.fxSensitivity ?? 1,
   fxBloom: fxSeed?.fxBloom ?? 0.35,
   fxPixelation: fxSeed?.fxPixelation ?? 16,
-  fxFlirPolarity: fxSeed?.fxFlirPolarity ?? 'whot',
+  fxFlirPolarity: normalizeAtlasFlirPolarity(fxSeed?.fxFlirPolarity ?? 'whot'),
   fxEcoQuality: fxSeed?.fxEcoQuality ?? false,
   selectedCityId: citySeed,
   cityPaletteOpen: false,
@@ -592,11 +603,11 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
     const fx = readFxPersisted();
     const city = readCityId();
     set({
-      fxPreset: fx?.fxPreset ?? 'normal',
+      fxPreset: normalizeAtlasFxPresetId(fx?.fxPreset ?? 'normal'),
       fxSensitivity: fx?.fxSensitivity ?? 1,
       fxBloom: fx?.fxBloom ?? 0.35,
       fxPixelation: fx?.fxPixelation ?? 16,
-      fxFlirPolarity: fx?.fxFlirPolarity ?? 'whot',
+      fxFlirPolarity: normalizeAtlasFlirPolarity(fx?.fxFlirPolarity ?? 'whot'),
       fxEcoQuality: fx?.fxEcoQuality ?? false,
       discTransparent: fx?.discTransparent ?? false,
       spotlightScale: clampAtlasSpotlightScale(fx?.spotlightScale ?? 1),

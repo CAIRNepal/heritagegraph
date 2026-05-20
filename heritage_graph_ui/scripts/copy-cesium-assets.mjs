@@ -16,10 +16,25 @@ async function main() {
   try {
     await fs.access(srcRoot);
   } catch {
-    console.warn(
-      "[copy-cesium-assets] Skip: cesium Build folder not found (run npm install).",
+    console.error(
+      "[copy-cesium-assets] ERROR: Cesium build folder not found at",
+      srcRoot,
+      "(run npm install in heritage_graph_ui).",
     );
-    return;
+    process.exit(1);
+  }
+
+  for (const name of subdirs) {
+    const from = path.join(srcRoot, name);
+    try {
+      await fs.access(from);
+    } catch {
+      console.error(
+        "[copy-cesium-assets] ERROR: Missing Cesium subdirectory:",
+        from,
+      );
+      process.exit(1);
+    }
   }
 
   await fs.rm(destRoot, { recursive: true, force: true });
@@ -29,6 +44,27 @@ async function main() {
     const from = path.join(srcRoot, name);
     const to = path.join(destRoot, name);
     await fs.cp(from, to, { recursive: true });
+  }
+
+  for (const name of subdirs) {
+    const to = path.join(destRoot, name);
+    const entries = await fs.readdir(to);
+    if (entries.length === 0) {
+      console.error(
+        `[copy-cesium-assets] ERROR: Destination ${name} is empty after copy.`,
+      );
+      process.exit(1);
+    }
+  }
+
+  const workersDir = path.join(destRoot, "Workers");
+  const workerFiles = await fs.readdir(workersDir);
+  const hasWorkerJs = workerFiles.some((f) => f.endsWith(".js"));
+  if (!hasWorkerJs) {
+    console.error(
+      "[copy-cesium-assets] ERROR: No .js worker bundles found under public/cesium/Workers.",
+    );
+    process.exit(1);
   }
 
   console.log("[copy-cesium-assets] Copied to public/cesium/");

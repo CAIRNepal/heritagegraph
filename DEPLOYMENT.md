@@ -295,6 +295,8 @@ TRAEFIK_DASHBOARD_USER=admin
 TRAEFIK_DASHBOARD_PASSWORD=<generate-with: htpasswd -nb admin yourpassword>
 ```
 
+> **Heritage Atlas (Cesium):** Production frontend builds must run **`npm run build`** inside `heritage_graph_ui` (or the repo Docker frontend target), so the `prebuild` step copies static Cesium workers into `public/cesium`. Using **`next build` alone** or **`npm ci --ignore-scripts`** without also running **`npm run copy-cesium`** in `heritage_graph_ui` breaks **`/atlas`** when the browser cannot load **`/cesium/Workers/`**.
+
 > **Generate secrets** (run these one by one and paste into `.env`):
 > ```bash
 > openssl rand -base64 50   # DJANGO_SECRET_KEY
