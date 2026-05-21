@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "copy-cesium": "node scripts/copy-cesium-assets.mjs",
+    "verify:cesium-public": "node scripts/verify-cesium-public.mjs",
     "postinstall": "node scripts/copy-cesium-assets.mjs",
     "predev": "node scripts/copy-cesium-assets.mjs && python3 ../tools/gen_heritage_viz_config.py",
     "prebuild": "node scripts/copy-cesium-assets.mjs && python3 ../tools/gen_heritage_viz_config.py",

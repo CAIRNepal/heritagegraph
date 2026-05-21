@@ -100,6 +100,28 @@ The stack runs **`backend`** (lean API image) plus **`redis`** and **`ocr-worker
 
 To disable after the database is healthy, set `MIGRATION_AUTO_REPAIR=0` (or remove it) in Dokploy and redeploy.
 
+## Heritage Atlas (Cesium 3D globe)
+
+The **`frontend`** Dockerfile runs **`npm run build`**, which runs **`prebuild`** and copies **`node_modules/cesium/…`** into **`public/cesium/`** (workers, WASM, Assets). Never replace that with bare **`next build`** without **`copy-cesium-assets`** or the atlas will fail at runtime.
+
+**Verify after deploy:**
+
+- From a browser or shell: **`GET https://<your-app-host>/cesium/Assets/approximateTerrainHeights.json`** should return **HTTP 200** (JSON). **`404`/HTML from the SPA** usually means **`public/cesium`** never made it into the image or the path is not routed to the frontend.
+- In **`heritage_graph_ui`**, you can smoke-check locally: **`npm run verify:cesium-public`** (checks `public/cesium` layout after copy).
+
+If **`approximateTerrainHeights.json`** is **200** but the globe still errors, open **DevTools → Console** on **`/atlas`** and watch for Content Security Policy (CSP) reports: Cesium expects workers (often **`blob:`**) and WASM. If your Dokploy ingress, CDN, or a security middleware injects CSP, widen it responsibly. Typical ingredients (adapt to your security model; tighten `default-src`/hosts as needed):
+
+```
+script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval' blob: https:
+worker-src 'self' blob:
+connect-src 'self' https://server.arcgisonline.com ...
+img-src 'self' data: blob: https:
+```
+
+Imagery tiles use **`https://server.arcgisonline.com/...`**; include that host in **`connect-src`**/**`img-src`** if you constrain those directives.
+
+**Operator-only UI:** Set **`NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL=true`** on the **`frontend`** service to show **`AtlasErrorBoundary`** exception text after a hard failure (helps distinguish WebGL vs. script errors vs. CSP). Leave unset for normal deployments.
+
 ## More help
 
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) — migration history, CORS, OAuth.

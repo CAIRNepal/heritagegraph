@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -16,8 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { fadeInUp, glassCard } from "@/lib/design";
-import { getApiErrorMessage } from "@/lib/api-client";
-import { createProject } from "@/lib/projects-api";
+import { getApiErrorMessage, isApiError } from "@/lib/api-client";
+import { createProject, getProject } from "@/lib/projects-api";
+
+const DRAFT_KEY = "hg-project-draft-v1";
 
 function slugify(s: string): string {
   return s
@@ -28,9 +30,26 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
+function collectSlugIssues(slug: string): string[] {
+  const issues: string[] = [];
+  if (!slug.trim()) return ["Slug is required."];
+  if (slug.length > 80) issues.push("Max 80 characters.");
+  if (!/^[a-z0-9-]+$/.test(slug)) issues.push("Only lowercase letters, digits, and hyphens.");
+  if (slug.startsWith("-") || slug.endsWith("-")) {
+    issues.push("Cannot start or end with a hyphen.");
+  }
+  return issues;
+}
+
 export default function NewProjectPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const idempotencyKeyRef = useRef(
+    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `proj-${Math.random().toString(36).slice(2)}`
+  );
+  const [restoredDraft, setRestoredDraft] = useState(false);
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -41,6 +60,49 @@ export default function NewProjectPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (typeof sessionStorage === "undefined") return;
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) {
+        setRestoredDraft(true);
+        return;
+      }
+      const o = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof o.title === "string") setTitle(o.title);
+      if (typeof o.slug === "string") setSlug(o.slug);
+      if (typeof o.abstract === "string") setAbstract(o.abstract);
+      if (typeof o.intendedSubject === "string") setIntendedSubject(o.intendedSubject);
+      if (typeof o.visibility === "string") setVisibility(o.visibility);
+      if (typeof o.tagsRaw === "string") setTagsRaw(o.tagsRaw);
+    } catch {
+      /* ignore */
+    }
+    setRestoredDraft(true);
+  }, []);
+
+  useEffect(() => {
+    if (!restoredDraft || typeof sessionStorage === "undefined") return;
+    try {
+      sessionStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+          title,
+          slug,
+          abstract,
+          intendedSubject,
+          visibility,
+          tagsRaw,
+        })
+      );
+    } catch {
+      /* ignore quota */
+    }
+  }, [abstract, intendedSubject, restoredDraft, slug, tagsRaw, title, visibility]);
+
+  const slugIssues = useMemo(() => collectSlugIssues(slug.trim()), [slug]);
+  const slugInvalid = slugIssues.length > 0;
+
   const handleTitleChange = (v: string) => {
     setTitle(v);
     setSlug(slugify(v));
@@ -50,8 +112,12 @@ export default function NewProjectPage() {
     e.preventDefault();
     const token = (session as { accessToken?: string } | null)?.accessToken;
     if (!token) return;
-    if (!title.trim() || !slug.trim()) {
-      setError("Title and slug are required.");
+    if (!title.trim()) {
+      setError("Title is required.");
+      return;
+    }
+    if (slugInvalid) {
+      setError(slugIssues.join(" "));
       return;
     }
 
@@ -64,17 +130,46 @@ export default function NewProjectPage() {
       .filter(Boolean);
 
     try {
-      const project = await createProject(token, {
-        title: title.trim(),
-        slug: slug.trim(),
-        abstract: abstract.trim(),
-        intended_subject: intendedSubject.trim(),
-        visibility,
-        tags,
-        languages: [],
-      });
+      const project = await createProject(
+        token,
+        {
+          title: title.trim(),
+          slug: slug.trim(),
+          abstract: abstract.trim(),
+          intended_subject: intendedSubject.trim(),
+          visibility,
+          tags,
+          languages: [],
+        },
+        { idempotencyKey: idempotencyKeyRef.current }
+      );
+      sessionStorage.removeItem(DRAFT_KEY);
       router.push(`/contribute/projects/${project.slug}`);
     } catch (err) {
+      if (isApiError(err) && err.status === 400) {
+        const body =
+          typeof err.body === "object" && err.body !== null
+            ? (err.body as Record<string, unknown>)
+            : {};
+        const slugField = body.slug;
+        const slugProblems =
+          Array.isArray(slugField) &&
+          slugField.some(
+            (m) =>
+              typeof m === "string" &&
+              (m.includes("already") || m.includes("unique") || m.includes("exists"))
+          );
+        if (slugProblems) {
+          try {
+            const existing = await getProject(slug.trim(), token);
+            sessionStorage.removeItem(DRAFT_KEY);
+            router.push(`/contribute/projects/${existing.slug}`);
+            return;
+          } catch {
+            /* fall through */
+          }
+        }
+      }
       setError(getApiErrorMessage(err, "Failed to create project."));
       setSubmitting(false);
     }
@@ -111,11 +206,23 @@ export default function NewProjectPage() {
           <Label htmlFor="slug">Slug *</Label>
           <Input
             id="slug"
+            aria-invalid={slugInvalid || undefined}
+            aria-describedby="slug-help slug-errors"
             value={slug}
             onChange={(e) => setSlug(slugify(e.target.value))}
             placeholder="auto-filled from title"
             required
           />
+          <p id="slug-help" className="text-xs text-muted-foreground">
+            Lowercase letters, digits, and hyphens only (max 80).
+          </p>
+          {slugInvalid && slug.trim() && (
+            <ul id="slug-errors" className="text-xs text-red-600 dark:text-red-400 list-disc list-inside">
+              {slugIssues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -170,7 +277,7 @@ export default function NewProjectPage() {
         )}
 
         <div className="flex items-center gap-3 pt-1">
-          <Button type="submit" disabled={submitting}>
+          <Button type="submit" disabled={submitting || slugInvalid}>
             {submitting ? "Creating…" : "Create Project"}
           </Button>
           <Button type="button" variant="ghost" onClick={() => router.push("/contribute/projects")}>

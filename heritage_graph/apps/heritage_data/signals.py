@@ -137,6 +137,35 @@ def _notify_project_members(project, actor, notification_type, message, link="")
         )
 
 
+def _notify_reviewers_about_project_submission(project, actor):
+    """Ping users in the ``Reviewers`` group when a project enters review."""
+    from django.contrib.auth import get_user_model
+
+    from .models import Notification
+
+    recipients = (
+        get_user_model()
+        .objects.filter(groups__name="Reviewers")
+        .values_list("id", flat=True)
+        .distinct()
+    )
+    actor_id = actor.id if actor and actor.is_authenticated else None
+    for user_id in recipients:
+        if user_id == actor_id:
+            continue
+        Notification.objects.create(
+            user_id=user_id,
+            actor=actor if actor and actor.is_authenticated else None,
+            notification_type="project_review_queue",
+            project=project,
+            message=(
+                f'Project "{project.title}" was submitted for review '
+                f"(slug: {project.slug})."
+            ),
+            link="/curation/projects-review",
+        )
+
+
 @receiver(post_save, sender="heritage_data.ProjectActivity")
 def on_project_activity(sender, instance, created, **kwargs):
     """Fire notifications when a project changes state."""
@@ -148,7 +177,9 @@ def on_project_activity(sender, instance, created, **kwargs):
         return
 
     project = instance.project
-    new_state = instance.payload.get("to_state", project.state)
+    new_state = instance.payload.get("to", instance.payload.get("to_state"))
+    if new_state is None:
+        new_state = project.state
     human = {
         Project.STATE_IN_REVIEW: "submitted for review",
         Project.STATE_APPROVED: "approved",
@@ -158,6 +189,9 @@ def on_project_activity(sender, instance, created, **kwargs):
     }.get(new_state)
     if not human:
         return
+
+    if new_state == Project.STATE_IN_REVIEW:
+        _notify_reviewers_about_project_submission(project, instance.actor)
 
     _notify_project_members(
         project=project,
@@ -221,3 +255,21 @@ def _project_rdf_merge(project):
             pass
 
     transaction.on_commit(_do_projection)
+
+
+@receiver(post_save, sender="document_processing.UploadedDocument")
+def queue_entity_suggestions_for_project_assets(sender, instance, **kwargs):
+    """After OCR succeeds, enqueue placeholder entity-link hints for matching assets."""
+    if instance.status != "completed":
+        return
+
+    try:
+        from .models import ProjectAsset
+        from .tasks import suggest_entities_from_project_asset
+    except Exception:
+        return
+
+    for pk in ProjectAsset.objects.filter(media_id=instance.media_id).values_list(
+        "pk", flat=True
+    ):
+        suggest_entities_from_project_asset.delay(str(pk))

@@ -91,6 +91,11 @@ export function ProjectAssetCard({
             <p className="text-xs text-muted-foreground">
               {asset.role} · {asset.media_type}
             </p>
+            {asset.version_label ? (
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Label: {asset.version_label}
+              </p>
+            ) : null}
           </div>
           <Badge variant="outline" className="text-[10px] shrink-0">
             {OCR_LABELS[asset.ocr_status] ?? asset.ocr_status}
@@ -105,6 +110,21 @@ export function ProjectAssetCard({
               className="rounded-md max-h-32 w-full object-cover"
             />
           </a>
+        )}
+        {asset.entity_suggestions && asset.entity_suggestions.length > 0 && (
+          <details className="text-xs rounded-md border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-950/20 px-2 py-1.5">
+            <summary className="cursor-pointer font-medium select-none">
+              Suggested entities ({asset.entity_suggestions.length})
+            </summary>
+            <ul className="mt-2 space-y-1 text-muted-foreground list-disc list-inside max-h-32 overflow-auto">
+              {asset.entity_suggestions.map((s, i) => (
+                <li key={`${s.label}-${i}`}>
+                  <span className="text-foreground">{s.label}</span>
+                  {s.ontology_class ? ` (${s.ontology_class})` : ""}
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
         {canEdit && (
           <div className="flex flex-wrap gap-2 pt-1">

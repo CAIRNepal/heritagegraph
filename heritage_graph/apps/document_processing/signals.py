@@ -28,7 +28,20 @@ def is_document_type(file_field):
         return False
     
     filename = file_field.name.lower()
-    document_extensions = ('.pdf', '.jpg', '.jpeg', '.png', '.tiff', '.tif', '.webp')
+    document_extensions = (
+        ".pdf",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".tiff",
+        ".tif",
+        ".webp",
+        ".bmp",
+        ".gif",
+        ".heic",
+        ".heif",
+        ".avif",
+    )
     
     return any(filename.endswith(ext) for ext in document_extensions)
 
@@ -66,9 +79,9 @@ def on_media_upload(sender, instance, created, **kwargs):
         # Import here to avoid circular imports at app startup
         from .tasks import classify_and_route_document
         
-        # Check if OCR is already initiated for this media
-        if hasattr(instance, 'ocr_document'):
-            logger.debug(f"OCR already initiated for media {instance.id}")
+        # Avoid relying on reverse OneToOne descriptor quirks across Django versions.
+        if UploadedDocument.objects.filter(media_id=instance.pk).exists():
+            logger.debug("OCR already initiated for media %s", instance.id)
             return
         
         # Create an UploadedDocument record (status='pending')

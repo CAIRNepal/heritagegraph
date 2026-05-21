@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+import logging
+import pathlib
+
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 from django.contrib.auth.models import Group
 from django.utils import timezone
 
@@ -90,6 +95,31 @@ def can_transition_project(user, project: Project, target: str) -> bool:
     return False
 
 
+def validate_project_for_review(project: Project) -> list[str]:
+    """Return human-readable blockers preventing transition to ``in_review``."""
+    errors: list[str] = []
+    abstract = (project.abstract or "").strip()
+    if not abstract:
+        errors.append("Abstract is required before submission.")
+    if not project.assets.exists():
+        errors.append("At least one evidence asset is required.")
+    if not project.entities.exists():
+        errors.append("At least one ontology entity must be linked.")
+
+    busy_ocr = False
+    assets = (
+        project.assets.select_related("media").select_related("media__ocr_document").all()
+    )
+    for asset in assets:
+        if get_asset_ocr_status(asset.media) in ("pending", "processing"):
+            busy_ocr = True
+            break
+    if busy_ocr:
+        errors.append("Wait for all OCR jobs to finish before submitting.")
+
+    return errors
+
+
 def get_allowed_project_transitions(user, project: Project) -> list[str]:
     candidates = _PROJECT_TRANSITIONS.get(project.state, set())
     return sorted(
@@ -140,6 +170,103 @@ def get_asset_ocr_status(media) -> str:
     return media.ocr_document.status
 
 
+def sniff_upload_main_type(uploaded_file) -> str | None:
+    """Best-effort MIME from first chunk (python-magic when available)."""
+    head = uploaded_file.read(8192)
+    uploaded_file.seek(0)
+    try:
+        import magic
+
+        raw = magic.from_buffer(head, mime=True)
+        if isinstance(raw, str):
+            return raw.split(";")[0].strip().lower()
+    except Exception:
+        pass
+    return _mime_from_magic_bytes(head)
+
+
+def _mime_from_magic_bytes(buf: bytes) -> str | None:
+    if buf.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if len(buf) >= 8 and buf.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if buf.startswith(b"RIFF") and len(buf) >= 12 and buf[8:12] == b"WEBP":
+        return "image/webp"
+    if buf.startswith(b"%PDF"):
+        return "application/pdf"
+    if len(buf) >= 2 and (buf.startswith(b"\xff\xfb") or buf.startswith(b"\xff\xfa")):
+        return "audio/mpeg"
+    if buf.startswith(b"ID3") or buf.startswith(b"\xff\xf3"):
+        return "audio/mpeg"
+    if len(buf) >= 12 and b"ftyp" in buf[:32]:
+        return "video/mp4"
+    return None
+
+
+ALLOWED_PROJECT_ASSET_EXTENSIONS = frozenset(
+    {".jpg", ".jpeg", ".png", ".webp", ".pdf", ".mp3", ".mp4"}
+)
+ALLOWED_PROJECT_ASSET_MIME = frozenset(
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "application/pdf",
+        "audio/mpeg",
+        "video/mp4",
+    }
+)
+
+
+def validate_project_asset_file(upload_file) -> None:
+    """Security-oriented checks for multipart project asset uploads."""
+    from rest_framework.exceptions import ValidationError
+
+    max_bytes = int(
+        getattr(
+            settings,
+            "PROJECT_ASSET_UPLOAD_MAX_BYTES",
+            getattr(settings, "OCR_MAX_FILE_BYTES", 50 * 1024 * 1024),
+        )
+    )
+    size = getattr(upload_file, "size", None)
+    if size is not None and size > max_bytes:
+        mb = max_bytes // (1024 * 1024)
+        raise ValidationError(f"File exceeds server limit ({mb} MB).")
+
+    name = (getattr(upload_file, "name", "") or "").lower()
+    ext = pathlib.Path(name).suffix.lower()
+    if ext and ext not in ALLOWED_PROJECT_ASSET_EXTENSIONS:
+        raise ValidationError(
+            "Unsupported file extension. Allowed: .jpg, .jpeg, .png, .webp, .pdf, .mp3, .mp4."
+        )
+
+    detected = sniff_upload_main_type(upload_file)
+    ext_mime = _extension_to_mime(ext) if ext else None
+    if detected and ext_mime and detected != ext_mime:
+        raise ValidationError(
+            "File content does not match the claimed extension.",
+        )
+
+    mime = detected or ext_mime
+    if mime is None or mime not in ALLOWED_PROJECT_ASSET_MIME:
+        raise ValidationError(
+            "Unsupported or unclear file type. Upload JPEG, PNG, WebP, PDF, MP3, or MP4."
+        )
+
+
+def _extension_to_mime(ext: str) -> str | None:
+    return {
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+        ".pdf": "application/pdf",
+        ".mp3": "audio/mpeg",
+        ".mp4": "video/mp4",
+    }.get(ext)
+
+
 def queue_ocr_for_media(*, media, project: Project | None = None) -> str:
     """Create UploadedDocument if needed and queue OCR. Returns document id."""
     from apps.document_processing.models import UploadedDocument
@@ -173,3 +300,35 @@ def queue_ocr_for_media(*, media, project: Project | None = None) -> str:
     doc.save(update_fields=["status", "error_message", "user_safe_error", "updated_at"])
     classify_and_route_document.delay(str(doc.id))
     return str(doc.id)
+
+
+def build_merge_snapshot_payload(project: Project) -> dict:
+    return {
+        "project_id": str(project.id),
+        "slug": project.slug,
+        "title": project.title,
+        "abstract": project.abstract or "",
+        "entity_ids": [
+            str(pk) for pk in project.entities.values_list("entity_id", flat=True)
+        ],
+    }
+
+
+def notify_project_review_webhook(project: Project) -> None:
+    url = (getattr(settings, "REVIEW_WEBHOOK_URL", None) or "").strip()
+    if not url:
+        return
+    try:
+        import requests
+
+        requests.post(
+            url,
+            json={
+                "project_id": str(project.id),
+                "slug": project.slug,
+                "title": project.title,
+            },
+            timeout=5,
+        )
+    except Exception as exc:
+        logger.warning("Review webhook failed for %s: %s", project.slug, exc)

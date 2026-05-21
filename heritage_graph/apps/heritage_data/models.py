@@ -2060,6 +2060,16 @@ class ProjectAsset(models.Model):
         default=ROLE_EVIDENCE,
     )
     caption = models.CharField(max_length=255, blank=True)
+    version_label = models.CharField(
+        max_length=120,
+        blank=True,
+        help_text="Contributor label for this revision of the attachment (v2, revised-2026, …).",
+    )
+    entity_suggestions = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Suggested ontology links from OCR/NER pipelines (stub until full matching).",
+    )
     uploaded_by = models.ForeignKey(
         User,
         on_delete=models.PROTECT,
@@ -2076,6 +2086,40 @@ class ProjectAsset(models.Model):
 
     def __str__(self):
         return f"Asset {self.media_id} on project {self.project_id}"
+
+
+class ProjectSnapshot(models.Model):
+    """Point-in-time JSON snapshot before a merge (rollback aid for moderators)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="snapshots",
+    )
+    merged_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="project_snapshots_recorded",
+    )
+    snapshot = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Serialized pointers (entity ids, title, slug) captured at merge time.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "project_snapshots"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["project", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"Snapshot for {self.project_id} ({self.created_at})"
 
 
 class ProjectEntity(models.Model):

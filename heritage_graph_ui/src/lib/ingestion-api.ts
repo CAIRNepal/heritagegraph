@@ -1,4 +1,5 @@
 import { getPublicApiUrl } from "@/lib/api-base";
+import { ApiError } from "@/lib/api-client";
 
 /** Same shape as `OcrFieldSuggestion` — duplicated here to avoid importing client hooks from shared lib. */
 export type IngestionSuggestionPayload = {
@@ -171,8 +172,7 @@ export async function uploadStandaloneIngestionDocument(args: {
     body,
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Upload failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as {
     media_id: number;
@@ -193,8 +193,7 @@ export async function fetchOcrReviewPayload(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Review fetch failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as ReviewPayload;
 }
@@ -210,8 +209,7 @@ export async function fetchOcrAssetBlob(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Asset fetch failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return res.blob();
 }
@@ -229,8 +227,7 @@ export async function fetchCidocUniversalSearch(args: {
     headers,
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Search failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   const data = (await res.json()) as Record<string, unknown[]>;
   return data;
@@ -270,8 +267,7 @@ export async function patchIngestionReviewState(args: {
     body: JSON.stringify(args.patch),
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Review state save failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as SavedReviewStatePayload;
 }
@@ -289,8 +285,7 @@ export async function finalizeIngestionReview(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Finalize failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as { detail: string; ingestion_review_state: SavedReviewStatePayload };
 }
@@ -307,8 +302,7 @@ export async function fetchDocumentCompilePreview(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Compile preview failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as DocumentCompilePreviewPayload;
 }
@@ -337,8 +331,7 @@ export async function fetchEntityClusterDuplicates(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Duplicate hints failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   const data = (await res.json()) as { results?: unknown[] };
   return Array.isArray(data.results) ? (data.results as never[]) : [];
@@ -376,8 +369,7 @@ export async function createChunkedUploadSession(args: {
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Chunk session failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as { id: string; bytes_written: number; expected_bytes: number };
 }
@@ -398,8 +390,7 @@ export async function appendChunkedUploadPart(args: {
     body: fd,
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Chunk append failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as { id: string; bytes_written: number; expected_bytes: number };
 }
@@ -417,8 +408,7 @@ export async function completeChunkedUpload(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Chunk complete failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as { media_id: number; uploaded_document_id: string; status: string };
 }
@@ -489,8 +479,7 @@ export async function createTabularImportJob(args: {
     body: fd,
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Tabular import failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as TabularImportJobPayload;
 }
@@ -515,8 +504,7 @@ export async function patchTabularImportJob(args: {
     body: JSON.stringify(args.patch),
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Tabular patch failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as TabularImportJobPayload;
 }
@@ -533,8 +521,7 @@ export async function fetchTabularCompilePreview(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Tabular compile preview failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as DocumentCompilePreviewPayload & {
     tabular_job_id?: string;

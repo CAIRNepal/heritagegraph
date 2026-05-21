@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { AtlasViewId } from '@/types/atlas';
 
+import { CesiumAssetsGate } from './cesium-assets-gate';
 import { AtlasGlobe } from './globe';
 import { CityJumpBar } from './city-jump-bar';
 import { FxControls } from './fx-controls';
@@ -193,7 +194,9 @@ export function GlobeWorkspace({ globeHandlesRef, shellRef }: GlobeWorkspaceProp
     >
       <div className="pointer-events-auto relative min-w-0 flex-1">
         <SpotlightDisc shellRef={shellRef} globeFxClassName="[filter:var(--atlas-fx-filter)]">
-          <AtlasGlobe globeHandlesRef={globeHandlesRef} />
+          <CesiumAssetsGate>
+            <AtlasGlobe globeHandlesRef={globeHandlesRef} />
+          </CesiumAssetsGate>
         </SpotlightDisc>
       </div>
 

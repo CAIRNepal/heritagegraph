@@ -152,3 +152,18 @@ class ProjectWorkspaceAPITests(APITestCase):
         self.assertIn("allowed_transitions", body)
         self.assertIn(Project.STATE_IN_REVIEW, body["allowed_transitions"])
         self.assertNotIn(Project.STATE_APPROVED, body["allowed_transitions"])
+
+    def test_submit_for_review_blocked_without_requirements(self):
+        self.project.abstract = ""
+        self.project.save(update_fields=["abstract", "updated_at"])
+        self.client.force_authenticate(user=self.owner)
+
+        res = self.client.post(
+            f"/api/v1/data/projects/{self.project.slug}/transition/",
+            {"target_state": Project.STATE_IN_REVIEW},
+            format="json",
+        )
+        self.assertEqual(res.status_code, 400)
+        body = res.json()
+        self.assertIsInstance(body.get("blockers"), list)
+        self.assertTrue(len(body["blockers"]) > 0)

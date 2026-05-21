@@ -7,10 +7,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   IconArrowLeft,
   IconGitFork,
+  IconLoader2,
   IconUsers,
   IconFiles,
   IconGraph,
@@ -19,12 +27,14 @@ import {
   IconSend,
 } from "@tabler/icons-react";
 import { fadeInUp, glassCard } from "@/lib/design";
-import { getApiErrorMessage } from "@/lib/api-client";
+import { extractProjectSubmissionBlockers, getApiErrorMessage } from "@/lib/api-client";
 import { useProjectDetail } from "@/hooks/use-project-detail";
+import { useUserRoles } from "@/hooks/use-user-roles";
 import {
   postProjectComment,
   PROJECT_STATE_LABELS,
   PROJECT_TRANSITION_LABELS,
+  rollbackProjectMerge,
   transitionProject,
   type ProjectCommentRow,
 } from "@/lib/projects-api";
@@ -85,10 +95,16 @@ export default function ProjectDetailPage() {
     refetch,
   } = useProjectDetail(slug);
 
+  const { isModerator } = useUserRoles();
+
   const [commentText, setCommentText] = useState("");
   const [postingComment, setPostingComment] = useState(false);
-  const [transitioning, setTransitioning] = useState(false);
+  const [transitioningTarget, setTransitioningTarget] = useState<string | null>(null);
   const [transitionError, setTransitionError] = useState("");
+  const [submissionBlockers, setSubmissionBlockers] = useState<string[]>([]);
+  const [revisionDialogOpen, setRevisionDialogOpen] = useState(false);
+  const [revisionNote, setRevisionNote] = useState("");
+  const [mergeRollbackBusy, setMergeRollbackBusy] = useState(false);
 
   const readOnlyWorkspace =
     project?.state === "merged" || project?.state === "in_review";
@@ -115,17 +131,45 @@ export default function ProjectDetailPage() {
   const stateColor = STATE_COLORS[project.state] ?? STATE_COLORS.draft;
   const canEditAssets = project.can_edit && !readOnlyWorkspace;
 
-  const handleTransition = async (targetState: string) => {
-    setTransitioning(true);
+  const handleTransition = async (targetState: string, comment?: string) => {
+    const previousState = project.state;
+    setTransitioningTarget(targetState);
     setTransitionError("");
+    setSubmissionBlockers([]);
+    setProject((prev) => (prev ? { ...prev, state: targetState } : prev));
     try {
-      const updated = await transitionProject(slug, token, targetState);
+      const updated = await transitionProject(slug, token, targetState, comment);
+      setSubmissionBlockers([]);
       setProject(updated);
       await refetch();
     } catch (e) {
-      setTransitionError(getApiErrorMessage(e));
+      setProject((prev) => (prev ? { ...prev, state: previousState } : prev));
+      const blockers = extractProjectSubmissionBlockers(e);
+      if (blockers?.length) setSubmissionBlockers(blockers);
+      else setSubmissionBlockers([]);
+      setTransitionError(blockers?.length ? "" : getApiErrorMessage(e));
     } finally {
-      setTransitioning(false);
+      setTransitioningTarget(null);
+    }
+  };
+
+  const handleRollbackMerge = async () => {
+    if (
+      !confirm(
+        "Return this merged project to “needs revision”? Coordinate RDF / graph cleanup separately."
+      )
+    )
+      return;
+    setMergeRollbackBusy(true);
+    try {
+      const updated = await rollbackProjectMerge(slug, token);
+      setProject(updated);
+      toast.success("Merge rolled back.");
+      await refetch();
+    } catch (e) {
+      toast.error(getApiErrorMessage(e, "Could not roll back merge."));
+    } finally {
+      setMergeRollbackBusy(false);
     }
   };
 
@@ -181,24 +225,50 @@ export default function ProjectDetailPage() {
               </div>
             </div>
 
-            {project.allowed_transitions.length > 0 && (
+            {(project.allowed_transitions.length > 0 ||
+              (isModerator && project.state === "merged")) && (
               <div className="flex flex-wrap gap-2 shrink-0">
                 {project.allowed_transitions.map((t) => (
                   <Button
                     key={t}
                     size="sm"
                     variant={TRANSITION_VARIANT[t] ?? "outline"}
-                    disabled={transitioning}
-                    onClick={() => void handleTransition(t)}
+                    disabled={transitioningTarget !== null || mergeRollbackBusy}
+                    onClick={() => {
+                      if (t === "needs_revision") {
+                        setRevisionNote("");
+                        setRevisionDialogOpen(true);
+                        return;
+                      }
+                      void handleTransition(t);
+                    }}
                   >
-                    {PROJECT_TRANSITION_LABELS[t] ?? t}
+                    {transitioningTarget === t ? (
+                      <>
+                        <IconLoader2 className="w-3.5 h-3.5 mr-1 animate-spin" aria-hidden />{" "}
+                        Working…
+                      </>
+                    ) : (
+                      (PROJECT_TRANSITION_LABELS[t] ?? t)
+                    )}
                   </Button>
                 ))}
+                {isModerator && project.state === "merged" && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    disabled={mergeRollbackBusy || transitioningTarget !== null}
+                    onClick={() => void handleRollbackMerge()}
+                  >
+                    {mergeRollbackBusy ? "Rolling back…" : "Undo merge"}
+                  </Button>
+                )}
               </div>
             )}
           </div>
 
-          <ProjectStepStrip project={project} />
+          <ProjectStepStrip project={project} submissionBlockers={submissionBlockers} />
 
           {transitionError && (
             <p className="text-sm text-red-600 dark:text-red-400 px-3 py-2 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
@@ -206,6 +276,42 @@ export default function ProjectDetailPage() {
             </p>
           )}
         </div>
+
+        <Dialog open={revisionDialogOpen} onOpenChange={setRevisionDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Request revision</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground">
+              Explain what the contributor must change before this project can be approved.
+            </p>
+            <Textarea
+              value={revisionNote}
+              onChange={(e) => setRevisionNote(e.target.value)}
+              placeholder="Revision notes…"
+              rows={4}
+              aria-required
+              className="min-h-[100px]"
+            />
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setRevisionDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={!revisionNote.trim() || transitioningTarget !== null}
+                onClick={() => {
+                  const note = revisionNote.trim();
+                  if (!note) return;
+                  setRevisionDialogOpen(false);
+                  void handleTransition("needs_revision", note);
+                }}
+              >
+                Submit
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </motion.div>
 
       <Tabs defaultValue="entities">
@@ -267,7 +373,7 @@ export default function ProjectDetailPage() {
             <ProjectAssetUploader
               slug={slug}
               accessToken={token}
-              onUploaded={() => void refetch()}
+              onUploaded={(_asset) => void refetch()}
             />
           )}
           {project.assets.length === 0 ? (

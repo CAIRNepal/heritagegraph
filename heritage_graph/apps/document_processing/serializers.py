@@ -6,6 +6,7 @@ from typing import Any
 
 from apps.heritage_data.models import CulturalEntity, Media, Submission
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from .models import ChunkedMediaUpload, DocumentPage, TabularImportJob, UploadedDocument
@@ -72,6 +73,26 @@ def suggestions_for_document(
         if allowed:
             out = {k: v for k, v in out.items() if k in allowed}
     return out
+
+
+def _raise_validation_from_model(exc: DjangoValidationError) -> None:
+    """Convert Django model ValidationError into DRF-friendly errors (avoid opaque 500s)."""
+    if hasattr(exc, "error_dict"):
+        out: dict[str, list[str]] = {}
+        for field, errs in exc.error_dict.items():
+            messages: list[str] = []
+            for item in errs:
+                if isinstance(item, DjangoValidationError):
+                    msg = item.message
+                    if item.params:
+                        msg %= item.params
+                    messages.append(str(msg))
+                else:
+                    messages.append(str(item))
+            out[field] = messages
+        raise serializers.ValidationError(out)
+    msgs = list(exc.messages)
+    raise serializers.ValidationError({"detail": msgs})
 
 
 def _merge_upload_provenance(validated_data: dict) -> dict[str, Any]:
@@ -264,7 +285,10 @@ class OcrDocumentUploadSerializer(serializers.Serializer):
                 description=description,
             )
 
-        media.full_clean()
+        try:
+            media.full_clean()
+        except DjangoValidationError as exc:
+            _raise_validation_from_model(exc)
         media.save()
 
         prov = _merge_upload_provenance(validated_data)
@@ -291,7 +315,10 @@ def save_standalone_ingestion_media(
         file=django_file,
         description=description or "",
     )
-    media.full_clean()
+    try:
+        media.full_clean()
+    except DjangoValidationError as exc:
+        _raise_validation_from_model(exc)
     media.save()
     doc = UploadedDocument.objects.filter(media=media).first()
     if doc:

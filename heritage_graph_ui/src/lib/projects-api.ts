@@ -1,4 +1,5 @@
-import { apiFetch, apiFetchJson, apiUrl } from "@/lib/api-client";
+import { ApiError, apiFetch, apiFetchJson, apiUrl, formatErrorBody } from "@/lib/api-client";
+import { getPublicApiUrl } from "@/lib/api-base";
 
 export interface ProjectUserBrief {
   id: string;
@@ -30,6 +31,13 @@ export interface ProjectMembershipRow {
   created_at: string;
 }
 
+export interface ProjectEntitySuggestion {
+  label: string;
+  ontology_class?: string;
+  confidence?: number;
+  hint?: string;
+}
+
 export interface ProjectAssetRow {
   id: string;
   media: string;
@@ -37,6 +45,8 @@ export interface ProjectAssetRow {
   media_type: string;
   role: string;
   caption: string;
+  version_label?: string;
+  entity_suggestions?: ProjectEntitySuggestion[];
   uploaded_by: ProjectUserBrief;
   uploaded_document_id: string | null;
   ocr_status: string;
@@ -100,12 +110,77 @@ function projectsPath(slug?: string, suffix = ""): string {
   return apiUrl(`${base}${suffix}`);
 }
 
-export async function listProjects(accessToken: string): Promise<ProjectSummary[]> {
-  const data = await apiFetchJson<ProjectSummary[] | { results: ProjectSummary[] }>(
-    projectsPath(undefined, "/?ordering=-updated_at"),
-    { headers: authHeaders(accessToken) }
-  );
-  return Array.isArray(data) ? data : (data.results ?? []);
+/** DRF pagination links may point at the server's host; remap to configured API origin for browser fetches. */
+export function normalizeProjectsPaginationUrl(next: string | null | undefined): string | null {
+  if (!next?.trim()) return null;
+  const base = getPublicApiUrl().replace(/\/$/, "");
+  if (!base) {
+    try {
+      return new URL(next).toString();
+    } catch {
+      return next;
+    }
+  }
+  try {
+    const u = new URL(next);
+    const origin = new URL(base).origin;
+    return `${origin}${u.pathname}${u.search}`;
+  } catch {
+    return next.startsWith("/") ? `${base}${next}` : next;
+  }
+}
+
+export interface ProjectsListPage {
+  results: ProjectSummary[];
+  next: string | null;
+  count: number | null;
+}
+
+export async function listProjectsPage(
+  accessToken: string | null | undefined,
+  opts?: {
+    nextUrl?: string | null;
+    ordering?: string;
+    visibility?: string;
+    state?: string;
+  }
+): Promise<ProjectsListPage> {
+  const ordering = opts?.ordering ?? "-updated_at";
+  const params = new URLSearchParams({ ordering });
+  if (opts?.visibility) params.set("visibility", opts.visibility);
+  if (opts?.state) params.set("state", opts.state);
+
+  const url =
+    opts?.nextUrl && opts.nextUrl.length > 0
+      ? (normalizeProjectsPaginationUrl(opts.nextUrl) ?? opts.nextUrl)
+      : projectsPath(undefined, `/?${params}`);
+
+  const headers: HeadersInit =
+    accessToken != null && accessToken !== ""
+      ? authHeaders(accessToken)
+      : { Accept: "application/json" };
+
+  const data = await apiFetchJson<
+    ProjectSummary[] | {
+      results?: ProjectSummary[];
+      next?: string | null;
+      count?: number;
+    }
+  >(url, { headers });
+
+  if (Array.isArray(data)) {
+    return {
+      results: data,
+      next: null,
+      count: data.length,
+    };
+  }
+  const results = data.results ?? [];
+  return {
+    results,
+    next: normalizeProjectsPaginationUrl(data.next ?? null),
+    count: data.count ?? null,
+  };
 }
 
 export async function getProject(slug: string, accessToken: string): Promise<ProjectDetail> {
@@ -126,11 +201,16 @@ export interface CreateProjectPayload {
 
 export async function createProject(
   accessToken: string,
-  payload: CreateProjectPayload
+  payload: CreateProjectPayload,
+  opts?: { idempotencyKey?: string }
 ): Promise<ProjectDetail> {
+  const headers: Record<string, string> = {
+    ...(authHeaders(accessToken) as Record<string, string>),
+    ...(opts?.idempotencyKey ? { "Idempotency-Key": opts.idempotencyKey } : {}),
+  };
   return apiFetchJson<ProjectDetail>(projectsPath(), {
     method: "POST",
-    headers: authHeaders(accessToken),
+    headers,
     body: JSON.stringify(payload),
   });
 }
@@ -183,6 +263,17 @@ export async function postProjectComment(
   });
 }
 
+export async function rollbackProjectMerge(
+  slug: string,
+  accessToken: string
+): Promise<ProjectDetail> {
+  return apiFetchJson<ProjectDetail>(projectsPath(slug, "/rollback-merge/"), {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({}),
+  });
+}
+
 export async function uploadProjectAsset(
   slug: string,
   accessToken: string,
@@ -190,21 +281,64 @@ export async function uploadProjectAsset(
     file: File;
     role?: string;
     caption?: string;
+    versionLabel?: string;
     mediaType?: string;
     runOcr?: boolean;
+    onProgress?: (percent: number) => void;
   }
 ): Promise<ProjectAssetRow> {
   const body = new FormData();
   body.append("file", args.file);
   body.append("role", args.role ?? "evidence");
   if (args.caption) body.append("caption", args.caption);
+  if (args.versionLabel?.trim())
+    body.append("version_label", args.versionLabel.trim().slice(0, 120));
   if (args.mediaType) body.append("media_type", args.mediaType);
   body.append("run_ocr", args.runOcr ? "true" : "false");
 
-  return apiFetchJson<ProjectAssetRow>(projectsPath(slug, "/assets/upload/"), {
-    method: "POST",
-    headers: authHeaders(accessToken, false),
-    body,
+  const url = projectsPath(slug, "/assets/upload/");
+  const onProgress = args.onProgress;
+
+  if (!onProgress) {
+    return apiFetchJson<ProjectAssetRow>(url, {
+      method: "POST",
+      headers: authHeaders(accessToken, false),
+      body,
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+    xhr.responseType = "text";
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        const pct = Math.round((100 * e.loaded) / Math.max(e.total, 1));
+        onProgress(Math.min(100, pct));
+      }
+    };
+    xhr.onload = () => {
+      let parsed: unknown = xhr.responseText;
+      if (
+        xhr.responseText &&
+        (xhr.getResponseHeader("content-type") || "").includes("application/json")
+      ) {
+        try {
+          parsed = JSON.parse(xhr.responseText);
+        } catch {
+          parsed = xhr.responseText;
+        }
+      }
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(parsed as ProjectAssetRow);
+        return;
+      }
+      const msg = formatErrorBody(parsed) ?? `Upload failed (${xhr.status}).`;
+      reject(new ApiError(xhr.status, msg, parsed));
+    };
+    xhr.onerror = () => reject(new ApiError(0, "Upload failed."));
+    xhr.send(body);
   });
 }
 

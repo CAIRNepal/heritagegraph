@@ -43,6 +43,7 @@ from .permissions import (
     IsStaffOrExpertCurator,
     IsSchemaExtensionModerator,
 )
+from .throttles import ProjectAssetUploadThrottle, ProjectCreateThrottle
 
 
 # For Swagger documentation
@@ -4118,13 +4119,18 @@ from .models import (  # noqa: E402
     ProjectAsset,
     ProjectEntity,
     ProjectMembership,
+    ProjectSnapshot,
 )
 from .project_services import (  # noqa: E402
     assert_project_ocr_quota,
+    build_merge_snapshot_payload,
     can_transition_project,
     infer_media_type_from_filename,
     is_document_media_file,
+    notify_project_review_webhook,
+    validate_project_for_review,
     queue_ocr_for_media,
+    user_can_merge_project,
     user_can_edit_project as _user_can_edit_project,
     user_can_view_project as _user_can_view_project,
 )
@@ -4154,13 +4160,24 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """CRUD + state machine for contributor projects."""
 
     queryset = Project.objects.all()
-    permission_classes = [permissions.IsAuthenticated, IsProjectOwnerOrReadOnly]
     lookup_field = "slug"
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["state", "visibility", "owner"]
     search_fields = ["title", "abstract", "intended_subject"]
     ordering_fields = ["created_at", "updated_at", "submitted_at", "merged_at"]
     ordering = ["-created_at"]
+
+    def get_permissions(self):
+        safe = self.request.method in permissions.SAFE_METHODS
+        if getattr(self, "action", None) in ("list", "retrieve") and safe:
+            return [AllowAny(), IsProjectOwnerOrReadOnly()]
+        return [permissions.IsAuthenticated(), IsProjectOwnerOrReadOnly()]
+
+    def get_throttles(self):
+        throttles = list(super().get_throttles())
+        if getattr(self, "action", None) == "create":
+            throttles.append(ProjectCreateThrottle())
+        return throttles
 
     def get_queryset(self):
         user = self.request.user
@@ -4211,6 +4228,36 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project, self.request.user, ProjectActivity.ACTION_UPDATED
         )
 
+    def create(self, request, *args, **kwargs):
+        key = (request.headers.get("Idempotency-Key") or "").strip()
+        ck = f"project:create:idemp:{request.user.pk}:{key}" if key else ""
+
+        if key:
+            existing_id = cache.get(ck)
+            if existing_id:
+                try:
+                    project = Project.objects.get(pk=existing_id)
+                except Project.DoesNotExist:
+                    cache.delete(ck)
+                else:
+                    self.check_object_permissions(request, project)
+                    out = ProjectDetailSerializer(
+                        project, context={"request": request}
+                    ).data
+                    return Response(out, status=status.HTTP_201_CREATED)
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        project = serializer.instance
+        resp = Response(
+            ProjectDetailSerializer(project, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
+        if key:
+            cache.set(ck, str(project.pk), timeout=86400)
+        return resp
+
     @action(
         detail=True,
         methods=["post"],
@@ -4230,8 +4277,21 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 "You do not have permission to perform this state transition."
             )
 
+        if target == Project.STATE_IN_REVIEW:
+            blockers = validate_project_for_review(project)
+            if blockers:
+                return Response({"blockers": blockers}, status=status.HTTP_400_BAD_REQUEST)
+
         with transaction.atomic():
             previous = project.state
+
+            if target == Project.STATE_MERGED:
+                ProjectSnapshot.objects.create(
+                    project=project,
+                    merged_by=request.user,
+                    snapshot=build_merge_snapshot_payload(project),
+                )
+
             project.state = target
             if target == Project.STATE_IN_REVIEW and not project.submitted_at:
                 project.submitted_at = timezone.now()
@@ -4244,6 +4304,46 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 request.user,
                 ProjectActivity.ACTION_STATE_CHANGED,
                 payload={"from": previous, "to": target, "comment": comment},
+            )
+
+            if target == Project.STATE_IN_REVIEW:
+                saved = project
+
+                transaction.on_commit(lambda p=saved: notify_project_review_webhook(p))
+
+        return Response(ProjectDetailSerializer(project, context={"request": request}).data)
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="rollback-merge",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def rollback_merge(self, request, slug=None):
+        project = self.get_object()
+        if not user_can_merge_project(request.user, project):
+            raise PermissionDenied("Only moderators can roll back a merge.")
+        if project.state != Project.STATE_MERGED:
+            raise ValidationError({"detail": "Project is not in merged state."})
+        snapshot = ProjectSnapshot.objects.filter(project=project).order_by("-created_at").first()
+        if snapshot is None:
+            raise ValidationError({"detail": "No merge snapshot is available."})
+
+        with transaction.atomic():
+            previous = project.state
+            project.state = Project.STATE_NEEDS_REVISION
+            project.merged_at = None
+            project.save(update_fields=["state", "merged_at", "updated_at"])
+            _log_project_activity(
+                project,
+                request.user,
+                ProjectActivity.ACTION_STATE_CHANGED,
+                payload={
+                    "from": previous,
+                    "to": project.state,
+                    "comment": "rollback_merge",
+                    "snapshot_id": str(snapshot.id),
+                },
             )
 
         return Response(ProjectDetailSerializer(project, context={"request": request}).data)
@@ -4325,6 +4425,12 @@ class ProjectMembershipViewSet(_ProjectScopedViewSet):
 class ProjectAssetViewSet(_ProjectScopedViewSet):
     serializer_class = ProjectAssetSerializer
 
+    def get_throttles(self):
+        throttles = list(super().get_throttles())
+        if getattr(self, "action", None) == "upload":
+            throttles.append(ProjectAssetUploadThrottle())
+        return throttles
+
     def get_queryset(self):
         project = self._get_project()
         self._require_view(project)
@@ -4390,6 +4496,7 @@ class ProjectAssetViewSet(_ProjectScopedViewSet):
                 media=media,
                 role=data.get("role") or ProjectAsset.ROLE_EVIDENCE,
                 caption=data.get("caption") or "",
+                version_label=(data.get("version_label") or "")[:120],
                 uploaded_by=request.user,
             )
 

@@ -4,6 +4,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
+import { atlasShowProdErrorDetail } from '@/lib/atlas-diagnostic-env';
 
 interface AtlasErrorBoundaryProps {
   children: ReactNode;
@@ -61,7 +62,7 @@ function AtlasErrorFallback({
       <div className="max-w-md space-y-2">
         <h2 className="text-lg font-semibold text-foreground">{t('globeLoadErrorTitle')}</h2>
         <p className="text-sm text-muted-foreground">{t('globeLoadErrorHint')}</p>
-        {process.env.NODE_ENV === 'development' && error?.message ?
+        {(process.env.NODE_ENV === 'development' || atlasShowProdErrorDetail()) && error?.message ?
           <p className="break-all font-mono text-xs text-destructive">{error.message}</p>
         : null}
       </div>

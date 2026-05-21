@@ -2,6 +2,7 @@
 
 import { useCallback, useRef } from "react";
 import { getPublicApiUrl } from "@/lib/api-base";
+import { ApiError } from "@/lib/api-client";
 
 export type OcrFieldSuggestion = {
   value: string;
@@ -67,8 +68,7 @@ export async function uploadHeritageOcrDocument(args: {
     body,
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Upload failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as {
     media_id: number;
@@ -89,8 +89,7 @@ export async function fetchOcrStatus(args: {
     },
   });
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Status fetch failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as OcrDocumentStatus;
 }
@@ -110,8 +109,7 @@ export async function fetchOcrSuggestions(args: {
     }
   );
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(text || `Suggestions fetch failed (${res.status})`);
+    throw await ApiError.fromResponse(res);
   }
   return (await res.json()) as Record<string, OcrFieldSuggestion>;
 }

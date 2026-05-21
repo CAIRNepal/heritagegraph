@@ -38,7 +38,18 @@ export class ApiError extends Error {
       }
     }
     const userMessage = buildUserMessageFromResponse(res.status, body, raw);
-    return new ApiError(res.status, userMessage, body);
+    let adjusted = userMessage;
+    if (res.status === 429) {
+      const ra = res.headers.get("Retry-After");
+      if (ra) {
+        const sec = Number.parseInt(ra, 10);
+        const suffix = Number.isFinite(sec)
+          ? ` Try again in about ${Math.max(1, Math.ceil(sec / 60))} minute(s).`
+          : "";
+        adjusted = `${adjusted}${suffix}`;
+      }
+    }
+    return new ApiError(res.status, adjusted, body);
   }
 }
 
@@ -60,6 +71,11 @@ export function formatErrorBody(body: unknown): string | null {
 
   const o = body as Record<string, unknown>;
 
+  if (Array.isArray(o.blockers)) {
+    const msgs = o.blockers.filter((x): x is string => typeof x === "string");
+    if (msgs.length) return msgs.join(" ");
+  }
+
   if (typeof o.error === "string") return o.error;
   if (typeof o.message === "string") return o.message;
   if (typeof o.detail === "string") return o.detail;
@@ -69,6 +85,10 @@ export function formatErrorBody(body: unknown): string | null {
       .filter(Boolean);
     if (parts.length) return parts.join(" ");
   }
+  if (typeof o.detail === "object" && o.detail !== null && !Array.isArray(o.detail)) {
+    const nested = formatErrorBody(o.detail);
+    if (nested) return nested;
+  }
 
   if (Array.isArray(o.non_field_errors)) {
     const msgs = o.non_field_errors.filter((x): x is string => typeof x === "string");
@@ -77,7 +97,14 @@ export function formatErrorBody(body: unknown): string | null {
 
   const fieldLines: string[] = [];
   for (const [key, val] of Object.entries(o)) {
-    if (key === "detail" || key === "non_field_errors" || key === "error" || key === "message") continue;
+    if (
+      key === "detail" ||
+      key === "non_field_errors" ||
+      key === "error" ||
+      key === "message" ||
+      key === "blockers"
+    )
+      continue;
     if (Array.isArray(val)) {
       const msgs = val
         .map((x) => (typeof x === "string" ? x : typeof x === "object" ? JSON.stringify(x) : String(x)))
@@ -117,6 +144,8 @@ function statusFallbackMessage(status: number): string {
       return "This action conflicts with the current state. Refresh and try again.";
     case 413:
       return "The upload is too large.";
+    case 507:
+      return "The server could not reserve storage for this upload (permissions or disk). Try again later or contact support.";
     case 422:
       return "Some fields are invalid. Check the form and try again.";
     case 429:
@@ -155,6 +184,18 @@ export function getApiErrorMessage(error: unknown, fallback = "Something went wr
     return "Unable to reach the server. Check your connection and try again.";
   }
   return fallback;
+}
+
+/** Parsed from project transition 400 payloads: `{ blockers: string[] }`. */
+export function extractProjectSubmissionBlockers(error: unknown): string[] | null {
+  if (error instanceof ApiError && error.body && typeof error.body === "object") {
+    const b = error.body as Record<string, unknown>;
+    const blockers = b.blockers;
+    if (Array.isArray(blockers) && blockers.every((x): x is string => typeof x === "string")) {
+      return blockers.filter(Boolean);
+    }
+  }
+  return null;
 }
 
 export function isApiError(error: unknown): error is ApiError {

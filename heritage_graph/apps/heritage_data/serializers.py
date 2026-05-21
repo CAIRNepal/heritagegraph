@@ -2117,6 +2117,8 @@ class ProjectAssetSerializer(serializers.ModelSerializer):
             "media_type",
             "role",
             "caption",
+            "version_label",
+            "entity_suggestions",
             "uploaded_by",
             "uploaded_document_id",
             "ocr_status",
@@ -2130,6 +2132,8 @@ class ProjectAssetSerializer(serializers.ModelSerializer):
             "media_type",
             "uploaded_document_id",
             "ocr_status",
+            "entity_suggestions",
+            "version_label",
             "created_at",
         ]
 
@@ -2157,6 +2161,7 @@ class ProjectAssetUploadSerializer(serializers.Serializer):
         default=ProjectAsset.ROLE_EVIDENCE,
     )
     caption = serializers.CharField(required=False, allow_blank=True, default="")
+    version_label = serializers.CharField(required=False, allow_blank=True, default="", max_length=120)
     media_type = serializers.ChoiceField(
         choices=Media.MEDIA_TYPE_CHOICES,
         required=False,
@@ -2169,9 +2174,9 @@ class ProjectAssetUploadSerializer(serializers.Serializer):
     copyright_note = serializers.CharField(required=False, allow_blank=True, default="")
 
     def validate_file(self, value):
-        max_bytes = int(getattr(settings, "OCR_MAX_FILE_BYTES", 25 * 1024 * 1024))
-        if hasattr(value, "size") and value.size and value.size > max_bytes:
-            raise ValidationError("File is too large to process (server limit).")
+        from .project_services import validate_project_asset_file
+
+        validate_project_asset_file(value)
         return value
 
 

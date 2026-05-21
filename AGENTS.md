@@ -179,6 +179,13 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/data/contribution-queue/` — pending contributions queue
 - `/data/revisions/` — revision history
 
+**Contributor projects (API: `/api/v1/data/projects/`):**
+- List/detail support DRF limit-offset pagination; unauthenticated `GET` may list/retrieve **public** dossiers only
+- `POST` create accepts optional `Idempotency-Key` (24h replay returns the same project per user)
+- `POST .../transition/` — lifecycle; `{"blockers": [...]}` when `in_review` prerequisites fail
+- `POST .../<slug>/rollback-merge/` — **Moderators** move a **merged** project back to **needs_revision** (uses last merge snapshot record)
+- Throttles: project create (~10/h) and multipart asset upload (~50/day); env `PROJECT_ASSET_UPLOAD_MAX_BYTES`, `REVIEW_WEBHOOK_URL`
+
 **Epistemic Review (prefix: `/data/`):**
 - `/data/review-queue/` — triaged queue (filterable: all, new_claims, conflicts, flagged, expiring); supports `ordering`, `stale_days`, `contradictions_only`, `max_trust_tier_rank`, `min_worst_source_rank`, `my_domain`; each row includes `triage_priority`, `triage_breakdown`, `worst_source_tier`, `worst_source_type`
 - `/data/review-queue/triage-policy/` — active `TriagePolicy` weights (JSON) for UI parity with scoring
@@ -234,6 +241,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/curation/contributions` — moderation queue
 - `/curation/activity` — activity log
 - `/curation/review` — triaged epistemic review queue
+- `/curation/projects-review` — contributor project dossiers in `in_review`
 - `/curation/review/<id>` — three-panel review workspace (triage strip uses workspace payload)
 - `/curation/schema-extensions` — schema extension proposals (authors + moderators)
 - `/contribute/entity-proposal` — propose canonical identity clusters (contributors)

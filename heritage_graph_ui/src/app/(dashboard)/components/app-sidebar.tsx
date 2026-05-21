@@ -46,6 +46,7 @@ import {
   IconLink,
   IconBrain,
   IconFolders,
+  IconBriefcase,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -287,6 +288,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ...(isModerator ? [{ title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard }] : []),
           ...(isReviewer ? [
             { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
+            {
+              title: 'Project dossiers',
+              url: '/curation/projects-review',
+              icon: IconBriefcase,
+            },
             { title: t('reviewWorkspace'), url: '/review', icon: IconListCheck },
           ] : []),
           ...(isModerator

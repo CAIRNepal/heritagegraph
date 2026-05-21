@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
@@ -11,10 +11,11 @@ import { IconPlus, IconSearch, IconFolders, IconGitFork } from "@tabler/icons-re
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { getApiErrorMessage } from "@/lib/api-client";
 import {
-  listProjects,
+  listProjectsPage,
   PROJECT_STATE_LABELS,
   type ProjectSummary,
 } from "@/lib/projects-api";
+import { ProjectCardSkeleton } from "@/components/projects/project-card-skeleton";
 
 const STATE_COLORS: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
@@ -70,39 +71,91 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
   );
 }
 
+type ListScope = "mine" | "public";
+
 export default function ProjectsListPage() {
   const router = useRouter();
   const { data: session, status: authStatus } = useSession();
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [listScope, setListScope] = useState<ListScope>("mine");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  const load = () => {
-    const token = (session as { accessToken?: string } | null)?.accessToken;
-    if (!token) {
-      setLoading(authStatus === "loading");
-      return;
-    }
+  const token = (session as { accessToken?: string } | null)?.accessToken;
+
+  const fetchFirstPage = useCallback(async () => {
+    if (!token && authStatus !== "loading") return;
+    if (!token) return;
+
     setLoading(true);
     setError(null);
-    listProjects(token)
-      .then(setProjects)
-      .catch((e) => setError(getApiErrorMessage(e)))
-      .finally(() => setLoading(false));
-  };
+    try {
+      const page =
+        listScope === "public"
+          ? await listProjectsPage(token, { visibility: "public" })
+          : await listProjectsPage(token);
+      setProjects(page.results);
+      setNextUrl(page.next);
+    } catch (e) {
+      setError(getApiErrorMessage(e));
+      setProjects([]);
+      setNextUrl(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [token, authStatus, listScope]);
 
   useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session, authStatus]);
+    if (authStatus === "loading") {
+      setLoading(true);
+      return;
+    }
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    void fetchFirstPage();
+  }, [token, authStatus, listScope, fetchFirstPage]);
+
+  const loadMore = async () => {
+    if (!token || !nextUrl || loadingMore) return;
+    setLoadingMore(true);
+    setError(null);
+    try {
+      const page =
+        listScope === "public"
+          ? await listProjectsPage(token, { nextUrl, visibility: "public" })
+          : await listProjectsPage(token, { nextUrl });
+      setProjects((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        const appended = page.results.filter((p) => !seen.has(p.id));
+        return [...prev, ...appended];
+      });
+      setNextUrl(page.next);
+    } catch (e) {
+      setError(getApiErrorMessage(e));
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const filtered = projects.filter(
     (p) =>
       !search.trim() ||
       p.title.toLowerCase().includes(search.toLowerCase()) ||
-      p.abstract.toLowerCase().includes(search.toLowerCase()) ||
-      p.tags.some((t) => t.toLowerCase().includes(search.toLowerCase()))
+      (p.abstract ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.tags ?? []).some((t) => t.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  const skeletonGrid = (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {[0, 1, 2, 3].map((k) => (
+        <ProjectCardSkeleton key={k} />
+      ))}
+    </div>
   );
 
   return (
@@ -114,15 +167,43 @@ export default function ProjectsListPage() {
         className={`relative overflow-hidden ${glassCard} p-6`}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-500 to-indigo-500 opacity-90 rounded-2xl" />
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-white/80 text-xs font-medium">
-              <IconFolders className="w-4 h-4" /> My Projects
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-white/80 text-xs font-medium flex-wrap">
+              <IconFolders className="w-4 h-4" /> Contribution Projects
             </div>
-            <h1 className="text-2xl font-bold text-white">Contribution Projects</h1>
+            <h1 className="text-2xl font-bold text-white">Your dossiers</h1>
             <p className="text-purple-100 text-sm">
-              Each project is a working dossier — collect evidence, author entities, request review.
+              Collect evidence, author entities, and request review.
             </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Button
+                type="button"
+                size="sm"
+                variant={listScope === "mine" ? "default" : "secondary"}
+                className={
+                  listScope === "mine"
+                    ? "bg-white text-purple-700 hover:bg-purple-50"
+                    : "bg-white/15 text-white border-white/30 hover:bg-white/25"
+                }
+                onClick={() => setListScope("mine")}
+              >
+                My projects
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={listScope === "public" ? "default" : "secondary"}
+                className={
+                  listScope === "public"
+                    ? "bg-white text-purple-700 hover:bg-purple-50"
+                    : "bg-white/15 text-white border-white/30 hover:bg-white/25"
+                }
+                onClick={() => setListScope("public")}
+              >
+                Public projects
+              </Button>
+            </div>
           </div>
           <Button
             onClick={() => router.push("/contribute/projects/new")}
@@ -146,37 +227,50 @@ export default function ProjectsListPage() {
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 p-4 flex items-center justify-between gap-3">
           <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-          <Button size="sm" variant="outline" onClick={load}>
+          <Button size="sm" variant="outline" onClick={() => void fetchFirstPage()}>
             Retry
           </Button>
         </div>
       )}
 
       {loading ? (
-        <div className="text-center py-16 text-muted-foreground text-sm">Loading projects…</div>
+        skeletonGrid
       ) : filtered.length === 0 ? (
         <div className="text-center py-16 space-y-3">
           <IconFolders className="w-12 h-12 mx-auto text-muted-foreground/40" />
           <p className="text-muted-foreground">
-            {search ? "No projects match your search." : "You have no projects yet."}
+            {search
+              ? "No projects match your search."
+              : listScope === "public"
+                ? "No public projects found."
+                : "You have no projects yet."}
           </p>
-          {!search && (
+          {!search && listScope === "mine" && (
             <Button variant="outline" onClick={() => router.push("/contribute/projects/new")}>
               Start your first project
             </Button>
           )}
         </div>
       ) : (
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={staggerContainer}
-          className="grid gap-4 sm:grid-cols-2"
-        >
-          {filtered.map((p) => (
-            <ProjectCard key={p.id} project={p} />
-          ))}
-        </motion.div>
+        <>
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={staggerContainer}
+            className="grid gap-4 sm:grid-cols-2"
+          >
+            {filtered.map((p) => (
+              <ProjectCard key={p.id} project={p} />
+            ))}
+          </motion.div>
+          {nextUrl && (
+            <div className="flex justify-center pt-2">
+              <Button variant="outline" disabled={loadingMore} onClick={() => void loadMore()}>
+                {loadingMore ? "Loading…" : "Load more"}
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

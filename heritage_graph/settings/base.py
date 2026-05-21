@@ -128,6 +128,10 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        "project_create": "10/hour",
+        "project_asset_upload": "50/day",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
@@ -202,8 +206,18 @@ OCR_MAX_FILE_BYTES = int(
 OCR_MAX_RUNS_PER_PROJECT_PER_DAY = int(
     os.environ.get("OCR_MAX_RUNS_PER_PROJECT_PER_DAY", "10")
 )
+# Project workspace asset uploads (separate ceiling from OCR pipeline max)
+PROJECT_ASSET_UPLOAD_MAX_BYTES = int(
+    os.environ.get(
+        "PROJECT_ASSET_UPLOAD_MAX_BYTES",
+        str(50 * 1024 * 1024),
+    )
+)
 # Optional override for the Tesseract binary location (useful in containers)
 TESSERACT_PATH = os.environ.get("TESSERACT_PATH", "")
+
+# POST target when a project enters ``in_review`` (moderation bridge)
+REVIEW_WEBHOOK_URL = os.environ.get("REVIEW_WEBHOOK_URL", "")
 
 # ── Ontology / schema registry (LinkML YAML → API, see specs/004-yaml-driven-schema) ──
 HERITAGEGRAPH_SCHEMA_PATH = os.environ.get(

@@ -175,6 +175,7 @@ class UploadedDocumentViewSet(
         methods=["post"],
         permission_classes=[permissions.IsAuthenticated],
         url_path="upload",
+        parser_classes=[MultiPartParser, FormParser],
     )
     def upload(self, request):
         ser = OcrDocumentUploadSerializer(
@@ -345,8 +346,20 @@ class ChunkedUploadViewSet(
         rel = os.path.join("chunk_uploads", str(uid), safe_name)
         root = Path(settings.MEDIA_ROOT)
         abs_path = root / rel
-        abs_path.parent.mkdir(parents=True, exist_ok=True)
-        abs_path.write_bytes(b"")
+        try:
+            abs_path.parent.mkdir(parents=True, exist_ok=True)
+            abs_path.write_bytes(b"")
+        except OSError:
+            return Response(
+                {
+                    "detail": (
+                        "Could not allocate temporary upload storage on the server "
+                        "(check MEDIA_ROOT permissions or disk space)."
+                    ),
+                    "code": "chunk_upload_storage_error",
+                },
+                status=status.HTTP_507_INSUFFICIENT_STORAGE,
+            )
 
         prov_payload = _merge_upload_provenance(
             {
