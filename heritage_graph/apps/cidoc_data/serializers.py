@@ -6,6 +6,65 @@ from .models import *
 
 User = get_user_model()
 
+
+def _stored_point_to_latlng(point_value):
+    """
+    Read coordinates from Location/ArchitecturalStructure/Monument `point`.
+
+    Matches migration ``0010_postgis_point_fields`` CharField format ``"<lat>, <lng>"``.
+    Returns ``(latitude, longitude)`` or ``(None, None)``. If GIS PointField is
+    enabled later, supports objects with ``.x`` / ``.y``.
+    """
+    if point_value is None:
+        return None, None
+    if hasattr(point_value, "x") and hasattr(point_value, "y"):
+        try:
+            return float(point_value.y), float(point_value.x)
+        except (AttributeError, TypeError, ValueError):
+            return None, None
+    raw = point_value.strip() if isinstance(point_value, str) else ""
+    if not raw:
+        return None, None
+    s = raw.replace(",", " ")
+    parts = s.split()
+    if len(parts) != 2:
+        return None, None
+    try:
+        lat, lng = float(parts[0]), float(parts[1])
+    except (TypeError, ValueError):
+        return None, None
+    if not (-90 <= lat <= 90 and -180 <= lng <= 180):
+        return None, None
+    return lat, lng
+
+
+def _latlng_to_point_charfield(latitude, longitude):
+    """Serialize lat/lng to the CharField convention used when GIS is disabled."""
+    return f"{latitude}, {longitude}"
+
+
+def _coerce_latlng_for_point(lat, lng):
+    """Validate inbound latitude/longitude for the optional `point` CharField."""
+    try:
+        lat_f = float(lat)
+        lng_f = float(lng)
+    except (TypeError, ValueError):
+        raise serializers.ValidationError(
+            {
+                "latitude": "Must be valid numbers.",
+                "longitude": "Must be valid numbers.",
+            }
+        )
+    if not (-90 <= lat_f <= 90 and -180 <= lng_f <= 180):
+        raise serializers.ValidationError(
+            {
+                "latitude": "Latitude must be between -90 and 90.",
+                "longitude": "Longitude must be between -180 and 180.",
+            }
+        )
+    return lat_f, lng_f
+
+
 ##########################################
 #           CIDOC_DATA CLASSES
 ##########################################
@@ -122,10 +181,12 @@ class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
         fields = "__all__"
 
     def get_latitude(self, obj):
-        return obj.point.y if obj.point else None
+        lat, _ = _stored_point_to_latlng(obj.point)
+        return lat
 
     def get_longitude(self, obj):
-        return obj.point.x if obj.point else None
+        _, lng = _stored_point_to_latlng(obj.point)
+        return lng
 
     def to_internal_value(self, data):
         mutable = (
@@ -144,13 +205,8 @@ class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
         lng = mutable.pop("longitude", None)
         ret = super().to_internal_value(mutable)
         if lat is not None and lng is not None:
-            from django.contrib.gis.geos import Point
-            try:
-                ret["point"] = Point(float(lng), float(lat), srid=4326)
-            except (TypeError, ValueError):
-                raise serializers.ValidationError(
-                    {"latitude": "Must be a valid float."}
-                )
+            lat_f, lng_f = _coerce_latlng_for_point(lat, lng)
+            ret["point"] = _latlng_to_point_charfield(lat_f, lng_f)
         if not ret.get("type"):
             ret["type"] = "temple"
         if not ret.get("current_status"):
@@ -229,23 +285,20 @@ class ArchitecturalStructureSerializer(
         return data
 
     def get_latitude(self, obj):
-        return obj.point.y if obj.point else None
+        lat, _ = _stored_point_to_latlng(obj.point)
+        return lat
 
     def get_longitude(self, obj):
-        return obj.point.x if obj.point else None
+        _, lng = _stored_point_to_latlng(obj.point)
+        return lng
 
     def to_internal_value(self, data):
         lat = data.pop("latitude", None)
         lng = data.pop("longitude", None)
         ret = super().to_internal_value(data)
         if lat is not None and lng is not None:
-            from django.contrib.gis.geos import Point
-            try:
-                ret["point"] = Point(float(lng), float(lat), srid=4326)
-            except (TypeError, ValueError):
-                raise serializers.ValidationError(
-                    {"latitude": "Must be a valid float."}
-                )
+            lat_f, lng_f = _coerce_latlng_for_point(lat, lng)
+            ret["point"] = _latlng_to_point_charfield(lat_f, lng_f)
         return ret
 
 
@@ -278,23 +331,20 @@ class MonumentSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
         fields = "__all__"
 
     def get_latitude(self, obj):
-        return obj.point.y if obj.point else None
+        lat, _ = _stored_point_to_latlng(obj.point)
+        return lat
 
     def get_longitude(self, obj):
-        return obj.point.x if obj.point else None
+        _, lng = _stored_point_to_latlng(obj.point)
+        return lng
 
     def to_internal_value(self, data):
         lat = data.pop("latitude", None)
         lng = data.pop("longitude", None)
         ret = super().to_internal_value(data)
         if lat is not None and lng is not None:
-            from django.contrib.gis.geos import Point
-            try:
-                ret["point"] = Point(float(lng), float(lat), srid=4326)
-            except (TypeError, ValueError):
-                raise serializers.ValidationError(
-                    {"latitude": "Must be a valid float."}
-                )
+            lat_f, lng_f = _coerce_latlng_for_point(lat, lng)
+            ret["point"] = _latlng_to_point_charfield(lat_f, lng_f)
         return ret
 
 

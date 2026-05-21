@@ -37,16 +37,45 @@ fi
 log_info "Waiting for database to be available..."
 max_retries=30
 retry_count=0
-while ! python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection()" 2>&1; do
-    retry_count=$((retry_count + 1))
-    if [ $retry_count -ge $max_retries ]; then
-        log_error "Failed to connect to database after $max_retries attempts. Exiting."
+
+_db_engine_normalized=$(echo "${DB_ENGINE:-}" | tr '[:upper:]' '[:lower:]')
+_use_pg_isready=0
+
+if echo "$_db_engine_normalized" | grep -q 'sqlite'; then
+    _use_pg_isready=0
+elif echo "$_db_engine_normalized" | grep -Eq 'postgresql|postgis'; then
+    _use_pg_isready=1
+elif [ -z "$_db_engine_normalized" ] && [ -n "${DB_HOST:-}" ]; then
+    # Common Docker layout: Postgres host set but DB_ENGINE injected only in base compose
+    _use_pg_isready=1
+fi
+
+if [ "$_use_pg_isready" = "1" ]; then
+    _db_host="${DB_HOST:-localhost}"
+    _db_port="${DB_PORT:-5432}"
+    _db_user="${DB_USER:-postgres}"
+    while true; do
+        if pg_isready -h "$_db_host" -p "$_db_port" -U "$_db_user" >/dev/null 2>&1; then
+            log_info "PostgreSQL is accepting connections (${_db_host}:${_db_port})."
+            break
+        fi
+        retry_count=$((retry_count + 1))
+        if [ "$retry_count" -ge "$max_retries" ]; then
+            log_error "PostgreSQL did not become ready after $max_retries attempts (${_db_host}:${_db_port}). Exiting."
+            exit 1
+        fi
+        log_warn "PostgreSQL not ready (attempt $retry_count/$max_retries). Retrying in 5 seconds..."
+        sleep 5
+    done
+else
+    log_info "Non-PostgreSQL engine (or no DB_HOST): running Django bootstrap once (misconfigurations exit immediately)."
+    if ! bootstrap_out="$(python -c "import django; django.setup()" 2>&1)"; then
+        log_error "Django bootstrap failed during django.setup() — this may be GDAL/settings/import errors, not the database socket. Details:"
+        echo "$bootstrap_out" >&2
         exit 1
     fi
-    log_warn "Database connection failed (attempt $retry_count/$max_retries). Retrying in 5 seconds..."
-    sleep 5
-done
-log_info "Database is ready!"
+    log_info "Django bootstrap OK."
+fi
 
 # ================================================================
 # Run database migrations

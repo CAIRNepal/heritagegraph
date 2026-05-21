@@ -1,18 +1,22 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
-from .base import *  # noqa: F403
-from .caching import build_caches_config
-
-# Add django.contrib.gis in production where GDAL/PostGIS is available
-INSTALLED_APPS.insert(INSTALLED_APPS.index("django.contrib.admin"), "django.contrib.gis")
-
-# --------------------------------------------------------------------
-# Load environment variables
-# --------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
+
+from .base import *  # noqa: F403, E402
+from .caching import build_caches_config  # noqa: E402
+
+# GeoDjango loads native GDAL at startup (admin autodiscover). Enable only when your
+# image has GDAL/GEOS/proj and Postgres has PostGIS; see Dockerfile + DB engine docs.
+_POSTGIS_ENV = os.environ.get("HERITAGEGRAPH_ENABLE_POSTGIS", "").strip().lower()
+if _POSTGIS_ENV in ("1", "true", "yes"):
+    INSTALLED_APPS.insert(  # noqa: F405
+        INSTALLED_APPS.index("django.contrib.admin"),  # noqa: F405
+        "django.contrib.gis",
+    )
 
 # --------------------------------------------------------------------
 # Core Security Settings
