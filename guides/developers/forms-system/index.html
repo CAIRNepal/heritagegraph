@@ -12,8 +12,6 @@
         <meta name="author" content="CAIR-Nepal">
       
       
-        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/guides/developers/forms-system/">
-      
       
         <link rel="prev" href="../conventions/">
       
@@ -74,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#forms-system-and-ontology-developer-summary" class="md-skip">
+        <a href="#forms-system-ontology-summary" class="md-skip">
           Skip to content
         </a>
       
@@ -657,34 +655,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../en/guides/developers/yaml-schema-workflow.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    YAML schema workflow
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../authentication/" class="md-nav__link">
         
   
@@ -778,24 +748,6 @@
         
       
       
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Forms system
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -812,91 +764,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-drives-the-contribute-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What drives the contribute UI
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#validation-current-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Validation (current behavior)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#field-types-high-level" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Field types (high level)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cultural-entities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cultural entities
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-wizards" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom wizards
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-docs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related docs
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
       
     </li>
   
@@ -1959,80 +1826,6 @@
     
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#what-drives-the-contribute-ui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What drives the contribute UI
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#validation-current-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Validation (current behavior)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#field-types-high-level" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Field types (high level)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cultural-entities" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cultural entities
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#custom-wizards" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom wizards
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-docs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related docs
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -2051,52 +1844,14 @@
   
 
 
-<h1 id="forms-system-and-ontology-developer-summary">Forms system and ontology (developer summary)</h1>
-<p><strong>End-to-end pipeline:</strong> <a href="yaml-schema-workflow.md">YAML schema workflow</a> — LinkML, <code>tools/ui-classmap.yaml</code>, optional <code>tools/ui-presentation.yaml</code>, <code>tools/contribute-hub.yaml</code>, <code>make ontology</code>, Django <code>GET /api/v1/cidoc/schema/registry/</code>, <code>OntologyProvider</code>, CI.</p>
-<p><strong>Task-level reference (add field, enum, entity type, Django sync):</strong> repository root <a href="https://github.com/CAIRNepal/heritagegraph/blob/main/FORMS.md"><code>FORMS.md</code></a>.</p>
-<h2 id="what-drives-the-contribute-ui">What drives the contribute UI</h2>
-<table>
-<thead>
-<tr>
-<th>Layer</th>
-<th>Role</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><code>OntologyForm</code></strong></td>
-<td>Renders fields from an <code>OntologyClass</code> (registry): sections, <code>?step=</code> for multi-section classes, validation, POST/PATCH to <code>apiEndpoint</code>.</td>
-</tr>
-<tr>
-<td><strong><code>ContributeOntologyForm</code></strong></td>
-<td>Resolves <code>ontologyKey</code> via <code>useOntology()</code>; shows <strong><code>OntologyUnavailablePanel</code></strong> if the key is missing.</td>
-</tr>
-<tr>
-<td><strong>Registry snapshot</strong></td>
-<td><code>registry.generated.json</code> / <code>.ts</code> — offline baseline; must stay in sync (<code>make ontology-check</code>).</td>
-</tr>
-<tr>
-<td><strong>Live registry</strong></td>
-<td>Authenticated clients fetch the schema API; payload includes <strong><code>registry_jsonschema</code></strong> for lightweight required-field checks on submit.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="validation-current-behavior">Validation (current behavior)</h2>
-<ul>
-<li><strong>Client:</strong> <code>validateRequiredFields</code> (required, empty values, coordinates, relations, multivalued, <strong><code>minimumCardinality</code> / <code>maximumCardinality</code></strong> when set on fields). Field-level error messages under inputs; optional pass against <strong><code>registry_jsonschema</code></strong> <code>required</code> lists (<code>validate-registry-payload.ts</code>).</li>
-<li><strong>Server:</strong> DRF + model constraints; <strong><code>registry_validation.validate_payload_for_class</code></strong> can validate against the same JSON Schema bundle when wired into viewsets.</li>
-</ul>
-<h2 id="field-types-high-level">Field types (high level)</h2>
-<p>See <strong><code>FORMS.md</code> §8</strong> for the full table. Notable types: <code>text</code>, <code>textarea</code>, <code>number</code>, <code>float</code>, <code>date</code>, <strong><code>edtf_date</code></strong>, <code>select</code>, <strong><code>multiselect</code></strong> (checkboxes), <strong><code>boolean</code></strong> (switch), <code>url</code>, <code>coordinates</code>, <strong><code>geo_point</code></strong>, <strong><code>relation</code></strong> (search; values serialize to API as IDs where applicable).</p>
-<h2 id="cultural-entities">Cultural entities</h2>
-<p>Registry key <strong><code>entity</code></strong> / LinkML class <strong><code>CulturalEntity</code></strong> — API <strong><code>/data/api/cultural-entities/</code></strong> (<code>heritage_data</code>). Contribute route uses the same <strong><code>OntologyForm</code></strong> as CIDOC types (no inline <code>OntologyClass</code> in page source).</p>
-<h2 id="custom-wizards">Custom wizards</h2>
-<p>Structure and ritual contribute routes use <strong><code>ContributeOntologyForm</code></strong> (registry-driven). Optional <strong><code>StepWizard</code></strong>, <strong><code>EntitySearch</code></strong>, <strong><code>AssertionWrapper</code></strong> components remain available for bespoke flows; see <strong><code>FORMS.md</code> §11</strong>.</p>
-<h2 id="related-docs">Related docs</h2>
-<ul>
-<li><a href="yaml-schema-workflow.md">YAML schema workflow</a> — architecture, deployment, troubleshooting, CI.</li>
-<li>Root <strong><code>ONTOLOGY.md</code></strong> — domain-oriented ontology guide (being aligned with YAML-first workflow; <strong><code>FORMS.md</code></strong> is authoritative for form tasks).</li>
-</ul>
+<h1 id="forms-system-ontology-summary">Forms System &amp; Ontology (summary)</h1>
+<p>This page will merge the existing <code>FORMS.md</code> and <code>ONTOLOGY.md</code> into a single authoritative guide about the registry-driven form system, field types, enums, and migration patterns.</p>
+<p>Current status: the canonical files <code>FORMS.md</code> and <code>ONTOLOGY.md</code> remain in the repository root. This page will be completed by consolidating those sources and removing duplication.</p>
+<p>Key concepts to include:
+- Field registry and types
+- How to add a new entity type
+- Mapping LinkML/schema to frontend registry
+- CIDOC-CRM alignment and provenance via PROV-O</p>
 
 
 
