@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -29,17 +30,19 @@ import { ShortcutGrid } from '@/components/dashboard/shortcut-grid';
 
 export default function Page() {
   const { data: session } = useSession();
-  const [greeting, setGreeting] = useState('Welcome');
+  const t = useTranslations('dashboard');
+  const tContribute = useTranslations('contribute');
+  const [greeting, setGreeting] = useState(() => t('greetingFallback'));
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     const h = new Date().getHours();
-    if (h < 12) setGreeting('Good morning');
-    else if (h < 18) setGreeting('Good afternoon');
-    else setGreeting('Good evening');
-  }, []);
+    if (h < 12) setGreeting(t('greetingMorning'));
+    else if (h < 18) setGreeting(t('greetingAfternoon'));
+    else setGreeting(t('greetingEvening'));
+  }, [t]);
 
-  const userName = session?.user?.name?.split(' ')[0] || 'there';
+  const userName = session?.user?.name?.split(' ')[0] || t('userFallback');
 
   return (
     <div className="space-y-8">
@@ -58,7 +61,7 @@ export default function Page() {
         <motion.div variants={fadeInUp} className="relative z-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
             <IconSparkles className="w-4 h-4" />
-            Heritage Graph Dashboard
+            {t('heroBadge')}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold leading-tight text-white">
             {greeting},{' '}
@@ -67,7 +70,7 @@ export default function Page() {
             </span>
           </h1>
           <p className="text-blue-100 max-w-2xl text-base md:text-lg leading-relaxed">
-            Your workspace for contributing, reviewing, and exploring cultural heritage data.
+            {t('heroSubtitle')}
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
             <Link href="/contribute">
@@ -76,7 +79,7 @@ export default function Page() {
                 className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold shadow-lg transition-colors duration-200"
               >
                 <IconPlus className="w-4 h-4 mr-2" />
-                New Contribution
+                {tContribute('newContribution')}
               </Button>
             </Link>
             <Link href="/graphview">
@@ -86,7 +89,7 @@ export default function Page() {
                 className="bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white rounded-full font-semibold transition-all duration-300"
               >
                 <IconGraph className="w-4 h-4 mr-2" />
-                Explore Knowledge Graph
+                {t('exploreGraph')}
                 <IconArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
@@ -97,7 +100,7 @@ export default function Page() {
                 className="bg-white/10 border-white/40 text-white hover:bg-white/20 hover:text-white rounded-full font-semibold transition-all duration-300"
               >
                 <IconPhotoScan className="w-4 h-4 mr-2" />
-                Document ingestion (OCR)
+                {t('documentIngestion')}
               </Button>
             </Link>
           </div>
@@ -113,12 +116,9 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100"
+          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
         >
-          Your{' '}
-          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
-            Overview
-          </span>
+          {t('yourOverview')}
         </motion.h2>
         <SectionCards />
       </motion.div>
@@ -131,12 +131,9 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100"
+          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
         >
-          Quick{' '}
-          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
-            Actions
-          </span>
+          {t('quickActions')}
         </motion.h2>
         <ShortcutGrid items={dashboardQuickActions} variant="detailed" />
       </motion.div>
@@ -150,12 +147,9 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100"
+          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-amber-500 to-yellow-500 bg-clip-text dark:from-blue-100 dark:via-amber-300 dark:to-yellow-300"
         >
-          Your{' '}
-          <span className="text-transparent bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text">
-            Progress
-          </span>
+          {t('yourProgress')}
         </motion.h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <motion.div variants={scaleIn} className="lg:col-span-2">
@@ -177,12 +171,9 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100"
+          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
         >
-          Browse by{' '}
-          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
-            Category
-          </span>
+          {t('browseByCategory')}
         </motion.h2>
         <ShortcutGrid
           items={dashboardBrowseCategories}
@@ -198,7 +189,7 @@ export default function Page() {
             href="/knowledge/entity"
             className="text-sm font-medium text-blue-700/80 hover:text-blue-800 dark:text-blue-200/70 dark:hover:text-blue-200 underline underline-offset-4"
           >
-            View all categories in the sidebar
+            {t('viewAllCategories')}
           </Link>
         </div>
       </motion.div>
@@ -212,12 +203,9 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100"
+          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
         >
-          Curation &{' '}
-          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
-            Review
-          </span>
+          {t('curationReview')}
         </motion.h2>
         <ShortcutGrid
           items={dashboardCurationShortcuts}

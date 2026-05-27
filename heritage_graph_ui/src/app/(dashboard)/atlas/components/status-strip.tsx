@@ -124,20 +124,20 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
         </ToggleGroup>
       </div>
 
-      <div className="pointer-events-none flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground md:flex-nowrap md:gap-x-3">
-        <span className="shrink-0 text-foreground">
+      <div className="pointer-events-none flex min-w-0 flex-1 items-center gap-x-2 overflow-hidden font-mono text-[10px] uppercase tracking-wide text-muted-foreground md:gap-x-3">
+        <span className="shrink-0 whitespace-nowrap text-foreground">
           {t('statusStripView')} <strong>{t(viewKey)}</strong>
         </span>
-        <span className="hidden sm:inline">{t('statusEntities', { count: visible.length })}</span>
-        <span className="hidden md:inline">{t('statusAssertions', { count: assertionCount })}</span>
-        <span className="hidden lg:inline">{t('statusCorpus', { count: entities.length })}</span>
-        <span className="hidden xl:inline">
+        <span className="hidden shrink-0 whitespace-nowrap sm:inline">{t('statusEntities', { count: visible.length })}</span>
+        <span className="hidden shrink-0 whitespace-nowrap md:inline">{t('statusAssertions', { count: assertionCount })}</span>
+        <span className="hidden shrink-0 whitespace-nowrap lg:inline">{t('statusCorpus', { count: entities.length })}</span>
+        <span className="hidden shrink-0 whitespace-nowrap xl:inline">
           {t('floors')} {reliabilityFloor} · {(confidenceFloor * 100).toFixed(0)}%
         </span>
-        <span className="hidden normal-case tracking-normal opacity-80 2xl:inline">
+        <span className="hidden min-w-0 truncate normal-case tracking-normal opacity-80 2xl:inline">
           {t('globeImageryAttribution')}
         </span>
-        <span className="hidden items-center gap-1 font-mono text-[10px] tabular-nums sm:flex">
+        <span className="hidden shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[10px] tabular-nums sm:flex">
           <span className="rounded border border-border/50 px-1 py-px">{FX_BADGE[fxPreset]}</span>
           {fxPreset === 'flir' ?
             <span className="text-muted-foreground">{fxFlirPolarity.toUpperCase()}</span>
@@ -145,20 +145,21 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
         </span>
       </div>
 
-      <div className="pointer-events-none ml-auto flex shrink-0 flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground md:gap-3">
-        <span className="hidden sm:inline">
+      <div className="pointer-events-none ml-auto flex shrink-0 items-center gap-2 font-mono text-[10px] uppercase tracking-wide text-muted-foreground md:gap-3">
+        <span className="hidden whitespace-nowrap sm:inline">
           {t('lastEdited')} {lastEdited}
         </span>
         <span
           className={
-            conflictCount > 0 ?
+            'whitespace-nowrap ' +
+            (conflictCount > 0 ?
               'animate-pulse rounded border border-destructive/60 px-1 py-px text-destructive'
-            : ''
+            : '')
           }
         >
           {t('conflicts')} {conflictCount}
         </span>
-        <span className="hidden opacity-70 md:inline">1–6 · 7 · T</span>
+        <span className="hidden whitespace-nowrap opacity-70 md:inline">1–6 · 7 · T</span>
         {corpusStatus === 'error' && corpusError ?
           <span className="max-w-[14rem] truncate text-destructive normal-case" title={corpusError}>
             {corpusError}
@@ -232,7 +233,7 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
             atlasSound.init();
             toggleMuted();
           }}
-          aria-label={muted ? 'Unmute sounds' : 'Mute sounds'}
+          aria-label={muted ? t('unmuteSounds') : t('muteSounds')}
           title="M"
         >
           {muted ? <IconVolumeOff className="h-3.5 w-3.5" /> : <IconVolume className="h-3.5 w-3.5" />}
@@ -246,7 +247,7 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
             atlasSound.init();
             onToggleFullscreen?.();
           }}
-          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          aria-label={isFullscreen ? t('exitFullscreen') : t('enterFullscreen')}
           title="F"
         >
           {isFullscreen ?
@@ -262,7 +263,7 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
             atlasSound.init();
             toggleShortcutHelp();
           }}
-          aria-label="Keyboard shortcuts"
+          aria-label={t('keyboardShortcuts')}
           title="?"
         >
           <IconHelp className="h-3.5 w-3.5" />
@@ -276,7 +277,7 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
             atlasSound.init();
             togglePanel();
           }}
-          aria-label={panelOpen ? 'Hide detail panel' : 'Show detail panel'}
+          aria-label={panelOpen ? t('hideDetailPanel') : t('showDetailPanel')}
           title="S"
         >
           {panelOpen ?

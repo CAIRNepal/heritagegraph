@@ -62,7 +62,7 @@ export function TimelineBar() {
               atlasSound.init();
               togglePlaying();
             }}
-            aria-label={playing ? 'Pause timeline' : 'Play timeline'}
+            aria-label={playing ? t('pauseTimeline') : t('playTimeline')}
             title="Space"
           >
             {playing ?
@@ -121,7 +121,7 @@ export function TimelineBar() {
                 setCurrentYear(Math.round(Number(next)));
               }}
               className="py-1"
-              aria-label="Timeline scrubber"
+              aria-label={t('timelineScrubber')}
             />
           </div>
 
