@@ -20,7 +20,7 @@ INSTALLED_APPS = [
 
     "django_prometheus",
     # "djoser",
-    # "rest_framework_simplejwt.token_blacklist",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "django_extensions",
     "drf_spectacular",
@@ -131,8 +131,20 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "project_create": "10/hour",
         "project_asset_upload": "50/day",
+        "token_obtain": "10/min",
+        "register": "5/hour",
+        "dev_login": "20/hour",
     },
 }
+
+# Sessions: Redis-backed when REDIS_URL is set (see caching.py); DB fallback otherwise.
+_redis_url = os.environ.get("REDIS_URL", "").strip()
+if _redis_url:
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    SESSION_CACHE_ALIAS = "default"
+
+SESSION_COOKIE_AGE = 60 * 60 * 12  # 12 hours absolute
+SESSION_SAVE_EVERY_REQUEST = True
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "HeritageGraph API Documentation",

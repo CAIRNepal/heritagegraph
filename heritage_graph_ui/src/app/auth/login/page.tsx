@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { isGoogleOAuthConfigured } from '@/lib/auth';
+import { isDevAuthEnabled, isGoogleOAuthConfigured } from '@/lib/auth';
 import LoginRedirectPageClient from './page-client';
 
 function LoginFallback() {
@@ -15,9 +15,13 @@ function LoginFallback() {
 
 export default function LoginRedirectPage() {
   const googleOAuthConfigured = isGoogleOAuthConfigured();
+  const devAuthEnabled = isDevAuthEnabled();
   return (
     <Suspense fallback={<LoginFallback />}>
-      <LoginRedirectPageClient googleOAuthConfigured={googleOAuthConfigured} />
+      <LoginRedirectPageClient
+        googleOAuthConfigured={googleOAuthConfigured}
+        devAuthEnabled={devAuthEnabled}
+      />
     </Suspense>
   );
 }

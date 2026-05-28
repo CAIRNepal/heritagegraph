@@ -80,11 +80,51 @@ The **Django API** still accepts multiple token types depending on `settings` (G
 | `INTERNAL_BACKEND_URL` | Yes in Docker | Server-side URL to Django (`http://backend:8000` in compose) |
 | `NEXT_PUBLIC_API_URL` | Yes | Browser-visible API origin |
 
-If `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are missing, `/auth/login` explains that Google is not configured (see `missingGoogleOAuthConfigMessage` in `src/lib/auth-errors.ts`).
+If `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are missing, `/auth/login` can still work when **dev auth** is enabled (see below).
+
+| Variable | Required? | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_DEV_AUTH` | Dev only | Set `true` to show dev email sign-in on `/auth/login` (requires backend `HERITAGEGRAPH_DEV_AUTH=true` and `DEBUG=True`) |
+
+### Django (backend)
+
+| Variable | Required? | Purpose |
+|---|---|---|
+| `GOOGLE_CLIENT_ID` | **Yes** (prod) | Must match frontend client ID for token verification |
+| `HERITAGEGRAPH_DEV_AUTH` | Dev only | Set `true` with `DEBUG=True` to enable `POST /api/dev/login/` and `X-Dev-User` header auth |
+| `REDIS_URL` | Recommended | Redis cache + session store (e.g. `redis://redis:6379/2`) |
+| `DJANGO_SECRET_KEY` | **Yes** (prod) | Django secret key |
+| `SECURE_SSL_REDIRECT` | Prod | Default `False` when Traefik terminates TLS; set `True` only without a reverse proxy |
 
 ### Production checklist
 
 Same Google **client ID** on Next.js and Django; `DJANGO_ENV=production` on the API host; HTTPS-ready `NEXTAUTH_URL` and authorized redirect URIs in Google Cloud Console (`…/api/auth/callback/google`).
+
+Production builds set `HERITAGEGRAPH_DEV_AUTH=false` and `NEXT_PUBLIC_DEV_AUTH=false` (see `docker-compose.prod.yml`). Django enables `SESSION_COOKIE_SECURE`, `CSRF_COOKIE_SECURE`, and HSTS via `settings/production.py`.
+
+### Secrets audit (one-time)
+
+If secrets were ever committed, rotate them and verify history:
+
+```bash
+git log -p --all -S 'GOOGLE_CLIENT_SECRET' -- .env .env.example
+git log -p --all -S 'NEXTAUTH_SECRET' -- .
+git log -p --all -S 'DJANGO_SECRET_KEY' -- .
+```
+
+Generate a new NextAuth secret: `openssl rand -base64 32`.
+
+### Development-only sign-in (no Google)
+
+When `DEBUG=True`, `HERITAGEGRAPH_DEV_AUTH=true`, and `NEXT_PUBLIC_DEV_AUTH=true`:
+
+1. Seed test users: `python manage.py seed_dev_users`
+2. Open `/auth/login` and use **Continue with dev email** (or `POST /api/dev/login/` with `{ "email": "dev@heritagegraph.local" }`)
+3. For API scripts: send header `X-Dev-User: dev@heritagegraph.local` (dev auth chain only)
+
+**Never enable dev auth in production** (`DEBUG=False` blocks the endpoint even if the env var is set).
+
+Use a **separate Google Cloud project** for local development with redirect URI `http://localhost:3000/api/auth/callback/google` (or your `NEXTAUTH_URL` + `/api/auth/callback/google`).
 
 ---
 
@@ -94,17 +134,19 @@ Same Google **client ID** on Next.js and Django; `DJANGO_ENV=production` on the 
 |---|---|
 | `heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts` | NextAuth HTTP handler |
 | `heritage_graph_ui/src/lib/auth.ts` | `authOptions` config (importable for server-side `getServerSession`) |
-| `heritage_graph_ui/src/app/auth/login/page.tsx` | Google-only sign-in (configuration + `?error=` handling) |
+| `heritage_graph_ui/src/app/auth/login/page.tsx` | Google sign-in + optional dev email sign-in |
 | `heritage_graph_ui/src/app/auth/error/page.tsx` | NextAuth `pages.error` — maps provider/configuration errors to copy |
 | `heritage_graph_ui/src/lib/auth-errors.ts` | User-facing strings for URL errors, session errors, and NextAuth codes |
 | `heritage_graph_ui/src/components/auth-session-monitor.tsx` | Banner when `session.error` is set (e.g. token refresh failure) |
 | `heritage_graph_ui/src/app/SessionProvider.tsx` | Client wrapper — `SessionProvider` + `ThemeProvider` + session error monitor |
 | `heritage_graph_ui/src/app/layout.tsx` | Root layout — wraps everything in `NextAuthSessionProvider` |
 | `heritage_graph_ui/types/next-auth.d.ts` | TypeScript augmentations for `Session`, `JWT`, and `User` |
-| `heritage_graph/apps/heritage_data/authentication.py` | Both auth backends: `DevSessionAuthentication` + `GoogleTokenAuthentication` |
-| `heritage_graph/settings/development.py` | Dev: session + SimpleJWT auth classes |
-| `heritage_graph/settings/production.py` | Prod: Google OAuth auth class |
-| `heritage_graph/settings/base.py` | Shared DRF config (auth classes set per-environment) |
+| `heritage_graph/apps/heritage_data/authentication.py` | Google/GitHub/dev header/session auth backends |
+| `heritage_graph/apps/heritage_data/dev_auth.py` | DEBUG-gated `POST /api/dev/login/` |
+| `heritage_graph/apps/users/auth_audit.py` | `AuthEvent` audit logging helpers |
+| `heritage_graph/settings/development.py` | Dev: dev header + Google + GitHub + session + JWT |
+| `heritage_graph/settings/production.py` | Prod: secure cookies, HSTS, Google + JWT only |
+| `heritage_graph/settings/base.py` | Redis sessions when `REDIS_URL` set; JWT blacklist app |
 
 ---
 

@@ -12,6 +12,8 @@ declare module 'next-auth' {
       id?: string;
       username?: string | null;
       slug?: string | null;
+      groups?: string[];
+      isStaff?: boolean;
     } & DefaultSession['user'];
   }
 
@@ -35,6 +37,8 @@ declare module 'next-auth/jwt' {
     id?: string;
     username?: string | null;
     slug?: string | null;
+    groups?: string[];
+    isStaff?: boolean;
     error?: string;
     errorDescription?: string;
   }

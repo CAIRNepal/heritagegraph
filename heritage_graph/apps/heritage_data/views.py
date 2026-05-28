@@ -43,7 +43,11 @@ from .permissions import (
     IsStaffOrExpertCurator,
     IsSchemaExtensionModerator,
 )
-from .throttles import ProjectAssetUploadThrottle, ProjectCreateThrottle
+from .throttles import (
+    ProjectAssetUploadThrottle,
+    ProjectCreateThrottle,
+    RegisterThrottle,
+)
 
 
 # For Swagger documentation
@@ -432,6 +436,14 @@ class LogoutView(APIView):
             refresh_token = request.data["refresh"]
             token = RefreshToken(refresh_token)
             token.blacklist()
+            from apps.users.auth_audit import record_auth_event
+            from apps.users.models import AuthEvent
+
+            record_auth_event(
+                request,
+                event_type=AuthEvent.EVENT_LOGOUT,
+                provider=AuthEvent.PROVIDER_JWT,
+            )
             return Response(status=status.HTTP_200_OK)
         except (ObjectDoesNotExist, TokenError):
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -778,6 +790,7 @@ class RegisterView(APIView):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = [RegisterThrottle]
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)

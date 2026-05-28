@@ -30,12 +30,14 @@ CACHES = build_caches_config()
 # GoogleTokenAuthentication returns None (not raises) for non-Google
 # tokens, allowing the chain to continue.
 #
-#   1. GoogleTokenAuthentication — primary: verifies Google id_tokens
-#   2. GitHubTokenAuthentication — secondary: verifies GitHub access_tokens
-#   3. DevSessionAuthentication  — allows Django admin session access
-#   4. JWTAuthentication          — fallback for SimpleJWT tokens
+#   1. DevHeaderAuthentication   — X-Dev-User header (DEBUG + HERITAGEGRAPH_DEV_AUTH)
+#   2. GoogleTokenAuthentication — primary: verifies Google id_tokens
+#   3. GitHubTokenAuthentication — secondary: verifies GitHub access_tokens
+#   4. DevSessionAuthentication  — allows Django admin session access
+#   5. JWTAuthentication          — fallback for SimpleJWT tokens
 # --------------------------------------------------------------------
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
+    "apps.heritage_data.authentication.DevHeaderAuthentication",
     "apps.heritage_data.authentication.GoogleTokenAuthentication",
     "apps.heritage_data.authentication.GitHubTokenAuthentication",
     "apps.heritage_data.authentication.DevSessionAuthentication",

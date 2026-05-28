@@ -64,3 +64,52 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         return self.first_name or self.email
 
+
+class AuthEvent(models.Model):
+    """Append-only audit trail for authentication attempts (no secrets stored)."""
+
+    EVENT_LOGIN_SUCCESS = "login_success"
+    EVENT_LOGIN_FAILURE = "login_failure"
+    EVENT_TOKEN_REFRESH = "token_refresh"
+    EVENT_LOGOUT = "logout"
+
+    EVENT_TYPE_CHOICES = [
+        (EVENT_LOGIN_SUCCESS, "Login success"),
+        (EVENT_LOGIN_FAILURE, "Login failure"),
+        (EVENT_TOKEN_REFRESH, "Token refresh"),
+        (EVENT_LOGOUT, "Logout"),
+    ]
+
+    PROVIDER_GOOGLE = "google"
+    PROVIDER_GITHUB = "github"
+    PROVIDER_JWT = "jwt"
+    PROVIDER_DEV = "dev"
+
+    PROVIDER_CHOICES = [
+        (PROVIDER_GOOGLE, "Google"),
+        (PROVIDER_GITHUB, "GitHub"),
+        (PROVIDER_JWT, "JWT"),
+        (PROVIDER_DEV, "Dev"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    event_type = models.CharField(max_length=32, choices=EVENT_TYPE_CHOICES)
+    provider = models.CharField(max_length=16, choices=PROVIDER_CHOICES)
+    email = models.EmailField(blank=True, default="")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True, default="")
+    failure_reason = models.CharField(max_length=64, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "users_auth_event"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["-created_at"]),
+            models.Index(fields=["email", "-created_at"]),
+            models.Index(fields=["ip_address", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.event_type} ({self.provider}) {self.email or '—'}"
+

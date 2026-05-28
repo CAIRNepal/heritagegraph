@@ -1,6 +1,7 @@
 // src/lib/auth.ts
-import { NextAuthOptions } from 'next-auth';
+import { NextAuthOptions, User } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { describeSessionAuthError } from '@/lib/auth-errors';
 
@@ -8,6 +9,14 @@ import { describeSessionAuthError } from '@/lib/auth-errors';
 export function isGoogleOAuthConfigured(): boolean {
   return Boolean(
     process.env.GOOGLE_CLIENT_ID?.trim() && process.env.GOOGLE_CLIENT_SECRET?.trim(),
+  );
+}
+
+/** DEBUG-gated dev email login (requires backend HERITAGEGRAPH_DEV_AUTH). */
+export function isDevAuthEnabled(): boolean {
+  return (
+    process.env.NODE_ENV === 'development' &&
+    process.env.NEXT_PUBLIC_DEV_AUTH?.trim().toLowerCase() === 'true'
   );
 }
 
@@ -24,6 +33,50 @@ if (isGoogleOAuthConfigured()) {
           prompt: 'select_account',
           scope: 'openid email profile',
         },
+      },
+    }),
+  );
+}
+
+if (isDevAuthEnabled()) {
+  providers.push(
+    CredentialsProvider({
+      id: 'dev-credentials',
+      name: 'Dev Sign-in',
+      credentials: {
+        email: { label: 'Email', type: 'email', placeholder: 'dev@heritagegraph.local' },
+      },
+      async authorize(credentials) {
+        const email = credentials?.email?.trim().toLowerCase();
+        if (!email) {
+          return null;
+        }
+
+        const backendBase = (
+          process.env.INTERNAL_BACKEND_URL || 'http://backend:8000'
+        ).replace(/\/$/, '');
+
+        const response = await fetch(`${backendBase}/api/dev/login/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok) {
+          return null;
+        }
+
+        const data = (await response.json()) as { access?: string; refresh?: string };
+        if (!data.access) {
+          return null;
+        }
+
+        return {
+          id: email,
+          email,
+          accessToken: data.access,
+          refreshToken: data.refresh,
+        } as User & { accessToken: string; refreshToken?: string };
       },
     }),
   );
@@ -57,7 +110,7 @@ function logHandshakeFailure(url: string, status: number, bodySnippet: string): 
 async function backendGet(
   url: string,
   accessToken: string | undefined,
-  idToken: string | undefined,
+  idToken?: string | undefined,
 ): Promise<Response> {
   const tryTokens = [accessToken, idToken].filter(
     (t, i, arr): t is string => Boolean(t) && arr.indexOf(t) === i,
@@ -80,7 +133,7 @@ async function backendGet(
 async function backendGetWithHandshakeRetry(
   url: string,
   accessToken: string | undefined,
-  idToken: string | undefined,
+  idToken?: string | undefined,
 ): Promise<Response> {
   const maxAttempts = 3;
   let last: Response = new Response(null, { status: 503 });
@@ -92,6 +145,30 @@ async function backendGetWithHandshakeRetry(
     await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
   }
   return last;
+}
+
+async function fetchRoleSnapshot(accessToken: string): Promise<{
+  groups?: string[];
+  is_staff?: boolean;
+} | null> {
+  const backendBase = (
+    process.env.INTERNAL_BACKEND_URL || 'http://backend:8000'
+  ).replace(/\/$/, '');
+
+  try {
+    const response = await fetch(`${backendBase}/api/user/info`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/json',
+      },
+    });
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as { groups?: string[]; is_staff?: boolean };
+  } catch {
+    return null;
+  }
 }
 
 async function refreshGoogleAccessToken(token: JWT): Promise<JWT> {
@@ -143,9 +220,13 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     /**
      * After Google OAuth succeeds, verify the token against Django so user provisioning runs
-     * before we issue a session. On failure, redirect to login with a specific ?error= code.
+     * before we issue a session. Dev credentials skip this (backend already issued JWT).
      */
     async signIn({ account, user }) {
+      if (account?.provider === 'dev-credentials') {
+        return true;
+      }
+
       if (account?.provider !== 'google') {
         return true;
       }
@@ -216,12 +297,31 @@ export const authOptions: NextAuthOptions = {
         token.username =
           (user as { username?: string }).username || user.email || undefined;
         token.slug = (user as { slug?: string }).slug ?? undefined;
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.accessTokenExpires = account.expires_at
-          ? account.expires_at * 1000
-          : jwtExpMs(account.access_token) ?? Date.now() + 3600 * 1000;
-        token.authProvider = 'google';
+
+        if (account.provider === 'dev-credentials') {
+          const devUser = user as User & { accessToken?: string; refreshToken?: string };
+          token.accessToken = devUser.accessToken;
+          token.refreshToken = devUser.refreshToken;
+          token.accessTokenExpires =
+            jwtExpMs(devUser.accessToken) ?? Date.now() + 3600 * 1000;
+          token.authProvider = 'dev';
+        } else {
+          token.accessToken = account.access_token;
+          token.refreshToken = account.refresh_token;
+          token.accessTokenExpires = account.expires_at
+            ? account.expires_at * 1000
+            : jwtExpMs(account.access_token) ?? Date.now() + 3600 * 1000;
+          token.authProvider = 'google';
+        }
+
+        if (token.accessToken) {
+          const roleInfo = await fetchRoleSnapshot(token.accessToken as string);
+          if (roleInfo) {
+            token.groups = roleInfo.groups;
+            token.isStaff = roleInfo.is_staff;
+          }
+        }
+
         return token;
       }
 
@@ -253,6 +353,8 @@ export const authOptions: NextAuthOptions = {
       session.user.username = token.username as string | null;
       session.user.slug = token.slug as string | null;
       session.accessToken = token.accessToken as string | undefined;
+      session.user.groups = token.groups as string[] | undefined;
+      session.user.isStaff = token.isStaff as boolean | undefined;
 
       if (token.error) {
         session.error = token.error as string;

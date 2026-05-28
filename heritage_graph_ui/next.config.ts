@@ -26,6 +26,29 @@ function apiMediaRemotePattern(): {
 
 const apiMediaPattern = apiMediaRemotePattern();
 
+function buildContentSecurityPolicy(): string {
+  const connectSrc = ["'self'", 'https://accounts.google.com', 'https://oauth2.googleapis.com'];
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (apiUrl) {
+    try {
+      connectSrc.push(new URL(apiUrl).origin);
+    } catch {
+      /* ignore invalid URL at build time */
+    }
+  }
+
+  return [
+    "default-src 'self'",
+    `connect-src ${connectSrc.join(' ')}`,
+    "form-action 'self' https://accounts.google.com",
+    "frame-src https://accounts.google.com",
+    "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://i.imgur.com",
+    "style-src 'self' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "font-src 'self' data:",
+  ].join('; ');
+}
+
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'standalone',
@@ -104,6 +127,28 @@ const nextConfig: NextConfig = {
       { source: '/dashboard', destination: '/', permanent: true },
       { source: '/dashboard/', destination: '/', permanent: true },
       { source: '/dashboard/:path*', destination: '/:path*', permanent: true },
+    ];
+  },
+
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: buildContentSecurityPolicy(),
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+        ],
+      },
     ];
   },
 };

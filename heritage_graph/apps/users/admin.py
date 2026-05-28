@@ -1,7 +1,40 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import User
+from .models import AuthEvent, User
+
+
+@admin.register(AuthEvent)
+class AuthEventAdmin(admin.ModelAdmin):
+    list_display = (
+        "created_at",
+        "event_type",
+        "provider",
+        "email",
+        "ip_address",
+        "failure_reason",
+    )
+    list_filter = ("event_type", "provider", "created_at")
+    search_fields = ("email", "ip_address", "failure_reason")
+    readonly_fields = (
+        "id",
+        "event_type",
+        "provider",
+        "email",
+        "ip_address",
+        "user_agent",
+        "failure_reason",
+        "created_at",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(User)

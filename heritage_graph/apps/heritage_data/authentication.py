@@ -22,13 +22,47 @@ import logging
 import os
 
 import requests as http_requests
+from apps.users.auth_audit import record_auth_event
+from apps.users.models import AuthEvent
 from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
 
+from .dev_auth_utils import dev_auth_enabled
 from .models import UserProfile
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
+
+
+# ====================================================================
+# Development Authentication — X-Dev-User header (DEBUG only)
+# ====================================================================
+
+
+class DevHeaderAuthentication(authentication.BaseAuthentication):
+    """
+    Authenticate via ``X-Dev-User: email@example.com`` when dev auth is enabled.
+
+    Useful for curl/Postman without OAuth. Disabled when ``DEBUG=False``.
+    """
+
+    def authenticate(self, request):
+        if not dev_auth_enabled():
+            return None
+
+        email = (request.headers.get("X-Dev-User") or "").strip().lower()
+        if not email:
+            return None
+
+        user, _created = User.objects.get_or_create(email=email)
+        UserProfile.objects.get_or_create(user=user)
+        record_auth_event(
+            request,
+            event_type=AuthEvent.EVENT_LOGIN_SUCCESS,
+            provider=AuthEvent.PROVIDER_DEV,
+            email=email,
+        )
+        return (user, None)
 
 
 # ====================================================================
@@ -117,12 +151,25 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         return None
 
     @staticmethod
-    def _user_from_google_claims(payload: dict):
+    def _user_from_google_claims(payload: dict, request=None):
         email = payload.get("email")
         if not email:
+            record_auth_event(
+                request,
+                event_type=AuthEvent.EVENT_LOGIN_FAILURE,
+                provider=AuthEvent.PROVIDER_GOOGLE,
+                failure_reason="missing_email",
+            )
             raise exceptions.AuthenticationFailed("Token missing email claim.")
 
         if not _email_verified_from_google_payload(payload):
+            record_auth_event(
+                request,
+                event_type=AuthEvent.EVENT_LOGIN_FAILURE,
+                provider=AuthEvent.PROVIDER_GOOGLE,
+                email=email,
+                failure_reason="email_unverified",
+            )
             raise exceptions.AuthenticationFailed("Google email not verified.")
 
         user, created = User.objects.get_or_create(
@@ -151,6 +198,13 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         profile.clerk_user_id = payload.get("sub", profile.clerk_user_id)
         profile.save()
 
+        record_auth_event(
+            request,
+            event_type=AuthEvent.EVENT_LOGIN_SUCCESS,
+            provider=AuthEvent.PROVIDER_GOOGLE,
+            email=email,
+        )
+
         return (user, None)
 
     def authenticate(self, request):
@@ -170,7 +224,7 @@ class GoogleTokenAuthentication(authentication.BaseAuthentication):
         if payload is None:
             return None
 
-        return self._user_from_google_claims(payload)
+        return self._user_from_google_claims(payload, request=request)
 
 
 # ====================================================================
@@ -289,6 +343,13 @@ class GitHubTokenAuthentication(authentication.BaseAuthentication):
                 email,
                 github_login,
             )
+
+        record_auth_event(
+            request,
+            event_type=AuthEvent.EVENT_LOGIN_SUCCESS,
+            provider=AuthEvent.PROVIDER_GITHUB,
+            email=email,
+        )
 
         # --- Sync UserProfile ---
         profile, _ = UserProfile.objects.get_or_create(user=user)

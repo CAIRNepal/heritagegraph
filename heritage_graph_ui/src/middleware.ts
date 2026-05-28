@@ -38,6 +38,20 @@ export async function middleware(request: NextRequest) {
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
+
+    if (
+      token?.error === 'RefreshAccessTokenError' ||
+      token?.error === 'AccessTokenExpiredError'
+    ) {
+      const loginUrl = new URL('/auth/login', request.url);
+      loginUrl.searchParams.set('error', String(token.error));
+      loginUrl.searchParams.set(
+        'callbackUrl',
+        `${pathname}${request.nextUrl.search || ''}`,
+      );
+      return NextResponse.redirect(loginUrl);
+    }
+
     if (!token) {
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set(

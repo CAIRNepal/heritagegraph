@@ -1,13 +1,10 @@
 from django.contrib import admin
-from django.contrib.auth.views import LogoutView
 from django.urls import include, path, re_path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-
 from apps.health_check import (
     deployment_index,
     health_check,
@@ -15,7 +12,12 @@ from apps.health_check import (
     liveness_check,
     readiness_check,
 )
-from apps.heritage_data.views import CurrentUserView, RegisterView
+from apps.heritage_data.auth_views import (
+    ThrottledTokenObtainPairView,
+    ThrottledTokenRefreshView,
+)
+from apps.heritage_data.dev_auth import DevLoginView
+from apps.heritage_data.views import CurrentUserView, LogoutView, RegisterView
 
 urlpatterns = [
     # Root: deployment index (admin + docs links); must stay before prometheus '' include
@@ -53,14 +55,19 @@ urlpatterns = [
     # Authentication
     path("auth/", include("djoser.urls")),  # Djoser URLs
     path("auth/", include("djoser.urls.jwt")),  # Djoser JWT URLs
-    path("auth/logout/", LogoutView.as_view(), name="logout"),  # Logout
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
     # JWT Token
     path(
-        "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
-    ),  # Obtain JWT Token
+        "api/token/",
+        ThrottledTokenObtainPairView.as_view(),
+        name="token_obtain_pair",
+    ),
     path(
-        "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
-    ),  # Refresh JWT Token
+        "api/token/refresh/",
+        ThrottledTokenRefreshView.as_view(),
+        name="token_refresh",
+    ),
+    path("api/dev/login/", DevLoginView.as_view(), name="dev_login"),
     path("api/register/", RegisterView.as_view(), name="register"),
     path("api/user/info", CurrentUserView.as_view(), name="current-user"),
     path("user/", include("apps.users.urls")),

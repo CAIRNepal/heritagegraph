@@ -128,6 +128,8 @@ services:
       DB_PORT: 5432
       # Google Auth
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      HERITAGEGRAPH_DEV_AUTH: "false"
+      REDIS_URL: redis://redis:6379/2
       # CORS - Set to your frontend domain(s), comma-separated
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://heritagegraph.xyz,https://heritagegraph.xyz}
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -258,6 +260,7 @@ services:
       # Google OAuth (optional - omit for dev auth mode)
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      NEXT_PUBLIC_DEV_AUTH: "false"
       # Server binding
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
