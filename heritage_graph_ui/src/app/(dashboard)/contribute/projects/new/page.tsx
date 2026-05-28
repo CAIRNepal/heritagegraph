@@ -21,6 +21,14 @@ import { createProject, getProject } from "@/lib/projects-api";
 
 const DRAFT_KEY = "hg-project-draft-v1";
 
+const INTENDED_SUBJECT_PRESETS = [
+  { label: "Temple / monument in Bhaktapur", value: "temple monument Bhaktapur" },
+  { label: "Ritual or festival", value: "ritual festival" },
+  { label: "Heritage place / site", value: "place site location" },
+  { label: "Historical person", value: "person biography" },
+  { label: "Architectural structure", value: "structure monument" },
+];
+
 function slugify(s: string): string {
   return s
     .toLowerCase()
@@ -238,6 +246,20 @@ export default function NewProjectPage() {
 
         <div className="space-y-1.5">
           <Label htmlFor="subject">Intended Subject</Label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {INTENDED_SUBJECT_PRESETS.map((preset) => (
+              <Button
+                key={preset.value}
+                type="button"
+                size="sm"
+                variant={intendedSubject === preset.value ? "default" : "outline"}
+                className="text-xs"
+                onClick={() => setIntendedSubject(preset.value)}
+              >
+                {preset.label}
+              </Button>
+            ))}
+          </div>
           <Input
             id="subject"
             value={intendedSubject}

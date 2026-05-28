@@ -42,6 +42,13 @@ import { ProjectStepStrip } from "@/components/projects/project-step-strip";
 import { ProjectAssetUploader } from "@/components/projects/project-asset-uploader";
 import { ProjectAssetCard } from "@/components/projects/project-asset-card";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
+import { ProjectAddPanel } from "@/components/projects/project-add-panel";
+import { ProjectEntityRow } from "@/components/projects/project-entity-row";
+import { ProjectReviewerPanel } from "@/components/projects/project-reviewer-panel";
+import {
+  appendProjectToRoute,
+  projectGraphPath,
+} from "@/lib/project-contribute";
 
 const STATE_COLORS: Record<string, string> = {
   draft: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
@@ -95,7 +102,7 @@ export default function ProjectDetailPage() {
     refetch,
   } = useProjectDetail(slug);
 
-  const { isModerator } = useUserRoles();
+  const { isModerator, isReviewer } = useUserRoles();
 
   const [commentText, setCommentText] = useState("");
   const [postingComment, setPostingComment] = useState(false);
@@ -189,8 +196,12 @@ export default function ProjectDetailPage() {
     }
   };
 
+  const showReviewerPanel =
+    (isReviewer || isModerator) &&
+    (project.state === "in_review" || project.state === "needs_revision");
+
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <motion.div initial="hidden" animate="show" variants={fadeInUp} className="space-y-4">
         <button
           type="button"
@@ -225,9 +236,19 @@ export default function ProjectDetailPage() {
               </div>
             </div>
 
+            <div className="flex flex-wrap gap-2 shrink-0">
+              <Button size="sm" variant="outline" asChild>
+                <a
+                  href={projectGraphPath(slug)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open graph
+                </a>
+              </Button>
             {(project.allowed_transitions.length > 0 ||
               (isModerator && project.state === "merged")) && (
-              <div className="flex flex-wrap gap-2 shrink-0">
+              <>
                 {project.allowed_transitions.map((t) => (
                   <Button
                     key={t}
@@ -264,8 +285,9 @@ export default function ProjectDetailPage() {
                     {mergeRollbackBusy ? "Rolling back…" : "Undo merge"}
                   </Button>
                 )}
-              </div>
+              </>
             )}
+            </div>
           </div>
 
           <ProjectStepStrip project={project} submissionBlockers={submissionBlockers} />
@@ -314,6 +336,12 @@ export default function ProjectDetailPage() {
         </Dialog>
       </motion.div>
 
+      <div
+        className={
+          showReviewerPanel ? "grid gap-6 lg:grid-cols-[1fr_280px] items-start" : undefined
+        }
+      >
+        <div className="min-w-0">
       <Tabs defaultValue="entities">
         <TabsList className="flex-wrap h-auto gap-1 p-1 bg-blue-50/80 dark:bg-gray-800/80">
           <TabsTrigger value="entities" className="text-xs gap-1.5">
@@ -333,16 +361,24 @@ export default function ProjectDetailPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="entities" className="mt-4 space-y-3">
+        <TabsContent value="entities" className="mt-4 space-y-4">
+          {canEditAssets && (
+            <ProjectAddPanel
+              projectSlug={slug}
+              intendedSubject={project.intended_subject}
+            />
+          )}
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Ontology entities in this project.</p>
+            <p className="text-sm text-muted-foreground">Records linked to this dossier.</p>
             {canEditAssets && (
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => router.push(`/contribute?project=${encodeURIComponent(slug)}`)}
+                onClick={() =>
+                  router.push(appendProjectToRoute("/contribute/entity", slug))
+                }
               >
-                Add Entity
+                Add entity
               </Button>
             )}
           </div>
@@ -351,18 +387,14 @@ export default function ProjectDetailPage() {
           ) : (
             <div className="space-y-2">
               {project.entities.map((e) => (
-                <div key={e.id} className={`${glassCard} p-3 flex items-center justify-between`}>
-                  <div>
-                    <span className="font-medium text-sm">{e.entity_name || e.entity}</span>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {e.entity_category} · {e.entity_status}
-                      {e.role_in_project && ` · ${e.role_in_project}`}
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {e.entity_status}
-                  </Badge>
-                </div>
+                <ProjectEntityRow
+                  key={e.id}
+                  slug={slug}
+                  row={e}
+                  accessToken={token}
+                  canEdit={canEditAssets}
+                  onUnlinked={() => void refetch()}
+                />
               ))}
             </div>
           )}
@@ -445,6 +477,11 @@ export default function ProjectDetailPage() {
           )}
         </TabsContent>
       </Tabs>
+        </div>
+        {showReviewerPanel && (
+          <ProjectReviewerPanel project={project} activity={activity} />
+        )}
+      </div>
     </div>
   );
 }

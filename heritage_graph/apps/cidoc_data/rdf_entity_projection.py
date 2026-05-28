@@ -421,3 +421,63 @@ def projection_for_metadata_instance(
         instance, resource_uri_fn=resource_uri_fn, label_fn=label_fn
     )
     return sparql_insert_for_triples(triples), managed
+
+
+def project_entity_to_rdf(entity) -> tuple[str, set[str]] | None:
+    """
+    Promote a merged ``CulturalEntity`` into the public RDF graph.
+
+    Uses revision payload when a CIDOC row is referenced; otherwise emits a
+    minimal heritageGraph entity resource from the cultural entity fields.
+    """
+    from apps.heritage_data.models import Revision
+
+    revision = (
+        Revision.objects.filter(entity_id=entity.entity_id)
+        .order_by("-revision_number")
+        .first()
+    )
+    data = revision.data if revision and isinstance(revision.data, dict) else {}
+
+    model_name = (data.get("_cidoc_model") or "").strip()
+    cidoc_id = data.get("_cidoc_id")
+    if model_name and cidoc_id is not None:
+        try:
+            from django.apps import apps
+
+            model = apps.get_model("cidoc_data", model_name)
+            instance = model.objects.filter(pk=cidoc_id).first()
+            if instance is not None:
+                uri = f"urn:hg:entity:{entity.entity_id}"
+                return projection_for_metadata_instance(
+                    instance,
+                    resource_uri_fn=lambda _i: uri,
+                    label_fn=lambda i: getattr(i, "name", None)
+                    or getattr(i, "title", None)
+                    or str(entity.entity_id),
+                )
+        except Exception:
+            logger.exception(
+                "CIDOC RDF projection failed for cultural entity %s",
+                entity.entity_id,
+            )
+
+    uri = f"urn:hg:entity:{entity.entity_id}"
+    label = (entity.name or str(entity.entity_id)).strip()
+    type_uri = RDF_PREFIXES.get("heritageGraph", "https://w3id.org/heritagegraph/") + (
+        entity.category or "Entity"
+    )
+    triples = [
+        _Triple(uri, RDF_TYPE_URI, type_uri, None),
+        _Triple(uri, RDF_PREFIXES["rdfs"] + "label", None, (label, "xsd:string")),
+    ]
+    if entity.description:
+        triples.append(
+            _Triple(
+                uri,
+                RDF_PREFIXES["rdfs"] + "comment",
+                None,
+                (entity.description[:2000], "xsd:string"),
+            )
+        )
+    return sparql_insert_for_triples(triples), {RDF_TYPE_URI}

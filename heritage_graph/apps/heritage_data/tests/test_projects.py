@@ -9,7 +9,13 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 from rest_framework.test import APITestCase
 
-from apps.heritage_data.models import Project, ProjectAsset, ProjectMembership
+from apps.heritage_data.models import (
+    CulturalEntity,
+    Project,
+    ProjectAsset,
+    ProjectEntity,
+    ProjectMembership,
+)
 
 User = get_user_model()
 
@@ -167,3 +173,33 @@ class ProjectWorkspaceAPITests(APITestCase):
         body = res.json()
         self.assertIsInstance(body.get("blockers"), list)
         self.assertTrue(len(body["blockers"]) > 0)
+
+    def test_project_graph_returns_linked_entities(self):
+        entity = CulturalEntity.objects.create(
+            name="Taumadhi Square",
+            description="Bhaktapur site",
+            category="monument",
+            contributor=self.owner,
+        )
+        ProjectEntity.objects.create(
+            project=self.project,
+            entity=entity,
+            added_by=self.owner,
+        )
+        self.client.force_authenticate(user=self.owner)
+        res = self.client.get(self._url("graph/"))
+        self.assertEqual(res.status_code, 200)
+        body = res.json()
+        self.assertEqual(len(body["nodes"]), 1)
+        self.assertEqual(body["nodes"][0]["id"], str(entity.entity_id))
+
+    def test_in_review_workspace_blocks_asset_upload(self):
+        self.project.state = Project.STATE_IN_REVIEW
+        self.project.save(update_fields=["state", "updated_at"])
+        self.client.force_authenticate(user=self.owner)
+        res = self.client.post(
+            self._url("assets/upload/"),
+            {"file": _pdf_file("blocked.pdf"), "role": "evidence"},
+            format="multipart",
+        )
+        self.assertEqual(res.status_code, 403)

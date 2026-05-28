@@ -17,10 +17,12 @@ import { Badge } from '@/components/ui/badge';
 import { glassCard } from '@/lib/design';
 import { useOntology } from '@/lib/ontology/OntologyProvider';
 import type { SemanticPattern } from '@/lib/ontology/types';
+import { ProjectContributeBanner } from '@/components/projects/project-contribute-banner';
 import {
   appendWorkflowContextToRoute,
   parseSemanticWorkflowCompleted,
 } from '@/lib/semantic-workflow-params';
+import { appendProjectToRoute, projectWorkspacePath } from '@/lib/project-contribute';
 
 function sortSuggestedPatterns(
   all: readonly SemanticPattern[],
@@ -43,6 +45,7 @@ function SemanticPatternWorkflowInner() {
   const params = useParams();
   const slug = typeof params.slug === 'string' ? params.slug : '';
   const urlSearchParams = useSearchParams();
+  const projectSlug = urlSearchParams.get('project')?.trim() || null;
   const completed = parseSemanticWorkflowCompleted(urlSearchParams);
   const nextStepRef = useRef<HTMLDivElement>(null);
 
@@ -110,6 +113,9 @@ function SemanticPatternWorkflowInner() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6">
+      {projectSlug ? (
+        <ProjectContributeBanner slug={projectSlug} />
+      ) : null}
       {completed != null ? (
         <div
           className={`${glassCard} p-4`}
@@ -173,10 +179,15 @@ function SemanticPatternWorkflowInner() {
             const done = completed != null && order <= completed;
             const isNext =
               nextStep != null && order === (nextStep.order ?? 0);
-            const href = appendWorkflowContextToRoute(s.ctaRoute, s.linkQuery, {
-              patternKey: pattern.key,
-              stepOrder: order,
-            });
+            const href = appendWorkflowContextToRoute(
+              s.ctaRoute,
+              s.linkQuery,
+              {
+                patternKey: pattern.key,
+                stepOrder: order,
+              },
+              projectSlug
+            );
 
             return (
               <div
@@ -219,6 +230,11 @@ function SemanticPatternWorkflowInner() {
             );
           })}
           <div className="flex flex-wrap gap-2">
+            {projectSlug ? (
+              <Button asChild variant="default">
+                <Link href={projectWorkspacePath(projectSlug)}>Back to project</Link>
+              </Button>
+            ) : null}
             <Button asChild variant="outline">
               <Link href="/contribute">All contribution types</Link>
             </Button>
@@ -238,7 +254,14 @@ function SemanticPatternWorkflowInner() {
             {suggestions.map((p) => (
               <Link
                 key={p.key}
-                href={`/contribute/pattern/${encodeURIComponent(p.key)}`}
+                href={
+                  projectSlug
+                    ? appendProjectToRoute(
+                        `/contribute/pattern/${encodeURIComponent(p.key)}`,
+                        projectSlug
+                      )
+                    : `/contribute/pattern/${encodeURIComponent(p.key)}`
+                }
                 className="border-border hover:bg-muted/50 rounded-lg border px-4 py-3 text-sm font-medium transition-colors"
               >
                 <span className="mr-2" aria-hidden>

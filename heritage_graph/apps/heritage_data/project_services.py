@@ -61,6 +61,11 @@ def user_can_merge_project(user, project: Project) -> bool:
     return user.groups.filter(name="Moderators").exists()
 
 
+def project_workspace_is_readonly(project: Project) -> bool:
+    """Assets/entities cannot be added or removed while in review or merged."""
+    return project.state in (Project.STATE_IN_REVIEW, Project.STATE_MERGED)
+
+
 def user_can_edit_project(user, project: Project) -> bool:
     if not user or not user.is_authenticated:
         return False

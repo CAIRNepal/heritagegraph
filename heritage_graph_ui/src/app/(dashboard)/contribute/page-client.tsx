@@ -391,7 +391,7 @@ export default function ContributeDashboard() {
               My projects
             </Button>
             <Button type="button" onClick={() => router.push("/contribute/projects/new")}>
-              New project
+              Start a heritage project
             </Button>
           </div>
         </div>

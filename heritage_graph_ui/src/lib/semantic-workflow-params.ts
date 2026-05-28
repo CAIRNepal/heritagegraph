@@ -30,10 +30,17 @@ export function parseSemanticWorkflowCompleted(searchParams: URLSearchParams): n
 }
 
 /** Return `/contribute/pattern/{key}?completed={step}` for post-submit redirects from workflow steps. */
-export function buildPatternCompletionUrl(patternKey: string, stepOrder: number): string {
+export function buildPatternCompletionUrl(
+  patternKey: string,
+  stepOrder: number,
+  projectSlug?: string | null
+): string {
   const path = `/contribute/pattern/${encodeURIComponent(patternKey)}`;
   const params = new URLSearchParams();
   params.set(SEMANTIC_WORKFLOW_COMPLETED_PARAM, String(stepOrder));
+  if (projectSlug?.trim()) {
+    params.set('project', projectSlug.trim());
+  }
   return `${path}?${params.toString()}`;
 }
 
@@ -41,7 +48,8 @@ export function buildPatternCompletionUrl(patternKey: string, stepOrder: number)
 export function appendWorkflowContextToRoute(
   route: string,
   linkQuery: string | undefined,
-  ctx: SemanticWorkflowContext
+  ctx: SemanticWorkflowContext,
+  projectSlug?: string | null
 ): string {
   const qIdx = route.indexOf('?');
   const path = qIdx >= 0 ? route.slice(0, qIdx) : route;
@@ -55,6 +63,9 @@ export function appendWorkflowContextToRoute(
   }
   params.set(SEMANTIC_WORKFLOW_PATTERN_KEY_PARAM, ctx.patternKey);
   params.set(SEMANTIC_WORKFLOW_STEP_ORDER_PARAM, String(ctx.stepOrder));
+  if (projectSlug?.trim()) {
+    params.set('project', projectSlug.trim());
+  }
   const q = params.toString();
   return q ? `${path}?${q}` : path;
 }

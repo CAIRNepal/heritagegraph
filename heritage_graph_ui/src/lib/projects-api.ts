@@ -387,6 +387,41 @@ export async function linkProjectEntity(
   });
 }
 
+export interface ProjectGraphNode {
+  id: string;
+  label: string;
+  category: string;
+  entityType: string;
+  description: string;
+  apiEndpoint: string;
+  roleInProject?: string;
+  status?: string;
+  rawData: Record<string, unknown>;
+}
+
+export interface ProjectGraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  label: string;
+  edgeType: string;
+}
+
+export interface ProjectGraphPayload {
+  nodes: ProjectGraphNode[];
+  edges: ProjectGraphEdge[];
+  isDemo?: boolean;
+}
+
+export async function fetchProjectGraph(
+  slug: string,
+  accessToken?: string
+): Promise<ProjectGraphPayload> {
+  const headers: Record<string, string> = {};
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  return apiFetchJson<ProjectGraphPayload>(projectsPath(slug, "/graph/"), { headers });
+}
+
 export async function unlinkProjectEntity(
   slug: string,
   linkId: string,

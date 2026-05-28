@@ -89,6 +89,12 @@ export function ProjectOcrSuggestionDrawer({
       toast.error("Select at least one field to apply.");
       return;
     }
+    const storageKey = `hg-project-ocr-apply-${uploadedDocumentId}`;
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(picked));
+    } catch {
+      /* ignore quota */
+    }
     const params = new URLSearchParams({
       project: projectSlug,
       ocrDoc: uploadedDocumentId,

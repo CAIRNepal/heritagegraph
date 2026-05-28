@@ -4358,6 +4358,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["get"], url_path="graph")
+    def graph(self, request, slug=None):
+        from .project_graph_services import build_project_graph_payload
+
+        project = self.get_object()
+        return Response(build_project_graph_payload(project))
+
 
 class _ProjectScopedViewSet(viewsets.ModelViewSet):
     """Base for viewsets that live under a single Project (resolved from URL kwarg)."""
@@ -4378,6 +4385,12 @@ class _ProjectScopedViewSet(viewsets.ModelViewSet):
             raise PermissionDenied("You cannot view this project.")
 
     def _require_edit(self, project):
+        from .project_services import project_workspace_is_readonly
+
+        if project_workspace_is_readonly(project):
+            raise PermissionDenied(
+                "This project workspace is read-only while it is in review or merged."
+            )
         if not _user_can_edit_project(self.request.user, project):
             raise PermissionDenied("You cannot modify this project.")
 

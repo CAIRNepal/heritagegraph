@@ -732,6 +732,8 @@ export interface OntologyFormProps {
   onFormControl?: (api: OntologyFormControlApi) => void;
   /** When set, shows OCR upload that applies suggestions to empty fields (requires signed-in user). */
   ocrCulturalEntityId?: string | null;
+  /** Pre-selected OCR document from a project asset (applies stored field hints on load). */
+  ocrUploadedDocumentId?: string | null;
   /**
    * When true, ignores URL `?id=` so embedding under pages that reuse `id` (e.g. proposal drafts)
    * never enters edit mode for this ontology endpoint.
@@ -756,6 +758,7 @@ export default function OntologyForm({
   description,
   onFormControl,
   ocrCulturalEntityId,
+  ocrUploadedDocumentId,
   embeddedCreateOnly = false,
   onContributionCreated,
 }: OntologyFormProps) {
@@ -1431,6 +1434,22 @@ export default function OntologyForm({
       ingestionHandoffAppliedRef.current = false;
     }
   }, [ontologyClass.key, pathname, router, searchParams, ocrApplyFromUpload]);
+
+  useEffect(() => {
+    if (!ocrUploadedDocumentId || isEditMode) return;
+    const storageKey = `hg-project-ocr-apply-${ocrUploadedDocumentId}`;
+    try {
+      const raw = sessionStorage.getItem(storageKey);
+      if (!raw) return;
+      const picked = JSON.parse(raw) as Record<string, OcrFieldSuggestion>;
+      if (picked && typeof picked === "object" && Object.keys(picked).length > 0) {
+        ocrApplyFromUpload(picked, { uploadedDocumentId: ocrUploadedDocumentId });
+        sessionStorage.removeItem(storageKey);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [ocrUploadedDocumentId, isEditMode, ocrApplyFromUpload]);
 
   const getValues = useCallback(() => formData, [formData]);
 

@@ -4,7 +4,9 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import OntologyForm from "@/components/ontology-form";
 import { OntologyUnavailablePanel } from "@/components/ontology/OntologyUnavailablePanel";
+import { ProjectContributeBanner } from "@/components/projects/project-contribute-banner";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
+import { useProjectContributeContext } from "@/lib/project-contribute";
 import {
   buildPatternCompletionUrl,
   parseSemanticWorkflowParams,
@@ -20,9 +22,15 @@ function ContributeOntologyFormInner({ ontologyKey }: { ontologyKey: string }) {
       ? rawPickRole
       : undefined;
   const wf = parseSemanticWorkflowParams(searchParams);
-  const redirectTo = wf
-    ? buildPatternCompletionUrl(wf.patternKey, wf.stepOrder)
-    : undefined;
+  const projectCtx = useProjectContributeContext();
+
+  const redirectTo =
+    projectCtx.redirectTo ??
+    (wf ? buildPatternCompletionUrl(wf.patternKey, wf.stepOrder, projectCtx.projectSlug) : undefined);
+
+  const ocrCulturalEntityId = ce;
+  const ocrUploadedDocumentId = projectCtx.ocrDocumentId;
+
   const { getOntologyClass } = useOntology();
   const cls = getOntologyClass(ontologyKey);
   if (!cls) {
@@ -31,13 +39,23 @@ function ContributeOntologyFormInner({ ontologyKey }: { ontologyKey: string }) {
     );
   }
   return (
-    <OntologyForm
-      ontologyClass={cls}
-      ocrCulturalEntityId={ce}
-      resumeEncoded={resumeEncoded}
-      resumePickRole={resumePickRole}
-      redirectTo={redirectTo}
-    />
+    <>
+      {projectCtx.projectSlug && (
+        <ProjectContributeBanner
+          slug={projectCtx.projectSlug}
+          title={projectCtx.projectTitle ?? undefined}
+        />
+      )}
+      <OntologyForm
+        ontologyClass={cls}
+        ocrCulturalEntityId={ocrCulturalEntityId}
+        ocrUploadedDocumentId={ocrUploadedDocumentId}
+        resumeEncoded={resumeEncoded}
+        resumePickRole={resumePickRole}
+        redirectTo={redirectTo}
+        onContributionCreated={projectCtx.onContributionCreated}
+      />
+    </>
   );
 }
 
