@@ -18,7 +18,7 @@ import {
   IconArrowRight,
   IconSparkles,
   IconGraph,
-  IconPhotoScan,
+  // IconPhotoScan, // re-import when the OCR ingestion hero CTA is restored below
 } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from '@/lib/design';
 import {
@@ -93,6 +93,11 @@ export default function Page() {
                 <IconArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
+            {/* ─────────────────────────────────────────────────────────────
+                Document ingestion (OCR) hero CTA — part of the agentic pipeline.
+                Hidden for now; restore when the OCR/pipeline UX is ready.
+                ──────────────────────────────────────────────────────────── */}
+            {/*
             <Link href="/contribute/ingestion">
               <Button
                 variant="outline"
@@ -103,6 +108,7 @@ export default function Page() {
                 {t('documentIngestion')}
               </Button>
             </Link>
+            */}
           </div>
         </motion.div>
       </motion.div>

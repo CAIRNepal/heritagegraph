@@ -186,6 +186,18 @@ CORS_ALLOWED_ORIGINS = [
     "http://heritagegraph.olinabin.com.np",
 ]
 
+# Custom headers the frontend sends that aren't in the django-cors-headers default
+# (which only allows accept, authorization, content-type, user-agent, x-csrftoken,
+# x-requested-with). Idempotency-Key is required by /projects/ POST and several
+# contribution endpoints; without it the browser blocks the preflight and fetch
+# throws "Unable to reach the server".
+from corsheaders.defaults import default_headers as _cors_default_headers  # noqa: E402
+
+CORS_ALLOW_HEADERS = (
+    *_cors_default_headers,
+    "idempotency-key",
+)
+
 # ── Celery Configuration ──────────────────────────────────────────────────────
 # Async task queue for OCR, NER extraction, and heavy processing
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')

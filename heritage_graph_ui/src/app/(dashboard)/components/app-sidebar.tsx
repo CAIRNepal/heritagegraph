@@ -44,7 +44,7 @@ import {
   IconListCheck,
   IconFingerprint,
   IconLink,
-  IconBrain,
+  // IconBrain, // re-import when the sidebar AI Pipeline entry is restored below
   IconFolders,
   IconBriefcase,
 } from '@tabler/icons-react';
@@ -265,11 +265,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     url: '/contribute/relationship-proposal',
                     icon: IconLink,
                   },
-                  {
-                    title: t('aiPipeline'),
-                    url: '/contribute/pipeline',
-                    icon: IconBrain,
-                  },
+                  // ────────────────────────────────────────────────────────
+                  // AI Pipeline — part of the agentic pipeline.
+                  // Hidden from the sidebar for now; the /contribute/pipeline
+                  // route still exists. Re-enable when the pipeline UX is ready.
+                  // ────────────────────────────────────────────────────────
+                  // {
+                  //   title: t('aiPipeline'),
+                  //   url: '/contribute/pipeline',
+                  //   icon: IconBrain,
+                  // },
                 ]
               : []),
             { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },

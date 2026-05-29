@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useRef, useEffect, useId } from "react";
+import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,11 @@ interface EntitySearchProps {
   className?: string;
   /** Hint when search has no / few matches (e.g. point user to full-form create on parent). */
   searchHint?: string;
+  /** URL to the full contribute form for this relation's target class. When supplied,
+   *  the empty-results state shows an actionable "Create new …" link instead of dead-ending. */
+  createHref?: string;
+  /** Label of the target class, used in the "Create new {createLabel}" link. */
+  createLabel?: string;
 }
 
 const API_BASE = getPublicApiUrl();
@@ -62,6 +68,8 @@ export function EntitySearch({
   hasError = false,
   className,
   searchHint,
+  createHref,
+  createLabel,
 }: EntitySearchProps) {
   const { data: session } = useSession();
   const [query, setQuery] = useState("");
@@ -253,7 +261,9 @@ export function EntitySearch({
 
             {!loading && results.length === 0 && (
               <div className="p-3 text-sm text-center space-y-2">
-                <p className="text-muted-foreground">No results found.</p>
+                <p className="text-muted-foreground">
+                  No matches for &ldquo;{query}&rdquo;.
+                </p>
                 {allowCreate ? (
                   <Button
                     variant="link"
@@ -263,9 +273,25 @@ export function EntitySearch({
                   >
                     + Create &quot;{query}&quot;
                   </Button>
+                ) : createHref ? (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="mt-1"
+                    asChild
+                  >
+                    <Link href={createHref}>
+                      + Create new {createLabel || "record"} →
+                    </Link>
+                  </Button>
                 ) : searchHint ? (
                   <p className="text-xs text-muted-foreground">{searchHint}</p>
-                ) : null}
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Try a different spelling, or create the record from its own
+                    contribute page.
+                  </p>
+                )}
               </div>
             )}
 

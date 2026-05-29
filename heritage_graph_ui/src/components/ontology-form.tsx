@@ -65,6 +65,7 @@ import {
   inferRootLabel,
 } from "@/lib/ontology/form-graph";
 import { OntologyFormGraphPreview } from "@/components/ontology-form/form-graph-preview";
+import { OntologyFormPreviewCard } from "@/components/ontology-form/preview-card";
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Sparkles } from "lucide-react";
@@ -570,6 +571,8 @@ function FieldRenderer({
               placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
               disabled={disabled}
               hasError={hasError}
+              createHref={fullFormHref ?? undefined}
+              createLabel={childClass?.label}
               searchHint={
                 showNested
                   ? "No match? Use the full form below to add a record, then return here."
@@ -645,6 +648,8 @@ function FieldRenderer({
           placeholder={`Search ${field.label?.toLowerCase() || "entities"}...`}
           disabled={disabled}
           hasError={hasError}
+          createHref={fullFormHref ?? undefined}
+          createLabel={childClass?.label}
           searchHint={
             showNested
               ? "No match? Use the full form below to add a record, then return here."
@@ -1014,6 +1019,9 @@ export default function OntologyForm({
     }
   }, [isEditMode, draftStorageKey]);
 
+  /** When the most-recent draft autosave landed; null until the first save fires. */
+  const [draftSavedAt, setDraftSavedAt] = useState<number | null>(null);
+
   useEffect(() => {
     if (isEditMode) return;
     const handle = window.setTimeout(() => {
@@ -1021,7 +1029,7 @@ export default function OntologyForm({
         formData: formData as Record<string, unknown>,
         schemaVersion: schemaVersion ?? registry.schema_version ?? null,
         savedAt: new Date().toISOString(),
-      });
+      }).then(() => setDraftSavedAt(Date.now()));
     }, 700);
     return () => window.clearTimeout(handle);
   }, [
@@ -1031,6 +1039,23 @@ export default function OntologyForm({
     schemaVersion,
     registry.schema_version,
   ]);
+
+  /** Human-friendly "saved Xs ago" string, refreshed once a minute. */
+  const [now, setNow] = useState<number>(() => Date.now());
+  useEffect(() => {
+    if (!draftSavedAt) return;
+    const id = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(id);
+  }, [draftSavedAt]);
+  const draftSavedLabel = useMemo(() => {
+    if (!draftSavedAt) return null;
+    const seconds = Math.max(0, Math.round((now - draftSavedAt) / 1000));
+    if (seconds < 5) return "Draft saved · just now";
+    if (seconds < 60) return `Draft saved · ${seconds}s ago`;
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `Draft saved · ${minutes}m ago`;
+    return "Draft saved";
+  }, [draftSavedAt, now]);
 
   const goNext = useCallback(() => {
     if (!hasSections || currentSectionIndex >= sections.length - 1 || !pathname)
@@ -1484,11 +1509,74 @@ export default function OntologyForm({
     sections,
   ]);
 
+  const focusFirstErroredField = useCallback(
+    (erroredKeys: string[]) => {
+      if (erroredKeys.length === 0) return;
+      const first = erroredKeys[0];
+      // Resolve the section that owns the first errored field so we can jump there.
+      let targetSectionKey: string | null = null;
+      for (const section of sections) {
+        if ((fieldsBySection[section.key] || []).some((f) => f.key === first)) {
+          targetSectionKey = section.key;
+          break;
+        }
+      }
+      if (hasSections && targetSectionKey && pathname) {
+        const raw = searchParams.get("step");
+        if (raw !== targetSectionKey) {
+          const p = new URLSearchParams(searchParams.toString());
+          p.set("step", targetSectionKey);
+          router.replace(`${pathname}?${p.toString()}`, { scroll: false });
+        }
+      }
+      // Defer so the section render commits before we focus.
+      window.setTimeout(() => {
+        const el = document.querySelector<HTMLElement>(
+          `[data-field-key="${first}"]`
+        );
+        if (!el) return;
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const focusable = el.querySelector<HTMLElement>(
+          "input,textarea,select,[role='combobox'],[tabindex]:not([tabindex='-1'])"
+        );
+        focusable?.focus({ preventScroll: true });
+      }, 60);
+    },
+    [
+      sections,
+      fieldsBySection,
+      hasSections,
+      pathname,
+      searchParams,
+      router,
+    ]
+  );
+
+  const sectionLabelForField = useCallback(
+    (fieldKey: string): string | null => {
+      for (const section of sections) {
+        if ((fieldsBySection[section.key] || []).some((f) => f.key === fieldKey)) {
+          return section.label;
+        }
+      }
+      return null;
+    },
+    [sections, fieldsBySection]
+  );
+
   const validate = useCallback((): boolean => {
     const errors = validateRequiredFields(ontologyClass, formData);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      toast.error("Please fix the highlighted fields.");
+      const keys = Object.keys(errors);
+      const where = sectionLabelForField(keys[0]);
+      const more = keys.length - 1;
+      toast.error(
+        more > 0
+          ? `${keys.length} required field${keys.length === 1 ? "" : "s"} missing${where ? ` (starts in ${where})` : ""}.`
+          : `Required field missing${where ? ` in ${where}` : ""}.`
+      );
+      focusFirstErroredField(keys);
       return false;
     }
     const schemaErrors = validatePayloadAgainstRegistrySchema(
@@ -1505,11 +1593,18 @@ export default function OntologyForm({
         Object.values(perField)[0] ||
         "Validation failed.";
       toast.error(firstMsg);
+      focusFirstErroredField(Object.keys(perField));
       return false;
     }
     setFieldErrors({});
     return true;
-  }, [formData, ontologyClass, registry.registry_jsonschema]);
+  }, [
+    formData,
+    ontologyClass,
+    registry.registry_jsonschema,
+    focusFirstErroredField,
+    sectionLabelForField,
+  ]);
 
   const openSubmitConfirm = () => {
     setSubmitAttempted(true);
@@ -1789,10 +1884,29 @@ export default function OntologyForm({
     </>
   );
 
+  const previewProgressPercent =
+    totalProgress.total > 0
+      ? (totalProgress.filled / totalProgress.total) * 100
+      : 0;
+  const contributorDisplayName =
+    (session?.user?.name as string | undefined) ||
+    (session?.user?.email as string | undefined) ||
+    null;
+  const previewCard = (
+    <OntologyFormPreviewCard
+      ontologyClass={ontologyClass}
+      formData={formData}
+      contributorName={contributorDisplayName}
+      progressPercent={previewProgressPercent}
+    />
+  );
+
   if (!hasSections) {
     return (
-      <div className="container max-w-2xl mx-auto space-y-6 px-4 lg:px-6">
+      <div className="container max-w-6xl mx-auto px-4 lg:px-6">
         {submitConfirmDialogs}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="min-w-0 space-y-6">
         <div>
           <button
             onClick={() => router.push("/contribute")}
@@ -1807,6 +1921,15 @@ export default function OntologyForm({
             {mainDescription}
           </p>
         </div>
+
+        <details className="rounded-2xl border border-blue-200/70 bg-blue-50/30 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">
+          <summary className="cursor-pointer text-xs font-semibold text-blue-700 dark:text-blue-300">
+            See live preview
+          </summary>
+          <div className="pt-3">
+            {previewCard}
+          </div>
+        </details>
 
         <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
 
@@ -1902,13 +2025,24 @@ export default function OntologyForm({
             )}
           </Button>
         </div>
+          </div>
+          {/* ── Desktop preview column ─────────────────────────────── */}
+          <aside className="hidden lg:block">
+            <div className="lg:sticky lg:top-6">
+              {previewCard}
+            </div>
+          </aside>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-2xl mx-auto space-y-5 px-4 lg:px-6">
+    <div className="container max-w-6xl mx-auto px-4 lg:px-6">
       {submitConfirmDialogs}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {/* ── Form column ──────────────────────────────────────────────── */}
+        <div className="min-w-0 space-y-5">
       {/* Header */}
       <div>
         <button
@@ -1917,13 +2051,37 @@ export default function OntologyForm({
         >
           ← Back to contribute
         </button>
-        <h1 className="text-2xl font-bold">
-          {mainTitle}
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <h1 className="text-2xl font-bold">
+            {mainTitle}
+          </h1>
+          {!isEditMode && draftSavedLabel ? (
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+              title="Drafts are saved in this browser. Nothing is shared until you submit."
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-emerald-500"
+                aria-hidden
+              />
+              {draftSavedLabel}
+            </span>
+          ) : null}
+        </div>
         <p className="text-muted-foreground text-sm mt-1">
           {mainDescription}
         </p>
       </div>
+
+      {/* Mobile preview — sits at the top of the form, collapsible. */}
+      <details className="rounded-2xl border border-blue-200/70 bg-blue-50/30 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">
+        <summary className="cursor-pointer text-xs font-semibold text-blue-700 dark:text-blue-300">
+          See live preview
+        </summary>
+        <div className="pt-3">
+          {previewCard}
+        </div>
+      </details>
 
       <CompletenessMeter ontologyClass={ontologyClass} values={formData} />
 
@@ -1974,38 +2132,58 @@ export default function OntologyForm({
                 {sections[currentSectionIndex].label}
               </CardTitle>
               <CardDescription>
-                {isSignedIn ? (
-                  <>
-                    Step {currentSectionIndex + 1} of {sections.length}
-                    {" — "}
-                    {sectionProgress[sections[currentSectionIndex].key]?.filled || 0} of{" "}
-                    {sectionProgress[sections[currentSectionIndex].key]?.total || 0}{" "}
-                    fields filled
-                  </>
-                ) : (
+                {!isSignedIn ? (
                   "Please sign in to submit contributions."
-                )}
+                ) : (() => {
+                  const sp = sectionProgress[sections[currentSectionIndex].key];
+                  const filled = sp?.filled || 0;
+                  const total = sp?.total || 0;
+                  const stepLabel = `Step ${currentSectionIndex + 1} of ${sections.length}`;
+                  if (total === 0) {
+                    return <>{stepLabel} — optional section. Add anything you can.</>;
+                  }
+                  if (sp?.requiredOk === false) {
+                    return (
+                      <span className="text-amber-700 dark:text-amber-300">
+                        {stepLabel} — {filled}/{total} filled. Required fields are still missing in this step.
+                      </span>
+                    );
+                  }
+                  if (filled === total) {
+                    return (
+                      <span className="text-emerald-700 dark:text-emerald-300">
+                        {stepLabel} — all {total} fields filled. ✨ Great progress!
+                      </span>
+                    );
+                  }
+                  return <>{stepLabel} — {filled} of {total} fields filled. Keep going.</>;
+                })()}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               {currentSectionFields.map((field) => (
-                <FieldRenderer
+                <div
                   key={field.key}
-                  field={field}
-                  value={formData[field.key]}
-                  onChange={updateField}
-                  disabled={!isSignedIn}
-                  hasError={shouldShowError(field)}
-                  errorMessage={fieldErrors[field.key]}
-                  onAssistClick={
-                    assistEnabled ? () => void onFieldSuggest(field) : undefined
-                  }
-                  assistPending={suggestKey === field.key}
-                  assistConfidence={ocrFieldConfidence[field.key]}
-                  getRelatedOntologyClass={resolveRelatedOntologyClass}
-                  getFullFormRelationHref={getFullFormRelationHref}
-                  apiBaseUrl={baseUrl}
-                />
+                  data-field-key={field.key}
+                  className="scroll-mt-24"
+                >
+                  <FieldRenderer
+                    field={field}
+                    value={formData[field.key]}
+                    onChange={updateField}
+                    disabled={!isSignedIn}
+                    hasError={shouldShowError(field)}
+                    errorMessage={fieldErrors[field.key]}
+                    onAssistClick={
+                      assistEnabled ? () => void onFieldSuggest(field) : undefined
+                    }
+                    assistPending={suggestKey === field.key}
+                    assistConfidence={ocrFieldConfidence[field.key]}
+                    getRelatedOntologyClass={resolveRelatedOntologyClass}
+                    getFullFormRelationHref={getFullFormRelationHref}
+                    apiBaseUrl={baseUrl}
+                  />
+                </div>
               ))}
               {currentSectionFields.length === 0 && (
                 <p className="text-sm text-muted-foreground py-4 text-center">
@@ -2064,6 +2242,14 @@ export default function OntologyForm({
             )}
           </Button>
         </div>
+      </div>
+        </div>
+        {/* ── Desktop preview column ────────────────────────────────── */}
+        <aside className="hidden lg:block">
+          <div className="lg:sticky lg:top-6">
+            {previewCard}
+          </div>
+        </aside>
       </div>
     </div>
   );

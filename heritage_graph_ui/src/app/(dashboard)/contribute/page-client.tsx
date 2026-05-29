@@ -14,7 +14,7 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { AlertCircle, FileText, FolderKanban } from "lucide-react";
+import { AlertCircle, /* FileText, */ FolderKanban } from "lucide-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { ContributeHubIntentRow } from "@/lib/ontology/types";
@@ -397,6 +397,13 @@ export default function ContributeDashboard() {
         </div>
       </motion.div>
 
+      {/* ─────────────────────────────────────────────────────────────────────
+          Supervised document ingestion (OCR) — part of the agentic pipeline.
+          Hidden from contributors for now; re-enable when the pipeline UX is
+          ready by uncommenting this block and the dashboard quick-action in
+          src/config/dashboard-links.ts.
+          ──────────────────────────────────────────────────────────────────── */}
+      {/*
       <motion.div
         initial="hidden"
         animate="show"
@@ -426,6 +433,7 @@ export default function ContributeDashboard() {
           </Button>
         </div>
       </motion.div>
+      */}
 
       <motion.div
         initial="hidden"
