@@ -107,6 +107,9 @@ function authHeaders(accessToken: string, json = true): HeadersInit {
 
 function projectsPath(slug?: string, suffix = ""): string {
   const base = slug ? `/api/v1/data/projects/${slug}` : "/api/v1/data/projects";
+  // POST to the collection endpoint without a suffix needs a trailing slash:
+  // Django's APPEND_SLASH cannot 301-redirect a POST body, so it returns 500.
+  if (!slug && !suffix) return apiUrl(`${base}/`);
   return apiUrl(`${base}${suffix}`);
 }
 
