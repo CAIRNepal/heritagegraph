@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 
 import { apiFetchJson, ApiError, getApiErrorMessage } from '@/lib/api-client';
+import { dataApiPath } from '@/lib/api-paths';
 import { getPublicApiUrl } from '@/lib/api-base';
-
-const API_BASE = getPublicApiUrl();
 
 export interface ReviewerRole {
   id: string;
@@ -44,7 +43,8 @@ export function useReviewerRole(): UseReviewerRoleReturn {
       setIsLoading(false);
       return;
     }
-    if (!API_BASE) {
+    const apiBase = getPublicApiUrl();
+    if (!apiBase) {
       setIsLoading(false);
       setError('API is not configured. Set NEXT_PUBLIC_API_URL and reload.');
       return;
@@ -56,7 +56,7 @@ export function useReviewerRole(): UseReviewerRoleReturn {
 
       try {
         const data = await apiFetchJson<ReviewerRole>(
-          `${API_BASE}/data/api/reviewer-roles/my_role/`,
+          dataApiPath('reviewer-roles', 'my_role'),
           {
             headers: {
               'Content-Type': 'application/json',

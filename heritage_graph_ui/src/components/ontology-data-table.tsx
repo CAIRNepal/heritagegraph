@@ -40,12 +40,12 @@ import {
 
 import type { OntologyClass, OntologyColumn } from "@/lib/ontology/types";
 import { apiFetch, getApiErrorMessage } from "@/lib/api-client";
+import { getPublicApiUrl } from "@/lib/api-base";
 
 // ---------------------------------------------------------------------------
 // CONSTANTS
 // ---------------------------------------------------------------------------
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = getPublicApiUrl();
 const PAGE_SIZE = 10;
 
 // ---------------------------------------------------------------------------

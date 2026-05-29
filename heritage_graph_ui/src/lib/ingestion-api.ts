@@ -1,4 +1,5 @@
 import { getPublicApiUrl } from "@/lib/api-base";
+import { dataApiPath } from "@/lib/api-paths";
 import { ApiError } from "@/lib/api-client";
 
 /** Same shape as `OcrFieldSuggestion` — duplicated here to avoid importing client hooks from shared lib. */
@@ -128,11 +129,10 @@ export type IngestionHandoffPayload = {
 };
 
 export function buildVersionedOcrBaseUrl(): string {
-  const api = getPublicApiUrl();
-  if (!api) {
+  if (!getPublicApiUrl()) {
     throw new Error("NEXT_PUBLIC_API_URL is not configured.");
   }
-  return `${api}/api/v1/data`;
+  return dataApiPath();
 }
 
 export async function uploadStandaloneIngestionDocument(args: {

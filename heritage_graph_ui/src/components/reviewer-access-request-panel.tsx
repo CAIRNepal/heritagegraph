@@ -12,83 +12,52 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Shield, Loader2, CheckCircle2, Clock, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-
-export interface ReviewerRoleRequest {
-  id: string;
-  requested_role: 'community_reviewer' | 'domain_expert';
-  message: string;
-  status: 'pending' | 'approved' | 'rejected' | 'withdrawn';
-  reviewed_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import { getApiErrorMessage } from '@/lib/api-client';
+import {
+  fetchMyReviewerApplication,
+  submitReviewerApplication,
+  withdrawMyReviewerApplication,
+  type ReviewerApplication,
+} from '@/lib/reviewer-applications-api';
 
 interface ReviewerAccessRequestPanelProps {
   className?: string;
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  community_reviewer: 'Community reviewer',
-  domain_expert: 'Domain expert',
-};
-
 export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestPanelProps) {
   const { data: session, status } = useSession();
-  const [requests, setRequests] = useState<ReviewerRoleRequest[]>([]);
+  const [application, setApplication] = useState<ReviewerApplication | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [role, setRole] = useState<string>('community_reviewer');
   const [message, setMessage] = useState('');
 
-  const token = (session as Record<string, unknown> | null)?.accessToken as string | undefined;
-
-  const buildHeaders = useCallback((): HeadersInit => {
-    const h: HeadersInit = { 'Content-Type': 'application/json' };
-    if (token) h.Authorization = `Bearer ${token}`;
-    return h;
-  }, [token]);
+  const token = (session as { accessToken?: string } | null)?.accessToken;
 
   const load = useCallback(async () => {
     if (status !== 'authenticated' || !token) {
+      setApplication(null);
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
-      const data = await apiFetchJson<unknown>(
-        `${API_BASE}/data/api/reviewer-role-requests/`,
-        { headers: buildHeaders() }
-      );
-      const list = Array.isArray(data)
-        ? data
-        : (data as { results?: ReviewerRoleRequest[] }).results ?? [];
-      setRequests(list);
+      const app = await fetchMyReviewerApplication(token);
+      setApplication(app?.id ? app : null);
     } catch (e) {
-      toast.error(getApiErrorMessage(e, 'Could not load reviewer requests.'));
+      toast.error(getApiErrorMessage(e, 'Could not load your reviewer application.'));
     } finally {
       setLoading(false);
     }
-  }, [status, token, buildHeaders]);
+  }, [status, token]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const latest = requests[0];
-  const hasPending = latest?.status === 'pending';
+  const hasPending = application?.status === 'pending';
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,33 +67,26 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
     }
     setSubmitting(true);
     try {
-      await apiFetchJson(`${API_BASE}/data/api/reviewer-role-requests/`, {
-        method: 'POST',
-        headers: buildHeaders(),
-        body: JSON.stringify({ requested_role: role, message }),
-      });
-      toast.success('Your request was submitted. Staff will review it soon.');
+      const created = await submitReviewerApplication(token, message);
+      setApplication(created);
+      toast.success('Your application was submitted. Staff will review it soon.');
       setMessage('');
-      await load();
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not submit your request.'));
+      toast.error(getApiErrorMessage(err, 'Could not submit your application.'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const onWithdraw = async () => {
-    if (!latest || !token) return;
+    if (!application?.id || !token) return;
     setSubmitting(true);
     try {
-      await apiFetch(
-        `${API_BASE}/data/api/reviewer-role-requests/${latest.id}/withdraw/`,
-        { method: 'POST', headers: buildHeaders() }
-      );
-      toast.success('Request withdrawn');
-      await load();
+      await withdrawMyReviewerApplication(token);
+      setApplication(null);
+      toast.success('Application withdrawn — you can submit again when ready.');
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Could not withdraw this request.'));
+      toast.error(getApiErrorMessage(err, 'Could not withdraw this application.'));
     } finally {
       setSubmitting(false);
     }
@@ -148,7 +110,7 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
           <CardTitle className="flex items-center gap-2 text-lg">
             <Shield className="h-5 w-5" /> Reviewer access
           </CardTitle>
-          <CardDescription>Sign in to request moderator or reviewer privileges.</CardDescription>
+          <CardDescription>Sign in to request reviewer privileges.</CardDescription>
         </CardHeader>
       </Card>
     );
@@ -159,47 +121,43 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <Shield className="h-5 w-5" />
-          Request reviewer / moderator access
+          Request reviewer access
         </CardTitle>
         <CardDescription>
-          Ask the HeritageGraph team for permission to review contributions. Staff approve requests in the
-          Django admin.
+          Tell the HeritageGraph team about your background. Staff approve applications in the
+          admin console; approved users receive a reviewer role for the curation queue.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {latest ? (
+        {application?.id ? (
           <div className="rounded-lg border border-blue-100 dark:border-gray-700 bg-blue-50/50 dark:bg-gray-900/40 p-4 text-sm">
-            <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">Latest request</p>
+            <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">Your application</p>
             <div className="flex flex-wrap items-center gap-2 text-blue-800 dark:text-blue-200">
-              {latest.status === 'pending' && (
+              {application.status === 'pending' && (
                 <>
                   <Clock className="h-4 w-4 shrink-0" />
-                  Pending — requested {ROLE_LABELS[latest.requested_role] ?? latest.requested_role}
+                  Pending review
                 </>
               )}
-              {latest.status === 'approved' && (
+              {application.status === 'approved' && (
                 <>
                   <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
-                  Approved
+                  Approved — refresh the page if your access has not updated yet
                 </>
               )}
-              {latest.status === 'rejected' && (
+              {application.status === 'rejected' && (
                 <>
                   <XCircle className="h-4 w-4 shrink-0 text-red-500" />
-                  Not approved — you may submit a new request later
-                </>
-              )}
-              {latest.status === 'withdrawn' && (
-                <>
-                  <XCircle className="h-4 w-4 shrink-0 opacity-60" />
-                  Withdrawn
+                  Not approved — you may submit a new application below
                 </>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Submitted {new Date(latest.created_at).toLocaleString()}
-            </p>
-            {latest.status === 'pending' && (
+            {application.created_at ? (
+              <p className="text-xs text-muted-foreground mt-2">
+                Submitted {new Date(application.created_at).toLocaleString()}
+              </p>
+            ) : null}
+            {application.status === 'pending' ? (
               <Button
                 type="button"
                 variant="outline"
@@ -208,32 +166,18 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
                 disabled={submitting}
                 onClick={() => void onWithdraw()}
               >
-                Withdraw request
+                Withdraw application
               </Button>
-            )}
+            ) : null}
           </div>
         ) : null}
 
         {hasPending ? (
-          <p className="text-sm text-blue-700 dark:text-blue-300">You already have a pending request.</p>
-        ) : (
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            You already have a pending application.
+          </p>
+        ) : application?.status === 'approved' ? null : (
           <form onSubmit={(e) => void onSubmit(e)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="requested_role">Requested role</Label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger id="requested_role" className="w-full max-w-md">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="community_reviewer">
-                    Community reviewer — first-line moderation
-                  </SelectItem>
-                  <SelectItem value="domain_expert">
-                    Domain expert — verify claims and conflicts
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
             <div className="space-y-2">
               <Label htmlFor="message">Message (optional)</Label>
               <Textarea
@@ -250,7 +194,7 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
               ) : (
                 <Shield className="h-4 w-4" />
               )}
-              Submit request
+              Submit application
             </Button>
           </form>
         )}

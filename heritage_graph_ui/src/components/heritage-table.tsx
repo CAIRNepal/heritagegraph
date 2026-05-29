@@ -2,8 +2,9 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { getPublicApiUrl } from '@/lib/api-base';
-import { apiFetch, getApiErrorMessage } from '@/lib/api-client';
+import { dataApiPath } from '@/lib/api-paths';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { limitOffsetSearchParams, totalPages } from '@/lib/drf-pagination';
 import {
   closestCenter,
   DndContext,
@@ -361,24 +362,35 @@ export function DataTable() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const url = `${getPublicApiUrl()}/cidoc/search/?q=mahadev`;
-        const response = await apiFetch(url, {
+        const sp = limitOffsetSearchParams(
+          pagination.pageIndex + 1,
+          pagination.pageSize,
+        );
+        const result = await apiFetchJson<{
+          count: number;
+          results: Array<{
+            submission_id: string;
+            title: string;
+            description: string;
+            contributor: number;
+            contributor_username?: string;
+            status: string;
+            created_at: string;
+          }>;
+        }>(`${dataApiPath('submissions')}?${sp}`, {
           headers: { Accept: 'application/json' },
         });
-        const result = await response.json();
-
-        // The JSON response structure is { persons: [...] }
-        const rows = result.persons || [];
-        
+        const rows = (result.results ?? []).map((row) => ({
+          id: row.submission_id,
+          title: row.title,
+          description: row.description ?? '',
+          contributor: String(row.contributor_username ?? row.contributor),
+          status: row.status,
+          created_at: row.created_at,
+          name: row.title,
+        }));
         setData(rows);
-        
-        // Handle count if your API provides it for pagination
-        if (result.count) {
-          setPageCount(Math.ceil(result.count / pagination.pageSize));
-        } else {
-           // Fallback if no count is returned (client side pagination simulation)
-           setPageCount(Math.ceil(rows.length / pagination.pageSize));
-        }
+        setPageCount(totalPages(result.count, pagination.pageSize));
 
       } catch (error) {
         toast.error(

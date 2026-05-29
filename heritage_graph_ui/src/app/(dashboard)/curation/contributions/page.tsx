@@ -24,6 +24,9 @@ import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { dataApiPath } from '@/lib/api-paths';
+import { limitOffsetSearchParams, totalPages, type PaginatedResponse } from '@/lib/drf-pagination';
+import { submitReviewerApplication as postReviewerApplication } from '@/lib/reviewer-applications-api';
 import { useUserRoles } from '@/hooks/use-user-roles';
 import {
   Dialog,
@@ -51,12 +54,9 @@ interface Contribution {
   is_fork?: boolean; fork_info?: ForkInfoInline | null;
   root_entity?: string | null; parent_entity?: string | null; fork_depth?: number;
 }
-interface APIResponse { count: number; next: string | null; previous: string | null; results: Contribution[]; }
 type QueueTab = 'all' | 'new_claims' | 'conflicts' | 'flagged' | 'expiring' | 'forks';
 type CategoryType = 'all' | 'monument' | 'artifact' | 'ritual' | 'festival' | 'tradition' | 'document' | 'other';
 type SortField = 'created_at' | 'name';
-
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 const CAT: Record<string, { label: string; cls: string }> = {
   monument:  { label: 'Monument',  cls: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300' },
@@ -110,7 +110,7 @@ export default function ContributionQueuePage() {
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortAsc, setSortAsc] = useState(false);
   const perPage = 20;
-  const pages = Math.ceil(total / perPage);
+  const pages = totalPages(total, perPage);
 
   const showApplyCta =
     !rolesLoading &&
@@ -127,18 +127,13 @@ export default function ContributionQueuePage() {
     return h;
   }, [session]);
 
-  const submitReviewerApplication = async () => {
+  const handleSubmitReviewerApplication = async () => {
     if (!session || applySubmitting) return;
     setApplySubmitting(true);
     try {
-      const h: HeadersInit = { 'Content-Type': 'application/json' };
       const t = (session as Record<string, unknown>)?.accessToken;
-      if (t) h['Authorization'] = `Bearer ${t}`;
-      await apiFetchJson(`${API}/data/api/reviewer-applications/`, {
-        method: 'POST',
-        headers: h,
-        body: JSON.stringify({ message: applyMessage.trim() || '' }),
-      });
+      if (!t) return;
+      await postReviewerApplication(t, applyMessage);
       toast.success('Application submitted. We will follow up if your request is approved.');
       setApplyOpen(false);
       setApplyMessage('');
@@ -150,44 +145,59 @@ export default function ContributionQueuePage() {
     }
   };
 
+  const loadCounts = useCallback(async () => {
+    try {
+      const countsData = await apiFetchJson<{
+        all: number;
+        new_claims: number;
+        conflicts: number;
+        flagged: number;
+        expiring: number;
+        forks: number;
+      }>(dataApiPath('contribution-queue', 'queue-counts'), { headers: headers() });
+      setCounts({
+        all: countsData.all,
+        new_claims: countsData.new_claims,
+        conflicts: countsData.conflicts,
+        flagged: countsData.flagged,
+        expiring: countsData.expiring,
+        forks: countsData.forks,
+      });
+    } catch {
+      /* tab counts are best-effort */
+    }
+  }, [headers]);
+
   const load = useCallback(async (p = 1) => {
     setLoading(true); setError(null);
     try {
-      const sp = new URLSearchParams();
-      sp.set('page', String(p));
-      if (cat !== 'all') sp.set('category', cat);
-      if (q) sp.set('search', q);
-      sp.set('ordering', `${sortAsc ? '' : '-'}${sortField}`);
-      const data = await apiFetchJson<APIResponse>(
-        `${API}/data/api/contribution-queue/?${sp}`,
-        { headers: headers() }
+      const sp = limitOffsetSearchParams(p, perPage, {
+        ordering: `${sortAsc ? '' : '-'}${sortField}`,
+        ...(cat !== 'all' ? { category: cat } : {}),
+        ...(q ? { search: q } : {}),
+        ...(tab !== 'all' ? { queue_tab: tab } : {}),
+      });
+      const data = await apiFetchJson<PaginatedResponse<Contribution>>(
+        `${dataApiPath('contribution-queue')}?${sp}`,
+        { headers: headers() },
       );
-      let all = data.results;
-      const nc = all.filter(c => c.status === 'pending_review' && c.activity_count <= 1).length;
-      const co = all.filter(c => c.has_conflicts).length;
-      const fl = all.filter(c => c.flag_count > 0 && !c.has_conflicts).length;
-      const ex = all.filter(c => c.days_in_review > 14).length;
-      const fk = all.filter(c => c.is_fork).length;
-      setCounts({ all: data.count, new_claims: nc, conflicts: co, flagged: fl, expiring: ex, forks: fk });
-      if (tab === 'new_claims') all = all.filter(c => c.status === 'pending_review' && c.activity_count <= 1);
-      else if (tab === 'conflicts') all = all.filter(c => c.has_conflicts);
-      else if (tab === 'flagged') all = all.filter(c => c.flag_count > 0 && !c.has_conflicts);
-      else if (tab === 'expiring') all = all.filter(c => c.days_in_review > 14);
-      else if (tab === 'forks') all = all.filter(c => c.is_fork);
-      setItems(all); setTotal(tab === 'all' ? data.count : all.length); setPage(p);
+      void loadCounts();
+      setItems(data.results);
+      setTotal(data.count);
+      setPage(p);
     } catch (e) {
       const msg = getApiErrorMessage(e, 'Could not load the contribution queue.');
       setError(msg);
       toast.error(msg);
     }
     finally { setLoading(false); }
-  }, [headers, tab, cat, q, sortField, sortAsc]);
+  }, [headers, tab, cat, q, sortField, sortAsc, perPage, loadCounts]);
 
   useEffect(() => { load(1); }, [session, tab, cat, sortField, sortAsc]);
 
   const moderate = async (c: Contribution, action: 'accept' | 'reject') => {
     try {
-      await apiFetch(`${API}/data/api/contribution-queue/${c.entity_id}/moderate/`, {
+      await apiFetch(dataApiPath('contribution-queue', c.entity_id, 'moderate'), {
         method: 'POST', headers: headers(), body: JSON.stringify({ action }),
       });
       toast.success(`${action === 'accept' ? 'Accepted' : 'Rejected'}: ${c.name}`);
@@ -300,7 +310,7 @@ export default function ContributionQueuePage() {
               <Button
                 type="button"
                 className="bg-gradient-to-r from-blue-600 to-sky-500"
-                onClick={submitReviewerApplication}
+                onClick={handleSubmitReviewerApplication}
                 disabled={applySubmitting}
               >
                 {applySubmitting ? 'Submitting…' : 'Submit application'}

@@ -6,12 +6,13 @@ import { useCallback, useEffect, useRef } from 'react';
 import { hydrateAtlasFromInstanceGraph } from '@/lib/atlas-api-hydrate';
 import { fetchInstanceGraphData } from '@/lib/instance-graph';
 import { getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 import { atlasTrack } from '@/lib/atlas-telemetry';
 
 import { computeAtlasTimelineExtents } from '../atlas-time-extents';
 import { useAtlasStore } from './use-atlas-store';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API_BASE = getPublicApiUrl();
 
 /**
  * Boots corpus hydration: demo corpus by default; live CIDOC graph on demand.

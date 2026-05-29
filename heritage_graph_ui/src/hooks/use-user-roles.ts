@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 import { useSession } from 'next-auth/react';
 
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { apiUserInfoPath } from '@/lib/api-paths';
 import { getPublicApiUrl } from '@/lib/api-base';
 
 const API_BASE = getPublicApiUrl();
@@ -87,7 +88,7 @@ export function useUserRolesProvider(): UserRoles {
           message: string;
           created_at: string;
         } | null;
-      }>(`${API_BASE}/api/user/info`, {
+      }>(apiUserInfoPath(), {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.accessToken}`,

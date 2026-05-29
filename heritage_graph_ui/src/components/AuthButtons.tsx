@@ -20,6 +20,7 @@ import { SimpleRankAvatar, tierConfig, TierType } from '@/components/rank-avatar
 import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { dataApiPath } from '@/lib/api-paths';
 
 const API_BASE = getPublicApiUrl();
 
@@ -42,7 +43,7 @@ export default function AuthSection() {
             setBackendInitError('API is not configured. Set NEXT_PUBLIC_API_URL.');
             return;
           }
-          const data = await apiFetchJson<{ slug?: string }>(`${API_BASE}/data/api/user/me/`, {
+          const data = await apiFetchJson<{ slug?: string }>(dataApiPath('user', 'me'), {
             headers: {
               Authorization: `Bearer ${session.accessToken}`,
               Accept: 'application/json',

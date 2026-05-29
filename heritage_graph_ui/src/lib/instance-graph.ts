@@ -104,7 +104,7 @@ interface EntityConfig {
 
 const ENTITY_CONFIGS: EntityConfig[] = [
   {
-    endpoint: '/cidoc/structures/',
+    endpoint: '/api/v1/cidoc/structures/',
     category: 'structure',
     entityType: 'ArchitecturalStructure',
     nameField: 'name',
@@ -117,7 +117,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     locationFkField: 'has_current_location',
   },
   {
-    endpoint: '/cidoc/deities/',
+    endpoint: '/api/v1/cidoc/deities/',
     category: 'deity',
     entityType: 'Deity',
     nameField: 'name',
@@ -127,7 +127,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     ],
   },
   {
-    endpoint: '/cidoc/persons/',
+    endpoint: '/api/v1/cidoc/persons/',
     category: 'person',
     entityType: 'Person',
     nameField: 'name',
@@ -137,7 +137,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     ],
   },
   {
-    endpoint: '/cidoc/locations/',
+    endpoint: '/api/v1/cidoc/locations/',
     category: 'location',
     entityType: 'Location',
     nameField: 'name',
@@ -147,7 +147,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     ],
   },
   {
-    endpoint: '/cidoc/events/',
+    endpoint: '/api/v1/cidoc/events/',
     category: 'event',
     entityType: 'Event',
     nameField: 'name',
@@ -157,7 +157,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     ],
   },
   {
-    endpoint: '/cidoc/rituals/',
+    endpoint: '/api/v1/cidoc/rituals/',
     category: 'ritual',
     entityType: 'RitualEvent',
     nameField: 'name',
@@ -169,7 +169,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     locationField: 'location_name',
   },
   {
-    endpoint: '/cidoc/festivals/',
+    endpoint: '/api/v1/cidoc/festivals/',
     category: 'festival',
     entityType: 'Festival',
     nameField: 'name',
@@ -180,7 +180,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     locationField: 'location_name',
   },
   {
-    endpoint: '/cidoc/guthis/',
+    endpoint: '/api/v1/cidoc/guthis/',
     category: 'guthi',
     entityType: 'Guthi',
     nameField: 'name',
@@ -191,7 +191,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     locationField: 'location',
   },
   {
-    endpoint: '/cidoc/monuments/',
+    endpoint: '/api/v1/cidoc/monuments/',
     category: 'monument',
     entityType: 'Monument',
     nameField: 'name',
@@ -202,7 +202,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     locationField: 'location_name',
   },
   {
-    endpoint: '/cidoc/iconographic_objects/',
+    endpoint: '/api/v1/cidoc/iconographic_objects/',
     category: 'iconography',
     entityType: 'IconographicObject',
     nameField: 'name',
@@ -215,7 +215,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     locationField: 'location_name',
   },
   {
-    endpoint: '/cidoc/historical_periods/',
+    endpoint: '/api/v1/cidoc/historical_periods/',
     category: 'period',
     entityType: 'HistoricalPeriod',
     nameField: 'name',
@@ -223,7 +223,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     relationFields: [],
   },
   {
-    endpoint: '/cidoc/traditions/',
+    endpoint: '/api/v1/cidoc/traditions/',
     category: 'tradition',
     entityType: 'Tradition',
     nameField: 'name',
@@ -233,7 +233,7 @@ const ENTITY_CONFIGS: EntityConfig[] = [
     ],
   },
   {
-    endpoint: '/cidoc/sources/',
+    endpoint: '/api/v1/cidoc/sources/',
     category: 'source',
     entityType: 'Source',
     nameField: 'title',
@@ -374,7 +374,7 @@ export async function fetchInstanceGraphData(
     );
     // HeritageAssertion edges live in their own endpoint, separate from per-resource fields.
     const assertionsPromise = fetchAllPages(
-      `${apiBaseUrl}/cidoc/assertions/?reconciliation_status=accepted`,
+      `${apiBaseUrl}/api/v1/cidoc/assertions/?reconciliation_status=accepted`,
       headers,
       controller.signal,
     )
@@ -633,7 +633,7 @@ export async function fetchForkEdges(
 
   try {
     const res = await apiFetch(
-      `${apiBaseUrl}/data/api/cultural-entities/?page_size=200`,
+      `${apiBaseUrl}/api/v1/data/cultural-entities/?limit=200&offset=0`,
       { headers }
     );
     const data = await res.json();

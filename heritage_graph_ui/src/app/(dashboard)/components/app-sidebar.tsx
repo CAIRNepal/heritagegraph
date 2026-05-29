@@ -68,6 +68,7 @@ import {
 
 import { apiFetchJson } from '@/lib/api-client';
 import { getPublicApiUrl } from '@/lib/api-base';
+import { apiUserInfoPath } from '@/lib/api-paths';
 import { useOntology } from "@/lib/ontology";
 
 const API_BASE = getPublicApiUrl();
@@ -96,7 +97,7 @@ function useSidebarRoles(): SidebarRoles {
           groups?: string[];
           is_staff?: boolean;
           reviewer_role?: { is_active?: boolean; can_manage_roles?: boolean } | null;
-        }>(`${API_BASE}/api/user/info`, {
+        }>(apiUserInfoPath(), {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session.accessToken}`,

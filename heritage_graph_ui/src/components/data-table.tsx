@@ -51,8 +51,9 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { getPublicApiUrl } from '@/lib/api-base';
-import { apiFetch, getApiErrorMessage } from '@/lib/api-client';
+import { dataApiPath } from '@/lib/api-paths';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { limitOffsetSearchParams, totalPages } from '@/lib/drf-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -307,13 +308,16 @@ export function DataTable() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const url = `${getPublicApiUrl()}/data/submissions/?page=${pagination.pageIndex + 1}&page_size=${pagination.pageSize}`;
-        const response = await apiFetch(url, {
-          headers: { Accept: 'application/json' },
-        });
-        const result = await response.json();
+        const sp = limitOffsetSearchParams(
+          pagination.pageIndex + 1,
+          pagination.pageSize,
+        );
+        const result = await apiFetchJson<{ count: number; results: z.infer<typeof schema>[] }>(
+          `${dataApiPath('submissions')}?${sp}`,
+          { headers: { Accept: 'application/json' } },
+        );
         setData(result.results || []);
-        setPageCount(Math.ceil(result.count / pagination.pageSize));
+        setPageCount(totalPages(result.count, pagination.pageSize));
       } catch (error) {
         toast.error(
           getApiErrorMessage(error, 'Could not load submissions. Please try again.')

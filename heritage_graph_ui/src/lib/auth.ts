@@ -4,6 +4,8 @@ import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import { describeSessionAuthError } from '@/lib/auth-errors';
+import { getInternalBackendUrl } from '@/lib/api-base';
+import { internalApiUserInfoPath, internalDataApiPath } from '@/lib/api-paths';
 
 /** True when NextAuth can register the Google provider (both env vars set). */
 export function isGoogleOAuthConfigured(): boolean {
@@ -52,11 +54,7 @@ if (isDevAuthEnabled()) {
           return null;
         }
 
-        const backendBase = (
-          process.env.INTERNAL_BACKEND_URL || 'http://backend:8000'
-        ).replace(/\/$/, '');
-
-        const response = await fetch(`${backendBase}/api/dev/login/`, {
+        const response = await fetch(`${getInternalBackendUrl()}/api/dev/login/`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
@@ -151,12 +149,8 @@ async function fetchRoleSnapshot(accessToken: string): Promise<{
   groups?: string[];
   is_staff?: boolean;
 } | null> {
-  const backendBase = (
-    process.env.INTERNAL_BACKEND_URL || 'http://backend:8000'
-  ).replace(/\/$/, '');
-
   try {
-    const response = await fetch(`${backendBase}/api/user/info`, {
+    const response = await fetch(internalApiUserInfoPath(), {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         Accept: 'application/json',
@@ -237,10 +231,7 @@ export const authOptions: NextAuthOptions = {
         return '/auth/login?error=Configuration';
       }
 
-      const backendBase = (
-        process.env.INTERNAL_BACKEND_URL || 'http://backend:8000'
-      ).replace(/\/$/, '');
-      const testUrl = `${backendBase}/data/api/testme/`;
+      const testUrl = internalDataApiPath('testme');
 
       try {
         const response = await backendGetWithHandshakeRetry(testUrl, accessToken, idToken);
@@ -262,7 +253,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const meResp = await backendGet(
-            `${backendBase}/data/api/user/me/`,
+            internalDataApiPath('user', 'me'),
             accessToken,
             idToken,
           );

@@ -27,6 +27,8 @@ import { useEffect, useState } from 'react';
 
 import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { dataApiPath } from '@/lib/api-paths';
+import { getPublicApiUrl } from '@/lib/api-base';
 import { getPublicApiUrl } from '@/lib/api-base';
 import { toast } from 'sonner';
 
@@ -67,7 +69,7 @@ export function NavUser({
             toast.error('API is not configured. Set NEXT_PUBLIC_API_URL and reload.');
             return;
           }
-          const data = await apiFetchJson<{ slug?: string }>(`${API_BASE}/data/api/user/me/`, {
+          const data = await apiFetchJson<{ slug?: string }>(dataApiPath('user', 'me'), {
             headers: {
               Authorization: `Bearer ${session.accessToken}`,
               Accept: 'application/json',

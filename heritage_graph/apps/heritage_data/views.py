@@ -1543,13 +1543,92 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """
         Only include pending or pending-revision contributions in the queue.
+        Optional ``queue_tab``: all | new_claims | conflicts | flagged | expiring | forks
         """
-        return (
+        from datetime import timedelta
+
+        from django.db.models import Count
+        from django.utils import timezone
+
+        qs = (
             CulturalEntity.objects.filter(
                 status__in=["pending_review", "pending_revision"]
             )
             .select_related("contributor")
-            .prefetch_related("activities")
+            .prefetch_related("activities", "review_flags")
+        )
+
+        tab = (self.request.query_params.get("queue_tab") or "all").strip()
+        if tab == "new_claims":
+            qs = qs.filter(status="pending_review").annotate(
+                _activity_total=Count("activities")
+            ).filter(_activity_total__lte=1)
+        elif tab == "conflicts":
+            qs = qs.filter(
+                review_flags__flag_type="contradiction",
+                review_flags__is_resolved=False,
+            ).distinct()
+        elif tab == "flagged":
+            qs = (
+                qs.filter(review_flags__is_resolved=False)
+                .exclude(review_flags__flag_type="contradiction")
+                .distinct()
+            )
+        elif tab == "expiring":
+            cutoff = timezone.now() - timedelta(days=14)
+            qs = qs.filter(status="pending_review", created_at__lt=cutoff)
+        elif tab == "forks":
+            qs = qs.filter(parent_entity_id__isnull=False)
+
+        return qs
+
+    @action(detail=False, methods=["get"], url_path="queue-counts")
+    def queue_counts(self, request):
+        """Tab counts for the contribution moderation queue UI."""
+        from datetime import timedelta
+
+        from django.db.models import Count
+        from django.utils import timezone
+
+        base = CulturalEntity.objects.filter(
+            status__in=["pending_review", "pending_revision"]
+        )
+        cutoff = timezone.now() - timedelta(days=14)
+
+        new_claims = (
+            base.filter(status="pending_review")
+            .annotate(_activity_total=Count("activities"))
+            .filter(_activity_total__lte=1)
+            .count()
+        )
+        conflicts = (
+            base.filter(
+                review_flags__flag_type="contradiction",
+                review_flags__is_resolved=False,
+            )
+            .distinct()
+            .count()
+        )
+        flagged = (
+            base.filter(review_flags__is_resolved=False)
+            .exclude(review_flags__flag_type="contradiction")
+            .distinct()
+            .count()
+        )
+        expiring = base.filter(
+            status="pending_review", created_at__lt=cutoff
+        ).count()
+        forks = base.filter(parent_entity_id__isnull=False).count()
+
+        return Response(
+            {
+                "all": base.count(),
+                "new_claims": new_claims,
+                "conflicts": conflicts,
+                "flagged": flagged,
+                "expiring": expiring,
+                "forks": forks,
+            }
         )
 
     @action(detail=True, methods=["post"])
@@ -2712,6 +2791,20 @@ class ReviewerApplicationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSe
             ReviewerApplicationSerializer(serializer.instance).data,
             status=status.HTTP_201_CREATED,
         )
+
+    @action(detail=False, methods=["post"], url_path="mine/withdraw")
+    def withdraw_mine(self, request):
+        """Remove the caller's pending application so they can submit again later."""
+        app = ReviewerApplication.objects.filter(
+            user=request.user, status="pending"
+        ).first()
+        if not app:
+            return Response(
+                {"detail": "No pending application to withdraw."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        app.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ReviewerDashboardView(APIView):

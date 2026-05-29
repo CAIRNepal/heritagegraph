@@ -24,6 +24,7 @@ import {
 import { toast } from "sonner";
 
 import { apiFetch, apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
+import { cidocApiPath } from "@/lib/api-paths";
 
 import {
   Card,
@@ -56,9 +57,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://backend.localhost";
 
 // ─────────────────────────────────────────────────────────
 // Types
@@ -219,7 +217,7 @@ export default function StructureRecordPage() {
       if (token) headers.Authorization = `Bearer ${token}`;
 
       const data = await apiFetchJson<StructureRecord>(
-        `${API_BASE_URL}/cidoc/structures/${id}/`,
+        cidocApiPath("structures", String(id)),
         { headers }
       );
       setRecord(data);
@@ -244,7 +242,7 @@ export default function StructureRecordPage() {
       if (token) headers.Authorization = `Bearer ${token}`;
 
       const res = await apiFetch(
-        `${API_BASE_URL}/cidoc/assertions/?entity_type=architecturalstructure&entity_id=${id}`,
+        `${cidocApiPath("assertions")}?entity_type=architecturalstructure&entity_id=${id}`,
         { headers }
       );
       const data = await res.json();
@@ -264,7 +262,7 @@ export default function StructureRecordPage() {
       // Search for rituals that mention this structure's name in location
       if (!record?.name) return;
       const res = await apiFetch(
-        `${API_BASE_URL}/cidoc/search/?q=${encodeURIComponent(record.name)}`,
+        `${cidocApiPath("search")}?q=${encodeURIComponent(record.name)}`,
         { headers }
       );
       const data = await res.json();
