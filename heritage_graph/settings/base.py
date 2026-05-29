@@ -253,18 +253,36 @@ HERITAGE_RESOURCE_NS = os.environ.get(
     "https://w3id.org/heritagegraph/resource/",
 )
 
+# RDF_ENDPOINT_URL is the SPARQL UPDATE endpoint used by post_save signals to
+# write contributions as triples. Oxigraph exposes updates at `/update` and
+# queries at `/query`; older configs that point at a combined `/sparql` still
+# work. Leave empty to use the local pyoxigraph file store at
+# OXIGRAPH_STORE_PATH (good for laptop dev without the oxigraph container).
 RDF_ENDPOINT_URL = os.environ.get("RDF_ENDPOINT_URL", "")
+# RDF_QUERY_URL is the SPARQL QUERY endpoint used by SparqlProxyView for reads.
+# Falls back to RDF_ENDPOINT_URL (legacy), then to the local file store.
+RDF_QUERY_URL = os.environ.get("RDF_QUERY_URL", "")
 RDF_RESOURCE_BASE_URI = os.environ.get(
     "RDF_RESOURCE_BASE_URI",
     HERITAGE_RESOURCE_NS,
 )
-RDF_SYNC_ENABLED = os.environ.get("RDF_SYNC_ENABLED", "false").lower() in {
+# RDF_SYNC_ENABLED is now ON by default so contribution saves project triples
+# without needing manual env setup. When no SPARQL endpoint is configured, the
+# signal falls back to writing into the local pyoxigraph store at
+# OXIGRAPH_STORE_PATH. Set RDF_SYNC_ENABLED=false to opt out (e.g. tests).
+RDF_SYNC_ENABLED = os.environ.get("RDF_SYNC_ENABLED", "true").lower() in {
     "1",
     "true",
     "yes",
     "y",
     "on",
 }
+# Where the local file Oxigraph store lives when no HTTP endpoint is set.
+# Defaults to <BASE_DIR>/oxigraph_db so the path is stable regardless of cwd.
+OXIGRAPH_STORE_PATH = os.environ.get(
+    "OXIGRAPH_STORE_PATH",
+    str(BASE_DIR / "oxigraph_db"),
+)
 
 GRAPH_MODELS = {
     "all_applications": True,

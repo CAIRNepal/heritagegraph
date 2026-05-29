@@ -1398,7 +1398,10 @@ class SparqlProxyView(APIView):
                 },
                 status=drf_status.HTTP_400_BAD_REQUEST,
             )
-        endpoint = getattr(settings, "RDF_ENDPOINT_URL", "").strip()
+        endpoint = (
+            getattr(settings, "RDF_QUERY_URL", "").strip()
+            or getattr(settings, "RDF_ENDPOINT_URL", "").strip()
+        )
         if not endpoint:
             try:
                 from pyoxigraph import Store

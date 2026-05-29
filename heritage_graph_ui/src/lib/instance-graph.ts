@@ -244,6 +244,65 @@ const ENTITY_CONFIGS: EntityConfig[] = [
   },
 ];
 
+/**
+ * Django ContentType `model` field → frontend InstanceCategory.
+ * Used to translate HeritageAssertion subject/object pointers into node IDs.
+ */
+const DJANGO_MODEL_TO_CATEGORY: Record<string, InstanceCategory> = {
+  person: 'person',
+  location: 'location',
+  event: 'event',
+  historicalperiod: 'period',
+  tradition: 'tradition',
+  source: 'source',
+  deity: 'deity',
+  guthi: 'guthi',
+  architecturalstructure: 'structure',
+  ritualevent: 'ritual',
+  festival: 'festival',
+  iconographicobject: 'iconography',
+  monument: 'monument',
+};
+
+interface AcceptedAssertionRow {
+  content_type_name?: string;
+  object_id?: number | string | null;
+  object_entity_type?: string;
+  object_entity_id?: number | string | null;
+  object_object_id?: number | string | null;
+  asserted_property?: string;
+  reconciliation_status?: string;
+}
+
+/**
+ * Convert a HeritageAssertion row into (sourceNodeId, targetNodeId, label).
+ * Returns null when either side maps to a class not visible in the graph
+ * (e.g. CasteGroup, KumariTenure) — `addEdge` would drop them anyway.
+ */
+function assertionToEdge(
+  a: AcceptedAssertionRow,
+): { source: string; target: string; label: string } | null {
+  const subjModel = (a.content_type_name || '').toLowerCase();
+  const objModel = (a.object_entity_type || '').toLowerCase();
+  const subjCat = DJANGO_MODEL_TO_CATEGORY[subjModel];
+  const objCat = DJANGO_MODEL_TO_CATEGORY[objModel];
+  if (!subjCat || !objCat) return null;
+
+  const subjPk = a.object_id ?? null;          // model PK of the subject row
+  const objPk = a.object_entity_id ?? a.object_object_id ?? null;
+  if (subjPk == null || objPk == null) return null;
+
+  const prop = a.asserted_property || '';
+  // 'relationship.member_of' → 'member_of'; bare property names pass through.
+  const label = prop.startsWith('relationship.') ? prop.slice('relationship.'.length) : prop;
+
+  return {
+    source: `${subjCat}_${subjPk}`,
+    target: `${objCat}_${objPk}`,
+    label: label || 'related_to',
+  };
+}
+
 /* ══════════════════════════════════════════════════════
  *  Paginated fetch helper
  *  Follows limit/offset pagination to retrieve ALL records.
@@ -300,9 +359,10 @@ export async function fetchInstanceGraphData(
   }
 
   let results: PromiseSettledResult<{ config: EntityConfig; data: Record<string, unknown>[] }>[];
+  let assertionRows: AcceptedAssertionRow[] = [];
 
   try {
-    results = await Promise.allSettled(
+    const entityResults = Promise.allSettled(
       ENTITY_CONFIGS.map(async (config) => {
         const data = await fetchAllPages(
           apiBaseUrl + config.endpoint,
@@ -312,6 +372,15 @@ export async function fetchInstanceGraphData(
         return { config, data };
       }),
     );
+    // HeritageAssertion edges live in their own endpoint, separate from per-resource fields.
+    const assertionsPromise = fetchAllPages(
+      `${apiBaseUrl}/cidoc/assertions/?reconciliation_status=accepted`,
+      headers,
+      controller.signal,
+    )
+      .then((rows) => rows as AcceptedAssertionRow[])
+      .catch(() => [] as AcceptedAssertionRow[]);
+    [results, assertionRows] = await Promise.all([entityResults, assertionsPromise]);
   } catch (err) {
     if (controller.signal.aborted || (err as Error).name === 'AbortError') {
       return { nodes: [], edges: [], isDemo: false };
@@ -463,6 +532,15 @@ export async function fetchInstanceGraphData(
         if (targetId) addEdge(sourceId, targetId, 'depicts', 'relation');
       }
     }
+  }
+
+  // HeritageAssertion edges (the actual KG cross-entity relationships).
+  // Each accepted assertion projects to an RDF triple in Oxigraph; mirror that
+  // structure in the UI graph so users see the same connectivity.
+  for (const row of assertionRows) {
+    const edge = assertionToEdge(row);
+    if (!edge) continue;
+    addEdge(edge.source, edge.target, edge.label, 'relation');
   }
 
   // ── Co-location edges ──

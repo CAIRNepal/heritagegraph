@@ -138,6 +138,10 @@ services:
       OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
       # Triplestore
       OXIGRAPH_URL: http://oxigraph:7878
+      # Project contribution saves to Oxigraph via SPARQL UPDATE; reads use /query.
+      RDF_SYNC_ENABLED: ${RDF_SYNC_ENABLED:-true}
+      RDF_ENDPOINT_URL: ${RDF_ENDPOINT_URL:-http://oxigraph:7878/update}
+      RDF_QUERY_URL: ${RDF_QUERY_URL:-http://oxigraph:7878/query}
       HERITAGEGRAPH_SHACL_SHAPES_PATH: /app/ontology/shapes/generated-heritagegraph-minimal-shacl.ttl
       # KG ingestion pipeline (Agent 2): host-side Ollama
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
@@ -329,6 +333,10 @@ services:
       OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
       # Triplestore — pipeline writes auto-accepted triples here
       OXIGRAPH_URL: http://oxigraph:7878
+      # Project contribution saves (and pipeline writes) to Oxigraph via SPARQL UPDATE.
+      RDF_SYNC_ENABLED: ${RDF_SYNC_ENABLED:-true}
+      RDF_ENDPOINT_URL: ${RDF_ENDPOINT_URL:-http://oxigraph:7878/update}
+      RDF_QUERY_URL: ${RDF_QUERY_URL:-http://oxigraph:7878/query}
     depends_on:
       postgres:
         condition: service_healthy
