@@ -276,6 +276,15 @@ def run_epistemic_routing(
                         confidence_composite=resolved.validated.candidate.confidence_score,
                     )
                 oxigraph_written = client.insert_data(nt, graph_uri=graph_uri)
+                if oxigraph_written and cfg.promote_to_public_graph:
+                    try:
+                        from apps.graph.kg_engine.promotion import promote_ntriples_to_public
+
+                        promote_ntriples_to_public(nt)
+                    except Exception:
+                        logger.warning(
+                            "Public graph promotion failed", exc_info=True
+                        )
             except Exception:
                 logger.warning("Oxigraph INSERT failed", exc_info=True)
 

@@ -13,7 +13,12 @@ on:
       - "heritage_graph/apps/cidoc_data/cidoc_registry_keys.py"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+      - "heritage_graph_ui/src/lib/ontology/__generated__/**"
+      - "heritage_graph/apps/graph/ontology_config.py"
       - "heritage_graph/apps/cidoc_data/serializers.generated.py"
+      - "ontology/shapes/generated-heritagegraph-minimal-shacl.ttl"
+      - "tools/gen_heritage_viz_config.py"
+      - "tools/emit_minimal_shacl.py"
   pull_request:
     paths:
       - "ontology/**"
@@ -26,7 +31,12 @@ on:
       - "heritage_graph/apps/cidoc_data/cidoc_registry_keys.py"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
       - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+      - "heritage_graph_ui/src/lib/ontology/__generated__/**"
+      - "heritage_graph/apps/graph/ontology_config.py"
       - "heritage_graph/apps/cidoc_data/serializers.generated.py"
+      - "ontology/shapes/generated-heritagegraph-minimal-shacl.ttl"
+      - "tools/gen_heritage_viz_config.py"
+      - "tools/emit_minimal_shacl.py"
 
 jobs:
   check-generated-artifacts:

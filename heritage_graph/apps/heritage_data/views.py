@@ -1048,6 +1048,7 @@ class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
 class SubmissionSuggestionViewSet(viewsets.ModelViewSet):
     queryset = SubmissionEditSuggestion.objects.all()
     serializer_class = SubmissionEditSuggestionSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -1317,7 +1318,7 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
 
         # For list action, only show accepted entities to non-staff users
         if self.action == "list" and not self.request.user.is_staff:
-            queryset = queryset.filter()
+            queryset = queryset.filter(status="accepted")
 
         # Prefetch related data for performance
         if self.action == "list":

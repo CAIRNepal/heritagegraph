@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 from django.db.models import Count, Q
@@ -5,6 +6,8 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from .models import CulturalEntity, Submission, UserProfile, UserStats
+
+logger = logging.getLogger(__name__)
 
 
 def refresh_user_stats(user):
@@ -243,14 +246,17 @@ def _project_rdf_merge(project):
 
     def _do_projection():
         try:
-            from apps.cidoc_data.rdf_entity_projection import project_entity_to_rdf
+            from apps.cidoc_data.rdf_publish import persist_cultural_entity_projection
             from .models import CulturalEntity
 
             for entity in CulturalEntity.objects.filter(id__in=entity_ids):
                 try:
-                    project_entity_to_rdf(entity)
+                    persist_cultural_entity_projection(entity)
                 except Exception:
-                    pass
+                    logger.exception(
+                        "RDF projection failed for cultural entity %s",
+                        entity.entity_id,
+                    )
         except ImportError:
             pass
 

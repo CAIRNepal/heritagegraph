@@ -295,6 +295,49 @@ OXIGRAPH_STORE_PATH = os.environ.get(
     "OXIGRAPH_STORE_PATH",
     str(BASE_DIR / "oxigraph_db"),
 )
+# Published instance triples go into this named graph (empty = default graph only).
+RDF_PUBLIC_GRAPH_URI = os.environ.get(
+    "RDF_PUBLIC_GRAPH_URI",
+    "https://w3id.org/heritagegraph/graph/public",
+)
+# Optional SHACL gate on contribution projection (uses generated minimal shapes).
+RDF_SHACL_VALIDATE_ON_WRITE = os.environ.get(
+    "RDF_SHACL_VALIDATE_ON_WRITE", "false"
+).lower() in {"1", "true", "yes", "y", "on"}
+RDF_SHACL_STRICT_ON_WRITE = os.environ.get("RDF_SHACL_STRICT_ON_WRITE", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+    "y",
+    "on",
+}
+RDF_SHACL_FAIL_OPEN_ON_ERROR = os.environ.get(
+    "RDF_SHACL_FAIL_OPEN_ON_ERROR", "true"
+).lower() in {"1", "true", "yes", "y", "on"}
+RDF_SCHEMA_GRAPH_URI = os.environ.get(
+    "RDF_SCHEMA_GRAPH_URI",
+    "https://w3id.org/heritagegraph/graph/schema",
+)
+RDF_DOCUMENT_GRAPH_BASE_URI = os.environ.get(
+    "RDF_DOCUMENT_GRAPH_BASE_URI",
+    "https://w3id.org/heritagegraph/graph/document",
+)
+RDF_PROVENANCE_GRAPH_BASE_URI = os.environ.get(
+    "RDF_PROVENANCE_GRAPH_BASE_URI",
+    "https://w3id.org/heritagegraph/graph/prov",
+)
+# Promote OCR/agent auto-accepted triples into the public graph.
+RDF_KG_PROMOTE_ON_AUTO_ACCEPT = os.environ.get(
+    "RDF_KG_PROMOTE_ON_AUTO_ACCEPT", "true"
+).lower() in {"1", "true", "yes", "y", "on"}
+# Enqueue failed Oxigraph writes for ``manage.py rdf_drain_outbox``.
+RDF_KG_OUTBOX_ENABLED = os.environ.get("RDF_KG_OUTBOX_ENABLED", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+    "y",
+    "on",
+}
 
 GRAPH_MODELS = {
     "all_applications": True,

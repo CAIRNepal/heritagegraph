@@ -308,22 +308,37 @@ def build_entity_projection(
     return triples, predicates
 
 
-def sparql_insert_for_triples(triples: list[_Triple]) -> str:
+def sparql_insert_for_triples(
+    triples: list[_Triple], *, graph_uri: str | None = None
+) -> str:
     if not triples:
         lines = INSERT_PREFIX_LINES + "INSERT DATA { }\n"
         return lines
     inner_lines = [_triple_to_line(t) for t in triples]
     inner_lines = [ln for ln in inner_lines if ln]
-    body = INSERT_PREFIX_LINES + "INSERT DATA {\n" + "\n".join(inner_lines) + "\n}\n"
-    return body
+    inner = "\n".join(inner_lines)
+    if graph_uri:
+        block = f"INSERT DATA {{\n  GRAPH <{graph_uri}> {{\n{inner}\n  }}\n}}\n"
+    else:
+        block = f"INSERT DATA {{\n{inner}\n}}\n"
+    return INSERT_PREFIX_LINES + block
 
 
 def sparql_delete_subject_predicates(
-    subject_uri: str, predicates_iris: set[str]
+    subject_uri: str,
+    predicates_iris: set[str],
+    *,
+    graph_uri: str | None = None,
 ) -> str:
     deletes: list[str] = []
     for pred in sorted(predicates_iris):
-        deletes.append(f"DELETE WHERE {{ <{subject_uri}> <{pred}> ?o . }};\n")
+        if graph_uri:
+            deletes.append(
+                f"DELETE WHERE {{ GRAPH <{graph_uri}> {{ "
+                f"<{subject_uri}> <{pred}> ?o . }} }};\n"
+            )
+        else:
+            deletes.append(f"DELETE WHERE {{ <{subject_uri}> <{pred}> ?o . }};\n")
     return "".join(deletes)
 
 
@@ -448,7 +463,9 @@ def project_entity_to_rdf(entity) -> tuple[str, set[str]] | None:
             model = apps.get_model("cidoc_data", model_name)
             instance = model.objects.filter(pk=cidoc_id).first()
             if instance is not None:
-                uri = f"urn:hg:entity:{entity.entity_id}"
+                from apps.cidoc_data.rdf_publish import cultural_entity_uri
+
+                uri = cultural_entity_uri(entity.entity_id)
                 return projection_for_metadata_instance(
                     instance,
                     resource_uri_fn=lambda _i: uri,
@@ -462,7 +479,9 @@ def project_entity_to_rdf(entity) -> tuple[str, set[str]] | None:
                 entity.entity_id,
             )
 
-    uri = f"urn:hg:entity:{entity.entity_id}"
+    from apps.cidoc_data.rdf_publish import cultural_entity_uri
+
+    uri = cultural_entity_uri(entity.entity_id)
     label = (entity.name or str(entity.entity_id)).strip()
     type_uri = RDF_PREFIXES.get("heritageGraph", "https://w3id.org/heritagegraph/") + (
         entity.category or "Entity"

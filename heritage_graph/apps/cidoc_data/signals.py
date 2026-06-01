@@ -33,30 +33,9 @@ def create_person_revision(sender, instance, created, **kwargs):
     )
 
 
-@receiver(post_save, sender=Person)
-def sync_person_to_graph(sender, instance, **kwargs):
-    try:
-        from apps.graph.client import graph_client
-        from apps.graph.serializers import person_to_triples, triples_to_nt
-
-        _uri, triples = person_to_triples(instance)
-        graph_client.insert_data(triples_to_nt(triples))
-    except Exception:
-        # Graph sync must never break the main DB write path.
-        pass
-
-
-@receiver(post_save, sender=ArchitecturalStructure)
-def sync_structure_to_graph(sender, instance, **kwargs):
-    try:
-        from apps.graph.client import graph_client
-        from apps.graph.serializers import architectural_structure_to_triples, triples_to_nt
-
-        _uri, triples = architectural_structure_to_triples(instance)
-        graph_client.insert_data(triples_to_nt(triples))
-    except Exception:
-        # Graph sync must never break the main DB write path.
-        pass
+# RDF projection for MetaData models is handled solely by apps.cidoc_data.rdf_signals
+# (registry-driven slot_uri / class_uri → Oxigraph). Legacy graph_client inserts for
+# Person/Structure were removed to avoid duplicate subjects (Person/ vs person/).
 
 
 def _backfill_entityrefs_for_instance(instance):

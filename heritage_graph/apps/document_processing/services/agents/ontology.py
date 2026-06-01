@@ -133,6 +133,14 @@ def class_slug(class_label: str) -> str:
 def mint_entity_uri(class_label: str) -> str:
     import uuid
 
+    try:
+        from django.conf import settings
+
+        base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "") or "").rstrip("/")
+        if base:
+            return f"{base}/entity/{class_slug(class_label)}-{uuid.uuid4()}"
+    except Exception:
+        pass
     return f"{HG}entity/{class_slug(class_label)}-{uuid.uuid4()}"
 
 

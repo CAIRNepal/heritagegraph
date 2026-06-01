@@ -2,6 +2,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from apps.graph.views import (
+    KnowledgeGraphNeighborhoodView,
+    KnowledgeGraphQueryView,
+    KnowledgeGraphStatsView,
+)
+
 from .views import *
 
 router = DefaultRouter()
@@ -101,6 +107,13 @@ urlpatterns = [
         SparqlProxyView.as_view(),
         name="cidoc-sparql-proxy",
     ),
+    path("kg/stats/", KnowledgeGraphStatsView.as_view(), name="kg-stats"),
+    path(
+        "kg/neighborhood/",
+        KnowledgeGraphNeighborhoodView.as_view(),
+        name="kg-neighborhood",
+    ),
+    path("kg/query/", KnowledgeGraphQueryView.as_view(), name="kg-query"),
     path(
         "assist/suggest-field/",
         AssistSuggestFieldView.as_view(),

@@ -14,6 +14,14 @@ def coerce_for_jsonschema(value: Any) -> Any:
     """Coerce DRF/Python values to JSON-schema-friendly types."""
     if value is None:
         return None
+    # DRF ModelSerializer FK fields become model instances in validated_data.
+    try:
+        from django.db.models import Model
+
+        if isinstance(value, Model):
+            return value.pk
+    except Exception:
+        pass
     if isinstance(value, Decimal):
         return float(value)
     if hasattr(value, "isoformat"):

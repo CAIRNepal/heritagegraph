@@ -56,41 +56,48 @@ class SparqlClient:
     """HTTP SPARQL client for Oxigraph with safe query construction."""
 
     def __init__(self, base_url: str, *, timeout: int = 15) -> None:
-        self._sparql_url = base_url.rstrip("/") + "/sparql"
+        root = base_url.rstrip("/")
+        self._query_url = root + "/query"
+        self._update_url = root + "/update"
+        self._sparql_url = root + "/sparql"
         self._timeout = timeout
 
     def select(self, sparql: str) -> list[dict[str, str]]:
         import requests
 
-        try:
-            resp = requests.get(
-                self._sparql_url,
-                params={"query": sparql},
-                headers={"Accept": "application/sparql-results+json"},
-                timeout=self._timeout,
-            )
-            resp.raise_for_status()
-            bindings = resp.json().get("results", {}).get("bindings", [])
-            return [{k: v.get("value", "") for k, v in row.items()} for row in bindings]
-        except Exception:
-            logger.debug("SPARQL SELECT failed", exc_info=True)
-            return []
+        for url in (self._query_url, self._sparql_url):
+            try:
+                resp = requests.get(
+                    url,
+                    params={"query": sparql},
+                    headers={"Accept": "application/sparql-results+json"},
+                    timeout=self._timeout,
+                )
+                resp.raise_for_status()
+                bindings = resp.json().get("results", {}).get("bindings", [])
+                return [
+                    {k: v.get("value", "") for k, v in row.items()} for row in bindings
+                ]
+            except Exception:
+                logger.debug("SPARQL SELECT failed at %s", url, exc_info=True)
+        return []
 
     def update(self, sparql: str) -> bool:
         import requests
 
-        try:
-            resp = requests.post(
-                self._sparql_url,
-                data={"update": sparql},
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-                timeout=self._timeout,
-            )
-            resp.raise_for_status()
-            return True
-        except Exception:
-            logger.warning("SPARQL UPDATE failed", exc_info=True)
-            return False
+        for url in (self._update_url, self._sparql_url):
+            try:
+                resp = requests.post(
+                    url,
+                    data={"update": sparql},
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    timeout=self._timeout,
+                )
+                resp.raise_for_status()
+                return True
+            except Exception:
+                logger.warning("SPARQL UPDATE failed at %s", url, exc_info=True)
+        return False
 
     def exact_label_lookup(
         self,

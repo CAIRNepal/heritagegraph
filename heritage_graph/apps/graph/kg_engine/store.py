@@ -1,0 +1,302 @@
+"""Oxigraph read/write adapter (HTTP endpoint or local pyoxigraph)."""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass
+from typing import Any
+
+from django.conf import settings
+
+from apps.graph.client import graph_client
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class StoreStats:
+    total_triples: int
+    public_triples: int
+    schema_triples: int
+    source: str
+
+
+class KnowledgeGraphStore:
+    """Low-level triplestore operations."""
+
+    def select(self, sparql: str, *, timeout_s: int = 30) -> list[dict[str, str]]:
+        endpoint = self._query_endpoint()
+        if endpoint:
+            return self._remote_select(endpoint, sparql, timeout_s=timeout_s)
+        return self._local_select(sparql)
+
+    def update(self, sparql_update: str, *, timeout_s: int = 45) -> bool:
+        endpoint = self._update_endpoint()
+        if endpoint:
+            return self._remote_update(endpoint, sparql_update, timeout_s=timeout_s)
+        return self._local_update(sparql_update)
+
+    def replace_managed_triples(
+        self,
+        *,
+        subject_uri: str,
+        managed_predicate_iris: set[str],
+        triples: list[Any],
+        graph_uri: str | None,
+    ) -> bool:
+        from apps.cidoc_data.rdf_entity_projection import (
+            sparql_delete_subject_predicates,
+            sparql_insert_for_triples,
+        )
+
+        delete_fragment = sparql_delete_subject_predicates(
+            subject_uri, managed_predicate_iris, graph_uri=graph_uri
+        )
+        insert_fragment = sparql_insert_for_triples(triples, graph_uri=graph_uri)
+        return self.update(delete_fragment + insert_fragment)
+
+    def upsert_object_triple(
+        self,
+        *,
+        subject_uri: str,
+        pred_uri: str,
+        object_uri: str,
+        graph_uri: str | None,
+    ) -> bool:
+        if graph_uri:
+            sparql = (
+                f"DELETE WHERE {{ GRAPH <{graph_uri}> {{ "
+                f"<{subject_uri}> <{pred_uri}> <{object_uri}> . }} }};\n"
+                f"INSERT DATA {{ GRAPH <{graph_uri}> {{ "
+                f"<{subject_uri}> <{pred_uri}> <{object_uri}> . }} }}\n"
+            )
+        else:
+            sparql = (
+                f"DELETE WHERE {{ <{subject_uri}> <{pred_uri}> <{object_uri}> . }};\n"
+                f"INSERT DATA {{ <{subject_uri}> <{pred_uri}> <{object_uri}> . }}\n"
+            )
+        return self.update(sparql)
+
+    def delete_subject(self, *, subject_uri: str, graph_uri: str | None) -> bool:
+        if graph_uri:
+            sparql = f"DELETE WHERE {{ GRAPH <{graph_uri}> {{ <{subject_uri}> ?p ?o . }} }}\n"
+        else:
+            sparql = f"DELETE WHERE {{ <{subject_uri}> ?p ?o . }}\n"
+        return self.update(sparql)
+
+    def insert_ntriples(self, ntriples: str, *, graph_uri: str | None) -> bool:
+        body = (ntriples or "").strip()
+        if not body:
+            return True
+        if graph_uri:
+            sparql = f"INSERT DATA {{ GRAPH <{graph_uri}> {{\n{body}\n}} }}\n"
+        else:
+            sparql = f"INSERT DATA {{\n{body}\n}}\n"
+        return self.update(sparql)
+
+    def copy_graph(
+        self, *, source_graph_uri: str, target_graph_uri: str, subject_uri: str | None = None
+    ) -> bool:
+        """Copy triples from one named graph into another (optional subject filter)."""
+        if subject_uri:
+            where = (
+                f"GRAPH <{source_graph_uri}> {{ <{subject_uri}> ?p ?o . }} "
+                f"BIND(<{subject_uri}> AS ?s)"
+            )
+            insert = f"GRAPH <{target_graph_uri}> {{ ?s ?p ?o . }}"
+            sparql = f"INSERT {{ {insert} }} WHERE {{ {where} }}\n"
+        else:
+            sparql = (
+                f"INSERT {{ GRAPH <{target_graph_uri}> {{ ?s ?p ?o . }} }} "
+                f"WHERE {{ GRAPH <{source_graph_uri}> {{ ?s ?p ?o . }} }}\n"
+            )
+        return self.update(sparql)
+
+    def stats(self, *, public_graph_uri: str | None, schema_graph_uri: str | None) -> StoreStats:
+        total = 0
+        public = 0
+        schema = 0
+        source = "unknown"
+
+        rows = self.select("SELECT (COUNT(*) AS ?c) WHERE { ?s ?p ?o }")
+        if rows:
+            total = int(rows[0].get("c", 0) or 0)
+            source = "sparql"
+
+        if public_graph_uri:
+            rows = self.select(
+                f"SELECT (COUNT(*) AS ?c) WHERE {{ GRAPH <{public_graph_uri}> {{ ?s ?p ?o }} }}"
+            )
+            if rows:
+                public = int(rows[0].get("c", 0) or 0)
+
+        if schema_graph_uri:
+            rows = self.select(
+                f"SELECT (COUNT(*) AS ?c) WHERE {{ GRAPH <{schema_graph_uri}> {{ ?s ?p ?o }} }}"
+            )
+            if rows:
+                schema = int(rows[0].get("c", 0) or 0)
+
+        return StoreStats(
+            total_triples=total,
+            public_triples=public,
+            schema_triples=schema,
+            source=source,
+        )
+
+    def health(self) -> bool:
+        if self._update_endpoint() or self._query_endpoint():
+            return graph_client.health()
+        return self._local_available()
+
+    def _query_endpoint(self) -> str:
+        return (
+            str(getattr(settings, "RDF_QUERY_URL", "") or "").strip()
+            or str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
+        )
+
+    def _update_endpoint(self) -> str:
+        return str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
+
+    def _remote_select(
+        self, endpoint: str, sparql: str, *, timeout_s: int
+    ) -> list[dict[str, str]]:
+        import requests
+
+        base = endpoint.replace("/update", "").replace("/sparql", "").rstrip("/")
+        for url in (f"{base}/query", endpoint, f"{base}/sparql"):
+            try:
+                resp = requests.get(
+                    url,
+                    params={"query": sparql},
+                    headers={"Accept": "application/sparql-results+json"},
+                    timeout=timeout_s,
+                )
+                resp.raise_for_status()
+                bindings = resp.json().get("results", {}).get("bindings", [])
+                return [{k: v.get("value", "") for k, v in row.items()} for row in bindings]
+            except Exception:
+                continue
+        return []
+
+    def _remote_update(self, endpoint: str, sparql: str, *, timeout_s: int) -> bool:
+        import requests
+
+        base = endpoint.replace("/update", "").replace("/sparql", "").rstrip("/")
+        for url in (endpoint, f"{base}/update", f"{base}/sparql"):
+            try:
+                resp = requests.post(
+                    url,
+                    data=sparql.encode("utf-8"),
+                    headers={"Content-Type": "application/sparql-update"},
+                    timeout=timeout_s,
+                )
+                resp.raise_for_status()
+                return True
+            except Exception as exc:
+                logger.warning("SPARQL update failed at %s: %s", url, exc)
+        return False
+
+    def _local_available(self) -> bool:
+        try:
+            import pyoxigraph  # noqa: F401
+        except ImportError:
+            return False
+        return True
+
+    def _local_store_path(self) -> str:
+        return str(getattr(settings, "OXIGRAPH_STORE_PATH", "oxigraph_db") or "oxigraph_db")
+
+    def _local_select(self, sparql: str) -> list[dict[str, str]]:
+        if not self._local_available():
+            return []
+        try:
+            from pyoxigraph import Store
+
+            store = Store(self._local_store_path())
+            result = store.query(sparql)
+            bindings = []
+            for row in result:
+                bindings.append(
+                    {
+                        k: getattr(v, "value", str(v))
+                        for k, v in dict(row).items()
+                    }
+                )
+            return bindings
+        except Exception:
+            logger.debug("Local SPARQL SELECT failed", exc_info=True)
+            return []
+
+    def _local_update(self, sparql: str) -> bool:
+        if not self._local_available():
+            return False
+        try:
+            from pyoxigraph import Store
+
+            store = Store(self._local_store_path())
+            store.update(sparql)
+            return True
+        except Exception:
+            logger.warning("Local SPARQL UPDATE failed", exc_info=True)
+            return False
+
+    def _triple_to_quad(self, t: Any, *, graph_uri: str | None):
+        try:
+            from pyoxigraph import Literal, NamedNode, Quad
+        except ImportError:
+            return None
+
+        from apps.cidoc_data.rdf_entity_projection import RDF_PREFIXES
+
+        graph_name = NamedNode(graph_uri) if graph_uri else None
+        sub = NamedNode(t.subj)
+        pred = NamedNode(t.pred)
+        if t.obj_uri:
+            return Quad(sub, pred, NamedNode(t.obj_uri), graph_name)
+        if not t.literal:
+            return None
+        lexical, datatype = t.literal
+        geo_wkt = RDF_PREFIXES["geo"] + "wktLiteral"
+        if not datatype:
+            return Quad(sub, pred, Literal(lexical), graph_name)
+        if datatype == geo_wkt:
+            return Quad(sub, pred, Literal(lexical, datatype=NamedNode(geo_wkt)), graph_name)
+        return Quad(sub, pred, Literal(lexical, datatype=NamedNode(datatype)), graph_name)
+
+    def local_replace_managed_triples(
+        self,
+        *,
+        subject_uri: str,
+        managed_predicate_iris: set[str],
+        triples: list[Any],
+        graph_uri: str | None,
+    ) -> bool:
+        if not self._local_available():
+            return False
+        try:
+            from pyoxigraph import NamedNode, Store
+        except ImportError:
+            return False
+
+        store = Store(self._local_store_path())
+        graph_name = NamedNode(graph_uri) if graph_uri else None
+        sub = NamedNode(subject_uri)
+        for pred_iri in sorted(managed_predicate_iris):
+            pn = NamedNode(pred_iri)
+            try:
+                for q in store.quads_for_pattern(sub, pn, None, graph_name):
+                    store.remove(q)
+            except Exception:
+                pass
+
+        for triple in triples:
+            quad = self._triple_to_quad(triple, graph_uri=graph_uri)
+            if quad is None:
+                continue
+            try:
+                store.add(quad)
+            except Exception as exc:
+                logger.warning("Local quad insert failed: %s", exc)
+                return False
+        return True

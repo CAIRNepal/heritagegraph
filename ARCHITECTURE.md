@@ -375,9 +375,9 @@ Moderators manage `SchemaExtensionProposal` rows (draft → submitted → approv
 
 The **`GET /api/v1/cidoc/schema/registry/`** response includes **`classes`**, **`enums`**, **`contribute_hub`**, **`semantic_patterns`** (from `tools/semantic-patterns.yaml`), and **`registry_jsonschema`**.
 
-### RDF sidecar (optional)
+### Knowledge Graph Engine (Oxigraph)
 
-When **`RDF_SYNC_ENABLED`** is set, `cidoc_data/rdf_signals.py` projects CIDOC **`MetaData`** rows to Oxigraph (`OXIGRAPH_STORE_PATH`) or a SPARQL Update endpoint (`RDF_ENDPOINT_URL`). Slot-aligned triples (`classUri`, registry `slot_uri`, relation IRIs) are built in **`rdf_entity_projection.py`**; moderators’ accepted **`relationship.*`** assertions emit separate predicate IRIs (`…/property/…`) and are not erased when clearing CRM slot predicates.
+When **`RDF_SYNC_ENABLED`** is set, **`apps/graph/kg_engine/`** is the single orchestration layer: registry projection → **public named graph**, optional SHACL, agent promotion on auto-accept, and **`RDFSyncOutbox`** retries. HTTP: `GET /cidoc/kg/stats/`, `GET /cidoc/kg/neighborhood/?uri=…`, `POST /cidoc/kg/query/`. See **`RDF_KG_ENGINE.md`**. Ops: `make rdf-rebuild`, `make rdf-diagnose`, `make rdf-load-tbox`, `make rdf-drain-outbox`.
 
 ---
 

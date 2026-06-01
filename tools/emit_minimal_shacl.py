@@ -3,11 +3,13 @@
 Emit a conservative SHACL shape snippet from registry.generated.json.
 
 Run after regenerating the registry snapshot:
-    python3 tools/linkml_generate_registry.py && python3 tools/emit_minimal_shacl.py
+    make ontology && make shacl
+    # or: python3 tools/linkml_generate_registry.py && python3 tools/emit_minimal_shacl.py
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -50,13 +52,9 @@ def expand_curie(curie: str) -> str:
     return f"{base}{rest}"
 
 
-def main(argv: list[str]) -> int:
-    reg_path = Path(argv[1]) if len(argv) > 1 else DEFAULT_REG
-    out_path = Path(argv[2]) if len(argv) > 2 else DEFAULT_OUT
-
+def build_shacl_ttl(*, reg_path: Path) -> str:
     if not reg_path.is_file():
-        print(f"Registry snapshot not found: {reg_path}", file=sys.stderr)
-        return 2
+        raise FileNotFoundError(f"Registry snapshot not found: {reg_path}")
 
     data = json.loads(reg_path.read_text(encoding="utf-8"))
     classes = data.get("classes") or {}
@@ -81,10 +79,14 @@ def main(argv: list[str]) -> int:
             ft = field.get("type") or ""
             req = bool(field.get("required"))
             minc_raw = field.get("minimumCardinality")
-            min_count = 1 if req else (
-                int(minc_raw)
-                if isinstance(minc_raw, int) and int(minc_raw) > 0
-                else 0
+            min_count = (
+                1
+                if req
+                else (
+                    int(minc_raw)
+                    if isinstance(minc_raw, int) and int(minc_raw) > 0
+                    else 0
+                )
             )
 
             lines_inner = [
@@ -112,20 +114,43 @@ def main(argv: list[str]) -> int:
         block[-1] = last + " ."
         chunks.append("\n".join(block))
 
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-
     if not chunks:
-        combined = (
-            TTL_PREFIXES
-            + "# No classUri entries produced shapes in this snapshot.\n"
-        )
-    else:
-        combined = TTL_PREFIXES + "\n\n".join(chunks) + "\n"
+        return TTL_PREFIXES + "# No classUri entries produced shapes in this snapshot.\n"
+    return TTL_PREFIXES + "\n\n".join(chunks) + "\n"
 
-    out_path.write_text(combined, encoding="utf-8")
-    print(f"Wrote {out_path}")
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--registry", type=Path, default=DEFAULT_REG)
+    parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit 1 if output file differs from regenerated content",
+    )
+    args = parser.parse_args()
+
+    try:
+        combined = build_shacl_ttl(reg_path=args.registry)
+    except FileNotFoundError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    if args.check:
+        if not args.out.is_file():
+            print(f"Missing {args.out} — run: make shacl", file=sys.stderr)
+            return 1
+        existing = args.out.read_text(encoding="utf-8")
+        if existing != combined:
+            print(f"Stale {args.out} — run: make shacl", file=sys.stderr)
+            return 1
+        return 0
+
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(combined, encoding="utf-8")
+    print(f"Wrote {args.out}")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv))
+    raise SystemExit(main())

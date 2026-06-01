@@ -8,7 +8,7 @@ Run `make generate` to regenerate all schema-driven artifacts in one command:
 make generate
 ```
 
-This runs: ontology → serializers → entityrefs → schema-rebuild.
+This runs: ontology → viz-config → shacl → serializers → entityrefs → schema-rebuild.
 
 For CI verification (no side-effects):
 
@@ -16,7 +16,7 @@ For CI verification (no side-effects):
 make check
 ```
 
-This runs all `*-check` gates: ontology-check, serializers-check, entityrefs-check.
+This runs all `*-check` gates: ontology, viz-config, shacl, serializers, entityrefs, contribute-routes.
 
 ---
 

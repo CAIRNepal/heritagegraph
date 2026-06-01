@@ -1,11 +1,9 @@
 """
 RDF / triplestore projection hooks (MR3).
 
-When RDF_SYNC_ENABLED and RDF_ENDPOINT_URL are set, POST SPARQL UPDATE
-to the configured store on save/delete of CIDOC MetaData models.
-
-When RDF_SYNC_ENABLED is enabled but RDF_ENDPOINT_URL is empty, we fall back to a
-local on-disk Oxigraph store at `oxigraph_db/` using `pyoxigraph`.
+When RDF_SYNC_ENABLED is set, CIDOC MetaData saves project registry-aligned
+triples into the public named graph (see ``rdf_publish``). Optional SHACL gate
+uses existing generated shapes — no ontology edits.
 """
 
 from __future__ import annotations
@@ -15,17 +13,23 @@ import re
 import uuid
 from typing import Any
 
-import requests
 from django.apps import apps
 from django.conf import settings
 from django.db import transaction
 from django.db.models.signals import post_delete, post_save, pre_save
 
+from apps.cidoc_data.rdf_publish import (
+    delete_subject_from_store,
+    label_for_instance,
+    persist_relationship_triple,
+    persist_slot_projection,
+    resource_uri_for_instance,
+)
+
 logger = logging.getLogger(__name__)
 
 _CONNECTED = False
 
-# Tracks entity_cluster FK before save — refresh RDF for old clusters on change.
 HERITAGE_ASSERTION_PRIOR_ENTITY_CLUSTER_ID: dict[uuid.UUID, uuid.UUID | None] = {}
 
 
@@ -33,129 +37,12 @@ def rdf_sync_enabled() -> bool:
     return bool(getattr(settings, "RDF_SYNC_ENABLED", False))
 
 
-def _oxigraph_store_path() -> str:
-    return str(getattr(settings, "OXIGRAPH_STORE_PATH", "oxigraph_db") or "oxigraph_db")
-
-
 def _resource_uri(instance: Any) -> str:
-    base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
-    name = instance.__class__.__name__.lower()
-    return f"{base}/{name}/{instance.pk}"
+    return resource_uri_for_instance(instance)
 
 
 def _label_for(instance: Any) -> str:
-    for attr in ("name", "title"):
-        v = getattr(instance, attr, None)
-        if v:
-            return str(v)[:500]
-    return str(instance.pk)
-
-
-def _local_oxigraph_available() -> bool:
-    try:
-        import pyoxigraph  # noqa: F401
-    except ImportError:
-        return False
-    return True
-
-
-def _triple_to_pyoxigraph_quad(t: Any):
-    """Build a pyoxigraph Quad from rdf_entity_projection._Triple."""
-    try:
-        from pyoxigraph import Literal, NamedNode, Quad
-    except ImportError:
-        return None
-
-    from apps.cidoc_data.rdf_entity_projection import RDF_PREFIXES
-
-    sub = NamedNode(t.subj)
-    pred = NamedNode(t.pred)
-    if t.obj_uri:
-        return Quad(sub, pred, NamedNode(t.obj_uri), None)
-    if not t.literal:
-        return None
-    lexical, datatype = t.literal
-    geo_wkt = RDF_PREFIXES["geo"] + "wktLiteral"
-
-    if not datatype:
-        return Quad(sub, pred, Literal(lexical), None)
-    if datatype == geo_wkt:
-        return Quad(sub, pred, Literal(lexical, datatype=NamedNode(geo_wkt)), None)
-    return Quad(sub, pred, Literal(lexical, datatype=NamedNode(datatype)), None)
-
-
-def _local_replace_slot_projection(
-    *, subject_uri: str, managed_predicate_iris: set[str], triples: list[Any]
-) -> None:
-    """Clear managed CIDOC-slot predicates for subject, then insert fresh triples."""
-    if not _local_oxigraph_available():
-        return
-    try:
-        from pyoxigraph import NamedNode, Store
-    except ImportError:
-        return
-
-    store = Store(_oxigraph_store_path())
-    sub = NamedNode(subject_uri)
-    for pred_iri in sorted(managed_predicate_iris):
-        pn = NamedNode(pred_iri)
-        try:
-            for q in store.quads_for_pattern(sub, pn, None, None):
-                store.remove(q)
-        except Exception:
-            pass
-
-    for triple in triples:
-        quad = _triple_to_pyoxigraph_quad(triple)
-        if quad is None:
-            continue
-        try:
-            store.add(quad)
-        except Exception as exc:
-            logger.warning("Local Oxigraph add quad failed: %s", exc)
-
-
-def _local_delete_subject(*, uri: str) -> None:
-    try:
-        from pyoxigraph import NamedNode, Store
-    except ImportError:
-        return
-    store = Store(_oxigraph_store_path())
-    subj = NamedNode(uri)
-    try:
-        for q in store.quads_for_pattern(subj, None, None, None):
-            store.remove(q)
-    except Exception as exc:
-        logger.warning("Local Oxigraph delete failed: %s", exc)
-
-
-def _sparql_update(update: str) -> None:
-    endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
-    if not rdf_sync_enabled() or not endpoint:
-        return
-    try:
-        r = requests.post(
-            endpoint,
-            data=update.encode("utf-8"),
-            headers={"Content-Type": "application/sparql-update"},
-            timeout=45,
-        )
-        r.raise_for_status()
-    except Exception as exc:
-        logger.warning("RDF SPARQL update failed: %s", exc)
-
-
-def _uri_for_generic(content_type, object_id) -> str | None:
-    if content_type is None or object_id is None:
-        return None
-    model = content_type.model_class()
-    if model is None:
-        return None
-    try:
-        obj = model.objects.get(pk=object_id)
-    except model.DoesNotExist:
-        return None
-    return _resource_uri(obj)
+    return label_for_instance(instance)
 
 
 def queue_relationship_assertion_projection(
@@ -182,29 +69,9 @@ def queue_relationship_assertion_projection(
     )
     base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
     pred_uri = f"{base}/property/{prop_suffix}"
-
-    endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
-    if not endpoint:
-        if not _local_oxigraph_available():
-            return
-        try:
-            from pyoxigraph import NamedNode, Quad, Store
-        except ImportError:
-            return
-        store = Store(_oxigraph_store_path())
-        s_n = NamedNode(subj_uri)
-        p_n = NamedNode(pred_uri)
-        o_n = NamedNode(obj_uri)
-        try:
-            for q in store.quads_for_pattern(s_n, p_n, o_n, None):
-                store.remove(q)
-        except Exception:
-            pass
-        store.add(Quad(s_n, p_n, o_n, None))
-        return
-
-    update = f"INSERT DATA {{ <{subj_uri}> <{pred_uri}> <{obj_uri}> . }}\n"
-    _sparql_update(update)
+    persist_relationship_triple(
+        subject_uri=subj_uri, pred_uri=pred_uri, object_uri=obj_uri
+    )
 
 
 def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> None:
@@ -212,48 +79,38 @@ def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> N
     if not rdf_sync_enabled() or instance is None:
         return
 
-    from apps.cidoc_data.rdf_entity_projection import (
-        sparql_delete_subject_predicates,
-        sparql_insert_for_triples,
-        tripleset_for_metadata_instance,
-    )
+    from apps.cidoc_data.rdf_entity_projection import tripleset_for_metadata_instance
 
     uri = _resource_uri(instance)
-
     triples, managed_preds = tripleset_for_metadata_instance(
         instance,
         resource_uri_fn=_resource_uri,
         label_fn=_label_for,
     )
-
-    endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
-    if not endpoint:
-        _local_replace_slot_projection(
-            subject_uri=uri,
-            managed_predicate_iris=managed_preds,
-            triples=triples,
-        )
-        return
-
-    delete_fragment = sparql_delete_subject_predicates(uri, managed_preds)
-    insert_fragment = sparql_insert_for_triples(triples)
-    _sparql_update(delete_fragment + insert_fragment)
+    persist_slot_projection(
+        subject_uri=uri,
+        triples=triples,
+        managed_predicate_iris=managed_preds,
+    )
 
 
 def _delete_projection(instance: Any) -> None:
     if not rdf_sync_enabled() or instance is None:
         return
-    uri = _resource_uri(instance)
+    delete_subject_from_store(uri=_resource_uri(instance))
 
-    endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
-    if not endpoint:
-        if not _local_oxigraph_available():
-            return
-        _local_delete_subject(uri=uri)
-        return
 
-    update = f"DELETE WHERE {{ <{uri}> ?p ?o . }}\n"
-    _sparql_update(update)
+def _uri_for_generic(content_type, object_id) -> str | None:
+    if content_type is None or object_id is None:
+        return None
+    model = content_type.model_class()
+    if model is None:
+        return None
+    try:
+        obj = model.objects.get(pk=object_id)
+    except model.DoesNotExist:
+        return None
+    return _resource_uri(obj)
 
 
 def _is_cidoc_metadata_model(model: type) -> bool:
@@ -375,7 +232,6 @@ def _on_assertion_saved(sender, instance, **kwargs: object) -> None:
 
 
 def _on_identity_assertion_deleted(sender, instance, **kwargs: object) -> None:
-    """Remove stale owl:sameAs from siblings/subject when membership row disappears."""
     if not rdf_sync_enabled():
         return
     if not _is_identity_same_referent_assertion(instance):
@@ -392,7 +248,6 @@ def _on_identity_assertion_deleted(sender, instance, **kwargs: object) -> None:
 
 
 def _on_entity_cluster_saved(sender, instance, **kwargs: object) -> None:
-    """Re-project cluster members after curator edits external_identifiers."""
     if not rdf_sync_enabled():
         return
     update_fields = kwargs.get("update_fields")
@@ -439,7 +294,7 @@ def connect_signals() -> None:
 
 
 def project_all_metadata_instances() -> int:
-    """Full rebuild: emit INSERT DATA for every MetaData subclass row."""
+    """Full rebuild: project every MetaData subclass row to the public graph."""
     if not rdf_sync_enabled():
         return 0
     n = 0

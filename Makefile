@@ -4,8 +4,10 @@
 # Run `make` or `make help` to see all commands.
 # ================================================================
 
-.PHONY: ontology ontology-check serializers serializers-check entityrefs entityrefs-check contribute-routes-check \
+.PHONY: ontology ontology-check viz-config viz-config-check shacl shacl-check \
+        serializers serializers-check entityrefs entityrefs-check contribute-routes-check \
         schema-rebuild identity-candidates schema-diff \
+        rdf-rebuild rdf-diagnose rdf-load-tbox \
         generate check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
         reset-dev-db migrate migrations shell seed seed-reset \
@@ -42,6 +44,18 @@ ontology-check:
 	@test ! -f "$(CURDIR)/Heritagegraph.yaml" || (echo "ERROR: Remove repo-root Heritagegraph.yaml — canonical ontology is ontology/HeritageGraph.yaml" >&2 && exit 1)
 	python3 tools/linkml_generate_registry.py --check
 
+viz-config: ## Regenerate enums.ts, heritage-viz-config.ts, ontology_config.py from YAML
+	python3 tools/gen_heritage_viz_config.py
+
+viz-config-check: ## CI: fail if viz/namespace artifacts are out of date
+	python3 tools/gen_heritage_viz_config.py --check
+
+shacl: ## Regenerate minimal SHACL from registry.generated.json (run after ontology)
+	python3 tools/emit_minimal_shacl.py
+
+shacl-check: ## CI: fail if generated SHACL TTL is out of date
+	python3 tools/emit_minimal_shacl.py --check
+
 contribute-routes-check: ## CI: contribute-hub intents map to Next.js pages
 	python3 tools/verify_contribute_intent_routes.py
 
@@ -51,14 +65,26 @@ serializers: ## Regenerate serializers.generated.py from HeritageGraph.yaml
 serializers-check: ## CI: fail if serializers.generated.py is out of date
 	python3 tools/generate_serializers.py --check
 
-entityrefs: ## Rebuild EntityRef edges from legacy CharField relation columns
-	python3 heritage_graph/manage.py rebuild_entityrefs
+entityrefs: $(VENV_PY) ## Rebuild EntityRef edges from legacy CharField relation columns
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rebuild_entityrefs
 
-entityrefs-check: ## CI: fail if any CharField relation values lack EntityRef rows
-	python3 heritage_graph/manage.py rebuild_entityrefs --check
+entityrefs-check: $(VENV_PY) ## CI: fail if any CharField relation values lack EntityRef rows
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rebuild_entityrefs --check
 
 schema-rebuild: $(VENV_PY) ## Persist ontology registry snapshot to DB (SchemaRegistry)
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rebuild_schema_registry
+
+rdf-rebuild: $(VENV_PY) ## Reproject all CIDOC rows into the public RDF named graph
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_rebuild
+
+rdf-diagnose: $(VENV_PY) ## Report RDF sync config and triple counts
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_diagnose
+
+rdf-load-tbox: $(VENV_PY) ## Load ontology/Heritage.ttl into the schema named graph
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_load_tbox
+
+rdf-drain-outbox: $(VENV_PY) ## Retry failed knowledge graph writes
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_drain_outbox
 
 identity-candidates: $(VENV_PY) ## Refresh IdentityResolutionCandidate pairs from same-name heuristic
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py refresh_identity_candidates
@@ -70,11 +96,11 @@ schema-diff: ## Compare two ontology YAML files: OLD=ontology/HeritageGraph.yaml
 	fi
 	python3 tools/schema_diff.py $(OLD) $(NEW)
 
-generate: ontology serializers entityrefs schema-rebuild ## Full pipeline: ontology → serializers → entityrefs → schema-rebuild
-	@echo "==> Full pipeline complete"
+generate: ontology viz-config shacl serializers entityrefs schema-rebuild ## Full pipeline from ontology/HeritageGraph.yaml
+	@echo "==> Full ontology pipeline complete (registry, viz, SHACL, serializers, entityrefs, DB snapshot)"
 
-check: ontology-check serializers-check entityrefs-check contribute-routes-check ## CI: verify all generated files are up to date (no side-effects)
-	@echo "==> All checks passed"
+check: ontology-check viz-config-check shacl-check serializers-check entityrefs-check contribute-routes-check ## CI: verify all generated files are up to date (no side-effects)
+	@echo "==> All ontology pipeline checks passed"
 
 # ================================================================
 # HELP
@@ -89,8 +115,10 @@ help:
 	@echo "    make superuser      Create a Django admin login"
 	@echo ""
 	@echo "  \033[1mPIPELINE\033[0m  (schema-driven UI/DB — run after ontology changes)"
-	@echo "    make generate       Full pipeline: ontology → serializers → entityrefs → schema-rebuild"
-	@echo "    make check          CI: verify all generated files are up to date (no side-effects)"
+	@echo "    make generate       Full pipeline: ontology → viz → shacl → serializers → entityrefs → schema-rebuild"
+	@echo "    make check          CI: verify all generated artifacts are up to date (no side-effects)"
+	@echo "    make viz-config     Regenerate atlas enums + RDF_PREFIXES (gen_heritage_viz_config.py)"
+	@echo "    make shacl          Regenerate ontology/shapes/generated-heritagegraph-minimal-shacl.ttl"
 	@echo "    make schema-rebuild Persist ontology registry snapshot to DB (SchemaRegistry)"
 	@echo "    make identity-candidates Refresh IdentityResolutionCandidate pairs (same-name)"
 	@echo "    make schema-diff    Compare two ontology YAML files: OLD=... NEW=..."

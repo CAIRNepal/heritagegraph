@@ -69,6 +69,7 @@ class PipelineConfig:
     # Provenance / named graphs
     provenance_named_graph: bool = True
     write_prov_triples: bool = True
+    promote_to_public_graph: bool = True
 
     @classmethod
     def from_env(cls) -> PipelineConfig:
@@ -91,6 +92,7 @@ class PipelineConfig:
             use_ollama_classification=_env_bool("HERITAGEGRAPH_USE_OLLAMA_CLASSIFICATION", True),
             provenance_named_graph=_env_bool("HERITAGEGRAPH_PROVENANCE_NAMED_GRAPH", True),
             write_prov_triples=_env_bool("HERITAGEGRAPH_WRITE_PROV_TRIPLES", True),
+            promote_to_public_graph=_env_bool("RDF_KG_PROMOTE_ON_AUTO_ACCEPT", True),
         )
 
 

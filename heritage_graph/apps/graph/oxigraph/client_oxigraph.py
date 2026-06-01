@@ -15,44 +15,74 @@ class OxigraphClient:
     """
     Minimal SPARQL 1.1 client for Oxigraph.
 
-    Oxigraph server (ghcr.io/oxigraph/oxigraph) exposes the SPARQL protocol at `/sparql`.
+    Oxigraph exposes SELECT at ``/query`` and updates at ``/update`` (also accepts
+  legacy ``/sparql`` on some versions).
     """
 
     base_url: str
 
     @property
+    def query_url(self) -> str:
+        return urljoin(self.base_url.rstrip("/") + "/", "query")
+
+    @property
+    def update_url(self) -> str:
+        return urljoin(self.base_url.rstrip("/") + "/", "update")
+
+    @property
     def sparql_url(self) -> str:
+        """Legacy combined endpoint (fallback)."""
         return urljoin(self.base_url.rstrip("/") + "/", "sparql")
 
     def select(self, sparql: str, *, timeout_s: int = 30) -> list[dict[str, str]]:
-        resp = requests.get(
-            self.sparql_url,
-            params={"query": sparql},
-            headers={"Accept": "application/sparql-results+json"},
-            timeout=timeout_s,
-        )
-        resp.raise_for_status()
-        bindings = resp.json().get("results", {}).get("bindings", [])
-        return [{k: v.get("value", "") for k, v in row.items()} for row in bindings]
+        for url in (self.query_url, self.sparql_url):
+            try:
+                resp = requests.get(
+                    url,
+                    params={"query": sparql},
+                    headers={"Accept": "application/sparql-results+json"},
+                    timeout=timeout_s,
+                )
+                resp.raise_for_status()
+                bindings = resp.json().get("results", {}).get("bindings", [])
+                return [
+                    {k: v.get("value", "") for k, v in row.items()} for row in bindings
+                ]
+            except requests.RequestException:
+                continue
+        return []
 
     def ask(self, sparql: str, *, timeout_s: int = 10) -> bool:
-        resp = requests.get(
-            self.sparql_url,
-            params={"query": sparql},
-            headers={"Accept": "application/sparql-results+json"},
-            timeout=timeout_s,
-        )
-        resp.raise_for_status()
-        return bool(resp.json().get("boolean", False))
+        for url in (self.query_url, self.sparql_url):
+            try:
+                resp = requests.get(
+                    url,
+                    params={"query": sparql},
+                    headers={"Accept": "application/sparql-results+json"},
+                    timeout=timeout_s,
+                )
+                resp.raise_for_status()
+                return bool(resp.json().get("boolean", False))
+            except requests.RequestException:
+                continue
+        return False
 
     def update(self, sparql: str, *, timeout_s: int = 30) -> None:
-        resp = requests.post(
-            self.sparql_url,
-            data={"update": sparql},
-            headers={"Content-Type": "application/x-www-form-urlencoded"},
-            timeout=timeout_s,
-        )
-        resp.raise_for_status()
+        last_exc: Exception | None = None
+        for url in (self.update_url, self.sparql_url):
+            try:
+                resp = requests.post(
+                    url,
+                    data={"update": sparql},
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    timeout=timeout_s,
+                )
+                resp.raise_for_status()
+                return
+            except requests.RequestException as exc:
+                last_exc = exc
+        if last_exc:
+            raise last_exc
 
     def insert_data(self, triples_nt: str) -> None:
         triples_nt = (triples_nt or "").strip()
@@ -73,4 +103,3 @@ def get_graph_client() -> OxigraphClient:
 
 
 graph_client = get_graph_client()
-
