@@ -80,7 +80,7 @@ class LocationModelTest(TestCase):
             name="Pashupatinath Temple",
             type="temple",
             current_status="preserved",
-            coordinates="27.7104, 85.3482",
+            coordinates_legacy="27.7104, 85.3482",
         )
         self.assertEqual(str(loc), "Pashupatinath Temple")
         self.assertEqual(loc.type, "temple")
@@ -509,9 +509,13 @@ class FrontendContributionPipelineTest(TestCase):
                 person = Person.objects.get(pk=response.json()["id"])
                 subject_uri = _resource_uri(person)
 
-                from pyoxigraph import NamedNode, Store
+                from pyoxigraph import NamedNode
 
-                store = Store(store_path)
+                from apps.graph.kg_engine.store import _open_local_store
+
+                # Use the engine's cached store handle (a separate Store() open
+                # would deadlock on the RocksDB exclusive lock).
+                store = _open_local_store(store_path)
                 subj = NamedNode(subject_uri)
                 quads = list(store.quads_for_pattern(subj, None, None, None))
                 self.assertGreater(

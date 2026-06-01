@@ -66,7 +66,7 @@ Once running, access:
 
 > 📖 **Full deployment guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production setup, SSL, backups, and more.
 
-> 📖 **Dokploy**: Compose stack (`docker-compose-dokploy.yml`) and automatic Dokploy redeploy when **`v1`** advances are documented in [DOKPLOY.md](DOKPLOY.md) (GitHub Actions hook + optional Git webhook).
+> 📖 **Dokploy**: Compose stack (`docker-compose-dokploy.yml`) and automatic Dokploy redeploy when **`v1`** advances are documented in [DOKPLOY.md](documentation/deployment/DOKPLOY.md) (GitHub Actions hook + optional Git webhook).
 
 ### Useful Commands
 
@@ -118,13 +118,13 @@ The dashboard includes a **platform admin** area for day-to-day user and reviewe
 | **User directory API** | `GET /data/api/platform-admin/users/` — list & retrieve; supports `search`, `ordering`, and limit/offset pagination |
 | **Assign reviewer role** | `POST /data/api/reviewer-roles/assign/` — updates `ReviewerRole` and syncs **`Reviewers`** / **`Moderators`** Django groups |
 
-Ensure role groups exist (e.g. `python manage.py setup_roles`). See [AUTH_ROLES_DEVELOPER_GUIDE.md](AUTH_ROLES_DEVELOPER_GUIDE.md) for how contributor, reviewer, staff, and `ReviewerRole` map to permissions.
+Ensure role groups exist (e.g. `python manage.py setup_roles`). See [AUTH_ROLES_DEVELOPER_GUIDE.md](documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md) for how contributor, reviewer, staff, and `ReviewerRole` map to permissions.
 
 ---
 
 ## ⚙️ Backend
 
-The backend is powered by **Django REST Framework** and uses **Keycloak** for authentication (JWT via OIDC).
+The backend is powered by **Django REST Framework** and uses **Google OAuth** for authentication (NextAuth issues a Google ID token that Django verifies via `google-auth`).
 
 > ⚠️ **Note:** Make sure to set up the required `.env` file (see `.env.example`).
 
@@ -169,7 +169,7 @@ Access the backend at (development):
 
 ## 📚 Documentation for AI Agents & Developers
 
-This project includes comprehensive documentation designed to help both human developers and AI coding assistants work effectively:
+This project includes comprehensive documentation designed to help both human developers and AI coding assistants work effectively. **See [DOCS.md](DOCS.md) for the full categorized index;** the most-used docs are listed below.
 
 **Documentation site:** A consolidated MkDocs site lives in the `docs/` folder and is configured to publish to GitHub Pages via CI. Visit the published site at: https://cairnepal.github.io/heritagegraph/ (update if your org URL differs).
 
@@ -178,12 +178,11 @@ This project includes comprehensive documentation designed to help both human de
 | [AGENTS.md](AGENTS.md) | 🤖 **Start here** — Master guide for AI agents. Project overview, critical rules, directory structure, API summary |
 | [FORMS.md](FORMS.md) | 📋 **How forms work** — Add fields, enums, sections, and new entity types. Registry-driven form system guide |
 | [AUTH.md](AUTH.md) | 🔐 Authentication system — NextAuth + Google OAuth + Django token verification |
-| [AUTH_ROLES_DEVELOPER_GUIDE.md](AUTH_ROLES_DEVELOPER_GUIDE.md) | 👥 Roles & permissions — contributor / reviewer / staff, DRF permissions, frontend guards, platform admin access |
+| [AUTH_ROLES_DEVELOPER_GUIDE.md](documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md) | 👥 Roles & permissions — contributor / reviewer / staff, DRF permissions, frontend guards, platform admin access |
 | [CLAUDE.md](CLAUDE.md) | 📝 Coding conventions and patterns for both Python/Django and TypeScript/Next.js |
 | [SKILLS.md](SKILLS.md) | 🗺️ Feature capability matrix — maps every feature to exact files with status indicators |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 🏗️ System design with ASCII diagrams — network topology, auth flow, data models, Docker lifecycle |
 | [CONVENTIONS.md](CONVENTIONS.md) | 📏 Naming rules, import ordering, code style patterns for all languages in the project |
-| [PLATFORM_PLAN.md](PLATFORM_PLAN.md) | 🗺️ Contributing platform vision — phased roadmap, data flow, API contracts |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | 🔧 Known issues, gotchas, debugging tips, and deployment checklist |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | 🚀 Full deployment guide — Docker setup, production config, SSL, backups, monitoring |
 
@@ -193,7 +192,8 @@ This project includes comprehensive documentation designed to help both human de
 
 ## 📜 License
 
-The license for this project is yet to be finalized. We’ll choose one that both empowers the community and benefits this project :-)
+HeritageGraph is released under the [MIT License](LICENSE) — code, ontology, and data. If you
+use it in your research, please cite it (see [`CITATION.cff`](CITATION.cff)).
 
 
 # Nepal Cultural heritage Linked Open Data (NCHLOD)

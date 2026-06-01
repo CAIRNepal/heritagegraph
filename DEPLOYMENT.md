@@ -29,12 +29,15 @@
 
 ## Dokploy compose and CI redeploy hook
 
-The same application stack can run on **[Dokploy](https://dokploy.com/)** using the repository **`docker-compose-dokploy.yml`** (build context = monorepo root). Operators should follow **[DOKPLOY.md](DOKPLOY.md)** for secrets, domains, OCR worker sizing, and migrations.
+The same application stack can run on managed PaaS platforms. Platform-specific runbooks:
+**[Dokploy](documentation/deployment/DOKPLOY.md)** (`docker-compose-dokploy.yml`) and
+**[Coolify](documentation/deployment/deploy_on_coolify.md)** — both terminate TLS and route to
+the containers; follow them for secrets, domains, OCR worker sizing, and migrations.
 
 When **`v1`** advances on GitHub, redeploy Dokploy automatically by either:
 
-1. **GitHub Actions (recommended, only `v1` pushes)** — Workflow [`.github/workflows/dokploy-deploy.yml`](.github/workflows/dokploy-deploy.yml) POSTs the Dokploy **Deployments → Webhook URL** if the Actions secret **`DOKPLOY_WEBHOOK_URL`** is set ([**DOKPLOY.md – Automatic redeploy on `v1`**](DOKPLOY.md#automatic-redeploy-on-v1)), or  
-2. **GitHub repository webhook** — Use the same URL in **Settings → Webhooks** ([**DOKPLOY.md**](DOKPLOY.md): do not duplicate with the Actions secret or you trigger two deploys).
+1. **GitHub Actions (recommended, only `v1` pushes)** — Workflow [`.github/workflows/dokploy-deploy.yml`](.github/workflows/dokploy-deploy.yml) POSTs the Dokploy **Deployments → Webhook URL** if the Actions secret **`DOKPLOY_WEBHOOK_URL`** is set ([**DOKPLOY.md – Automatic redeploy on `v1`**](documentation/deployment/DOKPLOY.md#automatic-redeploy-on-v1)), or  
+2. **GitHub repository webhook** — Use the same URL in **Settings → Webhooks** ([**DOKPLOY.md**](documentation/deployment/DOKPLOY.md): do not duplicate with the Actions secret or you trigger two deploys).
 
 ---
 

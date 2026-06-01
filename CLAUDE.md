@@ -16,7 +16,7 @@
 ## 🐍 Backend (Django REST Framework)
 
 ### Python Version & Tooling
-- **Python:** 3.13
+- **Python:** 3.12 (matches `Dockerfile.backend` and `pyproject.toml`)
 - **Formatter:** `ruff` (configured in pyproject.toml) — replaces black/isort
 - **Linting:** `ruff` — run `ruff check .` and `ruff format .`
 - **Package manager:** `pip` with `requirements.txt` (no Poetry/PDM)

@@ -37,19 +37,35 @@ COPY heritage_graph_ui/ heritage_graph_ui/
 WORKDIR /repo/heritage_graph_ui
 
 # Build-time arguments (for Next.js to pick up env variables during build)
+# NOTE: NEXT_PUBLIC_* vars are inlined into the client bundle at BUILD time,
+# so they MUST be passed as build args (compose `build.args`), not just runtime
+# `environment`. Server-side vars (NEXTAUTH_*, GOOGLE_*) are read at runtime by
+# the standalone server and only need placeholders here.
 ARG NEXTAUTH_URL
 ARG NEXTAUTH_SECRET
 ARG GOOGLE_CLIENT_ID
 ARG GOOGLE_CLIENT_SECRET
 ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_DEV_AUTH
+ARG NEXT_PUBLIC_RDF_RESOURCE_BASE_URI
+ARG NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN
+ARG NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL
+ARG NEXT_PUBLIC_SHOW_FORM_GRAPH
 
-# Set build-time environment variables (placeholders so build doesn't fail;
-# real values are injected at runtime via docker-compose environment)
+# Server-side placeholders (real values injected at runtime via compose environment).
 ENV NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
 ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-build-placeholder}
 ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-build-placeholder}
 ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-build-placeholder}
+# Client (NEXT_PUBLIC_*) values — baked into the bundle now.
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+ENV NEXT_PUBLIC_DEV_AUTH=${NEXT_PUBLIC_DEV_AUTH:-false}
+ENV NEXT_PUBLIC_RDF_RESOURCE_BASE_URI=${NEXT_PUBLIC_RDF_RESOURCE_BASE_URI:-https://w3id.org/heritagegraph/resource/}
+ENV NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN=${NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN:-}
+ENV NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL=${NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL:-false}
+ENV NEXT_PUBLIC_SHOW_FORM_GRAPH=${NEXT_PUBLIC_SHOW_FORM_GRAPH:-false}
 
 # `npm run build` runs prebuild (copy-cesium-assets + viz config). Do not use plain `next build`
 # without copying Cesium into public/cesium — Heritage Atlas would fail at runtime.

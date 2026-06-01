@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from dataclasses import dataclass
 from typing import Any
 
@@ -11,6 +12,28 @@ from django.conf import settings
 from apps.graph.client import graph_client
 
 logger = logging.getLogger(__name__)
+
+# A pyoxigraph RocksDB store takes an exclusive lock and is safe to share across
+# threads, so cache one handle per path instead of re-opening on every read/write.
+# Re-opening per call caused silent lock contention (writes dropped while a read
+# handle was open). Only used for the embedded dev fallback; production uses the
+# Oxigraph HTTP endpoint.
+_LOCAL_STORE_CACHE: dict[str, Any] = {}
+_LOCAL_STORE_LOCK = threading.Lock()
+
+
+def _open_local_store(path: str):
+    store = _LOCAL_STORE_CACHE.get(path)
+    if store is not None:
+        return store
+    with _LOCAL_STORE_LOCK:
+        store = _LOCAL_STORE_CACHE.get(path)
+        if store is None:
+            from pyoxigraph import Store
+
+            store = Store(path)
+            _LOCAL_STORE_CACHE[path] = store
+        return store
 
 
 @dataclass
@@ -45,6 +68,7 @@ class KnowledgeGraphStore:
         graph_uri: str | None,
     ) -> bool:
         from apps.cidoc_data.rdf_entity_projection import (
+            INSERT_PREFIX_LINES,
             sparql_delete_subject_predicates,
             sparql_insert_for_triples,
         )
@@ -53,7 +77,14 @@ class KnowledgeGraphStore:
             subject_uri, managed_predicate_iris, graph_uri=graph_uri
         )
         insert_fragment = sparql_insert_for_triples(triples, graph_uri=graph_uri)
-        return self.update(delete_fragment + insert_fragment)
+        # The insert fragment carries a PREFIX prologue. Concatenated after the
+        # DELETE operations it would land mid-update-sequence, which the Oxigraph
+        # HTTP server rejects ("expected CREATE, DELETE, INSERT"). Hoist the
+        # single prologue to the front so the combined update is valid SPARQL.
+        if insert_fragment.startswith(INSERT_PREFIX_LINES):
+            insert_fragment = insert_fragment[len(INSERT_PREFIX_LINES):]
+        combined = INSERT_PREFIX_LINES + delete_fragment + insert_fragment
+        return self.update(combined)
 
     def upsert_object_triple(
         self,
@@ -118,7 +149,13 @@ class KnowledgeGraphStore:
         schema = 0
         source = "unknown"
 
-        rows = self.select("SELECT (COUNT(*) AS ?c) WHERE { ?s ?p ?o }")
+        # Count triples in the default graph AND all named graphs; a bare
+        # `{ ?s ?p ?o }` only matches the default graph, which under-reports the
+        # total since HeritageGraph data lives in named graphs (public, schema…).
+        rows = self.select(
+            "SELECT (COUNT(*) AS ?c) WHERE { "
+            "{ ?s ?p ?o } UNION { GRAPH ?g { ?s ?p ?o } } }"
+        )
         if rows:
             total = int(rows[0].get("c", 0) or 0)
             source = "sparql"
@@ -211,18 +248,21 @@ class KnowledgeGraphStore:
         if not self._local_available():
             return []
         try:
-            from pyoxigraph import Store
-
-            store = Store(self._local_store_path())
+            store = _open_local_store(self._local_store_path())
             result = store.query(sparql)
+            # pyoxigraph 0.5.x: a QuerySolution is not convertible via dict();
+            # iterate the result's variables and index each solution by Variable.
+            variables = list(getattr(result, "variables", []) or [])
             bindings = []
-            for row in result:
-                bindings.append(
-                    {
-                        k: getattr(v, "value", str(v))
-                        for k, v in dict(row).items()
-                    }
-                )
+            for sol in result:
+                row: dict[str, str] = {}
+                for var in variables:
+                    term = sol[var]
+                    if term is None:
+                        continue
+                    key = getattr(var, "value", str(var).lstrip("?"))
+                    row[key] = getattr(term, "value", str(term))
+                bindings.append(row)
             return bindings
         except Exception:
             logger.debug("Local SPARQL SELECT failed", exc_info=True)
@@ -232,9 +272,7 @@ class KnowledgeGraphStore:
         if not self._local_available():
             return False
         try:
-            from pyoxigraph import Store
-
-            store = Store(self._local_store_path())
+            store = _open_local_store(self._local_store_path())
             store.update(sparql)
             return True
         except Exception:
@@ -275,11 +313,11 @@ class KnowledgeGraphStore:
         if not self._local_available():
             return False
         try:
-            from pyoxigraph import NamedNode, Store
+            from pyoxigraph import NamedNode
         except ImportError:
             return False
 
-        store = Store(self._local_store_path())
+        store = _open_local_store(self._local_store_path())
         graph_name = NamedNode(graph_uri) if graph_uri else None
         sub = NamedNode(subject_uri)
         for pred_iri in sorted(managed_predicate_iris):

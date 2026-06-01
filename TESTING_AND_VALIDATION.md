@@ -2,7 +2,7 @@
 
 This document describes how to **test and validate** the HeritageGraph data path from frontend contribution through PostgreSQL, registry-aligned RDF, Oxigraph, and live visualization (Atlas + Graphview).
 
-**Out of scope here:** OCR / document ingestion, KG agent pipeline (`semantic_backend` FastAPI), and legacy `Submission` flat-field workflow unless noted.
+**Out of scope here:** OCR / document ingestion and the legacy `Submission` flat-field workflow unless noted.
 
 **Canonical ontology:** [`ontology/HeritageGraph.yaml`](ontology/HeritageGraph.yaml)
 
@@ -450,7 +450,6 @@ curl -sS http://localhost:8000/health/detailed/ | jq .
 |----------|--------|
 | [`FORMS.md`](FORMS.md) | Ontology forms and registry |
 | [`ONTOLOGY.md`](ONTOLOGY.md) | LinkML, SHACL, namespaces |
-| [`FUSEKI.md`](FUSEKI.md) | Optional Fuseki (not the default Oxigraph path in Compose) |
 | [`heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md`](heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md) | UI-side ontology artifacts |
 | [`AGENTS.md`](AGENTS.md) | Repo map for agents |
 

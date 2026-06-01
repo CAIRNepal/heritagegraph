@@ -629,7 +629,7 @@ When a user uploads a document alongside a contribution form:
 - Field mapping uses registry `key` values to match NER entities to form fields
 
 **See Also:**
-- [OCR_INTEGRATION_SUMMARY.md](OCR_INTEGRATION_SUMMARY.md) — Full pipeline architecture and implementation guide
+- [OCR_INTEGRATION_SUMMARY.md](documentation/internal/OCR_INTEGRATION_SUMMARY.md) — Full pipeline architecture and implementation guide
 - [AGENTS.md](AGENTS.md) — `📄 OCR & Document Processing Pipeline` section
 
 ---
@@ -645,11 +645,11 @@ When a user uploads a document alongside a contribution form:
 | [CLAUDE.md](CLAUDE.md) | Coding conventions for Python/Django and TypeScript/Next.js |
 | [CONVENTIONS.md](CONVENTIONS.md) | Naming rules, import ordering, file organization |
 | [SKILLS.md](SKILLS.md) | Feature capability matrix with file-level mappings |
-| [PLATFORM_PLAN.md](PLATFORM_PLAN.md) | Contributing platform vision and phased roadmap |
+| [PLATFORM_PLAN.md](documentation/internal/PLATFORM_PLAN.md) | Contributing platform vision and phased roadmap |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | Docker deployment, production config, SSL |
-| [OCR_INTEGRATION_SUMMARY.md](OCR_INTEGRATION_SUMMARY.md) | **NEW** OCR document processing — auto-populate forms from documents |
+| [OCR_INTEGRATION_SUMMARY.md](documentation/internal/OCR_INTEGRATION_SUMMARY.md) | **NEW** OCR document processing — auto-populate forms from documents |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Known issues, debugging tips |
-| [contributing.md](contributing.md) | Contributor instructions |
+| [contributing.md](CONTRIBUTING.md) | Contributor instructions |
 
 ---
 

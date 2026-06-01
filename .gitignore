@@ -37,6 +37,13 @@ data/*.log
 /data/
 heritage_graph/db.sqlite3.bak-*
 
+# ==================== Runtime RDF store ====================
+# Embedded pyoxigraph RocksDB store — a runtime database, not source.
+# Rebuildable with `make rdf-rebuild`. Must not be tracked (causes huge,
+# churning diffs from RocksDB compaction). Untrack once with:
+#   git rm -r --cached oxigraph_db
+/oxigraph_db/
+
 # ==================== Docker ====================
 infra/traefik/acme/acme.json
 backups/
@@ -64,3 +71,5 @@ Thumbs.db
 
 # ==================== Spec Kit / tools ====================
 .specify/extensions/.cache/
+# Generated MkDocs output (build artifact, rebuild with `mkdocs build`)
+/site/

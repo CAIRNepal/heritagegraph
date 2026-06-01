@@ -215,7 +215,10 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after 1000 tasks to p
 
 # ── Document OCR / processing ────────────────────────────────────────────────
 # These are *defaults*; tune per environment via .env
-OCR_ENABLED = (os.environ.get("OCR_ENABLED", "true").lower() in {"1", "true", "yes", "y", "on"})
+# OCR / document-to-graph ingestion is SUSPENDED (future functionality), so it is
+# disabled by default. The upload signal short-circuits gracefully when off
+# (uploads still succeed; no OCR task is enqueued). Set OCR_ENABLED=true to revive.
+OCR_ENABLED = (os.environ.get("OCR_ENABLED", "false").lower() in {"1", "true", "yes", "y", "on"})
 OCR_CONFIDENCE_THRESHOLD = float(os.environ.get("OCR_CONFIDENCE_THRESHOLD", "0.6"))
 OCR_MAX_PAGES_PER_DOCUMENT = int(os.environ.get("OCR_MAX_PAGES_PER_DOCUMENT", "100"))
 OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT = int(

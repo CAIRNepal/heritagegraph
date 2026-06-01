@@ -1,6 +1,13 @@
 # OCR pipeline
 
-This document describes how document text extraction runs in HeritageGraph: triggers, the unified processing function, classification, engine routing, persistence, and the API. For infrastructure (Celery, Docker, requirements) and history, see [OCR_INTEGRATION_SUMMARY.md](./OCR_INTEGRATION_SUMMARY.md).
+> ⚠️ **SUSPENDED — future functionality.** The OCR / document-to-graph ingestion pipeline is
+> currently **paused and not part of the active deployment**: `OCR_ENABLED` defaults to
+> `false` (document uploads still succeed but no OCR runs), and the `ocr-worker` service has
+> been removed from the running Docker stacks (definition preserved in git history). This
+> document is retained for when the pipeline is revived. To re-enable, set `OCR_ENABLED=true`
+> and restore the `ocr-worker` service.
+
+This document describes how document text extraction runs in HeritageGraph: triggers, the unified processing function, classification, engine routing, persistence, and the API. For infrastructure (Celery, Docker, requirements) and history, see [OCR_INTEGRATION_SUMMARY.md](documentation/internal/OCR_INTEGRATION_SUMMARY.md).
 
 ## Purpose
 
@@ -175,4 +182,4 @@ Mounted under the app’s URL include; router basename is `ocr-document` (e.g. `
 | API | `…/views.py`, `…/serializers.py`, `…/urls.py` |
 | Models | `…/models.py` |
 
-This reflects the v1 implementation: end-to-end wiring is in place; handwriting-specific models, EasyOCR fallback in code paths, and rich NER are still evolution items (see [OCR_INTEGRATION_SUMMARY.md](./OCR_INTEGRATION_SUMMARY.md) **Current Limitations**).
+This reflects the v1 implementation: end-to-end wiring is in place; handwriting-specific models, EasyOCR fallback in code paths, and rich NER are still evolution items (see [OCR_INTEGRATION_SUMMARY.md](documentation/internal/OCR_INTEGRATION_SUMMARY.md) **Current Limitations**).

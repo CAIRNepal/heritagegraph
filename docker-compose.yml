@@ -124,7 +124,7 @@ services:
       # CORS
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend.localhost}
       # OCR: configuration only (actual OCR runs in `ocr-worker`, not this container)
-      OCR_ENABLED: ${OCR_ENABLED:-true}
+      OCR_ENABLED: ${OCR_ENABLED:-false}
       TESSERACT_PATH: ${TESSERACT_PATH:-/usr/bin/tesseract}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       # In-app chat assistant (OpenRouter; tiering: apps/assistant/services/routing.py)
@@ -197,12 +197,21 @@ services:
     build:
       context: .
       dockerfile: heritage_graph_ui/Dockerfile
+      # NEXT_PUBLIC_* must be passed at BUILD time (inlined into the client
+      # bundle); the runtime `environment` block below does not affect them.
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost/api}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
+        NEXT_PUBLIC_DEV_AUTH: ${HERITAGEGRAPH_DEV_AUTH:-true}
+        NEXT_PUBLIC_RDF_RESOURCE_BASE_URI: ${NEXT_PUBLIC_RDF_RESOURCE_BASE_URI:-https://w3id.org/heritagegraph/resource/}
+        NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN: ${NEXT_PUBLIC_CESIUM_ION_ACCESS_TOKEN:-}
+        NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL: ${NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL:-false}
+        NEXT_PUBLIC_SHOW_FORM_GRAPH: ${NEXT_PUBLIC_SHOW_FORM_GRAPH:-false}
     container_name: heritage-frontend
     restart: unless-stopped
     environment:
       # Frontend configuration
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost/api}
-      NEXT_PUBLIC_GRAPH_URL: ${NEXT_PUBLIC_GRAPH_URL:-http://graph.localhost}
       # NextAuth + Google OAuth
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://frontend.localhost}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-nextauth-secret-change-in-production}
@@ -302,65 +311,13 @@ services:
         max-file: "3"
 
   # ---------------------------------------------------------------
-  # Celery Worker for OCR & Document Processing
-  # Runs in background; processes async tasks from Redis queue
+  # OCR / document-ingestion worker — SUSPENDED (future functionality)
+  # The OCR + document-to-graph pipeline is currently paused and not part of
+  # the active deployment. The Celery worker service has been removed from the
+  # running stack; its full definition is preserved in git history. To
+  # re-enable: restore the `ocr-worker` service, build the `ocr-worker` image
+  # target, and set OCR_ENABLED=true. (`OCR_ENABLED` defaults to false.)
   # ---------------------------------------------------------------
-  ocr-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-      target: ocr-worker
-    container_name: heritage-ocr-worker
-    restart: unless-stopped
-    environment:
-      # Django settings (pipeline_e2e: dev + Postgres, no GDAL)
-      DJANGO_ENV: ${DJANGO_ENV:-development}
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.pipeline_e2e}
-      DEBUG: ${DEBUG:-False}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key-change-in-production}
-      # Database
-      DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
-      DB_NAME: ${DB_NAME:-heritage_db}
-      DB_USER: ${DB_USER:-heritage_user}
-      DB_PASSWORD: ${DB_PASSWORD:-changeme}
-      DB_HOST: postgres
-      DB_PORT: 5432
-      # Celery
-      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
-      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
-      # OCR
-      OCR_ENABLED: ${OCR_ENABLED:-true}
-      TESSERACT_PATH: ${TESSERACT_PATH:-/usr/bin/tesseract}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
-      OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
-      # Triplestore — pipeline writes auto-accepted triples here
-      OXIGRAPH_URL: http://oxigraph:7878
-      # Project contribution saves (and pipeline writes) to Oxigraph via SPARQL UPDATE.
-      RDF_SYNC_ENABLED: ${RDF_SYNC_ENABLED:-true}
-      RDF_ENDPOINT_URL: ${RDF_ENDPOINT_URL:-http://oxigraph:7878/update}
-      RDF_QUERY_URL: ${RDF_QUERY_URL:-http://oxigraph:7878/query}
-      RDF_PUBLIC_GRAPH_URI: ${RDF_PUBLIC_GRAPH_URI:-https://w3id.org/heritagegraph/graph/public}
-      RDF_RESOURCE_BASE_URI: ${RDF_RESOURCE_BASE_URI:-https://w3id.org/heritagegraph/resource/}
-      RDF_SHACL_VALIDATE_ON_WRITE: ${RDF_SHACL_VALIDATE_ON_WRITE:-false}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      oxigraph:
-        condition: service_started
-    volumes:
-      - ./heritage_graph:/app/heritage_graph
-      - backend-media:/app/heritage_graph/media
-    networks:
-      - backend
-    command: celery -A heritage_graph worker -l info --concurrency=2 --max-tasks-per-child=100
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
   # ---------------------------------------------------------------
   # Oxigraph Triplestore
@@ -379,53 +336,6 @@ services:
       - 7878
     healthcheck:
       test: ["NONE"]
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-
-  # ---------------------------------------------------------------
-  # Semantic Backend (FastAPI)
-  # SPARQL/RDF API layer for the knowledge graph (wraps Oxigraph)
-  # ---------------------------------------------------------------
-  graph-api:
-    build:
-      context: ./semantic_backend
-      dockerfile: Dockerfile
-    container_name: heritage-graph-api
-    restart: on-failure
-    environment:
-      OXIGRAPH_URL: http://oxigraph:7878
-      OXIGRAPH_TIMEOUT: "30.0"
-      ONTOLOGY_PATH: /app/Heritage.ttl
-      BASE_URI: ${BASE_URI:-https://heritagegraph.org/}
-      SHAPES_DIR: /app/shapes
-      VALIDATE_ON_INGEST: ${VALIDATE_ON_INGEST:-true}
-    depends_on:
-      oxigraph:
-        condition: service_started
-    volumes:
-      - ./Heritage.ttl:/app/Heritage.ttl:ro
-      - ./semantic_backend/shapes:/app/shapes:ro
-    networks:
-      - proxy
-      - backend
-    expose:
-      - 8001
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.graph-api.rule=Host(`backend.localhost`) && PathPrefix(`/graph`)"
-      - "traefik.http.routers.graph-api.entrypoints=web"
-      - "traefik.http.middlewares.graph-strip.stripprefix.prefixes=/graph"
-      - "traefik.http.routers.graph-api.middlewares=graph-strip"
-      - "traefik.http.services.graph-api.loadbalancer.server.port=8001"
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     logging:
       driver: "json-file"
       options:

@@ -405,4 +405,4 @@ Switch to the new language using the globe icon in the dashboard header and veri
 
 - [next-intl documentation](https://next-intl.dev/docs/getting-started)
 - [ICU Message Format](https://unicode-org.github.io/icu/userguide/format_parse/messages/)
-- [HeritageGraph Contributing Guide](contributing.md)
+- [HeritageGraph Contributing Guide](CONTRIBUTING.md)

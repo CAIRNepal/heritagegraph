@@ -23,19 +23,31 @@ if _POSTGIS_ENV in ("1", "true", "yes"):
 # Core Security Settings
 # --------------------------------------------------------------------
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-if not SECRET_KEY:
-    raise ValueError("Missing DJANGO_SECRET_KEY in environment variables.")
+# Reject empty and well-known insecure defaults so a misconfigured deploy fails
+# fast instead of silently running with a guessable key (session/CSRF forgery).
+_INSECURE_SECRET_KEYS = {
+    "",
+    "dev-key-change-in-production",
+    "dev-nextauth-secret-change-in-production",
+    "changeme",
+}
+if not SECRET_KEY or SECRET_KEY.strip() in _INSECURE_SECRET_KEYS:
+    raise ValueError(
+        "DJANGO_SECRET_KEY must be set to a secure, non-default value in production."
+    )
 
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 _allowed_raw = os.environ.get("ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [h.strip() for h in _allowed_raw.split(",") if h.strip()]
 
+# Operator must declare the public hostnames. Check BEFORE adding the internal
+# docker hostname, otherwise this guard can never fire (it would be ["backend"]).
+if not ALLOWED_HOSTS:
+    raise ValueError("ALLOWED_HOSTS must be set for production.")
+
 # Allow internal docker network requests from Next.js frontend to 'backend:8000'
 if "backend" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("backend")
-
-if not ALLOWED_HOSTS:
-    raise ValueError("ALLOWED_HOSTS must be set for production.")
 
 # Behind Coolify / Traefik: correct scheme and host for redirects and OpenAPI URLs
 USE_X_FORWARDED_HOST = True

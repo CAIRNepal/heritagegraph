@@ -88,6 +88,9 @@ class ProjectWorkspaceAPITests(APITestCase):
         asset = ProjectAsset.objects.get(project=self.project)
         self.assertTrue(asset.media.ocr_deferred)
 
+    # OCR is suspended (OCR_ENABLED defaults to false); this test pins it on to
+    # exercise the start-ocr endpoint behavior when the feature is enabled.
+    @override_settings(OCR_ENABLED=True)
     @patch("apps.document_processing.tasks.classify_and_route_document.delay")
     def test_start_ocr_queues_task_once(self, mock_delay):
         self.client.force_authenticate(user=self.owner)

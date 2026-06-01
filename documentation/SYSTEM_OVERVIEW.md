@@ -76,7 +76,7 @@ The API and data brain. Organized into focused Django apps under `heritage_graph
 | **`heritage_data`** | The contribution & governance core: `CulturalEntity` → `Revision` workflow, `ReviewerRole` / `ReviewDecision` / `ReviewFlag` (epistemic review), `Submission` (legacy), `Project`, `Organization`, schema-extension proposals, notifications, auth views |
 | **`cidoc_data`** | The ontology layer: CIDOC-CRM structured models (`Person`, `Location`, `Event`, `Festival`, `Monument`, `Deity`, `Guthi`, `Kumari*`, …), `HeritageAssertion`, identity resolution (`EntityCluster`), the LinkML schema registry, SHACL validation, and RDF projection |
 | **`graph`** | The Knowledge Graph engine (`kg_engine/`): projects Postgres → RDF, talks to Oxigraph, serves KG stats / neighborhood / SPARQL, retries via outbox |
-| **`document_processing`** | Document upload and OCR; Celery tasks. *(AI document-to-graph ingestion is currently suspended.)* |
+| **`document_processing`** | Document upload (storage/metadata). *(OCR and AI document-to-graph ingestion are currently **suspended** — `OCR_ENABLED` defaults to false and the `ocr-worker` service is removed from the active stack.)* |
 | **`assistant`** | In-app chatbot — retrieval + grounding + OpenRouter chat completion, with a navigation allowlist |
 | **`users`** | User profiles, auth auditing |
 
@@ -147,13 +147,15 @@ resolution outcomes (Supersedes / Coexist / Existing-stands / Refines / Disputed
 Reviewer tiers (see [§7 roles](#7-roles--permissions)): community reviewer → domain expert
 → expert curator.
 
-### 4.3 Process documents (OCR)
+### 4.3 Process documents (OCR) — suspended
 
-Users can upload heritage documents, which are OCR'd via Celery background tasks. The text
-is retained on the document record for human reference.
+Users can upload heritage documents (stored with metadata).
 
-> **Note:** automated AI document-to-graph ingestion (LLM extraction → validation → graph
-> assertions) is **currently suspended** and not part of the active platform.
+> **Note:** OCR text extraction **and** automated AI document-to-graph ingestion
+> (LLM extraction → validation → graph assertions) are **currently suspended** and not part
+> of the active platform. `OCR_ENABLED` defaults to false (uploads still succeed; no OCR
+> runs) and the `ocr-worker` service is removed from the active Docker stacks. The code and
+> docs are retained for future revival.
 
 ### 4.4 Resolve identity
 
@@ -275,7 +277,7 @@ This is the section to read if you're wondering *why* the system looks the way i
 | Knowledge graph engine, partitions, SPARQL API | [RDF_KG_ENGINE.md](../RDF_KG_ENGINE.md) |
 | Ontology, CIDOC-CRM mapping, LinkML registry | [ONTOLOGY.md](../ONTOLOGY.md) |
 | Ontology-driven contribution forms | [FORMS.md](../FORMS.md) |
-| Authentication & roles | [AUTH.md](../AUTH.md), [AUTH_ROLES_DEVELOPER_GUIDE.md](../AUTH_ROLES_DEVELOPER_GUIDE.md) |
+| Authentication & roles | [AUTH.md](../AUTH.md), [AUTH_ROLES_DEVELOPER_GUIDE.md](auth/AUTH_ROLES_DEVELOPER_GUIDE.md) |
 | OCR pipeline | [OCR_PIPELINE.md](../OCR_PIPELINE.md) |
 | Deployment | [DEPLOYMENT.md](../DEPLOYMENT.md) |
 | Coding conventions for contributors / AI agents | [CLAUDE.md](../CLAUDE.md), [AGENTS.md](../AGENTS.md) |

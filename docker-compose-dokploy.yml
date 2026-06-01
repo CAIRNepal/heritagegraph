@@ -131,7 +131,7 @@ services:
       MIGRATION_AUTO_REPAIR: "1"
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/1
-      OCR_ENABLED: ${OCR_ENABLED:-true}
+      OCR_ENABLED: ${OCR_ENABLED:-false}
       TESSERACT_PATH: /usr/bin/tesseract
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
@@ -170,65 +170,9 @@ services:
         max-size: "10m"
         max-file: "3"
 
-  ocr-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
-      target: ocr-worker
-    restart: always
-    environment:
-      DJANGO_ENV: production
-      DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
-      DEBUG: "False"
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-api.heritagegraph.xyz,devapi.heritagegraph.xyz,localhost,backend}
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: ${POSTGRES_DB:-heritage_db}
-      DB_USER: ${POSTGRES_USER:-heritage_user}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
-      DB_HOST: postgres
-      DB_PORT: "5432"
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      CELERY_BROKER_URL: redis://redis:6379/0
-      CELERY_RESULT_BACKEND: redis://redis:6379/1
-      OCR_ENABLED: ${OCR_ENABLED:-true}
-      TESSERACT_PATH: /usr/bin/tesseract
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
-      OCR_MAX_PAGES_PER_DOCUMENT: ${OCR_MAX_PAGES_PER_DOCUMENT:-100}
-      OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
-      OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - backend-media:/app/heritage_graph/media
-    networks:
-      - internal
-    command:
-      - celery
-      - -A
-      - heritage_graph
-      - worker
-      - -l
-      - info
-      - --concurrency=1
-      - --max-tasks-per-child=50
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: "1.0"
-        reservations:
-          memory: 512M
-          cpus: "0.25"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # ocr-worker — SUSPENDED (future functionality). The OCR / document-to-graph
+  # pipeline is paused and removed from the active stack; full definition is in
+  # git history. To revive: restore this service and set OCR_ENABLED=true.
 
   frontend:
     build:

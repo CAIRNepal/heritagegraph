@@ -1424,20 +1424,25 @@ class SparqlProxyView(APIView):
                 )
 
             try:
-                # pyoxigraph query results are JSON-serializable by `dict(...)` on each row.
+                # pyoxigraph 0.5.x: index each QuerySolution by the result's
+                # Variable objects (dict(row) is unsupported); emit SPARQL-JSON.
+                variables = list(getattr(result, "variables", []) or [])
+                var_names = [getattr(v, "value", str(v).lstrip("?")) for v in variables]
                 bindings = []
-                for row in result:
-                    bindings.append(
-                        {
-                            k: {
-                                "type": "uri" if getattr(v, "type", None) == "namedNode" else "literal",
-                                "value": getattr(v, "value", lambda: str(v))(),
-                            }
-                            for k, v in dict(row).items()
+                for sol in result:
+                    binding = {}
+                    for var, name in zip(variables, var_names):
+                        term = sol[var]
+                        if term is None:
+                            continue
+                        is_uri = type(term).__name__ == "NamedNode"
+                        binding[name] = {
+                            "type": "uri" if is_uri else "literal",
+                            "value": getattr(term, "value", str(term)),
                         }
-                    )
+                    bindings.append(binding)
                 response_payload = {
-                    "head": {"vars": list(bindings[0].keys()) if bindings else []},
+                    "head": {"vars": var_names},
                     "results": {"bindings": bindings},
                 }
             except Exception:

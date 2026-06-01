@@ -1,6 +1,9 @@
 # AUTH.md — Authentication Guide for Developers
 
 > **Audience:** Any developer adding a new feature, page, or API call that needs to know who the user is, protect a route, or talk to the Django backend on behalf of a logged-in user.
+>
+> **Related guides:** [Roles & permissions](documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md) ·
+> [Adding a new OAuth provider](documentation/auth/AUTH_GUIDE.md).
 
 ---
 

@@ -4275,8 +4275,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
     ordering = ["-created_at"]
 
     def get_permissions(self):
+        action = getattr(self, "action", None)
+        # These actions authorize internally (can_transition_project /
+        # user_can_merge_project) and intentionally allow non-owners such as
+        # reviewers and moderators. The owner-only object permission would
+        # otherwise reject them before their own checks run.
+        if action in ("transition", "rollback_merge"):
+            return [permissions.IsAuthenticated()]
         safe = self.request.method in permissions.SAFE_METHODS
-        if getattr(self, "action", None) in ("list", "retrieve") and safe:
+        if action in ("list", "retrieve") and safe:
             return [AllowAny(), IsProjectOwnerOrReadOnly()]
         return [permissions.IsAuthenticated(), IsProjectOwnerOrReadOnly()]
 
