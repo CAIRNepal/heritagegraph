@@ -31,6 +31,7 @@ import { MandalaLoader } from './components/MandalaLoader';
 import { TimelineStrip } from './components/TimelineStrip';
 import { GraphLegend } from './components/GraphLegend';
 import { MuseumToolbar, type MuseumDataSource, type MuseumViewMode } from './components/museum-toolbar';
+import { cn } from '@/lib/utils';
 
 const API_BASE = getPublicApiUrl();
 
@@ -421,7 +422,7 @@ export function HeritageMindMapClient() {
         : null;
 
   return (
-    <div className="flex flex-col h-full bg-background text-foreground overflow-hidden">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background text-foreground">
 
       <MuseumToolbar
         viewMode={viewMode}
@@ -487,12 +488,17 @@ export function HeritageMindMapClient() {
             />
           </div>
 
-          {/* Graph + sidebar above a fixed-height timeline (2D) */}
-          <div className="flex min-h-0 flex-1 flex-col">
-            <div className="flex min-h-0 flex-1">
-
+          {/* Grid: graph | story (scroll) on row 1; timeline spans full width on row 2 */}
+          <div
+            className={cn(
+              'grid min-h-0 flex-1',
+              viewMode === '2d'
+                ? 'grid-rows-[minmax(0,1fr)_auto] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_24rem]'
+                : 'grid-cols-1 grid-rows-[minmax(0,1fr)]',
+            )}
+          >
             {/* Graph / Map canvas */}
-            <div className="relative min-h-0 min-w-0 flex-1">
+            <div className="relative min-h-0 min-w-0">
               {viewMode === '2d' && (
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-amber-500/[0.04] blur-3xl" />
@@ -604,25 +610,24 @@ export function HeritageMindMapClient() {
               )}
             </div>
 
-            {/* Desktop story sidebar — scrollable; does not push timeline down */}
-            <div className="hidden min-h-0 w-96 flex-shrink-0 flex-col overflow-hidden border-l border-border bg-card/80 backdrop-blur-md lg:flex">
-              <div className="min-h-0 flex-1 overflow-hidden">
-                <StoryPanel
-                  node={selectedNode}
-                  graphData={fullGraph ?? EMPTY}
-                  onRelatedNodeClick={handleRelatedNodeClick}
-                />
-              </div>
-            </div>
+            {/* Desktop story sidebar — isolated vertical scroll */}
+            <div className="hidden min-h-0 overflow-hidden border-l border-border bg-card/80 backdrop-blur-md lg:block">
+              <StoryPanel
+                node={selectedNode}
+                graphData={fullGraph ?? EMPTY}
+                onRelatedNodeClick={handleRelatedNodeClick}
+              />
             </div>
 
-            {/* Timeline strip pinned to bottom of workspace (2D only) */}
+            {/* Timeline: full width, fixed strip height (2D only) */}
             {viewMode === '2d' && !loading && !error && (
-              <TimelineStrip
-                nodes={filteredGraph?.nodes ?? []}
-                selectedId={selectedNode?.id ?? null}
-                onSelect={handleNodeSelect}
-              />
+              <div className="min-h-0 lg:col-span-2">
+                <TimelineStrip
+                  nodes={filteredGraph?.nodes ?? []}
+                  selectedId={selectedNode?.id ?? null}
+                  onSelect={handleNodeSelect}
+                />
+              </div>
             )}
           </div>
         </div>

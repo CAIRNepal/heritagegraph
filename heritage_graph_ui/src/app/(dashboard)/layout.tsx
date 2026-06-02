@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* ── Main Content ── */}
         <main
           role="main"
-          className="flex flex-col flex-1 @container/main gap-3 py-4 px-4 md:px-6 bg-gradient-to-br from-blue-50/50 via-sky-50/30 to-blue-50/50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"
+          className="flex min-h-0 flex-1 flex-col @container/main gap-3 bg-gradient-to-br from-blue-50/50 via-sky-50/30 to-blue-50/50 px-4 py-4 md:px-6 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"
         >
           {children}
         </main>

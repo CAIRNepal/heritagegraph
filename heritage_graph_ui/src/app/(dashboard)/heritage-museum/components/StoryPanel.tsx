@@ -2,6 +2,9 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
+
+import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { NODE_TYPE_CONFIG, RELATION_LABELS, type GraphNode, type GraphData } from '../heritage-data';
 import { MediaViewer } from './MediaViewer';
 
@@ -13,15 +16,19 @@ interface StoryPanelProps {
 
 export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelProps) {
   const t = useTranslations('heritageMuseum.panel');
-  const panelRef = useRef<HTMLDivElement>(null);
+  const scrollRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (panelRef.current) panelRef.current.scrollTop = 0;
+    const viewport = scrollRootRef.current?.querySelector(
+      '[data-slot="scroll-area-viewport"]',
+    ) as HTMLElement | null;
+    if (viewport) viewport.scrollTop = 0;
   }, [node?.id]);
 
   if (!node) {
     return (
-      <div className="flex h-full min-h-0 flex-col items-center justify-center gap-6 px-8 text-center">
+      <ScrollArea className="h-full min-h-0" ref={scrollRootRef}>
+      <div className="flex min-h-[min(100%,20rem)] flex-col items-center justify-center gap-6 px-8 py-8 text-center">
         <div className="w-20 h-20 rounded-full border-2 border-primary/30 flex items-center justify-center text-4xl animate-pulse">
           ☸
         </div>
@@ -38,6 +45,7 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
           ))}
         </div>
       </div>
+      </ScrollArea>
     );
   }
 
@@ -55,11 +63,8 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
   }, {});
 
   return (
-    <div
-      ref={panelRef}
-      className="h-full min-h-0 overflow-y-auto overscroll-contain"
-      style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
-    >
+    <ScrollArea className="h-full min-h-0" ref={scrollRootRef}>
+    <div className="min-h-0">
       {/* Hero image + narration */}
       <MediaViewer node={node} />
 
@@ -287,6 +292,7 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
         )}
       </div>
     </div>
+    </ScrollArea>
   );
 }
 
