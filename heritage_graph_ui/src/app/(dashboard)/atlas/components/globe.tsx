@@ -26,7 +26,7 @@ import {
   HeightReference,
   type Viewer as CesiumViewerType,
 } from 'cesium';
-import { Entity, ScreenSpaceCameraController, Viewer, useCesium } from 'resium';
+import { Entity, ImageryLayer, ScreenSpaceCameraController, Viewer, useCesium } from 'resium';
 import { useShallow } from 'zustand/react/shallow';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 
@@ -104,25 +104,6 @@ function ViewerCaptureBridge({
     onViewer(v);
     return () => onViewer(null);
   }, [viewer, onViewer]);
-  return null;
-}
-
-function InstallImageryLayers({
-  baseProvider,
-  overlayProvider,
-}: {
-  baseProvider: UrlTemplateImageryProvider;
-  overlayProvider: UrlTemplateImageryProvider;
-}) {
-  const { viewer } = useCesium();
-  useEffect(() => {
-    if (!viewer?.imageryLayers) return;
-    viewer.imageryLayers.removeAll();
-    viewer.imageryLayers.addImageryProvider(baseProvider);
-    const overlayLayer = viewer.imageryLayers.addImageryProvider(overlayProvider);
-    overlayLayer.alpha = 0.42;
-    viewer.scene?.requestRender();
-  }, [viewer, baseProvider, overlayProvider]);
   return null;
 }
 
@@ -377,6 +358,11 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
           full
           creditContainer={creditHostElement}
           terrainProvider={ellipsoidTerrain}
+          // Skip Cesium's default Ion/Bing base imagery (we have no Ion token and
+          // supply our own Esri tiles in InstallImageryLayers). Without this,
+          // Cesium 1.140 tries to load Ion world imagery, fails on the empty
+          // token, and the globe renders blank/broken.
+          baseLayer={false}
           baseLayerPicker={false}
           geocoder={false}
           homeButton={false}
@@ -395,7 +381,12 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
           />
           <ViewerCaptureBridge onViewer={setViewerFromBridge} />
           <GlobeFxStack />
-          <InstallImageryLayers baseProvider={esriImagery} overlayProvider={esriLabels} />
+          {/* Declarative imagery (robust across Cesium versions): Esri satellite
+              base + a faint boundaries/places reference overlay. Replaces the
+              imperative addImageryProvider effect, which depended on useCesium()
+              timing and silently left the globe blank. */}
+          <ImageryLayer imageryProvider={esriImagery} />
+          <ImageryLayer imageryProvider={esriLabels} alpha={0.42} />
           <AtlasGlobeInteractionBridge entities={entities} />
 
           {entities.map((row) => {

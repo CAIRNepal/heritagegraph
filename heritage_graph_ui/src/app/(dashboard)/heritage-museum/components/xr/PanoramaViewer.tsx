@@ -4,11 +4,21 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import * as THREE from 'three';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
 import { buildBeats } from '../../utils/storyBeats';
+import { ImageAttribution } from '../ImageAttribution';
 
 interface PanoramaViewerProps {
   imageUrl: string;
   node: GraphNode;
+  reducedMotion?: boolean;
   onClose: () => void;
+}
+
+// An equirectangular (true 360°) panorama has a 2:1 width:height ratio. Anything
+// else is a standard photograph; wrapping it on a sphere is an immersive *effect*,
+// not a real 360° capture, and we must say so rather than imply VR-grade fidelity.
+function isEquirectangular(width: number, height: number): boolean {
+  if (!width || !height) return false;
+  return Math.abs(width / height - 2) <= 0.15;
 }
 
 // ── Narration ─────────────────────────────────────────────────────────────────
@@ -201,14 +211,25 @@ function PanoramaFacts({ node }: { node: GraphNode }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps) {
+export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose }: PanoramaViewerProps) {
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   const mountRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
   const [vrSupported, setVrSupported] = useState(false);
   const [arSupported, setArSupported] = useState(false);
   const [xrActive, setXrActive] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // null = unknown until the texture loads; then true/false from its dimensions.
+  const [equirect, setEquirect] = useState<boolean | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+
+  // Close on Escape and move focus to the close button when the dialog opens.
+  useEffect(() => {
+    closeBtnRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -228,12 +249,17 @@ export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps)
 
     const geo = new THREE.SphereGeometry(500, 60, 40);
     geo.scale(-1, 1, 1);
-    const tex = new THREE.TextureLoader().load(imageUrl, () => setLoaded(true));
+    const tex = new THREE.TextureLoader().load(imageUrl, (loadedTex) => {
+      setLoaded(true);
+      const img = loadedTex.image as { width?: number; height?: number } | undefined;
+      if (img?.width && img?.height) setEquirect(isEquirectangular(img.width, img.height));
+    });
     tex.colorSpace = THREE.SRGBColorSpace;
     const sphere = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex }));
     scene.add(sphere);
 
-    let lon = 0, lat = 0, isDragging = false, prevX = 0, prevY = 0, autoRotate = true;
+    // Auto-rotate only when motion is allowed; never fight a reduced-motion request.
+    let lon = 0, lat = 0, isDragging = false, prevX = 0, prevY = 0, autoRotate = !reducedMotion;
     const AUTO_SPEED = 0.05;
     const toRad = (d: number) => (d * Math.PI) / 180;
 
@@ -253,6 +279,23 @@ export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps)
     const onTouchEnd = () => { isDragging = false; };
     const onWheel = (e: WheelEvent) => { camera.fov = Math.max(20, Math.min(100, camera.fov + e.deltaY * 0.03)); camera.updateProjectionMatrix(); };
     const onResize = () => { const w = container.clientWidth, h = container.clientHeight; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); };
+    // Keyboard look — arrow keys pan, +/- zoom. Lets the view be explored without
+    // a pointer drag (WCAG 2.1 Keyboard). Ignored while typing in a field.
+    const onKeyLook = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      const STEP = 6;
+      switch (e.key) {
+        case 'ArrowLeft':  lon -= STEP; autoRotate = false; break;
+        case 'ArrowRight': lon += STEP; autoRotate = false; break;
+        case 'ArrowUp':    lat += STEP; autoRotate = false; break;
+        case 'ArrowDown':  lat -= STEP; autoRotate = false; break;
+        case '+': case '=': camera.fov = Math.max(20, camera.fov - 4); camera.updateProjectionMatrix(); break;
+        case '-': case '_': camera.fov = Math.min(100, camera.fov + 4); camera.updateProjectionMatrix(); break;
+        default: return;
+      }
+      e.preventDefault();
+    };
 
     canvas.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mousemove', onMouseMove);
@@ -262,6 +305,7 @@ export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps)
     canvas.addEventListener('touchend', onTouchEnd);
     canvas.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('resize', onResize);
+    window.addEventListener('keydown', onKeyLook);
 
     renderer.setAnimationLoop(() => { if (autoRotate && !isDragging) lon += AUTO_SPEED; updateCamera(); renderer.render(scene, camera); });
 
@@ -280,11 +324,12 @@ export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps)
       canvas.removeEventListener('touchend', onTouchEnd);
       canvas.removeEventListener('wheel', onWheel);
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKeyLook);
       renderer.dispose();
       if (container.contains(canvas)) container.removeChild(canvas);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imageUrl]);
+  }, [imageUrl, reducedMotion]);
 
   const enterVR = useCallback(async () => {
     const r = rendererRef.current; if (!r || !navigator.xr) return;
@@ -308,8 +353,20 @@ export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps)
     const s = rendererRef.current?.xr.getSession(); if (s) await s.end();
   }, []);
 
+  // Honest description of what is actually on screen, driven by image dimensions.
+  const subtitle = !loaded
+    ? 'Loading image…'
+    : equirect === false
+      ? 'Standard photograph in an immersive viewer — not a true 360° capture'
+      : 'Drag or use arrow keys to look around · scroll or +/- to zoom';
+
   return (
-    <div className="fixed inset-0 z-50 bg-black">
+    <div
+      className="fixed inset-0 z-50 bg-black"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Immersive view of ${node.label}`}
+    >
       <style>{`
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
@@ -320,14 +377,15 @@ export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps)
       {/* Top toolbar */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-5 py-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
         <div className="flex items-center gap-3 pointer-events-auto">
-          <button onClick={onClose} className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all">✕</button>
+          <button ref={closeBtnRef} onClick={onClose} aria-label="Close immersive view" className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all">✕</button>
           <div>
             <p className="text-white font-semibold text-sm flex items-center gap-2">
               <span style={{ color: cfg.glowColor }}>{cfg.emoji}</span>
               {node.label}
+              {equirect === true && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-900/50 border border-emerald-400/40 text-emerald-300">360°</span>}
               {node.unescoStatus && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-900/50 border border-blue-400/40 text-blue-300">UNESCO</span>}
             </p>
-            <p className="text-gray-400 text-xs mt-0.5">{loaded ? 'Drag to look around · Scroll to zoom' : 'Loading panorama…'}</p>
+            <p className="text-gray-400 text-xs mt-0.5">{subtitle}</p>
           </div>
         </div>
 
@@ -368,10 +426,19 @@ export function PanoramaViewer({ imageUrl, node, onClose }: PanoramaViewerProps)
       <PanoramaFacts node={node} />
       <PanoramaStory node={node} />
 
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-        <p className="text-xs text-white/20 bg-black/30 backdrop-blur-sm rounded-full px-4 py-1">
-          Note: full 360° view requires equirectangular photos
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none max-w-[90vw]">
+        <p className="text-xs text-white/40 bg-black/40 backdrop-blur-sm rounded-full px-4 py-1 text-center">
+          {equirect === true
+            ? 'True 360° equirectangular panorama'
+            : equirect === false
+              ? 'This is a standard photograph projected onto a sphere for immersive viewing — it is not a 360° capture'
+              : 'Preparing immersive view…'}
         </p>
+      </div>
+
+      {/* Image attribution / license (pointer-events-auto so links are clickable) */}
+      <div className="absolute bottom-2 right-3 z-10 max-w-[40vw] text-right pointer-events-auto">
+        <ImageAttribution credit={node.imageCredits?.[imageUrl]} />
       </div>
     </div>
   );

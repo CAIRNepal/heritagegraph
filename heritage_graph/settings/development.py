@@ -41,7 +41,7 @@ REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
     "apps.heritage_data.authentication.GoogleTokenAuthentication",
     "apps.heritage_data.authentication.GitHubTokenAuthentication",
     "apps.heritage_data.authentication.DevSessionAuthentication",
-    "rest_framework_simplejwt.authentication.JWTAuthentication",
+    "apps.heritage_data.authentication.SafeJWTAuthentication",
 )
 
 

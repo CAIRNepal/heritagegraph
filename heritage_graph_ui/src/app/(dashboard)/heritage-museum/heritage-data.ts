@@ -16,6 +16,27 @@ export interface HeritageRelation {
   targetLabel?: string;
 }
 
+/**
+ * Per-image provenance + licensing, captured at corpus-freeze time by
+ * `scripts/freeze-heritage-corpus.mjs` from the Wikimedia API. Surfacing this
+ * is both a licensing requirement (CC-BY-SA attribution) and a FAIR/provenance
+ * expectation for a publishable dataset. Keyed by image URL on the node.
+ */
+export interface ImageCredit {
+  /** Short license name, e.g. "CC BY-SA 4.0" or "Public domain". */
+  license?: string;
+  /** Canonical license deed URL. */
+  licenseUrl?: string;
+  /** Author/creator attribution string (may contain markup-free text). */
+  artist?: string;
+  /** File description page on the source wiki (the citable landing page). */
+  descriptionUrl?: string;
+  /** Originating repository, e.g. "Wikimedia Commons". */
+  source?: string;
+  /** ISO date the metadata was retrieved (reproducibility anchor). */
+  retrieved?: string;
+}
+
 export interface HeritageNode {
   id: string;
   label: string;
@@ -26,6 +47,8 @@ export interface HeritageNode {
   storyText: string;
   imageUrl?: string;
   images?: string[];
+  /** Provenance/licensing for each image, keyed by image URL. */
+  imageCredits?: Record<string, ImageCredit>;
   significance?: string;
   tags?: string[];
   religion?: string;
@@ -127,6 +150,7 @@ function parseJsonLd(raw: any): HeritageNode[] {
       images: Array.isArray(item['images'])
         ? (item['images'] as string[]).map(proxyImg).filter(Boolean) as string[]
         : undefined,
+      imageCredits:  item['imageCredits'],
       significance:  item['significance'],
       tags:          item['tags'],
       religion:      item['religion'],

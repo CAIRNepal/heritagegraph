@@ -26,6 +26,8 @@ from apps.users.auth_audit import record_auth_event
 from apps.users.models import AuthEvent
 from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from .dev_auth_utils import dev_auth_enabled
 from .models import UserProfile
@@ -362,3 +364,32 @@ class GitHubTokenAuthentication(authentication.BaseAuthentication):
         profile.save()
 
         return (user, None)
+
+
+# ====================================================================
+# Safe SimpleJWT — decline (return None) instead of raising on tokens
+# that are not valid SimpleJWT access tokens.
+# ====================================================================
+
+
+class SafeJWTAuthentication(JWTAuthentication):
+    """SimpleJWT authentication that fails *soft*.
+
+    The default ``JWTAuthentication`` **raises** ``InvalidToken`` for any Bearer
+    token it cannot parse as a SimpleJWT access token. Because HeritageGraph also
+    accepts **Google ID tokens** as Bearer credentials, an expired or non-SimpleJWT
+    token would otherwise reach this backend and 403 the request with the confusing
+    ``"Given token not valid for any token type"`` — even on public endpoints, since
+    DRF runs authentication before permission checks.
+
+    Returning ``None`` instead lets the request fall through to anonymous access:
+    public endpoints still serve, and protected endpoints respond with the clear
+    ``"Authentication credentials were not provided."`` (re-authenticate / refresh).
+    Genuine SimpleJWT access tokens still authenticate normally.
+    """
+
+    def authenticate(self, request):
+        try:
+            return super().authenticate(request)
+        except (InvalidToken, TokenError):
+            return None

@@ -186,6 +186,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://heritagegraph.olinabin.com.np",
 ]
 
+# The frontend fetches several endpoints (e.g. the ontology schema registry) with
+# `credentials: "include"`. Browsers block such responses unless the server sends
+# `Access-Control-Allow-Credentials: true`; without it the fetch throws and the UI
+# falls back to the stale ontology snapshot. (Production also sets this.)
+CORS_ALLOW_CREDENTIALS = True
+
 # Custom headers the frontend sends that aren't in the django-cors-headers default
 # (which only allows accept, authorization, content-type, user-agent, x-csrftoken,
 # x-requested-with). Idempotency-Key is required by /projects/ POST and several

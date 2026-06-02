@@ -32,7 +32,11 @@ if (isGoogleOAuthConfigured()) {
       authorization: {
         params: {
           access_type: 'offline',
-          prompt: 'select_account',
+          // `consent` is required for Google to return a refresh_token on every
+          // sign-in; without it (e.g. plain `select_account`) the token cannot be
+          // refreshed and the session silently breaks after ~1h, 403-ing the
+          // dashboard and contribute pages. `select_account` keeps the picker.
+          prompt: 'consent select_account',
           scope: 'openid email profile',
         },
       },

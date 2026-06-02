@@ -26,6 +26,19 @@ function apiMediaRemotePattern(): {
 
 const apiMediaPattern = apiMediaRemotePattern();
 
+// Esri ArcGIS tile hosts back the Atlas globe (Cesium). Cesium fetches tiles via
+// XHR/createImageBitmap, so the host must be allowed in BOTH connect-src (the
+// fetch) and img-src (the <img> fallback) — otherwise the CSP silently blocks
+// every tile and the globe renders as a bare blue sphere with no Earth imagery.
+//
+// Note: ArcGIS endpoints may redirect between subdomains (e.g. server → services),
+// so we allow the common hostnames plus the wildcard.
+const MAP_TILE_HOSTS = [
+  'https://server.arcgisonline.com',
+  'https://services.arcgisonline.com',
+  'https://*.arcgisonline.com',
+];
+
 function buildContentSecurityPolicy(): string {
   const connectSrc = ["'self'", 'https://accounts.google.com', 'https://oauth2.googleapis.com'];
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
@@ -36,13 +49,22 @@ function buildContentSecurityPolicy(): string {
       /* ignore invalid URL at build time */
     }
   }
+  connectSrc.push(...MAP_TILE_HOSTS);
 
   return [
     "default-src 'self'",
     `connect-src ${connectSrc.join(' ')}`,
     "form-action 'self' https://accounts.google.com",
     "frame-src https://accounts.google.com",
-    "img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://i.imgur.com",
+    // Cesium uses web workers (often from blob: URLs). Without this, some
+    // browsers will block worker startup under default-src 'self', and the globe
+    // can render without imagery/terrain updates.
+    "worker-src 'self' blob:",
+    // Wikimedia hosts power the heritage-museum demo corpus (Special:FilePath on
+    // *.wikipedia.org redirects to upload.wikimedia.org); they feed both the <img>
+    // heroes/thumbnails and the WebGL panorama texture in the XR view.
+    // arcgisonline serves the Atlas globe satellite/reference tiles.
+    `img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://i.imgur.com https://*.wikipedia.org https://*.wikimedia.org ${MAP_TILE_HOSTS.join(' ')}`,
     "style-src 'self' 'unsafe-inline'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "font-src 'self' data:",

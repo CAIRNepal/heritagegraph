@@ -16,6 +16,8 @@
     "check:ontology": "python3 ../tools/gen_heritage_viz_config.py --check && python3 ../tools/linkml_generate_registry.py --check",
     "verify:form-graph": "tsx scripts/verify-form-graph.ts",
     "verify:contribute-routes": "python3 ../tools/verify_contribute_intent_routes.py",
+    "freeze:corpus": "node scripts/freeze-heritage-corpus.mjs",
+    "check:corpus": "node scripts/freeze-heritage-corpus.mjs --check",
     "start": "node .next/standalone/server.js",
     "lint": "next lint"
   },

@@ -4,6 +4,8 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
 import { buildBeats } from '../../utils/storyBeats';
+import { ImageAttribution } from '../ImageAttribution';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
 
 const PanoramaViewer = dynamic(() => import('./PanoramaViewer').then((m) => m.PanoramaViewer), { ssr: false });
 
@@ -25,9 +27,11 @@ const BEAT_MS = 10_000;
 function StorytellingOverlay({
   node,
   cfg,
+  reducedMotion,
 }: {
   node: GraphNode;
   cfg: (typeof NODE_TYPE_CONFIG)[keyof typeof NODE_TYPE_CONFIG];
+  reducedMotion: boolean;
 }) {
   const beats = useMemo(() => buildBeats(node), [node]);
   const [idx, setIdx] = useState(0);
@@ -39,13 +43,18 @@ function StorytellingOverlay({
   const pausedProgressRef = useRef(0);
 
   useEffect(() => {
-    setIdx(0); setProgress(0); setVisible(false);
+    setIdx(0); setProgress(0);
+    // When reduced motion is requested, render immediately (no fade-in delay).
+    setVisible(reducedMotion);
+    if (reducedMotion) return;
     const t = setTimeout(() => setVisible(true), 800);
     return () => clearTimeout(t);
-  }, [node.id]);
+  }, [node.id, reducedMotion]);
 
   useEffect(() => {
-    if (paused) { pausedProgressRef.current = progress; return; }
+    // Respect prefers-reduced-motion: never auto-advance; the reader steps
+    // through beats manually via Prev/Next or the dot navigation.
+    if (reducedMotion || paused) { pausedProgressRef.current = progress; return; }
     const startProg = pausedProgressRef.current || progress;
     startRef.current = performance.now() - (startProg / 100) * BEAT_MS;
     const tick = (now: number) => {
@@ -61,7 +70,7 @@ function StorytellingOverlay({
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paused, idx, beats.length]);
+  }, [paused, idx, beats.length, reducedMotion]);
 
   const go = useCallback((next: number) => {
     setIdx(next); setProgress(0);
@@ -119,7 +128,11 @@ function StorytellingOverlay({
             <span className="text-xs text-gray-600 tabular-nums">{idx + 1} / {beats.length}</span>
           </div>
 
-          <div key={`${node.id}-${idx}`} style={{ animation: 'fadeInUp 0.4s ease both' }}>
+          <div
+            key={`${node.id}-${idx}`}
+            style={{ animation: reducedMotion ? 'none' : 'fadeInUp 0.4s ease both' }}
+            aria-live="polite"
+          >
             {isBullet ? (
               <ul className="space-y-2">
                 {beat.lines.map((line, i) => {
@@ -174,7 +187,9 @@ function StorytellingOverlay({
       </div>
 
       <p className="text-xs text-gray-700 mt-3 text-center">
-        Hover to pause · Click dots to jump · auto-advances every 10s
+        {reducedMotion
+          ? 'Use ← Prev / Next → or the dots to step through the story'
+          : 'Hover to pause · Click dots to jump · auto-advances every 10s'}
       </p>
     </div>
   );
@@ -273,8 +288,10 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
   const [heroIdx, setHeroIdx] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [showPanorama, setShowPanorama] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
   const { playing, play, stop } = useNarration(node?.storyText ?? '');
 
   const images: string[] = node
@@ -285,13 +302,14 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
   useEffect(() => { setImgLoaded(false); }, [heroIdx]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (reducedMotion) return; // no parallax drift when reduced motion is requested
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
     setParallax({
       x: ((e.clientX - rect.left) / rect.width - 0.5) * 18,
       y: ((e.clientY - rect.top) / rect.height - 0.5) * 12,
     });
-  }, []);
+  }, [reducedMotion]);
   const handleMouseLeave = useCallback(() => setParallax({ x: 0, y: 0 }), []);
 
   // ── Gallery (no node selected) ──────────────────────────────────────────────
@@ -342,7 +360,7 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
               className="w-full h-full object-cover"
               style={{
                 opacity: imgLoaded ? 1 : 0, transition: 'opacity 1.2s ease',
-                animation: imgLoaded ? 'kenBurns 30s ease-in-out infinite alternate' : 'none',
+                animation: imgLoaded && !reducedMotion ? 'kenBurns 30s ease-in-out infinite alternate' : 'none',
               }}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgLoaded(false)}
@@ -401,24 +419,44 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={playing ? stop : play}
+                aria-pressed={playing}
                 className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 active:scale-95"
                 style={{ background: playing ? '#991b1b' : `${cfg.color}dd`, color: '#fff', boxShadow: `0 0 20px ${cfg.color}55` }}
               >
                 {playing ? '⏹ Stop' : '▶ Narrate'}
               </button>
+              {node.storyText && (
+                <button
+                  onClick={() => setShowTranscript((v) => !v)}
+                  aria-expanded={showTranscript}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-white/20 bg-white/5 text-gray-200 hover:bg-white/10 transition-all"
+                >
+                  {showTranscript ? '▾ Hide transcript' : '☰ Transcript'}
+                </button>
+              )}
               {heroImage && (
                 <button
                   onClick={() => setShowPanorama(true)}
                   className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-purple-400/60 bg-purple-900/40 text-purple-200 hover:bg-purple-700/60 transition-all hover:scale-105"
                 >
-                  ◈ Panorama / VR
+                  ◈ Immersive View
                 </button>
               )}
             </div>
+
+            {/* Narration transcript — text alternative for the spoken audio (WCAG 1.2) */}
+            {showTranscript && node.storyText && (
+              <div
+                className="mt-1 max-h-44 overflow-y-auto rounded-xl border border-white/10 bg-black/50 backdrop-blur-md p-4 text-sm leading-7 text-gray-200"
+                style={{ scrollbarWidth: 'thin' }}
+              >
+                {node.storyText}
+              </div>
+            )}
           </div>
 
-          {/* Right: auto-advancing storytelling overlay */}
-          <StorytellingOverlay node={node} cfg={cfg} />
+          {/* Right: storytelling overlay (auto-advances unless reduced motion) */}
+          <StorytellingOverlay node={node} cfg={cfg} reducedMotion={reducedMotion} />
         </div>
 
         {/* Image filmstrip */}
@@ -446,9 +484,16 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
         )}
       </div>
 
+      {/* Hero image attribution / license */}
+      {heroImage && node.imageCredits?.[heroImage] && (
+        <div className="absolute bottom-2 right-3 z-10 max-w-[45%] text-right">
+          <ImageAttribution credit={node.imageCredits[heroImage]} />
+        </div>
+      )}
+
       {/* Panorama modal */}
       {showPanorama && heroImage && (
-        <PanoramaViewer imageUrl={heroImage} node={node} onClose={() => setShowPanorama(false)} />
+        <PanoramaViewer imageUrl={heroImage} node={node} reducedMotion={reducedMotion} onClose={() => setShowPanorama(false)} />
       )}
     </div>
   );

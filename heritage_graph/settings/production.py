@@ -85,7 +85,7 @@ CACHES = build_caches_config()
 # --------------------------------------------------------------------
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (  # noqa: F405
     "apps.heritage_data.authentication.GoogleTokenAuthentication",
-    "rest_framework_simplejwt.authentication.JWTAuthentication",
+    "apps.heritage_data.authentication.SafeJWTAuthentication",
 )
 
 # Spectacular (/docs, /redoc/, /schema/) must stay public; do not inherit Google/JWT auth
