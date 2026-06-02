@@ -252,6 +252,15 @@ export const authOptions: NextAuthOptions = {
           if (response.status === 404) {
             return '/auth/login?error=BACKEND_HANDSHAKE_NOT_FOUND';
           }
+          if (
+            response.status === 400 &&
+            /disallowedhost|invalid http_host/i.test(bodyText)
+          ) {
+            return '/auth/login?error=BACKEND_DISALLOWED_HOST';
+          }
+          if (response.status === 400) {
+            return '/auth/login?error=BACKEND_DISALLOWED_HOST';
+          }
           return '/auth/login?error=BACKEND_SYNC';
         }
 

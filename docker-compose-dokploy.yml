@@ -124,10 +124,11 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       DB_HOST: postgres
       DB_PORT: 5432
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is required for Google sign-in}
       HERITAGEGRAPH_DEV_AUTH: "false"
       REDIS_URL: redis://redis:6379/2
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://heritagegraph.xyz,https://heritagegraph.xyz}
+      # Must include every public app origin (https). Missing dev/prod app URL breaks browser API calls after sign-in.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://heritagegraph.xyz,https://www.heritagegraph.xyz,https://dev.heritagegraph.xyz,http://heritagegraph.xyz}
       MIGRATION_AUTO_REPAIR: "1"
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/1
@@ -192,12 +193,13 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api.heritagegraph.xyz}
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://heritagegraph.xyz}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is required}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?GOOGLE_CLIENT_SECRET is required}
       NEXT_PUBLIC_DEV_AUTH: "false"
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
-      INTERNAL_BACKEND_URL: http://backend:8000
+      # Server-side OAuth handshake only — do not point at the public API URL unless ALLOWED_HOSTS matches.
+      INTERNAL_BACKEND_URL: ${INTERNAL_BACKEND_URL:-http://backend:8000}
     networks:
       - internal
     expose:

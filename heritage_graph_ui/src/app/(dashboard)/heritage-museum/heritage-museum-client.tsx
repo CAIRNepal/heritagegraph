@@ -488,12 +488,12 @@ export function HeritageMindMapClient() {
             />
           </div>
 
-          {/* Grid: graph | story (scroll) on row 1; timeline spans full width on row 2 */}
+          {/* Grid: graph | story on row 1; timeline pinned to workspace footer (row 2) */}
           <div
             className={cn(
               'grid min-h-0 flex-1',
               viewMode === '2d'
-                ? 'grid-rows-[minmax(0,1fr)_minmax(0,1fr)] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_24rem]'
+                ? 'grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(11rem,28vh)] lg:grid-cols-[minmax(0,1fr)_24rem]'
                 : 'grid-cols-1 grid-rows-[minmax(0,1fr)]',
             )}
           >
@@ -619,9 +619,9 @@ export function HeritageMindMapClient() {
               />
             </div>
 
-            {/* Timeline: lower half of workspace (2D only) */}
+            {/* Timeline: fixed footer band — always visible above site footer (2D only) */}
             {viewMode === '2d' && !loading && !error && (
-              <div className="flex min-h-0 flex-col border-t border-border lg:col-span-2">
+              <div className="flex min-h-[11rem] max-h-[28vh] flex-shrink-0 flex-col overflow-hidden border-t border-border bg-background lg:col-span-2">
                 <TimelineStrip
                   nodes={filteredGraph?.nodes ?? []}
                   selectedId={selectedNode?.id ?? null}

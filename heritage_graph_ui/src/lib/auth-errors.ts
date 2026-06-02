@@ -9,11 +9,14 @@ export type HeritageAuthErrorCode =
   | 'BACKEND_UNAVAILABLE'
   | 'BACKEND_UNREACHABLE'
   | 'BACKEND_HANDSHAKE_NOT_FOUND'
+  | 'BACKEND_DISALLOWED_HOST'
   | 'BACKEND_SYNC';
 
 const HERITAGE_AUTH_MESSAGES: Record<HeritageAuthErrorCode, string> = {
   BACKEND_REJECTED:
-    'The server could not verify your Google token. Use the same Google OAuth client on the Next.js app and Django, ensure GOOGLE_CLIENT_ID is set on the backend, and try again.',
+    'The server could not verify your Google token. Use the same Google OAuth client on the Next.js app and Django, ensure GOOGLE_CLIENT_ID is set on the backend service (not only the frontend), and try again.',
+  BACKEND_DISALLOWED_HOST:
+    'The API rejected the sign-in handshake (400). On Dokploy, set ALLOWED_HOSTS to your public API hostname plus `backend`, and keep INTERNAL_BACKEND_URL=http://backend:8000 on the frontend container.',
   BACKEND_UNAVAILABLE:
     'The HeritageGraph API returned an error while signing you in. Please try again in a few minutes.',
   BACKEND_UNREACHABLE:
@@ -21,7 +24,7 @@ const HERITAGE_AUTH_MESSAGES: Record<HeritageAuthErrorCode, string> = {
   BACKEND_HANDSHAKE_NOT_FOUND:
     'The sign-in handshake URL was not found on the API (404). Check deploy routing, that Django serves GET /data/api/testme/, and that INTERNAL_BACKEND_URL points at the API root without a wrong path prefix.',
   BACKEND_SYNC:
-    'Sign-in with the provider worked, but the server rejected the follow-up request. Check API logs and OAuth configuration.',
+    'Sign-in with Google succeeded, but the HeritageGraph API returned an unexpected error during the token handshake. Check API logs for GET /data/api/testme/ (status and body), then verify GOOGLE_CLIENT_ID on the backend, ALLOWED_HOSTS, and INTERNAL_BACKEND_URL.',
 };
 
 /** NextAuth `error` query values documented at https://next-auth.js.org/configuration/pages */
