@@ -27,6 +27,7 @@ interface MuseumToolbarProps {
   nodeCount: number;
   linkCount: number;
   showStats: boolean;
+  provenanceText?: string | null;
 }
 
 export function MuseumToolbar({
@@ -38,6 +39,7 @@ export function MuseumToolbar({
   nodeCount,
   linkCount,
   showStats,
+  provenanceText,
 }: MuseumToolbarProps) {
   const t = useTranslations('heritageMuseum');
 
@@ -53,6 +55,12 @@ export function MuseumToolbar({
       <p className="hidden sm:block text-xs text-muted-foreground max-w-xs leading-snug mr-1">
         {t('subtitle')}
       </p>
+
+      {provenanceText ? (
+        <p className="hidden lg:block text-[11px] text-muted-foreground/90 max-w-[32rem] truncate">
+          {provenanceText}
+        </p>
+      ) : null}
 
       <div className="flex-1 min-w-[1rem]" />
 

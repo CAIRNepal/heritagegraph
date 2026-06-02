@@ -8,8 +8,9 @@ import { IconX } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { getPublicApiUrl, isPublicApiUrlConfigured } from '@/lib/api-base';
 import {
-  fetchHeritageDemoData,
+  fetchHeritageDemoCorpus,
   NODE_TYPE_CONFIG,
   HG_CATEGORY_CONFIG,
   type NodeType,
@@ -31,7 +32,7 @@ import { TimelineStrip } from './components/TimelineStrip';
 import { GraphLegend } from './components/GraphLegend';
 import { MuseumToolbar, type MuseumDataSource, type MuseumViewMode } from './components/museum-toolbar';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 // ── View / data mode types ─────────────────────────────────────────────────────
 type ViewMode = MuseumViewMode;
@@ -210,6 +211,7 @@ export function HeritageMindMapClient() {
 
   // ── Demo data ──────────────────────────────────────────────────────────────
   const [demoGraph,   setDemoGraph]   = useState<GraphData | null>(null);
+  const [demoProv,    setDemoProv]    = useState<{ retrieved?: string; generatedBy?: string; imageSource?: string } | null>(null);
   const [demoLoading, setDemoLoading] = useState(true);
   const [demoError,   setDemoError]   = useState<string | null>(null);
 
@@ -229,13 +231,26 @@ export function HeritageMindMapClient() {
 
   // ── Load demo data once ────────────────────────────────────────────────────
   useEffect(() => {
-    fetchHeritageDemoData()
-      .then((d) => { setDemoGraph(d); setDemoLoading(false); })
+    fetchHeritageDemoCorpus()
+      .then(({ graph, provenance }) => {
+        setDemoGraph(graph);
+        setDemoProv(provenance ? {
+          retrieved: provenance.retrieved,
+          generatedBy: provenance.generatedBy,
+          imageSource: provenance.imageSource,
+        } : null);
+        setDemoLoading(false);
+      })
       .catch(() => { setDemoError('demo'); setDemoLoading(false); });
   }, []);
 
   // ── Load live data on demand ───────────────────────────────────────────────
   const loadLiveData = useCallback(async () => {
+    if (!API_BASE || !isPublicApiUrlConfigured()) {
+      setLiveError('unconfigured');
+      setLiveLoading(false);
+      return;
+    }
     setLiveLoading(true);
     setLiveError(null);
     try {
@@ -259,6 +274,10 @@ export function HeritageMindMapClient() {
 
   const toggleDataSource = useCallback(() => {
     if (dataSource === 'demo') {
+      if (!API_BASE || !isPublicApiUrlConfigured()) {
+        setLiveError('unconfigured');
+        return;
+      }
       setDataSource('live');
       if (!liveGraph) loadLiveData();
     } else {
@@ -380,7 +399,20 @@ export function HeritageMindMapClient() {
   }, [filteredGraph]);
 
   const errorMessage =
-    error === 'live' ? t('errors.liveLoad') : error === 'demo' ? t('errors.demoLoad') : null;
+    error === 'unconfigured'
+      ? 'Live data source is not configured (set NEXT_PUBLIC_API_URL).'
+      : error === 'live'
+        ? t('errors.liveLoad')
+        : error === 'demo'
+          ? t('errors.demoLoad')
+          : null;
+
+  const provenanceText =
+    dataSource === 'demo' && demoProv?.retrieved
+      ? `Demo corpus frozen ${demoProv.retrieved}${demoProv.imageSource ? ` · Images: ${demoProv.imageSource}` : ''}`
+      : dataSource === 'live'
+        ? (API_BASE ? `Live API: ${API_BASE}` : null)
+        : null;
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground overflow-hidden">
@@ -394,6 +426,7 @@ export function HeritageMindMapClient() {
         nodeCount={nodeCount}
         linkCount={linkCount}
         showStats={!loading}
+        provenanceText={provenanceText}
       />
 
       {liveError && (

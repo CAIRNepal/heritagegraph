@@ -91,6 +91,13 @@ export interface GraphData {
   links: GraphLink[];
 }
 
+export interface CorpusProvenance {
+  generatedBy?: string;
+  retrieved?: string;
+  imageSource?: string;
+  note?: string;
+}
+
 // ── JSON-LD parser ─────────────────────────────────────────────────────────────
 
 // Derived from RELATION_LABELS so it stays in sync automatically.
@@ -198,6 +205,7 @@ function buildGraphData(nodes: HeritageNode[]): GraphData {
 // ── Public fetch (cached) ─────────────────────────────────────────────────────
 
 let _cache: GraphData | null = null;
+let _provenanceCache: CorpusProvenance | null = null;
 
 export async function fetchHeritageDemoData(): Promise<GraphData> {
   if (_cache) return _cache;
@@ -205,5 +213,14 @@ export async function fetchHeritageDemoData(): Promise<GraphData> {
   const raw = await res.json();
   const nodes = parseJsonLd(raw);
   _cache = buildGraphData(nodes);
+  _provenanceCache = (raw?._provenance ?? null) as CorpusProvenance | null;
   return _cache;
+}
+
+export async function fetchHeritageDemoCorpus(): Promise<{
+  graph: GraphData;
+  provenance: CorpusProvenance | null;
+}> {
+  const graph = await fetchHeritageDemoData();
+  return { graph, provenance: _provenanceCache };
 }

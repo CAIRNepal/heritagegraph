@@ -50,6 +50,9 @@ function buildContentSecurityPolicy(): string {
     }
   }
   connectSrc.push(...MAP_TILE_HOSTS);
+  // Wikimedia image credits + the XR panorama loader may resolve Special:FilePath
+  // URLs via the MediaWiki API to obtain a direct upload.wikimedia.org URL.
+  connectSrc.push('https://*.wikipedia.org', 'https://*.wikimedia.org');
 
   return [
     "default-src 'self'",

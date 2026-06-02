@@ -21,6 +21,42 @@ function isEquirectangular(width: number, height: number): boolean {
   return Math.abs(width / height - 2) <= 0.15;
 }
 
+function isWikimediaFilePath(url: string): boolean {
+  return /\/Special:FilePath\//.test(url);
+}
+
+function extractWikimediaFileTitle(url: string): string | null {
+  const m = /\/Special:FilePath\/([^?#]+)/.exec(url);
+  if (!m) return null;
+  return `File:${decodeURIComponent(m[1])}`;
+}
+
+async function resolveWikimediaDirectUrl(originalUrl: string): Promise<string | null> {
+  const title = extractWikimediaFileTitle(originalUrl);
+  if (!title) return null;
+  const api = new URL('https://en.wikipedia.org/w/api.php');
+  api.searchParams.set('action', 'query');
+  api.searchParams.set('format', 'json');
+  api.searchParams.set('prop', 'imageinfo');
+  api.searchParams.set('iiprop', 'url');
+  api.searchParams.set('redirects', '1');
+  // Required for browser CORS on MediaWiki.
+  api.searchParams.set('origin', '*');
+  api.searchParams.set('titles', title);
+
+  const res = await fetch(api.toString(), { method: 'GET' });
+  if (!res.ok) return null;
+  const json = (await res.json()) as {
+    query?: { pages?: Record<string, { imageinfo?: Array<{ url?: string }> }> };
+  };
+  const pages = json.query?.pages ?? {};
+  for (const p of Object.values(pages)) {
+    const url = p.imageinfo?.[0]?.url;
+    if (typeof url === 'string' && url.startsWith('https://')) return url;
+  }
+  return null;
+}
+
 // ── Narration ─────────────────────────────────────────────────────────────────
 function useNarration(text: string) {
   const [playing, setPlaying] = useState(false);
@@ -215,10 +251,12 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   const mountRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
   const [vrSupported, setVrSupported] = useState(false);
   const [arSupported, setArSupported] = useState(false);
   const [xrActive, setXrActive] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   // null = unknown until the texture loads; then true/false from its dimensions.
   const [equirect, setEquirect] = useState<boolean | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -233,6 +271,10 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
 
   useEffect(() => {
     if (!mountRef.current) return;
+    setLoaded(false);
+    setLoadError(null);
+    setEquirect(null);
+    const urlToLoad = resolvedUrl ?? imageUrl;
     const container = mountRef.current;
     const W = container.clientWidth, H = container.clientHeight;
 
@@ -249,11 +291,30 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
 
     const geo = new THREE.SphereGeometry(500, 60, 40);
     geo.scale(-1, 1, 1);
-    const tex = new THREE.TextureLoader().load(imageUrl, (loadedTex) => {
-      setLoaded(true);
-      const img = loadedTex.image as { width?: number; height?: number } | undefined;
-      if (img?.width && img?.height) setEquirect(isEquirectangular(img.width, img.height));
-    });
+    const loader = new THREE.TextureLoader();
+    // Required for cross-origin images used as WebGL textures (e.g. Wikimedia).
+    loader.setCrossOrigin('anonymous');
+    const tex = loader.load(
+      urlToLoad,
+      (loadedTex) => {
+        setLoaded(true);
+        const img = loadedTex.image as { width?: number; height?: number } | undefined;
+        if (img?.width && img?.height) setEquirect(isEquirectangular(img.width, img.height));
+      },
+      undefined,
+      async () => {
+        // Retry once for Wikimedia Special:FilePath URLs by resolving a direct URL.
+        if (!resolvedUrl && isWikimediaFilePath(urlToLoad)) {
+          const direct = await resolveWikimediaDirectUrl(urlToLoad);
+          if (direct) {
+            setResolvedUrl(direct);
+            return;
+          }
+        }
+        // Avoid an infinite spinner: surface a visible error instead.
+        setLoadError('Could not load the immersive image. This is often a cross-origin or blocked-resource issue.');
+      },
+    );
     tex.colorSpace = THREE.SRGBColorSpace;
     const sphere = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex }));
     scene.add(sphere);
@@ -325,11 +386,14 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
       canvas.removeEventListener('wheel', onWheel);
       window.removeEventListener('resize', onResize);
       window.removeEventListener('keydown', onKeyLook);
+      tex.dispose();
+      (sphere.material as THREE.Material).dispose();
+      geo.dispose();
       renderer.dispose();
       if (container.contains(canvas)) container.removeChild(canvas);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [imageUrl, reducedMotion]);
+  }, [imageUrl, resolvedUrl, reducedMotion]);
 
   const enterVR = useCallback(async () => {
     const r = rendererRef.current; if (!r || !navigator.xr) return;
@@ -354,8 +418,10 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
   }, []);
 
   // Honest description of what is actually on screen, driven by image dimensions.
-  const subtitle = !loaded
-    ? 'Loading image…'
+  const subtitle = loadError
+    ? 'Image failed to load'
+    : !loaded
+      ? 'Loading image…'
     : equirect === false
       ? 'Standard photograph in an immersive viewer — not a true 360° capture'
       : 'Drag or use arrow keys to look around · scroll or +/- to zoom';
@@ -419,6 +485,18 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
           <div className="text-center">
             <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style={{ borderColor: `${cfg.color}66`, borderTopColor: cfg.color }} />
             <p className="text-gray-400 text-sm">Loading {node.label}…</p>
+          </div>
+        </div>
+      )}
+
+      {loadError && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center px-6">
+          <div className="max-w-md rounded-2xl border border-white/10 bg-black/70 p-6 text-center backdrop-blur-md">
+            <p className="text-white text-sm font-semibold mb-1">Immersive view failed to load</p>
+            <p className="text-gray-400 text-xs leading-relaxed">{loadError}</p>
+            <p className="text-gray-500 text-[11px] mt-3 break-all">
+              {imageUrl}
+            </p>
           </div>
         </div>
       )}

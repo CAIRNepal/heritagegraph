@@ -350,8 +350,7 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
     <>
       <div
         ref={setCreditHostElement}
-        aria-hidden
-        className="sr-only absolute h-px w-px overflow-hidden border-0 p-0"
+        className="pointer-events-auto absolute bottom-2 right-2 z-30 max-w-[min(70%,520px)] rounded-md border border-border/50 bg-background/75 px-2 py-1 text-[10px] leading-snug text-muted-foreground backdrop-blur-md"
       />
       {creditHostElement ?
         <Viewer
