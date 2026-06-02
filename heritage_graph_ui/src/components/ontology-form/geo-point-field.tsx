@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { OPENSTREETMAP_TILE_LAYER } from "@/lib/map-tiles";
 
 type LatLng = { lat?: string; lng?: string };
 
@@ -71,9 +72,9 @@ export function GeoPointField({
           zoomControl: true,
           attributionControl: true,
         }).setView(center, 12);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          maxZoom: 19,
-          attribution: "&copy; OpenStreetMap",
+        L.tileLayer(OPENSTREETMAP_TILE_LAYER.url, {
+          maxZoom: OPENSTREETMAP_TILE_LAYER.maxZoom,
+          attribution: OPENSTREETMAP_TILE_LAYER.attribution,
         }).addTo(map);
         map.on("click", (e) => {
           const { lat: la, lng: ln } = e.latlng;

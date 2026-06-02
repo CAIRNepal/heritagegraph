@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
+import { HERITAGE_MUSEUM_TILE_LAYER } from '@/lib/map-tiles';
+
 import { NODE_TYPE_CONFIG, type GraphNode } from '../heritage-data';
 
 interface MapViewProps {
@@ -82,6 +84,7 @@ export function MapView({ nodes, selectedId, onNodeSelect }: MapViewProps) {
     if (!containerRef.current || geoNodes.length === 0) return;
 
     let cancelled = false;
+    let resizeObserver: ResizeObserver | null = null;
 
     import('leaflet').then((mod) => {
       if (cancelled || !containerRef.current) return;
@@ -105,17 +108,13 @@ export function MapView({ nodes, selectedId, onNodeSelect }: MapViewProps) {
         zoomControl: true,
         attributionControl: true,
       });
+      map.getContainer().classList.add('hm-map-root');
 
-      L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-        {
-          attribution: '© OpenStreetMap © CARTO',
-          subdomains: 'abcd',
-          maxZoom: 19,
-        },
-      ).addTo(map);
-
-      mapRef.current = map;
+      L.tileLayer(HERITAGE_MUSEUM_TILE_LAYER.url, {
+        attribution: HERITAGE_MUSEUM_TILE_LAYER.attribution,
+        subdomains: HERITAGE_MUSEUM_TILE_LAYER.subdomains,
+        maxZoom: HERITAGE_MUSEUM_TILE_LAYER.maxZoom,
+      }).addTo(map);
 
       for (const { node, coord } of geoNodes) {
         const icon = L.divIcon({
@@ -128,15 +127,35 @@ export function MapView({ nodes, selectedId, onNodeSelect }: MapViewProps) {
         marker.on('click', () => onNodeSelect(node));
         markersRef.current.set(node.id, marker);
       }
+
+      if (geoNodes.length > 1) {
+        const bounds = L.latLngBounds(
+          geoNodes.map(({ coord }) => [coord.lat, coord.lng] as [number, number]),
+        );
+        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 13 });
+      }
+
+      const syncMapSize = () => {
+        map.invalidateSize();
+      };
+      syncMapSize();
+      window.setTimeout(syncMapSize, 80);
+
+      const host = containerRef.current;
+      if (host && typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(() => syncMapSize());
+        resizeObserver.observe(host);
+      }
+      mapRef.current = map;
     });
 
     return () => {
       cancelled = true;
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
-        markersRef.current.clear();
-      }
+      resizeObserver?.disconnect();
+      const map = mapRef.current;
+      mapRef.current = null;
+      markersRef.current.clear();
+      map?.remove();
     };
     // We intentionally depend on the *signature*, not the geoNodes array, so
     // identical sets don't trigger a full map teardown.

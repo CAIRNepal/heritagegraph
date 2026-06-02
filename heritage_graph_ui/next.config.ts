@@ -2,6 +2,8 @@ import type { NextConfig } from 'next';
 import path from 'path';
 import createNextIntlPlugin from 'next-intl/plugin';
 
+import { LEAFLET_TILE_CSP_HOSTS } from './src/lib/map-tiles';
+
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 function apiMediaRemotePattern(): {
@@ -49,7 +51,7 @@ function buildContentSecurityPolicy(): string {
       /* ignore invalid URL at build time */
     }
   }
-  connectSrc.push(...MAP_TILE_HOSTS);
+  connectSrc.push(...MAP_TILE_HOSTS, ...LEAFLET_TILE_CSP_HOSTS);
   // Wikimedia image credits + the XR panorama loader may resolve Special:FilePath
   // URLs via the MediaWiki API to obtain a direct upload.wikimedia.org URL.
   connectSrc.push('https://*.wikipedia.org', 'https://*.wikimedia.org');
@@ -69,7 +71,7 @@ function buildContentSecurityPolicy(): string {
     // *.wikipedia.org redirects to upload.wikimedia.org); they feed both the <img>
     // heroes/thumbnails and the WebGL panorama texture in the XR view.
     // arcgisonline serves the Atlas globe satellite/reference tiles.
-    `img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://i.imgur.com https://*.wikipedia.org https://*.wikimedia.org ${MAP_TILE_HOSTS.join(' ')}`,
+    `img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://i.imgur.com https://*.wikipedia.org https://*.wikimedia.org ${MAP_TILE_HOSTS.join(' ')} ${LEAFLET_TILE_CSP_HOSTS.join(' ')}`,
     "style-src 'self' 'unsafe-inline'",
     // Cesium + Resium can construct worker bootstrap scripts from blob: URLs.
     // Allow blob: scripts so workers can start in strict CSP environments.

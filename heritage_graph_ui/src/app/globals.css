@@ -398,3 +398,14 @@
     }
   }
 }
+
+/* Heritage Museum map — divIcon markers must not use Leaflet's default white tile */
+.leaflet-container.hm-map-root,
+.leaflet-container.hm-map-root .leaflet-tile-pane {
+  z-index: 0;
+}
+
+.hm-map-marker.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
