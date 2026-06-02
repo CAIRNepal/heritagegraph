@@ -242,8 +242,7 @@ that the UI is powered by a *live* graph, not a static export.
 
 ## 4. Heritage Museum — the immersive, story-driven experience
 
-**Code:** [heritage-museum/](../heritage_graph_ui/src/app/%28dashboard%29/heritage-museum/) ·
-also a standalone app at [visual_story_museum_kg/](../visual_story_museum_kg/)
+**Code:** [heritage-museum/](../heritage_graph_ui/src/app/%28dashboard%29/heritage-museum/)
 
 This is the **showpiece** — it turns the knowledge graph into a guided, cinematic tour.
 
