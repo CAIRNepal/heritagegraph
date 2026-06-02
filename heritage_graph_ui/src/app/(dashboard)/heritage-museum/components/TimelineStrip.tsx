@@ -19,10 +19,9 @@ interface TimelineStripProps {
 }
 
 const MARKER_SIZE = 36;
-/** Fixed track height so the axis stays in the first viewport; dense lanes scroll inside the strip only. */
-const TIMELINE_TRACK_HEIGHT_PX = 148;
-const TIMELINE_AXIS_TOP_PX = TIMELINE_TRACK_HEIGHT_PX - 20;
-const TIMELINE_LANE_STEP_PX = 38;
+const TIMELINE_LANE_STEP_PX = 40;
+/** Space reserved at bottom of track for axis + year ticks */
+const TIMELINE_AXIS_RESERVE_PX = 36;
 
 export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProps) {
   const t = useTranslations('heritageMuseum.timeline');
@@ -57,17 +56,15 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
   if (!layout) return null;
 
   const { width, markers, periods, ticks, minYear, maxYear } = layout;
-  const markerBaseY = 6;
-  const innerCanvasHeight = Math.max(
-    TIMELINE_TRACK_HEIGHT_PX,
-    markerBaseY + (layout.maxLane + 1) * TIMELINE_LANE_STEP_PX + 8,
-  );
+  const markerBaseY = 8;
+  const markerAreaHeight =
+    markerBaseY + (layout.maxLane + 1) * TIMELINE_LANE_STEP_PX + TIMELINE_AXIS_RESERVE_PX;
 
   return (
     <div
       className={cn(
         glassCard,
-        'relative flex-shrink-0 border-t border-border rounded-none px-4 py-3 shadow-none sm:px-6',
+        'flex h-full min-h-0 flex-col rounded-none border-0 px-4 py-3 shadow-none sm:px-6',
       )}
       role="region"
       aria-label={t('title')}
@@ -124,18 +121,15 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
         </div>
       </div>
 
-      <div
-        className="relative overflow-hidden rounded-md border border-border/60 bg-muted/20"
-        style={{ height: TIMELINE_TRACK_HEIGHT_PX }}
-      >
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-border/60 bg-muted/25">
         <div
           ref={scrollRef}
-          className="absolute inset-0 overflow-x-auto overflow-y-auto overscroll-contain"
+          className="absolute inset-0 overflow-x-auto overflow-y-auto overscroll-contain pb-9"
           style={{ scrollbarWidth: 'thin' }}
         >
         <div
           className="relative"
-          style={{ width, height: innerCanvasHeight, minWidth: '100%' }}
+          style={{ width, height: markerAreaHeight, minWidth: '100%' }}
         >
           {/* Reference period bands (intervals, not point markers) */}
           {periods.map((p) => (
@@ -159,18 +153,18 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
             </div>
           ))}
 
-          {/* Tick labels (above pinned axis) */}
+          {/* Tick labels — anchored above axis at bottom of track */}
           {ticks.map((tick) => (
             <div
               key={tick.year}
-              className="absolute flex flex-col items-center -translate-x-1/2"
-              style={{ left: tick.x, top: TIMELINE_AXIS_TOP_PX - 18 }}
+              className="absolute flex flex-col-reverse items-center -translate-x-1/2"
+              style={{ left: tick.x, bottom: TIMELINE_AXIS_RESERVE_PX - 4 }}
             >
               <span className="text-[10px] font-mono tabular-nums text-muted-foreground">
                 {tick.year}
               </span>
               <span
-                className="mt-0.5 block h-2 w-px bg-border/70"
+                className="mb-0.5 block h-2 w-px bg-border/70"
                 aria-hidden
               />
             </div>
@@ -181,7 +175,7 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
             <div
               key={`cluster-${pill.year}`}
               className="absolute -translate-x-1/2 rounded-full border border-border bg-card/90 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground shadow-sm"
-              style={{ left: pill.x, top: TIMELINE_AXIS_TOP_PX + 4 }}
+              style={{ left: pill.x, bottom: 6 }}
               title={t('sameYearCluster', { year: pill.year, count: pill.size })}
             >
               {t('clusterBadge', { count: pill.size })}
@@ -246,15 +240,14 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
         </div>
         </div>
 
-        {/* Axis pinned to bottom of track — always visible without scrolling the page */}
+        {/* Axis pinned to bottom of lower pane */}
         <div
-          className="pointer-events-none absolute inset-x-0 z-10 h-px bg-gradient-to-r from-transparent via-border to-transparent"
-          style={{ top: TIMELINE_AXIS_TOP_PX }}
+          className="pointer-events-none absolute inset-x-0 bottom-7 z-10 h-px bg-gradient-to-r from-transparent via-border to-transparent"
           aria-hidden
         />
       </div>
 
-      <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
+      <p className="mt-2 shrink-0 text-[10px] leading-snug text-muted-foreground">
         {t('footerHint')}
       </p>
     </div>

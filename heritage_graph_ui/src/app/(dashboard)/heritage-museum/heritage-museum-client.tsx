@@ -493,7 +493,7 @@ export function HeritageMindMapClient() {
             className={cn(
               'grid min-h-0 flex-1',
               viewMode === '2d'
-                ? 'grid-rows-[minmax(0,1fr)_auto] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_24rem]'
+                ? 'grid-rows-[minmax(0,1fr)_minmax(0,1fr)] grid-cols-1 lg:grid-cols-[minmax(0,1fr)_24rem]'
                 : 'grid-cols-1 grid-rows-[minmax(0,1fr)]',
             )}
           >
@@ -619,9 +619,9 @@ export function HeritageMindMapClient() {
               />
             </div>
 
-            {/* Timeline: full width, fixed strip height (2D only) */}
+            {/* Timeline: lower half of workspace (2D only) */}
             {viewMode === '2d' && !loading && !error && (
-              <div className="min-h-0 lg:col-span-2">
+              <div className="flex min-h-0 flex-col border-t border-border lg:col-span-2">
                 <TimelineStrip
                   nodes={filteredGraph?.nodes ?? []}
                   selectedId={selectedNode?.id ?? null}
