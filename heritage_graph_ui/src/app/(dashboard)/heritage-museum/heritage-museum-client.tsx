@@ -211,7 +211,12 @@ export function HeritageMindMapClient() {
 
   // ── Demo data ──────────────────────────────────────────────────────────────
   const [demoGraph,   setDemoGraph]   = useState<GraphData | null>(null);
-  const [demoProv,    setDemoProv]    = useState<{ retrieved?: string; generatedBy?: string; imageSource?: string } | null>(null);
+  const [demoProv,    setDemoProv]    = useState<{
+    retrieved?: string;
+    generatedBy?: string;
+    imageSource?: string;
+    note?: string;
+  } | null>(null);
   const [demoLoading, setDemoLoading] = useState(true);
   const [demoError,   setDemoError]   = useState<string | null>(null);
 
@@ -238,6 +243,7 @@ export function HeritageMindMapClient() {
           retrieved: provenance.retrieved,
           generatedBy: provenance.generatedBy,
           imageSource: provenance.imageSource,
+          note: provenance.note,
         } : null);
         setDemoLoading(false);
       })
@@ -427,6 +433,8 @@ export function HeritageMindMapClient() {
         linkCount={linkCount}
         showStats={!loading}
         provenanceText={provenanceText}
+        provenance={dataSource === 'demo' ? demoProv : null}
+        liveApiBase={dataSource === 'live' ? API_BASE : null}
       />
 
       {liveError && (
