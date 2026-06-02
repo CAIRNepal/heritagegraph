@@ -63,13 +63,17 @@ function buildContentSecurityPolicy(): string {
     // browsers will block worker startup under default-src 'self', and the globe
     // can render without imagery/terrain updates.
     "worker-src 'self' blob:",
+    // Legacy CSP for some browsers/extensions that still consult child-src.
+    "child-src 'self' blob:",
     // Wikimedia hosts power the heritage-museum demo corpus (Special:FilePath on
     // *.wikipedia.org redirects to upload.wikimedia.org); they feed both the <img>
     // heroes/thumbnails and the WebGL panorama texture in the XR view.
     // arcgisonline serves the Atlas globe satellite/reference tiles.
     `img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://i.imgur.com https://*.wikipedia.org https://*.wikimedia.org ${MAP_TILE_HOSTS.join(' ')}`,
     "style-src 'self' 'unsafe-inline'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    // Cesium + Resium can construct worker bootstrap scripts from blob: URLs.
+    // Allow blob: scripts so workers can start in strict CSP environments.
+    "script-src 'self' blob: 'unsafe-inline' 'unsafe-eval'",
     "font-src 'self' data:",
   ].join('; ');
 }
