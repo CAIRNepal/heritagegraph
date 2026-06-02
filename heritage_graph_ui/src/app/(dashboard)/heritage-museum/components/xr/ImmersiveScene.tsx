@@ -376,83 +376,95 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
       <KeyFactBadges node={node} cfg={cfg} />
 
       {/* Main content */}
-      <div className="relative z-10 h-full flex flex-col">
+      <div className="relative z-10 h-full flex flex-col min-h-0">
         <div className="flex flex-1 min-h-0">
 
-          {/* Left: identity + controls */}
-          <div className="flex flex-col justify-end w-[58%] p-8 pb-6 gap-3">
-            <div className="flex items-center gap-2">
-              <span
-                className="text-xs font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full"
-                style={{ background: `${cfg.color}44`, color: cfg.glowColor }}
-              >
-                {cfg.emoji} {cfg.label}
-              </span>
-              {node.unescoStatus && (
-                <span className="text-xs px-2.5 py-1 rounded-full bg-blue-900/50 border border-blue-400/40 text-blue-300">UNESCO ✦</span>
-              )}
-            </div>
-
-            <h2
-              className="text-white font-extrabold leading-none"
-              style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', textShadow: `0 0 40px ${cfg.color}88`, animation: 'fadeInUp 0.8s ease both' }}
+          {/* Left: sticky actions at top, scrollable identity + transcript below */}
+          <div className="flex w-[58%] min-h-0 min-w-0 flex-col">
+            <div
+              className="sticky top-0 z-30 flex-shrink-0 pl-24 pr-8 pt-14 pb-3 sm:pl-28"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 70%, transparent 100%)',
+                backdropFilter: 'blur(8px)',
+              }}
             >
-              {node.label}
-            </h2>
-
-            <div className="flex flex-wrap gap-2">
-              {node.religion     && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">🕉 {node.religion}</span>}
-              {node.inceptionYear && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">📅 c. {node.inceptionYear} CE</span>}
-              {node.dynasty      && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">👑 {node.dynasty}</span>}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={playing ? stop : play}
+                  aria-pressed={playing}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                  style={{ background: playing ? '#991b1b' : `${cfg.color}dd`, color: '#fff', boxShadow: `0 0 20px ${cfg.color}55` }}
+                >
+                  {playing ? '⏹ Stop' : '▶ Narrate'}
+                </button>
+                {node.storyText && (
+                  <button
+                    onClick={() => setShowTranscript((v) => !v)}
+                    aria-expanded={showTranscript}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-white/20 bg-white/5 text-gray-200 hover:bg-white/10 transition-all"
+                  >
+                    {showTranscript ? '▾ Hide transcript' : '☰ Transcript'}
+                  </button>
+                )}
+                {heroImage && (
+                  <button
+                    onClick={() => setShowPanorama(true)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-purple-400/60 bg-purple-900/40 text-purple-200 hover:bg-purple-700/60 transition-all hover:scale-105"
+                  >
+                    ◈ Immersive View
+                  </button>
+                )}
+              </div>
             </div>
 
-            {node.lat && node.long && (
-              <div className="text-xs text-gray-500">
-                📍 {parseFloat(node.lat).toFixed(3)}°N, {parseFloat(node.long).toFixed(3)}°E ·{' '}
-                <a href={`https://www.openstreetmap.org/?mlat=${node.lat}&mlon=${node.long}&zoom=15`}
-                  target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                  Open map ↗
-                </a>
+            <div
+              className="flex-1 min-h-0 overflow-y-auto px-8 pb-6 pt-2 flex flex-col gap-3"
+              style={{ scrollbarWidth: 'thin' }}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-xs font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full"
+                  style={{ background: `${cfg.color}44`, color: cfg.glowColor }}
+                >
+                  {cfg.emoji} {cfg.label}
+                </span>
+                {node.unescoStatus && (
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-blue-900/50 border border-blue-400/40 text-blue-300">UNESCO ✦</span>
+                )}
               </div>
-            )}
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={playing ? stop : play}
-                aria-pressed={playing}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 active:scale-95"
-                style={{ background: playing ? '#991b1b' : `${cfg.color}dd`, color: '#fff', boxShadow: `0 0 20px ${cfg.color}55` }}
+              <h2
+                className="text-white font-extrabold leading-none"
+                style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', textShadow: `0 0 40px ${cfg.color}88`, animation: 'fadeInUp 0.8s ease both' }}
               >
-                {playing ? '⏹ Stop' : '▶ Narrate'}
-              </button>
-              {node.storyText && (
-                <button
-                  onClick={() => setShowTranscript((v) => !v)}
-                  aria-expanded={showTranscript}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-white/20 bg-white/5 text-gray-200 hover:bg-white/10 transition-all"
-                >
-                  {showTranscript ? '▾ Hide transcript' : '☰ Transcript'}
-                </button>
+                {node.label}
+              </h2>
+
+              <div className="flex flex-wrap gap-2">
+                {node.religion     && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">🕉 {node.religion}</span>}
+                {node.inceptionYear && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">📅 c. {node.inceptionYear} CE</span>}
+                {node.dynasty      && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">👑 {node.dynasty}</span>}
+              </div>
+
+              {node.lat && node.long && (
+                <div className="text-xs text-gray-500">
+                  📍 {parseFloat(node.lat).toFixed(3)}°N, {parseFloat(node.long).toFixed(3)}°E ·{' '}
+                  <a href={`https://www.openstreetmap.org/?mlat=${node.lat}&mlon=${node.long}&zoom=15`}
+                    target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                    Open map ↗
+                  </a>
+                </div>
               )}
-              {heroImage && (
-                <button
-                  onClick={() => setShowPanorama(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-purple-400/60 bg-purple-900/40 text-purple-200 hover:bg-purple-700/60 transition-all hover:scale-105"
+
+              {showTranscript && node.storyText && (
+                <div
+                  className="rounded-xl border border-white/10 bg-black/50 backdrop-blur-md p-4 text-sm leading-7 text-gray-200"
+                  style={{ scrollbarWidth: 'thin' }}
                 >
-                  ◈ Immersive View
-                </button>
+                  {node.storyText}
+                </div>
               )}
             </div>
-
-            {/* Narration transcript — text alternative for the spoken audio (WCAG 1.2) */}
-            {showTranscript && node.storyText && (
-              <div
-                className="mt-1 max-h-44 overflow-y-auto rounded-xl border border-white/10 bg-black/50 backdrop-blur-md p-4 text-sm leading-7 text-gray-200"
-                style={{ scrollbarWidth: 'thin' }}
-              >
-                {node.storyText}
-              </div>
-            )}
           </div>
 
           {/* Right: storytelling overlay (auto-advances unless reduced motion) */}

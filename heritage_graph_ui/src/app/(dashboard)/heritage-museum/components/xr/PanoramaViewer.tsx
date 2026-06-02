@@ -88,7 +88,6 @@ function PanoramaStory({ node }: { node: GraphNode }) {
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const { playing, play, stop } = useNarration(node.storyText);
   const rafRef = useRef<number>(0);
   const startRef = useRef<number>(0);
   const pausedProgRef = useRef(0);
@@ -202,18 +201,6 @@ function PanoramaStory({ node }: { node: GraphNode }) {
                 Next →
               </button>
             </div>
-
-            <button
-              onClick={playing ? stop : play}
-              className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all hover:scale-[1.02] active:scale-95"
-              style={{
-                background: playing ? '#7f1d1d' : `${cfg.color}33`,
-                color: playing ? '#fca5a5' : cfg.glowColor,
-                border: `1px solid ${cfg.color}44`,
-              }}
-            >
-              {playing ? '⏹ Stop Narration' : '▶ Narrate Full Story'}
-            </button>
           </div>
         </div>
       )}
@@ -249,6 +236,7 @@ function PanoramaFacts({ node }: { node: GraphNode }) {
 // ── Main component ────────────────────────────────────────────────────────────
 export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose }: PanoramaViewerProps) {
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
+  const { playing, play, stop } = useNarration(node.storyText);
   const mountRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
@@ -456,6 +444,21 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
         </div>
 
         <div className="flex items-center gap-2 pointer-events-auto">
+          {node.storyText && (
+            <button
+              type="button"
+              onClick={playing ? stop : play}
+              aria-pressed={playing}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95"
+              style={{
+                background: playing ? '#991b1b' : `${cfg.color}dd`,
+                color: '#fff',
+                boxShadow: `0 0 16px ${cfg.color}44`,
+              }}
+            >
+              {playing ? '⏹ Stop' : '▶ Narrate'}
+            </button>
+          )}
           {!xrActive ? (
             <>
               {vrSupported && (

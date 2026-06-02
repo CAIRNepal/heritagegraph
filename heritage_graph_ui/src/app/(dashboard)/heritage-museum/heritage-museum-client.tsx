@@ -470,9 +470,9 @@ export function HeritageMindMapClient() {
 
       {/* ── 2D / Map modes ── */}
       {(viewMode === '2d' || viewMode === 'map') && (
-        <>
+        <div className="flex min-h-0 flex-1 flex-col">
           {/* Filter bar — visible in both 2D and Map modes */}
-          <div className="flex-shrink-0 z-10">
+          <div className="z-10 flex-shrink-0">
             <FilterBar
               activeTypes={activeTypes}
               onToggle={toggleType}
@@ -487,11 +487,12 @@ export function HeritageMindMapClient() {
             />
           </div>
 
-          {/* Main area */}
-          <div className="flex flex-1 min-h-0">
+          {/* Graph + sidebar above a fixed-height timeline (2D) */}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex min-h-0 flex-1">
 
             {/* Graph / Map canvas */}
-            <div className="relative flex-1 min-w-0 min-h-0">
+            <div className="relative min-h-0 min-w-0 flex-1">
               {viewMode === '2d' && (
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-amber-500/[0.04] blur-3xl" />
@@ -603,25 +604,28 @@ export function HeritageMindMapClient() {
               )}
             </div>
 
-            {/* Desktop story sidebar */}
-            <div className="hidden lg:flex flex-col w-96 min-h-0 border-l border-border bg-card/80 backdrop-blur-md overflow-hidden">
-              <StoryPanel
-                node={selectedNode}
-                graphData={fullGraph ?? EMPTY}
-                onRelatedNodeClick={handleRelatedNodeClick}
-              />
+            {/* Desktop story sidebar — scrollable; does not push timeline down */}
+            <div className="hidden min-h-0 w-96 flex-shrink-0 flex-col overflow-hidden border-l border-border bg-card/80 backdrop-blur-md lg:flex">
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <StoryPanel
+                  node={selectedNode}
+                  graphData={fullGraph ?? EMPTY}
+                  onRelatedNodeClick={handleRelatedNodeClick}
+                />
+              </div>
             </div>
-          </div>
+            </div>
 
-          {/* Timeline strip (2D only) */}
-          {viewMode === '2d' && !loading && !error && (
-            <TimelineStrip
-              nodes={filteredGraph?.nodes ?? []}
-              selectedId={selectedNode?.id ?? null}
-              onSelect={handleNodeSelect}
-            />
-          )}
-        </>
+            {/* Timeline strip pinned to bottom of workspace (2D only) */}
+            {viewMode === '2d' && !loading && !error && (
+              <TimelineStrip
+                nodes={filteredGraph?.nodes ?? []}
+                selectedId={selectedNode?.id ?? null}
+                onSelect={handleNodeSelect}
+              />
+            )}
+          </div>
+        </div>
       )}
 
       {/* ── XR Mode ── */}

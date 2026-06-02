@@ -21,7 +21,7 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
 
   if (!node) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center px-8 gap-6">
+      <div className="flex h-full min-h-0 flex-col items-center justify-center gap-6 px-8 text-center">
         <div className="w-20 h-20 rounded-full border-2 border-primary/30 flex items-center justify-center text-4xl animate-pulse">
           ☸
         </div>
@@ -57,7 +57,7 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
   return (
     <div
       ref={panelRef}
-      className="h-full overflow-y-auto"
+      className="h-full min-h-0 overflow-y-auto overscroll-contain"
       style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
     >
       {/* Hero image + narration */}
