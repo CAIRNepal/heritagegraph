@@ -103,6 +103,14 @@ const nextConfig: NextConfig = {
    * eval-source-map style maps; production is unchanged.
    */
   webpack: (config, { dev }) => {
+    config.resolve = config.resolve ?? {};
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Cesium → @cesium/engine → @spz-loader/core ships WASM inside template literals
+      // (`\0asm…`), which throws "Octal escape sequences are not allowed" at runtime.
+      '@spz-loader/core': path.resolve(__dirname, 'src/lib/stubs/spz-loader-core-stub.ts'),
+    };
+
     if (!dev || !config.plugins?.length) return config;
     config.plugins = config.plugins.filter((plugin) => {
       const name =
