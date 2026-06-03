@@ -494,7 +494,10 @@ export function HeritageMindMapClient() {
               'grid min-h-0 flex-1',
               viewMode === '2d'
                 ? 'grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(11rem,28vh)] lg:grid-cols-[minmax(0,1fr)_24rem]'
-                : 'grid-cols-1 grid-rows-[minmax(0,1fr)]',
+                // Map mode: single row. The story panel must be the right COLUMN
+                // (lg) — not an implicit stacked row — or it steals the map's
+                // height and collapses it to a thin strip.
+                : 'grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_24rem]',
             )}
           >
             {/* Graph / Map canvas */}

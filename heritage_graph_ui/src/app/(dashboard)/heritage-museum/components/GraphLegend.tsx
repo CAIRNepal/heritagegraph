@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 import { NODE_TYPE_CONFIG, HG_CATEGORY_CONFIG, type NodeType, type HgCategory } from '../heritage-data';
+import { NodeGlyph } from '../node-icons';
 
 interface GraphLegendProps {
   typeCounts?: Record<string, number>;
@@ -65,15 +66,14 @@ export function GraphLegend({ typeCounts, onTypeClick, activeTypes }: GraphLegen
                   const dimmed = !isActive || count === 0;
                   const node = (
                     <span
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-[12px] flex-shrink-0"
+                      className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
                       style={{
                         background: `radial-gradient(circle at 35% 35%, ${cfg.glowColor}, ${cfg.color})`,
-                        fontFamily: "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif",
                         opacity: dimmed ? 0.35 : 1,
                       }}
                       aria-hidden="true"
                     >
-                      {cfg.emoji}
+                      <NodeGlyph nodeType={key} size={13} color="#fff" />
                     </span>
                   );
                   const content = (

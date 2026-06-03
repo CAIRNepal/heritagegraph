@@ -11,6 +11,7 @@ import { buildTimelineLayout } from '@/lib/heritage-museum/timeline-layout';
 import { cn } from '@/lib/utils';
 
 import { NODE_TYPE_CONFIG, type GraphNode } from '../heritage-data';
+import { NodeGlyph } from '../node-icons';
 
 interface TimelineStripProps {
   nodes: GraphNode[];
@@ -22,6 +23,8 @@ const MARKER_SIZE = 36;
 const TIMELINE_LANE_STEP_PX = 40;
 /** Space reserved at bottom of track for axis + year ticks */
 const TIMELINE_AXIS_RESERVE_PX = 36;
+/** Height of the reference-period bands pinned to the top of the track. */
+const TIMELINE_PERIOD_BAND_PX = 22;
 
 export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProps) {
   const t = useTranslations('heritageMuseum.timeline');
@@ -56,7 +59,9 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
   if (!layout) return null;
 
   const { width, markers, periods, ticks, minYear, maxYear } = layout;
-  const markerBaseY = 8;
+  // Start the marker lanes below the period-band strip so lane-0 markers don't
+  // overlap the band labels (Licchavi / Malla / Shah) pinned at the top.
+  const markerBaseY = TIMELINE_PERIOD_BAND_PX + 8;
   const markerAreaHeight =
     markerBaseY + (layout.maxLane + 1) * TIMELINE_LANE_STEP_PX + TIMELINE_AXIS_RESERVE_PX;
 
@@ -139,7 +144,7 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
               style={{
                 left: Math.min(p.x0, p.x1),
                 width: Math.max(8, Math.abs(p.x1 - p.x0)),
-                height: 22,
+                height: TIMELINE_PERIOD_BAND_PX,
               }}
               title={t('periodInterval', {
                 label: t(p.labelKey),
@@ -221,12 +226,10 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
                     border: isSelected
                       ? `2px solid ${cfg.glowColor}`
                       : '2px solid transparent',
-                    fontFamily:
-                      "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif",
                   }}
                   aria-hidden
                 >
-                  {cfg.emoji}
+                  <NodeGlyph nodeType={m.node.nodeType} size={MARKER_SIZE - 16} color="#fff" />
                 </div>
                 <span className="max-w-[72px] truncate text-center text-[9px] font-mono text-muted-foreground/90">
                   {m.anchor.uncertain ? `~${m.anchor.year}` : m.anchor.year}

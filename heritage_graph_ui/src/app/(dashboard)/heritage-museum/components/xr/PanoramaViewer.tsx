@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
 import { buildBeats } from '../../utils/storyBeats';
 import { ImageAttribution } from '../ImageAttribution';
+import { NodeGlyph } from '../../node-icons';
 
 interface PanoramaViewerProps {
   imageUrl: string;
@@ -434,7 +435,7 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
           <button ref={closeBtnRef} onClick={onClose} aria-label="Close immersive view" className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all">✕</button>
           <div>
             <p className="text-white font-semibold text-sm flex items-center gap-2">
-              <span style={{ color: cfg.glowColor }}>{cfg.emoji}</span>
+              <NodeGlyph nodeType={node.nodeType} size={16} color={cfg.glowColor} />
               {node.label}
               {equirect === true && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-900/50 border border-emerald-400/40 text-emerald-300">360°</span>}
               {node.unescoStatus && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-900/50 border border-blue-400/40 text-blue-300">UNESCO</span>}

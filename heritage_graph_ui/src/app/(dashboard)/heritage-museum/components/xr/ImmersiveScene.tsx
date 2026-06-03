@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
+import { NodeGlyph } from '../../node-icons';
 import { buildBeats } from '../../utils/storyBeats';
 import { ImageAttribution } from '../ImageAttribution';
 import { useReducedMotion } from '@/hooks/use-reduced-motion';
@@ -263,8 +264,8 @@ function GalleryCard({ node, onSelect }: { node: GraphNode; onSelect: (n: GraphN
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      <div className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center text-base" style={{ background: `${cfg.color}cc` }}>
-        {cfg.emoji}
+      <div className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${cfg.color}cc` }}>
+        <NodeGlyph nodeType={node.nodeType} size={17} color="#fff" />
       </div>
       <div className="absolute bottom-0 left-0 right-0 p-4">
         <p className="text-white font-semibold text-sm leading-tight">{node.label}</p>
@@ -347,10 +348,11 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
       {/* Hero background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 40% 40%, ${cfg.color}33 0%, #000814 70%)` }} />
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="text-[22rem] opacity-5 select-none" style={{ filter: `drop-shadow(0 0 80px ${cfg.color})` }}>
-            {cfg.emoji}
-          </span>
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ filter: `drop-shadow(0 0 80px ${cfg.color})` }}
+        >
+          <NodeGlyph nodeType={node.nodeType} size={360} color={cfg.color} strokeWidth={0.75} className="opacity-[0.07] select-none" />
         </div>
         {heroImage && (
           <div className="absolute inset-[-5%]" style={{ transform: `translate(${parallax.x}px, ${parallax.y}px)`, transition: 'transform 0.15s ease-out' }}>
@@ -423,10 +425,10 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
             >
               <div className="flex items-center gap-2">
                 <span
-                  className="text-xs font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full"
                   style={{ background: `${cfg.color}44`, color: cfg.glowColor }}
                 >
-                  {cfg.emoji} {cfg.label}
+                  <NodeGlyph nodeType={node.nodeType} size={14} color={cfg.glowColor} /> {cfg.label}
                 </span>
                 {node.unescoStatus && (
                   <span className="text-xs px-2.5 py-1 rounded-full bg-blue-900/50 border border-blue-400/40 text-blue-300">UNESCO ✦</span>

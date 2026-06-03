@@ -1,6 +1,7 @@
 'use client';
 
 import { NODE_TYPE_CONFIG, type GraphNode, type NodeType } from '../../heritage-data';
+import { NodeGlyph } from '../../node-icons';
 
 interface PlaceNavProps {
   nodes: GraphNode[];
@@ -27,7 +28,7 @@ function NavNode({ node, selected, onSelect }: { node: GraphNode; selected: bool
           // eslint-disable-next-line @next/next/no-img-element
           <img src={node.imageUrl} alt="" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-lg">{cfg.emoji}</div>
+          <div className="w-full h-full flex items-center justify-center"><NodeGlyph nodeType={node.nodeType} size={20} color="#fff" /></div>
         )}
       </div>
       <div className="min-w-0 flex-1">
@@ -63,8 +64,8 @@ export function PlaceNav({ nodes, selectedId, onSelect }: PlaceNavProps) {
           return (
             <div key={type}>
               <div className="px-3 pt-3 pb-1">
-                <span className="text-xs text-gray-600 uppercase tracking-wider">
-                  {cfg?.emoji} {cfg?.label}
+                <span className="flex items-center gap-1.5 text-xs text-gray-600 uppercase tracking-wider">
+                  <NodeGlyph nodeType={type} size={13} color="currentColor" /> {cfg?.label}
                 </span>
               </div>
               {group.map((node) => (

@@ -9,6 +9,7 @@ import { glassCard } from '@/lib/design';
 import { cn } from '@/lib/utils';
 
 import { NODE_TYPE_CONFIG, HG_CATEGORY_CONFIG, type NodeType, type HgCategory } from '../heritage-data';
+import { NodeGlyph } from '../node-icons';
 
 interface FilterBarProps {
   activeTypes: Set<NodeType>;
@@ -135,7 +136,7 @@ export function FilterBar({
                   color: isActive ? cfg.glowColor : `${cfg.glowColor}99`,
                 }}
               >
-                <span aria-hidden="true">{cfg.emoji}</span>
+                <NodeGlyph nodeType={type} size={13} color={isActive ? cfg.glowColor : `${cfg.glowColor}99`} />
                 <span>{cfg.label}</span>
               </button>
             );

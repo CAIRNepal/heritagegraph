@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../heritage-data';
+import { ImageAttribution } from './ImageAttribution';
+import { NodeGlyph } from '../node-icons';
 
 type SpeechState = 'idle' | 'playing' | 'paused';
 
@@ -77,9 +79,7 @@ export function MediaViewer({ node }: MediaViewerProps) {
             style={{ background: `linear-gradient(135deg, ${cfg.color}55 0%, #0f172a 60%, ${cfg.glowColor}22 100%)` }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-8xl opacity-10 select-none" style={{ filter: `drop-shadow(0 0 30px ${cfg.color})` }}>
-              {cfg.emoji}
-            </span>
+            <NodeGlyph nodeType={node.nodeType} size={120} color="#fff" strokeWidth={1.25} className="opacity-10 select-none" />
           </div>
 
           {imageSrc && (
@@ -96,9 +96,9 @@ export function MediaViewer({ node }: MediaViewerProps) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
 
-          {imageSrc && imgLoaded && (
-            <div className="absolute bottom-2 right-2 text-xs text-white/40 bg-black/40 px-1.5 py-0.5 rounded">
-              © Wikimedia / CC
+          {imageSrc && imgLoaded && node.imageCredits?.[imageSrc] && (
+            <div className="absolute bottom-2 right-2 max-w-[70%] text-right rounded bg-black/45 px-1.5 py-0.5">
+              <ImageAttribution credit={node.imageCredits[imageSrc]} />
             </div>
           )}
 

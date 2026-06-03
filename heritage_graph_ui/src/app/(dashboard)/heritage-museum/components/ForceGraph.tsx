@@ -9,6 +9,7 @@ import {
   type GraphLink,
   type GraphData,
 } from '../heritage-data';
+import { nodeIconInner } from '../node-icons';
 
 interface ForceGraphProps {
   data: GraphData;
@@ -22,8 +23,6 @@ interface ForceGraphProps {
 
 const NODE_RADIUS = 28;
 const LINK_DISTANCE = 160;
-const EMOJI_FONT =
-  "'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Twemoji Mozilla',sans-serif";
 
 // Adaptive charge: -300 for tiny graphs, scaling down to -800 for larger
 // graphs. Empirically this keeps nodes apart without flinging them off-canvas.
@@ -366,16 +365,24 @@ export function ForceGraph({
       .attr('stroke', (d) => NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? '#fff')
       .attr('stroke-width', 1.5);
 
-    // Emoji
+    // Node glyph — deterministic Tabler SVG (24×24) scaled to ~20px, white for
+    // contrast on the coloured disc. innerHTML on an SVG <g> parses in the SVG
+    // namespace in all evergreen browsers.
+    const GLYPH_PX = 20;
+    const glyphScale = GLYPH_PX / 24;
     nodeEnter
-      .append('text')
-      .attr('class', 'hm-emoji')
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'central')
-      .attr('font-size', 16)
-      .attr('y', -4)
-      .style('font-family', EMOJI_FONT)
-      .text((d) => NODE_TYPE_CONFIG[d.nodeType]?.emoji ?? '●');
+      .append('g')
+      .attr('class', 'hm-glyph')
+      .attr('transform', `translate(${-GLYPH_PX / 2}, ${-4 - GLYPH_PX / 2}) scale(${glyphScale})`)
+      .attr('fill', 'none')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 2)
+      .attr('stroke-linecap', 'round')
+      .attr('stroke-linejoin', 'round')
+      .style('pointer-events', 'none')
+      .each(function (d) {
+        this.innerHTML = nodeIconInner(d.nodeType);
+      });
 
     // Title accessibility (hover/screen-reader)
     nodeEnter

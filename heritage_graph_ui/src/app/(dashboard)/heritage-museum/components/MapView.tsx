@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { HERITAGE_MUSEUM_TILE_LAYER } from '@/lib/map-tiles';
 
 import { NODE_TYPE_CONFIG, type GraphNode } from '../heritage-data';
+import { nodeGlyphSvg } from '../node-icons';
 
 interface MapViewProps {
   nodes: GraphNode[];
@@ -35,17 +36,16 @@ function buildIconHtml(node: GraphNode, selected: boolean): string {
   const ring = selected
     ? `box-shadow:0 0 0 4px ${cfg.color}55, 0 0 18px ${cfg.color};`
     : `box-shadow:0 0 10px ${cfg.color}99;`;
+  const glyph = nodeGlyphSvg(node.nodeType, { size: selected ? 26 : 20, color: '#fff' });
   return `
     <div style="
       width:${size}px;height:${size}px;border-radius:50%;
       background:radial-gradient(circle at 35% 35%, ${cfg.glowColor}, ${cfg.color});
       border:2px solid ${cfg.glowColor};
       ${ring}
-      display:flex;align-items:center;justify-content:center;
-      font-size:${selected ? 22 : 17}px;cursor:pointer;
-      font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;
+      display:flex;align-items:center;justify-content:center;cursor:pointer;
       transition:transform 0.2s ease;
-    ">${cfg.emoji}</div>
+    ">${glyph}</div>
     <div style="
       position:absolute;top:${size + 2}px;left:50%;transform:translateX(-50%);
       white-space:nowrap;font-size:11px;font-weight:600;

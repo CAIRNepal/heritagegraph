@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 import { NODE_TYPE_CONFIG, RELATION_LABELS, type GraphNode, type GraphData } from '../heritage-data';
 import { MediaViewer } from './MediaViewer';
+import { NodeGlyph } from '../node-icons';
 
 interface StoryPanelProps {
   node: GraphNode | null;
@@ -39,7 +40,7 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
         <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
           {Object.entries(NODE_TYPE_CONFIG).map(([type, cfg]) => (
             <div key={type} className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-              <span>{cfg.emoji}</span>
+              <NodeGlyph nodeType={type} size={16} color={cfg.color} />
               <span style={{ color: cfg.color }}>{cfg.label}</span>
             </div>
           ))}
@@ -78,13 +79,13 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
       >
         <div className="flex items-start gap-4">
           <div
-            className="w-12 h-12 rounded-full flex items-center justify-center text-2xl flex-shrink-0"
+            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
             style={{
               background: `radial-gradient(circle at 35% 35%, ${cfg.glowColor}, ${cfg.color})`,
               boxShadow: `0 0 20px ${cfg.color}66`,
             }}
           >
-            {cfg.emoji}
+            <NodeGlyph nodeType={node.nodeType} size={26} color="#fff" title={cfg.label} />
           </div>
           <div className="min-w-0">
             <span
@@ -279,7 +280,7 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
                             color: rcfg.glowColor,
                           }}
                         >
-                          <span>{rcfg.emoji}</span>
+                          <NodeGlyph nodeType={rn.nodeType} size={14} color={rcfg.glowColor} />
                           <span>{rn.label}</span>
                         </button>
                       );
