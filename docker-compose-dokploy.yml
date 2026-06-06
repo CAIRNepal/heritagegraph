@@ -55,6 +55,18 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # Standalone RDF triplestore (SPARQL 1.1). Internal-only: its /update endpoint
+  # is unauthenticated, so it is NEVER published through Traefik — only the
+  # backend reaches it over the internal network.
+  oxigraph:
+    image: ghcr.io/oxigraph/oxigraph:latest
+    restart: always
+    command: ["serve", "--location", "/data", "--bind", "0.0.0.0:7878"]
+    volumes:
+      - oxigraph-data:/data
+    networks:
+      - internal
+
   redis:
     image: redis:7-alpine
     hostname: redis
@@ -139,11 +151,24 @@ services:
       OCR_MAX_PAGES_PER_DOCUMENT: ${OCR_MAX_PAGES_PER_DOCUMENT:-100}
       OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
       OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
+      # Knowledge-graph store: a standalone Oxigraph HTTP server (persistent +
+      # safe for multiple gunicorn workers). Without these, the backend falls
+      # back to an embedded file store that is wiped on redeploy AND lock-contends
+      # across workers — which is why /kg/graph came back empty in production.
+      # Populate once after deploy with `rdf_load_tbox` + `rdf_rebuild`.
+      RDF_SYNC_ENABLED: ${RDF_SYNC_ENABLED:-true}
+      OXIGRAPH_URL: http://oxigraph:7878
+      RDF_ENDPOINT_URL: http://oxigraph:7878/update
+      RDF_QUERY_URL: http://oxigraph:7878/query
+      # Canonical resource IRI base (set to your public API origin for FAIR IRIs).
+      RDF_RESOURCE_BASE_URI: ${RDF_RESOURCE_BASE_URI:-https://api.heritagegraph.xyz}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      oxigraph:
+        condition: service_started
     volumes:
       - backend-static:/app/heritage_graph/staticfiles
       - backend-media:/app/heritage_graph/media
@@ -332,6 +357,8 @@ volumes:
   backend-static:
     driver: local
   backend-media:
+    driver: local
+  oxigraph-data:
     driver: local
   prometheus-data:
     driver: local
