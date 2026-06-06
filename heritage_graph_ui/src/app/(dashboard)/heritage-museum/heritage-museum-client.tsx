@@ -20,11 +20,12 @@ import {
   type GraphLink,
 } from './heritage-data';
 import {
-  fetchInstanceGraphData,
-  type InstanceNode,
-  type InstanceEdge,
-  type InstanceCategory,
-} from '@/lib/instance-graph';
+  fetchKgGraph,
+  fetchKgNeighborhood,
+  rdfTypeToNodeType,
+  type KgGraphResponse,
+  type KgNeighborhoodResponse,
+} from '@/lib/kg-graph';
 import { FilterBar } from './components/FilterBar';
 import { StoryPanel } from './components/StoryPanel';
 import { MandalaLoader } from './components/MandalaLoader';
@@ -39,129 +40,90 @@ const API_BASE = getPublicApiUrl();
 type ViewMode = MuseumViewMode;
 type DataSource = MuseumDataSource;
 
-// ── Instance → museum node conversion ─────────────────────────────────────────
+// ── Live Knowledge Graph → museum graph conversion ────────────────────────────
 //
-// Each backend InstanceCategory is mapped to the closest matching NodeType in
-// the generated ontology viz config. This is the SINGLE place where backend
-// taxonomy is translated to the visualization taxonomy.
-const INSTANCE_CAT_MAP: Record<InstanceCategory, NodeType> = {
-  structure:   'ArchitecturalStructure',
-  deity:       'Deity',
-  person:      'Person',
-  location:    'Place',
-  event:       'HistoricalEvent',
-  ritual:      'Festival',          // No RitualEvent NodeType yet; Festival is the nearest analog
-  festival:    'Festival',
-  guthi:       'Guthi',
-  monument:    'BuddhistMonument',
-  iconography: 'IconographicObject',
-  period:      'HistoricalPeriod',
-  tradition:   'ReligiousTradition',
-  source:      'Source',
-};
+// The live view reads the Oxigraph PUBLIC graph: every node is typed by its real
+// rdf:type and every edge is a real triple (see lib/kg-graph.ts + the backend
+// /kg/graph/ endpoint). Node types come straight from the ontology via
+// RDF_CLASS_URI_TO_NODE_TYPE — no lossy category enum, no heuristic edges.
+// Nodes whose rdf:type maps to no NodeType are dropped to stay ontology-faithful.
+function kgToGraphData(resp: KgGraphResponse): GraphData {
+  const nodes: GraphNode[] = [];
+  const kept = new Set<string>();
 
-// ── rawData → GraphNode field extractors ─────────────────────────────────────
-//
-// Per-category extractors that pull human-facing strings, coordinates, dates,
-// and tags from the DRF response shape. We never trust types here — every
-// access is defensive (typeof / Array.isArray).
-
-type Raw = Record<string, unknown>;
-
-function s(raw: Raw, ...keys: string[]): string | undefined {
-  for (const k of keys) {
-    const v = raw[k];
-    if (typeof v === 'string' && v.trim()) return v.trim();
-    if (typeof v === 'number' && Number.isFinite(v)) return String(v);
+  for (const n of resp.nodes) {
+    const nodeType = rdfTypeToNodeType(n.types);
+    if (!nodeType) continue; // not an ontology class we visualise
+    const cfg = NODE_TYPE_CONFIG[nodeType];
+    kept.add(n.id);
+    nodes.push({
+      id: n.id,
+      label: n.label,
+      nodeType,
+      cidocMapping: cfg.cidocMapping,
+      hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
+      description: n.comment ?? '',
+      storyText: n.comment ?? '',
+      lat: n.lat ?? undefined,
+      long: n.long ?? undefined,
+      relations: [],
+    });
   }
-  return undefined;
+
+  const links: GraphLink[] = resp.edges
+    .filter((e) => kept.has(e.source) && kept.has(e.target))
+    .map((e) => ({
+      source: e.source,
+      target: e.target,
+      predicate: (e.predicateLocal || 'associated_with').replace(/-/g, '_'),
+    }));
+
+  return { nodes, links };
 }
 
-function pickLatLong(raw: Raw): { lat?: string; long?: string } {
-  // Direct lat/lng fields (Monument, Structure, Location serializers expose these)
-  const lat = s(raw, 'latitude', 'lat');
-  const long = s(raw, 'longitude', 'long', 'lng');
-  if (lat && long) return { lat, long };
+// Local name of an IRI (after the last # or /).
+function iriLocalName(iri: string): string {
+  if (!iri) return '';
+  const i = Math.max(iri.lastIndexOf('#'), iri.lastIndexOf('/'));
+  return i >= 0 ? iri.slice(i + 1) : iri;
+}
 
-  // GeoJSON-ish "point" field: { type: 'Point', coordinates: [lng, lat] }
-  const point = raw.point as { coordinates?: [number, number] } | undefined;
-  if (point && Array.isArray(point.coordinates) && point.coordinates.length === 2) {
-    const [lngN, latN] = point.coordinates;
-    if (Number.isFinite(latN) && Number.isFinite(lngN)) {
-      return { lat: String(latN), long: String(lngN) };
+// Convert a node's neighborhood (click-to-expand) into nodes + links. Only typed
+// resource neighbours are kept — literals (label/comment) and untyped IRIs drop out.
+function kgNeighborhoodToGraph(
+  centerId: string,
+  resp: KgNeighborhoodResponse,
+): { nodes: GraphNode[]; links: GraphLink[] } {
+  const nodes: GraphNode[] = [];
+  const links: GraphLink[] = [];
+  const seen = new Set<string>();
+
+  for (const e of resp.edges) {
+    if (!e.value || !/^https?:\/\//.test(e.value)) continue; // skip literals
+    const nodeType = e.valueType ? rdfTypeToNodeType([e.valueType]) : null;
+    if (!nodeType) continue; // only render ontology-typed neighbours
+    if (!seen.has(e.value)) {
+      seen.add(e.value);
+      const cfg = NODE_TYPE_CONFIG[nodeType];
+      nodes.push({
+        id: e.value,
+        label: e.valueLabel || iriLocalName(e.value),
+        nodeType,
+        cidocMapping: cfg.cidocMapping,
+        hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
+        description: '',
+        storyText: '',
+        relations: [],
+      });
     }
+    const predicate = (iriLocalName(e.predicate) || 'associated_with').replace(/-/g, '_');
+    links.push(
+      e.direction === 'outbound'
+        ? { source: centerId, target: e.value, predicate }
+        : { source: e.value, target: centerId, predicate },
+    );
   }
-  return {};
-}
-
-function pickInceptionYear(raw: Raw): string | undefined {
-  // EDTF strings ("c.1200", "1768"): pull the first 4-digit run
-  const candidates = [
-    raw.inception_year, raw.construction_date, raw.start_year,
-    raw.founded_in, raw.start_date, raw.birth_date,
-  ];
-  for (const c of candidates) {
-    if (typeof c !== 'string') continue;
-    const m = c.match(/-?\d{3,4}/);
-    if (m) return m[0];
-  }
-  return undefined;
-}
-
-function pickImage(raw: Raw): string | undefined {
-  const direct = s(raw, 'image_url', 'imageUrl', 'image', 'thumbnail', 'photo_url');
-  if (direct && /^https?:\/\//.test(direct)) return direct;
-  return undefined;
-}
-
-function pickTags(raw: Raw): string[] | undefined {
-  const t = raw.tags;
-  if (Array.isArray(t)) return t.map(String).filter(Boolean);
-  if (typeof t === 'string' && t.trim()) {
-    return t.split(',').map((x) => x.trim()).filter(Boolean);
-  }
-  return undefined;
-}
-
-function instanceToGraphNode(n: InstanceNode): GraphNode {
-  const nodeType = INSTANCE_CAT_MAP[n.category] ?? 'Place';
-  const cfg = NODE_TYPE_CONFIG[nodeType];
-  const raw = n.rawData ?? {};
-  const { lat, long } = pickLatLong(raw);
-
-  return {
-    id: n.id,
-    label: n.label,
-    nodeType,
-    cidocMapping: cfg.cidocMapping,
-    hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
-    description: n.description || s(raw, 'note', 'description', 'biography') || '',
-    storyText: s(raw, 'story', 'narrative', 'story_text') || n.description || '',
-    imageUrl: pickImage(raw),
-    significance: s(raw, 'significance', 'cultural_significance'),
-    religion: s(raw, 'religion', 'religious_tradition', 'tradition'),
-    unescoStatus: s(raw, 'unesco_status', 'unescoStatus'),
-    inceptionYear: pickInceptionYear(raw),
-    dynasty: s(raw, 'dynasty', 'ruling_dynasty'),
-    ethnicity: s(raw, 'ethnicity', 'caste_group'),
-    period: s(raw, 'period', 'historical_period'),
-    lat,
-    long,
-    history: s(raw, 'history', 'historical_context'),
-    architecture: s(raw, 'architecture', 'architectural_style'),
-    culturalRole: s(raw, 'cultural_role'),
-    visitNote: s(raw, 'visit_note', 'visitor_information'),
-    tags: pickTags(raw),
-    relations: [],
-  };
-}
-
-// Live edge labels emitted by instance-graph.ts must use predicate keys that
-// match RELATION_LABELS (underscore-style). We pass them through as-is here;
-// the heritage-data RELATION_LABELS map covers the full set.
-function instanceEdgeToLink(e: InstanceEdge): GraphLink {
-  const predicate = (e.label || 'associated_with').replace(/-/g, '_');
-  return { source: e.source, target: e.target, predicate };
+  return { nodes, links };
 }
 
 // Build a HeritageRelation[] for every node from the edge list so the
@@ -234,6 +196,7 @@ export function HeritageMindMapClient() {
   const [activeCats,   setActiveCats]   = useState<Set<HgCategory>>(ALL_CATS);
   const [searchQuery,  setSearchQuery]  = useState('');
   const [panelOpen,    setPanelOpen]    = useState(false);
+  const [expanding,    setExpanding]    = useState(false);
 
   // ── Load demo data once ────────────────────────────────────────────────────
   useEffect(() => {
@@ -263,9 +226,8 @@ export function HeritageMindMapClient() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken as string | undefined;
-      const raw = await fetchInstanceGraphData(API_BASE, token);
-      const nodes = raw.nodes.map(instanceToGraphNode);
-      const links = raw.edges.map(instanceEdgeToLink);
+      const resp = await fetchKgGraph(API_BASE, token);
+      const { nodes, links } = kgToGraphData(resp);
       // Populate node.relations so the StoryPanel "Connections" section
       // and the neighbor-highlight logic both work for live data.
       attachRelations(nodes, links);
@@ -297,6 +259,42 @@ export function HeritageMindMapClient() {
     setLiveError(null);
     loadLiveData();
   }, [loadLiveData]);
+
+  // ── Click-to-expand (live KG only) ─────────────────────────────────────────
+  // Pull a node's neighbourhood from Oxigraph and merge any new typed entities +
+  // real edges into the live graph, so large graphs grow on demand instead of
+  // loading everything up front.
+  const expandNode = useCallback(
+    async (node: GraphNode) => {
+      if (dataSource !== 'live' || !API_BASE) return;
+      setExpanding(true);
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const token = (session as any)?.accessToken as string | undefined;
+        const resp = await fetchKgNeighborhood(API_BASE, node.id, token);
+        const add = kgNeighborhoodToGraph(node.id, resp);
+        setLiveGraph((prev) => {
+          const base = prev ?? { nodes: [], links: [] };
+          const nodeIds = new Set(base.nodes.map((n) => n.id));
+          const newNodes = add.nodes.filter((n) => !nodeIds.has(n.id));
+          const idOf = (x: string | GraphNode) => (typeof x === 'string' ? x : x.id);
+          const linkKey = (l: GraphLink) => `${idOf(l.source)}→${idOf(l.target)}→${l.predicate}`;
+          const seenLinks = new Set(base.links.map(linkKey));
+          const newLinks = add.links.filter((l) => !seenLinks.has(linkKey(l)));
+          if (!newNodes.length && !newLinks.length) return prev; // nothing new
+          const nodes = [...base.nodes, ...newNodes];
+          const links = [...base.links, ...newLinks];
+          attachRelations(nodes, links);
+          return { nodes, links };
+        });
+      } catch {
+        /* expansion is best-effort; ignore transient failures */
+      } finally {
+        setExpanding(false);
+      }
+    },
+    [dataSource, session],
+  );
 
   const showAllCategories = useCallback(() => setActiveCats(new Set(ALL_CATS)), []);
   const showAllTypes      = useCallback(() => setActiveTypes(new Set(ALL_TYPES)), []);
@@ -586,9 +584,22 @@ export function HeritageMindMapClient() {
                 </div>
               )}
 
-              {/* View in XR button */}
+              {/* View in XR + (live) expand-neighbours buttons */}
               {viewMode === '2d' && !loading && !error && selectedNode && (
-                <div className="absolute top-3 right-3">
+                <div className="absolute top-3 right-3 flex gap-2">
+                  {dataSource === 'live' && (
+                    <Button
+                      onClick={() => expandNode(selectedNode)}
+                      disabled={expanding}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs gap-1.5"
+                      type="button"
+                      title="Pull this node's connected entities from the knowledge graph"
+                    >
+                      {expanding ? 'Expanding…' : '+ Expand'}
+                    </Button>
+                  )}
                   <Button onClick={() => switchToXR(selectedNode)} size="sm" variant="secondary" className="text-xs gap-1.5">
                     {t('viewInXr')}
                   </Button>

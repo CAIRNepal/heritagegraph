@@ -1,5 +1,5 @@
 {
-  "schema_version": "e9aac58e6ab612a4deab14db49d708afb1e9d311ff9aacdc2bfe66babb75f513",
+  "schema_version": "1dee365f73d1e4026d0d5b392b2c2e3993a925aedc3ac4f8791fb51cf052579a",
   "tenant_id": null,
   "degraded": false,
   "classes": {
@@ -405,6 +405,82 @@
         {
           "key": "includes_ritual_event",
           "label": "Includes Ritual Event",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
+    },
+    "period": {
+      "key": "period",
+      "label": "Historical Period",
+      "labelPlural": "Historical Periods",
+      "description": "A named, time-bounded historical period of Nepal (e.g., Lichhavi, Malla, Shah). A temporal frame within which heritage entities and events are situated \u2014 distinct from a single HistoricalEvent.",
+      "classUri": "heritageGraph:HistoricalPeriod",
+      "icon": "clock",
+      "apiEndpoint": "/cidoc/historical_periods/",
+      "category": "spatiotemporal",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "note",
+          "label": "Note",
+          "type": "text",
+          "section": "basic",
+          "order": 2,
+          "required": false,
+          "multivalued": false,
+          "description": "Free-text note (description, reason, verification notes)",
+          "slot_uri": "crm:P3_has_note"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "type": "relation",
+          "section": "basic",
+          "order": 3,
+          "required": false,
+          "multivalued": false,
+          "description": "Links event to its temporal extent",
+          "slot_uri": "crm:P4_has_time-span",
+          "relationTo": "TimeSpan"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "note",
+          "label": "Note",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
           "sortable": true,
           "visible": true,
           "format": "text"
@@ -834,7 +910,9 @@
           "multivalued": true,
           "description": "Events where this deity was enshrined",
           "slot_uri": "heritageGraph:is_enshrined_through_event",
-          "relationTo": "Enshrinement"
+          "relationTo": "Enshrinement",
+          "relationEndpoint": "/cidoc/enshrinements/",
+          "relationRegistryKey": "enshrinement"
         }
       ],
       "columns": [
@@ -1112,7 +1190,9 @@
           "multivalued": false,
           "description": "Event that created this object or structure",
           "slot_uri": "crm:P108i_was_produced_by",
-          "relationTo": "Production"
+          "relationTo": "Production",
+          "relationEndpoint": "/cidoc/productions/",
+          "relationRegistryKey": "production"
         },
         {
           "key": "has_current_location",
@@ -1327,7 +1407,9 @@
           "multivalued": true,
           "description": "Custody transfer events for this structure",
           "slot_uri": "crm:P30i_custody_transferred_through",
-          "relationTo": "TransferOfCustody"
+          "relationTo": "TransferOfCustody",
+          "relationEndpoint": "/cidoc/transfers_of_custody/",
+          "relationRegistryKey": "transfer_of_custody"
         },
         {
           "key": "was_documented_by",
@@ -2293,6 +2375,615 @@
         }
       ]
     },
+    "production": {
+      "key": "production",
+      "label": "Production Event",
+      "labelPlural": "Production Events",
+      "description": "Event of creating an architectural structure, murti, or paubha",
+      "classUri": "crm:E12_Production",
+      "icon": "hammer",
+      "apiEndpoint": "/cidoc/productions/",
+      "category": "event",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "produced_object",
+          "label": "Produced Object",
+          "type": "relation",
+          "section": "basic",
+          "order": 2,
+          "required": true,
+          "multivalued": false,
+          "description": "Object produced by this production event",
+          "slot_uri": "crm:P108_has_produced",
+          "relationTo": "PhysicalHeritageThing",
+          "minimumCardinality": 1
+        },
+        {
+          "key": "carried_out_by",
+          "label": "Carried Out By",
+          "type": "relation",
+          "section": "basic",
+          "order": 3,
+          "required": false,
+          "multivalued": true,
+          "description": "Actor(s) who performed this event",
+          "slot_uri": "crm:P14_carried_out_by",
+          "relationTo": "Actor",
+          "minimumCardinality": 1
+        },
+        {
+          "key": "used_technique",
+          "label": "Used Technique",
+          "type": "relation",
+          "section": "basic",
+          "order": 4,
+          "required": false,
+          "multivalued": true,
+          "description": "Craft technique used in production",
+          "slot_uri": "crm:P32_used_general_technique",
+          "relationTo": "Technique"
+        },
+        {
+          "key": "took_place_at",
+          "label": "Took Place At",
+          "type": "relation",
+          "section": "basic",
+          "order": 5,
+          "required": false,
+          "multivalued": false,
+          "description": "Place where event occurred",
+          "slot_uri": "crm:P7_took_place_at",
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "type": "relation",
+          "section": "basic",
+          "order": 6,
+          "required": true,
+          "multivalued": false,
+          "description": "Links event to its temporal extent",
+          "slot_uri": "crm:P4_has_time-span",
+          "relationTo": "TimeSpan"
+        },
+        {
+          "key": "commissioned_by",
+          "label": "Commissioned By",
+          "type": "relation",
+          "section": "basic",
+          "order": 7,
+          "required": false,
+          "multivalued": true,
+          "description": "Person or group who commissioned production",
+          "slot_uri": "crm:P17_was_motivated_by",
+          "relationTo": "Actor"
+        },
+        {
+          "key": "was_documented_by",
+          "label": "Was Documented By",
+          "type": "relation",
+          "section": "basic",
+          "order": 8,
+          "required": false,
+          "multivalued": true,
+          "description": "Documentation event that recorded this entity or event",
+          "slot_uri": "heritageGraph:was_documented_by",
+          "relationTo": "DocumentationActivity"
+        },
+        {
+          "key": "has_provenance_assertion",
+          "label": "Has Provenance Assertion",
+          "type": "relation",
+          "section": "basic",
+          "order": 9,
+          "required": false,
+          "multivalued": true,
+          "description": "All factual claims about this structure with full provenance",
+          "slot_uri": "heritageGraph:has_provenance_assertion",
+          "relationTo": "HeritageAssertion",
+          "relationEndpoint": "/cidoc/assertions/",
+          "relationRegistryKey": "assertion"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "produced_object",
+          "label": "Produced Object",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "carried_out_by",
+          "label": "Carried Out By",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "used_technique",
+          "label": "Used Technique",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "took_place_at",
+          "label": "Took Place At",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "commissioned_by",
+          "label": "Commissioned By",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "was_documented_by",
+          "label": "Was Documented By",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
+    },
+    "consecration": {
+      "key": "consecration",
+      "label": "Consecration",
+      "labelPlural": "Consecrations",
+      "description": "Ritual event that transforms an object into a sacred vessel (e.g., Prana Pratistha for Murti)",
+      "classUri": "heritageGraph:Consecration",
+      "icon": "sparkles",
+      "apiEndpoint": "/cidoc/consecrations/",
+      "category": "event",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "consecrated_object",
+          "label": "Consecrated Object",
+          "type": "relation",
+          "section": "basic",
+          "order": 2,
+          "required": true,
+          "multivalued": false,
+          "description": "Murti that participated in the consecration ritual",
+          "slot_uri": "heritageGraph:consecrated_object",
+          "relationTo": "Murti",
+          "minimumCardinality": 1,
+          "maximumCardinality": 1
+        },
+        {
+          "key": "carried_out_by",
+          "label": "Carried Out By",
+          "type": "relation",
+          "section": "basic",
+          "order": 3,
+          "required": false,
+          "multivalued": true,
+          "description": "Actor(s) who performed this event",
+          "slot_uri": "crm:P14_carried_out_by",
+          "relationTo": "Actor",
+          "minimumCardinality": 1
+        },
+        {
+          "key": "took_place_at",
+          "label": "Took Place At",
+          "type": "relation",
+          "section": "basic",
+          "order": 4,
+          "required": false,
+          "multivalued": false,
+          "description": "Place where event occurred",
+          "slot_uri": "crm:P7_took_place_at",
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "type": "relation",
+          "section": "basic",
+          "order": 5,
+          "required": true,
+          "multivalued": false,
+          "description": "Links event to its temporal extent",
+          "slot_uri": "crm:P4_has_time-span",
+          "relationTo": "TimeSpan"
+        },
+        {
+          "key": "makes_deity_present",
+          "label": "Makes Deity Present",
+          "type": "relation",
+          "section": "basic",
+          "order": 6,
+          "required": false,
+          "multivalued": false,
+          "description": "Deity made present through consecration",
+          "slot_uri": "heritageGraph:makes_deity_present",
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "consecrated_object",
+          "label": "Consecrated Object",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "carried_out_by",
+          "label": "Carried Out By",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "took_place_at",
+          "label": "Took Place At",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "makes_deity_present",
+          "label": "Makes Deity Present",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
+    },
+    "enshrinement": {
+      "key": "enshrinement",
+      "label": "Enshrinement",
+      "labelPlural": "Enshrinements",
+      "description": "Event of installing a deity's murti or symbol within a temple sanctum",
+      "classUri": "heritageGraph:Enshrinement",
+      "icon": "landmark",
+      "apiEndpoint": "/cidoc/enshrinements/",
+      "category": "event",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "enshrined_deity",
+          "label": "Enshrined Deity",
+          "type": "relation",
+          "section": "basic",
+          "order": 2,
+          "required": true,
+          "multivalued": false,
+          "description": "Deity installed through enshrinement",
+          "slot_uri": "heritageGraph:enshrined_deity",
+          "relationTo": "Deity",
+          "relationEndpoint": "/cidoc/deities/",
+          "relationRegistryKey": "deity",
+          "minimumCardinality": 1
+        },
+        {
+          "key": "enshrined_in_structure",
+          "label": "Enshrined In Structure",
+          "type": "relation",
+          "section": "basic",
+          "order": 3,
+          "required": true,
+          "multivalued": false,
+          "description": "Temple where deity was enshrined",
+          "slot_uri": "heritageGraph:enshrined_in_structure",
+          "relationTo": "Temple",
+          "minimumCardinality": 1,
+          "maximumCardinality": 1
+        },
+        {
+          "key": "carried_out_by",
+          "label": "Carried Out By",
+          "type": "relation",
+          "section": "basic",
+          "order": 4,
+          "required": false,
+          "multivalued": true,
+          "description": "Actor(s) who performed this event",
+          "slot_uri": "crm:P14_carried_out_by",
+          "relationTo": "Actor"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "type": "relation",
+          "section": "basic",
+          "order": 5,
+          "required": true,
+          "multivalued": false,
+          "description": "Links event to its temporal extent",
+          "slot_uri": "crm:P4_has_time-span",
+          "relationTo": "TimeSpan"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "enshrined_deity",
+          "label": "Enshrined Deity",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "enshrined_in_structure",
+          "label": "Enshrined In Structure",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "carried_out_by",
+          "label": "Carried Out By",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
+    },
+    "transfer_of_custody": {
+      "key": "transfer_of_custody",
+      "label": "Transfer of Custody",
+      "labelPlural": "Transfers of Custody",
+      "description": "Event of transferring responsibility for temple maintenance, ritual performance, or artifact stewardship",
+      "classUri": "crm:E10_Transfer_of_Custody",
+      "icon": "arrow-left-right",
+      "apiEndpoint": "/cidoc/transfers_of_custody/",
+      "category": "event",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "transferred_object",
+          "label": "Transferred Object",
+          "type": "relation",
+          "section": "basic",
+          "order": 2,
+          "required": true,
+          "multivalued": false,
+          "description": "Object transferred in custody event",
+          "slot_uri": "crm:P30_transferred_custody_of",
+          "relationTo": "PhysicalHeritageThing",
+          "minimumCardinality": 1
+        },
+        {
+          "key": "transferred_from_actor",
+          "label": "Transferred From Actor",
+          "type": "relation",
+          "section": "basic",
+          "order": 3,
+          "required": false,
+          "multivalued": false,
+          "description": "Previous custodian",
+          "slot_uri": "crm:P28_custody_surrendered_by",
+          "relationTo": "Actor"
+        },
+        {
+          "key": "transferred_to_actor",
+          "label": "Transferred To Actor",
+          "type": "relation",
+          "section": "basic",
+          "order": 4,
+          "required": false,
+          "multivalued": false,
+          "description": "New custodian (person or group)",
+          "slot_uri": "crm:P29_custody_received_by",
+          "relationTo": "Actor"
+        },
+        {
+          "key": "transferred_to_guthi",
+          "label": "Transferred To Guthi",
+          "type": "relation",
+          "section": "basic",
+          "order": 5,
+          "required": false,
+          "multivalued": false,
+          "description": "New custodian (Guthi)",
+          "slot_uri": "heritageGraph:transferred_to_guthi",
+          "relationTo": "Guthi",
+          "relationEndpoint": "/cidoc/guthis/",
+          "relationRegistryKey": "guthi"
+        },
+        {
+          "key": "took_place_at",
+          "label": "Took Place At",
+          "type": "relation",
+          "section": "basic",
+          "order": 6,
+          "required": false,
+          "multivalued": false,
+          "description": "Place where event occurred",
+          "slot_uri": "crm:P7_took_place_at",
+          "relationTo": "Place",
+          "relationEndpoint": "/cidoc/locations/",
+          "relationRegistryKey": "location"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "type": "relation",
+          "section": "basic",
+          "order": 7,
+          "required": true,
+          "multivalued": false,
+          "description": "Links event to its temporal extent",
+          "slot_uri": "crm:P4_has_time-span",
+          "relationTo": "TimeSpan"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "transferred_object",
+          "label": "Transferred Object",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "transferred_from_actor",
+          "label": "Transferred From Actor",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "transferred_to_actor",
+          "label": "Transferred To Actor",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "transferred_to_guthi",
+          "label": "Transferred To Guthi",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "took_place_at",
+          "label": "Took Place At",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
+    },
     "iconography": {
       "key": "iconography",
       "label": "Iconographic Object",
@@ -2356,7 +3047,9 @@
           "multivalued": false,
           "description": "Event that created this object or structure",
           "slot_uri": "crm:P108i_was_produced_by",
-          "relationTo": "Production"
+          "relationTo": "Production",
+          "relationEndpoint": "/cidoc/productions/",
+          "relationRegistryKey": "production"
         },
         {
           "key": "participates_in_ritual",
@@ -2421,7 +3114,9 @@
           "multivalued": true,
           "description": "Custody transfer events for this structure",
           "slot_uri": "crm:P30i_custody_transferred_through",
-          "relationTo": "TransferOfCustody"
+          "relationTo": "TransferOfCustody",
+          "relationEndpoint": "/cidoc/transfers_of_custody/",
+          "relationRegistryKey": "transfer_of_custody"
         },
         {
           "key": "was_documented_by",
@@ -2544,7 +3239,9 @@
           "multivalued": false,
           "description": "Event that created this object or structure",
           "slot_uri": "crm:P108i_was_produced_by",
-          "relationTo": "Production"
+          "relationTo": "Production",
+          "relationEndpoint": "/cidoc/productions/",
+          "relationRegistryKey": "production"
         },
         {
           "key": "has_current_location",
@@ -2759,7 +3456,9 @@
           "multivalued": true,
           "description": "Custody transfer events for this structure",
           "slot_uri": "crm:P30i_custody_transferred_through",
-          "relationTo": "TransferOfCustody"
+          "relationTo": "TransferOfCustody",
+          "relationEndpoint": "/cidoc/transfers_of_custody/",
+          "relationRegistryKey": "transfer_of_custody"
         },
         {
           "key": "was_documented_by",
@@ -2870,7 +3569,7 @@
           "required": true,
           "multivalued": true,
           "description": "The girl serving as Living Goddess during this period",
-          "slot_uri": "crm:P11_had_participant",
+          "slot_uri": "heritageGraph:had_participant",
           "relationTo": "Person",
           "relationEndpoint": "/cidoc/persons/",
           "relationRegistryKey": "person",
@@ -2886,7 +3585,7 @@
           "required": true,
           "multivalued": false,
           "description": "Deity believed to be present in this person (e.g., Taleju, Kumari Devi)",
-          "slot_uri": "crm:P14.1_in_the_role_of",
+          "slot_uri": "heritageGraph:embodied_deity",
           "relationTo": "Deity",
           "relationEndpoint": "/cidoc/deities/",
           "relationRegistryKey": "deity",
@@ -2902,7 +3601,7 @@
           "required": true,
           "multivalued": false,
           "description": "God-house where Living Goddess resides (e.g., Kumari Ghar)",
-          "slot_uri": "crm:P74_has_current_or_former_residence",
+          "slot_uri": "heritageGraph:residence_structure",
           "relationTo": "ArchitecturalStructure",
           "relationEndpoint": "/cidoc/structures/",
           "relationRegistryKey": "structure",
@@ -4530,11 +5229,33 @@
           "slot_uri": "heritageGraph:reconciliation_status"
         },
         {
+          "key": "justification_note",
+          "label": "Justification Note",
+          "type": "text",
+          "section": "basic",
+          "order": 10,
+          "required": false,
+          "multivalued": false,
+          "description": "CRMinf justification or reasoning summary for this belief",
+          "slot_uri": "crminf:J4_that"
+        },
+        {
+          "key": "crminf_conclusion",
+          "label": "Crminf Conclusion",
+          "type": "text",
+          "section": "basic",
+          "order": 11,
+          "required": false,
+          "multivalued": false,
+          "description": "Optional CRMinf conclusion label (confirmed, refuted, uncertain)",
+          "slot_uri": "crminf:J2_concluded_that"
+        },
+        {
           "key": "asserted_property",
           "label": "Asserted Property",
           "type": "text",
           "section": "basic",
-          "order": 10,
+          "order": 12,
           "required": true,
           "multivalued": false,
           "description": "Property or attribute name (e.g., 'existence_status', 'hypothesized_location', 'construction_date')",
@@ -4545,7 +5266,7 @@
           "label": "Asserted Value",
           "type": "text",
           "section": "basic",
-          "order": 11,
+          "order": 13,
           "required": true,
           "multivalued": false,
           "description": "The value claimed for this property (e.g., 'Lost', 'Handigaun', '598 CE')",
@@ -4556,7 +5277,7 @@
           "label": "Supersedes Assertion",
           "type": "relation",
           "section": "basic",
-          "order": 12,
+          "order": 14,
           "required": false,
           "multivalued": false,
           "description": "Previous version of this assertion (if this is an update). Creates version chain: A1 \u2192 A2 \u2192 A3. Query pattern: latest assertion = one with no incoming prov:invalidated",
@@ -5225,6 +5946,42 @@
         "shortDescription": "Jatra processions, chariot festivals, dances",
         "description": "Record large-scale community events with component rituals.",
         "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "production",
+        "hubCategory": "events",
+        "route": "/contribute/production",
+        "emoji": "\ud83d\udd28",
+        "shortDescription": "Creation of structures, murti, paubha",
+        "description": "Document E12 Production events with object, actors, place, and timespan.",
+        "difficulty": "intermediate"
+      },
+      {
+        "registryKey": "consecration",
+        "hubCategory": "events",
+        "route": "/contribute/consecration",
+        "emoji": "\u2728",
+        "shortDescription": "Prana Pratistha, sacred activation",
+        "description": "Record consecration rituals that transform objects into sacred vessels.",
+        "difficulty": "advanced"
+      },
+      {
+        "registryKey": "enshrinement",
+        "hubCategory": "events",
+        "route": "/contribute/enshrinement",
+        "emoji": "\ud83d\uded5",
+        "shortDescription": "Deity installation in sanctum",
+        "description": "Document enshrinement of murti or symbols within temple structures.",
+        "difficulty": "advanced"
+      },
+      {
+        "registryKey": "transfer_of_custody",
+        "hubCategory": "events",
+        "route": "/contribute/transfer-of-custody",
+        "emoji": "\u2194\ufe0f",
+        "shortDescription": "Stewardship and Guthi transfers",
+        "description": "Record E10 transfer of custody for temples, rituals, or artifacts.",
+        "difficulty": "advanced"
       },
       {
         "registryKey": "event",
@@ -6108,6 +6865,31 @@
         ],
         "additionalProperties": true
       },
+      "period": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": true
+      },
       "tradition": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -6899,6 +7681,274 @@
         },
         "required": [
           "name",
+          "has_timespan"
+        ],
+        "additionalProperties": true
+      },
+      "production": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "produced_object": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "carried_out_by": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "used_technique": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "took_place_at": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "commissioned_by": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "was_documented_by": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "has_provenance_assertion": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "produced_object",
+          "has_timespan"
+        ],
+        "additionalProperties": true
+      },
+      "consecration": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "consecrated_object": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "carried_out_by": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "took_place_at": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "makes_deity_present": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "consecrated_object",
+          "has_timespan"
+        ],
+        "additionalProperties": true
+      },
+      "enshrinement": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "enshrined_deity": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "enshrined_in_structure": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "carried_out_by": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "enshrined_deity",
+          "enshrined_in_structure",
+          "has_timespan"
+        ],
+        "additionalProperties": true
+      },
+      "transfer_of_custody": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "transferred_object": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "transferred_from_actor": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "transferred_to_actor": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "transferred_to_guthi": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "took_place_at": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "transferred_object",
           "has_timespan"
         ],
         "additionalProperties": true
@@ -7878,6 +8928,12 @@
             "type": "string"
           },
           "reconciliation_status": {
+            "type": "string"
+          },
+          "justification_note": {
+            "type": "string"
+          },
+          "crminf_conclusion": {
             "type": "string"
           },
           "asserted_property": {

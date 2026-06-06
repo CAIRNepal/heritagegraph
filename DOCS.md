@@ -19,6 +19,7 @@ and historical material is organized under [`documentation/`](documentation/).
 |-----|----------------|
 | [ONTOLOGY.md](ONTOLOGY.md) | CIDOC-CRM mapping, LinkML registry, SHACL, namespaces |
 | [RDF_KG_ENGINE.md](RDF_KG_ENGINE.md) | The knowledge-graph engine (Oxigraph): projection, partitions, SPARQL API |
+| [KG_PIPELINE.md](KG_PIPELINE.md) | Full KG pipeline ingestion→display, SOTA assessment & roadmap |
 
 ## 📝 Contribution & forms
 | Doc | What it covers |

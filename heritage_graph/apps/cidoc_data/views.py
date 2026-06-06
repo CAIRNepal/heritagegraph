@@ -48,6 +48,10 @@ def _get_category_for_model(model_class):
         "ArchitecturalStructure": "monument",
         "RitualEvent": "ritual",
         "Festival": "festival",
+        "Production": "production",
+        "Consecration": "consecration",
+        "Enshrinement": "enshrinement",
+        "TransferOfCustody": "transfer_of_custody",
         "IconographicObject": "artifact",
         "Monument": "monument",
         "KumariTenure": "ritual",
@@ -292,6 +296,30 @@ class FestivalViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     search_fields = ["name", "location_name"]
 
 
+class ProductionViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = Production.objects.all()
+    serializer_class = ProductionSerializer
+    search_fields = ["name", "carried_out_by"]
+
+
+class ConsecrationViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = Consecration.objects.all()
+    serializer_class = ConsecrationSerializer
+    search_fields = ["name", "makes_deity_present"]
+
+
+class EnshrinementViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = Enshrinement.objects.all()
+    serializer_class = EnshrinementSerializer
+    search_fields = ["name"]
+
+
+class TransferOfCustodyViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
+    queryset = TransferOfCustody.objects.all()
+    serializer_class = TransferOfCustodySerializer
+    search_fields = ["name", "transferred_from_actor", "transferred_to_actor"]
+
+
 class IconographicObjectViewSet(ContributionFlowMixin, viewsets.ModelViewSet):
     queryset = IconographicObject.objects.all()
     serializer_class = IconographicObjectSerializer
@@ -487,9 +515,33 @@ class EntityClusterViewSet(viewsets.ModelViewSet):
             "unlock",
         ):
             return [permissions.IsAuthenticated(), IsExpertCurator()]
-        if self.action == "suggest_duplicates":
+        if self.action in ("suggest_duplicates", "suggest_external"):
             return [permissions.IsAuthenticated()]
         return [permissions.IsAuthenticated()]
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="suggest-external",
+        permission_classes=[permissions.IsAuthenticated],
+    )
+    def suggest_external(self, request, pk=None):
+        """Wikidata / GeoNames reconciliation suggestions for this cluster."""
+        from apps.graph.reconciliation.service import suggest_for_cluster
+
+        cluster = self.get_object()
+        suggestions = suggest_for_cluster(
+            canonical_label=cluster.canonical_label,
+            type_scope=cluster.type_scope,
+        )
+        return Response(
+            {
+                "cluster_id": str(cluster.id),
+                "canonical_label": cluster.canonical_label,
+                "type_scope": cluster.type_scope,
+                "suggestions": suggestions,
+            }
+        )
 
     @action(
         detail=False,

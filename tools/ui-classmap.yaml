@@ -39,6 +39,15 @@ classes:
     category: event
     icon: calendar
 
+  - linkml: HistoricalPeriod
+    key: period
+    apiEndpoint: /cidoc/historical_periods/
+    label: Historical Period
+    labelPlural: Historical Periods
+    navigable: false
+    category: event
+    icon: hourglass
+
   - linkml: ReligiousTradition
     key: tradition
     apiEndpoint: /cidoc/traditions/
@@ -101,6 +110,42 @@ classes:
     navigable: true
     category: event
     icon: party-popper
+
+  - linkml: Production
+    key: production
+    apiEndpoint: /cidoc/productions/
+    label: Production Event
+    labelPlural: Production Events
+    navigable: true
+    category: event
+    icon: hammer
+
+  - linkml: Consecration
+    key: consecration
+    apiEndpoint: /cidoc/consecrations/
+    label: Consecration
+    labelPlural: Consecrations
+    navigable: true
+    category: event
+    icon: sparkles
+
+  - linkml: Enshrinement
+    key: enshrinement
+    apiEndpoint: /cidoc/enshrinements/
+    label: Enshrinement
+    labelPlural: Enshrinements
+    navigable: true
+    category: event
+    icon: landmark
+
+  - linkml: TransferOfCustody
+    key: transfer_of_custody
+    apiEndpoint: /cidoc/transfers_of_custody/
+    label: Transfer of Custody
+    labelPlural: Transfers of Custody
+    navigable: true
+    category: event
+    icon: arrow-left-right
 
   - linkml: IconographicObject
     key: iconography

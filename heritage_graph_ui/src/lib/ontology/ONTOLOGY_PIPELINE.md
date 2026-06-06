@@ -20,15 +20,23 @@ Before this pipeline, ontology definitions were duplicated across five independe
 ontology/HeritageGraph.yaml          ← semantic source of truth (classes, slots, enums, prefixes)
 tools/ui-vizmap.yaml                 ← presentational config (colors, emojis, hg_category)
         │
-        └── tools/gen_heritage_viz_config.py
+        ├── tools/linkml_generate_registry.py   (make ontology — step 1)
+        │        ├── registry.generated.json / .ts  →  contribution forms (OntologyForm)
+        │        └── consumed by emit_skos_vocabularies.py, SHACL, serializers
+        │
+        └── tools/gen_heritage_viz_config.py      (make ontology — step 2)
                   │
                   ├── __generated__/heritage-viz-config.ts
                   │        RDF_PREFIXES, NodeType, NODE_TYPE_CONFIG,
                   │        RELATION_LABELS, HG_CATEGORY_CONFIG, HgCategory
                   │        │
-                  │        ├── heritage-data.ts  →  heritage museum page
-                  │        ├── heritage-data.ts  →  ForceGraph component
+                  │        ├── heritage-data.ts  →  Heritage Museum (live KG)
                   │        └── form-graph.ts     →  JSON-LD / contribution forms
+                  │
+                  ├── __generated__/ontology-graph.ts
+                  │        Cytoscape class hierarchy + object-property edges
+                  │        │
+                  │        └── ontology-graph.ts (re-export)  →  /graphview Ontology tab
                   │
                   ├── __generated__/enums.ts
                   │        ontologyEnums (all permissible_values from schema)
@@ -40,6 +48,14 @@ tools/ui-vizmap.yaml                 ← presentational config (colors, emojis, 
                            │
                            └── rdf_entity_projection.py  →  Oxigraph triple store
 ```
+
+**One command after editing the schema:**
+
+```bash
+make ontology
+```
+
+This regenerates the registry (forms) and all visualization/backend config files. Commit every changed file under `__generated__/`, `registry.generated.*`, and `ontology_config.py` together with your YAML edit.
 
 The generator reads both YAMLs, validates cross-references, and writes deterministic output. Generated files are committed alongside schema changes so the repo is always self-contained and CI can enforce consistency.
 

@@ -14,7 +14,9 @@ from .models import (
     ArchitecturalStructure,
     CalendarSystem,
     CasteGroup,
+    Consecration,
     Deity,
+    Enshrinement,
     Event,
     Festival,
     Guthi,
@@ -26,10 +28,12 @@ from .models import (
     Location,
     Monument,
     Person,
+    Production,
     RitualEvent,
     Source,
     SyncreticRelationship,
     Tradition,
+    TransferOfCustody,
 )
 from .serializers import BaseRegistrySerializer
 
@@ -57,11 +61,27 @@ class CasteGroupGeneratedSerializer(BaseRegistrySerializer):
         fields = "__all__"
 
 
+class ConsecrationGeneratedSerializer(BaseRegistrySerializer):
+    """Auto-generated serializer stub for Consecration (registry key: consecration)."""
+
+    class Meta:
+        model = Consecration
+        fields = "__all__"
+
+
 class DeityGeneratedSerializer(BaseRegistrySerializer):
     """Auto-generated serializer stub for Deity (registry key: deity)."""
 
     class Meta:
         model = Deity
+        fields = "__all__"
+
+
+class EnshrinementGeneratedSerializer(BaseRegistrySerializer):
+    """Auto-generated serializer stub for Enshrinement (registry key: enshrinement)."""
+
+    class Meta:
+        model = Enshrinement
         fields = "__all__"
 
 
@@ -153,6 +173,14 @@ class PersonGeneratedSerializer(BaseRegistrySerializer):
         fields = "__all__"
 
 
+class ProductionGeneratedSerializer(BaseRegistrySerializer):
+    """Auto-generated serializer stub for Production (registry key: production)."""
+
+    class Meta:
+        model = Production
+        fields = "__all__"
+
+
 class RitualEventGeneratedSerializer(BaseRegistrySerializer):
     """Auto-generated serializer stub for RitualEvent (registry key: ritual)."""
 
@@ -182,5 +210,13 @@ class TraditionGeneratedSerializer(BaseRegistrySerializer):
 
     class Meta:
         model = Tradition
+        fields = "__all__"
+
+
+class TransferOfCustodyGeneratedSerializer(BaseRegistrySerializer):
+    """Auto-generated serializer stub for TransferOfCustody (registry key: transfer_of_custody)."""
+
+    class Meta:
+        model = TransferOfCustody
         fields = "__all__"
 

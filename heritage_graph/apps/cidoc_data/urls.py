@@ -3,6 +3,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from apps.graph.views import (
+    KnowledgeGraphGraphView,
     KnowledgeGraphNeighborhoodView,
     KnowledgeGraphQueryView,
     KnowledgeGraphStatsView,
@@ -29,6 +30,10 @@ router.register(r'guthis', GuthiViewSet)
 router.register(r'structures', ArchitecturalStructureViewSet)
 router.register(r'rituals', RitualEventViewSet)
 router.register(r'festivals', FestivalViewSet)
+router.register(r'productions', ProductionViewSet)
+router.register(r'consecrations', ConsecrationViewSet)
+router.register(r'enshrinements', EnshrinementViewSet)
+router.register(r'transfers_of_custody', TransferOfCustodyViewSet)
 router.register(r'iconographic_objects', IconographicObjectViewSet)
 router.register(r'monuments', MonumentViewSet)
 
@@ -114,6 +119,7 @@ urlpatterns = [
         name="kg-neighborhood",
     ),
     path("kg/query/", KnowledgeGraphQueryView.as_view(), name="kg-query"),
+    path("kg/graph/", KnowledgeGraphGraphView.as_view(), name="kg-graph"),
     path(
         "assist/suggest-field/",
         AssistSuggestFieldView.as_view(),

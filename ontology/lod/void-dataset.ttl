@@ -1,0 +1,18 @@
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix hg: <https://w3id.org/heritagegraph/> .
+
+hg:dataset/public
+  a void:Dataset, dcat:Dataset ;
+  dcterms:title "HeritageGraph public knowledge graph"@en ;
+  dcterms:creator <https://cairnepal.org/> ;
+  dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+  void:uriSpace <https://w3id.org/heritagegraph/resource/> ;
+  void:sparqlEndpoint <https://w3id.org/heritagegraph/sparql> ;
+  void:subset <https://w3id.org/heritagegraph/graph/public> ;
+  dcat:distribution [
+    a dcat:Distribution ;
+    dcterms:format "application/n-quads" ;
+    dcat:accessURL <https://w3id.org/heritagegraph/dataset/public/dump.nt> ;
+  ] .

@@ -9,6 +9,7 @@ Inputs  (never edit the outputs below — edit these instead):
 Outputs (auto-generated — do not edit by hand):
   heritage_graph_ui/src/lib/ontology/__generated__/heritage-viz-config.ts
   heritage_graph_ui/src/lib/ontology/__generated__/enums.ts
+  heritage_graph_ui/src/lib/ontology/__generated__/ontology-graph.ts
   heritage_graph/apps/graph/ontology_config.py
 
 Usage:
@@ -17,10 +18,10 @@ Usage:
   python3 tools/gen_heritage_viz_config.py --dry-run  # print to stdout, write nothing
 
 The --check flag is used in CI to enforce that generated files are committed
-alongside schema changes. The pipeline is:
-  1. Edit ontology/HeritageGraph.yaml or tools/ui-vizmap.yaml
-  2. Run python3 tools/gen_heritage_viz_config.py
-  3. Commit all changed files together
+alongside schema changes. Prefer:
+  1. Edit ontology/HeritageGraph.yaml and/or tools/ui-vizmap.yaml
+  2. Run make ontology   (registry + viz + schema graph + forms enums)
+  3. Commit all changed generated files together
 """
 
 from __future__ import annotations
@@ -67,6 +68,15 @@ OUT_ENUMS_TS = (
     / "enums.ts"
 )
 OUT_PY = ROOT / "heritage_graph" / "apps" / "graph" / "ontology_config.py"
+OUT_ONTOLOGY_GRAPH_TS = (
+    ROOT
+    / "heritage_graph_ui"
+    / "src"
+    / "lib"
+    / "ontology"
+    / "__generated__"
+    / "ontology-graph.ts"
+)
 
 # ─── YAML helpers ─────────────────────────────────────────────────────────────
 
@@ -256,6 +266,38 @@ def _gen_viz_config_ts(schema: dict, vizmap: dict, source_hash: str) -> str:
     lines.append("};")
     lines.append("")
 
+    # ── RDF_CLASS_URI_TO_NODE_TYPE ────────────────────────────────────────────
+    # Maps the ontology class IRI (the rdf:type emitted into Oxigraph) back to
+    # the canonical NodeType, so the museum can type *live KG* nodes straight
+    # from their real rdf:type instead of a hand-written enum. Alias viz types
+    # (e.g. SacredSite, Settlement) collapse to their underlying ontology class —
+    # the KG does not distinguish them, so neither should a faithful read.
+    def _expand_curie(curie: str) -> str:
+        if not curie or ":" not in curie:
+            return curie
+        pfx, local = curie.split(":", 1)
+        base = all_prefixes.get(pfx)
+        return base + local if base else curie
+
+    class_uri_to_key: dict[str, str] = {}
+    for nt in node_types:
+        key = nt["key"]
+        linkml_class = nt.get("linkml_class", key)
+        full = _expand_curie(_class_uri(schema, linkml_class))
+        if not full:
+            continue
+        # Prefer the canonical type (key == linkml_class) on classUri collision.
+        if full not in class_uri_to_key or key == linkml_class:
+            class_uri_to_key[full] = key
+    lines.append(
+        "/** Ontology class IRI (rdf:type in the Oxigraph public graph) → canonical NodeType. */"
+    )
+    lines.append("export const RDF_CLASS_URI_TO_NODE_TYPE: Record<string, NodeType> = {")
+    for uri, key in sorted(class_uri_to_key.items()):
+        lines.append(f'  "{uri}": "{key}",')
+    lines.append("};")
+    lines.append("")
+
     # ── RELATION_LABELS ───────────────────────────────────────────────────────
     lines.append(
         "/**\n"
@@ -354,15 +396,17 @@ Usage:
 
 
 def _gen_py_config(schema: dict, vizmap: dict, source_hash: str) -> str:
-    core_prefix_keys = vizmap.get("core_prefixes") or []
+    # The backend RDF projection expands CURIEs from this map. It MUST carry the
+    # full prefix set declared in the schema — not just the UI ``core_prefixes`` —
+    # otherwise CURIEs for crminf/crmsci/crmdig/datacite/time/skos/etc. silently
+    # collapse into the heritageGraph namespace (minting incorrect IRIs).
     all_prefixes = _schema_prefixes(schema)
-    core_prefixes = {k: all_prefixes[k] for k in core_prefix_keys if k in all_prefixes}
 
     lines: list[str] = [_PY_BANNER.format(hash=source_hash), ""]
     lines.append("from __future__ import annotations")
     lines.append("")
     lines.append("RDF_PREFIXES: dict[str, str] = {")
-    for k, v in core_prefixes.items():
+    for k, v in all_prefixes.items():
         lines.append(f'    "{k}": "{v}",')
     lines.append("}")
     lines.append("")
@@ -457,13 +501,18 @@ def main(argv: list[str] | None = None) -> int:
     source_hash = _source_hash(schema_path, vizmap_path)
 
     # ── Generate content ──────────────────────────────────────────────────────
+    sys.path.insert(0, str(ROOT))
+    from tools.gen_ontology_graph_ts import generate_ontology_graph_ts
+
     viz_ts = _gen_viz_config_ts(schema, vizmap, source_hash)
     enums_ts = _gen_enums_ts(schema, source_hash)
     py_cfg = _gen_py_config(schema, vizmap, source_hash)
+    ontology_graph_ts = generate_ontology_graph_ts(schema, vizmap, source_hash=source_hash)
 
     outputs = [
         (OUT_VIZ_TS, viz_ts, "heritage-viz-config.ts"),
         (OUT_ENUMS_TS, enums_ts, "enums.ts"),
+        (OUT_ONTOLOGY_GRAPH_TS, ontology_graph_ts, "ontology-graph.ts"),
         (OUT_PY, py_cfg, "ontology_config.py"),
     ]
 

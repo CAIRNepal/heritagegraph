@@ -5,6 +5,7 @@
 # ================================================================
 
 .PHONY: ontology ontology-check viz-config viz-config-check shacl shacl-check \
+        crm-bridge crm-bridge-check skos-vocab skos-vocab-check \
         serializers serializers-check entityrefs entityrefs-check contribute-routes-check \
         schema-rebuild identity-candidates schema-diff \
         rdf-rebuild rdf-diagnose rdf-load-tbox \
@@ -37,14 +38,16 @@ NODE_PATH := PATH=$(NODE_BIN):$$PATH
 # ================================================================
 # ONTOLOGY / SCHEMA REGISTRY (specs/004-yaml-driven-schema)
 # ================================================================
-ontology:
+ontology: ## Regenerate registry + museum/graph/forms viz artifacts from HeritageGraph.yaml
 	python3 tools/linkml_generate_registry.py
+	python3 tools/gen_heritage_viz_config.py
 
 ontology-check:
 	@test ! -f "$(CURDIR)/Heritagegraph.yaml" || (echo "ERROR: Remove repo-root Heritagegraph.yaml — canonical ontology is ontology/HeritageGraph.yaml" >&2 && exit 1)
 	python3 tools/linkml_generate_registry.py --check
+	python3 tools/gen_heritage_viz_config.py --check
 
-viz-config: ## Regenerate enums.ts, heritage-viz-config.ts, ontology_config.py from YAML
+viz-config: ## Regenerate viz-config, enums, ontology-graph.ts, ontology_config.py
 	python3 tools/gen_heritage_viz_config.py
 
 viz-config-check: ## CI: fail if viz/namespace artifacts are out of date
@@ -55,6 +58,15 @@ shacl: ## Regenerate minimal SHACL from registry.generated.json (run after ontol
 
 shacl-check: ## CI: fail if generated SHACL TTL is out of date
 	python3 tools/emit_minimal_shacl.py --check
+
+crm-bridge: ## Emit CIDOC-CRM alignment bridge + disjointness TBox (subClassOf/disjointWith)
+	python3 tools/emit_crm_bridge.py
+
+crm-bridge-check: ## CI: fail if the CRM bridge TTL is out of date
+	python3 tools/emit_crm_bridge.py --check
+
+skos-vocab-check: ## CI: fail if the SKOS vocabulary TTL is out of date
+	python3 tools/emit_skos_vocabularies.py --check
 
 contribute-routes-check: ## CI: contribute-hub intents map to Next.js pages
 	python3 tools/verify_contribute_intent_routes.py
@@ -77,6 +89,27 @@ schema-rebuild: $(VENV_PY) ## Persist ontology registry snapshot to DB (SchemaRe
 rdf-rebuild: $(VENV_PY) ## Reproject all CIDOC rows into the public RDF named graph
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_rebuild
 
+kg-quality-report: $(VENV_PY) ## JSON KG quality metrics (Phase 1 evaluation)
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_quality_report
+
+rdf-export-dump: $(VENV_PY) ## Export public/schema RDF dumps to ontology/lod/dumps
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_export_dump
+
+skos-vocab: ## Emit AAT-aligned SKOS controlled vocabularies from HeritageGraph.yaml enums
+	python3 tools/emit_skos_vocabularies.py
+
+kg-inference: $(VENV_PY) ## Materialize OWL-RL into graph/inferred
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_materialize_inference
+
+kg-nanopubs: $(VENV_PY) ## Export TriG nanopublications per assertion
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_export_nanopubs
+
+kg-linkset: $(VENV_PY) ## Export VoID linkset TTL
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_export_linkset
+
+kg-rdfstar: $(VENV_PY) ## Export RDF-star annotation TriG
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_export_rdfstar
+
 rdf-diagnose: $(VENV_PY) ## Report RDF sync config and triple counts
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_diagnose
 
@@ -96,10 +129,10 @@ schema-diff: ## Compare two ontology YAML files: OLD=ontology/HeritageGraph.yaml
 	fi
 	python3 tools/schema_diff.py $(OLD) $(NEW)
 
-generate: ontology viz-config shacl serializers entityrefs schema-rebuild ## Full pipeline from ontology/HeritageGraph.yaml
-	@echo "==> Full ontology pipeline complete (registry, viz, SHACL, serializers, entityrefs, DB snapshot)"
+generate: ontology viz-config shacl crm-bridge skos-vocab serializers entityrefs schema-rebuild ## Full pipeline from ontology/HeritageGraph.yaml
+	@echo "==> Full ontology pipeline complete (registry, viz, SHACL, CRM bridge, SKOS, serializers, entityrefs, DB snapshot)"
 
-check: ontology-check viz-config-check shacl-check serializers-check entityrefs-check contribute-routes-check ## CI: verify all generated files are up to date (no side-effects)
+check: ontology-check shacl-check crm-bridge-check skos-vocab-check serializers-check entityrefs-check contribute-routes-check ## CI: verify all generated files are up to date (no side-effects)
 	@echo "==> All ontology pipeline checks passed"
 
 # ================================================================

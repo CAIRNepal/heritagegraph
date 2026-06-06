@@ -34,3 +34,32 @@ class RDFSyncOutbox(models.Model):
 
     def __str__(self) -> str:
         return f"{self.operation} {self.subject_uri[:60]}"
+
+
+class PartnerInstitution(models.Model):
+    """
+    Multi-site deployment anchor (Phase 3 pilot readiness).
+
+    Each partner runs the same ontology registry with an isolated or federated graph partition.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=300)
+    country_code = models.CharField(max_length=2, blank=True, help_text="ISO 3166-1 alpha-2")
+    ror_id = models.CharField(max_length=64, blank=True, help_text="ROR institution ID")
+    website = models.URLField(max_length=500, blank=True)
+    graph_partition_suffix = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Optional named-graph suffix for partner-specific assertions",
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "graph_partner_institution"
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name

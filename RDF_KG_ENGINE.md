@@ -102,6 +102,7 @@ See `.env.example` for `RDF_*` variables. Key flags:
 | **E** | Next | Wikidata/Getty entity resolution in engine |
 | **F** | Optional | External OWL reasoner → `graph/inferred` materialization |
 | **G** | Optional | SPARQL federation endpoint |
+| **Phase 1–2** | Done | Assertion/prov graphs, LOD `/lod/resource/`, VoID, SKOS, quality report — `docs/PHASE1_PHASE2_IMPLEMENTATION.md` |
 
 **Target maturity after C–D:** Level 3–4 (knowledge graph with semantic query surface).
 

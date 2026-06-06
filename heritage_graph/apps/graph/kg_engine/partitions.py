@@ -14,6 +14,9 @@ class GraphPartition(str, Enum):
     SCHEMA = "schema"
     DOCUMENT = "document"
     PROVENANCE = "prov"
+    ASSERTION = "assertion"
+    SNAPSHOT = "snapshot"
+    INFERRED = "inferred"
     INGEST = "ingest"
 
     def uri(self, *, suffix: str = "") -> str | None:
@@ -57,6 +60,39 @@ class GraphPartition(str, Enum):
             if not suffix:
                 return base
             return f"{base}/{suffix}"
+
+        if self is GraphPartition.ASSERTION:
+            base = str(
+                getattr(
+                    settings,
+                    "RDF_ASSERTION_GRAPH_BASE_URI",
+                    "https://w3id.org/heritagegraph/graph/assertion/",
+                )
+            ).rstrip("/")
+            if not suffix:
+                return base
+            return f"{base}/{suffix}"
+
+        if self is GraphPartition.SNAPSHOT:
+            base = str(
+                getattr(
+                    settings,
+                    "RDF_SNAPSHOT_GRAPH_BASE_URI",
+                    "https://w3id.org/heritagegraph/graph/snapshot/",
+                )
+            ).rstrip("/")
+            if not suffix:
+                return base
+            return f"{base}/{suffix}"
+
+        if self is GraphPartition.INFERRED:
+            return str(
+                getattr(
+                    settings,
+                    "RDF_INFERRED_GRAPH_URI",
+                    "https://w3id.org/heritagegraph/graph/inferred",
+                )
+            ).strip() or None
 
         if self is GraphPartition.INGEST:
             return str(

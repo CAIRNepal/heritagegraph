@@ -12,6 +12,7 @@
 # Outputs (do not edit by hand):
 #   heritage_graph_ui/src/lib/ontology/__generated__/heritage-viz-config.ts
 #   heritage_graph_ui/src/lib/ontology/__generated__/enums.ts
+#   heritage_graph_ui/src/lib/ontology/__generated__/ontology-graph.ts
 #   heritage_graph/apps/graph/ontology_config.py
 #
 # ─────────────────────────────────────────────────────────────────────────────
@@ -140,17 +141,20 @@ node_types:
     emoji: "\U0001F5BC"   # 🖼
     hg_category: tangible
 
-  # HistoricalPeriod is a TimeSpan subtype for named historical periods
+  # Named historical periods (Lichhavi, Malla, …) — a heritageGraph:HistoricalPeriod
+  # (crm:E4_Period), the class instances are actually projected with.
   - key: HistoricalPeriod
-    linkml_class: TimeSpan
+    linkml_class: HistoricalPeriod
     label: Historical Period
     color: "#a3a3a3"
     glow_color: "#d4d4d4"
     emoji: "⏳"       # ⏳
     hg_category: temporal
 
+  # Source nodes are projected as heritageGraph:InformationObject (registry key
+  # `source`); point the viz at the class the KG actually emits.
   - key: Source
-    linkml_class: DataSource
+    linkml_class: InformationObject
     label: Source
     color: "#78716c"
     glow_color: "#a8a29e"
@@ -164,6 +168,39 @@ node_types:
     glow_color: "#fde68a"
     emoji: "\U0001F4C5"   # 📅
     hg_category: event
+
+  # ── Classes that appear in the KG but previously had no viz identity ───────
+  - key: RitualEvent
+    linkml_class: RitualEvent
+    label: Ritual
+    color: "#fb923c"
+    glow_color: "#fdba74"
+    emoji: "\U0001F549"   # 🕉
+    hg_category: event
+
+  - key: CasteGroup
+    linkml_class: CasteGroup
+    label: Caste Group
+    color: "#16a34a"
+    glow_color: "#4ade80"
+    emoji: "\U0001F46A"   # 👪
+    hg_category: actor
+
+  - key: LivingGoddessTenure
+    linkml_class: LivingGoddessTenure
+    label: Living Goddess Tenure
+    color: "#e11d48"
+    glow_color: "#fb7185"
+    emoji: "\U0001F451"   # 👑
+    hg_category: temporal
+
+  - key: SyncreticRelationship
+    linkml_class: SyncreticRelationship
+    label: Syncretic Link
+    color: "#9333ea"
+    glow_color: "#c084fc"
+    emoji: "\U0001F517"   # 🔗
+    hg_category: conceptual
 
 
 # Domain category visual config.
@@ -199,6 +236,65 @@ hg_categories:
     border: "#57534e"
     label: Provenance
 
+# ── Graph View → Ontology tab (Cytoscape schema graph) ─────────────────────
+# Class nodes are generated from ontology/HeritageGraph.yaml (is_a + slot ranges).
+# hg_category from node_types above is mapped into these schema-view categories.
+
+schema_category_map:
+  tangible: tangible
+  conceptual: conceptual
+  event: event
+  spatial: spatial
+  temporal: spatial
+  actor: social
+  provenance: provenance
+
+schema_view_categories:
+  tangible:
+    bg: "#3b82f6"
+    border: "#2563eb"
+    text: "#fff"
+    label: Tangible Heritage
+  conceptual:
+    bg: "#8b5cf6"
+    border: "#7c3aed"
+    text: "#fff"
+    label: Conceptual Entities
+  event:
+    bg: "#f59e0b"
+    border: "#d97706"
+    text: "#fff"
+    label: Events
+  social:
+    bg: "#10b981"
+    border: "#059669"
+    text: "#fff"
+    label: Social / Actors
+  spatial:
+    bg: "#06b6d4"
+    border: "#0891b2"
+    text: "#fff"
+    label: Spatiotemporal
+  provenance:
+    bg: "#ec4899"
+    border: "#db2777"
+    text: "#fff"
+    label: Provenance
+  kumari:
+    bg: "#ef4444"
+    border: "#dc2626"
+    text: "#fff"
+    label: Living Goddess
+  enum:
+    bg: "#94a3b8"
+    border: "#64748b"
+    text: "#fff"
+    label: Enumerations
+  external:
+    bg: "#78716c"
+    border: "#57534e"
+    text: "#fff"
+    label: External (CRM/AAT)
 
 # Slots from ontology/HeritageGraph.yaml that appear as edge labels in the
 # graph visualization. The generator resolves slot_uri from the schema.

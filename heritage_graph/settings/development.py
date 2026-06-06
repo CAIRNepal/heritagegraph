@@ -22,6 +22,11 @@ DATABASES = {
 
 CACHES = build_caches_config()
 
+# Dev: SHACL off by default unless explicitly enabled (pyshacl optional).
+RDF_SHACL_VALIDATE_ON_WRITE = os.environ.get(
+    "RDF_SHACL_VALIDATE_ON_WRITE", "false"
+).lower() in {"1", "true", "yes", "y", "on"}
+
 # --------------------------------------------------------------------
 # Authentication: Google OAuth (primary) + GitHub (placeholder)
 # --------------------------------------------------------------------

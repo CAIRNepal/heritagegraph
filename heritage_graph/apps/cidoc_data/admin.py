@@ -23,6 +23,10 @@ from .models import (
     Monument,
     Person,
     PersonRevision,
+    Production,
+    Consecration,
+    Enshrinement,
+    TransferOfCustody,
     RitualEvent,
     RelationshipPredicate,
     Source,
@@ -246,6 +250,26 @@ class RitualEventAdmin(MetaDataMixin, admin.ModelAdmin):
     search_fields = ("name", "performed_by", "location_name", "note")
     ordering = ("-created_at",)
     list_per_page = 25
+
+
+@admin.register(Production)
+class ProductionAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "status_colored", "created_at")
+
+
+@admin.register(Consecration)
+class ConsecrationAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "status_colored", "created_at")
+
+
+@admin.register(Enshrinement)
+class EnshrinementAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "status_colored", "created_at")
+
+
+@admin.register(TransferOfCustody)
+class TransferOfCustodyAdmin(MetaDataMixin, admin.ModelAdmin):
+    list_display = ("name", "status_colored", "created_at")
 
 
 @admin.register(Festival)

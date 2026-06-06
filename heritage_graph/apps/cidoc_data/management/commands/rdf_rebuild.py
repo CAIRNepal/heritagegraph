@@ -50,4 +50,9 @@ class Command(BaseCommand):
 
         count = get_kg_engine().rebuild_public_graph()
         self.stdout.write(self.style.SUCCESS(f"Projected {count} MetaData instances."))
-        self.stdout.write("Run: python manage.py rdf_diagnose")
+
+        from apps.cidoc_data.rdf_signals import project_all_accepted_assertions
+
+        acount = project_all_accepted_assertions()
+        self.stdout.write(self.style.SUCCESS(f"Projected {acount} accepted assertions (assertion + prov graphs)."))
+        self.stdout.write("Run: python manage.py kg_verify && python manage.py kg_quality_report")

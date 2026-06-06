@@ -48,30 +48,23 @@ def _label_for(instance: Any) -> str:
 def queue_relationship_assertion_projection(
     instance: Any | None = None, **_kwargs: object
 ) -> None:
-    """Emit one triple for accepted relationship.* assertions (007)."""
+    """Project assertions to public + assertion + prov named graphs (on commit)."""
     if not rdf_sync_enabled() or instance is None:
         return
     from apps.cidoc_data.assertion_validation import is_relationship_property
+    from apps.graph.kg_engine.engine import get_kg_engine
 
-    if instance.reconciliation_status != "accepted":
-        return
-    if not is_relationship_property(instance.asserted_property):
-        return
+    prop = instance.asserted_property or ""
+    if is_relationship_property(prop) or (
+        instance.reconciliation_status == "accepted"
+        and prop
+        and (instance.asserted_value or "").strip()
+    ):
 
-    subj_uri = _uri_for_generic(instance.content_type, instance.object_id)
-    obj_uri = _uri_for_generic(instance.object_content_type, instance.object_object_id)
-    if not subj_uri or not obj_uri:
-        return
+        def _run() -> None:
+            get_kg_engine().publish_assertion(instance)
 
-    raw_prop = instance.asserted_property or ""
-    prop_suffix = (
-        raw_prop[len("relationship.") :] if "relationship." in raw_prop else raw_prop
-    )
-    base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
-    pred_uri = f"{base}/property/{prop_suffix}"
-    persist_relationship_triple(
-        subject_uri=subj_uri, pred_uri=pred_uri, object_uri=obj_uri
-    )
+        transaction.on_commit(_run)
 
 
 def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> None:
@@ -285,12 +278,21 @@ def connect_signals() -> None:
         weak=False,
     )
     post_save.connect(_on_assertion_saved, sender=HeritageAssertion, weak=False)
+    post_delete.connect(_on_assertion_deleted, sender=HeritageAssertion, weak=False)
     post_delete.connect(
         _on_identity_assertion_deleted, sender=HeritageAssertion, weak=False
     )
     post_save.connect(_on_entity_cluster_saved, sender=EntityCluster, weak=False)
 
     _CONNECTED = True
+
+
+def _on_assertion_deleted(sender, instance, **kwargs: object) -> None:
+    if not rdf_sync_enabled():
+        return
+    from apps.graph.kg_engine.engine import get_kg_engine
+
+    get_kg_engine().unpublish_assertion(instance)
 
 
 def project_all_metadata_instances() -> int:
@@ -304,6 +306,23 @@ def project_all_metadata_instances() -> int:
             continue
         for obj in model.objects.all().iterator():
             queue_entity_projection(obj)
+            n += 1
+    return n
+
+
+def project_all_accepted_assertions() -> int:
+    """Reproject every accepted HeritageAssertion to assertion + prov graphs."""
+    if not rdf_sync_enabled():
+        return 0
+    from apps.cidoc_data.models import HeritageAssertion
+    from apps.graph.kg_engine.engine import get_kg_engine
+
+    engine = get_kg_engine()
+    n = 0
+    for assertion in HeritageAssertion.objects.filter(
+        reconciliation_status="accepted"
+    ).iterator():
+        if engine.publish_assertion(assertion):
             n += 1
     return n
 

@@ -311,7 +311,7 @@ RDF_PUBLIC_GRAPH_URI = os.environ.get(
 )
 # Optional SHACL gate on contribution projection (uses generated minimal shapes).
 RDF_SHACL_VALIDATE_ON_WRITE = os.environ.get(
-    "RDF_SHACL_VALIDATE_ON_WRITE", "false"
+    "RDF_SHACL_VALIDATE_ON_WRITE", "true"
 ).lower() in {"1", "true", "yes", "y", "on"}
 RDF_SHACL_STRICT_ON_WRITE = os.environ.get("RDF_SHACL_STRICT_ON_WRITE", "false").lower() in {
     "1",
@@ -334,6 +334,34 @@ RDF_DOCUMENT_GRAPH_BASE_URI = os.environ.get(
 RDF_PROVENANCE_GRAPH_BASE_URI = os.environ.get(
     "RDF_PROVENANCE_GRAPH_BASE_URI",
     "https://w3id.org/heritagegraph/graph/prov",
+)
+RDF_ASSERTION_GRAPH_BASE_URI = os.environ.get(
+    "RDF_ASSERTION_GRAPH_BASE_URI",
+    "https://w3id.org/heritagegraph/graph/assertion",
+)
+RDF_SNAPSHOT_GRAPH_BASE_URI = os.environ.get(
+    "RDF_SNAPSHOT_GRAPH_BASE_URI",
+    "https://w3id.org/heritagegraph/graph/snapshot",
+)
+# Copy public triples to snapshot graph on assertion publish (Phase 2 versioning).
+RDF_SNAPSHOT_ON_PUBLISH = os.environ.get("RDF_SNAPSHOT_ON_PUBLISH", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+    "y",
+    "on",
+}
+RDF_PUBLIC_SPARQL_URL = os.environ.get(
+    "RDF_PUBLIC_SPARQL_URL",
+    "https://w3id.org/heritagegraph/sparql",
+)
+# Legacy Submission rows are not projected to RDF when true (Phase 2).
+RDF_EXCLUDE_LEGACY_SUBMISSION = os.environ.get(
+    "RDF_EXCLUDE_LEGACY_SUBMISSION", "true"
+).lower() in {"1", "true", "yes", "y", "on"}
+RDF_INFERRED_GRAPH_URI = os.environ.get(
+    "RDF_INFERRED_GRAPH_URI",
+    "https://w3id.org/heritagegraph/graph/inferred",
 )
 # Promote OCR/agent auto-accepted triples into the public graph.
 RDF_KG_PROMOTE_ON_AUTO_ACCEPT = os.environ.get(

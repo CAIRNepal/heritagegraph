@@ -258,18 +258,30 @@ class Command(BaseCommand):
                             # Re-save to trigger signals into temp store
                             person.description = person.description + " "
                             person.save()
-                            from pyoxigraph import NamedNode, Store
+                            from apps.graph.kg_engine import get_kg_engine
 
-                            subj = NamedNode(_resource_uri(person))
-                            quads = list(
-                                Store(store_path).quads_for_pattern(
-                                    subj, None, None, None
-                                )
-                            )
+                            subj_uri = _resource_uri(person)
+                            edges = get_kg_engine().neighborhood(subj_uri, limit=20)
                             report.add(
                                 "oxigraph_store",
-                                len(quads) > 0,
-                                f"quad_count={len(quads)} subject={_resource_uri(person)}",
+                                len(edges) > 0,
+                                f"edge_count={len(edges)} subject={subj_uri}",
+                            )
+                            graph_res = client.get(
+                                "/api/v1/cidoc/kg/graph/",
+                                {"scope": "all", "node_limit": 500},
+                            )
+                            graph_ok = graph_res.status_code == 200
+                            graph_body = graph_res.json() if graph_ok else {}
+                            node_iris = {
+                                n.get("id")
+                                for n in graph_body.get("nodes", [])
+                                if isinstance(n, dict)
+                            }
+                            report.add(
+                                "kg_graph_api",
+                                graph_ok and subj_uri in node_iris,
+                                f"status={graph_res.status_code} nodes={len(node_iris)}",
                             )
 
         # ── Read APIs (what graphview / atlas fetch) ─────────────────────

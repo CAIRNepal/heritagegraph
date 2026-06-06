@@ -44,6 +44,13 @@ heritage_graph/db.sqlite3.bak-*
 #   git rm -r --cached oxigraph_db
 /oxigraph_db/
 
+# Generated LOD exports (rebuild via manage.py / make targets)
+/ontology/lod/nanopubs/
+/ontology/lod/dumps/
+/ontology/lod/annotations.trig
+/evaluation/reports/latest.json
+/evaluation/reports/inference.json
+
 # ==================== Docker ====================
 infra/traefik/acme/acme.json
 backups/

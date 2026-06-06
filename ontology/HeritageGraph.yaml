@@ -231,6 +231,8 @@ prefixes:
   crminf: "http://www.cidoc-crm.org/crminf/"
   rico: "https://www.ica.org/standards/RiC/ontology#"
   datacite: "http://purl.org/spar/datacite/"
+  edm: "http://www.europeana.eu/schemas/edm/"
+  geonames: "https://www.geonames.org/ontology#"
 
 default_prefix: heritageGraph
 
@@ -258,6 +260,8 @@ classes:
       - schema:CreativeWork
       - aat:300117127  # artifacts (object genre)
       - wikidata:Q838948
+    close_mappings:
+      - edm:ProvidedCHO  # Europeana cultural heritage object
     slots:
       - id
       - name
@@ -533,6 +537,27 @@ classes:
       name:
         required: true
 
+  HistoricalPeriod:
+    class_uri: heritageGraph:HistoricalPeriod
+    description: "A named, time-bounded historical period of Nepal (e.g., Lichhavi,
+      Malla, Shah). A temporal frame within which heritage entities and events are
+      situated — distinct from a single HistoricalEvent."
+    broad_mappings:
+      - crm:E4_Period
+    close_mappings:
+      - edm:TimeSpan
+    disjoint_with:
+      - Person
+      - Place
+      - Deity
+    slots:
+      - name
+      - note
+      - has_timespan
+    slot_usage:
+      name:
+        required: true
+
   HistoricalEvent:
     class_uri: crm:E5_Event
     description: "Major event affecting heritage structures or ritual life
@@ -612,6 +637,8 @@ classes:
     broad_mappings:
       - aat:300054754  # ceremonies
       - crm:E7_Activity
+    close_mappings:
+      - edm:Event
     slots:
       - name
       - note
@@ -836,6 +863,9 @@ classes:
   Person:
     class_uri: crm:E21_Person
     description: "Individual person who performs, commissions, documents, or verifies heritage activities"
+    close_mappings:
+      - edm:Agent
+      - schema:Person
     disjoint_with:
       - Guthi
       - CasteGroup
@@ -870,6 +900,10 @@ classes:
   Place:
     class_uri: crm:E53_Place
     description: "Defined geographic location where events occur and structures exist"
+    close_mappings:
+      - edm:Place
+      - geonames:Feature
+      - schema:Place
     disjoint_with:
       - Person
       - Deity
@@ -946,6 +980,8 @@ classes:
       - confidence_score
       - data_quality_note
       - reconciliation_status
+      - justification_note
+      - crminf_conclusion
       # to track what is being asserted
       - asserted_property
       - asserted_value
@@ -1505,20 +1541,33 @@ slots:
   # ============================================================================
 
   had_participant:
-    slot_uri: crm:P11_had_participant
+    # P11 had_participant has domain E5 Event; LivingGoddessTenure is an E4 Period
+    # (not an E5 Event), so a direct P11 assertion would be a CRM domain violation.
+    # Use a local predicate and document the CRM intent as a broad mapping.
+    slot_uri: heritageGraph:had_participant
     range: Actor
     multivalued: true
     description: "Actor(s) who participated in this event or period"
+    broad_mappings:
+      - crm:P11_had_participant
 
   embodied_deity:
-    slot_uri: crm:P14.1_in_the_role_of
+    # P14.1 in_the_role_of is a property-of-a-property (qualifier on P14), not a
+    # standalone binary predicate. Model the embodied deity as a local predicate.
+    slot_uri: heritageGraph:embodied_deity
     range: Deity
     description: "Deity role embodied by participant"
+    broad_mappings:
+      - crm:P14.1_in_the_role_of
 
   residence_structure:
-    slot_uri: crm:P74_has_current_or_former_residence
+    # P74 has domain E39 Actor and range E53 Place; here the subject is an
+    # E4 Period and the object an E22 structure, so P74 cannot be asserted directly.
+    slot_uri: heritageGraph:residence_structure
     range: ArchitecturalStructure
     description: "Structure where a person resides during a specific period. For Living Goddess, this is typically a Kumari Ghar (god-house)."
+    broad_mappings:
+      - crm:P74_has_current_or_former_residence
 
   supported_by_institution:
     slot_uri: heritageGraph:supported_by_institution
@@ -1860,9 +1909,14 @@ slots:
     inverse: depicts_deity
     
   is_about_deity:
-    slot_uri: crm:P129_is_about
+    # P129 is_about has domain E89 Propositional Object; a Murti is a physical
+    # E22 object, so P129 is a domain violation. Depiction (P62) is the apt CRM
+    # anchor; the local predicate also carries the cultic-presence connotation.
+    slot_uri: heritageGraph:is_about_deity
     range: Deity
     description: "Deity represented and ritually associated with the Murti"
+    broad_mappings:
+      - crm:P62_depicts
 
   consecrated_by_event:
     slot_uri: heritageGraph:consecrated_by_event
@@ -2193,6 +2247,37 @@ slots:
     slot_uri: heritageGraph:reconciliation_status
     range: string
     description: "Status of multi-source reconciliation (confirmed, conflicting, unverified)"
+
+  justification_note:
+    slot_uri: crminf:J4_that
+    range: string
+    description: "CRMinf justification or reasoning summary for this belief"
+
+  crminf_conclusion:
+    slot_uri: crminf:J2_concluded_that
+    range: string
+    description: "Optional CRMinf conclusion label (confirmed, refuted, uncertain)"
+
+  access_tier:
+    slot_uri: heritageGraph:accessTier
+    range: string
+    description: "CARE-aligned access tier (public, restricted, community_only, sensitive_indigenous)"
+
+  care_labels:
+    slot_uri: heritageGraph:careLabels
+    range: string
+    multivalued: true
+    description: "TK/CARE label URIs or codes"
+
+  iiif_manifest_url:
+    slot_uri: crmdig:D1_Digital_Object
+    range: string
+    description: "IIIF Presentation 3 manifest URL for digitized source"
+
+  digitization_activity:
+    slot_uri: crmdig:D2_Digitization_Event
+    range: string
+    description: "Label for digitization or scanning activity"
 
   # --- VERIFICATION ---
 

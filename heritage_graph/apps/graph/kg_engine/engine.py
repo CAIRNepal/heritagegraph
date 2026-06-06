@@ -17,7 +17,11 @@ from django.conf import settings
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.projector import tripleset_for_cultural_entity, tripleset_for_metadata
 from apps.graph.kg_engine.promotion import promote_document_graph_to_public, promote_ntriples_to_public
-from apps.graph.kg_engine.queries import fetch_neighborhood, fetch_type_counts
+from apps.graph.kg_engine.queries import (
+    fetch_graph_projection,
+    fetch_neighborhood,
+    fetch_type_counts,
+)
 from apps.graph.kg_engine.store import KnowledgeGraphStore, StoreStats
 from apps.graph.kg_engine.uris import (
     label_for_instance,
@@ -26,6 +30,37 @@ from apps.graph.kg_engine.uris import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def resource_uri_for_instance_from_assertion(assertion: Any) -> str | None:
+    inst = django_instance_from_assertion(assertion, as_object=False)
+    return resource_uri_for_instance(inst) if inst else None
+
+
+def resource_uri_for_object_assertion(assertion: Any) -> str | None:
+    inst = django_instance_from_assertion(assertion, as_object=True)
+    return resource_uri_for_instance(inst) if inst else None
+
+
+def django_instance_from_assertion(assertion: Any, *, as_object: bool = False) -> Any | None:
+    if as_object:
+        ct_id = assertion.object_content_type_id
+        pk = assertion.object_object_id
+    else:
+        ct_id = assertion.content_type_id
+        pk = assertion.object_id
+    if ct_id is None or pk is None:
+        return None
+    from django.contrib.contenttypes.models import ContentType
+
+    ct = ContentType.objects.get(pk=ct_id)
+    model = ct.model_class()
+    if model is None:
+        return None
+    try:
+        return model.objects.get(pk=pk)
+    except model.DoesNotExist:
+        return None
 
 
 @dataclass
@@ -105,6 +140,24 @@ class KnowledgeGraphEngine:
             )
         return ok
 
+    def _ensure_public_resource(self, instance: Any) -> None:
+        """Project subject/object if missing rdf:type in the public graph (avoids dangling edges)."""
+        if not self.enabled() or instance is None:
+            return
+        from apps.graph.ontology_config import RDF_PREFIXES
+
+        uri = resource_uri_for_instance(instance)
+        public = GraphPartition.PUBLIC.uri()
+        if not public:
+            return
+        rdf_type = RDF_PREFIXES["rdf"] + "type"
+        rows = self.store.select(
+            f"SELECT ?t WHERE {{ GRAPH <{public}> {{ <{uri}> <{rdf_type}> ?t }} }} LIMIT 1"
+        )
+        if rows:
+            return
+        self.publish_metadata_instance(instance)
+
     def publish_relationship(
         self, *, subject_uri: str, pred_suffix: str, object_uri: str
     ) -> bool:
@@ -118,6 +171,133 @@ class KnowledgeGraphEngine:
             object_uri=object_uri,
             graph_uri=graph_uri,
         )
+
+    def publish_assertion(self, assertion: Any) -> bool:
+        """Project an accepted HeritageAssertion to public + assertion + prov graphs."""
+        if not self.enabled():
+            return False
+        from apps.cidoc_data.assertion_validation import is_relationship_property
+        from apps.graph.kg_engine.assertion_projection import (
+            build_relationship_assertion_triples,
+            build_slot_assertion_triples,
+        )
+
+        if assertion.reconciliation_status != "accepted":
+            return self.unpublish_assertion(assertion)
+
+        subj_inst = django_instance_from_assertion(assertion, as_object=False)
+        if not subj_inst:
+            return False
+        self._ensure_public_resource(subj_inst)
+        subj_uri = resource_uri_for_instance(subj_inst)
+
+        if is_relationship_property(assertion.asserted_property):
+            obj_inst = django_instance_from_assertion(assertion, as_object=True)
+            if not obj_inst:
+                return False
+            self._ensure_public_resource(obj_inst)
+            obj_uri = resource_uri_for_instance(obj_inst)
+            if not obj_uri:
+                return False
+            raw = assertion.asserted_property or ""
+            suffix = raw[len("relationship.") :] if "relationship." in raw else raw
+            pred_uri = relationship_predicate_uri(suffix)
+            public, assertion_triples, prov_triples = build_relationship_assertion_triples(
+                assertion,
+                subject_uri=subj_uri,
+                pred_uri=pred_uri,
+                object_uri=obj_uri,
+                resource_uri_fn=resource_uri_for_instance,
+            )
+        else:
+            prop = (assertion.asserted_property or "").strip()
+            if not prop or not (assertion.asserted_value or "").strip():
+                return False
+            base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
+            pred_uri = f"{base}/property/{prop}"
+            public, assertion_triples, prov_triples = build_slot_assertion_triples(
+                assertion,
+                subject_uri=subj_uri,
+                pred_uri=pred_uri,
+                literal_value=assertion.asserted_value,
+                resource_uri_fn=resource_uri_for_instance,
+            )
+
+        public_graph = GraphPartition.PUBLIC.uri()
+        assertion_graph = GraphPartition.ASSERTION.uri(suffix=str(assertion.pk))
+        prov_graph = GraphPartition.PROVENANCE.uri(suffix=str(assertion.pk))
+
+        conforms, _ = self._validate_shacl(public)
+        if conforms is False and getattr(settings, "RDF_SHACL_STRICT_ON_WRITE", False):
+            return False
+
+        ok_pub = True
+        if public and public_graph:
+            edge = public[0]
+            if edge.obj_uri:
+                ok_pub = self.store.upsert_object_triple(
+                    subject_uri=edge.subj,
+                    pred_uri=edge.pred,
+                    object_uri=edge.obj_uri,
+                    graph_uri=public_graph,
+                )
+            elif edge.literal:
+                lex, dtype = edge.literal
+                ok_pub = self.store.upsert_literal_triple(
+                    subject_uri=edge.subj,
+                    pred_uri=edge.pred,
+                    lexical=lex,
+                    datatype=dtype or "",
+                    graph_uri=public_graph,
+                )
+
+        ok_assert = self.store.replace_named_graph_triples(
+            graph_uri=assertion_graph or "",
+            triples=assertion_triples,
+        )
+        ok_prov = self.store.replace_named_graph_triples(
+            graph_uri=prov_graph or "",
+            triples=prov_triples,
+        )
+
+        if getattr(settings, "RDF_SNAPSHOT_ON_PUBLISH", False) and public_graph:
+            snap = GraphPartition.SNAPSHOT.uri(suffix=str(assertion.pk))
+            if snap:
+                self.store.replace_named_graph_triples(graph_uri=snap, triples=public)
+
+        return bool(ok_pub and ok_assert and ok_prov)
+
+    def unpublish_assertion(self, assertion: Any) -> bool:
+        """Remove assertion triples from all graphs when not accepted."""
+        if not self.enabled():
+            return False
+        from apps.cidoc_data.assertion_validation import is_relationship_property
+
+        assertion_graph = GraphPartition.ASSERTION.uri(suffix=str(assertion.pk))
+        prov_graph = GraphPartition.PROVENANCE.uri(suffix=str(assertion.pk))
+        snap_graph = GraphPartition.SNAPSHOT.uri(suffix=str(assertion.pk))
+        if assertion_graph:
+            self.store.clear_named_graph(assertion_graph)
+        if prov_graph:
+            self.store.clear_named_graph(prov_graph)
+        if snap_graph:
+            self.store.clear_named_graph(snap_graph)
+
+        if is_relationship_property(assertion.asserted_property):
+            subj_uri = resource_uri_for_instance_from_assertion(assertion)
+            obj_uri = resource_uri_for_object_assertion(assertion)
+            if subj_uri and obj_uri:
+                raw = assertion.asserted_property or ""
+                suffix = raw[len("relationship.") :] if "relationship." in raw else raw
+                pred_uri = relationship_predicate_uri(suffix)
+                public_graph = GraphPartition.PUBLIC.uri()
+                if public_graph:
+                    sparql = (
+                        f"DELETE WHERE {{ GRAPH <{public_graph}> {{ "
+                        f"<{subj_uri}> <{pred_uri}> <{obj_uri}> . }} }}\n"
+                    )
+                    self.store.update(sparql)
+        return True
 
     def delete_resource(self, uri: str, graph: GraphPartition = GraphPartition.PUBLIC) -> bool:
         if not self.enabled():
@@ -179,6 +359,14 @@ class KnowledgeGraphEngine:
 
     def type_histogram(self) -> list[dict[str, str]]:
         return fetch_type_counts(store=self.store)
+
+    def graph(
+        self, *, node_limit: int = 600, edge_limit: int = 3000
+    ) -> dict[str, list[dict[str, str]]]:
+        """Whole public-graph projection (typed nodes + real edges) for the museum."""
+        return fetch_graph_projection(
+            store=self.store, node_limit=node_limit, edge_limit=edge_limit
+        )
 
     def query(self, sparql: str) -> list[dict[str, str]]:
         return self.store.select(sparql)

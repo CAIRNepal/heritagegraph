@@ -1,0 +1,166 @@
+# AUTO-GENERATED — do not edit by hand.
+# Source:  ontology/HeritageGraph.yaml
+# Regen:   python3 tools/emit_crm_bridge.py
+#
+# CIDOC-CRM alignment bridge + disjointness axioms. Loaded into the SCHEMA
+# named graph so OWL-RL/RDFS reasoning can (a) entail CRM supertypes for
+# every heritage class and (b) detect class-disjointness violations.
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix hg:   <https://w3id.org/heritagegraph/> .
+@prefix crm:  <http://www.cidoc-crm.org/cidoc-crm/> .
+
+# ── rdfs:subClassOf → CIDOC-CRM (sound upward entailment) ──────────────
+<https://w3id.org/heritagegraph/Actor> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> .
+<https://w3id.org/heritagegraph/ArchitecturalElement> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E25_Architectural_Element> .
+<https://w3id.org/heritagegraph/ArchivalRecord> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E31_Document> .
+<https://w3id.org/heritagegraph/CalendarSystem> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E29_Designated_Reference_System> .
+<https://w3id.org/heritagegraph/CasteGroup> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E74_Group> .
+<https://w3id.org/heritagegraph/ConditionAssessment> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E14_Condition_Assessment> .
+<https://w3id.org/heritagegraph/ConditionState> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E3_Condition_State> .
+<https://w3id.org/heritagegraph/Consecration> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://w3id.org/heritagegraph/DataSource> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> .
+<https://w3id.org/heritagegraph/Deity> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E28_Conceptual_Object> .
+<https://w3id.org/heritagegraph/DestructionEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E6_Destruction> .
+<https://w3id.org/heritagegraph/DocumentationActivity> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://w3id.org/heritagegraph/Enshrinement> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://w3id.org/heritagegraph/FieldSurveyActivity> rdfs:subClassOf <http://www.cidoc-crm.org/crmsci/S4_Observation> .
+<https://w3id.org/heritagegraph/FieldSurveyDataset> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E31_Document> .
+<https://w3id.org/heritagegraph/Guthi> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E74_Group> .
+<https://w3id.org/heritagegraph/HeritageAssertion> rdfs:subClassOf <http://www.cidoc-crm.org/crminf/I2_Belief> .
+<https://w3id.org/heritagegraph/HistoricalEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E5_Event> .
+<https://w3id.org/heritagegraph/HistoricalPeriod> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E4_Period> .
+<https://w3id.org/heritagegraph/HumanMadeObject> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> .
+<https://w3id.org/heritagegraph/IconographicObject> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item> .
+<https://w3id.org/heritagegraph/LivingGoddessRetirement> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://w3id.org/heritagegraph/LivingGoddessSelection> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://w3id.org/heritagegraph/LivingGoddessTenure> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E4_Period> .
+<https://w3id.org/heritagegraph/Material> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E57_Material> .
+<https://w3id.org/heritagegraph/OralHistoryInterview> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E65_Creation> .
+<https://w3id.org/heritagegraph/OralHistoryRecording> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object> .
+<https://w3id.org/heritagegraph/Person> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E21_Person> .
+<https://w3id.org/heritagegraph/Place> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E53_Place> .
+<https://w3id.org/heritagegraph/Production> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E12_Production> .
+<https://w3id.org/heritagegraph/ReligiousTradition> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E55_Type> .
+<https://w3id.org/heritagegraph/RitualEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://w3id.org/heritagegraph/SyncreticRelationship> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment> .
+<https://w3id.org/heritagegraph/Technique> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure> .
+<https://w3id.org/heritagegraph/TimeSpan> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span> .
+<https://w3id.org/heritagegraph/TransferOfCustody> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E10_Transfer_of_Custody> .
+
+# ── skos:exactMatch → external authorities ────────────────────────────
+<https://w3id.org/heritagegraph/ArchitecturalElement> skos:exactMatch <http://vocab.getty.edu/aat/300000885> .
+<https://w3id.org/heritagegraph/ArchitecturalStructure> skos:exactMatch <http://www.wikidata.org/entity/Q811979> .
+<https://w3id.org/heritagegraph/ArchivalRecord> skos:exactMatch <https://www.ica.org/standards/RiC/ontology#Record> .
+<https://w3id.org/heritagegraph/BuddhistMonument> skos:exactMatch <http://vocab.getty.edu/aat/300007576> .
+<https://w3id.org/heritagegraph/BuddhistMonument> skos:exactMatch <http://www.wikidata.org/entity/Q177980> .
+<https://w3id.org/heritagegraph/Deity> skos:exactMatch <http://dbpedia.org/ontology/Deity> .
+<https://w3id.org/heritagegraph/Deity> skos:exactMatch <http://vocab.getty.edu/aat/300343850> .
+<https://w3id.org/heritagegraph/Deity> skos:exactMatch <https://schema.org/Deity> .
+<https://w3id.org/heritagegraph/HeritageAssertion> skos:exactMatch <https://schema.org/Claim> .
+<https://w3id.org/heritagegraph/HumanMadeObject> skos:exactMatch <http://vocab.getty.edu/aat/300117127> .
+<https://w3id.org/heritagegraph/HumanMadeObject> skos:exactMatch <http://www.wikidata.org/entity/Q838948> .
+<https://w3id.org/heritagegraph/HumanMadeObject> skos:exactMatch <https://schema.org/CreativeWork> .
+<https://w3id.org/heritagegraph/IconographicObject> skos:exactMatch <http://dbpedia.org/ontology/Artwork> .
+<https://w3id.org/heritagegraph/Murti> skos:exactMatch <http://vocab.getty.edu/aat/300047090> .
+<https://w3id.org/heritagegraph/Murti> skos:exactMatch <http://www.wikidata.org/entity/Q2594295> .
+<https://w3id.org/heritagegraph/ReligiousTradition> skos:exactMatch <http://vocab.getty.edu/aat/300073708> .
+<https://w3id.org/heritagegraph/Temple> skos:exactMatch <http://dbpedia.org/ontology/ReligiousBuilding> .
+<https://w3id.org/heritagegraph/Temple> skos:exactMatch <http://dbpedia.org/ontology/Temple> .
+<https://w3id.org/heritagegraph/Temple> skos:exactMatch <http://vocab.getty.edu/aat/300007595> .
+<https://w3id.org/heritagegraph/Temple> skos:exactMatch <http://www.wikidata.org/entity/Q44539> .
+<https://w3id.org/heritagegraph/Temple> skos:exactMatch <https://schema.org/HinduTemple> .
+
+# ── skos:closeMatch → external authorities (EDM / GeoNames / schema.org) ──
+<https://w3id.org/heritagegraph/ArchitecturalStructure> skos:closeMatch <https://schema.org/Place> .
+<https://w3id.org/heritagegraph/HistoricalPeriod> skos:closeMatch <http://www.europeana.eu/schemas/edm/TimeSpan> .
+<https://w3id.org/heritagegraph/HumanMadeObject> skos:closeMatch <http://www.europeana.eu/schemas/edm/ProvidedCHO> .
+<https://w3id.org/heritagegraph/Paubha> skos:closeMatch <http://www.wikidata.org/entity/Q130993> .
+<https://w3id.org/heritagegraph/Person> skos:closeMatch <http://www.europeana.eu/schemas/edm/Agent> .
+<https://w3id.org/heritagegraph/Person> skos:closeMatch <https://schema.org/Person> .
+<https://w3id.org/heritagegraph/Place> skos:closeMatch <http://www.europeana.eu/schemas/edm/Place> .
+<https://w3id.org/heritagegraph/Place> skos:closeMatch <https://schema.org/Place> .
+<https://w3id.org/heritagegraph/Place> skos:closeMatch <https://www.geonames.org/ontology#Feature> .
+<https://w3id.org/heritagegraph/RitualEvent> skos:closeMatch <http://www.europeana.eu/schemas/edm/Event> .
+<https://w3id.org/heritagegraph/Temple> skos:closeMatch <https://schema.org/PlaceOfWorship> .
+
+# ── skos:broadMatch → external authorities ────────────────────────────
+<https://w3id.org/heritagegraph/ArchitecturalStructure> skos:broadMatch <http://vocab.getty.edu/aat/300004792> .
+<https://w3id.org/heritagegraph/DocumentationActivity> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+<https://w3id.org/heritagegraph/HeritageAssertion> skos:broadMatch <http://www.w3.org/ns/prov#Entity> .
+<https://w3id.org/heritagegraph/IconographicObject> skos:broadMatch <http://vocab.getty.edu/aat/300264387> .
+<https://w3id.org/heritagegraph/Paubha> skos:broadMatch <http://vocab.getty.edu/aat/300033666> .
+<https://w3id.org/heritagegraph/RitualEvent> skos:broadMatch <http://vocab.getty.edu/aat/300054754> .
+
+# ── owl:disjointWith (class-level consistency constraints) ────────────
+<https://w3id.org/heritagegraph/Actor> owl:disjointWith <https://w3id.org/heritagegraph/HumanMadeObject> .
+<https://w3id.org/heritagegraph/ArchitecturalElement> owl:disjointWith <https://w3id.org/heritagegraph/ArchitecturalStructure> .
+<https://w3id.org/heritagegraph/ArchitecturalElement> owl:disjointWith <https://w3id.org/heritagegraph/Deity> .
+<https://w3id.org/heritagegraph/ArchitecturalElement> owl:disjointWith <https://w3id.org/heritagegraph/IconographicObject> .
+<https://w3id.org/heritagegraph/ArchitecturalElement> owl:disjointWith <https://w3id.org/heritagegraph/Person> .
+<https://w3id.org/heritagegraph/ArchitecturalStructure> owl:disjointWith <https://w3id.org/heritagegraph/IconographicObject> .
+<https://w3id.org/heritagegraph/ArchivalRecord> owl:disjointWith <https://w3id.org/heritagegraph/FieldSurveyDataset> .
+<https://w3id.org/heritagegraph/ArchivalRecord> owl:disjointWith <https://w3id.org/heritagegraph/OralHistoryRecording> .
+<https://w3id.org/heritagegraph/BuddhistMonument> owl:disjointWith <https://w3id.org/heritagegraph/RestHouse> .
+<https://w3id.org/heritagegraph/BuddhistMonument> owl:disjointWith <https://w3id.org/heritagegraph/Temple> .
+<https://w3id.org/heritagegraph/BuddhistMonument> owl:disjointWith <https://w3id.org/heritagegraph/WaterStructure> .
+<https://w3id.org/heritagegraph/CalendarSystem> owl:disjointWith <https://w3id.org/heritagegraph/Deity> .
+<https://w3id.org/heritagegraph/CalendarSystem> owl:disjointWith <https://w3id.org/heritagegraph/Person> .
+<https://w3id.org/heritagegraph/CalendarSystem> owl:disjointWith <https://w3id.org/heritagegraph/Place> .
+<https://w3id.org/heritagegraph/CasteGroup> owl:disjointWith <https://w3id.org/heritagegraph/Deity> .
+<https://w3id.org/heritagegraph/CasteGroup> owl:disjointWith <https://w3id.org/heritagegraph/Guthi> .
+<https://w3id.org/heritagegraph/CasteGroup> owl:disjointWith <https://w3id.org/heritagegraph/Person> .
+<https://w3id.org/heritagegraph/CasteGroup> owl:disjointWith <https://w3id.org/heritagegraph/Place> .
+<https://w3id.org/heritagegraph/Chaitya> owl:disjointWith <https://w3id.org/heritagegraph/Stupa> .
+<https://w3id.org/heritagegraph/ChariotFestival> owl:disjointWith <https://w3id.org/heritagegraph/MaskedDance> .
+<https://w3id.org/heritagegraph/ConditionAssessment> owl:disjointWith <https://w3id.org/heritagegraph/Consecration> .
+<https://w3id.org/heritagegraph/ConditionAssessment> owl:disjointWith <https://w3id.org/heritagegraph/Enshrinement> .
+<https://w3id.org/heritagegraph/ConditionAssessment> owl:disjointWith <https://w3id.org/heritagegraph/Production> .
+<https://w3id.org/heritagegraph/ConditionAssessment> owl:disjointWith <https://w3id.org/heritagegraph/RitualEvent> .
+<https://w3id.org/heritagegraph/ConditionAssessment> owl:disjointWith <https://w3id.org/heritagegraph/TransferOfCustody> .
+<https://w3id.org/heritagegraph/Consecration> owl:disjointWith <https://w3id.org/heritagegraph/Enshrinement> .
+<https://w3id.org/heritagegraph/Consecration> owl:disjointWith <https://w3id.org/heritagegraph/Festival> .
+<https://w3id.org/heritagegraph/Consecration> owl:disjointWith <https://w3id.org/heritagegraph/Production> .
+<https://w3id.org/heritagegraph/Consecration> owl:disjointWith <https://w3id.org/heritagegraph/TransferOfCustody> .
+<https://w3id.org/heritagegraph/DataSource> owl:disjointWith <https://w3id.org/heritagegraph/DocumentationActivity> .
+<https://w3id.org/heritagegraph/DataSource> owl:disjointWith <https://w3id.org/heritagegraph/HeritageAssertion> .
+<https://w3id.org/heritagegraph/Deity> owl:disjointWith <https://w3id.org/heritagegraph/Guthi> .
+<https://w3id.org/heritagegraph/Deity> owl:disjointWith <https://w3id.org/heritagegraph/HistoricalPeriod> .
+<https://w3id.org/heritagegraph/Deity> owl:disjointWith <https://w3id.org/heritagegraph/HumanMadeObject> .
+<https://w3id.org/heritagegraph/Deity> owl:disjointWith <https://w3id.org/heritagegraph/Person> .
+<https://w3id.org/heritagegraph/Deity> owl:disjointWith <https://w3id.org/heritagegraph/Place> .
+<https://w3id.org/heritagegraph/Deity> owl:disjointWith <https://w3id.org/heritagegraph/TimeSpan> .
+<https://w3id.org/heritagegraph/Dharmashala> owl:disjointWith <https://w3id.org/heritagegraph/Pati> .
+<https://w3id.org/heritagegraph/Dharmashala> owl:disjointWith <https://w3id.org/heritagegraph/Sattal> .
+<https://w3id.org/heritagegraph/DhungeDhara> owl:disjointWith <https://w3id.org/heritagegraph/Pokhari> .
+<https://w3id.org/heritagegraph/DocumentationActivity> owl:disjointWith <https://w3id.org/heritagegraph/HeritageAssertion> .
+<https://w3id.org/heritagegraph/DocumentationActivity> owl:disjointWith <https://w3id.org/heritagegraph/Production> .
+<https://w3id.org/heritagegraph/Enshrinement> owl:disjointWith <https://w3id.org/heritagegraph/Festival> .
+<https://w3id.org/heritagegraph/Enshrinement> owl:disjointWith <https://w3id.org/heritagegraph/Production> .
+<https://w3id.org/heritagegraph/Enshrinement> owl:disjointWith <https://w3id.org/heritagegraph/TransferOfCustody> .
+<https://w3id.org/heritagegraph/FieldSurveyActivity> owl:disjointWith <https://w3id.org/heritagegraph/OralHistoryInterview> .
+<https://w3id.org/heritagegraph/FieldSurveyActivity> owl:disjointWith <https://w3id.org/heritagegraph/Verification> .
+<https://w3id.org/heritagegraph/FieldSurveyDataset> owl:disjointWith <https://w3id.org/heritagegraph/OralHistoryRecording> .
+<https://w3id.org/heritagegraph/Guthi> owl:disjointWith <https://w3id.org/heritagegraph/Person> .
+<https://w3id.org/heritagegraph/Guthi> owl:disjointWith <https://w3id.org/heritagegraph/Place> .
+<https://w3id.org/heritagegraph/HistoricalPeriod> owl:disjointWith <https://w3id.org/heritagegraph/Person> .
+<https://w3id.org/heritagegraph/HistoricalPeriod> owl:disjointWith <https://w3id.org/heritagegraph/Place> .
+<https://w3id.org/heritagegraph/HumanMadeObject> owl:disjointWith <https://w3id.org/heritagegraph/Person> .
+<https://w3id.org/heritagegraph/HumanMadeObject> owl:disjointWith <https://w3id.org/heritagegraph/Place> .
+<https://w3id.org/heritagegraph/HumanMadeObject> owl:disjointWith <https://w3id.org/heritagegraph/TimeSpan> .
+<https://w3id.org/heritagegraph/LivingGoddessRetirement> owl:disjointWith <https://w3id.org/heritagegraph/LivingGoddessSelection> .
+<https://w3id.org/heritagegraph/Material> owl:disjointWith <https://w3id.org/heritagegraph/Technique> .
+<https://w3id.org/heritagegraph/Murti> owl:disjointWith <https://w3id.org/heritagegraph/Paubha> .
+<https://w3id.org/heritagegraph/OralHistoryInterview> owl:disjointWith <https://w3id.org/heritagegraph/Verification> .
+<https://w3id.org/heritagegraph/Pati> owl:disjointWith <https://w3id.org/heritagegraph/Sattal> .
+<https://w3id.org/heritagegraph/Person> owl:disjointWith <https://w3id.org/heritagegraph/Place> .
+<https://w3id.org/heritagegraph/Person> owl:disjointWith <https://w3id.org/heritagegraph/TimeSpan> .
+<https://w3id.org/heritagegraph/Place> owl:disjointWith <https://w3id.org/heritagegraph/TimeSpan> .
+<https://w3id.org/heritagegraph/Production> owl:disjointWith <https://w3id.org/heritagegraph/RitualEvent> .
+<https://w3id.org/heritagegraph/Production> owl:disjointWith <https://w3id.org/heritagegraph/TransferOfCustody> .
+<https://w3id.org/heritagegraph/RestHouse> owl:disjointWith <https://w3id.org/heritagegraph/Temple> .
+<https://w3id.org/heritagegraph/RestHouse> owl:disjointWith <https://w3id.org/heritagegraph/WaterStructure> .
+<https://w3id.org/heritagegraph/RitualEvent> owl:disjointWith <https://w3id.org/heritagegraph/TransferOfCustody> .
+<https://w3id.org/heritagegraph/Temple> owl:disjointWith <https://w3id.org/heritagegraph/WaterStructure> .

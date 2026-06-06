@@ -32,67 +32,87 @@ class Command(BaseCommand):
         if not ontology_path.is_file():
             raise CommandError(f"Ontology file not found: {ontology_path}")
 
+        # The schema graph is the union of the LinkML OWL export plus the
+        # generated CIDOC-CRM alignment bridge (rdfs:subClassOf + owl:disjointWith)
+        # and the AAT-aligned SKOS controlled vocabularies. Without the bridge,
+        # no heritage class entails its CRM supertype and no disjointness is
+        # checkable; without the vocab, the Getty AAT mappings never reach the store.
+        ontology_dir = ontology_path.parent
+        tbox_paths = [ontology_path]
+        for extra in (
+            ontology_dir / "heritagegraph-crm-bridge.ttl",
+            ontology_dir / "lod" / "skos-vocabularies.ttl",
+        ):
+            if extra.is_file():
+                tbox_paths.append(extra)
+
         graph_uri = (
             options["graph_uri"]
             or getattr(settings, "RDF_SCHEMA_GRAPH_URI", "")
             or "https://w3id.org/heritagegraph/graph/schema"
         )
 
-        ttl = ontology_path.read_text(encoding="utf-8")
         endpoint = str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
         if endpoint:
-            self._load_remote(endpoint, graph_uri, ttl)
+            self._load_remote(endpoint, graph_uri, tbox_paths)
         else:
-            self._load_local(graph_uri, ttl, ontology_path)
+            count = self._load_local(graph_uri, tbox_paths)
+            self.stdout.write(f"  triples in schema graph: {count}")
 
+        loaded = ", ".join(p.name for p in tbox_paths)
         self.stdout.write(
             self.style.SUCCESS(
-                f"Loaded TBox from {ontology_path} into graph <{graph_uri}>."
+                f"Loaded TBox ({loaded}) into graph <{graph_uri}>."
             )
         )
 
-    def _load_remote(self, endpoint: str, graph_uri: str, ttl: str) -> None:
+    def _load_remote(self, endpoint: str, graph_uri: str, tbox_paths: list[Path]) -> None:
         import requests
 
         base = endpoint.replace("/update", "").replace("/sparql", "").rstrip("/")
-        put_url = f"{base}/store"
-        response = requests.put(
-            put_url,
-            params={"graph": graph_uri},
-            data=ttl.encode("utf-8"),
-            headers={"Content-Type": "text/turtle"},
-            timeout=120,
-        )
-        response.raise_for_status()
+        store_url = f"{base}/store"
+        # First file replaces the graph (PUT); remaining files append (POST).
+        for idx, path in enumerate(tbox_paths):
+            ttl = path.read_text(encoding="utf-8")
+            method = requests.put if idx == 0 else requests.post
+            response = method(
+                store_url,
+                params={"graph": graph_uri},
+                data=ttl.encode("utf-8"),
+                headers={"Content-Type": "text/turtle"},
+                timeout=120,
+            )
+            response.raise_for_status()
 
-    def _load_local(self, graph_uri: str, ttl: str, ontology_path: Path) -> None:
+    def _load_local(self, graph_uri: str, tbox_paths: list[Path]) -> int:
         try:
-            from pyoxigraph import NamedNode, Store
-            from rdflib import Graph
+            from pyoxigraph import NamedNode, RdfFormat
+            from apps.graph.kg_engine.store import _open_local_store
         except ImportError as exc:
-            raise CommandError("pyoxigraph and rdflib are required for local TBox load.") from exc
+            raise CommandError("pyoxigraph is required for local TBox load.") from exc
 
-        store_path = getattr(settings, "OXIGRAPH_STORE_PATH", "oxigraph_db")
-        store = Store(str(store_path))
+        store_path = str(
+            getattr(settings, "OXIGRAPH_STORE_PATH", "oxigraph_db") or "oxigraph_db"
+        )
+        try:
+            store = _open_local_store(store_path)
+        except OSError as exc:
+            raise CommandError(
+                "Cannot open Oxigraph store (another process may hold the lock, "
+                "e.g. runserver). Stop Django and retry."
+            ) from exc
+
         graph_name = NamedNode(graph_uri)
+        for quad in list(store.quads_for_pattern(None, None, None, graph_name)):
+            store.remove(quad)
 
-        for q in list(store.quads_for_pattern(None, None, None, graph_name)):
-            store.remove(q)
-
-        rdf = Graph()
-        rdf.parse(str(ontology_path), format="turtle")
-        from pyoxigraph import Literal, Quad
-
-        for s, p, o in rdf:
-            s_n = NamedNode(str(s))
-            p_n = NamedNode(str(p))
-            if hasattr(o, "toPython"):
-                if o.datatype is not None:
-                    o_term = Literal(str(o), datatype=NamedNode(str(o.datatype)))
-                elif o.language:
-                    o_term = Literal(str(o), language=str(o.language))
-                else:
-                    o_term = Literal(str(o))
-            else:
-                o_term = NamedNode(str(o))
-            store.add(Quad(s_n, p_n, o_term, graph_name))
+        # Native Turtle load — handles blank nodes and relative IRIs (rdflib→NamedNode cannot).
+        for path in tbox_paths:
+            store.bulk_load(
+                path=str(path.resolve()),
+                format=RdfFormat.TURTLE,
+                to_graph=graph_name,
+            )
+        return sum(
+            1 for _ in store.quads_for_pattern(None, None, None, graph_name)
+        )

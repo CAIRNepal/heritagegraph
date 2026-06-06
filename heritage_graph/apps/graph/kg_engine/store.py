@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import threading
+from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
 
@@ -19,10 +20,12 @@ logger = logging.getLogger(__name__)
 # handle was open). Only used for the embedded dev fallback; production uses the
 # Oxigraph HTTP endpoint.
 _LOCAL_STORE_CACHE: dict[str, Any] = {}
+_LOCAL_READONLY_CACHE: dict[str, Any] = {}
 _LOCAL_STORE_LOCK = threading.Lock()
 
 
 def _open_local_store(path: str):
+    """Read-write embedded store (exclusive lock; one writer process at a time)."""
     store = _LOCAL_STORE_CACHE.get(path)
     if store is not None:
         return store
@@ -33,6 +36,21 @@ def _open_local_store(path: str):
 
             store = Store(path)
             _LOCAL_STORE_CACHE[path] = store
+        return store
+
+
+def _open_local_store_readonly(path: str):
+    """Read-only handle — safe alongside runserver or other CLI readers."""
+    store = _LOCAL_READONLY_CACHE.get(path)
+    if store is not None:
+        return store
+    with _LOCAL_STORE_LOCK:
+        store = _LOCAL_READONLY_CACHE.get(path)
+        if store is None:
+            from pyoxigraph import Store
+
+            store = Store.read_only(path)
+            _LOCAL_READONLY_CACHE[path] = store
         return store
 
 
@@ -51,7 +69,115 @@ class KnowledgeGraphStore:
         endpoint = self._query_endpoint()
         if endpoint:
             return self._remote_select(endpoint, sparql, timeout_s=timeout_s)
-        return self._local_select(sparql)
+        return self._local_select(sparql, read_only=True)
+
+    def iter_named_graph_triples(
+        self, graph_uri: str, *, limit: int | None = None
+    ) -> Iterator[tuple[str, str, str]]:
+        """Yield (subject, predicate, object) from a named graph; object is IRI or literal string."""
+        if not graph_uri:
+            return
+        endpoint = self._query_endpoint()
+        if endpoint:
+            sparql = f"SELECT ?s ?p ?o WHERE {{ GRAPH <{graph_uri}> {{ ?s ?p ?o }} }}"
+            if limit is not None:
+                sparql += f" LIMIT {int(limit)}"
+            for row in self.select(sparql):
+                s, p, o = row.get("s"), row.get("p"), row.get("o")
+                if s and p and o is not None:
+                    yield s, p, o
+            return
+        if not self._local_available():
+            return
+        try:
+            from pyoxigraph import NamedNode
+
+            store = _open_local_store_readonly(self._local_store_path())
+            graph_name = NamedNode(graph_uri)
+            count = 0
+            from pyoxigraph import Literal, NamedNode
+
+            for quad in store.quads_for_pattern(None, None, None, graph_name):
+                s = quad.subject.value
+                p = quad.predicate.value
+                obj = quad.object
+                if isinstance(obj, NamedNode):
+                    o = obj.value
+                elif isinstance(obj, Literal):
+                    o = obj.value
+                else:
+                    o = str(obj)
+                yield s, p, o
+                count += 1
+                if limit is not None and count >= limit:
+                    break
+        except OSError as exc:
+            logger.warning(
+                "Cannot read local Oxigraph at %s (%s). Stop runserver or set RDF_QUERY_URL.",
+                self._local_store_path(),
+                exc,
+            )
+        except Exception:
+            logger.debug("iter_named_graph_triples failed", exc_info=True)
+
+    def iter_named_graph_terms(
+        self, graph_uri: str, *, limit: int | None = None
+    ) -> "Iterator[tuple[str, str, dict]]":
+        """Yield (subject, predicate, object_term) preserving RDF term kind.
+
+        ``object_term`` is ``{"kind": "uri"|"literal"|"bnode", "value": str,
+        "datatype": str|None, "lang": str|None}``. Unlike
+        :meth:`iter_named_graph_triples`, this does NOT stringify objects, so a
+        reasoner cannot mistake a literal that happens to start with ``http``
+        for an IRI, and datatypes/language tags survive.
+        """
+        if not graph_uri:
+            return
+        if not self._query_endpoint() and self._local_available():
+            try:
+                from pyoxigraph import BlankNode, Literal, NamedNode
+
+                store = _open_local_store_readonly(self._local_store_path())
+                graph_name = NamedNode(graph_uri)
+                count = 0
+                for quad in store.quads_for_pattern(None, None, None, graph_name):
+                    obj = quad.object
+                    if isinstance(obj, NamedNode):
+                        term = {"kind": "uri", "value": obj.value, "datatype": None, "lang": None}
+                    elif isinstance(obj, BlankNode):
+                        term = {"kind": "bnode", "value": obj.value, "datatype": None, "lang": None}
+                    elif isinstance(obj, Literal):
+                        term = {
+                            "kind": "literal",
+                            "value": obj.value,
+                            "datatype": obj.datatype.value if obj.datatype else None,
+                            "lang": obj.language,
+                        }
+                    else:
+                        term = {"kind": "literal", "value": str(obj), "datatype": None, "lang": None}
+                    yield quad.subject.value, quad.predicate.value, term
+                    count += 1
+                    if limit is not None and count >= limit:
+                        break
+                return
+            except OSError as exc:
+                logger.warning("Cannot read local Oxigraph at %s (%s).", self._local_store_path(), exc)
+                return
+            except Exception:
+                logger.debug("iter_named_graph_terms (local) failed", exc_info=True)
+                return
+        # Remote SPARQL fallback: ``?o`` typing is not exposed by the simplified
+        # select(), so classify conservatively (well-formed IRI vs literal).
+        for s, p, o in self.iter_named_graph_triples(graph_uri, limit=limit):
+            is_iri = o.startswith(("http://", "https://")) and not any(
+                ch in o for ch in " \t\n\"<>{}|\\^`"
+            )
+            yield s, p, {
+                "kind": "uri" if is_iri else "literal",
+                "value": o,
+                "datatype": None,
+                "lang": None,
+            }
 
     def update(self, sparql_update: str, *, timeout_s: int = 45) -> bool:
         endpoint = self._update_endpoint()
@@ -86,6 +212,34 @@ class KnowledgeGraphStore:
         combined = INSERT_PREFIX_LINES + delete_fragment + insert_fragment
         return self.update(combined)
 
+    def upsert_literal_triple(
+        self,
+        *,
+        subject_uri: str,
+        pred_uri: str,
+        lexical: str,
+        datatype: str = "",
+        graph_uri: str | None,
+    ) -> bool:
+        escaped = lexical.replace("\\", "\\\\").replace('"', '\\"')
+        if datatype:
+            obj = f'"{escaped}"^^<{datatype}>'
+        else:
+            obj = f'"{escaped}"'
+        if graph_uri:
+            sparql = (
+                f"DELETE WHERE {{ GRAPH <{graph_uri}> {{ "
+                f"<{subject_uri}> <{pred_uri}> ?o . }} }};\n"
+                f"INSERT DATA {{ GRAPH <{graph_uri}> {{ "
+                f"<{subject_uri}> <{pred_uri}> {obj} . }} }}\n"
+            )
+        else:
+            sparql = (
+                f"DELETE WHERE {{ <{subject_uri}> <{pred_uri}> ?o . }};\n"
+                f"INSERT DATA {{ <{subject_uri}> <{pred_uri}> {obj} . }}\n"
+            )
+        return self.update(sparql)
+
     def upsert_object_triple(
         self,
         *,
@@ -114,6 +268,36 @@ class KnowledgeGraphStore:
         else:
             sparql = f"DELETE WHERE {{ <{subject_uri}> ?p ?o . }}\n"
         return self.update(sparql)
+
+    def clear_named_graph(self, graph_uri: str) -> bool:
+        """Remove all triples from a named graph (Oxigraph-safe)."""
+        if not graph_uri:
+            return False
+        sparql = f"DELETE WHERE {{ GRAPH <{graph_uri}> {{ ?s ?p ?o . }} }}\n"
+        ok = self.update(sparql)
+        if ok:
+            return True
+        # Graph may not exist yet — treat as empty.
+        return True
+
+    def replace_named_graph_triples(
+        self, *, graph_uri: str, triples: list[Any]
+    ) -> bool:
+        """Replace entire contents of a named graph with the given triples."""
+        from apps.cidoc_data.rdf_entity_projection import (
+            INSERT_PREFIX_LINES,
+            sparql_insert_for_triples,
+        )
+
+        if not graph_uri:
+            return False
+        self.clear_named_graph(graph_uri)
+        if not triples:
+            return True
+        insert_fragment = sparql_insert_for_triples(triples, graph_uri=graph_uri)
+        if insert_fragment.startswith(INSERT_PREFIX_LINES):
+            insert_fragment = insert_fragment[len(INSERT_PREFIX_LINES) :]
+        return self.update(INSERT_PREFIX_LINES + insert_fragment)
 
     def insert_ntriples(self, ntriples: str, *, graph_uri: str | None) -> bool:
         body = (ntriples or "").strip()
@@ -244,11 +428,16 @@ class KnowledgeGraphStore:
     def _local_store_path(self) -> str:
         return str(getattr(settings, "OXIGRAPH_STORE_PATH", "oxigraph_db") or "oxigraph_db")
 
-    def _local_select(self, sparql: str) -> list[dict[str, str]]:
+    def _local_select(self, sparql: str, *, read_only: bool = True) -> list[dict[str, str]]:
         if not self._local_available():
             return []
+        path = self._local_store_path()
         try:
-            store = _open_local_store(self._local_store_path())
+            store = (
+                _open_local_store_readonly(path)
+                if read_only
+                else _open_local_store(path)
+            )
             result = store.query(sparql)
             # pyoxigraph 0.5.x: a QuerySolution is not convertible via dict();
             # iterate the result's variables and index each solution by Variable.
@@ -264,6 +453,12 @@ class KnowledgeGraphStore:
                     row[key] = getattr(term, "value", str(term))
                 bindings.append(row)
             return bindings
+        except OSError as exc:
+            logger.warning(
+                "Local SPARQL SELECT failed (%s). Stop Django runserver or use Oxigraph HTTP.",
+                exc,
+            )
+            return []
         except Exception:
             logger.debug("Local SPARQL SELECT failed", exc_info=True)
             return []
@@ -301,6 +496,32 @@ class KnowledgeGraphStore:
         if datatype == geo_wkt:
             return Quad(sub, pred, Literal(lexical, datatype=NamedNode(geo_wkt)), graph_name)
         return Quad(sub, pred, Literal(lexical, datatype=NamedNode(datatype)), graph_name)
+
+    def local_replace_named_graph(self, graph_uri: str, triples: list[Any]) -> bool:
+        """Replace all triples in a named graph using pyoxigraph quads (local store only)."""
+        if not self._local_available() or not graph_uri:
+            return False
+        try:
+            from pyoxigraph import NamedNode
+        except ImportError:
+            return False
+        store = _open_local_store(self._local_store_path())
+        graph_name = NamedNode(graph_uri)
+        try:
+            for q in list(store.quads_for_pattern(None, None, None, graph_name)):
+                store.remove(q)
+        except Exception:
+            pass
+        for triple in triples:
+            quad = self._triple_to_quad(triple, graph_uri=graph_uri)
+            if quad is None:
+                continue
+            try:
+                store.add(quad)
+            except Exception as exc:
+                logger.warning("Local quad insert failed: %s", exc)
+                return False
+        return True
 
     def local_replace_managed_triples(
         self,

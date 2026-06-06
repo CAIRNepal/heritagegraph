@@ -78,6 +78,13 @@ SOURCE_TYPE_CHOICES = [
     ("field_note", "Field Notes"),
 ]
 
+ACCESS_TIER_CHOICES = [
+    ("public", "Public"),
+    ("restricted", "Restricted"),
+    ("community_only", "Community only"),
+    ("sensitive_indigenous", "Sensitive / indigenous"),
+]
+
 
 class MetaData(models.Model):
     """
@@ -88,6 +95,17 @@ class MetaData(models.Model):
     description = models.TextField(blank=True, null=True)
     contributor = models.CharField(max_length=255, blank=True, null=True)
     status = models.CharField(max_length=50, blank=True, null=True)
+    access_tier = models.CharField(
+        max_length=32,
+        choices=ACCESS_TIER_CHOICES,
+        default="public",
+        help_text="CARE-aligned access tier for publication and LOD export",
+    )
+    care_labels = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="TK/CARE label URIs or codes (e.g. community consent markers)",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -514,6 +532,127 @@ class Festival(MetaData):
         return self.name
 
 
+class Production(MetaData):
+    """E12 Production — creation of a heritage object or structure."""
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    produced_object = models.ForeignKey(
+        "ArchitecturalStructure",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="production_events",
+    )
+    carried_out_by = models.CharField(max_length=300, blank=True)
+    took_place_at = models.ForeignKey(
+        "Location",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="production_events",
+    )
+    date_earliest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    date_latest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Consecration(MetaData):
+    """Ritual activation of a sacred object (Prana Pratistha, etc.)."""
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    consecrated_object = models.ForeignKey(
+        "IconographicObject",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="consecration_events",
+    )
+    carried_out_by = models.CharField(max_length=300, blank=True)
+    took_place_at = models.ForeignKey(
+        "Location",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="consecration_events",
+    )
+    makes_deity_present = models.CharField(max_length=200, blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    date_latest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Enshrinement(MetaData):
+    """Installation of a deity representation in a sanctum."""
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    enshrined_deity = models.ForeignKey(
+        "Deity",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="enshrinement_events",
+    )
+    enshrined_in_structure = models.ForeignKey(
+        "ArchitecturalStructure",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="enshrinement_events",
+    )
+    carried_out_by = models.CharField(max_length=300, blank=True)
+    date_earliest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    date_latest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class TransferOfCustody(MetaData):
+    """E10 Transfer of Custody — stewardship change."""
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    transferred_object = models.ForeignKey(
+        "ArchitecturalStructure",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="custody_transfers",
+    )
+    transferred_from_actor = models.CharField(max_length=300, blank=True)
+    transferred_to_actor = models.CharField(max_length=300, blank=True)
+    transferred_to_guthi = models.ForeignKey(
+        "Guthi",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="custody_receipts",
+    )
+    took_place_at = models.ForeignKey(
+        "Location",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="custody_transfers",
+    )
+    date_earliest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    date_latest = models.CharField(max_length=100, blank=True, validators=[validate_edtf])
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+
 class IconographicObject(MetaData):
     """Sacred visual art — Paubha, Murti, etc."""
 
@@ -746,6 +885,16 @@ class DataSource(models.Model):
         help_text="Language of the source (e.g., Nepali, Newari, English)",
     )
     note = models.TextField(blank=True)
+    iiif_manifest_url = models.URLField(
+        max_length=500,
+        blank=True,
+        help_text="IIIF Presentation 3 manifest URL (CRMdig/Digital resource)",
+    )
+    digitization_activity = models.CharField(
+        max_length=300,
+        blank=True,
+        help_text="Label for digitization or scanning activity",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -1003,6 +1152,15 @@ class HeritageAssertion(models.Model):
     )
     data_quality_note = models.TextField(
         blank=True, help_text="Notes on data quality or limitations"
+    )
+    justification_note = models.TextField(
+        blank=True,
+        help_text="CRMinf-style justification or reasoning chain summary",
+    )
+    crminf_conclusion = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="Optional CRMinf conclusion code (e.g. confirmed, refuted)",
     )
 
     # Agent pipeline fields (populated by Agent 2; null for human contributions)

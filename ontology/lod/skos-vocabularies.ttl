@@ -1,0 +1,334 @@
+# AUTO-GENERATED — do not edit by hand.
+# Source:  ontology/HeritageGraph.yaml (enums section)
+# Regen:   python3 tools/emit_skos_vocabularies.py
+#
+# AAT-aligned SKOS controlled vocabularies for HeritageGraph enums.
+
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix crm:  <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix aat:  <http://vocab.getty.edu/aat/> .
+@prefix hg:   <https://w3id.org/heritagegraph/> .
+
+<https://w3id.org/heritagegraph/vocab/ConditionTypeEnum> a skos:ConceptScheme ;
+  skos:prefLabel "ConditionTypeEnum"@en .
+<https://w3id.org/heritagegraph/vocab/ConditionTypeEnum/Good> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ConditionTypeEnum> ;
+  skos:prefLabel "Good"@en ;
+  skos:definition "No significant damage"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Good> .
+
+<https://w3id.org/heritagegraph/vocab/ConditionTypeEnum/Damaged> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ConditionTypeEnum> ;
+  skos:prefLabel "Damaged"@en ;
+  skos:definition "Partially damaged"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Damaged> .
+
+<https://w3id.org/heritagegraph/vocab/ConditionTypeEnum/Ruined> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ConditionTypeEnum> ;
+  skos:prefLabel "Ruined"@en ;
+  skos:definition "Severely damaged or collapsed"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Ruined> .
+
+<https://w3id.org/heritagegraph/vocab/ConditionTypeEnum/Restored> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ConditionTypeEnum> ;
+  skos:prefLabel "Restored"@en ;
+  skos:definition "Repaired and stabilized"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Restored> .
+
+<https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum> a skos:ConceptScheme ;
+  skos:prefLabel "ExistenceStatusEnum"@en .
+<https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum/Extant> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum> ;
+  skos:prefLabel "Extant"@en ;
+  skos:definition "Currently exists in physical form"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Extant> .
+
+<https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum/PartiallyExtant> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum> ;
+  skos:prefLabel "PartiallyExtant"@en ;
+  skos:definition "Fragments or ruins remain"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/PartiallyExtant> .
+
+<https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum/Destroyed> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum> ;
+  skos:prefLabel "Destroyed"@en ;
+  skos:definition "Known to have been destroyed; no physical remains"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Destroyed> .
+
+<https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum/Lost> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum> ;
+  skos:prefLabel "Lost"@en ;
+  skos:definition "Existence documented but location/remains unknown"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Lost> .
+
+<https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum/Hypothetical> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum> ;
+  skos:prefLabel "Hypothetical"@en ;
+  skos:definition "Reconstructed or theorized; never physically realized"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Hypothetical> .
+
+<https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum/Unknown> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ExistenceStatusEnum> ;
+  skos:prefLabel "Unknown"@en ;
+  skos:definition "Existence status uncertain"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Unknown> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum> a skos:ConceptScheme ;
+  skos:prefLabel "RitualTypeEnum"@en .
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/NityaPuja> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "NityaPuja"@en ;
+  skos:definition "Daily mandatory worship"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/NityaPuja> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/NaimittikaPuja> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "NaimittikaPuja"@en ;
+  skos:definition "Occasional/Festival worship"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/NaimittikaPuja> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/KamyaPuja> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "KamyaPuja"@en ;
+  skos:definition "Desire-based optional worship"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/KamyaPuja> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/Abhisheka> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "Abhisheka"@en ;
+  skos:definition "Ritual bathing/anointing of deity"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Abhisheka> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/Homa> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "Homa"@en ;
+  skos:definition "Fire offering ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Homa> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/Bhajan> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "Bhajan"@en ;
+  skos:definition "Devotional singing ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Bhajan> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/Yagna> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "Yagna"@en ;
+  skos:definition "Vedic sacrifice ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Yagna> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/Vrata> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "Vrata"@en ;
+  skos:definition "Vow observance ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Vrata> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/Jatra> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "Jatra"@en ;
+  skos:definition "Festival procession ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Jatra> ;
+  skos:broadMatch <http://vocab.getty.edu/aat/300069290> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/ChariotProcession> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "ChariotProcession"@en ;
+  skos:definition "Ritual chariot pulling"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/ChariotProcession> ;
+  skos:broadMatch <http://vocab.getty.edu/aat/300069290> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/MaskedPerformance> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "MaskedPerformance"@en ;
+  skos:definition "Ritual masked dance"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/MaskedPerformance> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/RitualConsecration> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "RitualConsecration"@en ;
+  skos:definition "Consecration/activation ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/RitualConsecration> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/ProcessionRitual> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "ProcessionRitual"@en ;
+  skos:definition "Ritual procession/movement"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/ProcessionRitual> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/InstallationRitual> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "InstallationRitual"@en ;
+  skos:definition "Installation/enshrinement ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/InstallationRitual> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/DeinstallationRitual> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "DeinstallationRitual"@en ;
+  skos:definition "De-installation/conclusion ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/DeinstallationRitual> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/ReturningRitual> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "ReturningRitual"@en ;
+  skos:definition "Return to normal state ritual"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/ReturningRitual> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/Circumambulation> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "Circumambulation"@en ;
+  skos:definition "Ritual circular movement around sacred site"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Circumambulation> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/RelicTour> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "RelicTour"@en ;
+  skos:definition "Procession with sacred relics between sites"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/RelicTour> .
+
+<https://w3id.org/heritagegraph/vocab/RitualTypeEnum/ProcessionalMovement> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/RitualTypeEnum> ;
+  skos:prefLabel "ProcessionalMovement"@en ;
+  skos:definition "General ritual movement between locations"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/ProcessionalMovement> .
+
+<https://w3id.org/heritagegraph/vocab/DatePrecisionEnum> a skos:ConceptScheme ;
+  skos:prefLabel "DatePrecisionEnum"@en .
+<https://w3id.org/heritagegraph/vocab/DatePrecisionEnum/Exact> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/DatePrecisionEnum> ;
+  skos:prefLabel "Exact"@en ;
+  skos:definition "Precise date known"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Exact> .
+
+<https://w3id.org/heritagegraph/vocab/DatePrecisionEnum/Year> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/DatePrecisionEnum> ;
+  skos:prefLabel "Year"@en ;
+  skos:definition "Year-level precision only"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Year> .
+
+<https://w3id.org/heritagegraph/vocab/DatePrecisionEnum/Decade> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/DatePrecisionEnum> ;
+  skos:prefLabel "Decade"@en ;
+  skos:definition "Within 10-year range"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Decade> .
+
+<https://w3id.org/heritagegraph/vocab/DatePrecisionEnum/Century> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/DatePrecisionEnum> ;
+  skos:prefLabel "Century"@en ;
+  skos:definition "Within century range"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Century> .
+
+<https://w3id.org/heritagegraph/vocab/DatePrecisionEnum/Circa> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/DatePrecisionEnum> ;
+  skos:prefLabel "Circa"@en ;
+  skos:definition "Approximate date"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Circa> .
+
+<https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum> a skos:ConceptScheme ;
+  skos:prefLabel "SyncreticTypeEnum"@en .
+<https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum/Equivalence> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum> ;
+  skos:prefLabel "Equivalence"@en ;
+  skos:definition "Same deity in different traditions (e.g., Avalokiteshvara = Matsyendranath)"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Equivalence> .
+
+<https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum/Appropriation> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum> ;
+  skos:prefLabel "Appropriation"@en ;
+  skos:definition "Deity borrowed from one tradition into another"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Appropriation> .
+
+<https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum/Fusion> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum> ;
+  skos:prefLabel "Fusion"@en ;
+  skos:definition "Intrinsically syncretic deity merging multiple traditions"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Fusion> .
+
+<https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum/Historical> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/SyncreticTypeEnum> ;
+  skos:prefLabel "Historical"@en ;
+  skos:definition "Gradual syncretism over time"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/Historical> .
+
+<https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum> a skos:ConceptScheme ;
+  skos:prefLabel "ArchitecturalStyleEnum"@en ;
+  skos:relatedMatch <http://www.cidoc-crm.org/cidoc-crm/E55_Type> .
+<https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum/Pagoda> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum> ;
+  skos:prefLabel "Pagoda"@en ;
+  skos:definition "Multi-tiered roof style indigenous to Nepal"@en ;
+  skos:exactMatch <http://vocab.getty.edu/aat/300004829> .
+
+<https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum/Shikhara> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum> ;
+  skos:prefLabel "Shikhara"@en ;
+  skos:definition "North Indian spire-shaped style"@en ;
+  skos:exactMatch <http://vocab.getty.edu/aat/300446671> .
+
+<https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum/Dome> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum> ;
+  skos:prefLabel "Dome"@en ;
+  skos:definition "Dome-based style (Mughal/Neo-classical influence)"@en ;
+  skos:exactMatch <http://vocab.getty.edu/aat/300001285> .
+
+<https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum/Chaitya> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum> ;
+  skos:prefLabel "Chaitya"@en ;
+  skos:definition "Buddhist votive shrine style"@en ;
+  skos:exactMatch <http://vocab.getty.edu/aat/300007562> .
+
+<https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum/Stupa> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/ArchitecturalStyleEnum> ;
+  skos:prefLabel "Stupa"@en ;
+  skos:definition "Buddhist dome-shaped reliquary"@en ;
+  skos:exactMatch <http://vocab.getty.edu/aat/300007576> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> a skos:ConceptScheme ;
+  skos:prefLabel "GuthiTypeEnum"@en .
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/SiGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "SiGuthi"@en ;
+  skos:definition "Funeral trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/SiGuthi> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/JatraGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "JatraGuthi"@en ;
+  skos:definition "Festival organization trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/JatraGuthi> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/PujaGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "PujaGuthi"@en ;
+  skos:definition "Daily worship trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/PujaGuthi> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/TempleGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "TempleGuthi"@en ;
+  skos:definition "Temple maintenance trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/TempleGuthi> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/NashaGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "NashaGuthi"@en ;
+  skos:definition "Music and dance trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/NashaGuthi> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/SanaGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "SanaGuthi"@en ;
+  skos:definition "Agricultural cooperative trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/SanaGuthi> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/SanGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "SanGuthi"@en ;
+  skos:definition "Life-cycle ritual trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/SanGuthi> .
+
+<https://w3id.org/heritagegraph/vocab/GuthiTypeEnum/RajGuthi> a skos:Concept ;
+  skos:inScheme <https://w3id.org/heritagegraph/vocab/GuthiTypeEnum> ;
+  skos:prefLabel "RajGuthi"@en ;
+  skos:definition "Royal endowment trust"@en ;
+  skos:exactMatch <https://w3id.org/heritagegraph/RajGuthi> .
+

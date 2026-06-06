@@ -136,6 +136,22 @@ class FormToKnowledgeGraphToVisualizationTest(APITestCase):
         self.assertGreater(stats.public_triples, 0)
         self.assertEqual(stats.source, "sparql")
 
+        # 5d. Museum KG graph projection (typed nodes + real triple edges).
+        kg_resp = self.client.get("/api/v1/cidoc/kg/graph/?scope=all&node_limit=500")
+        self.assertEqual(kg_resp.status_code, 200, kg_resp.content)
+        kg_body = kg_resp.json()
+        node_iris = {n["id"] for n in kg_body.get("nodes", [])}
+        self.assertIn(person_uri, node_iris, "Person missing from kg/graph nodes")
+        edge_endpoints = {
+            (e["source"], e["target"])
+            for e in kg_body.get("edges", [])
+            if e.get("source") and e.get("target")
+        }
+        self.assertTrue(
+            any(person_uri in pair for pair in edge_endpoints),
+            "Person has no entity-to-entity edge in kg/graph projection",
+        )
+
         # ── STAGE 6: RETRACTION (delete propagates out of the graph) ──────────────
         before = engine.stats().public_triples
         self.client.delete(f"/api/v1/cidoc/persons/{person_id}/")

@@ -18,6 +18,7 @@ from apps.heritage_data.auth_views import (
 )
 from apps.heritage_data.dev_auth import DevLoginView
 from apps.heritage_data.views import CurrentUserView, LogoutView, RegisterView
+from apps.graph.lod_views import LodResourceView, VoidDatasetView
 
 urlpatterns = [
     # Root: deployment index (admin + docs links); must stay before prometheus '' include
@@ -46,10 +47,12 @@ urlpatterns = [
     path(
         "cidoc/", include("apps.cidoc_data.urls")
     ),  # Heritage Data App
+    path("graph/", include("apps.graph.urls")),
     # Versioned API (recommended for new clients)
     path("api/v1/data/", include("apps.heritage_data.urls")),
     path("api/v1/data/", include("apps.document_processing.urls")),
     path("api/v1/cidoc/", include("apps.cidoc_data.urls")),
+    path("api/v1/graph/", include("apps.graph.urls")),
     path("api/v1/assistant/", include("apps.assistant.urls")),
 
     # Authentication
@@ -71,4 +74,9 @@ urlpatterns = [
     path("api/register/", RegisterView.as_view(), name="register"),
     path("api/user/info", CurrentUserView.as_view(), name="current-user"),
     path("user/", include("apps.users.urls")),
+    # Linked Open Data (Phase 1–2)
+    path("lod/resource/<path:path>", LodResourceView.as_view(), name="lod-resource"),
+    path("lod/dataset/", VoidDatasetView.as_view(), name="lod-dataset"),
+    path("api/v1/lod/resource/<path:path>", LodResourceView.as_view()),
+    path("api/v1/lod/dataset/", VoidDatasetView.as_view()),
 ]

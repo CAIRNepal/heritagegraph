@@ -314,6 +314,42 @@ class FestivalSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ProductionSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    date_earliest = EDTFSerializerField(required=False, allow_blank=True)
+    date_latest = EDTFSerializerField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Production
+        fields = "__all__"
+
+
+class ConsecrationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    date_earliest = EDTFSerializerField(required=False, allow_blank=True)
+    date_latest = EDTFSerializerField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Consecration
+        fields = "__all__"
+
+
+class EnshrinementSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    date_earliest = EDTFSerializerField(required=False, allow_blank=True)
+    date_latest = EDTFSerializerField(required=False, allow_blank=True)
+
+    class Meta:
+        model = Enshrinement
+        fields = "__all__"
+
+
+class TransferOfCustodySerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    date_earliest = EDTFSerializerField(required=False, allow_blank=True)
+    date_latest = EDTFSerializerField(required=False, allow_blank=True)
+
+    class Meta:
+        model = TransferOfCustody
+        fields = "__all__"
+
+
 class IconographicObjectSerializer(
     CulturalEntityLinkMixin, serializers.ModelSerializer
 ):
