@@ -173,7 +173,7 @@ This project includes comprehensive documentation designed to help both human de
 
 ## 📜 License
 
-The license for this project is yet to be finalized. We’ll choose one that both empowers the community and benefits this project :-)
+Apache 2.0
 
 
 # Nepal Cultural heritage Linked Open Data (NCHLOD)
