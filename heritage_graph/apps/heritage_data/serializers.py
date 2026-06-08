@@ -583,14 +583,19 @@ class CulturalEntityCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         form_data = validated_data.pop("form_data")
         request = self.context.get("request")
+        # `contributor` may arrive via perform_create's serializer.save(contributor=...)
+        # or be derived from the request; accept either without duplicating the kwarg.
+        contributor = validated_data.pop("contributor", None) or (
+            request.user if request else None
+        )
 
         # Create cultural entity
         entity = CulturalEntity.objects.create(
-            **validated_data, contributor=request.user, status="draft"
+            **validated_data, contributor=contributor, status="draft"
         )
 
         # Create first revision
-        entity.create_revision(request.user, form_data)
+        entity.create_revision(contributor, form_data)
 
         # Submit for review
         entity.submit_for_review()

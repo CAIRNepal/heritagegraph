@@ -68,8 +68,24 @@ def tripleset_for_cultural_entity(entity: Any) -> tuple[list[Any], set[str], str
             pass
 
     label = (entity.name or str(entity.entity_id)).strip()
-    type_uri = RDF_PREFIXES.get("heritageGraph", "https://w3id.org/heritagegraph/") + (
-        entity.category or "Entity"
+    # Map the coarse contributor-declared category to a real ontology class IRI so
+    # the museum's RDF_CLASS_URI_TO_NODE_TYPE recognises it and renders the node.
+    # (Raw `heritageGraph:<category>` lowercase IRIs match no NodeType and get
+    # silently dropped at render time.) Targets are class IRIs that resolve to a
+    # museum NodeType directly or via the ontology hierarchy.
+    hg = RDF_PREFIXES.get("heritageGraph", "https://w3id.org/heritagegraph/")
+    crm = RDF_PREFIXES.get("crm", "http://www.cidoc-crm.org/cidoc-crm/")
+    category_class = {
+        "monument": hg + "ArchitecturalStructure",
+        "artifact": hg + "IconographicObject",
+        "ritual": hg + "RitualEvent",
+        "festival": hg + "Festival",
+        "tradition": crm + "E28_Conceptual_Object",
+        "document": hg + "InformationObject",
+        "other": crm + "E28_Conceptual_Object",
+    }
+    type_uri = category_class.get(
+        (entity.category or "").strip().lower(), crm + "E28_Conceptual_Object"
     )
     triples = [
         _Triple(uri, RDF_TYPE_URI, type_uri, None),

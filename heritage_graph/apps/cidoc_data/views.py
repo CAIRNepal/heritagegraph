@@ -1011,10 +1011,9 @@ def _discovery_location_hint(instance):
 
 
 def _discovery_is_published(instance):
-    raw = (getattr(instance, "status", None) or "").strip().lower()
-    if not raw:
-        return True
-    return raw not in ("pending_review", "draft", "rejected")
+    from apps.cidoc_data.publication_policy import is_published_for_rdf
+
+    return is_published_for_rdf(instance)
 
 
 def _discovery_row(instance, resource_key):

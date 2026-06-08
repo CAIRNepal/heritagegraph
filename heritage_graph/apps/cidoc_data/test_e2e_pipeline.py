@@ -74,6 +74,13 @@ class FormToKnowledgeGraphToVisualizationTest(APITestCase):
         person = Person.objects.get(pk=person_id)
         location = Location.objects.get(pk=location_id)
 
+        # Curation gate: only published-status rows enter graph/public.
+        with self.captureOnCommitCallbacks(execute=True):
+            person.status = "accepted"
+            person.save(update_fields=["status"])
+            location.status = "accepted"
+            location.save(update_fields=["status"])
+
         # GET them back through the API (read path the knowledge pages use)
         self.assertEqual(
             self.client.get(f"/api/v1/cidoc/persons/{person_id}/").status_code, 200
@@ -102,14 +109,17 @@ class FormToKnowledgeGraphToVisualizationTest(APITestCase):
         # ── STAGE 4: RELATIONSHIP -> GRAPH EDGE (accepted assertion) ──────────────
         person_ct = ContentType.objects.get_for_model(Person)
         location_ct = ContentType.objects.get_for_model(Location)
-        assertion = HeritageAssertion.objects.create(
-            content_type=person_ct,
-            object_id=person.pk,
-            asserted_property="relationship.P74_has_current_or_former_residence",
-            object_content_type=location_ct,
-            object_object_id=location.pk,
-            reconciliation_status="accepted",
-        )
+        # Assertion (edge) projection is deferred via transaction.on_commit, so
+        # capture+run the on-commit callbacks to mirror a real committed request.
+        with self.captureOnCommitCallbacks(execute=True):
+            assertion = HeritageAssertion.objects.create(
+                content_type=person_ct,
+                object_id=person.pk,
+                asserted_property="relationship.P74_has_current_or_former_residence",
+                object_content_type=location_ct,
+                object_object_id=location.pk,
+                reconciliation_status="accepted",
+            )
         self.assertTrue(HeritageAssertion.objects.filter(pk=assertion.pk).exists())
 
         # ── STAGE 5: GRAPH-VISUALIZATION DATA PATH ────────────────────────────────

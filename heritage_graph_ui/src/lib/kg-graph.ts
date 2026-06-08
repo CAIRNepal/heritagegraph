@@ -26,6 +26,10 @@ export interface KgGraphNode {
   comment: string | null;
   lat: string | null;
   long: string | null;
+  /** curated HeritageGraph vs linked Yale LUX stub */
+  sourceLayer?: 'curated' | 'lux';
+  /** Yale LUX canonical URI when this node is a linked stub */
+  externalUri?: string | null;
 }
 
 export interface KgEdgeProvenance {
@@ -49,9 +53,12 @@ export interface KgGraphEdge {
 
 export interface KgGraphResponse {
   graph: string; // named-graph IRI the data came from (provenance partition)
+  layers?: string[];
+  includeLux?: boolean;
+  luxLinkCount?: number;
   nodes: KgGraphNode[];
   edges: KgGraphEdge[];
-  counts: { nodes: number; edges: number };
+  counts: { nodes: number; edges: number; luxNodes?: number };
 }
 
 function expandCurie(curie: string): string {
@@ -83,6 +90,10 @@ function nodeTypeForIri(iri: string): NodeType | null {
   if (direct) return direct;
   ensureOntologyIndex();
   let id = _iriToId!.get(iri);
+  if (!id) {
+    const hgLocal = iri.match(/heritagegraph\/([^/#]+)$/)?.[1];
+    if (hgLocal && _byId!.has(hgLocal)) id = hgLocal;
+  }
   const seen = new Set<string>();
   while (id && !seen.has(id)) {
     seen.add(id);
@@ -107,14 +118,17 @@ export function rdfTypeToNodeType(types: string[]): NodeType | null {
 export async function fetchKgGraph(
   apiBaseUrl: string,
   token?: string,
-  options?: { signal?: AbortSignal; scope?: 'all' | 'reviewed' },
+  options?: { signal?: AbortSignal; scope?: 'all' | 'reviewed'; includeLux?: 'linked' | 'none' },
 ): Promise<KgGraphResponse> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  // scope=all during testing (shows pending entities); switch to 'reviewed' to
-  // expose only curated data in a published build.
-  const scope = options?.scope ?? 'all';
-  const res = await apiFetch(`${apiBaseUrl}/api/v1/cidoc/kg/graph/?scope=${scope}`, {
+  // Default to the curated graph: the public museum shows only reviewed data.
+  // Callers with curator privileges may pass scope='all' to preview pending
+  // entities (the backend still requires authentication to honour it).
+  const scope = options?.scope ?? 'reviewed';
+  const includeLux = options?.includeLux ?? 'linked';
+  const params = new URLSearchParams({ scope, include_lux: includeLux });
+  const res = await apiFetch(`${apiBaseUrl}/api/v1/cidoc/kg/graph/?${params}`, {
     headers,
     signal: options?.signal,
   });
@@ -138,16 +152,20 @@ export interface KgNeighborhoodResponse {
   count: number;
 }
 
-/** Inbound + outbound edges of one resource in the public graph (for on-demand expansion). */
+/** Inbound + outbound edges of one resource (public graph + optional linked LUX). */
 export async function fetchKgNeighborhood(
   apiBaseUrl: string,
   uri: string,
   token?: string,
-  options?: { signal?: AbortSignal; limit?: number },
+  options?: { signal?: AbortSignal; limit?: number; includeLux?: 'linked' | 'none' },
 ): Promise<KgNeighborhoodResponse> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-  const params = new URLSearchParams({ uri, limit: String(options?.limit ?? 60) });
+  const params = new URLSearchParams({
+    uri,
+    limit: String(options?.limit ?? 60),
+    include_lux: options?.includeLux ?? 'linked',
+  });
   const res = await apiFetch(`${apiBaseUrl}/api/v1/cidoc/kg/neighborhood/?${params}`, {
     headers,
     signal: options?.signal,

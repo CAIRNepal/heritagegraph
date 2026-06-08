@@ -21,7 +21,6 @@ from django.db.models.signals import post_delete, post_save, pre_save
 from apps.cidoc_data.rdf_publish import (
     delete_subject_from_store,
     label_for_instance,
-    persist_relationship_triple,
     persist_slot_projection,
     resource_uri_for_instance,
 )
@@ -68,8 +67,14 @@ def queue_relationship_assertion_projection(
 
 
 def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> None:
-    """Upsert slot triples, labels, types, plus owl:sameAs when IRIs resolve."""
+    """Upsert slot triples when published; remove from PUBLIC when not."""
     if not rdf_sync_enabled() or instance is None:
+        return
+
+    from apps.cidoc_data.publication_policy import is_published_for_rdf
+
+    if not is_published_for_rdf(instance):
+        _delete_projection(instance)
         return
 
     from apps.cidoc_data.rdf_entity_projection import tripleset_for_metadata_instance
@@ -295,21 +300,6 @@ def _on_assertion_deleted(sender, instance, **kwargs: object) -> None:
     get_kg_engine().unpublish_assertion(instance)
 
 
-def project_all_metadata_instances() -> int:
-    """Full rebuild: project every MetaData subclass row to the public graph."""
-    if not rdf_sync_enabled():
-        return 0
-    n = 0
-    cfg = apps.get_app_config("cidoc_data")
-    for model in cfg.get_models():
-        if not _is_cidoc_metadata_model(model):
-            continue
-        for obj in model.objects.all().iterator():
-            queue_entity_projection(obj)
-            n += 1
-    return n
-
-
 def project_all_accepted_assertions() -> int:
     """Reproject every accepted HeritageAssertion to assertion + prov graphs."""
     if not rdf_sync_enabled():
@@ -319,9 +309,14 @@ def project_all_accepted_assertions() -> int:
 
     engine = get_kg_engine()
     n = 0
+    from apps.cidoc_data.publication_policy import is_curated_assertion
+
     for assertion in HeritageAssertion.objects.filter(
         reconciliation_status="accepted"
     ).iterator():
+        if not is_curated_assertion(assertion):
+            engine.unpublish_assertion(assertion)
+            continue
         if engine.publish_assertion(assertion):
             n += 1
     return n

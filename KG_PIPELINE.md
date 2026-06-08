@@ -111,20 +111,20 @@ SHACL enforcement, external-authority reconciliation, LOD publishing, evaluation
 
 ## 3. SOTA scorecard
 
-| Dimension | Status | Notes |
-|---|---|---|
-| Ontology & standards | 🟢 Strong | CIDOC-CRM + LinkML single source → SHACL/TS/Py |
-| Reified statements + uncertainty | 🟢 Strong | `crminf:I2_Belief`, confidence, EDTF temporal |
-| Identity & external linking | 🟡 Partial | `owl:sameAs` machinery exists; needs real links to Wikidata/Getty/GeoNames/VIAF |
-| Provenance **in the graph** | 🟡 Partial | Now surfaced per edge at read time; not yet statement-level *in RDF* |
-| Validation (SHACL) | 🟡 Partial | Shapes exist but `RDF_SHACL_VALIDATE_ON_WRITE=false` by default |
-| Versioning | 🟢 Good | Revision/Activity; no triple-level time-travel |
-| Review-gated publication | 🟢 Added | `scope=reviewed` filters pending/draft |
-| LOD publishing / FAIR | 🔴 Gap | No dereferenceable RDF, public SPARQL, VoID/DCAT, or dataset DOI |
-| Controlled vocab (SKOS) | 🟡 Partial | SKOS referenced in agents; no full thesaurus aligned to Getty AAT |
-| Ingestion pipeline | 🟢 Novel | 5-agent, confidence-scored, human-gated (suggestion-based) |
-| Evaluation / quality metrics | 🔴 Gap | No gold-standard eval or KG-quality dashboard |
-| Scale | 🟢 OK | Oxigraph single-node fits current scale |
+| Dimension | Status | Industry benchmark | Notes |
+|---|---|---|---|
+| Ontology & standards | 🟢 Strong | Getty/CIDOC LOD | CIDOC-CRM + LinkML single source → SHACL/TS/Py |
+| Reified statements + uncertainty | 🟢 Strong | Nanopub / CRMinf | `crminf:I2_Belief`, confidence, EDTF temporal |
+| Identity & external linking | 🟡 Partial | Wikidata 5-star LOD | `skos:exactMatch` machinery exists; needs real links |
+| Provenance **in the graph** | 🟢 Good | PROV-O / nanopubs | Per-assertion prov graphs + read-time edge provenance |
+| Validation (SHACL) | 🟡 Partial | SHACL mandatory at publish | Shapes exist; `RDF_SHACL_VALIDATE_ON_WRITE=false` by default |
+| Review-gated publication | 🟢 Strong | Museum LOD norm | **Write + read** gate: only `accepted/merged/published` → PUBLIC |
+| Linkset vs bulk merge | 🟢 Strong | VoID linksets | External datasets stay separate; curated namespace only in PUBLIC |
+| LOD publishing / FAIR | 🔴 Gap | Zenodo DOI + dereferenceable URIs | VoID/DCAT plumbing exists; no versioned public release yet |
+| Evaluation / quality metrics | 🟡 Partial | Gold-standard F1 | `kg_quality_report` + `kg_verify`; no expert benchmark yet |
+| Dataset density | 🔴 Gap (data) | Connected graph | ~112 curated entities; curation throughput is the bottleneck |
+
+**Maturity level:** **Level 3–4 architecture** (research/industry-grade stack) on a **curated global corpus** (Nepal-rich fixtures + review workflow). Dataset density grows with curation throughput and external linking — not bulk third-party imports.
 
 ---
 
@@ -163,6 +163,11 @@ SHACL enforcement, external-authority reconciliation, LOD publishing, evaluation
 - A read-only **public SPARQL endpoint**; **VoID + DCAT** dataset description; **Zenodo DOI**
   per versioned release; per-resource license.
 - **SKOS** thesauri for controlled vocabularies, aligned to Getty AAT.
+- **Linkset model (not bulk merge):** external datasets (e.g. Yale LUX) live in separate
+  named graphs (`imported/*`, `alignment/*`). Curated entities link via `skos:exactMatch`
+  only. The public graph (`graph/public`) accepts IRIs under `RDF_RESOURCE_BASE_URI` only;
+  run `python manage.py kg_purge_public_imports --apply` if bulk imports were merged by mistake.
+  Batch link suggestions: `python manage.py kg_suggest_external_links`.
 
 ### P3 — evaluation & quality
 - **Gold-standard evaluation** of the agent extraction (precision/recall/F1 vs expert

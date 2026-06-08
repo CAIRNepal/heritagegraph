@@ -19,6 +19,65 @@ def resource_base() -> str:
     return str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
 
 
+def curated_resource_uri_prefix() -> str:
+    """Prefix for HeritageGraph-owned curated instance IRIs (not bulk imports)."""
+    return f"{resource_base()}/"
+
+
+def is_curated_resource_uri(iri: str | None) -> bool:
+    """True when *iri* lives in the curated resource namespace."""
+    if not iri:
+        return False
+    return str(iri).startswith(curated_resource_uri_prefix())
+
+
+def is_non_curated_instance_iri(iri: str | None) -> bool:
+    """True when *iri* looks like a foreign **instance** imported into PUBLIC by mistake.
+
+    Ontology class IRIs, CRM codes, W3C vocab, and graph partition IRIs are **not**
+    treated as pollution (``rdf:type`` and ``skos:exactMatch`` targets must survive).
+    """
+    if not iri or not str(iri).startswith(("http://", "https://")):
+        return False
+    text = str(iri)
+    if text.startswith(curated_resource_uri_prefix()):
+        return False
+    if "/imported/" in text or "lux.collections.yale.edu" in text:
+        return True
+    allowed_prefixes = (
+        "http://www.w3.org/",
+        "http://www.wikidata.org/",
+        "https://www.wikidata.org/",
+        "http://www.cidoc-crm.org/",
+        "http://www.w3.org/2006/time",
+        "http://www.opengis.net/",
+        "http://purl.org/dc/",
+        "http://www.nanopub.org/",
+        "https://creativecommons.org/",
+        "https://vocab.getty.edu/",
+        "https://w3id.org/heritagegraph/graph/",
+    )
+    if any(text.startswith(p) for p in allowed_prefixes):
+        return False
+    hg = RDF_PREFIXES.get("heritageGraph", "https://w3id.org/heritagegraph/")
+    if text.startswith(hg) and "/resource/" not in text:
+        return False
+    return True
+
+
+def is_public_graph_pollution(*, subject: str, object_iri: str | None) -> bool:
+    """Whether a triple in PUBLIC should be removed (bulk import / wrong instance IRIs)."""
+    if not subject.startswith(curated_resource_uri_prefix()):
+        return True
+    return is_non_curated_instance_iri(object_iri)
+
+
+def curated_resource_uri_filter(*, var: str = "?s") -> str:
+    """SPARQL FILTER: keep only curated resource IRIs (excludes bulk imports like LUX)."""
+    prefix = curated_resource_uri_prefix()
+    return f'FILTER(STRSTARTS(STR({var}), "{prefix}"))'
+
+
 def resource_uri_for_instance(instance: Any) -> str:
     segment = instance.__class__.__name__.lower()
     try:
@@ -57,6 +116,15 @@ def _slot_uri_by_key() -> dict[str, str]:
             if key and slot_uri and key not in out:
                 out[key] = str(slot_uri)
     return out
+
+
+def legacy_property_predicate_uri(suffix: str) -> str:
+    """Deprecated ad-hoc predicate IRIs under ``{resource_base}/property/``."""
+    return f"{resource_base()}/property/{(suffix or '').lstrip('/')}"
+
+
+def legacy_property_predicate_prefix() -> str:
+    return f"{resource_base()}/property/"
 
 
 def relationship_predicate_uri(prop_suffix: str) -> str:

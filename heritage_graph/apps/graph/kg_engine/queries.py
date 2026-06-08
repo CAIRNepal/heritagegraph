@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.store import KnowledgeGraphStore
+from apps.graph.kg_engine.uris import curated_resource_uri_filter
 
 RDFS = "http://www.w3.org/2000/01/rdf-schema#"
 RDF = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -79,6 +80,7 @@ def fetch_type_counts(*, store: KnowledgeGraphStore | None = None) -> list[dict[
 
 def graph_nodes_query(*, graph_uri: str | None, limit: int = 600) -> str:
     graph_clause = f"GRAPH <{graph_uri}>" if graph_uri else ""
+    curated = curated_resource_uri_filter(var="?s")
     return f"""
 PREFIX rdf: <{RDF}>
 PREFIX rdfs: <{RDFS}>
@@ -89,6 +91,7 @@ SELECT DISTINCT ?s ?type ?label ?comment ?wkt WHERE {{
     OPTIONAL {{ ?s rdfs:comment ?comment }}
     OPTIONAL {{ ?s ?geop ?wkt . FILTER(isLiteral(?wkt) && CONTAINS(STR(?wkt), "POINT")) }}
     FILTER(STRSTARTS(STR(?type), "http"))
+    {curated}
   }}
 }}
 LIMIT {int(limit)}
@@ -97,6 +100,8 @@ LIMIT {int(limit)}
 
 def graph_edges_query(*, graph_uri: str | None, limit: int = 3000) -> str:
     graph_clause = f"GRAPH <{graph_uri}>" if graph_uri else ""
+    curated_s = curated_resource_uri_filter(var="?s")
+    curated_o = curated_resource_uri_filter(var="?o")
     return f"""
 PREFIX rdf: <{RDF}>
 PREFIX rdfs: <{RDFS}>
@@ -108,6 +113,8 @@ SELECT DISTINCT ?s ?p ?o ?plabel WHERE {{
     OPTIONAL {{ ?p rdfs:label ?plabel }}
     FILTER(isIRI(?o))
     FILTER(?p != rdf:type && ?p != rdfs:label && ?p != rdfs:comment)
+    {curated_s}
+    {curated_o}
   }}
 }}
 LIMIT {int(limit)}

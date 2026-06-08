@@ -10,6 +10,11 @@ import re
 
 from apps.cidoc_data.rdf_signals import is_readonly_sparql_query
 from apps.graph.kg_engine.engine import get_kg_engine
+from apps.graph.kg_engine.lux_museum import (
+    is_lux_stub_uri,
+    lux_imported_graph_uri,
+    museum_include_lux_default,
+)
 from apps.graph.kg_engine.partitions import GraphPartition
 
 _POINT_RE = re.compile(r"POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)", re.IGNORECASE)
@@ -70,25 +75,7 @@ def _assertion_provenance_map() -> dict[tuple[str, str, str], dict]:
     return out
 
 
-# Statuses that mean "not yet reviewed/published"; excluded when scope=reviewed.
-_UNPUBLISHED_STATUSES = {"pending_review", "draft", "rejected"}
-
-
-def _unpublished_iris() -> set[str]:
-    """Resource IRIs of CIDOC rows that are not yet reviewed (for scope=reviewed)."""
-    from django.apps import apps as dj
-    from apps.cidoc_data.models import MetaData
-    from apps.cidoc_data.rdf_publish import resource_uri_for_instance
-
-    out: set[str] = set()
-    for model in dj.get_app_config("cidoc_data").get_models():
-        if not issubclass(model, MetaData) or model is MetaData or model._meta.abstract:
-            continue
-        rows = model.objects.filter(status__in=_UNPUBLISHED_STATUSES).only("id")
-        out.update(resource_uri_for_instance(o) for o in rows)
-        blank = model.objects.filter(status__isnull=True).only("id")
-        out.update(resource_uri_for_instance(o) for o in blank)
-    return out
+from apps.cidoc_data.publication_policy import is_published_for_rdf, unpublished_resource_iris
 
 
 class KnowledgeGraphStatsView(APIView):
@@ -125,8 +112,9 @@ class KnowledgeGraphNeighborhoodView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         limit = min(int(request.query_params.get("limit") or 50), 200)
-        rows = get_kg_engine().neighborhood(uri, limit=limit)
-        return Response({"uri": uri, "edges": rows, "count": len(rows)})
+        include_lux = _parse_include_lux(request.query_params.get("include_lux"))
+        rows = get_kg_engine().neighborhood(uri, limit=limit, include_lux=include_lux)
+        return Response({"uri": uri, "edges": rows, "count": len(rows), "includeLux": include_lux})
 
 
 class KnowledgeGraphQueryView(APIView):
@@ -150,6 +138,16 @@ class KnowledgeGraphQueryView(APIView):
         return Response({"results": rows, "count": len(rows)})
 
 
+def _parse_include_lux(raw: str | None) -> bool:
+    """True when the museum should attach linked LUX stubs (never the full Yale dump)."""
+    text = (raw or "").strip().lower()
+    if text in {"none", "false", "0", "off", "no"}:
+        return False
+    if text in {"linked", "true", "1", "yes", "on"}:
+        return True
+    return museum_include_lux_default()
+
+
 class KnowledgeGraphGraphView(APIView):
     """GET /cidoc/kg/graph/ — whole public-graph projection as render-ready JSON.
 
@@ -164,11 +162,25 @@ class KnowledgeGraphGraphView(APIView):
     def get(self, request, *args, **kwargs):
         node_limit = min(int(request.query_params.get("node_limit") or 600), 2000)
         edge_limit = min(int(request.query_params.get("edge_limit") or 3000), 10000)
-        # scope=all (default, testing) shows every typed entity; scope=reviewed
-        # drops pending/draft rows so a published build only exposes curated data.
-        scope = (request.query_params.get("scope") or "all").strip().lower()
-        excluded = _unpublished_iris() if scope == "reviewed" else set()
-        projection = get_kg_engine().graph(node_limit=node_limit, edge_limit=edge_limit)
+        # Default to the curated graph: a public/unauthenticated request only ever
+        # sees reviewed data. scope=all (every typed entity, incl. draft/pending/
+        # rejected) is a curator affordance and requires authentication, so
+        # unreviewed or rejected contributions are never world-readable.
+        scope = (request.query_params.get("scope") or "reviewed").strip().lower()
+        if scope == "all" and not request.user.is_authenticated:
+            scope = "reviewed"
+        include_lux = _parse_include_lux(request.query_params.get("include_lux"))
+        excluded = unpublished_resource_iris() if scope == "reviewed" else set()
+        projection = get_kg_engine().graph(
+            node_limit=node_limit,
+            edge_limit=edge_limit,
+            include_lux=include_lux,
+        )
+        lux_links = projection.pop("lux_links", []) if include_lux else []
+        lux_sampled: set[str] = set(projection.pop("lux_sampled", []) or [])
+        external_by_lux: dict[str, str | None] = {}
+        for link in lux_links:
+            external_by_lux[getattr(link, "lux", "")] = getattr(link, "external", None)
 
         # Aggregate node rows (one row per type/wkt combination) into one entry per IRI.
         nodes: dict[str, dict] = {}
@@ -185,6 +197,8 @@ class KnowledgeGraphGraphView(APIView):
                     "comment": None,
                     "lat": None,
                     "long": None,
+                    "sourceLayer": "lux" if is_lux_stub_uri(iri) else "curated",
+                    "externalUri": external_by_lux.get(iri),
                 },
             )
             type_iri = row.get("type")
@@ -200,11 +214,32 @@ class KnowledgeGraphGraphView(APIView):
                 if m:
                     # WKT is POINT(longitude latitude).
                     node["long"], node["lat"] = m.group(1), m.group(2)
+            if not node.get("externalUri") and row.get("external"):
+                node["externalUri"] = row.get("external")
 
         # Fall back to the IRI local name when a resource carries no rdfs:label.
         for node in nodes.values():
             if not node["label"]:
                 node["label"] = _local_name(node["id"])
+
+        if include_lux and excluded:
+            curated_ids = {
+                iri for iri, node in nodes.items() if node.get("sourceLayer") == "curated"
+            }
+            linked_lux: set[str] = set()
+            for row in projection["edges"]:
+                s, o = row.get("s"), row.get("o")
+                if s in curated_ids and is_lux_stub_uri(o):
+                    linked_lux.add(o)
+                if o in curated_ids and is_lux_stub_uri(s):
+                    linked_lux.add(s)
+            for iri in list(nodes):
+                if (
+                    nodes[iri].get("sourceLayer") == "lux"
+                    and iri not in linked_lux
+                    and iri not in lux_sampled
+                ):
+                    del nodes[iri]
 
         # Provenance per edge (source/confidence/asserter/temporal) from accepted
         # assertions — makes every relationship citable, a research-grade requirement.
@@ -235,16 +270,31 @@ class KnowledgeGraphGraphView(APIView):
                 }
             )
 
+        graph_label = GraphPartition.PUBLIC.uri()
+        if include_lux and lux_imported_graph_uri():
+            graph_label = f"{graph_label}+lux-linked"
+
         return Response(
             {
-                "graph": GraphPartition.PUBLIC.uri(),
+                "graph": graph_label,
+                "layers": [
+                    layer
+                    for layer in (
+                        GraphPartition.PUBLIC.uri(),
+                        lux_imported_graph_uri() if include_lux else None,
+                    )
+                    if layer
+                ],
                 "scope": scope,
+                "includeLux": include_lux,
+                "luxLinkCount": len(lux_links),
                 "nodes": list(nodes.values()),
                 "edges": edges,
                 "counts": {
                     "nodes": len(nodes),
                     "edges": len(edges),
                     "edgesWithProvenance": edges_with_prov,
+                    "luxNodes": sum(1 for n in nodes.values() if n.get("sourceLayer") == "lux"),
                 },
             }
         )

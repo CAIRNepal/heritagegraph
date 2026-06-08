@@ -113,6 +113,46 @@ def update_user_stats_from_cultural_entity(sender, instance, **kwargs):
     refresh_user_stats(instance.contributor)
 
 
+@receiver(post_save, sender=CulturalEntity)
+def sync_cultural_entity_to_public_graph(sender, instance, **kwargs):
+    """Mirror a curated standalone CulturalEntity into the public RDF graph so it
+    appears in the live Heritage Museum, and remove it again if it is rejected or
+    superseded. Standalone contributions never go through the project-merge flow
+    (`_project_rdf_merge`), so without this they would save to Postgres but never
+    reach the live KG. Runs in transaction.on_commit so the rows are visible
+    before we touch the triplestore; failures here never propagate to the request.
+    """
+    from django.conf import settings
+    from django.db import transaction
+
+    if not getattr(settings, "RDF_SYNC_ENABLED", False):
+        return
+
+    status = instance.status
+    entity_pk = instance.pk
+
+    def _sync():
+        try:
+            from .models import CulturalEntity
+
+            entity = CulturalEntity.objects.filter(pk=entity_pk).first()
+            if entity is None:
+                return
+            if status in ("accepted", "merged"):
+                from apps.cidoc_data.rdf_publish import persist_cultural_entity_projection
+
+                persist_cultural_entity_projection(entity)
+            elif status in ("rejected", "superseded"):
+                from apps.graph.kg_engine.uris import cultural_entity_uri
+                from apps.graph.rdf_publish import delete_subject_from_store
+
+                delete_subject_from_store(uri=cultural_entity_uri(entity.entity_id))
+        except Exception:
+            logger.exception("RDF sync failed for cultural entity %s", entity_pk)
+
+    transaction.on_commit(_sync)
+
+
 # =====================================================================
 # PROJECT SIGNALS
 # =====================================================================

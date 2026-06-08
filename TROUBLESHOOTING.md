@@ -57,7 +57,7 @@
 ### 6. `settings.py` vs `settings/` — two settings systems
 - **Where:** `heritage_graph/settings/settings.py` AND `heritage_graph/settings/__init__.py`
 - **Problem:** `settings.py` is a legacy standalone settings file. The `__init__.py` dispatches to `development.py` or `production.py`. Both exist and can cause confusion.
-- **Impact:** If `DJANGO_SETTINGS_MODULE` points to `heritage_graph.settings`, the `__init__.py` dispatch is used. If it points to `heritage_graph.settings.settings`, the legacy file is used.
+- **Impact:** `DJANGO_SETTINGS_MODULE` should be `settings` (dispatches via `settings/__init__.py` on `DJANGO_ENV`) or `settings.development` / `settings.production` directly. The legacy `settings/settings.py` startproject file was removed.
 - **Fix:** Use `__init__.py` dispatch (set `DJANGO_ENV=development` or `DJANGO_ENV=production`). Don't use `settings.py` directly.
 
 ### 7. WSGI/ASGI `DJANGO_SETTINGS_MODULE` mismatch

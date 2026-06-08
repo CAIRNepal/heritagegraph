@@ -18,6 +18,9 @@ class GraphPartition(str, Enum):
     SNAPSHOT = "snapshot"
     INFERRED = "inferred"
     INGEST = "ingest"
+    # External bulk imports (e.g. Yale LUX) — link via skos:exactMatch, never merge into PUBLIC.
+    IMPORTED = "imported"
+    ALIGNMENT = "alignment"
 
     def uri(self, *, suffix: str = "") -> str | None:
         """Resolve the named graph IRI for this partition."""
@@ -102,5 +105,29 @@ class GraphPartition(str, Enum):
                     "https://w3id.org/heritagegraph/graph/ingest/",
                 )
             ).rstrip("/") + (f"/{suffix}" if suffix else "")
+
+        if self is GraphPartition.IMPORTED:
+            base = str(
+                getattr(
+                    settings,
+                    "RDF_IMPORTED_GRAPH_BASE_URI",
+                    "https://w3id.org/heritagegraph/imported/",
+                )
+            ).rstrip("/")
+            if not suffix:
+                return base
+            return f"{base}/{suffix}"
+
+        if self is GraphPartition.ALIGNMENT:
+            base = str(
+                getattr(
+                    settings,
+                    "RDF_ALIGNMENT_GRAPH_BASE_URI",
+                    "https://w3id.org/heritagegraph/alignment/",
+                )
+            ).rstrip("/")
+            if not suffix:
+                return base
+            return f"{base}/{suffix}"
 
         return None

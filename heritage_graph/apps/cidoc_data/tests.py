@@ -18,7 +18,7 @@ from apps.cidoc_data.models import (
 from apps.cidoc_data.cidoc_registry_keys import registry_class_key_for_model
 from apps.cidoc_data.linkml_loader import get_effective_registry_payload
 from apps.cidoc_data.rdf_entity_projection import (
-    OWL_SAME_AS_URI,
+    EXTERNAL_MATCH_URI,
     RDF_TYPE_URI,
     expand_curie,
     iris_from_external_identifiers,
@@ -359,7 +359,7 @@ class OwlSameAsTriplesetTest(TestCase):
             label_fn=lambda o: getattr(o, "name", "") or str(o.pk),
         )
         objs = sorted(
-            t.obj_uri for t in triples if t.pred == OWL_SAME_AS_URI and t.obj_uri
+            t.obj_uri for t in triples if t.pred == EXTERNAL_MATCH_URI and t.obj_uri
         )
         self.assertEqual(
             objs,
@@ -398,7 +398,7 @@ class OwlSameAsTriplesetTest(TestCase):
             resource_uri_fn=self._uri,
             label_fn=lambda o: getattr(o, "name", "") or str(o.pk),
         )
-        self.assertFalse(any(t.pred == OWL_SAME_AS_URI for t in triples))
+        self.assertFalse(any(t.pred == EXTERNAL_MATCH_URI for t in triples))
 
 
 def _registry_person_class() -> dict:

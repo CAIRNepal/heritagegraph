@@ -14,6 +14,7 @@ from django.core.management.base import BaseCommand
 
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
+from apps.graph.kg_engine.uris import curated_resource_uri_prefix
 
 RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
@@ -62,11 +63,14 @@ class Command(BaseCommand):
 
         # ── 3. Real entity→entity edges, by predicate ──────────────────────────
         self.stdout.write(self.style.MIGRATE_HEADING("3. Edges (entity→entity) by predicate"))
+        prefix = curated_resource_uri_prefix()
         edge_q = f"""
 SELECT ?p (COUNT(*) AS ?n) WHERE {{
   GRAPH <{public}> {{
     ?s ?p ?o . ?s a ?st . ?o a ?ot .
     FILTER(?p != <{RDF_TYPE}>)
+    FILTER(STRSTARTS(STR(?s), "{prefix}"))
+    FILTER(STRSTARTS(STR(?o), "{prefix}"))
   }}
 }} GROUP BY ?p ORDER BY DESC(?n)
 """
@@ -78,6 +82,83 @@ SELECT ?p (COUNT(*) AS ?n) WHERE {{
                 self.stdout.write(f"  {r.get('n', '?'):>5}  {r.get('p', '')}")
         except Exception as exc:
             self.stdout.write(warn(f"  edge query failed: {exc}"))
+
+        # ── 3b. Graph connectivity (curated namespace only) ───────────────────
+        self.stdout.write(self.style.MIGRATE_HEADING("3b. Connectivity (curated only)"))
+        conn_q = f"""
+SELECT (COUNT(*) AS ?edges) (COUNT(DISTINCT ?s) AS ?connected) WHERE {{
+  GRAPH <{public}> {{
+    ?s ?p ?o .
+    FILTER(isIRI(?o))
+    FILTER(?p != <{RDF_TYPE}>)
+    FILTER(STRSTARTS(STR(?s), "{prefix}"))
+    FILTER(STRSTARTS(STR(?o), "{prefix}"))
+  }}
+}}
+"""
+        try:
+            rows = engine.query(conn_q)
+            if rows:
+                b = rows[0]
+                self.stdout.write(
+                    f"  entity→entity edges: {b.get('edges', '?')}  "
+                    f"subjects with ≥1 edge: {b.get('connected', '?')}"
+                )
+        except Exception as exc:
+            self.stdout.write(warn(f"  connectivity query failed: {exc}"))
+
+        # ── 3c. Bulk-import pollution + legacy ghost predicates in PUBLIC ─────
+        self.stdout.write(self.style.MIGRATE_HEADING("3c. Non-curated pollution in PUBLIC"))
+        pollute_q = f"""
+SELECT (COUNT(*) AS ?n) WHERE {{
+  GRAPH <{public}> {{
+    ?s ?p ?o .
+    FILTER(!STRSTARTS(STR(?s), "{prefix}")
+         || STRSTARTS(STR(?o), "https://lux.")
+         || STRSTARTS(STR(?o), "https://w3id.org/heritagegraph/imported/"))
+  }}
+}}
+"""
+        try:
+            rows = engine.query(pollute_q)
+            n = int((rows[0].get("n") if rows else 0) or 0)
+            if n == 0:
+                self.stdout.write(ok("  ✓ no bulk-import / external IRIs in PUBLIC"))
+            else:
+                self.stdout.write(
+                    warn(
+                        f"  ⚠ {n} triple(s) reference non-curated IRIs — "
+                        "run: python manage.py kg_purge_public_imports --apply"
+                    )
+                )
+        except Exception as exc:
+            self.stdout.write(warn(f"  pollution query failed: {exc}"))
+
+        from apps.graph.kg_engine.uris import legacy_property_predicate_prefix
+
+        ghost_prefix = legacy_property_predicate_prefix()
+        ghost_q = f"""
+SELECT (COUNT(*) AS ?n) WHERE {{
+  GRAPH <{public}> {{
+    ?s ?p ?o .
+    FILTER(STRSTARTS(STR(?p), "{ghost_prefix}"))
+  }}
+}}
+"""
+        try:
+            rows = engine.query(ghost_q)
+            gn = int((rows[0].get("n") if rows else 0) or 0)
+            if gn == 0:
+                self.stdout.write(ok("  ✓ no legacy /property/ ghost predicates in PUBLIC"))
+            elif gn:
+                self.stdout.write(
+                    warn(
+                        f"  ⚠ {gn} legacy /property/ ghost triple(s) — "
+                        "run: python manage.py kg_purge_public_imports --apply"
+                    )
+                )
+        except Exception as exc:
+            self.stdout.write(warn(f"  ghost predicate query failed: {exc}"))
 
         # ── 4. Relationship assertions: accepted vs pending ────────────────────
         self.stdout.write(self.style.MIGRATE_HEADING("4. relationship.* assertions (Postgres)"))

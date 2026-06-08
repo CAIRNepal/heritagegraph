@@ -34,13 +34,12 @@ class Command(BaseCommand):
         parser.add_argument(
             "--project-all",
             action="store_true",
-            help="Re-project every MetaData row (delegates to rebuild_triplestore).",
+            help="Re-project every MetaData row (delegates to rdf_rebuild).",
         )
 
     def handle(self, *args, **options):
         from apps.cidoc_data.rdf_signals import (
             _resource_uri,
-            project_all_metadata_instances,
             queue_entity_projection,
             rdf_sync_enabled,
         )
@@ -115,9 +114,10 @@ class Command(BaseCommand):
                     self._probe_local(subject_uri=uri)
 
         if options["project_all"]:
-            self.stdout.write(self.style.MIGRATE_HEADING("\nFull rebuild"))
-            n = project_all_metadata_instances()
-            self.stdout.write(self.style.SUCCESS(f"  Projected {n} instances."))
+            from django.core.management import call_command
+
+            self.stdout.write(self.style.MIGRATE_HEADING("\nFull rebuild (rdf_rebuild)"))
+            call_command("rdf_rebuild")
 
     def _probe_local(self, *, subject_uri: str | None = None) -> None:
         try:

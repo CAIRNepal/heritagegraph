@@ -17,6 +17,7 @@ from django.conf import settings
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.projector import tripleset_for_cultural_entity, tripleset_for_metadata
 from apps.graph.kg_engine.promotion import promote_document_graph_to_public, promote_ntriples_to_public
+from apps.graph.kg_engine.lux_museum import fetch_federated_neighborhood, fetch_museum_projection_with_lux
 from apps.graph.kg_engine.queries import (
     fetch_graph_projection,
     fetch_neighborhood,
@@ -144,6 +145,10 @@ class KnowledgeGraphEngine:
         """Project subject/object if missing rdf:type in the public graph (avoids dangling edges)."""
         if not self.enabled() or instance is None:
             return
+        from apps.cidoc_data.publication_policy import is_published_for_rdf
+
+        if not is_published_for_rdf(instance):
+            return
         from apps.graph.ontology_config import RDF_PREFIXES
 
         uri = resource_uri_for_instance(instance)
@@ -172,6 +177,27 @@ class KnowledgeGraphEngine:
             graph_uri=graph_uri,
         )
 
+    def _purge_legacy_property_edges(
+        self, *, subject_uri: str, object_uri: str, suffix: str, raw: str
+    ) -> None:
+        """Remove deprecated ``{base}/property/…`` edges left by older projection code."""
+        from apps.graph.kg_engine.uris import legacy_property_predicate_uri
+
+        public_graph = GraphPartition.PUBLIC.uri()
+        if not public_graph:
+            return
+        candidates = {
+            legacy_property_predicate_uri(suffix),
+            legacy_property_predicate_uri(raw),
+            legacy_property_predicate_uri(f"relationship.{suffix}"),
+        }
+        for pred_uri in candidates:
+            sparql = (
+                f"DELETE WHERE {{ GRAPH <{public_graph}> {{ "
+                f"<{subject_uri}> <{pred_uri}> <{object_uri}> . }} }}\n"
+            )
+            self.store.update(sparql)
+
     def publish_assertion(self, assertion: Any) -> bool:
         """Project an accepted HeritageAssertion to public + assertion + prov graphs."""
         if not self.enabled():
@@ -185,9 +211,19 @@ class KnowledgeGraphEngine:
         if assertion.reconciliation_status != "accepted":
             return self.unpublish_assertion(assertion)
 
+        from apps.cidoc_data.publication_policy import is_curated_assertion, is_published_for_rdf
+
+        if not is_curated_assertion(assertion):
+            return self.unpublish_assertion(assertion)
+
         subj_inst = django_instance_from_assertion(assertion, as_object=False)
         if not subj_inst:
             return False
+        obj_inst = django_instance_from_assertion(assertion, as_object=True)
+        if obj_inst is not None and not is_published_for_rdf(obj_inst):
+            return self.unpublish_assertion(assertion)
+        if not is_published_for_rdf(subj_inst):
+            return self.unpublish_assertion(assertion)
         self._ensure_public_resource(subj_inst)
         subj_uri = resource_uri_for_instance(subj_inst)
 
@@ -202,6 +238,12 @@ class KnowledgeGraphEngine:
             raw = assertion.asserted_property or ""
             suffix = raw[len("relationship.") :] if "relationship." in raw else raw
             pred_uri = relationship_predicate_uri(suffix)
+            self._purge_legacy_property_edges(
+                subject_uri=subj_uri,
+                object_uri=obj_uri,
+                suffix=suffix,
+                raw=raw,
+            )
             public, assertion_triples, prov_triples = build_relationship_assertion_triples(
                 assertion,
                 subject_uri=subj_uri,
@@ -213,8 +255,7 @@ class KnowledgeGraphEngine:
             prop = (assertion.asserted_property or "").strip()
             if not prop or not (assertion.asserted_value or "").strip():
                 return False
-            base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
-            pred_uri = f"{base}/property/{prop}"
+            pred_uri = relationship_predicate_uri(prop)
             public, assertion_triples, prov_triples = build_slot_assertion_triples(
                 assertion,
                 subject_uri=subj_uri,
@@ -292,11 +333,19 @@ class KnowledgeGraphEngine:
                 pred_uri = relationship_predicate_uri(suffix)
                 public_graph = GraphPartition.PUBLIC.uri()
                 if public_graph:
-                    sparql = (
-                        f"DELETE WHERE {{ GRAPH <{public_graph}> {{ "
-                        f"<{subj_uri}> <{pred_uri}> <{obj_uri}> . }} }}\n"
-                    )
-                    self.store.update(sparql)
+                    from apps.graph.kg_engine.uris import legacy_property_predicate_uri
+
+                    for ghost in {
+                        pred_uri,
+                        legacy_property_predicate_uri(suffix),
+                        legacy_property_predicate_uri(raw),
+                        legacy_property_predicate_uri(f"relationship.{suffix}"),
+                    }:
+                        sparql = (
+                            f"DELETE WHERE {{ GRAPH <{public_graph}> {{ "
+                            f"<{subj_uri}> <{ghost}> <{obj_uri}> . }} }}\n"
+                        )
+                        self.store.update(sparql)
         return True
 
     def delete_resource(self, uri: str, graph: GraphPartition = GraphPartition.PUBLIC) -> bool:
@@ -318,8 +367,9 @@ class KnowledgeGraphEngine:
     def promote_document(self, document_id: str) -> bool:
         return promote_document_graph_to_public(document_id, store=self.store)
 
-    def rebuild_public_graph(self) -> int:
+    def rebuild_public_graph(self, *, include_unpublished: bool = False) -> int:
         from apps.cidoc_data.models import MetaData
+        from apps.cidoc_data.publication_policy import is_published_for_rdf
         from django.apps import apps as django_apps
 
         if not self.enabled():
@@ -334,6 +384,10 @@ class KnowledgeGraphEngine:
             ):
                 continue
             for obj in model.objects.all().iterator():
+                uri = resource_uri_for_instance(obj)
+                if not include_unpublished and not is_published_for_rdf(obj):
+                    self.delete_resource(uri)
+                    continue
                 result = self.publish_metadata_instance(obj)
                 if result.stored:
                     count += 1
@@ -354,16 +408,30 @@ class KnowledgeGraphEngine:
             schema_graph_uri=GraphPartition.SCHEMA.uri(),
         )
 
-    def neighborhood(self, subject_uri: str, *, limit: int = 50) -> list[dict[str, str]]:
+    def neighborhood(
+        self, subject_uri: str, *, limit: int = 50, include_lux: bool = False
+    ) -> list[dict[str, str]]:
+        if include_lux:
+            return fetch_federated_neighborhood(
+                subject_uri, limit=limit, store=self.store, include_lux=True
+            )
         return fetch_neighborhood(subject_uri, limit=limit, store=self.store)
 
     def type_histogram(self) -> list[dict[str, str]]:
         return fetch_type_counts(store=self.store)
 
     def graph(
-        self, *, node_limit: int = 600, edge_limit: int = 3000
+        self,
+        *,
+        node_limit: int = 600,
+        edge_limit: int = 3000,
+        include_lux: bool = False,
     ) -> dict[str, list[dict[str, str]]]:
         """Whole public-graph projection (typed nodes + real edges) for the museum."""
+        if include_lux:
+            return fetch_museum_projection_with_lux(
+                store=self.store, node_limit=node_limit, edge_limit=edge_limit
+            )
         return fetch_graph_projection(
             store=self.store, node_limit=node_limit, edge_limit=edge_limit
         )

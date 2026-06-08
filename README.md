@@ -197,9 +197,8 @@ use it in your research, please cite it (see [`CITATION.cff`](CITATION.cff)).
 
 
 # Nepal Cultural heritage Linked Open Data (NCHLOD)
-This repository contains the LinkML code for NCHLOD. It includes the following components:
-
-1. `schema.yaml`: Defines the schema for NCHLOD.
+This repository contains the LinkML code for NCHLOD. The canonical schema is
+[`ontology/HeritageGraph.yaml`](ontology/HeritageGraph.yaml) (registry-driven; see `make ontology`).
 
 
 docker build -f Dockerfile.backend --target ocr-worker -t heritagegraph-ocr-worker:test .

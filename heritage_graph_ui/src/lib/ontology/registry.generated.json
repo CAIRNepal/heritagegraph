@@ -1,5 +1,5 @@
 {
-  "schema_version": "1dee365f73d1e4026d0d5b392b2c2e3993a925aedc3ac4f8791fb51cf052579a",
+  "schema_version": "46d4f5133d871ee9367b277d33f996d0967b1487a96db8d2471fb3967f0af56f",
   "tenant_id": null,
   "degraded": false,
   "classes": {
@@ -5568,6 +5568,119 @@
           "format": "text"
         }
       ]
+    },
+    "entity": {
+      "key": "entity",
+      "label": "Cultural Entity",
+      "labelPlural": "Cultural Entities",
+      "description": "High-level cultural contribution (monuments, festivals, rituals, traditions, artifacts) for the heritage_data review workflow.",
+      "classUri": "heritageGraph:CulturalEntity",
+      "icon": "landmark",
+      "apiEndpoint": "/data/api/cultural-entities/",
+      "category": "tangible",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "category",
+          "label": "Category",
+          "type": "select",
+          "section": "basic",
+          "order": 2,
+          "required": true,
+          "multivalued": false,
+          "description": "Domain category for a cultural entity contribution",
+          "slot_uri": "heritageGraph:entity_category",
+          "options": [
+            {
+              "value": "monument",
+              "label": "Monument",
+              "description": "Monument or built heritage"
+            },
+            {
+              "value": "artifact",
+              "label": "Artifact",
+              "description": ""
+            },
+            {
+              "value": "ritual",
+              "label": "Ritual",
+              "description": ""
+            },
+            {
+              "value": "festival",
+              "label": "Festival",
+              "description": ""
+            },
+            {
+              "value": "tradition",
+              "label": "Tradition",
+              "description": ""
+            },
+            {
+              "value": "document",
+              "label": "Document",
+              "description": ""
+            },
+            {
+              "value": "other",
+              "label": "Other",
+              "description": ""
+            }
+          ],
+          "enum_range": "CulturalEntityCategoryEnum"
+        },
+        {
+          "key": "description",
+          "label": "Description",
+          "type": "text",
+          "section": "basic",
+          "order": 3,
+          "required": true,
+          "multivalued": false,
+          "description": "Long-form narrative description",
+          "slot_uri": "schema:description"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "category",
+          "label": "Category",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "description",
+          "label": "Description",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
     }
   },
   "enums": {
@@ -5839,6 +5952,43 @@
         "label": "RajGuthi",
         "description": "Royal endowment trust"
       }
+    ],
+    "CulturalEntityCategoryEnum": [
+      {
+        "value": "monument",
+        "label": "Monument",
+        "description": "Monument or built heritage"
+      },
+      {
+        "value": "artifact",
+        "label": "Artifact",
+        "description": ""
+      },
+      {
+        "value": "ritual",
+        "label": "Ritual",
+        "description": ""
+      },
+      {
+        "value": "festival",
+        "label": "Festival",
+        "description": ""
+      },
+      {
+        "value": "tradition",
+        "label": "Tradition",
+        "description": ""
+      },
+      {
+        "value": "document",
+        "label": "Document",
+        "description": ""
+      },
+      {
+        "value": "other",
+        "label": "Other",
+        "description": ""
+      }
     ]
   },
   "contribute_hub": {
@@ -5894,7 +6044,7 @@
     ],
     "intents": [
       {
-        "registryKey": "cultural_entity",
+        "registryKey": "entity",
         "hubCategory": "general",
         "route": "/contribute/cultural-entity",
         "emoji": "\ud83c\udfee",
@@ -6142,7 +6292,7 @@
       "source",
       "location",
       "person",
-      "cultural_entity",
+      "entity",
       "entity_proposal"
     ]
   },
@@ -9023,6 +9173,36 @@
         },
         "required": [
           "name"
+        ],
+        "additionalProperties": true
+      },
+      "entity": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "monument",
+              "artifact",
+              "ritual",
+              "festival",
+              "tradition",
+              "document",
+              "other"
+            ]
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "description"
         ],
         "additionalProperties": true
       }

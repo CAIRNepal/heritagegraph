@@ -245,7 +245,7 @@ python manage.py rdf_diagnose --project-all     # full rebuild (heavy)
 
 ```bash
 cd heritage_graph
-DJANGO_ENV=development python manage.py rebuild_triplestore
+DJANGO_ENV=development python manage.py rdf_rebuild --purge-imports
 ```
 
 ### 5.3 SPARQL sanity (Docker Oxigraph)
@@ -395,7 +395,7 @@ Use LinkML / model choices exactly (e.g. `"Temple"`, not `"temple"`). See `STRUC
 
 - `RDF_SYNC_ENABLED=false` in env — set `true` (see `.env.example`).
 - `rdf_diagnose` shows empty `RDF_ENDPOINT_URL` — in Docker, use `http://oxigraph:7878/update`.
-- Run `python manage.py rebuild_triplestore` after fixing config.
+- Run `python manage.py rdf_rebuild --purge-imports` after fixing config.
 
 ### `make entityrefs` / `schema-rebuild` fails with “No module named django”
 
@@ -429,7 +429,7 @@ DJANGO_ENV=development python manage.py validate_contribution_pipeline --json
 # ── RDF / Oxigraph ──
 DJANGO_ENV=development python manage.py rdf_diagnose
 DJANGO_ENV=development python manage.py rdf_diagnose --project-first
-DJANGO_ENV=development python manage.py rebuild_triplestore
+DJANGO_ENV=development python manage.py rdf_rebuild --purge-imports
 
 # ── Tests ──
 DJANGO_ENV=development python manage.py test apps.cidoc_data.tests.FrontendContributionPipelineTest

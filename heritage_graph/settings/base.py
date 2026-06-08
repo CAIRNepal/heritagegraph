@@ -375,6 +375,19 @@ RDF_KG_OUTBOX_ENABLED = os.environ.get("RDF_KG_OUTBOX_ENABLED", "true").lower() 
     "y",
     "on",
 }
+# Heritage museum: attach Yale LUX stubs linked to curated entities (not the full dump).
+RDF_MUSEUM_INCLUDE_LUX = os.environ.get("RDF_MUSEUM_INCLUDE_LUX", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+    "y",
+    "on",
+}
+RDF_LUX_IMPORTED_GRAPH_URI = os.environ.get("RDF_LUX_IMPORTED_GRAPH_URI", "")
+# Optional separate SPARQL read endpoint for Yale LUX (local curated + remote LUX).
+RDF_LUX_QUERY_URL = os.environ.get("RDF_LUX_QUERY_URL", "")
+RDF_LUX_LINKED_NODE_LIMIT = int(os.environ.get("RDF_LUX_LINKED_NODE_LIMIT", "150"))
+RDF_LUX_LABEL_MATCH_LIMIT = int(os.environ.get("RDF_LUX_LABEL_MATCH_LIMIT", "40"))
 
 GRAPH_MODELS = {
     "all_applications": True,

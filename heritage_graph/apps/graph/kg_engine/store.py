@@ -40,11 +40,27 @@ def _open_local_store(path: str):
 
 
 def _open_local_store_readonly(path: str):
-    """Read-only handle — safe alongside runserver or other CLI readers."""
+    """Read handle for the embedded store.
+
+    Prefer an already-open read-write handle in this process: a RocksDB primary
+    reads its own writes, whereas a cached ``Store.read_only`` is a point-in-time
+    snapshot that goes stale after later writes — edges and deletes become
+    invisible to readers (the cause of the edge-less / un-retracted graph in
+    embedded/dev runs). Only fall back to a fresh read-only snapshot when this
+    process holds no writer handle (e.g. a pure reader running alongside a
+    separate writer process). Production uses the remote Oxigraph HTTP endpoint
+    and never reaches this path.
+    """
+    rw = _LOCAL_STORE_CACHE.get(path)
+    if rw is not None:
+        return rw
     store = _LOCAL_READONLY_CACHE.get(path)
     if store is not None:
         return store
     with _LOCAL_STORE_LOCK:
+        rw = _LOCAL_STORE_CACHE.get(path)
+        if rw is not None:
+            return rw
         store = _LOCAL_READONLY_CACHE.get(path)
         if store is None:
             from pyoxigraph import Store
@@ -64,6 +80,9 @@ class StoreStats:
 
 class KnowledgeGraphStore:
     """Low-level triplestore operations."""
+
+    def __init__(self, *, query_url: str | None = None) -> None:
+        self._query_url_override = (query_url or "").strip() or None
 
     def select(self, sparql: str, *, timeout_s: int = 30) -> list[dict[str, str]]:
         endpoint = self._query_endpoint()
@@ -371,6 +390,8 @@ class KnowledgeGraphStore:
         return self._local_available()
 
     def _query_endpoint(self) -> str:
+        if self._query_url_override:
+            return self._query_url_override
         return (
             str(getattr(settings, "RDF_QUERY_URL", "") or "").strip()
             or str(getattr(settings, "RDF_ENDPOINT_URL", "") or "").strip()
@@ -559,3 +580,69 @@ class KnowledgeGraphStore:
                 logger.warning("Local quad insert failed: %s", exc)
                 return False
         return True
+
+    def purge_public_graph(
+        self,
+        *,
+        graph_uri: str,
+        curated_prefix: str,
+        legacy_property_prefix: str,
+    ) -> tuple[int, int]:
+        """Drop non-curated and legacy ``/property/`` triples from PUBLIC."""
+        if self._local_available() and not self._update_endpoint():
+            return self._local_purge_public(
+                graph_uri, curated_prefix, legacy_property_prefix
+            )
+        pollution = ghost = 0
+        if graph_uri:
+            poll_q = f"""
+DELETE WHERE {{
+  GRAPH <{graph_uri}> {{
+    ?s ?p ?o .
+    FILTER(
+      !STRSTARTS(STR(?s), "{curated_prefix}")
+      || ((STRSTARTS(STR(?o), "http://") || STRSTARTS(STR(?o), "https://"))
+          && !STRSTARTS(STR(?o), "{curated_prefix}"))
+    )
+  }}
+}}
+"""
+            ghost_q = f"""
+DELETE WHERE {{
+  GRAPH <{graph_uri}> {{
+    ?s ?p ?o .
+    FILTER(STRSTARTS(STR(?p), "{legacy_property_prefix}"))
+  }}
+}}
+"""
+            if self.update(poll_q):
+                pollution = -1
+            if self.update(ghost_q):
+                ghost = -1
+        return pollution, ghost
+
+    def _local_purge_public(
+        self, graph_uri: str, curated_prefix: str, legacy_property_prefix: str
+    ) -> tuple[int, int]:
+        try:
+            from pyoxigraph import NamedNode
+        except ImportError:
+            return 0, 0
+        store = _open_local_store(self._local_store_path())
+        graph_name = NamedNode(graph_uri)
+        pollution = ghost = 0
+        for quad in list(store.quads_for_pattern(None, None, None, graph_name)):
+            subj = str(quad.subject)
+            pred = str(quad.predicate)
+            obj = quad.object
+            obj_str = getattr(obj, "value", str(obj))
+            if pred.startswith(legacy_property_prefix):
+                store.remove(quad)
+                ghost += 1
+                continue
+            from apps.graph.kg_engine.uris import is_public_graph_pollution
+
+            if is_public_graph_pollution(subject=subj, object_iri=obj_str):
+                store.remove(quad)
+                pollution += 1
+        return pollution, ghost

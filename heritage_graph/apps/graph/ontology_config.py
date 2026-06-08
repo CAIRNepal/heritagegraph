@@ -2,7 +2,7 @@
 AUTO-GENERATED — do not edit by hand.
 Source:  ontology/HeritageGraph.yaml (prefixes section)
 Regen:   python3 tools/gen_heritage_viz_config.py
-Hash:    ea79a7e7423bd520
+Hash:    130355f83bf8eb68
 
 Import this module wherever RDF prefix expansion is needed instead of
 re-declaring the dict inline (which risks silent drift).
@@ -34,6 +34,7 @@ RDF_PREFIXES: dict[str, str] = {
     "foaf": "http://xmlns.com/foaf/0.1/",
     "prov": "http://www.w3.org/ns/prov#",
     "crm": "http://www.cidoc-crm.org/cidoc-crm/",
+    "la": "https://linked.art/ns/terms/",
     "crmsci": "http://www.cidoc-crm.org/crmsci/",
     "crmdig": "http://www.cidoc-crm.org/crmdig/",
     "crminf": "http://www.cidoc-crm.org/crminf/",

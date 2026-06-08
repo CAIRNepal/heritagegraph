@@ -56,16 +56,21 @@ function kgToGraphData(resp: KgGraphResponse): GraphData {
     if (!nodeType) continue; // not an ontology class we visualise
     const cfg = NODE_TYPE_CONFIG[nodeType];
     kept.add(n.id);
+    const isLux = n.sourceLayer === 'lux';
     nodes.push({
       id: n.id,
       label: n.label,
       nodeType,
       cidocMapping: cfg.cidocMapping,
       hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
-      description: n.comment ?? '',
-      storyText: n.comment ?? '',
+      description: n.comment ?? (isLux ? 'Linked Yale LUX collection record.' : ''),
+      storyText: n.comment ?? (isLux ? 'Linked Yale LUX collection record.' : ''),
       lat: n.lat ?? undefined,
       long: n.long ?? undefined,
+      tags: isLux ? ['Yale LUX', 'Collection link'] : undefined,
+      keyFacts: isLux && n.externalUri
+        ? [{ label: 'Yale LUX', value: n.externalUri }]
+        : undefined,
       relations: [],
     });
   }
@@ -105,14 +110,16 @@ function kgNeighborhoodToGraph(
     if (!seen.has(e.value)) {
       seen.add(e.value);
       const cfg = NODE_TYPE_CONFIG[nodeType];
+      const isLux = e.value.includes('/imported/lux/');
       nodes.push({
         id: e.value,
         label: e.valueLabel || iriLocalName(e.value),
         nodeType,
         cidocMapping: cfg.cidocMapping,
         hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
-        description: '',
-        storyText: '',
+        description: isLux ? 'Linked Yale LUX collection record.' : '',
+        storyText: isLux ? 'Linked Yale LUX collection record.' : '',
+        tags: isLux ? ['Yale LUX', 'Collection link'] : undefined,
         relations: [],
       });
     }
@@ -226,7 +233,7 @@ export function HeritageMindMapClient() {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (session as any)?.accessToken as string | undefined;
-      const resp = await fetchKgGraph(API_BASE, token);
+      const resp = await fetchKgGraph(API_BASE, token, { includeLux: 'linked' });
       const { nodes, links } = kgToGraphData(resp);
       // Populate node.relations so the StoryPanel "Connections" section
       // and the neighbor-highlight logic both work for live data.
@@ -271,7 +278,7 @@ export function HeritageMindMapClient() {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const token = (session as any)?.accessToken as string | undefined;
-        const resp = await fetchKgNeighborhood(API_BASE, node.id, token);
+        const resp = await fetchKgNeighborhood(API_BASE, node.id, token, { includeLux: 'linked' });
         const add = kgNeighborhoodToGraph(node.id, resp);
         setLiveGraph((prev) => {
           const base = prev ?? { nodes: [], links: [] };

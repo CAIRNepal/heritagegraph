@@ -255,6 +255,25 @@ hg:enshrinementShape a sh:NodeShape ;
       sh:minCount 1 ;
     ]  .
 
+hg:entityShape a sh:NodeShape ;
+  rdfs:label "Shape for registry class entity" ;
+  sh:targetClass <https://w3id.org/heritagegraph/CulturalEntity> ;
+    sh:property [
+      sh:path <http://www.w3.org/2000/01/rdf-schema#label> ;
+      sh:nodeKind sh:Literal ;
+      sh:minCount 1 ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/entity_category> ;
+      sh:nodeKind sh:Literal ;
+      sh:minCount 1 ;
+    ] ;
+    sh:property [
+      sh:path <https://schema.org/description> ;
+      sh:nodeKind sh:Literal ;
+      sh:minCount 1 ;
+    ]  .
+
 hg:eventShape a sh:NodeShape ;
   rdfs:label "Shape for registry class event" ;
   sh:targetClass <http://www.cidoc-crm.org/cidoc-crm/E5_Event> ;

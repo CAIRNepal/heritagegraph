@@ -35,8 +35,8 @@ class Command(BaseCommand):
             self.stdout.write(err("RDF_SYNC_ENABLED is off — enable it before running this test."))
             return
 
-        person = Person.objects.create(name=f"[{TAG}] Demo Person")
-        location = Location.objects.create(name=f"[{TAG}] Demo Location")
+        person = Person.objects.create(name=f"[{TAG}] Demo Person", status="accepted")
+        location = Location.objects.create(name=f"[{TAG}] Demo Location", status="accepted")
         assertion = HeritageAssertion.objects.create(
             content_type=ContentType.objects.get_for_model(Person),
             object_id=person.pk,

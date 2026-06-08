@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml + tools/ui-vizmap.yaml
 // Regen:   python3 tools/gen_heritage_viz_config.py
-// Hash:    ea79a7e7423bd520
+// Hash:    130355f83bf8eb68
 //
 // This file is the single source of truth for graph-visualization ontology
 // config consumed by:
@@ -46,7 +46,10 @@ export type NodeType =
   | 'RitualEvent'
   | 'CasteGroup'
   | 'LivingGoddessTenure'
-  | 'SyncreticRelationship';
+  | 'SyncreticRelationship'
+  | 'HumanMadeObject'
+  | 'Group'
+  | 'Set';
 
 export type HgCategory = 'tangible' | 'conceptual' | 'event' | 'spatial' | 'temporal' | 'actor' | 'provenance';
 
@@ -75,18 +78,24 @@ export const NODE_TYPE_CONFIG: Record<
   CasteGroup: { color: '#16a34a', glowColor: '#4ade80', emoji: '👪', label: 'Caste Group', cidocMapping: 'heritageGraph:CasteGroup', hgCategory: 'actor' },
   LivingGoddessTenure: { color: '#e11d48', glowColor: '#fb7185', emoji: '👑', label: 'Living Goddess Tenure', cidocMapping: 'crm:E4_Period', hgCategory: 'temporal' },
   SyncreticRelationship: { color: '#9333ea', glowColor: '#c084fc', emoji: '🔗', label: 'Syncretic Link', cidocMapping: 'crm:E13_Attribute_Assignment', hgCategory: 'conceptual' },
+  HumanMadeObject: { color: '#0d9488', glowColor: '#2dd4bf', emoji: '🏺', label: 'Human-Made Object', cidocMapping: 'crm:E22_Human-Made_Object', hgCategory: 'tangible' },
+  Group: { color: '#15803d', glowColor: '#4ade80', emoji: '👥', label: 'Group', cidocMapping: 'crm:E74_Group', hgCategory: 'actor' },
+  Set: { color: '#a16207', glowColor: '#facc15', emoji: '🗂', label: 'Set / Collection', cidocMapping: 'la:Set', hgCategory: 'provenance' },
 };
 
 /** Ontology class IRI (rdf:type in the Oxigraph public graph) → canonical NodeType. */
 export const RDF_CLASS_URI_TO_NODE_TYPE: Record<string, NodeType> = {
   "http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment": "SyncreticRelationship",
   "http://www.cidoc-crm.org/cidoc-crm/E21_Person": "Person",
+  "http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object": "HumanMadeObject",
   "http://www.cidoc-crm.org/cidoc-crm/E28_Conceptual_Object": "Deity",
   "http://www.cidoc-crm.org/cidoc-crm/E4_Period": "LivingGoddessTenure",
   "http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span": "TimeSpan",
   "http://www.cidoc-crm.org/cidoc-crm/E53_Place": "Place",
   "http://www.cidoc-crm.org/cidoc-crm/E55_Type": "ReligiousTradition",
   "http://www.cidoc-crm.org/cidoc-crm/E5_Event": "HistoricalEvent",
+  "http://www.cidoc-crm.org/cidoc-crm/E74_Group": "Group",
+  "https://linked.art/ns/terms/Set": "Set",
   "https://w3id.org/heritagegraph/ArchitecturalStructure": "ArchitecturalStructure",
   "https://w3id.org/heritagegraph/BuddhistMonument": "BuddhistMonument",
   "https://w3id.org/heritagegraph/CasteGroup": "CasteGroup",

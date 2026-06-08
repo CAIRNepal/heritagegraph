@@ -205,6 +205,25 @@ enums:
         description: "Royal endowment trust"
         meaning: heritageGraph:RajGuthi
 
+  CulturalEntityCategoryEnum:
+    description: "Domain category for a high-level cultural entity contribution."
+    permissible_values:
+      monument:
+        title: "Monument"
+        description: "Monument or built heritage"
+      artifact:
+        title: "Artifact"
+      ritual:
+        title: "Ritual"
+      festival:
+        title: "Festival"
+      tradition:
+        title: "Tradition"
+      document:
+        title: "Document"
+      other:
+        title: "Other"
+
 
 prefixes:
   heritageGraph: "https://w3id.org/heritagegraph/"
@@ -226,6 +245,7 @@ prefixes:
   foaf: "http://xmlns.com/foaf/0.1/"
   prov: "http://www.w3.org/ns/prov#"
   crm: "http://www.cidoc-crm.org/cidoc-crm/"
+  la: "https://linked.art/ns/terms/"
   crmsci: "http://www.cidoc-crm.org/crmsci/"
   crmdig: "http://www.cidoc-crm.org/crmdig/"
   crminf: "http://www.cidoc-crm.org/crminf/"
@@ -245,6 +265,24 @@ annotations:
   owl:imports: "http://www.cidoc-crm.org/cidoc-crm/ http://www.w3.org/ns/prov#"
 
 classes:
+  # ========================================================================
+  # GENERIC CONTRIBUTION UMBRELLA
+  # ========================================================================
+  CulturalEntity:
+    class_uri: heritageGraph:CulturalEntity
+    description: "High-level cultural contribution (monuments, festivals, rituals, traditions, artifacts) for the heritage_data review workflow."
+    slots:
+      - name
+      - category
+      - description
+    slot_usage:
+      name:
+        required: true
+      category:
+        required: true
+      description:
+        required: true
+
   # ========================================================================
   # CORE TANGIBLE HERITAGE (CIDOC E22 Human-Made Objects)
   # ========================================================================
@@ -1481,6 +1519,145 @@ classes:
 # SLOTS (PROPERTIES)
 # ============================================================================
 
+  # ========================================================================
+  # CIDOC-CRM / LinkedArt interop scaffolding (added for Yale LUX alignment).
+  # These formalise the HeritageGraph<->LUX crosswalk so imported LinkedArt
+  # data is typed in our vocabulary. They are NOT user-contributable (absent
+  # from tools/ui-classmap.yaml, so no forms are generated for them).
+  # ========================================================================
+  Acquisition:
+    class_uri: crm:E8_Acquisition
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  AttributeAssignment:
+    class_uri: crm:E13_Attribute_Assignment
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  BeginningOfExistence:
+    class_uri: crm:E63_Beginning_of_Existence
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Birth:
+    class_uri: crm:E67_Birth
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  CuratedHolding:
+    class_uri: crm:E78_Curated_Holding
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  CurationActivity:
+    class_uri: crm:E87_Curation_Activity
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Currency:
+    class_uri: crm:E98_Currency
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Death:
+    class_uri: crm:E69_Death
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  DigitalObject:
+    class_uri: crmdig:D1_Digital_Object
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Dimension:
+    class_uri: crm:E54_Dimension
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Dissolution:
+    class_uri: crm:E68_Dissolution
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Encounter:
+    class_uri: crmsci:S19_Encounter_Event
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  EndOfExistence:
+    class_uri: crm:E64_End_of_Existence
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Formation:
+    class_uri: crm:E66_Formation
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Group:
+    class_uri: crm:E74_Group
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Identifier:
+    class_uri: crm:E42_Identifier
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Inscription:
+    class_uri: crm:E34_Inscription
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Language:
+    class_uri: crm:E56_Language
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  LegalObject:
+    class_uri: crm:E72_Legal_Object
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  LinguisticObject:
+    class_uri: crm:E33_Linguistic_Object
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Measurement:
+    class_uri: crm:E16_Measurement
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  MeasurementUnit:
+    class_uri: crm:E58_Measurement_Unit
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Modification:
+    class_uri: crm:E11_Modification
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  MonetaryAmount:
+    class_uri: crm:E97_Monetary_Amount
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Move:
+    class_uri: crm:E9_Move
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Name:
+    class_uri: crm:E33_E41_Linguistic_Appellation
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Period:
+    class_uri: crm:E4_Period
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  PropositionalObject:
+    class_uri: crm:E89_Propositional_Object
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  ProvenanceActivity:
+    class_uri: crm:E7_Activity
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Right:
+    class_uri: crm:E30_Right
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Set:
+    class_uri: la:Set
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  Title:
+    class_uri: crm:E35_Title
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+  VisualItem:
+    class_uri: crm:E36_Visual_Item
+    description: "CIDOC-CRM/LinkedArt interop class for Yale LUX alignment (not user-contributable)."
+
+
 slots:
   architectural_structures:
     slot_uri: crm:P12_occurred_in_the_presence_of
@@ -1521,9 +1698,19 @@ slots:
     description: "Text description of the procession route"
 
   name:
-    slot_uri: rdfs:label 
+    slot_uri: rdfs:label
     range: string
     description: "Primary name or label"
+
+  category:
+    slot_uri: heritageGraph:entity_category
+    range: CulturalEntityCategoryEnum
+    description: "Domain category for a cultural entity contribution"
+
+  description:
+    slot_uri: schema:description
+    range: string
+    description: "Long-form narrative description"
 
   is_component_of:
     slot_uri: crm:P46i_forms_part_of

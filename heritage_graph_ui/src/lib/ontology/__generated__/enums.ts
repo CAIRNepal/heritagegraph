@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml (enums section)
 // Regen:   python3 tools/gen_heritage_viz_config.py
-// Hash:    ea79a7e7423bd520
+// Hash:    130355f83bf8eb68
 //
 // Controlled vocabularies for select fields in contribution forms.
 // Edit permissible_values in the schema, then re-run the generator.
@@ -78,6 +78,16 @@ export const ontologyEnums = {
     { value: "SanaGuthi", label: "SanaGuthi", description: "Agricultural cooperative trust" },
     { value: "SanGuthi", label: "SanGuthi", description: "Life-cycle ritual trust" },
     { value: "RajGuthi", label: "RajGuthi", description: "Royal endowment trust" },
+  ],
+
+  CulturalEntityCategoryEnum: [
+    { value: "monument", label: "Monument", description: "Monument or built heritage" },
+    { value: "artifact", label: "Artifact" },
+    { value: "ritual", label: "Ritual" },
+    { value: "festival", label: "Festival" },
+    { value: "tradition", label: "Tradition" },
+    { value: "document", label: "Document" },
+    { value: "other", label: "Other" },
   ],
 
 } as const;

@@ -197,6 +197,40 @@ def type_coverage(engine: Any) -> dict[str, Any]:
     return {"value": value, "typed_subjects": typed, "total_subjects": subjects}
 
 
+def graph_connectivity(engine: Any) -> dict[str, Any]:
+    """Curated entity→entity edge count and fraction of subjects with ≥1 edge."""
+    from apps.graph.kg_engine.uris import curated_resource_uri_prefix
+
+    public = GraphPartition.PUBLIC.uri()
+    prefix = curated_resource_uri_prefix()
+    edges = _count(
+        engine,
+        f"""SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{public}> {{
+  ?s ?p ?o . FILTER(isIRI(?o)) FILTER(?p != <{RDF_TYPE}>)
+  FILTER(STRSTARTS(STR(?s), "{prefix}")) FILTER(STRSTARTS(STR(?o), "{prefix}"))
+}} }}""",
+    )
+    connected = _count(
+        engine,
+        f"""SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH <{public}> {{
+  ?s ?p ?o . FILTER(isIRI(?o)) FILTER(?p != <{RDF_TYPE}>)
+  FILTER(STRSTARTS(STR(?s), "{prefix}")) FILTER(STRSTARTS(STR(?o), "{prefix}"))
+}} }}""",
+    )
+    subjects = _count(
+        engine,
+        f"""SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH <{public}> {{
+  ?s <{RDF_TYPE}> ?t FILTER(STRSTARTS(STR(?s), "{prefix}"))
+}} }}""",
+    )
+    return {
+        "entity_entity_edges": edges,
+        "subjects_with_outgoing_edge": connected,
+        "typed_subjects": subjects,
+        "connectivity_rate": round(connected / subjects, 4) if subjects and connected is not None else None,
+    }
+
+
 def dangling_edges(engine: Any) -> int | None:
     public = GraphPartition.PUBLIC.uri()
     return _count(
@@ -259,6 +293,8 @@ def temporal_validity(engine: Any) -> dict[str, Any]:
 def provenance_coverage(engine: Any) -> dict[str, Any]:
     """Accepted relationship edges whose belief carries an IRI agent + source."""
     try:
+        from django.db.models import Q
+
         from apps.cidoc_data.models import HeritageAssertion
 
         qs = HeritageAssertion.objects.filter(
@@ -266,14 +302,16 @@ def provenance_coverage(engine: Any) -> dict[str, Any]:
             reconciliation_status="accepted",
         )
         total = qs.count()
-        attributed = qs.exclude(attributed_to_agent="").exclude(contributed_by="").count()
-        sourced = qs.filter(source__isnull=False).count() + qs.exclude(source_citation="").count()
+        attributed = qs.filter(
+            Q(attributed_to_agent__gt="") | Q(contributed_by__gt="")
+        ).count()
+        sourced = qs.filter(Q(source__isnull=False) | Q(source_citation__gt="")).count()
     except Exception:
         return {"value": None, "accepted_edges": None}
     return {
         "accepted_edges": total,
         "with_agent": attributed,
-        "with_source": min(sourced, total) if total else 0,
+        "with_source": sourced,
         "value": round(attributed / total, 4) if total else None,
     }
 
@@ -318,6 +356,7 @@ def build_quality_report(engine: Any) -> dict[str, Any]:
         "completeness": {
             "type_coverage": type_coverage(engine),
             "external_alignment": external_alignment_density(),
+            "graph_connectivity": graph_connectivity(engine),
         },
         "provenance_coverage": provenance_coverage(engine),
         "temporal_validity": temporal_validity(engine),

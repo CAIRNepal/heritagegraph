@@ -8,9 +8,10 @@
         crm-bridge crm-bridge-check skos-vocab skos-vocab-check \
         serializers serializers-check entityrefs entityrefs-check contribute-routes-check \
         schema-rebuild identity-candidates schema-diff \
-        rdf-rebuild rdf-diagnose rdf-load-tbox \
+        rdf-rebuild rdf-diagnose rdf-load-tbox kg-publish kg-verify \
         generate check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
+        museum-backend museum-frontend museum-dev \
         reset-dev-db migrate migrations shell seed seed-reset \
         docs-build docs-serve docs-clean \
         docker-up docker-up-build docker-down docker-build \
@@ -86,8 +87,14 @@ entityrefs-check: $(VENV_PY) ## CI: fail if any CharField relation values lack E
 schema-rebuild: $(VENV_PY) ## Persist ontology registry snapshot to DB (SchemaRegistry)
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rebuild_schema_registry
 
-rdf-rebuild: $(VENV_PY) ## Reproject all CIDOC rows into the public RDF named graph
-	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_rebuild
+rdf-rebuild: $(VENV_PY) ## Reproject curated corpus into the public RDF graph
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_rebuild --purge-imports
+
+kg-publish: $(VENV_PY) ## Full KG publish pipeline (rebuild + verify + quality report)
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_publish
+
+kg-verify: $(VENV_PY) ## Verify KG store consistency and publication gates
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_verify
 
 kg-quality-report: $(VENV_PY) ## JSON KG quality metrics (Phase 1 evaluation)
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py kg_quality_report
@@ -253,6 +260,30 @@ backend: $(VENV_PY) ## Start Django dev server on http://localhost:8000
 
 frontend: ## Start main Next.js app on http://localhost:3000
 	cd $(FRONTEND) && $(NODE_PATH) NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
+
+museum-backend: $(VENV_PY) ## Django for Heritage Museum (local KG + remote LUX reads)
+	cd $(BACKEND) && DJANGO_ENV=development \
+		RDF_LUX_QUERY_URL=$${RDF_LUX_QUERY_URL:-https://semihyumusak.com.tr/oxigraph/query} \
+		RDF_LUX_LABEL_MATCH_LIMIT=$${RDF_LUX_LABEL_MATCH_LIMIT:-8} \
+		../$(VENV_PY) manage.py runserver 0.0.0.0:8000
+
+museum-frontend: ## Next.js for Heritage Museum on http://localhost:3000
+	cd $(FRONTEND) && $(NODE_PATH) NEXT_PUBLIC_API_URL=http://localhost:8000 \
+		npx next dev -H 127.0.0.1 -p 3000
+
+museum-dev: ## Show Heritage Museum dev URLs (run museum-backend + museum-frontend in two terminals)
+	@echo ""
+	@echo "  Heritage Museum — local visualization"
+	@echo "  ====================================="
+	@echo "    Terminal 1:  make museum-backend"
+	@echo "    Terminal 2:  make museum-frontend"
+	@echo ""
+	@echo "    Museum UI:   http://localhost:3000/heritage-museum"
+	@echo "    API graph:   http://localhost:8000/api/v1/cidoc/kg/graph/?include_lux=linked"
+	@echo ""
+	@echo "  In the museum toolbar: switch Data source → Live, then explore the graph."
+	@echo "  Demo mode works without sign-in; Live uses your local curated KG + linked Yale LUX."
+	@echo ""
 
 landing: ## Start marketing landing on http://localhost:3001 (links to app on :3000)
 	cd $(LANDING) && $(NODE_PATH) NEXT_PUBLIC_APP_URL=http://localhost:3000 npm run dev
