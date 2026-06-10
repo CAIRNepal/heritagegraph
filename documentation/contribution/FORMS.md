@@ -97,7 +97,7 @@ python3 tools/linkml_generate_registry.py
 python3 tools/emit_minimal_shacl.py
 ```
 
-Output path: [`ontology/shapes/generated-heritagegraph-minimal-shacl.ttl`](ontology/shapes/generated-heritagegraph-minimal-shacl.ttl).
+Output path: [`ontology/shapes/generated-heritagegraph-minimal-shacl.ttl`](../../ontology/shapes/generated-heritagegraph-minimal-shacl.ttl).
 
 ### Identity resolution & duplicate contributions
 
@@ -581,7 +581,10 @@ python manage.py migrate
 | `src/app/(dashboard)/contribute/page-client.tsx` | Contribute hub (intents + **semantic workflows** cards) |
 | `src/app/(dashboard)/contribute/pattern/[slug]/page.tsx` | Guided semantic pattern steps |
 | `src/app/(dashboard)/knowledge/<domain>/page.tsx` | Per-domain knowledge table page stubs |
+| `src/app/(dashboard)/knowledge/[domain]/page.tsx` | Generic knowledge table fallback (registry-driven columns) |
 | `src/app/(dashboard)/knowledge/[domain]/view/[id]/page.tsx` | Generic entity detail/record view |
+
+**Knowledge tables (browse accepted data):** see [`KNOWLEDGE_PAGES.md`](KNOWLEDGE_PAGES.md) for the full `/knowledge/*` matrix, status-tab behavior, API endpoints, and verification commands.
 
 ### Backend (Django API)
 

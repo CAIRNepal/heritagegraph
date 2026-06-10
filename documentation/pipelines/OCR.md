@@ -182,7 +182,7 @@ Mounted under the app’s URL include; router basename is `ocr-document` (e.g. `
 | API | `…/views.py`, `…/serializers.py`, `…/urls.py` |
 | Models | `…/models.py` |
 
-This reflects the v1 implementation: end-to-end wiring is in place; handwriting-specific models, EasyOCR fallback in code paths, and rich NER are still evolution items (see [OCR_INTEGRATION_SUMMARY.md](documentation/internal/OCR_INTEGRATION_SUMMARY.md) **Current Limitations**).
+This reflects the v1 implementation: end-to-end wiring is in place; handwriting-specific models, EasyOCR fallback in code paths, and rich NER are still evolution items (see [Current Limitations / TODO](#current-limitations--todo) below).
 
 
 ---
@@ -205,13 +205,13 @@ HeritageGraph now has infrastructure in place for document OCR processing. Two m
 - `requirements-ocr.txt` with heavy deps: pytesseract, easyocr, transformers, torch, trocr, anthropic, etc.
 
 **Django Configuration:**
-- Celery configured in [heritage_graph/settings/base.py](../heritage_graph/settings/base.py):
+- Celery configured in [heritage_graph/settings/base.py](../../heritage_graph/settings/base.py):
   - `CELERY_BROKER_URL` and `CELERY_RESULT_BACKEND` point to Redis
   - Serialization: JSON (safe for all data types)
   - Task time limits: 30min hard / 25min soft
 - Development mode: `CELERY_TASK_ALWAYS_EAGER = True` (tasks run synchronously for easier debugging)
-- Created [heritage_graph/celery_app.py](../heritage_graph/celery_app.py) app initialization
-- Updated [heritage_graph/__init__.py](../heritage_graph/__init__.py) to load Celery on startup
+- Created [heritage_graph/celery_app.py](../../heritage_graph/celery_app.py) app initialization
+- Updated [heritage_graph/__init__.py](../../heritage_graph/__init__.py) to load Celery on startup
 
 **Docker Setup:**
 - Added Redis service to docker-compose.yml (port 6379 internal)
@@ -232,7 +232,7 @@ HeritageGraph now has infrastructure in place for document OCR processing. Two m
 
 ### Phase 1: Data Models & Document Processing App ✅
 
-**App Created:** [heritage_graph/apps/document_processing/](../heritage_graph/apps/document_processing/)
+**App Created:** [heritage_graph/apps/document_processing/](../../heritage_graph/apps/document_processing/)
 
 **Models:**
 1. **UploadedDocument** (`models.py`)

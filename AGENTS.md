@@ -364,7 +364,7 @@ HeritageGraph uses **Celery + Redis** when async tasks are enabled:
 - [ ] Unit tests & end-to-end testing
 
 **Documentation:**
-- `OCR_INTEGRATION_SUMMARY.md` — Detailed architecture, implementation guide, and troubleshooting
+- [`documentation/pipelines/OCR.md`](documentation/pipelines/OCR.md) — OCR pipeline architecture, implementation guide, and troubleshooting
 
 ---
 

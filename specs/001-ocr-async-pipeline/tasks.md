@@ -36,7 +36,7 @@ Reference `/.specify/memory/constitution.md` while executing tasks:
 - [x] T003 [P] Verify `OCR_ENABLED` and Celery/Redis settings are read consistently in `heritage_graph/settings/base.py` and that `heritage_graph/settings/development.py`’s `CELERY_TASK_ALWAYS_EAGER` behavior is understood for dev vs `ocr-worker` in docker
 - [x] T004 [P] Verify the `ocr-worker` service in `docker-compose.yml` points at the `ocr-worker` build target in `Dockerfile.backend` and uses a Celery autodiscover-friendly app module path
 - [x] T005 [P] Verify the heavy dependency split still makes sense: `heritage_graph/requirements.txt` vs `heritage_graph/requirements-ocr.txt` and how the worker image installs the OCR stack
-- [x] T006 [P] Verify existing operational documentation in `OCR_INTEGRATION_SUMMARY.md` matches the intended runtime (update later in polish if the implementation changes behavior materially)
+- [x] T006 [P] Verify existing operational documentation in [`documentation/pipelines/OCR.md`](../../documentation/pipelines/OCR.md) matches the intended runtime (update later in polish if the implementation changes behavior materially)
 
 ## Phase 2: Foundational (blocking prerequisites for all user stories)
 
@@ -119,7 +119,7 @@ Reference `/.specify/memory/constitution.md` while executing tasks:
 
 **Purpose**: Rollout safety, documentation currency, and repo hygiene.
 
-- [x] T038 [P] Update `OCR_INTEGRATION_SUMMARY.md` to match the now-real upload + API surfaces and the `CulturalEntity` attach behavior via `heritage_data.Media` in `heritage_graph/apps/heritage_data/models.py`
+- [x] T038 [P] Update [`documentation/pipelines/OCR.md`](../../documentation/pipelines/OCR.md) to match the now-real upload + API surfaces and the `CulturalEntity` attach behavior via `heritage_data.Media` in `heritage_graph/apps/heritage_data/models.py`
 - [x] T039 [P] Update `AGENTS.md` OCR section with the final endpoints (legacy + versioned) and the attach model behavior (as required by the constitution for workflow doc updates)
 - [x] T040 [P] If service topology or ports change, update `ARCHITECTURE.md` in the repo root (only if the docker topology or routing meaningfully changes)
 - [x] T041 Run the manual bring-up in `specs/001-ocr-async-pipeline/quickstart.md` against `docker compose` and dev settings, and adjust `specs/001-ocr-async-pipeline/quickstart.md` if the steps drift
@@ -175,4 +175,4 @@ Reference `/.specify/memory/constitution.md` while executing tasks:
 - If any endpoint shape changes, update:
   - `heritage_graph/apps/document_processing/urls.py`
   - `specs/001-ocr-async-pipeline/contracts/openapi-ocr-documents.v1.yaml`
-  - `AGENTS.md` and `OCR_INTEGRATION_SUMMARY.md` as needed
+  - [`AGENTS.md`](../../AGENTS.md) and [`documentation/pipelines/OCR.md`](../../documentation/pipelines/OCR.md) as needed

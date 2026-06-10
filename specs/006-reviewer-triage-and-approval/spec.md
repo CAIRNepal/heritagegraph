@@ -3,7 +3,7 @@
 **Feature Branch**: `006-reviewer-triage-and-approval`  
 **Created**: 2026-04-25  
 **Status**: Draft  
-**Input**: User description: "P1 Reviewer Triage and Schema Extension Approval — from platform next-steps checklist (P0-independent slice): composite reviewer triage scoring (age, conflicts, source tier, flags) with queue sort/filter UX; moderator-only schema extension proposal, review, approval, publish, and audit; expose My Domain and sort controls. Grounded in [docs/platform-next-steps-checklist.md](../../docs/platform-next-steps-checklist.md) and [docs/platform-epistemic-status-2026.md](../../docs/platform-epistemic-status-2026.md)."
+**Input**: User description: "P1 Reviewer Triage and Schema Extension Approval — from platform next-steps checklist (P0-independent slice): composite reviewer triage scoring (age, conflicts, source tier, flags) with queue sort/filter UX; moderator-only schema extension proposal, review, approval, publish, and audit; expose My Domain and sort controls. Grounded in [documentation/internal/PLATFORM_ISSUES_CHECKLIST.md](../../documentation/internal/PLATFORM_ISSUES_CHECKLIST.md) and [documentation/developer/SKILLS.md](../../documentation/developer/SKILLS.md)."
 
 ## User Scenarios & Testing *(mandatory)*
 

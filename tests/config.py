@@ -9,6 +9,8 @@ FULL_E2E_LABELS: tuple[str, ...] = (
     "apps.cidoc_data.test_contribution_entity_resolution",
     "apps.cidoc_data.test_canonical_record_selection",
     "apps.cidoc_data.test_publication_policy",
+    "apps.cidoc_data.test_knowledge_list_apis",
+    "apps.cidoc_data.test_list_visibility",
     "apps.graph.test_museum_graph_enrichment",
     "apps.graph.test_museum_media",
     "apps.heritage_data.test_cultural_entity_kg",
@@ -26,6 +28,7 @@ COVERAGE_AREAS: tuple[str, ...] = (
     "Public discovery + search + schema registry",
     "KG stats + graph API (museum/graphview)",
     "Contribution POST → CulturalEntity + identity resolution",
+    "CIDOC form → reviewer accept (decide API) → cultural-entity RDF → kg/graph",
     "Duplicate contribution → cluster link + identity candidate",
     "suggest-duplicates API (canonical member ranking)",
     "Contribution queue + epistemic review queue (reviewer)",
@@ -33,6 +36,8 @@ COVERAGE_AREAS: tuple[str, ...] = (
     "Full form→graph pipeline (test_e2e_pipeline)",
     "Entity resolution + canonical selection unit tests",
     "Museum enrichment + cultural entity KG sync",
+    "Knowledge list APIs (all 26 navigable /knowledge/<domain> tables)",
+    "List visibility (published-by-default) + published-edit re-review",
 )
 
 LIVE_HTTP_PROBES: tuple[str, ...] = (

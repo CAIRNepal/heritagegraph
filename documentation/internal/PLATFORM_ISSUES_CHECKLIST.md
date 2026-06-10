@@ -1,7 +1,7 @@
 # Platform issues — comprehensive checklist
 
 > **Purpose:** Single reference for every *kind* of “issue” HeritageGraph can surface: **curation/review taxonomies** (what reviewers and contributors see), **legacy moderation states**, **fork/public contribution categories**, **known engineering gaps**, and **operational checks**.  
-> **Related:** [`TROUBLESHOOTING.md`](../../TROUBLESHOOTING.md) (deep detail on engineering items), [`SKILLS.md`](../../SKILLS.md) (feature matrix and planned work), [`AGENTS.md`](../../AGENTS.md) (architecture overview).
+> **Related:** [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md) (deep detail on engineering items), [`SKILLS.md`](../developer/SKILLS.md) (feature matrix and planned work), [`AGENTS.md`](../../AGENTS.md) (architecture overview).
 
 ---
 
@@ -209,7 +209,7 @@ Model: `ReviewDecision`. Workspace: `GET /data/review-workspace/<uuid>/`, decide
 
 ## 6. Known technical issues (engineering)
 
-Canonical narratives live in [`TROUBLESHOOTING.md`](../../TROUBLESHOOTING.md). Use this checklist to track remediation.
+Canonical narratives live in [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md). Use this checklist to track remediation.
 
 ### 6.1 Critical / high impact
 
@@ -245,7 +245,7 @@ Canonical narratives live in [`TROUBLESHOOTING.md`](../../TROUBLESHOOTING.md). U
 
 ## 7. Planned / partial features
 
-From [`SKILLS.md`](../../SKILLS.md) — not exhaustive; see file for file-level pointers.
+From [`SKILLS.md`](../developer/SKILLS.md) — not exhaustive; see file for file-level pointers.
 
 | Item | Typical gap |
 |------|-------------|
@@ -270,7 +270,7 @@ From [`SKILLS.md`](../../SKILLS.md) — not exhaustive; see file for file-level 
 
 ## 8. Deployment & security checklist
 
-Consolidated from [`TROUBLESHOOTING.md`](../../TROUBLESHOOTING.md) deploy section.
+Consolidated from [`TROUBLESHOOTING.md`](../TROUBLESHOOTING.md) deploy section.
 
 - [ ] `.env` from `.env.example` with production values
 - [ ] `DJANGO_SECRET_KEY` strong and unique

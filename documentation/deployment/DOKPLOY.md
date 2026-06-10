@@ -47,7 +47,7 @@ Use that full URL (do **not** commit it into this repo):
 
 ### 3. GitHub Actions (recommended on GitHub: only `v1` pushes trigger)
 
-Workflow [`.github/workflows/dokploy-deploy.yml`](.github/workflows/dokploy-deploy.yml) runs on **`push` to branch `v1`** and **`workflow_dispatch`** (manual run may require that branch’s workflow on the repo’s default branch; prefer a **push** to **`v1`** for a reliable hook).
+Workflow [`.github/workflows/dokploy-deploy.yml`](../../.github/workflows/dokploy-deploy.yml) runs on **`push` to branch `v1`** and **`workflow_dispatch`** (manual run may require that branch’s workflow on the repo’s default branch; prefer a **push** to **`v1`** for a reliable hook).
 
 **Operator checklist:**
 
@@ -125,5 +125,5 @@ Imagery tiles use **`https://server.arcgisonline.com/...`**; include that host i
 
 ## More help
 
-- [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md) — migration history, CORS, OAuth.
+- [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) — migration history, CORS, OAuth.
 - [deploy_on_coolify.md](deploy_on_coolify.md) — same stack pattern; substitute “Dokploy” for “Coolify” where relevant.

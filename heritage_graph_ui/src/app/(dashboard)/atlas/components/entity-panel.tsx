@@ -16,8 +16,14 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
+import {
+  atlasEntityClassLabel,
+  atlasEntityIsOnGlobe,
+} from '@/lib/atlas-entity-display';
+
 import { useAtlasStore, useAtlasViewEdges, useFilteredAtlasEntities } from '../hooks/use-atlas-store';
 import { AtlasKnowledgeLink } from './atlas-knowledge-link';
+import { CoordProvenanceBadge } from './coord-provenance-badge';
 import { ProvenancePanel } from './provenance-panel';
 
 type DetailTab = 'overview' | 'provenance' | 'timeline' | 'relations' | 'sources';
@@ -196,8 +202,11 @@ export function EntityPanel() {
                         <span className="text-[11px] text-muted-foreground">{entity.nameNe}</span>
                       : null}
                       <span className="rounded border border-border/60 bg-muted/35 px-1.5 py-px font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
-                        {entity.class}
+                        {atlasEntityClassLabel(entity)}
                       </span>
+                      {entity.coordProvenance ?
+                        <CoordProvenanceBadge provenance={entity.coordProvenance} compact />
+                      : null}
                       <span className="rounded border border-border/60 bg-muted/35 px-1.5 py-px font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
                         {entity.era.replace('_', ' ')}
                       </span>
@@ -234,6 +243,28 @@ export function EntityPanel() {
                             {t('yearFilteredHint', { year: currentYear })}
                           </p>
                           <p className="text-[13px] leading-snug">{entity.summary}</p>
+                          <div className="rounded-md border border-border/50 bg-muted/20 px-2.5 py-2 text-[11px]">
+                            <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
+                              {t('geoSection')}
+                            </p>
+                            {entity.lat != null && entity.lon != null ?
+                              <p className="mt-1 font-mono tabular-nums">
+                                {entity.lat.toFixed(5)}°, {entity.lon.toFixed(5)}°
+                              </p>
+                            : (
+                              <p className="mt-1 text-muted-foreground">{t('geoUnmapped')}</p>
+                            )}
+                            {entity.coordProvenance ?
+                              <p className="mt-1 text-muted-foreground leading-snug">
+                                {t(`${entity.coordProvenance === 'verified' ? 'coordVerified' : entity.coordProvenance === 'gazetteer' ? 'coordGazetteer' : entity.coordProvenance === 'inherited' ? 'coordInherited' : 'coordUnmapped'}Hint`)}
+                              </p>
+                            : null}
+                            {!atlasEntityIsOnGlobe(entity) ?
+                              <p className="mt-1 text-amber-800 dark:text-amber-200">
+                                {t('geoCatalogOnly')}
+                              </p>
+                            : null}
+                          </div>
                           {entity.ritualType ?
                             <p className="text-[11px] text-muted-foreground">
                               {t('ritualType')} {entity.ritualType}

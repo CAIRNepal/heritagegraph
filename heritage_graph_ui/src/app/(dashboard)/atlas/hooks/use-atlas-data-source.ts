@@ -1,6 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { hydrateAtlasFromInstanceGraph } from '@/lib/atlas-api-hydrate';
@@ -15,13 +16,15 @@ import { useAtlasStore } from './use-atlas-store';
 const API_BASE = getPublicApiUrl();
 
 /**
- * Boots corpus hydration: demo corpus by default; live CIDOC graph on demand.
+ * Boots corpus hydration: curated demo by default; opt into live via toggle or `?source=live`.
  */
 export function useAtlasDataSource() {
   const { data: session } = useSession();
+  const searchParams = useSearchParams();
   const dataSource = useAtlasStore((s) => s.dataSource);
   const corpusStatus = useAtlasStore((s) => s.corpusStatus);
   const abortRef = useRef<AbortController | null>(null);
+  const bootstrappedRef = useRef(false);
 
   const tryLoadLive = useCallback(async () => {
     abortRef.current?.abort();
@@ -54,6 +57,7 @@ export function useAtlasDataSource() {
         dataSource: 'live',
         corpusStatus: 'ready',
         corpusError: null,
+        locationStats: hydrated.locationStats,
         minYear: extents.minYear,
         maxYear: extents.maxYear,
         currentYear: Math.min(
@@ -77,6 +81,14 @@ export function useAtlasDataSource() {
       atlasTrack('corpus_load_error', { message });
     }
   }, [session]);
+
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+    if (searchParams.get('source') === 'live') {
+      useAtlasStore.getState().loadLiveCorpus();
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (dataSource === 'live' && corpusStatus === 'idle') {

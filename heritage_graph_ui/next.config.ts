@@ -166,6 +166,8 @@ const nextConfig: NextConfig = {
       { source: '/dashboard', destination: '/', permanent: true },
       { source: '/dashboard/', destination: '/', permanent: true },
       { source: '/dashboard/:path*', destination: '/:path*', permanent: true },
+      { source: '/discover', destination: '/about', permanent: true },
+      { source: '/discover/', destination: '/about', permanent: true },
     ];
   },
 

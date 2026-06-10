@@ -60,6 +60,7 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
   const dataSource = useAtlasStore((s) => s.dataSource);
   const corpusStatus = useAtlasStore((s) => s.corpusStatus);
   const corpusError = useAtlasStore((s) => s.corpusError);
+  const locationStats = useAtlasStore((s) => s.locationStats);
   const setDataSource = useAtlasStore((s) => s.setDataSource);
   const loadLiveCorpus = useAtlasStore((s) => s.loadLiveCorpus);
 
@@ -129,7 +130,15 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
           {t('statusStripView')} <strong>{t(viewKey)}</strong>
         </span>
         <span className="hidden shrink-0 whitespace-nowrap sm:inline">{t('statusEntities', { count: visible.length })}</span>
-        <span className="hidden shrink-0 whitespace-nowrap md:inline">{t('statusAssertions', { count: assertionCount })}</span>
+        {dataSource === 'live' && locationStats ?
+          <span className="hidden shrink-0 whitespace-nowrap md:inline" title={t('placesCoverageHint')}>
+            {t('statusPlaces', {
+              mapped: locationStats.mappedOnGlobe,
+              total: locationStats.totalPlaces,
+            })}
+          </span>
+        : null}
+        <span className="hidden shrink-0 whitespace-nowrap lg:inline">{t('statusAssertions', { count: assertionCount })}</span>
         <span className="hidden shrink-0 whitespace-nowrap lg:inline">{t('statusCorpus', { count: entities.length })}</span>
         <span className="hidden shrink-0 whitespace-nowrap xl:inline">
           {t('floors')} {reliabilityFloor} · {(confidenceFloor * 100).toFixed(0)}%

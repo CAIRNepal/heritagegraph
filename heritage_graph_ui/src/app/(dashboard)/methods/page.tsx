@@ -115,7 +115,7 @@ export default function MethodsPage() {
           <Link href="/heritage-museum?source=live">Open Heritage Museum (live)</Link>
         </Button>
         <Button asChild variant="outline" size="sm">
-          <Link href="/discover">Discover curated entities</Link>
+          <Link href="/about">About HeritageGraph</Link>
         </Button>
       </div>
     </div>

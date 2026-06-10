@@ -30,6 +30,8 @@ import {
 } from '../lib/atlas-fx-presets';
 import { entityExistedAtYear } from '@/lib/atlas-temporal';
 
+import type { AtlasLocationCatalogStats } from '@/lib/atlas-api-hydrate';
+
 import { computeAtlasTimelineExtents } from '../atlas-time-extents';
 
 const ATLAS_FX_STORAGE_KEY = 'atlas:fx';
@@ -211,6 +213,8 @@ interface AtlasState {
   dataSource: AtlasDataSource;
   corpusStatus: AtlasCorpusStatus;
   corpusError: string | null;
+  /** Live corpus place-mapping coverage (undefined in demo mode). */
+  locationStats: AtlasLocationCatalogStats | null;
   /** Increment to invalidate in-flight live corpus loads. */
   liveLoadToken: number;
   /** When true, timeline year hides entities outside their existence span. */
@@ -328,6 +332,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   dataSource: 'demo',
   corpusStatus: 'ready',
   corpusError: null,
+  locationStats: null,
   liveLoadToken: 0,
   temporalFilterEnabled: true,
 
@@ -378,7 +383,14 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   },
 
   getGlobeEntities() {
-    return get().getFilteredEntities().filter((e) => e.lat != null && e.lon != null);
+    return get()
+      .getFilteredEntities()
+      .filter(
+        (e) =>
+          e.lat != null &&
+          e.lon != null &&
+          e.coordProvenance !== 'unmapped',
+      );
   },
 
   getEntityById(id) {
@@ -706,6 +718,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
         edges: ATLAS_ONTOLOGY_EDGES,
         corpusStatus: 'ready',
         corpusError: null,
+        locationStats: null,
         minYear: extents.minYear,
         maxYear: extents.maxYear,
         selectedId: null,

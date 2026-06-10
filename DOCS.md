@@ -30,6 +30,7 @@ A map of all project documentation. Start with [README.md](README.md) for setup.
 | Doc | What it covers |
 |-----|----------------|
 | [documentation/contribution/FORMS.md](documentation/contribution/FORMS.md) | Registry-driven contribution forms |
+| [documentation/contribution/KNOWLEDGE_PAGES.md](documentation/contribution/KNOWLEDGE_PAGES.md) | `/knowledge/*` tabular browse pages (26 types) |
 
 ## Authentication & roles
 

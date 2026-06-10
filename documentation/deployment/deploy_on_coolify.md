@@ -247,7 +247,7 @@ The backend entrypoint runs `migrate` on every start. If Postgres was initialize
 1. **Disposable data:** drop and recreate the public schema or delete the Postgres volume, then redeploy (see **TROUBLESHOOTING.md §10** — PostgreSQL / Coolify).
 2. **Keep data:** `DELETE FROM django_migrations WHERE app = 'admin';` then `migrate` from the backend container; use `--fake-initial` for `users` only if tables already exist and match.
 
-Full steps: [TROUBLESHOOTING.md](../../TROUBLESHOOTING.md) → section **10**.
+Full steps: [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) → section **10**.
 
 ### CORS Errors
 

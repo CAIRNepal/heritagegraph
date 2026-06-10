@@ -8,11 +8,9 @@ import { useSession } from 'next-auth/react';
 
 import {
   IconChartBar,
-  IconCompass,
   IconLayoutDashboard,
   IconTrophy,
   IconPlus,
-  IconBell,
   IconUsersGroup,
   IconBuildingCommunity,
   IconUser,
@@ -227,7 +225,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           navtitle={t('describe')}
           items={[
             { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
-            { title: 'Discover', url: '/discover', icon: IconCompass },
+            { title: t('about'), url: '/about', icon: IconInfoCircle },
             { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
             { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
             { title: t('heritageMuseum'), url: '/heritage-museum', icon: IconBuildingMonument },
@@ -314,10 +312,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           { title: t('contributors'), url: '/community/contributors', icon: IconUsers },
           { title: t('organizations'), url: '/community/organizations', icon: IconBuilding },
           { title: t('team'), url: '/team', icon: IconUsersGroup },
-          { title: t('about'), url: '/about', icon: IconInfoCircle },
-          ...(showAuthedNav
-            ? [{ title: t('notifications'), url: '/notification', icon: IconBell }]
-            : []),
         ]} />
         {isPlatformAdmin ? (
           <NavMain

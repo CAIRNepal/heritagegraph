@@ -48,7 +48,7 @@ function formatDate(dateString?: string): string {
   }
 }
 
-function getStatusColor(status?: string): string {
+export function getStatusColor(status?: string): string {
   const s = (status ?? '').toLowerCase().replace(/\s+/g, '_');
   switch (s) {
     case 'approved':
@@ -1608,6 +1608,8 @@ export const personTableConfig: DataTableConfig<PersonRecord> = {
   title: 'Persons',
   description: 'Browse historical and cultural figures in the knowledge base.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Person',
     href: '/contribute/person',
@@ -1622,6 +1624,8 @@ export const locationTableConfig: DataTableConfig<LocationRecord> = {
   title: 'Locations',
   description: 'Browse heritage sites and cultural locations.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Location',
     href: '/contribute/location',
@@ -1636,6 +1640,8 @@ export const eventTableConfig: DataTableConfig<EventRecord> = {
   title: 'Events',
   description: 'Browse cultural events, festivals, and historical occurrences.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Event',
     href: '/contribute/event',
@@ -1650,6 +1656,8 @@ export const traditionTableConfig: DataTableConfig<TraditionRecord> = {
   title: 'Traditions',
   description: 'Browse cultural practices and intangible heritage traditions.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Tradition',
     href: '/contribute/tradition',
@@ -1657,7 +1665,7 @@ export const traditionTableConfig: DataTableConfig<TraditionRecord> = {
 };
 
 export const culturalEntityTableConfig: DataTableConfig<CulturalEntityRecord> = {
-  endpoint: '/data/cultural-entities/',
+  endpoint: '/data/api/cultural-entities/',
   columns: culturalEntityColumns,
   dataKey: 'results',
   rowIdField: 'entity_id',
@@ -1665,6 +1673,8 @@ export const culturalEntityTableConfig: DataTableConfig<CulturalEntityRecord> = 
   title: 'Cultural Entities',
   description: 'Browse contributed cultural entities — monuments, festivals, rituals, traditions, and artifacts.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Entity',
     href: '/contribute',
@@ -1679,6 +1689,8 @@ export const sourceTableConfig: DataTableConfig<SourceRecord> = {
   title: 'Sources',
   description: 'Browse documentary sources, manuscripts, and reference materials.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Source',
     href: '/contribute/source',
@@ -1693,6 +1705,8 @@ export const historicalPeriodTableConfig: DataTableConfig<HistoricalPeriodRecord
   title: 'Historical Periods',
   description: 'Browse historical eras and time periods.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Period',
     href: '/contribute/period',
@@ -1707,6 +1721,8 @@ export const deityTableConfig: DataTableConfig<DeityRecord> = {
   title: 'Deities',
   description: 'Browse deities and divine figures in the knowledge base.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Deity',
     href: '/contribute/deity',
@@ -1721,6 +1737,8 @@ export const guthiTableConfig: DataTableConfig<GuthiRecord> = {
   title: 'Guthis',
   description: 'Browse Guthi organizations and community institutions.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Guthi',
     href: '/contribute/guthi',
@@ -1735,6 +1753,8 @@ export const structureTableConfig: DataTableConfig<StructureRecord> = {
   title: 'Architectural Structures',
   description: 'Browse temples, stupas, and other heritage structures.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Structure',
     href: '/contribute/structure',
@@ -1749,6 +1769,8 @@ export const ritualTableConfig: DataTableConfig<RitualRecord> = {
   title: 'Rituals',
   description: 'Browse ritual events, pujas, and ceremonial practices.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Ritual',
     href: '/contribute/ritual',
@@ -1763,6 +1785,8 @@ export const festivalTableConfig: DataTableConfig<FestivalRecord> = {
   title: 'Festivals',
   description: 'Browse cultural festivals and celebrations.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Festival',
     href: '/contribute/festival',
@@ -1777,6 +1801,8 @@ export const iconographyTableConfig: DataTableConfig<IconographyRecord> = {
   title: 'Iconographic Objects',
   description: 'Browse sculptures, paintings, and iconographic artifacts.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Iconography',
     href: '/contribute/iconography',
@@ -1791,6 +1817,8 @@ export const monumentTableConfig: DataTableConfig<MonumentRecord> = {
   title: 'Monuments',
   description: 'Browse heritage monuments and historical landmarks.',
   showHeader: true,
+  serverPagination: true,
+  enableServerSearch: true,
   addAction: {
     label: 'Add Monument',
     href: '/contribute/monument',

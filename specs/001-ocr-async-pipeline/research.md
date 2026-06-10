@@ -46,7 +46,7 @@
 - Enforce max “vision rescue” invocations per document and persist the count in an auditable way.
 - Set Celery time limits consistent with `settings` expectations; OCR tasks should checkpoint per page where feasible.
 
-**Rationale**: The spec’s success criteria explicitly require preventing runaway processing; the repo already documents related env controls in `OCR_INTEGRATION_SUMMARY.md` / `.env.example`.
+**Rationale**: The spec’s success criteria explicitly require preventing runaway processing; the repo already documents related env controls in [`documentation/pipelines/OCR.md`](../../documentation/pipelines/OCR.md) and [`.env.example`](../../.env.example).
 
 **Alternatives considered**:
 - Unlimited pages with best-effort (rejected: operational risk, poor UX for huge PDFs).

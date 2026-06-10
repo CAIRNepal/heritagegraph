@@ -20,8 +20,14 @@ import { ONTOLOGY_CLASSES } from '@/types/atlas';
 
 import { cn } from '@/lib/utils';
 
+import { CoordProvenanceBadge } from '../components/coord-provenance-badge';
 import { AtlasKnowledgeLink } from '../components/atlas-knowledge-link';
 import { ProvenanceBadge } from '../components/provenance-badge';
+import {
+  atlasEntityClassLabel,
+  atlasEntityIsOnGlobe,
+  atlasEntityIsPlace,
+} from '@/lib/atlas-entity-display';
 import { tierFromAssertionSources } from '@/lib/atlas-provenance-helpers';
 import { ATLAS_ERAS_ORDER, useAtlasStore, useFilteredAtlasEntities } from '../hooks/use-atlas-store';
 
@@ -37,29 +43,36 @@ export function SearchView({ compact = false }: SearchViewProps) {
   const selectEntity = useAtlasStore((s) => s.selectEntity);
   const focusView = useAtlasStore((s) => s.focusView);
 
+  const dataSource = useAtlasStore((s) => s.dataSource);
+  const locationStats = useAtlasStore((s) => s.locationStats);
+
   const [query, setQuery] = useState('');
   const [eraFilter, setEraFilter] = useState<string>('any');
   const [classFilter, setClassFilter] = useState<string>('any');
+  const [scopeFilter, setScopeFilter] = useState<string>('all');
   const [visibleCount, setVisibleCount] = useState(24);
 
   const SEARCH_PAGE = 24;
 
   useEffect(() => {
     setVisibleCount(SEARCH_PAGE);
-  }, [query, eraFilter, classFilter, base.length]);
+  }, [query, eraFilter, classFilter, scopeFilter, base.length]);
 
   const results = useMemo(() => {
     const q = query.trim();
     return base.filter((e) => {
       if (eraFilter !== 'any' && e.era !== eraFilter) return false;
       if (classFilter !== 'any' && e.class !== classFilter) return false;
+      if (scopeFilter === 'places' && !atlasEntityIsPlace(e)) return false;
+      if (scopeFilter === 'mapped' && !atlasEntityIsOnGlobe(e)) return false;
+      if (scopeFilter === 'unmapped' && atlasEntityIsOnGlobe(e)) return false;
       if (!q) return true;
       const rName = rankItem(e.name, q);
       const rNe = e.nameNe ? rankItem(e.nameNe, q) : { passed: false };
       const rSum = rankItem(e.summary, q);
       return Boolean(rName.passed || rNe.passed || rSum.passed);
     });
-  }, [base, query, eraFilter, classFilter]);
+  }, [base, query, eraFilter, classFilter, scopeFilter]);
 
   const latestAssertion = (e: (typeof base)[0]) =>
     [...e.assertions].sort((a, b) => b.generatedAtTime.localeCompare(a.generatedAtTime))[0];
@@ -91,7 +104,30 @@ export function SearchView({ compact = false }: SearchViewProps) {
           className="mt-1 font-mono text-sm"
           autoComplete="off"
         />
-        <div className={cn('mt-3 grid gap-2', compact ? 'grid-cols-1' : 'sm:grid-cols-2')}>
+        {dataSource === 'live' && locationStats ?
+          <p className="mt-2 font-mono text-[10px] leading-snug text-muted-foreground">
+            {t('placesCatalogSummary', {
+              total: locationStats.totalPlaces,
+              mapped: locationStats.mappedOnGlobe,
+              unmapped: locationStats.unmapped,
+            })}
+          </p>
+        : null}
+        <div className={cn('mt-3 grid gap-2', compact ? 'grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-3')}>
+          <div>
+            <Label className="text-[10px] text-muted-foreground">{t('filterScope')}</Label>
+            <Select value={scopeFilter} onValueChange={setScopeFilter}>
+              <SelectTrigger className="mt-1 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('scopeAll')}</SelectItem>
+                <SelectItem value="places">{t('scopePlaces')}</SelectItem>
+                <SelectItem value="mapped">{t('scopeMapped')}</SelectItem>
+                <SelectItem value="unmapped">{t('scopeUnmapped')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <Label className="text-[10px] text-muted-foreground">{t('filterEra')}</Label>
             <Select value={eraFilter} onValueChange={setEraFilter}>
@@ -151,9 +187,16 @@ export function SearchView({ compact = false }: SearchViewProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="truncate font-semibold">{e.name}</p>
-                    <p className="font-mono text-[10px] text-muted-foreground">{e.class}</p>
+                    <p className="font-mono text-[10px] text-muted-foreground">
+                      {atlasEntityClassLabel(e)}
+                    </p>
                   </div>
-                  {la ? <ProvenanceBadge assertion={la} tier={tier} compact /> : null}
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    {e.coordProvenance ?
+                      <CoordProvenanceBadge provenance={e.coordProvenance} compact />
+                    : null}
+                    {la ? <ProvenanceBadge assertion={la} tier={tier} compact /> : null}
+                  </div>
                 </div>
                 <p className="line-clamp-3 text-muted-foreground">{e.summary}</p>
                 <div className="mt-auto flex flex-wrap gap-1">
@@ -163,12 +206,16 @@ export function SearchView({ compact = false }: SearchViewProps) {
                     size="sm"
                     variant="outline"
                     className="h-7 text-[11px]"
+                    disabled={!atlasEntityIsOnGlobe(e)}
+                    title={
+                      atlasEntityIsOnGlobe(e) ? undefined : t('catalogOnlyHint')
+                    }
                     onClick={() => {
                       selectEntity(e.id);
                       focusView(null);
                     }}
                   >
-                    {t('pinGlobe')}
+                    {atlasEntityIsOnGlobe(e) ? t('pinGlobe') : t('catalogOnly')}
                   </Button>
                   <Button
                     type="button"

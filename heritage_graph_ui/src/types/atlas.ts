@@ -81,6 +81,9 @@ export interface OntologyEdge {
   predicate: string;
 }
 
+/** How WGS84 coordinates were resolved (research-grade epistemic labeling). */
+export type AtlasCoordProvenance = 'verified' | 'gazetteer' | 'inherited' | 'unmapped';
+
 /** Shared entity fields; spatial coords optional when anchorEntityIds present. */
 export interface AtlasEntity {
   id: string;
@@ -98,6 +101,12 @@ export interface AtlasEntity {
   lat?: number;
   lon?: number;
   height?: number;
+  /** Coordinate resolution tier (live corpus); unmapped rows appear in catalog only. */
+  coordProvenance?: AtlasCoordProvenance;
+  /** CIDOC list category (`location`, `structure`, …) for filters and place catalog. */
+  recordCategory?: string;
+  /** Location.type or similar subtype when recordCategory is location. */
+  locationType?: string;
   /** IDs of spatial entities this row anchors to (festivals, persons, guthi, etc.) */
   anchorEntityIds?: string[];
   /** Ritual type enum label when class is RitualEvent */

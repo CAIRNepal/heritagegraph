@@ -15,11 +15,24 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import type { ColumnDef } from '@tanstack/react-table';
 
-import { GenericDataTable, type DataTableConfig } from '@/components/generic-data-table';
+import { Badge } from '@/components/ui/badge';
+import {
+  GenericDataTable,
+  type DataTableConfig,
+} from '@/components/generic-data-table';
+import { getStatusColor } from '@/components/generic-data-table/columns';
 import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 import { useOntology } from '@/lib/ontology/OntologyProvider';
 
 type Row = Record<string, unknown> & { id: number | string };
+
+/** Provenance / identity browsers — no contribution workflow status tabs. */
+const BROWSE_ONLY_DOMAINS = new Set(['assertion', 'entity_cluster']);
+
+/** Domains without a matching `/contribute/<segment>/page.tsx`. */
+const CONTRIBUTE_HREF_OVERRIDES: Record<string, string> = {
+  entity_cluster: '/contribute/entity-proposal',
+};
 
 export default function GenericKnowledgePage() {
   const params = useParams();
@@ -40,7 +53,26 @@ export default function GenericKnowledgePage() {
     .filter((f) => ['text', 'textarea', 'select', 'enum'].includes(f.type))
     .slice(0, 4);
 
-  const columns: ColumnDef<Row>[] = displayFields.map((field) => ({
+  const columns: ColumnDef<Row>[] = [];
+
+  if (!BROWSE_ONLY_DOMAINS.has(domain)) {
+    columns.push({
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const status = row.original.status;
+        if (!status) return <span className="text-muted-foreground">—</span>;
+        const text = String(status).replace(/_/g, ' ');
+        return (
+          <Badge variant="outline" className={getStatusColor(String(status))}>
+            {text.charAt(0).toUpperCase() + text.slice(1)}
+          </Badge>
+        );
+      },
+    });
+  }
+
+  columns.push(...displayFields.map((field) => ({
     accessorKey: field.key,
     header: field.label,
     cell: ({ row }) => {
@@ -58,22 +90,30 @@ export default function GenericKnowledgePage() {
       }
       return <span className="text-muted-foreground">{text}</span>;
     },
-  }));
+  })));
+
+  const contributeHref =
+    CONTRIBUTE_HREF_OVERRIDES[domain] ??
+    `/contribute/${domain.replace(/_/g, '-')}`;
 
   const config: DataTableConfig<Row> = {
     endpoint: cls.apiEndpoint,
     columns,
     dataKey: 'results',
+    serverPagination: true,
+    enableServerSearch: true,
     viewBasePath: `/knowledge/${domain}`,
     title: cls.labelPlural ?? cls.label,
     description: cls.description,
     showHeader: true,
-    tabs: false,
+    ...(BROWSE_ONLY_DOMAINS.has(domain) ? { tabs: false as const } : {}),
+    defaultTabId: BROWSE_ONLY_DOMAINS.has(domain) ? undefined : 'approved',
     rowIdField: 'id',
     idField: 'id',
     addAction: {
-      label: `Add ${cls.label}`,
-      href: `/contribute/${domain.replace(/_/g, '-')}`,
+      label:
+        domain === 'entity_cluster' ? 'Propose identity cluster' : `Add ${cls.label}`,
+      href: contributeHref,
     },
   };
 

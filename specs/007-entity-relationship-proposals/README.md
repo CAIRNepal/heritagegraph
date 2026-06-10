@@ -23,8 +23,8 @@ Contributor **entity proposals** and **relationship proposals** are moderator-ga
 
 | Document | Link |
 | -------- | ---- |
-| Epistemic framing | [../../docs/platform-epistemic-status-2026.md](../../docs/platform-epistemic-status-2026.md) |
-| Roadmap checklist | [../../docs/platform-next-steps-checklist.md](../../docs/platform-next-steps-checklist.md) |
+| Epistemic framing | [../../documentation/internal/PLATFORM_ISSUES_CHECKLIST.md](../../documentation/internal/PLATFORM_ISSUES_CHECKLIST.md) |
+| Roadmap checklist | [../../documentation/developer/SKILLS.md](../../documentation/developer/SKILLS.md) |
 | Agent / API index | [../../AGENTS.md](../../AGENTS.md) |
 
 ## Implementation map

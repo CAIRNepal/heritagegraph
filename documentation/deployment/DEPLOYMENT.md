@@ -817,7 +817,7 @@ docker ps --format "{{.Names}} {{.Status}}" | grep -i "restarting"
 
 - **GitHub**: https://github.com/CAIRNepal/heritagegraph
 - **Issues**: https://github.com/CAIRNepal/heritagegraph/issues
-- **Contributing**: See `contributing.md`
+- **Contributing**: See [`CONTRIBUTING.md`](../../CONTRIBUTING.md)
 
 ---
 

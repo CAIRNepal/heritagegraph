@@ -15,7 +15,6 @@ function pathRequiresLogin(pathname: string): boolean {
     '/platform-admin',
     '/moderate',
     '/account',
-    '/notification',
     '/progression',
     '/community/reviewer-request',
     // /contribute is gated in (dashboard)/contribute/layout.tsx (RequireAuth) so Edge

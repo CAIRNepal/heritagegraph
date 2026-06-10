@@ -88,8 +88,15 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-import { createStatusWorkflowTabs } from './create-status-tabs';
+import {
+  createStatusWorkflowTabs,
+  statusQueryParamsForTab,
+} from './create-status-tabs';
 import type { DataTableConfig, DataTableTab } from './types';
+
+function useServerListMode(config: DataTableConfig<unknown>) {
+  return config.serverPagination ?? config.endpoint.startsWith('/cidoc/');
+}
 
 /** Normalize legacy tab count keys from earlier dashboard props. */
 function mergeTabCountOverrides(
@@ -256,8 +263,18 @@ export function GenericDataTable<TData>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 20,
   });
+  const [totalCount, setTotalCount] = React.useState(0);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
+
+  const serverListMode = useServerListMode(config);
+
+  React.useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    return () => window.clearTimeout(t);
+  }, [searchQuery]);
 
   const sortableId = React.useId();
   const sensors = useSensors(
@@ -277,9 +294,11 @@ export function GenericDataTable<TData>({
   }, [config.tabs, config.showTabs]);
 
   const firstTabId = resolvedTabs?.[0]?.id ?? 'all';
-  const [activeTab, setActiveTab] = React.useState(
-    () => config.defaultTabId ?? firstTabId
-  );
+  const [activeTab, setActiveTab] = React.useState(() => {
+    if (config.defaultTabId) return config.defaultTabId;
+    if (resolvedTabs?.some((t) => t.id === 'approved')) return 'approved';
+    return firstTabId;
+  });
 
   React.useEffect(() => {
     if (!resolvedTabs?.length) return;
@@ -299,20 +318,20 @@ export function GenericDataTable<TData>({
   );
 
   const tableData = React.useMemo(() => {
-    if (!resolvedTabs?.length) return data;
+    if (serverListMode || !resolvedTabs?.length) return data;
     const tab = resolvedTabs.find((t) => t.id === activeTab);
     if (!tab?.filter) return data;
     return data.filter(tab.filter);
-  }, [data, resolvedTabs, activeTab]);
+  }, [data, resolvedTabs, activeTab, serverListMode]);
 
   const dragDropActive =
-    config.enableDragDrop !== false &&
+    config.enableDragDrop === true &&
     (!resolvedTabs?.length || activeTab === 'all');
 
   const columns = React.useMemo(() => {
     const cols: ColumnDef<TData>[] = [];
 
-    if (config.enableDragDrop !== false) {
+    if (config.enableDragDrop === true) {
       cols.push({
         id: 'drag',
         header: () => null,
@@ -395,74 +414,119 @@ export function GenericDataTable<TData>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-    manualPagination: false,
+    manualPagination: serverListMode,
+    pageCount: serverListMode
+      ? Math.max(1, Math.ceil(totalCount / pagination.pageSize))
+      : undefined,
   });
 
   React.useEffect(() => {
     setPagination((p) => ({ ...p, pageIndex: 0 }));
-  }, [columnFilters, sorting, activeTab]);
+  }, [columnFilters, sorting, activeTab, debouncedSearch]);
+
+  const buildListUrl = React.useCallback(() => {
+    const params = new URLSearchParams();
+    if (serverListMode) {
+      params.set('limit', String(pagination.pageSize));
+      params.set('offset', String(pagination.pageIndex * pagination.pageSize));
+      if (debouncedSearch && config.enableServerSearch !== false) {
+        params.set('search', debouncedSearch);
+      }
+      if (resolvedTabs?.length) {
+        for (const [key, value] of Object.entries(
+          statusQueryParamsForTab(activeTab)
+        )) {
+          params.set(key, value);
+        }
+      }
+    } else {
+      params.set('limit', '500');
+    }
+    const base = apiUrl(config.endpoint);
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}${params.toString()}`;
+  }, [
+    serverListMode,
+    pagination.pageSize,
+    pagination.pageIndex,
+    debouncedSearch,
+    config.endpoint,
+    config.enableServerSearch,
+    resolvedTabs,
+    activeTab,
+  ]);
+
+  const loadRows = React.useCallback(async () => {
+    if (initialData) return;
+
+    setFetchError(null);
+    setLoading(true);
+
+    try {
+      if (fetchFn) {
+        const result = await fetchFn();
+        setData(Array.isArray(result) ? result : []);
+        setTotalCount(Array.isArray(result) ? result.length : 0);
+        return;
+      }
+
+      const headers: HeadersInit = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+      if (session?.accessToken) {
+        headers.Authorization = `Bearer ${session.accessToken}`;
+      }
+
+      const response = await apiFetch(buildListUrl(), { headers });
+      const result = await response.json();
+
+      let rows: TData[];
+      let count = 0;
+      if (config.dataKey && typeof result === 'object' && result !== null) {
+        const raw = (result as Record<string, unknown>)[config.dataKey as string];
+        rows = Array.isArray(raw) ? raw : [];
+        count =
+          typeof (result as { count?: number }).count === 'number'
+            ? (result as { count: number }).count
+            : rows.length;
+      } else if (Array.isArray(result)) {
+        rows = result;
+        count = result.length;
+      } else if (Array.isArray((result as { results?: TData[] }).results)) {
+        rows = (result as { results: TData[] }).results;
+        count =
+          typeof (result as { count?: number }).count === 'number'
+            ? (result as { count: number }).count
+            : rows.length;
+      } else {
+        rows = [];
+      }
+
+      setData(rows);
+      setTotalCount(count);
+    } catch (error) {
+      const message = getApiErrorMessage(
+        error,
+        'Could not load this table. Please try again.'
+      );
+      setFetchError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    initialData,
+    fetchFn,
+    session?.accessToken,
+    buildListUrl,
+    config.dataKey,
+  ]);
 
   React.useEffect(() => {
     if (initialData) return;
-
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        setFetchError(null);
-        setLoading(true);
-
-        if (fetchFn) {
-          const result = await fetchFn();
-          if (!cancelled) setData(Array.isArray(result) ? result : []);
-          return;
-        }
-
-        const url = apiUrl(config.endpoint);
-        const headers: HeadersInit = {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        };
-
-        if (session?.accessToken) {
-          headers.Authorization = `Bearer ${session.accessToken}`;
-        }
-
-        const response = await apiFetch(url, { headers });
-        const result = await response.json();
-
-        let rows: TData[];
-        if (config.dataKey) {
-          const raw = result[config.dataKey as string];
-          rows = Array.isArray(raw) ? raw : [];
-        } else if (Array.isArray(result)) {
-          rows = result;
-        } else if (Array.isArray(result.results)) {
-          rows = result.results;
-        } else {
-          rows = [];
-        }
-
-        if (!cancelled) setData(rows);
-      } catch (error) {
-        const message = getApiErrorMessage(
-          error,
-          'Could not load this table. Please try again.'
-        );
-        if (!cancelled) {
-          setFetchError(message);
-          toast.error(message);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-
-    void load();
-    return () => {
-      cancelled = true;
-    };
-  }, [config.endpoint, config.dataKey, session?.accessToken, initialData, fetchFn]);
+    void loadRows();
+  }, [initialData, loadRows]);
 
   function handleDragEnd(event: DragEndEvent) {
     if (!dragDropActive) return;
@@ -484,13 +548,16 @@ export function GenericDataTable<TData>({
 
   const tabBadge = React.useCallback(
     (tab: DataTableTab<TData>) => {
+      if (serverListMode) {
+        return tab.id === activeTab ? totalCount : undefined;
+      }
       if (tab.id === 'all') return undefined;
       const override = tabCountOverrides?.[tab.id];
       if (override !== undefined) return override;
       if (!tab.filter) return data.length;
       return data.filter(tab.filter).length;
     },
-    [data, tabCountOverrides]
+    [data, tabCountOverrides, serverListMode, activeTab, totalCount]
   );
 
   if (loading) {
@@ -511,46 +578,7 @@ export function GenericDataTable<TData>({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => {
-            setFetchError(null);
-            setLoading(true);
-            void (async () => {
-              try {
-                const url = apiUrl(config.endpoint);
-                const headers: HeadersInit = {
-                  Accept: 'application/json',
-                  'Content-Type': 'application/json',
-                };
-                if (session?.accessToken) {
-                  headers.Authorization = `Bearer ${session.accessToken}`;
-                }
-                const response = await apiFetch(url, { headers });
-                const result = await response.json();
-                let rows: TData[];
-                if (config.dataKey) {
-                  const raw = result[config.dataKey as string];
-                  rows = Array.isArray(raw) ? raw : [];
-                } else if (Array.isArray(result)) {
-                  rows = result;
-                } else if (Array.isArray(result.results)) {
-                  rows = result.results;
-                } else {
-                  rows = [];
-                }
-                setData(rows);
-                setFetchError(null);
-              } catch (e) {
-                const message = getApiErrorMessage(
-                  e,
-                  'Could not load this table. Please try again.'
-                );
-                setFetchError(message);
-                toast.error(message);
-              } finally {
-                setLoading(false);
-              }
-            })();
-          }}
+          onClick={() => void loadRows()}
         >
           Retry
         </Button>
@@ -655,8 +683,9 @@ export function GenericDataTable<TData>({
   const renderPagination = () => (
     <div className="flex items-center justify-between px-4">
       <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-        {table.getFilteredSelectedRowModel().rows.length} of{' '}
-        {table.getFilteredRowModel().rows.length} row(s) selected.
+        {serverListMode
+          ? `${totalCount} record(s)`
+          : `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} row(s) selected.`}
       </div>
       <div className="flex w-full items-center gap-8 lg:w-fit">
         <div className="hidden items-center gap-2 lg:flex">
@@ -771,9 +800,18 @@ export function GenericDataTable<TData>({
   };
 
   const renderToolbar = () => (
-    <div className="flex items-center justify-between px-4 lg:px-6">
-      <div className="flex-1" />
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between px-4 lg:px-6 gap-3">
+      {serverListMode && config.enableServerSearch !== false ? (
+        <Input
+          placeholder="Search…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm h-9"
+        />
+      ) : (
+        <div className="flex-1" />
+      )}
+      <div className="flex items-center gap-2 ml-auto">
         <ColumnVisibilityMenu table={table} />
         {config.addAction && (
           <Link href={config.addAction.href}>

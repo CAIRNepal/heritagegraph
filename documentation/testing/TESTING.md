@@ -4,7 +4,7 @@ This document describes how to **test and validate** the HeritageGraph data path
 
 **Out of scope here:** OCR / document ingestion and the legacy `Submission` flat-field workflow unless noted.
 
-**Canonical ontology:** [`ontology/HeritageGraph.yaml`](ontology/HeritageGraph.yaml)
+**Canonical ontology:** [`ontology/HeritageGraph.yaml`](../../ontology/HeritageGraph.yaml)
 
 ---
 
@@ -84,7 +84,7 @@ pip install -r heritage_graph/requirements.txt linkml pyyaml
 docker compose up -d postgres backend oxigraph frontend
 ```
 
-Relevant environment (see [`docker-compose.yml`](docker-compose.yml) and [`.env.example`](.env.example)):
+Relevant environment (see [`docker-compose.yml`](../../docker-compose.yml) and [`.env.example`](../../.env.example)):
 
 | Variable | Typical value (Compose) | Purpose |
 |----------|-------------------------|---------|
@@ -136,7 +136,7 @@ Commit **YAML + all generated files** in one PR.
 
 **Still manual when adding a new entity type:** Django model, migration, ViewSet + `urls.py`, and a row in `heritage_graph/apps/cidoc_data/cidoc_registry_keys.py`.
 
-More detail: [`ontology/README.md`](ontology/README.md), [`tools/README.md`](tools/README.md), [`specs/004-yaml-driven-schema/quickstart.md`](specs/004-yaml-driven-schema/quickstart.md).
+More detail: [`ontology/README.md`](../../ontology/README.md), [`tools/README.md`](../../tools/README.md), [`specs/004-yaml-driven-schema/quickstart.md`](../../specs/004-yaml-driven-schema/quickstart.md).
 
 ---
 
@@ -170,7 +170,9 @@ Contribution → Viz pipeline
   [PASS] postgres_person: ...
   [PASS] postgres_cultural_entity: ...
   [PASS] rdf_projection_registry: ...
+  [PASS] review_accept_publish: ...
   [PASS] oxigraph_store: ...
+  [PASS] kg_graph_api: ...
   [PASS] api_list_location: ...
   [PASS] api_list_structure: ...
   [PASS] api_list_person: ...
@@ -181,13 +183,24 @@ Contribution → Viz pipeline
 Overall: PASSED
 ```
 
-Implementation: [`heritage_graph/apps/cidoc_data/management/commands/validate_contribution_pipeline.py`](heritage_graph/apps/cidoc_data/management/commands/validate_contribution_pipeline.py)
+Implementation: [`heritage_graph/apps/cidoc_data/management/commands/validate_contribution_pipeline.py`](../../heritage_graph/apps/cidoc_data/management/commands/validate_contribution_pipeline.py)
 
-**Note:** The command uses a **temporary local Oxigraph directory** when `RDF_ENDPOINT_URL` is empty (typical for bare `manage.py` on SQLite). For Docker Oxigraph, use [§5](#5-oxigraph-and-rdf-validation) after a run with `--keep-data` or contribute via the UI.
+**Note:** Records are created as `pending_review` (same as the UI), then the command **publishes** them (`CIDOC.status=accepted` + `CulturalEntity.accept_contribution`) before RDF/Atlas checks — matching the real reviewer workflow. It uses a **temporary local Oxigraph directory** when `RDF_ENDPOINT_URL` is empty. For Docker Oxigraph, use [§5](#5-oxigraph-and-rdf-validation) after a run with `--keep-data` or contribute via the UI.
 
-### 4.2 Platform E2E (recommended gate)
+### 4.2 Knowledge list API smoke test
 
-Single command that runs **40 automated tests** across health, discovery, KG APIs, contribution + identity resolution, duplicate handling, review queue, RDF projection, museum enrichment, and cultural-entity sync:
+Every navigable ontology class used by `/knowledge/<domain>` tables must return HTTP 200 from its DRF list endpoint (see [`../contribution/KNOWLEDGE_PAGES.md`](../contribution/KNOWLEDGE_PAGES.md)):
+
+```bash
+cd heritage_graph
+DJANGO_ENV=development python manage.py test apps.cidoc_data.test_knowledge_list_apis -v2
+```
+
+Included in `make test-e2e` via `tests/config.py`.
+
+### 4.3 Platform E2E (recommended gate)
+
+Single command that runs **42 automated tests** across health, discovery, KG APIs, contribution + identity resolution, **CIDOC form → reviewer `decide` accept → kg/graph**, duplicate handling, review queue, RDF projection, museum enrichment, and cultural-entity sync:
 
 ```bash
 make test-e2e
@@ -213,7 +226,7 @@ PLATFORM_E2E_LIVE_URL=http://127.0.0.1:8000 ./tests/run_e2e.sh
 
 **Not covered by this suite** (manual or separate tooling): Next.js UI flows, Google OAuth login, OCR/document pipeline, OpenRouter assistant chat, Traefik TLS, production deploy smoke.
 
-### 4.3 Django unit / integration tests
+### 4.4 Django unit / integration tests
 
 ```bash
 cd heritage_graph
@@ -229,7 +242,7 @@ Broader CIDOC suite:
 DJANGO_ENV=development python manage.py test apps.cidoc_data
 ```
 
-### 4.4 Registry API smoke
+### 4.5 Registry API smoke
 
 ```bash
 curl -sS -H "Authorization: Bearer <token>" \
@@ -239,7 +252,7 @@ curl -sS -H "Authorization: Bearer <token>" \
 
 Expect `schema_version` and a non-empty `classes` object. Repeat with `If-None-Match` from `ETag` → expect `304` when unchanged.
 
-### 4.5 What the E2E command checks (mapping)
+### 4.6 What the E2E command checks (mapping)
 
 | Step | Validates |
 |------|-----------|
@@ -317,8 +330,8 @@ GET /api/v1/cidoc/sparql/?query=SELECT%20*%20WHERE%20%7B%20?s%20?p%20?o%20%7D%20
 
 Both **Atlas** and **Graphview** use:
 
-- [`heritage_graph_ui/src/lib/instance-graph.ts`](heritage_graph_ui/src/lib/instance-graph.ts) — `fetchInstanceGraphData()`
-- Atlas also uses [`heritage_graph_ui/src/lib/atlas-api-hydrate.ts`](heritage_graph_ui/src/lib/atlas-api-hydrate.ts) — `hydrateAtlasFromInstanceGraph()`
+- [`heritage_graph_ui/src/lib/instance-graph.ts`](../../heritage_graph_ui/src/lib/instance-graph.ts) — `fetchInstanceGraphData()`
+- Atlas also uses [`heritage_graph_ui/src/lib/atlas-api-hydrate.ts`](../../heritage_graph_ui/src/lib/atlas-api-hydrate.ts) — `hydrateAtlasFromInstanceGraph()`
 
 Live fetch pulls paginated CIDOC list endpoints under `/api/v1/cidoc/...` plus accepted assertions.
 
@@ -336,7 +349,7 @@ Live fetch pulls paginated CIDOC list endpoints under `/api/v1/cidoc/...` plus a
 
 1. Open **Atlas**.
 2. Switch corpus to **Live** (not Demo).
-3. Wait for “corpus ready” (see [`use-atlas-data-source.ts`](heritage_graph_ui/src/app/(dashboard)/atlas/hooks/use-atlas-data-source.ts)).
+3. Wait for “corpus ready” (see [`use-atlas-data-source.ts`](<../../heritage_graph_ui/src/app/(dashboard)/atlas/hooks/use-atlas-data-source.ts>)).
 4. **Globe:** entities with `latitude` and `longitude` in API JSON show as points.
 5. **Graph panel:** uses filtered entities and ontology edges from the same corpus.
 6. **Search / entity panel:** should list contributed names.
@@ -384,7 +397,7 @@ Use after `validate_contribution_pipeline --keep-data` or a real contribute sess
 
 | Workflow / command | What it enforces |
 |--------------------|------------------|
-| [`.github/workflows/ontology-registry.yml`](.github/workflows/ontology-registry.yml) | `make check` on ontology-related changes |
+| [`.github/workflows/ontology-registry.yml`](../../.github/workflows/ontology-registry.yml) | `make check` on ontology-related changes |
 | `make check` | Registry, viz config, SHACL, serializers, entityrefs, contribute routes |
 | `make ontology-check` | `registry.generated.*` matches YAML |
 | `make shacl-check` | SHACL TTL matches registry snapshot |
@@ -406,11 +419,11 @@ cd heritage_graph && DJANGO_ENV=development python manage.py test apps.cidoc_dat
 
 **Cause:** Registry JSON Schema expected a scalar relation id; FK was validated as a model instance.
 
-**Fix:** Ensure `coerce_for_jsonschema` maps Django models to `pk` ([`registry_validation.py`](heritage_graph/apps/cidoc_data/registry_validation.py)). Relation fields in the UI should send numeric IDs.
+**Fix:** Ensure `coerce_for_jsonschema` maps Django models to `pk` ([`registry_validation.py`](../../heritage_graph/apps/cidoc_data/registry_validation.py)). Relation fields in the UI should send numeric IDs.
 
 ### `structure_type` validation error
 
-Use LinkML / model choices exactly (e.g. `"Temple"`, not `"temple"`). See `STRUCTURE_TYPE_CHOICES` in [`cidoc_data/models.py`](heritage_graph/apps/cidoc_data/models.py).
+Use LinkML / model choices exactly (e.g. `"Temple"`, not `"temple"`). See `STRUCTURE_TYPE_CHOICES` in [`cidoc_data/models.py`](../../heritage_graph/apps/cidoc_data/models.py).
 
 ### Atlas shows “No entities” in live mode
 
@@ -482,7 +495,7 @@ curl -sS http://localhost:8000/health/detailed/ | jq .
 |----------|--------|
 | [`../contribution/FORMS.md`](../contribution/FORMS.md) | Ontology forms and registry |
 | [`../ontology/ONTOLOGY.md`](../ontology/ONTOLOGY.md) | LinkML, SHACL, namespaces |
-| [`heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md`](heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md) | UI-side ontology artifacts |
+| [`heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md`](../../heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md) | UI-side ontology artifacts |
 | [`../../AGENTS.md`](../../AGENTS.md) | Repo map for agents |
 
 ---

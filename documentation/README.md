@@ -31,6 +31,7 @@ Canonical topic guides live here. The repository root keeps a short index in [`D
 | Doc | Topic |
 |-----|--------|
 | [`contribution/FORMS.md`](contribution/FORMS.md) | Registry-driven forms, identity resolution, RDF projection |
+| [`contribution/KNOWLEDGE_PAGES.md`](contribution/KNOWLEDGE_PAGES.md) | `/knowledge/*` tabular pages — purpose, matrix, verification |
 | [`ontology/ONTOLOGY.md`](ontology/ONTOLOGY.md) | LinkML v1.0.0 registry (26 types), lifecycle events, CulturalEntity, LUX interop |
 
 ### Auth & API
@@ -71,13 +72,25 @@ Canonical topic guides live here. The repository root keeps a short index in [`D
 | [`developer/CONVENTIONS.md`](developer/CONVENTIONS.md) | Naming and code style |
 | [`developer/SKILLS.md`](developer/SKILLS.md) | Feature → files capability matrix |
 
+## MkDocs static site
+
+Build from repo root (see [`ARCHIVED.md`](ARCHIVED.md)):
+
+```bash
+pip install -r requirements.txt   # includes mkdocs + material theme
+make docs-build                     # → ./site/
+make docs-serve                     # http://localhost:8001
+```
+
+[`mkdocs.yml`](../mkdocs.yml) uses `docs_dir: documentation` — the nav mirrors the table above.
+
 ## Maintenance
 
 | Doc | Topic |
 |-----|--------|
 | [`TECHNICAL_DEBT.md`](TECHNICAL_DEBT.md) | Known limitations / consolidation record |
 | [`internal/`](internal/) | Historical planning notes (not user-facing) |
-| [`ARCHIVED.md`](ARCHIVED.md) | Legacy Sphinx site (do not edit) |
+| [`ARCHIVED.md`](ARCHIVED.md) | Legacy Sphinx site + MkDocs notes |
 
 ## Spec Kit
 

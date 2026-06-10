@@ -20,7 +20,6 @@ import {
   IconInfoCircle,
   IconSearch,
   IconSparkles,
-  IconCompass,
 } from '@tabler/icons-react';
 
 import { useChatStore } from '@/lib/chat/useChatStore';
@@ -57,7 +56,7 @@ type Entry = { label: string; href: string; icon: React.ComponentType<{ classNam
 
 const NAVIGATE: Entry[] = [
   { label: 'Dashboard', href: '/', icon: IconLayoutDashboard, keywords: 'home' },
-  { label: 'Discover', href: '/discover', icon: IconCompass, keywords: 'explore featured surprise browse' },
+  { label: 'About', href: '/about', icon: IconInfoCircle, keywords: 'discover explore help info mission cair' },
   { label: 'Graph Visualization', href: '/graphview', icon: IconGraph, keywords: 'knowledge graph network' },
   { label: 'Heritage Atlas', href: '/atlas', icon: IconWorld, keywords: 'map globe geography' },
   { label: 'Heritage Museum', href: '/heritage-museum', icon: IconBuildingMonument, keywords: 'explore stories live kg immersive xr 3d vr' },
@@ -65,7 +64,6 @@ const NAVIGATE: Entry[] = [
   { label: 'Progression', href: '/progression', icon: IconMedal, keywords: 'badges achievements' },
   { label: 'Contributors', href: '/community/contributors', icon: IconUsers, keywords: 'community people' },
   { label: 'Review Workspace', href: '/review', icon: IconListCheck, keywords: 'curation moderate' },
-  { label: 'About', href: '/about', icon: IconInfoCircle, keywords: 'help info' },
   { label: 'Methods & data', href: '/methods', icon: IconInfoCircle, keywords: 'provenance sparql citation nature reproducibility' },
 ];
 

@@ -20,35 +20,35 @@ import { cn } from "@/lib/utils";
 const typeBadgeMap: Record<string, { label: string; className: string }> = {
   submission_update: {
     label: "Submission",
-    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
+    className: "bg-muted text-foreground",
   },
   comment: {
     label: "Comment",
-    className: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300",
+    className: "bg-muted text-foreground",
   },
   moderation: {
     label: "Review",
-    className: "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
+    className: "bg-muted text-foreground",
   },
   review_decision: {
     label: "Decision",
-    className: "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
+    className: "bg-muted text-foreground",
   },
   revision: {
     label: "Revision",
-    className: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300",
+    className: "bg-muted text-foreground",
   },
   reaction: {
     label: "Reaction",
-    className: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300",
+    className: "bg-muted text-foreground",
   },
   fork: {
     label: "Fork",
-    className: "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300",
+    className: "bg-muted text-foreground",
   },
   general: {
     label: "General",
-    className: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+    className: "bg-muted text-foreground",
   },
 };
 
@@ -59,7 +59,7 @@ function resolveNotificationLink(notification: Notification): string {
   if (notification.entity_id) {
     return `/knowledge/entity/view/${notification.entity_id}`;
   }
-  return "/notification";
+  return "/";
 }
 
 function NotificationItem({
@@ -87,44 +87,45 @@ function NotificationItem({
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       className={cn(
-        "w-full text-left p-3 rounded-lg transition-colors duration-200 border-b last:border-0",
+        "w-full rounded-lg border-b p-3 text-left transition-colors last:border-0",
         notification.is_read
-          ? "opacity-60 hover:opacity-80"
-          : "bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30"
+          ? "opacity-70 hover:opacity-90"
+          : "bg-primary/5 hover:bg-primary/10",
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          {actorLabel && (
-            <p className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 mb-0.5 truncate">
+        <div className="min-w-0 flex-1">
+          {actorLabel ?
+            <p className="mb-0.5 truncate text-[11px] font-semibold text-primary">
               {actorLabel}
             </p>
-          )}
-          <p className="text-sm font-medium text-foreground truncate">
+          : null}
+          <p className="truncate text-sm font-medium text-foreground">
             {notification.message}
           </p>
-          {notification.entity_name && (
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+          {notification.entity_name ?
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
               {notification.entity_name}
             </p>
-          )}
-          <div className="flex items-center gap-2 mt-1">
-            <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", badge.className)}>
+          : null}
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className={cn("px-1.5 py-0 text-[10px]", badge.className)}>
               {badge.label}
             </Badge>
-            {notification.entity_category && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 capitalize">
+            {notification.entity_category ?
+              <Badge variant="outline" className="px-1.5 py-0 text-[10px] capitalize">
                 {notification.entity_category}
               </Badge>
-            )}
+            : null}
             <span className="text-[10px] text-muted-foreground">{timeAgo}</span>
           </div>
         </div>
-        {!notification.is_read && (
-          <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
-        )}
+        {!notification.is_read ?
+          <div className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+        : null}
       </div>
     </button>
   );
@@ -141,110 +142,83 @@ export function NotificationBell() {
     loadMore,
     markAsRead,
     markAllAsRead,
-  } = useNotifications({ pageSize: 5 });
-
-  const router = useRouter();
+  } = useNotifications({ pageSize: 15 });
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative overflow-visible">
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-900 pointer-events-none">
+          {unreadCount > 0 ?
+            <span className="pointer-events-none absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground ring-2 ring-background">
               {unreadCount > 99 ? "99+" : unreadCount}
             </span>
-          )}
+          : null}
         </Button>
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-[min(24rem,calc(100vw-2rem))] p-0 overflow-hidden"
+        className="w-[min(24rem,calc(100vw-2rem))] overflow-hidden p-0"
         sideOffset={8}
         collisionPadding={12}
       >
-        <div className="flex items-center justify-between p-3 border-b">
-          <h3 className="font-semibold text-sm">Notifications</h3>
-          <div className="flex gap-2">
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs h-7"
-                onClick={() => markAllAsRead()}
-              >
-                Mark all read
-              </Button>
-            )}
+        <div className="flex items-center justify-between border-b p-3">
+          <div>
+            <h3 className="text-sm font-semibold">Notifications</h3>
+            {totalCount > 0 ?
+              <p className="text-[11px] text-muted-foreground">{totalCount} total</p>
+            : null}
+          </div>
+          {unreadCount > 0 ?
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs h-7"
-              onClick={() => router.push("/notification")}
+              className="h-7 text-xs"
+              onClick={() => markAllAsRead()}
             >
-              View all
+              Mark all read
+            </Button>
+          : null}
+        </div>
+
+        <ScrollArea className="max-h-[min(28rem,70vh)]">
+          {loading && notifications.length === 0 ?
+            <div className="p-6 text-center text-sm text-muted-foreground">Loading...</div>
+          : notifications.length === 0 ?
+            <div className="p-6 text-center text-sm text-muted-foreground">
+              No notifications yet
+            </div>
+          : (
+            <div className="p-1">
+              {notifications.map((n) => (
+                <NotificationItem
+                  key={n.notification_id}
+                  notification={n}
+                  onRead={(id) => markAsRead([id])}
+                />
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        {hasMore ?
+          <div className="border-t px-2 py-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-full text-xs"
+              onClick={loadMore}
+              disabled={loadingMore}
+            >
+              {loadingMore ?
+                <>
+                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                  Loading...
+                </>
+              : "Load more"}
             </Button>
           </div>
-        </div>
-
-        <div className="overflow-hidden max-h-80">
-          <ScrollArea className="h-full max-h-80">
-            {loading && notifications.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                Loading...
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">
-                No notifications yet
-              </div>
-            ) : (
-              <div className="p-1">
-                {notifications.map((n) => (
-                  <NotificationItem
-                    key={n.notification_id}
-                    notification={n}
-                    onRead={(id) => markAsRead([id])}
-                  />
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </div>
-
-        <div className="border-t">
-          {hasMore && (
-            <div className="px-2 pt-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs w-full h-7"
-                onClick={loadMore}
-                disabled={loadingMore}
-              >
-                {loadingMore ? (
-                  <>
-                    <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Load more"
-                )}
-              </Button>
-            </div>
-          )}
-          {totalCount > 0 && (
-            <div className="px-2 pb-2 pt-1 text-center">
-              <Button
-                variant="link"
-                size="sm"
-                className="text-xs h-7"
-                onClick={() => router.push("/notification")}
-              >
-                See all {totalCount} notification{totalCount !== 1 ? "s" : ""}
-              </Button>
-            </div>
-          )}
-        </div>
+        : null}
       </PopoverContent>
     </Popover>
   );

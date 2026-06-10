@@ -346,6 +346,19 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
     }
   };
 
+  const coordProvenanceOutline = (provenance?: string): Color => {
+    switch (provenance) {
+      case 'verified':
+        return Color.fromCssColorString('#16a34a').withAlpha(0.95);
+      case 'gazetteer':
+        return Color.fromCssColorString('#d97706').withAlpha(0.92);
+      case 'inherited':
+        return Color.fromCssColorString('#0284c7').withAlpha(0.9);
+      default:
+        return Color.fromCssColorString('#94a3b8').withAlpha(0.85);
+    }
+  };
+
   return (
     <>
       <div
@@ -394,9 +407,13 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
               b.generatedAtTime.localeCompare(a.generatedAtTime),
             )[0];
             const reconStatus = latestAssertion?.reconciliationStatus ?? 'confirmed';
-            const outline = reconciliationOutline(reconStatus);
+            const outline =
+              row.coordProvenance ?
+                coordProvenanceOutline(row.coordProvenance)
+              : reconciliationOutline(reconStatus);
             const outlineWidth =
               reconStatus === 'conflicting' ? 2.5
+              : row.coordProvenance === 'gazetteer' ? 2.25
               : selectedId === row.id ? 2
               : hoveredEntityId === row.id ? 1.75
               : 1.25;

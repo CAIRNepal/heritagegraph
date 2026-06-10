@@ -3,7 +3,7 @@
 **Feature Branch**: `005-identity-layer`  
 **Created**: 2026-04-25  
 **Status**: Draft  
-**Input**: User description: "Claim-first identity layer for HeritageGraph: `EntityCluster` anchors, membership expressed as provenance-bearing assertions (same-referent), derived canonical membership, merge/split audit trail, APIs with reviewer vs moderator permissions, bootstrap of existing entities into singleton clusters, ontology/registry alignment, Identity Resolution Workspace UI (three-panel reviewer flow), knowledge-page canonical label and aliases, and competing-identities presentation when conflicts exist. Grounded in [docs/platform-epistemic-status-2026.md](../../docs/platform-epistemic-status-2026.md) and [docs/platform-next-steps-checklist.md](../../docs/platform-next-steps-checklist.md)."
+**Input**: User description: "Claim-first identity layer for HeritageGraph: `EntityCluster` anchors, membership expressed as provenance-bearing assertions (same-referent), derived canonical membership, merge/split audit trail, APIs with reviewer vs moderator permissions, bootstrap of existing entities into singleton clusters, ontology/registry alignment, Identity Resolution Workspace UI (three-panel reviewer flow), knowledge-page canonical label and aliases, and competing-identities presentation when conflicts exist. Grounded in [documentation/internal/PLATFORM_ISSUES_CHECKLIST.md](../../documentation/internal/PLATFORM_ISSUES_CHECKLIST.md) and [documentation/developer/SKILLS.md](../../documentation/developer/SKILLS.md)."
 
 ## User Scenarios & Testing *(mandatory)*
 

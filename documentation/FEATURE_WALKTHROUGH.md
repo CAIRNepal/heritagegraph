@@ -165,7 +165,7 @@ POST /api/v1/cidoc/<type>/   (structured CIDOC domains)
 
 ## 2. Graph View (global) — "the whole knowledge graph"
 
-**Code:** [graphview/](../heritage_graph_ui/src/app/%28dashboard%29/graphview/) ·
+**Code:** [graphview/](<../heritage_graph_ui/src/app/(dashboard)/graphview/>) ·
 data builder [instance-graph.ts](../heritage_graph_ui/src/lib/instance-graph.ts)
 
 ### Stack
@@ -242,7 +242,7 @@ that the UI is powered by a *live* graph, not a static export.
 
 ## 4. Heritage Museum — the immersive, story-driven experience
 
-**Code:** [heritage-museum/](../heritage_graph_ui/src/app/%28dashboard%29/heritage-museum/)
+**Code:** [heritage-museum/](<../heritage_graph_ui/src/app/(dashboard)/heritage-museum/>)
 
 This is the **showpiece** — it turns the knowledge graph into a guided, cinematic tour.
 
@@ -300,9 +300,9 @@ fetchInstanceGraphData(API_BASE, token) ──► same REST-built graph as /grap
 
 ## 5. Atlas — heritage in space *and* time (3D globe)
 
-**Code:** [atlas/](../heritage_graph_ui/src/app/%28dashboard%29/atlas/) ·
-globe [components/globe.tsx](../heritage_graph_ui/src/app/%28dashboard%29/atlas/components/globe.tsx) ·
-store [hooks/use-atlas-store.ts](../heritage_graph_ui/src/app/%28dashboard%29/atlas/hooks/use-atlas-store.ts)
+**Code:** [atlas/](<../heritage_graph_ui/src/app/(dashboard)/atlas/>) ·
+globe [components/globe.tsx](<../heritage_graph_ui/src/app/(dashboard)/atlas/components/globe.tsx>) ·
+store [hooks/use-atlas-store.ts](<../heritage_graph_ui/src/app/(dashboard)/atlas/hooks/use-atlas-store.ts>)
 
 ### Stack
 **CesiumJS** 1.123 (open-source 3D-geospatial engine) via **Resium** 1.18 (React bindings) ·

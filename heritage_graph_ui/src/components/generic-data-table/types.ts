@@ -59,6 +59,13 @@ export interface DataTableConfig<TData> {
     label: string;
     href: string;
   };
+  /**
+   * Use DRF limit/offset + status query params (recommended for `/cidoc/*` lists).
+   * Default: true when `endpoint` starts with `/cidoc/`.
+   */
+  serverPagination?: boolean;
+  /** Debounced server search field (maps to DRF `?search=`). */
+  enableServerSearch?: boolean;
 }
 
 /**
