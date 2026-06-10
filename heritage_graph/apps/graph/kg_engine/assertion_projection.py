@@ -21,11 +21,10 @@ import logging
 import re
 from typing import Any
 
-from django.conf import settings
-
 from apps.cidoc_data.rdf_entity_projection import _Triple
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.ontology_config import RDF_PREFIXES
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 

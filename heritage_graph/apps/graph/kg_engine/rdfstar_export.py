@@ -19,7 +19,6 @@ from apps.graph.kg_engine.uris import relationship_predicate_uri
 
 
 def export_rdfstar_trig(output_path: Path) -> int:
-    from apps.cidoc_data.assertion_validation import is_relationship_property
     from apps.cidoc_data.models import HeritageAssertion
 
     prov_base = GraphPartition.PROVENANCE.uri(suffix="") or ""

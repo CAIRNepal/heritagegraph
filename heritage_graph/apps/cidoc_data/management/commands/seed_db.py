@@ -17,11 +17,6 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from django.contrib.contenttypes.models import ContentType
-from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
-
 from apps.cidoc_data.models import (
     ArchitecturalStructure,
     Deity,
@@ -38,6 +33,10 @@ from apps.cidoc_data.models import (
     Source,
     Tradition,
 )
+from django.contrib.contenttypes.models import ContentType
+from django.core.management import call_command
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 MODEL_MAP = [
     ("persons", Person, "name"),

@@ -8,7 +8,7 @@ import uuid
 from datetime import UTC, datetime
 
 from .ontology import HG, PROV, RDF, RDFS
-from .sparql import escape_sparql_string, nt_iri, nt_literal
+from .sparql import nt_iri, nt_literal
 
 
 def document_graph_uri(document_id: str) -> str:

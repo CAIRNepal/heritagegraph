@@ -15,12 +15,6 @@ import uuid
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.core.management.base import BaseCommand
-from django.test.utils import override_settings
-from rest_framework.test import APIClient
-
 from apps.cidoc_data.linkml_loader import get_effective_registry_payload
 from apps.cidoc_data.models import ArchitecturalStructure, Location, Person
 from apps.cidoc_data.rdf_entity_projection import (
@@ -30,6 +24,11 @@ from apps.cidoc_data.rdf_entity_projection import (
 )
 from apps.cidoc_data.rdf_signals import _resource_uri, rdf_sync_enabled
 from apps.heritage_data.models import CulturalEntity
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
+from django.test.utils import override_settings
+from rest_framework.test import APIClient
 
 
 @dataclass

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from django.core.management.base import BaseCommand
-
 from apps.graph.kg_engine.outbox import drain_pending
 from apps.graph.models import RDFSyncOutbox
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

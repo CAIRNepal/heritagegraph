@@ -1,2 +1,6 @@
-from .client_oxigraph import OxigraphClient, get_graph_client, graph_client  # noqa: F401
+from .client_oxigraph import (  # noqa: F401
+    OxigraphClient,
+    get_graph_client,
+    graph_client,
+)
 

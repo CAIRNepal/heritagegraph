@@ -6,11 +6,10 @@ Usage:
     python manage.py setup_roles --assign-superuser    # Also give superusers moderator + expert_curator
 """
 
+from apps.heritage_data.models import ReviewerRole
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
-
-from apps.heritage_data.models import ReviewerRole
 
 User = get_user_model()
 

@@ -58,7 +58,6 @@ def naive_extract(*, text: str) -> list[ExtractedNerItem]:
 
 def _llm_registry_extract(*, text: str, class_key: str, api_key: str) -> list[ExtractedNerItem]:
     from anthropic import Anthropic
-
     from apps.cidoc_data.linkml_loader import get_effective_registry_payload
 
     registry = get_effective_registry_payload()

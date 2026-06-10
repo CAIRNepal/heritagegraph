@@ -10,10 +10,9 @@ Models for OCR pipeline and document processing:
 
 import uuid
 
+from apps.heritage_data.models import CulturalEntity, Media, Submission
 from django.conf import settings
 from django.db import models
-
-from apps.heritage_data.models import CulturalEntity, Media, Submission
 
 
 class UploadedDocument(models.Model):

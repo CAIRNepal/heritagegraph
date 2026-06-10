@@ -5,12 +5,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from apps.graph.kg_engine.engine import get_kg_engine
+from apps.graph.kg_engine.partitions import GraphPartition
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound
 from django.views import View
-
-from apps.graph.kg_engine.engine import get_kg_engine
-from apps.graph.kg_engine.partitions import GraphPartition
 
 
 def _resource_path_from_request(path: str) -> str:

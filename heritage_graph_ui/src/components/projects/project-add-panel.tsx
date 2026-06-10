@@ -62,11 +62,11 @@ export function ProjectAddPanel({
       const aHit =
         subject &&
         (a.userLabel.toLowerCase().includes(subject) ||
-          a.userDescription.toLowerCase().includes(subject));
+          (a.userDescription ?? '').toLowerCase().includes(subject));
       const bHit =
         subject &&
         (b.userLabel.toLowerCase().includes(subject) ||
-          b.userDescription.toLowerCase().includes(subject));
+          (b.userDescription ?? '').toLowerCase().includes(subject));
       if (aHit !== bHit) return aHit ? -1 : 1;
       return a.userLabel.localeCompare(b.userLabel);
     });

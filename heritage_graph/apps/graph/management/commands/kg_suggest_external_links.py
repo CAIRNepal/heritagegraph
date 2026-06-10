@@ -14,12 +14,11 @@ from __future__ import annotations
 
 import json
 
-from django.apps import apps as django_apps
-from django.core.management.base import BaseCommand
-
 from apps.cidoc_data.models import MetaData
 from apps.graph.kg_engine.uris import resource_uri_for_instance
 from apps.graph.reconciliation.service import suggest_for_cluster
+from django.apps import apps as django_apps
+from django.core.management.base import BaseCommand
 
 
 def _label_for(obj) -> str:

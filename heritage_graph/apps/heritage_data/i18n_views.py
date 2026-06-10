@@ -6,19 +6,18 @@ Provides locale info and Bikram Sambat date data to the frontend.
 
 from datetime import date
 
-from django.utils.translation import activate, get_language
-from rest_framework import permissions, status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-
 from apps.heritage_data.bikram_sambat import (
+    BS_MONTHS_EN,
+    BS_MONTHS_NE,
     ad_to_bs,
     format_bs_date,
     format_bs_iso,
     today_bs,
-    BS_MONTHS_EN,
-    BS_MONTHS_NE,
 )
+from django.utils.translation import activate, get_language
+from rest_framework import permissions, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
 
 
 @api_view(["GET"])

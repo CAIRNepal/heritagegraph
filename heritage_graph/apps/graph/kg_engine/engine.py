@@ -12,12 +12,19 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
-
+from apps.graph.kg_engine.lux_museum import (
+    fetch_federated_neighborhood,
+    fetch_museum_projection_with_lux,
+)
 from apps.graph.kg_engine.partitions import GraphPartition
-from apps.graph.kg_engine.projector import tripleset_for_cultural_entity, tripleset_for_metadata
-from apps.graph.kg_engine.promotion import promote_document_graph_to_public, promote_ntriples_to_public
-from apps.graph.kg_engine.lux_museum import fetch_federated_neighborhood, fetch_museum_projection_with_lux
+from apps.graph.kg_engine.projector import (
+    tripleset_for_cultural_entity,
+    tripleset_for_metadata,
+)
+from apps.graph.kg_engine.promotion import (
+    promote_document_graph_to_public,
+    promote_ntriples_to_public,
+)
 from apps.graph.kg_engine.queries import (
     fetch_graph_projection,
     fetch_neighborhood,
@@ -25,10 +32,10 @@ from apps.graph.kg_engine.queries import (
 )
 from apps.graph.kg_engine.store import KnowledgeGraphStore, StoreStats
 from apps.graph.kg_engine.uris import (
-    label_for_instance,
     relationship_predicate_uri,
     resource_uri_for_instance,
 )
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +218,10 @@ class KnowledgeGraphEngine:
         if assertion.reconciliation_status != "accepted":
             return self.unpublish_assertion(assertion)
 
-        from apps.cidoc_data.publication_policy import is_curated_assertion, is_published_for_rdf
+        from apps.cidoc_data.publication_policy import (
+            is_curated_assertion,
+            is_published_for_rdf,
+        )
 
         if not is_curated_assertion(assertion):
             return self.unpublish_assertion(assertion)

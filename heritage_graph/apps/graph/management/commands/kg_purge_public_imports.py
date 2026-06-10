@@ -13,8 +13,6 @@ Usage:
 
 from __future__ import annotations
 
-from django.core.management.base import BaseCommand
-
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.uris import (
@@ -22,6 +20,7 @@ from apps.graph.kg_engine.uris import (
     legacy_property_predicate_prefix,
     resource_base,
 )
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -95,11 +94,33 @@ SELECT (COUNT(*) AS ?n) WHERE {{
             self.stdout.write(self.style.SUCCESS("Nothing to remove."))
             return
 
-        removed_pollution, removed_ghost = engine.store.purge_public_graph(
-            graph_uri=public or "",
-            curated_prefix=prefix,
-            legacy_property_prefix=ghost_prefix,
-        )
+        # Delete exactly what the COUNT queries above detect, so detection and
+        # removal can never diverge (the previous store.purge_public_graph helper
+        # missed imported-subject triples it had reported).
+        removed_pollution = 0
+        removed_ghost = 0
+        if n:
+            del_pollution = f"""
+DELETE {{ GRAPH <{public}> {{ ?s ?p ?o }} }}
+WHERE {{ GRAPH <{public}> {{ ?s ?p ?o .
+  FILTER(
+    !STRSTARTS(STR(?s), "{prefix}")
+    || STRSTARTS(STR(?o), "https://lux.")
+    || STRSTARTS(STR(?o), "https://w3id.org/heritagegraph/imported/")
+  )
+}} }}
+"""
+            if engine.store.update(del_pollution):
+                removed_pollution = n
+        if gn:
+            del_ghost = f"""
+DELETE {{ GRAPH <{public}> {{ ?s ?p ?o }} }}
+WHERE {{ GRAPH <{public}> {{ ?s ?p ?o .
+  FILTER(STRSTARTS(STR(?p), "{ghost_prefix}"))
+}} }}
+"""
+            if engine.store.update(del_ghost):
+                removed_ghost = gn
         if removed_pollution:
             self.stdout.write(
                 self.style.SUCCESS(

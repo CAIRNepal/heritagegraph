@@ -45,10 +45,9 @@ def is_curated_assertion(assertion: Any) -> bool:
 
 def unpublished_resource_iris() -> set[str]:
     """Resource IRIs excluded from scope=reviewed (explicitly withheld statuses only)."""
-    from django.apps import apps as django_apps
-
     from apps.cidoc_data.models import MetaData
     from apps.cidoc_data.rdf_publish import resource_uri_for_instance
+    from django.apps import apps as django_apps
 
     out: set[str] = set()
     for model in django_apps.get_app_config("cidoc_data").get_models():

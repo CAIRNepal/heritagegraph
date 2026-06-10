@@ -46,7 +46,9 @@ export function ReactionButtons({
     if (!session) return;
     setLoading(true);
     try {
-      const result = await toggleReaction(type, entityId, commentId);
+      const result = (await toggleReaction(type, entityId, commentId)) as {
+        action: string;
+      };
       // Optimistic update
       setSummary((prev) => {
         const newSummary = { ...prev };

@@ -5,7 +5,6 @@ Shared ontology URI resolution for heritage KG ingestion agents.
 from __future__ import annotations
 
 import re
-from functools import lru_cache
 from pathlib import Path
 
 CRM = "http://www.cidoc-crm.org/cidoc-crm/"

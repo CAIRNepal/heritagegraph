@@ -1,8 +1,7 @@
 """Populate EntityRef rows from legacy CharField relation columns."""
 
-from django.core.management.base import BaseCommand, CommandError
-
 from apps.cidoc_data.relation_backrefs import backfill_entityrefs_from_legacy_columns
+from django.core.management.base import BaseCommand, CommandError
 
 
 def _check_consistency():
@@ -10,14 +9,13 @@ def _check_consistency():
     Return list of (model, field, instance_pk, raw_value) tuples where the CharField
     value contains non-empty relation IDs that have no matching EntityRef row.
     """
-    from django.contrib.contenttypes.models import ContentType
-
     from apps.cidoc_data.models import EntityRef
     from apps.cidoc_data.relation_backrefs import (
         CIDOC_RELATION_BACKREFS,
         DOMAIN_KEY_TO_TARGET_MODEL,
         _parse_relation_ids,
     )
+    from django.contrib.contenttypes.models import ContentType
 
     missing = []
     for model_cls, field_name, multivalued, ref_domain in CIDOC_RELATION_BACKREFS:

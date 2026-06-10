@@ -8,10 +8,8 @@ import pathlib
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
-from django.contrib.auth.models import Group
-from django.utils import timezone
-
 from apps.document_processing.services.ocr_settings import get_ocr_settings
+from django.utils import timezone
 
 from .models import Project, ProjectMembership
 

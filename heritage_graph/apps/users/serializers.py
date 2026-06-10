@@ -3,7 +3,6 @@ import re
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-
 User = get_user_model()
 
 USERNAME_RE = re.compile(r"^[a-zA-Z0-9_-]+$")

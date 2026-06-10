@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import json
 
-from django.core.management.base import BaseCommand
-
 from apps.graph.kg_engine.inference import materialize_inferred_graph
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

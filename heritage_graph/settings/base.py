@@ -287,6 +287,11 @@ RDF_RESOURCE_BASE_URI = os.environ.get(
     "RDF_RESOURCE_BASE_URI",
     HERITAGE_RESOURCE_NS,
 )
+# Primary natural-language of the corpus — emitted as a BCP-47 language tag on
+# rdfs:label literals (FAIR/datatype hygiene: language-tagged strings instead of
+# plain xsd:string). The corpus is romanised Nepali/Newari heritage names, hence
+# ne-Latn (Nepali, Latin script). Override per-deployment with RDF_DEFAULT_LANGUAGE.
+RDF_DEFAULT_LANGUAGE = os.environ.get("RDF_DEFAULT_LANGUAGE", "ne-Latn").strip()
 # RDF_SYNC_ENABLED is now ON by default so contribution saves project triples
 # without needing manual env setup. When no SPARQL endpoint is configured, the
 # signal falls back to writing into the local pyoxigraph store at

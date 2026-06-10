@@ -10,7 +10,9 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from .models import ChunkedMediaUpload, DocumentPage, TabularImportJob, UploadedDocument
-from .services.review_state import merge_ingestion_review_state, pages_with_block_corrections
+from .services.review_state import (
+    pages_with_block_corrections,
+)
 
 ENGINE_BLOCK_PRIORITY = (
     "tesseract",

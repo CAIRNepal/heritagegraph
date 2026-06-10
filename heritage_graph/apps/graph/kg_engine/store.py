@@ -8,9 +8,8 @@ from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
 
-from django.conf import settings
-
 from apps.graph.client import graph_client
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -514,6 +513,9 @@ class KnowledgeGraphStore:
         geo_wkt = RDF_PREFIXES["geo"] + "wktLiteral"
         if not datatype:
             return Quad(sub, pred, Literal(lexical), graph_name)
+        # "@<lang>" marks a language-tagged literal (BCP-47), not a datatype IRI.
+        if datatype.startswith("@"):
+            return Quad(sub, pred, Literal(lexical, language=datatype[1:]), graph_name)
         if datatype == geo_wkt:
             return Quad(sub, pred, Literal(lexical, datatype=NamedNode(geo_wkt)), graph_name)
         return Quad(sub, pred, Literal(lexical, datatype=NamedNode(datatype)), graph_name)

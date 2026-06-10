@@ -131,7 +131,9 @@ export default function ContributionQueuePage() {
     if (!session || applySubmitting) return;
     setApplySubmitting(true);
     try {
-      const t = (session as Record<string, unknown>)?.accessToken;
+      const t = (session as unknown as Record<string, unknown>)?.accessToken as
+        | string
+        | undefined;
       if (!t) return;
       await postReviewerApplication(t, applyMessage);
       toast.success('Application submitted. We will follow up if your request is approved.');

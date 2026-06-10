@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from apps.graph.models import PartnerInstitution
+from rest_framework import serializers
 
 
 class PartnerInstitutionSerializer(serializers.ModelSerializer):

@@ -6,10 +6,9 @@ import re
 from functools import lru_cache
 from typing import Any
 
-from django.conf import settings
-
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.ontology_config import RDF_PREFIXES, expand_curie
+from django.conf import settings
 
 # CRM property codes, e.g. ``P74_has_current_or_former_residence``.
 _CRM_PROPERTY_CODE = re.compile(r"^P\d+[A-Za-z0-9._-]*$")

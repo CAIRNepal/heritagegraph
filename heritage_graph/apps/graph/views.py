@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-from rest_framework import permissions, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
 import re
 
 from apps.cidoc_data.rdf_signals import is_readonly_sparql_query
@@ -16,6 +12,9 @@ from apps.graph.kg_engine.lux_museum import (
     museum_include_lux_default,
 )
 from apps.graph.kg_engine.partitions import GraphPartition
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 _POINT_RE = re.compile(r"POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)", re.IGNORECASE)
 
@@ -75,7 +74,7 @@ def _assertion_provenance_map() -> dict[tuple[str, str, str], dict]:
     return out
 
 
-from apps.cidoc_data.publication_policy import is_published_for_rdf, unpublished_resource_iris
+from apps.cidoc_data.publication_policy import unpublished_resource_iris
 
 
 class KnowledgeGraphStatsView(APIView):

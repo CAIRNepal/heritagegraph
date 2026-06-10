@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
@@ -10,33 +9,34 @@ from .models import (
     Moderation,
     Organization,
     OrganizationMembership,
+    PublicContribution,
     Submission,
     SubmissionEditSuggestion,
     SubmissionVersion,
     UserProfile,
-    PublicContribution,
 )
 
 User = get_user_model()
 from apps.cidoc_data.models import EntityCluster
+
 from .models import (
-    CulturalEntity,
-    Revision,
     Activity,
-    ReviewDecision,
-    ReviewFlag,
-    ReviewerRole,
-    ReviewerApplication,
-    Notification,
-    Reaction,
-    Fork,
-    Share,
-    SchemaExtensionAuditEvent,
-    SchemaExtensionProposal,
+    CulturalEntity,
     EntityProposal,
     EntityProposalAuditEvent,
+    Fork,
+    Notification,
+    Reaction,
     RelationshipProposal,
     RelationshipProposalAuditEvent,
+    ReviewDecision,
+    ReviewerApplication,
+    ReviewerRole,
+    ReviewFlag,
+    Revision,
+    SchemaExtensionAuditEvent,
+    SchemaExtensionProposal,
+    Share,
 )
 
 

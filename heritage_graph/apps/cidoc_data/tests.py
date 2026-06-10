@@ -1,6 +1,8 @@
 import json
 
+from apps.cidoc_data.cidoc_registry_keys import registry_class_key_for_model
 from apps.cidoc_data.identity_constants import IDENTITY_SAME_REFERENT_PROPERTY
+from apps.cidoc_data.linkml_loader import get_effective_registry_payload
 from apps.cidoc_data.models import (
     ArchitecturalStructure,
     Deity,
@@ -15,8 +17,6 @@ from apps.cidoc_data.models import (
     SyncreticRelationship,
     Tradition,
 )
-from apps.cidoc_data.cidoc_registry_keys import registry_class_key_for_model
-from apps.cidoc_data.linkml_loader import get_effective_registry_payload
 from apps.cidoc_data.rdf_entity_projection import (
     EXTERNAL_MATCH_URI,
     RDF_TYPE_URI,
@@ -26,12 +26,12 @@ from apps.cidoc_data.rdf_entity_projection import (
 )
 from apps.cidoc_data.rdf_signals import _resource_uri, rdf_sync_enabled
 from apps.heritage_data.models import CulturalEntity
-from rest_framework import status
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import SimpleTestCase, TestCase, override_settings
+from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
 
@@ -509,9 +509,8 @@ class FrontendContributionPipelineTest(TestCase):
                 person = Person.objects.get(pk=response.json()["id"])
                 subject_uri = _resource_uri(person)
 
-                from pyoxigraph import NamedNode
-
                 from apps.graph.kg_engine.store import _open_local_store
+                from pyoxigraph import NamedNode
 
                 # Use the engine's cached store handle (a separate Store() open
                 # would deadlock on the RocksDB exclusive lock).

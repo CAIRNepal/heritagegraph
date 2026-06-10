@@ -1,13 +1,12 @@
 """Tests for curation-gated RDF publication policy."""
 
-from django.test import SimpleTestCase
-
 from apps.cidoc_data.publication_policy import (
     PUBLISHED_STATUSES,
     WITHHELD_STATUSES,
     is_curated_assertion,
     is_published_for_rdf,
 )
+from django.test import SimpleTestCase
 
 
 class _Stub:

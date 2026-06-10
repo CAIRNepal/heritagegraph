@@ -1,7 +1,6 @@
+from apps.graph.partner_views import PartnerInstitutionViewSet
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-
-from apps.graph.partner_views import PartnerInstitutionViewSet
 
 router = DefaultRouter()
 router.register(

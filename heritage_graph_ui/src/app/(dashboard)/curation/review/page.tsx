@@ -130,7 +130,7 @@ function ReviewQueuePageInner() {
   ];
 
   const getHeaders = useCallback(() => {
-    const token = (session as Record<string, unknown>)?.accessToken as string | undefined;
+    const token = (session as unknown as Record<string, unknown>)?.accessToken as string | undefined;
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     return headers;

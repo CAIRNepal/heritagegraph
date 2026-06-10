@@ -2,8 +2,8 @@
 HeritageGraph agentic KG ingestion pipeline — public API.
 """
 
-from .config import DEFAULT_CONFIG, PipelineConfig
 from .confidence import ConfidenceBreakdown, calibrate
+from .config import DEFAULT_CONFIG, PipelineConfig
 from .doc_intelligence import run_doc_intelligence
 from .entity_resolution_agent import run_entity_resolution
 from .epistemic_router_agent import run_epistemic_routing

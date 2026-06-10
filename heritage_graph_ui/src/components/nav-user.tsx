@@ -29,7 +29,6 @@ import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { dataApiPath } from '@/lib/api-paths';
 import { getPublicApiUrl } from '@/lib/api-base';
-import { getPublicApiUrl } from '@/lib/api-base';
 import { toast } from 'sonner';
 
 const API_BASE = getPublicApiUrl();

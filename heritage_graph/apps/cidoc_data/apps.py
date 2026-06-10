@@ -6,7 +6,6 @@ class CidocDataConfig(AppConfig):
     name = "apps.cidoc_data"
 
     def ready(self):
-        import apps.cidoc_data.signals
         from apps.cidoc_data import rdf_signals
 
         rdf_signals.connect_signals()

@@ -19,7 +19,7 @@ def build_linkset_ttl() -> str:
         "@prefix dct: <http://purl.org/dc/terms/> .",
         "",
         f"<{dataset}/linkset/wikidata> a void:Linkset ;",
-        f"  void:target <https://www.wikidata.org/> ;",
+        "  void:target <https://www.wikidata.org/> ;",
         "  dct:title \"HeritageGraph → Wikidata\"@en ;",
         "  void:subjectsTarget ?hg ;",
         "  void:objectsTarget ?wd .",

@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from django.conf import settings
-from django.core.management.base import BaseCommand
-
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.rdf_serialize import format_nt_line
+from django.conf import settings
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

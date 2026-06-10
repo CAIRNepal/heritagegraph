@@ -81,7 +81,7 @@ export function AccessDenied({ requiredRole, userEmail }: AccessDeniedProps) {
 
   return (
     <div className="flex items-center justify-center min-h-[60vh] px-4">
-      <motion.div {...fadeInUp}>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <Card className={`max-w-lg w-full ${colors.border} ${colors.bg}`}>
           <CardContent className="flex flex-col items-center gap-6 py-12 px-8 text-center">
             <div className="relative">

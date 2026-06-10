@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from apps.graph.kg_engine.nanopub_export import export_nanopubs
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from apps.graph.kg_engine.nanopub_export import export_nanopubs
 
 
 class Command(BaseCommand):

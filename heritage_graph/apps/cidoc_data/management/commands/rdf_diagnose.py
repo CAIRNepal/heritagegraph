@@ -38,12 +38,12 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        from apps.cidoc_data.models import MetaData
         from apps.cidoc_data.rdf_signals import (
             _resource_uri,
             queue_entity_projection,
             rdf_sync_enabled,
         )
-        from apps.cidoc_data.models import MetaData
 
         self.stdout.write(self.style.MIGRATE_HEADING("Configuration"))
         self.stdout.write(f"  RDF_SYNC_ENABLED       = {rdf_sync_enabled()}")

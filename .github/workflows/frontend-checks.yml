@@ -1,0 +1,38 @@
+name: Frontend checks
+
+# Type-checks and lints the Next.js app. Gates the TypeScript/ESLint health that
+# `next dev`/`build` (SWC) does not enforce, so type regressions can't merge.
+
+on:
+  push:
+    branches: [v1, main]
+    paths:
+      - "heritage_graph_ui/**"
+      - ".github/workflows/frontend-checks.yml"
+  pull_request:
+    paths:
+      - "heritage_graph_ui/**"
+      - ".github/workflows/frontend-checks.yml"
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: heritage_graph_ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: heritage_graph_ui/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type-check
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npx eslint src --quiet

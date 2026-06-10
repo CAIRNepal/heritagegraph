@@ -34,10 +34,10 @@ from .serializers import (
     TabularImportCreateSerializer,
     TabularImportJobPatchSerializer,
     TabularImportJobSerializer,
+    _merge_upload_provenance,
     build_review_payload,
     save_standalone_ingestion_media,
     suggestions_for_document,
-    _merge_upload_provenance,
 )
 from .services.ingestion_compile import (
     build_ingestion_compile_preview,

@@ -37,6 +37,7 @@ from .models import (
 )
 from .serializers import BaseRegistrySerializer
 
+
 class ArchitecturalStructureGeneratedSerializer(BaseRegistrySerializer):
     """Auto-generated serializer stub for ArchitecturalStructure (registry key: structure)."""
 

@@ -47,7 +47,7 @@ export default function SchemaExtensionDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const headers = useCallback((): HeadersInit => {
-    const token = (session as Record<string, unknown>)?.accessToken as string | undefined;
+    const token = (session as unknown as Record<string, unknown>)?.accessToken as string | undefined;
     const h: HeadersInit = { 'Content-Type': 'application/json' };
     if (token) h.Authorization = `Bearer ${token}`;
     return h;

@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
+from apps.heritage_data.models import CulturalEntity, ReviewerApplication
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
-
-from apps.heritage_data.models import CulturalEntity, ReviewerApplication
 
 User = get_user_model()
 

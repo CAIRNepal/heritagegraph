@@ -31,7 +31,7 @@ export default function CurationLayout({
   if (!session) {
     return (
       <div className="flex items-center justify-center min-h-[60vh] px-4">
-        <motion.div {...fadeInUp}>
+        <motion.div variants={fadeInUp} initial="hidden" animate="show">
           <Card className="max-w-lg w-full border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
             <CardContent className="flex flex-col items-center gap-6 py-12 px-8 text-center">
               <div className="rounded-full bg-amber-100 dark:bg-amber-900/40 p-4">

@@ -1,16 +1,17 @@
 import uuid
-from django.db import models
+
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.db import models
 
 # GIS support (PostGIS) - disabled for development on SQLite
 # To enable: install GDAL system library and python-gdal
 GIS_AVAILABLE = False
 gis_models = None  # type: ignore
 
-from .identity_constants import CLUSTER_AUDIT_ACTION_CHOICES
 from .edtf_field import validate_edtf
+from .identity_constants import CLUSTER_AUDIT_ACTION_CHOICES
 
 User = get_user_model()
 

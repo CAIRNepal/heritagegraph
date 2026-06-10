@@ -114,7 +114,7 @@ const nextConfig: NextConfig = {
     };
 
     if (!dev || !config.plugins?.length) return config;
-    config.plugins = config.plugins.filter((plugin) => {
+    config.plugins = config.plugins.filter((plugin: { constructor?: { name?: string } }) => {
       const name =
         plugin &&
         typeof plugin === 'object' &&

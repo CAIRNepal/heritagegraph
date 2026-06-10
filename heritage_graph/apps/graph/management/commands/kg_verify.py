@@ -9,12 +9,11 @@ Usage:  python manage.py kg_verify
 
 from __future__ import annotations
 
-from django.conf import settings
-from django.core.management.base import BaseCommand
-
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.uris import curated_resource_uri_prefix
+from django.conf import settings
+from django.core.management.base import BaseCommand
 
 RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 
@@ -163,8 +162,8 @@ SELECT (COUNT(*) AS ?n) WHERE {{
         # ── 4. Relationship assertions: accepted vs pending ────────────────────
         self.stdout.write(self.style.MIGRATE_HEADING("4. relationship.* assertions (Postgres)"))
         try:
-            from django.db.models import Count
             from apps.cidoc_data.models import HeritageAssertion
+            from django.db.models import Count
 
             qs = (
                 HeritageAssertion.objects.filter(asserted_property__startswith="relationship.")

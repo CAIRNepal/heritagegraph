@@ -1,65 +1,71 @@
 import json
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from drf_yasg import openapi
-
-from django.db.models import Q
-from rest_framework import mixins, parsers, viewsets, status, permissions
-from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import (
-    CulturalEntity,
-    Revision,
-    Activity,
-    ReviewDecision,
-    ReviewFlag,
-    ReviewerRole,
-    ReviewerApplication,
-    SchemaExtensionAuditEvent,
-    SchemaExtensionProposal,
-    EntityProposal,
-    RelationshipProposal,
-)
-from .models import Organization, OrganizationMembership
-from .models import Notification, Reaction, Fork, Share
-from .models import PublicContribution
-from .serializers import *
-from .permissions import (
-    IsContributorOrReadOnly,
-    IsEditor,
-    IsReviewerOrAdmin,
-    IsCommunityReviewer,
-    IsDomainExpert,
-    IsExpertCurator,
-    IsStaffOrExpertCurator,
-    IsSchemaExtensionModerator,
-)
-from .throttles import (
-    ProjectAssetUploadThrottle,
-    ProjectCreateThrottle,
-    RegisterThrottle,
-)
-
+from drf_yasg import openapi
 
 # For Swagger documentation
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, permissions, serializers, status, viewsets
+from rest_framework import (
+    generics,
+    mixins,
+    parsers,
+    permissions,
+    serializers,
+    status,
+    viewsets,
+)
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import (
+    Activity,
+    CulturalEntity,
+    EntityProposal,
+    Fork,
+    Notification,
+    Organization,
+    OrganizationMembership,
+    PublicContribution,
+    Reaction,
+    RelationshipProposal,
+    ReviewDecision,
+    ReviewerApplication,
+    ReviewerRole,
+    ReviewFlag,
+    Revision,
+    SchemaExtensionProposal,
+    Share,
+)
+from .permissions import (
+    IsCommunityReviewer,
+    IsContributorOrReadOnly,
+    IsEditor,
+    IsExpertCurator,
+    IsReviewerOrAdmin,
+    IsSchemaExtensionModerator,
+    IsStaffOrExpertCurator,
+)
+from .serializers import *
+from .throttles import (
+    ProjectAssetUploadThrottle,
+    ProjectCreateThrottle,
+    RegisterThrottle,
+)
 
 User = get_user_model()
 
@@ -68,8 +74,6 @@ from .models import (
     Comments,
     CulturalHeritage,
     Moderation,
-    Organization,
-    OrganizationMembership,
     Submission,
     SubmissionEditSuggestion,
     SubmissionVersion,
@@ -1965,8 +1969,9 @@ class ReviewQueueViewSet(viewsets.ReadOnlyModelViewSet):
         base = CulturalEntity.objects.filter(
             status__in=["pending_review", "pending_revision"]
         )
-        from django.utils import timezone
         from datetime import timedelta
+
+        from django.utils import timezone
 
         cutoff = timezone.now() - timedelta(days=14)
 
@@ -2054,12 +2059,12 @@ class SchemaExtensionProposalViewSet(viewsets.ModelViewSet):
                 {"detail": "Not a draft"}, status=status.HTTP_400_BAD_REQUEST
             )
         from apps.cidoc_data.linkml_loader import build_fresh_payload
+        from apps.heritage_data.services.schema_proposal_keys import (
+            extract_conflict_keys,
+        )
         from apps.heritage_data.services.schema_proposal_publish import (
             append_audit,
             overlapping_active_proposals,
-        )
-        from apps.heritage_data.services.schema_proposal_keys import (
-            extract_conflict_keys,
         )
 
         keys = extract_conflict_keys(proposal.proposed_yaml)
@@ -3851,6 +3856,7 @@ class PublicContributionViewSet(viewsets.ModelViewSet):
 
 import math
 from datetime import timedelta as _td
+
 from django.utils import timezone as _tz
 
 
@@ -4218,13 +4224,12 @@ class ProgressionView(APIView):
 # =====================================================================
 
 from django.db import transaction  # noqa: E402
-from django.db.models import Count  # noqa: E402
+
 from .models import (  # noqa: E402
     Media,
     Project,
     ProjectActivity,
     ProjectAsset,
-    ProjectEntity,
     ProjectMembership,
     ProjectSnapshot,
 )
@@ -4235,10 +4240,14 @@ from .project_services import (  # noqa: E402
     infer_media_type_from_filename,
     is_document_media_file,
     notify_project_review_webhook,
-    validate_project_for_review,
     queue_ocr_for_media,
     user_can_merge_project,
+    validate_project_for_review,
+)
+from .project_services import (
     user_can_edit_project as _user_can_edit_project,
+)
+from .project_services import (
     user_can_view_project as _user_can_view_project,
 )
 

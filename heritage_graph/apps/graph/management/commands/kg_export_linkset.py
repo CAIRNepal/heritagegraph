@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from apps.graph.kg_engine.linkset_export import write_linkset
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from apps.graph.kg_engine.linkset_export import write_linkset
 
 
 class Command(BaseCommand):

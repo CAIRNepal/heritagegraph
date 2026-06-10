@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import logging
 
-from django.conf import settings
-
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.store import KnowledgeGraphStore
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 

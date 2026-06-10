@@ -7,12 +7,12 @@ from django.utils import timezone
 
 from ..models import ExtractedField, UploadedDocument
 from .agents.doc_intelligence import run_doc_intelligence
-from .progress import patch_processing_progress
 from .classifier import classify_media_file
 from .htr import extract_handwritten
 from .ner import extract_structured_fields
 from .ocr_settings import get_ocr_settings
 from .pdf import extract_pdf_digital
+from .progress import patch_processing_progress
 from .raster_ocr import extract_raster_ocr
 from .vision_rescue import run_vision_rescue
 

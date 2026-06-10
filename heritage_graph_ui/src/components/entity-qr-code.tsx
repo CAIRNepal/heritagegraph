@@ -189,7 +189,7 @@ export function EntityQRCode({
             <div class="qr-title">${entityName}</div>
             <div class="qr-type">${entityType}${locationName ? ` • ${locationName}` : ''}</div>
             <div class="qr-code">
-              <img src="${document.querySelector('#qr-code-canvas')?.toDataURL()}" width="${qrSize}" height="${qrSize}" />
+              <img src="${(document.querySelector('#qr-code-canvas') as HTMLCanvasElement | null)?.toDataURL()}" width="${qrSize}" height="${qrSize}" />
             </div>
             <div class="qr-cta">📱 Scan to Share What You Know!</div>
             <div class="qr-subtitle">Help preserve our cultural heritage</div>

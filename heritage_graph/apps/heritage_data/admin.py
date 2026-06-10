@@ -8,6 +8,7 @@ from .models import (
     Contributor,
     CulturalEntity,
     CulturalHeritage,
+    EntityProposal,
     Fork,
     Media,
     Moderation,
@@ -16,17 +17,14 @@ from .models import (
     OrganizationMembership,
     PublicContribution,
     Reaction,
+    RelationshipProposal,
     ReviewDecision,
-    ReviewerRole,
     ReviewerApplication,
+    ReviewerRole,
     ReviewFlag,
     Revision,
     SchemaExtensionAuditEvent,
     SchemaExtensionProposal,
-    EntityProposal,
-    EntityProposalAuditEvent,
-    RelationshipProposal,
-    RelationshipProposalAuditEvent,
     Share,
     Submission,
     SubmissionEditSuggestion,
@@ -35,7 +33,6 @@ from .models import (
     UserProfile,
     UserStats,
 )
-
 
 # =====================================================================
 # CULTURAL ENTITY WORKFLOW (core contribution pipeline)

@@ -11,11 +11,6 @@ from typing import Any
 
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
-from apps.graph.kg_engine.uris import (
-    cultural_entity_uri,
-    label_for_instance,
-    resource_uri_for_instance,
-)
 
 
 def public_graph_uri() -> str | None:

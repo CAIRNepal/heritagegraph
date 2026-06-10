@@ -1,9 +1,8 @@
 """Partner institution API (multi-site pilot)."""
 
-from rest_framework import permissions, viewsets
-
 from apps.graph.models import PartnerInstitution
 from apps.graph.partner_serializers import PartnerInstitutionSerializer
+from rest_framework import permissions, viewsets
 
 
 class PartnerInstitutionViewSet(viewsets.ModelViewSet):

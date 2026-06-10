@@ -7,14 +7,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
-
 from apps.graph.kg_engine.assertion_projection import assertion_uri, data_source_uri
 from apps.graph.kg_engine.engine import (
     resource_uri_for_instance_from_assertion,
     resource_uri_for_object_assertion,
 )
 from apps.graph.kg_engine.partitions import GraphPartition
+from django.conf import settings
 
 
 def _hash_manifest(text: str) -> str:
@@ -24,7 +23,6 @@ def _hash_manifest(text: str) -> str:
 def nanopub_trig_for_assertion(assertion: Any) -> str:
     """Single nanopublication as TriG (assertion / provenance / publication info graphs)."""
     from apps.cidoc_data.assertion_validation import is_relationship_property
-    from apps.graph.kg_engine.assertion_projection import build_relationship_assertion_triples
     from apps.graph.kg_engine.uris import relationship_predicate_uri
 
     aid = assertion.pk
@@ -81,7 +79,7 @@ def nanopub_trig_for_assertion(assertion: Any) -> str:
         [
             f"<{pub_graph}> {{",
             f'  <{pub_graph}> dct:creator "HeritageGraph" ;',
-            f'  dct:license <https://creativecommons.org/licenses/by/4.0/> ;',
+            '  dct:license <https://creativecommons.org/licenses/by/4.0/> ;',
             f'  dct:identifier "{digest}"^^xsd:string .',
             "}",
             "",

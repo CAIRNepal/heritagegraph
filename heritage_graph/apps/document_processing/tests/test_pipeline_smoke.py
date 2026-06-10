@@ -9,15 +9,23 @@ from __future__ import annotations
 
 import sys
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from apps.document_processing.services.agents.confidence import calibrate
-from apps.document_processing.services.agents.doc_intelligence import run_doc_intelligence
-from apps.document_processing.services.agents.entity_resolution_agent import run_entity_resolution
+from apps.document_processing.services.agents.doc_intelligence import (
+    run_doc_intelligence,
+)
+from apps.document_processing.services.agents.entity_resolution_agent import (
+    run_entity_resolution,
+)
 from apps.document_processing.services.agents.extraction_agent import run_extraction
-from apps.document_processing.services.agents.orchestrator import run_kg_ingestion_pipeline
-from apps.document_processing.services.agents.shacl_agent import _load_shapes_index, run_shacl_validation
-from apps.document_processing.services.agents.ontology import default_shapes_path
+from apps.document_processing.services.agents.orchestrator import (
+    run_kg_ingestion_pipeline,
+)
+from apps.document_processing.services.agents.shacl_agent import (
+    _load_shapes_index,
+    run_shacl_validation,
+)
 
 _load_shapes_index.cache_clear()
 from apps.document_processing.services.agents.types import (
@@ -25,7 +33,6 @@ from apps.document_processing.services.agents.types import (
     HeritageDocType,
     Triple,
 )
-
 
 SAMPLE_INSCRIPTION = """
 शिलालेख — Stone inscription at Pashupatinath.

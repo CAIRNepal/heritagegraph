@@ -130,7 +130,7 @@ def _classify_with_heuristics(text: str) -> tuple[HeritageDocType, float]:
 
 def _detect_language(text: str) -> str:
     try:
-        from langdetect import detect, LangDetectException
+        from langdetect import detect
 
         sample = text[:3000]
         lang = detect(sample)

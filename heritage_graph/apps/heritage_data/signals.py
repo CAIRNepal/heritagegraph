@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 
-from django.db.models import Count, Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -139,7 +138,9 @@ def sync_cultural_entity_to_public_graph(sender, instance, **kwargs):
             if entity is None:
                 return
             if status in ("accepted", "merged"):
-                from apps.cidoc_data.rdf_publish import persist_cultural_entity_projection
+                from apps.cidoc_data.rdf_publish import (
+                    persist_cultural_entity_projection,
+                )
 
                 persist_cultural_entity_projection(entity)
             elif status in ("rejected", "superseded"):
@@ -159,7 +160,7 @@ def sync_cultural_entity_to_public_graph(sender, instance, **kwargs):
 
 def _notify_project_members(project, actor, notification_type, message, link=""):
     """Create Notification rows for all active project members except the actor."""
-    from .models import Notification, ProjectMembership
+    from .models import Notification
 
     recipients = set()
     recipients.add(project.owner_id)
@@ -287,6 +288,7 @@ def _project_rdf_merge(project):
     def _do_projection():
         try:
             from apps.cidoc_data.rdf_publish import persist_cultural_entity_projection
+
             from .models import CulturalEntity
 
             for entity in CulturalEntity.objects.filter(id__in=entity_ids):

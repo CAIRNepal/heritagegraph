@@ -13,17 +13,16 @@ import re
 import uuid
 from typing import Any
 
-from django.apps import apps
-from django.conf import settings
-from django.db import transaction
-from django.db.models.signals import post_delete, post_save, pre_save
-
 from apps.cidoc_data.rdf_publish import (
     delete_subject_from_store,
     label_for_instance,
     persist_slot_projection,
     resource_uri_for_instance,
 )
+from django.apps import apps
+from django.conf import settings
+from django.db import transaction
+from django.db.models.signals import post_delete, post_save, pre_save
 
 logger = logging.getLogger(__name__)
 

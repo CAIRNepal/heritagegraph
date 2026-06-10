@@ -1,8 +1,10 @@
 """Tests for PUBLIC graph pollution detection (linkset model)."""
 
+from apps.graph.kg_engine.uris import (
+    is_non_curated_instance_iri,
+    is_public_graph_pollution,
+)
 from django.test import SimpleTestCase
-
-from apps.graph.kg_engine.uris import is_non_curated_instance_iri, is_public_graph_pollution
 
 PREFIX = "https://w3id.org/heritagegraph/resource/"
 

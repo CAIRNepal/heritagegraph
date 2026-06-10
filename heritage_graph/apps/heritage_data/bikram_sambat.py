@@ -12,7 +12,6 @@ Usage:
 """
 
 from datetime import date, datetime
-from typing import Optional
 
 import nepali_datetime
 from rest_framework import serializers

@@ -19,10 +19,9 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from django.conf import settings
-
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.ontology_config import RDF_PREFIXES
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +76,7 @@ def crm_bridge_coverage() -> dict[str, Any]:
 
     A type is covered if it is itself a ``crm:`` IRI or reaches one through the
     transitive ``rdfs:subClassOf`` closure of (Heritage.ttl ∪ bridge)."""
-    from rdflib import RDFS, URIRef
+    from rdflib import RDFS
 
     types = _instance_type_iris()
     if not types:
@@ -113,7 +112,6 @@ def crm_bridge_coverage() -> dict[str, Any]:
 
 def external_alignment_density() -> dict[str, Any]:
     """Count of class-level external authority links by SKOS match strength."""
-    from rdflib import URIRef
     from rdflib.namespace import SKOS
 
     g = _load_schema_graph()
@@ -293,9 +291,8 @@ def temporal_validity(engine: Any) -> dict[str, Any]:
 def provenance_coverage(engine: Any) -> dict[str, Any]:
     """Accepted relationship edges whose belief carries an IRI agent + source."""
     try:
-        from django.db.models import Q
-
         from apps.cidoc_data.models import HeritageAssertion
+        from django.db.models import Q
 
         qs = HeritageAssertion.objects.filter(
             asserted_property__startswith="relationship.",

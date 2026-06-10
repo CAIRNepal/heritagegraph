@@ -6,16 +6,18 @@ from .models import (
     CalendarSystem,
     CasteGroup,
     ClusterAuditEvent,
+    Consecration,
     DataSource,
     Deity,
+    Enshrinement,
     EntityCluster,
     Event,
     Festival,
     Guthi,
     HeritageAssertion,
     HistoricalPeriod,
-    IdentityResolutionCandidate,
     IconographicObject,
+    IdentityResolutionCandidate,
     KumariRetirement,
     KumariSelection,
     KumariTenure,
@@ -24,16 +26,13 @@ from .models import (
     Person,
     PersonRevision,
     Production,
-    Consecration,
-    Enshrinement,
-    TransferOfCustody,
-    RitualEvent,
     RelationshipPredicate,
+    RitualEvent,
     Source,
     SyncreticRelationship,
     Tradition,
+    TransferOfCustody,
 )
-
 
 # =====================================================================
 # SHARED METADATA MIXIN for all CIDOC domain admin classes

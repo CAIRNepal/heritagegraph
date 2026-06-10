@@ -124,9 +124,9 @@ export default function EntityViewPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <ReactionButtons entityType="cultural_entity" entityId={entityId} />
-            <ShareButton entityType="entity" entityId={entityId} entityName={displayName} />
-            <ForkButton entityType="cultural_entity" entityId={entityId} />
+            <ReactionButtons entityId={entityId} />
+            <ShareButton entityId={entityId} entityName={displayName} />
+            <ForkButton entityId={entityId} entityName={displayName} />
           </div>
         </div>
       </motion.div>
@@ -159,7 +159,7 @@ export default function EntityViewPage() {
           </TabsContent>
 
           <TabsContent value="comments">
-            <EntityComments entityType="cultural_entity" entityId={entityId} />
+            <EntityComments entityId={entityId} />
           </TabsContent>
 
           <TabsContent value="forks">

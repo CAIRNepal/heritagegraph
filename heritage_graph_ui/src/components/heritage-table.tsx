@@ -104,7 +104,7 @@ import { useState } from 'react';
 
 // --- 1. UPDATED SCHEMA TO MATCH API RESPONSE ---
 export const schema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   title: z.string(),
   description: z.string(),
   contributor: z.string(),

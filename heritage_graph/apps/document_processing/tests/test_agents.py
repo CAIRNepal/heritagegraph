@@ -21,7 +21,6 @@ from apps.document_processing.services.agents.extraction_agent import (
     _fuzzy_match_triples,
     _parse_triples,
     _predicate_allowed,
-    _triple_key,
 )
 from apps.document_processing.services.agents.ontology import (
     INVERSE_MAP,
@@ -31,7 +30,10 @@ from apps.document_processing.services.agents.ontology import (
     predicate_uri,
 )
 from apps.document_processing.services.agents.shacl_agent import _load_shapes_index
-from apps.document_processing.services.agents.sparql import escape_sparql_string, validate_uri
+from apps.document_processing.services.agents.sparql import (
+    escape_sparql_string,
+    validate_uri,
+)
 from apps.document_processing.services.agents.types import HeritageDocType, Triple
 
 
@@ -138,7 +140,9 @@ class SparqlSecurityTests(unittest.TestCase):
 
 class ShaclIndexTests(unittest.TestCase):
     def test_shapes_index_loads_or_empty(self):
-        from apps.document_processing.services.agents.ontology import default_shapes_path
+        from apps.document_processing.services.agents.ontology import (
+            default_shapes_path,
+        )
 
         path = str(default_shapes_path())
         index = _load_shapes_index(path)

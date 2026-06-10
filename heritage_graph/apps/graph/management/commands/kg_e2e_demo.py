@@ -10,13 +10,12 @@ Usage:  python manage.py kg_e2e_demo          # create, verify, clean up
 
 from __future__ import annotations
 
-from django.contrib.contenttypes.models import ContentType
-from django.core.management.base import BaseCommand
-
 from apps.cidoc_data.models import HeritageAssertion, Location, Person
 from apps.cidoc_data.rdf_publish import resource_uri_for_instance
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.queries import fetch_graph_projection
+from django.contrib.contenttypes.models import ContentType
+from django.core.management.base import BaseCommand
 
 TAG = "kg-e2e-test"
 

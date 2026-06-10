@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import json
 
-from django.core.management.base import BaseCommand
-
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
+from django.core.management.base import BaseCommand
 
 RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
 

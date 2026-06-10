@@ -1,10 +1,9 @@
-from django.core.management.base import BaseCommand
-
 from apps.cidoc_data.linkml_loader import (
     build_fresh_payload,
     invalidate_registry_cache,
 )
 from apps.cidoc_data.models import SchemaRegistry
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

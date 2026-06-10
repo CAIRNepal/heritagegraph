@@ -4,14 +4,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from django.test import SimpleTestCase, override_settings
-
 from apps.graph.kg_engine.lux_museum import (
     LuxLink,
     discover_lux_links,
     fetch_museum_projection_with_lux,
     is_lux_stub_uri,
 )
+from django.test import SimpleTestCase, override_settings
 
 
 class LuxMuseumHelpersTest(SimpleTestCase):

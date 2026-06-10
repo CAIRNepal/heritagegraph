@@ -19,8 +19,8 @@ from .types import (
     EntityResolutionResult,
     EpistemicRoutingResult,
     ResolvedAssertion,
-    RouteDecision,
     RoutedAssertion,
+    RouteDecision,
 )
 
 logger = logging.getLogger(__name__)
@@ -278,7 +278,9 @@ def run_epistemic_routing(
                 oxigraph_written = client.insert_data(nt, graph_uri=graph_uri)
                 if oxigraph_written and cfg.promote_to_public_graph:
                     try:
-                        from apps.graph.kg_engine.promotion import promote_ntriples_to_public
+                        from apps.graph.kg_engine.promotion import (
+                            promote_ntriples_to_public,
+                        )
 
                         promote_ntriples_to_public(nt)
                     except Exception:

@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 from dataclasses import replace
 from functools import lru_cache
-from pathlib import Path
 from typing import NamedTuple
 
 from .confidence import calibrate, shacl_validity_score

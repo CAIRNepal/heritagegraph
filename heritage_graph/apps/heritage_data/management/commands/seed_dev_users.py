@@ -1,9 +1,8 @@
 """Seed development users for DEBUG-gated email-only dev login."""
 
+from apps.heritage_data.models import UserProfile
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
-
-from apps.heritage_data.models import UserProfile
 
 User = get_user_model()
 

@@ -62,7 +62,7 @@ def _consistency_violations(graph: "Graph") -> list[tuple[str, str, str]]:
     """Detect class-disjointness violations against the (now-present) owl:disjointWith
     axioms. OWL-RL materialisation alone does not flag these, so we scan the
     closed graph: any individual asserted/entailed into two disjoint classes."""
-    from rdflib import RDF, OWL
+    from rdflib import OWL, RDF
 
     disjoint: set[frozenset[str]] = set()
     for a, _, b in graph.triples((None, OWL.disjointWith, None)):

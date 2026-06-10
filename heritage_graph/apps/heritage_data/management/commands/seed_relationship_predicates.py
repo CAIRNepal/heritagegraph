@@ -13,10 +13,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
+from apps.cidoc_data.models import RelationshipPredicate
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from apps.cidoc_data.models import RelationshipPredicate
 
 
 def _ontology_object_properties() -> list[tuple[str, str, str]]:

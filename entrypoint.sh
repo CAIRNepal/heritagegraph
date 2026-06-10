@@ -61,4 +61,10 @@ fi
 python manage.py bootstrap_identity_clusters || echo "bootstrap_identity_clusters failed (continuing)."
 python manage.py refresh_identity_candidates || echo "refresh_identity_candidates failed (continuing)."
 
+# Backfill provenance on accepted edges (idempotent — fills blanks only), then
+# log a Nature-rigor integrity audit of the public graph. The audit is advisory
+# at boot (non-fatal); run `kg_rigor_audit --strict` in CI/release to gate.
+python manage.py backfill_assertion_provenance || echo "backfill_assertion_provenance failed (continuing)."
+python manage.py kg_rigor_audit || echo "kg_rigor_audit reported violations (see above)."
+
 exec "$@"

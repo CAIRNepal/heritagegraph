@@ -86,8 +86,8 @@ class Command(BaseCommand):
 
     def _load_local(self, graph_uri: str, tbox_paths: list[Path]) -> int:
         try:
-            from pyoxigraph import NamedNode, RdfFormat
             from apps.graph.kg_engine.store import _open_local_store
+            from pyoxigraph import NamedNode, RdfFormat
         except ImportError as exc:
             raise CommandError("pyoxigraph is required for local TBox load.") from exc
 

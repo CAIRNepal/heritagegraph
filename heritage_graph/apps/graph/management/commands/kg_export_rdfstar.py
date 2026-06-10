@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from apps.graph.kg_engine.rdfstar_export import export_rdfstar_trig
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from apps.graph.kg_engine.rdfstar_export import export_rdfstar_trig
 
 
 class Command(BaseCommand):

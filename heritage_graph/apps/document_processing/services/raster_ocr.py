@@ -4,10 +4,10 @@ import os
 import tempfile
 from io import BytesIO
 
-from django.core.files import File
-from PIL import Image
-from pdf2image import convert_from_path, pdfinfo_from_path
 import pytesseract
+from django.core.files import File
+from pdf2image import convert_from_path, pdfinfo_from_path
+from PIL import Image
 
 from ..models import UploadedDocument
 from .ocr_settings import get_ocr_settings

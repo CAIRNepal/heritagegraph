@@ -11,13 +11,12 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from django.conf import settings
-
 from apps.graph.kg_engine.partitions import GraphPartition
 from apps.graph.kg_engine.queries import fetch_graph_projection
 from apps.graph.kg_engine.store import KnowledgeGraphStore
 from apps.graph.kg_engine.uris import curated_resource_uri_prefix
 from apps.graph.ontology_config import RDF_PREFIXES
+from django.conf import settings
 
 RDF = RDF_PREFIXES["rdf"]
 RDFS = RDF_PREFIXES["rdfs"]

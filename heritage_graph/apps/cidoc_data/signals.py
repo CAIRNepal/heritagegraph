@@ -1,7 +1,4 @@
-from django.db.models.signals import pre_save, post_save
-from django.dispatch import receiver
 from apps.cidoc_data.models import (
-    ArchitecturalStructure,
     IconographicObject,
     KumariRetirement,
     KumariSelection,
@@ -10,6 +7,9 @@ from apps.cidoc_data.models import (
     PersonRevision,
     SyncreticRelationship,
 )
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 @receiver(post_save, sender=Person)
 def create_person_revision(sender, instance, created, **kwargs):
@@ -41,12 +41,12 @@ def create_person_revision(sender, instance, created, **kwargs):
 def _backfill_entityrefs_for_instance(instance):
     """Scoped EntityRef backfill for a single saved instance."""
     try:
+        from apps.cidoc_data.models import EntityRef
         from apps.cidoc_data.relation_backrefs import (
             CIDOC_RELATION_BACKREFS,
             DOMAIN_KEY_TO_TARGET_MODEL,
             _parse_relation_ids,
         )
-        from apps.cidoc_data.models import EntityRef
         from django.contrib.contenttypes.models import ContentType
 
         model_cls = instance.__class__

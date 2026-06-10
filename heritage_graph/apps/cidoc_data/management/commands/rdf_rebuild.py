@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from django.conf import settings
-from django.core.management.base import BaseCommand
-
 from apps.cidoc_data.rdf_publish import public_graph_uri
 from apps.cidoc_data.rdf_signals import rdf_sync_enabled
+from django.conf import settings
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
@@ -101,13 +100,12 @@ class Command(BaseCommand):
 
     def _print_publication_summary(self) -> None:
         """Post-rebuild counts: Postgres vs PUBLIC graph (curated namespace)."""
-        from django.apps import apps as django_apps
-
         from apps.cidoc_data.models import MetaData
         from apps.cidoc_data.publication_policy import PUBLISHED_STATUSES
         from apps.graph.kg_engine.engine import get_kg_engine
         from apps.graph.kg_engine.partitions import GraphPartition
         from apps.graph.kg_engine.uris import curated_resource_uri_prefix
+        from django.apps import apps as django_apps
 
         total = published = 0
         for model in django_apps.get_app_config("cidoc_data").get_models():

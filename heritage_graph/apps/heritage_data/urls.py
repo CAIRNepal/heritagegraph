@@ -1,7 +1,8 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
 from . import views
-from .i18n_views import locale_info, convert_date
+from .i18n_views import convert_date, locale_info
 
 # Create router
 router = DefaultRouter()

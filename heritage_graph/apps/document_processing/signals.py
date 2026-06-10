@@ -5,10 +5,12 @@ Automatically triggers OCR when documents are uploaded.
 """
 
 import logging
+
+from apps.heritage_data.models import Media
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.conf import settings
-from apps.heritage_data.models import Media
+
 from .models import ExtractedField, UploadedDocument
 
 logger = logging.getLogger(__name__)

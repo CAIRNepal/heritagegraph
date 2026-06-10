@@ -1,6 +1,5 @@
-from django.test import SimpleTestCase
-
 from apps.document_processing.services.review_state import merge_ingestion_review_state
+from django.test import SimpleTestCase
 
 
 class MergeIngestionReviewStateTests(SimpleTestCase):

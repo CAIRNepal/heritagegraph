@@ -11,7 +11,7 @@ Invoked from entrypoint when MIGRATION_AUTO_REPAIR=1 (see docker-compose-dokploy
 """
 
 from django.core.management import call_command
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.db import connection
 
 

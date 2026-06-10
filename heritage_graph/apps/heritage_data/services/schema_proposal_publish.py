@@ -6,16 +6,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import yaml
+from apps.heritage_data.services.schema_proposal_keys import extract_conflict_keys
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from apps.heritage_data.services.schema_proposal_keys import extract_conflict_keys
-
 if TYPE_CHECKING:
-    from django.contrib.auth.models import AbstractUser
-
     from apps.heritage_data.models import SchemaExtensionProposal
+    from django.contrib.auth.models import AbstractUser
 
 
 def overlapping_active_proposals(*, keys: list[str], exclude_pk) -> bool:

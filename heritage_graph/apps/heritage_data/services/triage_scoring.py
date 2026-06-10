@@ -8,7 +8,6 @@ from typing import Any
 
 from apps.heritage_data.models import CulturalEntity, TriagePolicy
 
-
 DEFAULT_TIER_ORDER_BEST_TO_WORST = [
     "inscription",
     "archival",

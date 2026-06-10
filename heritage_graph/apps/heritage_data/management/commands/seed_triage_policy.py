@@ -2,10 +2,9 @@
 
 from decimal import Decimal
 
-from django.core.management.base import BaseCommand
-
 from apps.heritage_data.models import TriagePolicy
 from apps.heritage_data.services.triage_scoring import DEFAULT_TIER_ORDER_BEST_TO_WORST
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

@@ -12,15 +12,14 @@ Run:
 
 import tempfile
 
+from apps.cidoc_data.models import HeritageAssertion, Location, Person
+from apps.graph.kg_engine import get_kg_engine
+from apps.graph.kg_engine.uris import resource_uri_for_instance
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
-
-from apps.cidoc_data.models import HeritageAssertion, Location, Person
-from apps.graph.kg_engine import get_kg_engine
-from apps.graph.kg_engine.uris import resource_uri_for_instance
 
 User = get_user_model()
 
