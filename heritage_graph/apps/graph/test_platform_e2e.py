@@ -251,6 +251,112 @@ class PlatformReviewE2ETest(APITestCase):
 
 
 @override_settings(**E2E_SETTINGS)
+class PlatformContributionReviewAcceptE2ETest(APITestCase):
+    """Research pipeline: CIDOC form POST → review queue → reviewer accept → live KG."""
+
+    def setUp(self):
+        self.contributor = User.objects.create_user(
+            username="e2e_accept_contrib",
+            email="e2e-accept-c@example.com",
+            password="pw",
+        )
+        self.reviewer = User.objects.create_user(
+            username="e2e_accept_reviewer",
+            email="e2e-accept-r@example.com",
+            password="pw",
+            is_staff=True,
+        )
+        ReviewerRole.objects.create(
+            user=self.reviewer,
+            role="expert_curator",
+            is_active=True,
+        )
+        self.engine = get_kg_engine()
+
+    def test_cidoc_form_review_accept_reaches_kg_graph(self):
+        label = "E2E Review Accept Stupa"
+        self.client.force_authenticate(user=self.contributor)
+        with self.captureOnCommitCallbacks(execute=True):
+            resp = self.client.post(
+                "/api/v1/cidoc/locations/",
+                {
+                    "name": label,
+                    "description": "Full contribution pipeline (review accept).",
+                    "type": "archaeological_site",
+                    "current_status": "preserved",
+                    "latitude": 27.71,
+                    "longitude": 85.32,
+                },
+                format="json",
+            )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.content)
+        loc_id = resp.json()["id"]
+        loc = Location.objects.get(pk=loc_id)
+        self.assertEqual(loc.status, "pending_review")
+
+        entity = CulturalEntity.objects.get(name=label)
+        self.assertEqual(entity.status, "pending_review")
+        from apps.graph.kg_engine.uris import cultural_entity_uri
+
+        uri = cultural_entity_uri(entity.entity_id)
+        before = self.engine.query(
+            f"SELECT ?p WHERE {{ GRAPH ?g {{ <{uri}> ?p ?o }} }}"
+        )
+        self.assertEqual(len(before), 0, "pending contribution must not be in RDF yet")
+
+        self.client.force_authenticate(user=self.reviewer)
+        with self.captureOnCommitCallbacks(execute=True):
+            decide = self.client.post(
+                f"/api/v1/data/api/review-workspace/{entity.entity_id}/decide/",
+                {
+                    "verdict": "accept",
+                    "feedback": "E2E accept — publish to KG",
+                    "conflict_handling": "not_applicable",
+                },
+                format="json",
+            )
+        self.assertEqual(decide.status_code, status.HTTP_201_CREATED, decide.content)
+
+        entity.refresh_from_db()
+        loc.refresh_from_db()
+        self.assertEqual(entity.status, "accepted")
+        self.assertEqual(loc.status, "accepted")
+
+        list_res = self.client.get(
+            "/api/v1/cidoc/locations/",
+            {"limit": 500, "search": label},
+        )
+        self.assertEqual(list_res.status_code, 200, list_res.content)
+        rows = list_res.json().get("results", [])
+        self.assertTrue(
+            any(r.get("id") == loc_id and r.get("status") == "accepted" for r in rows),
+            "accepted location must appear in knowledge list API",
+        )
+
+        ce_list = self.client.get(
+            "/api/v1/data/cultural-entities/",
+            {"search": label, "limit": 50},
+        )
+        self.assertEqual(ce_list.status_code, 200, ce_list.content)
+        ce_rows = ce_list.json().get("results", [])
+        self.assertTrue(
+            any(r.get("name") == label and r.get("status") == "accepted" for r in ce_rows),
+            "accepted cultural entity must appear in /knowledge/entity table API",
+        )
+
+        after = self.engine.query(
+            f"SELECT ?p ?o WHERE {{ GRAPH ?g {{ <{uri}> ?p ?o }} }}"
+        )
+        self.assertGreater(len(after), 0, "accepted entity must project to RDF")
+
+        kg = self.client.get("/api/v1/cidoc/kg/graph/?scope=all&node_limit=200")
+        self.assertEqual(kg.status_code, 200, kg.content)
+        node = next((n for n in kg.json().get("nodes", []) if n.get("id") == uri), None)
+        self.assertIsNotNone(node, "cultural-entity URI must appear in kg/graph")
+        self.assertEqual(node.get("label"), label)
+
+
+@override_settings(**E2E_SETTINGS)
 class PlatformRdfPublishE2ETest(APITestCase):
     """Accepted record → RDF projection → KG engine readable."""
 

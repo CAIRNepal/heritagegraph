@@ -76,6 +76,32 @@ def _simulate_instance_graph_nodes(api_lists: dict[str, list]) -> tuple[list[str
     return node_ids, spatial
 
 
+def _publish_seeded_records(
+    *,
+    loc_id: int | None,
+    struct_id: int | None,
+    person_id: int | None,
+    editor,
+) -> None:
+    """Mirror reviewer acceptance so RDF and public list APIs see the records."""
+    models_to_accept: list = []
+    if loc_id:
+        models_to_accept.append(Location.objects.get(pk=loc_id))
+    if struct_id:
+        models_to_accept.append(ArchitecturalStructure.objects.get(pk=struct_id))
+    if person_id:
+        models_to_accept.append(Person.objects.get(pk=person_id))
+
+    for instance in models_to_accept:
+        if getattr(instance, "status", None) != "accepted":
+            instance.status = "accepted"
+            instance.save(update_fields=["status"])
+        label = getattr(instance, "name", None) or getattr(instance, "title", "")
+        ce = CulturalEntity.objects.filter(name=label).first()
+        if ce and ce.status != "accepted":
+            ce.accept_contribution(editor, "validate_contribution_pipeline publish")
+
+
 def _simulate_atlas_hydrate(api_lists: dict[str, list]) -> tuple[int, int]:
     """Mirror atlas-api-hydrate extractCoords + nodeToEntity."""
     entities = 0
@@ -214,7 +240,7 @@ class Command(BaseCommand):
                 f"status={getattr(ce, 'status', None)}",
             )
 
-        # ── RDF / Oxigraph (local store) ───────────────────────────────────
+        # ── RDF / Oxigraph (isolated store) + publish ───────────────────────
         if person_id:
             person = Person.objects.get(pk=person_id)
             person_cls = (get_effective_registry_payload().get("classes") or {}).get(
@@ -254,17 +280,35 @@ class Command(BaseCommand):
                         if not rdf_sync_enabled():
                             report.add("oxigraph_store", False, "RDF_SYNC_ENABLED off")
                         else:
-                            # Re-save to trigger signals into temp store
-                            person.description = person.description + " "
-                            person.save()
+                            # Publish inside isolated store (withheld while pending_review).
+                            _publish_seeded_records(
+                                loc_id=loc_id,
+                                struct_id=struct_id,
+                                person_id=person_id,
+                                editor=user,
+                            )
+                            report.add(
+                                "review_accept_publish",
+                                Person.objects.get(pk=person_id).status == "accepted",
+                                "CIDOC status=accepted + CulturalEntity.accept_contribution",
+                            )
                             from apps.graph.kg_engine import get_kg_engine
+                            from apps.graph.kg_engine.uris import cultural_entity_uri
 
+                            person = Person.objects.get(pk=person_id)
                             subj_uri = _resource_uri(person)
+                            ce = CulturalEntity.objects.filter(
+                                name=person_payload["name"]
+                            ).first()
+                            ce_uri = (
+                                cultural_entity_uri(ce.entity_id) if ce else subj_uri
+                            )
                             edges = get_kg_engine().neighborhood(subj_uri, limit=20)
+                            ce_edges = get_kg_engine().neighborhood(ce_uri, limit=20)
                             report.add(
                                 "oxigraph_store",
-                                len(edges) > 0,
-                                f"edge_count={len(edges)} subject={subj_uri}",
+                                len(edges) > 0 or len(ce_edges) > 0,
+                                f"cidoc_edges={len(edges)} ce_edges={len(ce_edges)}",
                             )
                             graph_res = client.get(
                                 "/api/v1/cidoc/kg/graph/",
@@ -279,7 +323,8 @@ class Command(BaseCommand):
                             }
                             report.add(
                                 "kg_graph_api",
-                                graph_ok and subj_uri in node_iris,
+                                graph_ok
+                                and (subj_uri in node_iris or ce_uri in node_iris),
                                 f"status={graph_res.status_code} nodes={len(node_iris)}",
                             )
 
@@ -290,18 +335,16 @@ class Command(BaseCommand):
             ("/api/v1/cidoc/structures/", "structure"),
             ("/api/v1/cidoc/persons/", "person"),
         ]:
-            list_res = client.get(path)
-            ok = list_res.status_code == 200
-            rows = []
-            if ok:
-                body = list_res.json()
-                rows = body.get("results") if isinstance(body, dict) else body
-                rows = rows if isinstance(rows, list) else []
+            rid = report.markers.get(f"{key}_id")
+            detail_res = client.get(f"{path}{rid}/") if rid else None
+            ok = detail_res is not None and detail_res.status_code == 200
+            row = detail_res.json() if ok else {}
+            rows = [row] if ok else []
             api_lists[key] = rows
             report.add(
                 f"api_list_{key}",
-                ok and any(str(r.get("id")) == report.markers.get(f"{key}_id") for r in rows if f"{key}_id" in report.markers),
-                f"count={len(rows)}",
+                ok and str(row.get("id")) == str(rid),
+                f"id={row.get('id')} status={row.get('status')}",
             )
 
         # Find our rows in list payloads

@@ -17,6 +17,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import identity_services
+from .list_visibility import apply_cidoc_list_visibility, apply_cidoc_retrieve_visibility
+from .pagination import HeritageLimitOffsetPagination
+from .publication_policy import is_published_for_rdf
 
 User = get_user_model()
 from .cidoc_registry_keys import registry_class_key_for_model
@@ -76,9 +79,26 @@ class ContributionFlowMixin:
       4. Creates a first Revision with the submitted data as JSON
       5. Fires notifications to the contributor and all active reviewers
 
+    On PATCH/PUT (update) of a published row:
+      Resets to pending_review and appends a Revision (re-review), matching create.
+
+    List/retrieve: published catalog by default (see ``list_visibility``).
+
     Validates create/update payloads against ``registry_jsonschema`` when a
     registry class key exists for the model (see ``cidoc_registry_keys``).
     """
+
+    pagination_class = HeritageLimitOffsetPagination
+    ordering_fields = ["created_at", "id", "name"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == "list":
+            return apply_cidoc_list_visibility(qs, self.request)
+        if self.action == "retrieve":
+            return apply_cidoc_retrieve_visibility(qs, self.request)
+        return qs
 
     def _payload_for_registry_validation(self, serializer, *, instance=None):
         """Build a dict of model field values suitable for JSON Schema validation."""
@@ -127,9 +147,126 @@ class ContributionFlowMixin:
             return [permissions.IsAuthenticated()]
         return [permissions.AllowAny()]
 
+    def _find_cultural_entity_for_instance(self, instance):
+        from django.db import connection
+
+        from apps.heritage_data.models import Revision
+
+        model_name = instance.__class__.__name__
+        cidoc_id = instance.pk
+
+        if connection.vendor == "postgresql":
+            rev = (
+                Revision.objects.filter(data__contains={"_cidoc_model": model_name})
+                .filter(data__contains={"_cidoc_id": cidoc_id})
+                .select_related("entity")
+                .order_by("-revision_number")
+                .first()
+            )
+            return rev.entity if rev else None
+
+        for rev in (
+            Revision.objects.select_related("entity").order_by("-revision_number")
+        ):
+            data = rev.data if isinstance(rev.data, dict) else {}
+            if (
+                data.get("_cidoc_model") == model_name
+                and data.get("_cidoc_id") == cidoc_id
+            ):
+                return rev.entity
+        return None
+
+    def _notify_review_resubmission(self, entity, instance, entity_name: str):
+        from apps.heritage_data.models import Notification
+
+        contributor_link = f"/knowledge/entity/view/{entity.entity_id}"
+        if instance.__class__.__name__ == "Source":
+            contributor_link = f"/knowledge/source/view/{instance.pk}"
+
+        Notification.objects.create(
+            user=self.request.user,
+            actor=self.request.user,
+            notification_type="submission_update",
+            message=f'Your edits to "{entity_name}" were saved and sent back for review.',
+            entity=entity,
+            link=contributor_link,
+        )
+        reviewer_users = User.objects.filter(
+            reviewer_role__is_active=True,
+        ).exclude(id=self.request.user.id)
+        for reviewer in reviewer_users:
+            Notification.objects.create(
+                user=reviewer,
+                actor=self.request.user,
+                notification_type="submission_update",
+                message=f'"{entity_name}" was edited after publication — awaiting re-review.',
+                entity=entity,
+                link=f"/curation/review/{entity.entity_id}",
+            )
+
+    def _resubmit_published_edit(self, instance, serializer):
+        from apps.heritage_data.models import Activity, CulturalEntity, Revision
+
+        entity_name = (
+            getattr(instance, "name", None)
+            or getattr(instance, "title", "")
+            or str(instance)
+        )
+        entity_description = getattr(instance, "description", "") or ""
+        category = _get_category_for_model(instance.__class__)
+
+        entity = self._find_cultural_entity_for_instance(instance)
+        if entity is None:
+            entity = CulturalEntity.objects.create(
+                name=entity_name,
+                description=entity_description,
+                category=category,
+                status="pending_review",
+                contributor=self.request.user,
+            )
+
+        revision_data = serializer.data.copy()
+        revision_data["_cidoc_model"] = instance.__class__.__name__
+        revision_data["_cidoc_id"] = instance.pk
+
+        latest = entity.get_latest_revision()
+        next_number = (latest.revision_number + 1) if latest else 1
+        revision = Revision.objects.create(
+            entity=entity,
+            data=revision_data,
+            revision_number=next_number,
+            created_by=self.request.user,
+        )
+        entity.status = "pending_review"
+        entity.current_revision = revision
+        entity.save(update_fields=["status", "current_revision"])
+
+        Activity.objects.create(
+            entity=entity,
+            user=self.request.user,
+            activity_type="submitted",
+            comment=f'Re-submitted "{entity_name}" after in-place edit',
+        )
+        self._notify_review_resubmission(entity, instance, entity_name)
+
     def perform_update(self, serializer):
         self._validate_registry_payload(serializer, instance=serializer.instance)
-        serializer.save()
+        instance = serializer.instance
+        was_public = is_published_for_rdf(instance)
+        updated = serializer.save()
+        if was_public:
+            updated.status = "pending_review"
+            updated.save(update_fields=["status"])
+            try:
+                self._resubmit_published_edit(updated, serializer)
+            except Exception:
+                import logging
+
+                logging.getLogger(__name__).exception(
+                    "Failed to re-queue published edit for %s pk=%s",
+                    updated.__class__.__name__,
+                    updated.pk,
+                )
 
     def perform_create(self, serializer):
         self._validate_registry_payload(serializer, instance=None)

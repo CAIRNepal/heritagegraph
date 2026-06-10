@@ -41,6 +41,35 @@ def submit_for_review(self):
         comment=f'Submitted "{self.name}" for review',
     )
 
+def _sync_linked_cidoc_status(entity, *, status: str) -> None:
+    """Keep CIDOC MetaData rows in sync when a wrapper CulturalEntity is decided."""
+    latest_revision = entity.get_latest_revision()
+    if not latest_revision:
+        return
+    data = latest_revision.data
+    if not isinstance(data, dict):
+        return
+    model_name = (data.get("_cidoc_model") or "").strip()
+    if not model_name:
+        return
+    cidoc_id = data.get("_cidoc_id")
+    if cidoc_id is None:
+        return
+    from django.apps import apps
+
+    try:
+        model = apps.get_model("cidoc_data", model_name)
+    except LookupError:
+        return
+    instance = model.objects.filter(pk=cidoc_id).first()
+    if instance is None:
+        return
+    if getattr(instance, "status", None) == status:
+        return
+    instance.status = status
+    instance.save(update_fields=["status"])
+
+
 def accept_contribution(self, editor, comment=None):
     """Accept the contribution and set it as published"""
     latest_revision = self.get_latest_revision()
@@ -48,7 +77,8 @@ def accept_contribution(self, editor, comment=None):
         self.current_revision = latest_revision
     self.status = 'accepted'
     self.save()
-    
+    _sync_linked_cidoc_status(self, status="accepted")
+
     # Log the activity
     Activity.objects.create(
         entity=self,
@@ -61,7 +91,8 @@ def reject_contribution(self, editor, comment):
     """Reject the contribution"""
     self.status = 'rejected'
     self.save()
-    
+    _sync_linked_cidoc_status(self, status="rejected")
+
     # Log the activity
     Activity.objects.create(
         entity=self,
