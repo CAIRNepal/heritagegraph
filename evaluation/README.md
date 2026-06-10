@@ -10,6 +10,12 @@ Place expert-annotated JSON under `evaluation/gold/`:
 ## Commands
 
 ```bash
+# Precision / recall / F1 vs the gold standard (type assignment, triples, alignment)
+python manage.py kg_evaluate \
+    --gold evaluation/gold/entities.json \
+    --alignments evaluation/gold/alignments.json \
+    --output evaluation/reports/evaluation.json
+
 python manage.py kg_quality_report --output evaluation/reports/latest.json
 python manage.py kg_verify
 python manage.py rdf_export_dump --output-dir ontology/lod/dumps

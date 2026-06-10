@@ -517,11 +517,25 @@ class FrontendContributionPipelineTest(TestCase):
                 # would deadlock on the RocksDB exclusive lock).
                 store = _open_local_store(store_path)
                 subj = NamedNode(subject_uri)
+
+                # Curation gate: an unpublished (freshly contributed) entity must
+                # NOT be projected to the public graph — only reviewed/published
+                # rows reach RDF (apps.cidoc_data.publication_policy).
+                pending = list(store.quads_for_pattern(subj, None, None, None))
+                self.assertEqual(
+                    len(pending),
+                    0,
+                    "Unpublished entity must not be projected before review",
+                )
+
+                # Once published, rdf_signals projects it into the local store.
+                person.status = "accepted"
+                person.save()
                 quads = list(store.quads_for_pattern(subj, None, None, None))
                 self.assertGreater(
                     len(quads),
                     0,
-                    "Expected rdf_signals to write triples into local Oxigraph store",
+                    "Expected rdf_signals to write triples once the entity is published",
                 )
 
                 person_cls = _registry_person_class()

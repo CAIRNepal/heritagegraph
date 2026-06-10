@@ -63,6 +63,7 @@ class LuxMuseumHelpersTest(SimpleTestCase):
         RDF_LUX_IMPORTED_GRAPH_URI="https://w3id.org/heritagegraph/imported/lux",
         RDF_LUX_LINKED_NODE_LIMIT=10,
         RDF_LUX_LABEL_MATCH_LIMIT=0,
+        RDF_LUX_SAMPLE_LIMIT=0,  # this test covers the linked-merge path only
     )
     @patch("apps.graph.kg_engine.lux_museum.fetch_graph_projection")
     @patch("apps.graph.kg_engine.lux_museum.discover_lux_links")
@@ -104,3 +105,36 @@ class LuxMuseumHelpersTest(SimpleTestCase):
         self.assertEqual(len(out["nodes"]), 2)
         self.assertEqual(len(out["edges"]), 1)
         self.assertIn("exactMatch", out["edges"][0]["p"])
+
+    @override_settings(
+        RDF_RESOURCE_BASE_URI="https://w3id.org/heritagegraph/resource/",
+        RDF_PUBLIC_GRAPH_URI="https://w3id.org/heritagegraph/graph/public",
+        RDF_LUX_IMPORTED_GRAPH_URI="https://w3id.org/heritagegraph/imported/lux",
+        RDF_LUX_SAMPLE_LIMIT=50,
+    )
+    @patch("apps.graph.kg_engine.lux_museum.fetch_graph_projection")
+    @patch("apps.graph.kg_engine.lux_museum.discover_lux_links")
+    def test_fetch_museum_projection_includes_connected_sample(
+        self, mock_discover, mock_curated
+    ):
+        """With no curated links, a connected LUX sample is still surfaced
+        (tagged as an external layer) so the museum can show Yale LUX."""
+        mock_curated.return_value = {"nodes": [], "edges": []}
+        mock_discover.return_value = []  # zero exactMatch links
+        a = "https://w3id.org/heritagegraph/imported/lux/person/a"
+        b = "https://w3id.org/heritagegraph/imported/lux/group/b"
+        store = MagicMock()
+        store.select.side_effect = [
+            # 1) connected-sample edges query
+            [{"s": a, "p": "https://linked.art/ns/terms/member_of", "o": b, "plabel": None}],
+            # 2) batched node-detail fetch (<=30 IRIs -> single batch)
+            [
+                {"s": a, "type": "https://w3id.org/heritagegraph/Person", "label": "A"},
+                {"s": b, "type": "https://w3id.org/heritagegraph/Group", "label": "B"},
+            ],
+        ]
+        out = fetch_museum_projection_with_lux(store=store)
+        self.assertEqual(len(out["lux_links"]), 0)
+        self.assertEqual(set(out["lux_sampled"]), {a, b})
+        self.assertEqual(len(out["nodes"]), 2)  # both LUX stubs surfaced
+        self.assertEqual(len(out["edges"]), 1)  # the sampled member_of edge
