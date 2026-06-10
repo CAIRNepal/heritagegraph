@@ -1,0 +1,3619 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/auth/AUTH_GUIDE/">
+      
+      
+        <link rel="prev" href="../AUTH_ROLES_DEVELOPER_GUIDE/">
+      
+      
+        <link rel="next" href="../../api/VERSIONING/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Adding providers - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#auth_guidemd-how-to-add-a-new-authentication-provider" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Adding providers
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#token-types-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token types (reference)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-auth-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Auth Modes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start-local-google-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start — Local Google sign-in
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-adding-a-new-oauth-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-Step: Adding a New OAuth Provider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-Step: Adding a New OAuth Provider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-get-oauth-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Get OAuth Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-add-to-frontend-nextauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Add to Frontend (NextAuth)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Add to Frontend (NextAuth)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2a-import-the-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2a. Import the provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2b-add-provider-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2b. Add provider detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2c-push-the-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2c. Push the provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2d-handle-the-token-in-the-jwt-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2d. Handle the token in the jwt callback
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2e-also-update-heritage_graph_uisrclibauthts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2e. Also update heritage_graph_ui/src/lib/auth.ts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-add-to-backend-django-drf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Add to Backend (Django DRF)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Add to Backend (Django DRF)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-for-a-new-auth-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template for a new auth backend:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-rules-for-the-backend-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key rules for the backend class:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-register-in-django-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Register in Django Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-add-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Add Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-add-makefile-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Add Makefile Command
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-test-end-to-end" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Test End-to-End
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-existing-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference: Existing Providers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference: Existing Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#credentials-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credentials (Dev)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#token-flow-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Flow Diagrams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Token Flow Diagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#google-oauth-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google OAuth Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-oauth-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub OAuth Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jwt-dev-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JWT Dev Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#invalid-character-or-unexpected-token-after-setting-env-vars" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Invalid character" or "Unexpected token" after setting env vars
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csrf-check-failed-callback-url-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "CSRF check failed" / "Callback URL mismatch"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#401-unauthorized-on-api-calls-after-successful-oauth-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "401 Unauthorized" on API calls after successful OAuth login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nextjs-server_error-on-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next.js "SERVER_ERROR" on sign-in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sign-in-shows-an-error-on-authlogin-backend_-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign-in shows an error on /auth/login (BACKEND_* codes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-banner-session-needs-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session banner: “Session needs attention”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wrong-api-path-after-login-404-on-test-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wrong API path after login (404 on “test” endpoints)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#could-not-retrieve-email-from-github" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Could not retrieve email" from GitHub
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django-user-created-with-wrong-username" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django user created with wrong username
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-switch-back-to-jwt-dev-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to switch back to JWT dev mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#token-types-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token types (reference)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#current-auth-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Auth Modes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start-local-google-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start — Local Google sign-in
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-adding-a-new-oauth-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-Step: Adding a New OAuth Provider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-Step: Adding a New OAuth Provider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-get-oauth-credentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Get OAuth Credentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-add-to-frontend-nextauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Add to Frontend (NextAuth)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Add to Frontend (NextAuth)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2a-import-the-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2a. Import the provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2b-add-provider-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2b. Add provider detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2c-push-the-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2c. Push the provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2d-handle-the-token-in-the-jwt-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2d. Handle the token in the jwt callback
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2e-also-update-heritage_graph_uisrclibauthts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2e. Also update heritage_graph_ui/src/lib/auth.ts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-add-to-backend-django-drf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Add to Backend (Django DRF)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Add to Backend (Django DRF)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#template-for-a-new-auth-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Template for a new auth backend:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-rules-for-the-backend-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key rules for the backend class:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-register-in-django-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Register in Django Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-add-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Add Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-add-makefile-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Add Makefile Command
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-test-end-to-end" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Test End-to-End
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-existing-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference: Existing Providers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reference: Existing Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#credentials-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credentials (Dev)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#token-flow-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Flow Diagrams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Token Flow Diagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#google-oauth-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google OAuth Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-oauth-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub OAuth Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jwt-dev-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JWT Dev Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#invalid-character-or-unexpected-token-after-setting-env-vars" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Invalid character" or "Unexpected token" after setting env vars
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csrf-check-failed-callback-url-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "CSRF check failed" / "Callback URL mismatch"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#401-unauthorized-on-api-calls-after-successful-oauth-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "401 Unauthorized" on API calls after successful OAuth login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nextjs-server_error-on-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next.js "SERVER_ERROR" on sign-in
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sign-in-shows-an-error-on-authlogin-backend_-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign-in shows an error on /auth/login (BACKEND_* codes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-banner-session-needs-attention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session banner: “Session needs attention”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wrong-api-path-after-login-404-on-test-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wrong API path after login (404 on “test” endpoints)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#could-not-retrieve-email-from-github" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Could not retrieve email" from GitHub
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django-user-created-with-wrong-username" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django user created with wrong username
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-switch-back-to-jwt-dev-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to switch back to JWT dev mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        File Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="auth_guidemd-how-to-add-a-new-authentication-provider">AUTH_GUIDE.md — How to Add a New Authentication Provider</h1>
+<blockquote>
+<p><strong>Audience:</strong> Developers who want to add a new OAuth provider (e.g., Facebook, Discord, Microsoft) to HeritageGraph.</p>
+<p><strong>Current main app:</strong> <code>heritage_graph_ui</code> ships with <strong>Google sign-in only</strong> in NextAuth (<code>src/lib/auth.ts</code>). Treat this guide as the pattern for <em>adding</em> another provider later; day-to-day setup is in <a href="../AUTH/">AUTH.md</a> and <code>make auth-setup</code>.</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#architecture-overview">Architecture Overview</a></li>
+<li><a href="#current-auth-modes">Current Auth Modes</a></li>
+<li><a href="#quick-start--switching-auth-modes">Quick Start — Switching Auth Modes</a></li>
+<li><a href="#step-by-step-adding-a-new-oauth-provider">Step-by-Step: Adding a New OAuth Provider</a></li>
+<li><a href="#step-1-get-oauth-credentials">Step 1: Get OAuth Credentials</a></li>
+<li><a href="#step-2-add-to-frontend-nextauth">Step 2: Add to Frontend (NextAuth)</a></li>
+<li><a href="#step-3-add-to-backend-django-drf">Step 3: Add to Backend (Django DRF)</a></li>
+<li><a href="#step-4-register-in-django-settings">Step 4: Register in Django Settings</a></li>
+<li><a href="#step-5-add-environment-variables">Step 5: Add Environment Variables</a></li>
+<li><a href="#step-6-add-makefile-command">Step 6: Add Makefile Command</a></li>
+<li><a href="#step-7-test-end-to-end">Step 7: Test End-to-End</a></li>
+<li><a href="#reference-existing-providers">Reference: Existing Providers</a></li>
+<li><a href="#token-flow-diagrams">Token Flow Diagrams</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ol>
+<hr />
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p>HeritageGraph auth has <strong>two layers</strong> — a <strong>frontend</strong> (NextAuth v4) and a <strong>backend</strong> (Django REST Framework). Every authenticaton flow follows the same pattern:</p>
+<pre><code>                  ┌──────────────────┐
+                  │  OAuth Provider  │
+   ┌─────────────►│  (e.g. Google)   │
+   │              └────────┬─────────┘
+   │                       │ Returns token (id_token / access_token)
+   │                       ▼
+┌──┴───────────┐   ┌──────────────┐   ┌──────────────────┐
+│   Browser    │   │  NextAuth    │   │  Django Backend   │
+│              │◄──┤  (Next.js)   ├──►│  (DRF)            │
+│              │   │              │   │                    │
+│              │   │  Stores      │   │  Verifies token,  │
+│              │   │  token in    │   │  creates/syncs     │
+│              │   │  JWT cookie  │   │  User + Profile    │
+└──────────────┘   └──────────────┘   └──────────────────┘
+</code></pre>
+<p><strong>Key principle:</strong> The frontend (NextAuth) handles the OAuth dance and stores the provider's token. The backend (Django) verifies that token on every API request. Each provider needs implementation on <strong>both</strong> sides.</p>
+<h3 id="token-types-reference">Token types (reference)</h3>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Token sent to Django</th>
+<th>Typical Django handler</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NextAuth + Google</strong></td>
+<td>Google OAuth <strong>access</strong> token</td>
+<td><code>GoogleTokenAuthentication</code> (userinfo check)</td>
+</tr>
+<tr>
+<td><strong>SimpleJWT</strong></td>
+<td>JWT <code>access</code></td>
+<td><code>JWTAuthentication</code></td>
+</tr>
+<tr>
+<td><strong>(Optional / future)</strong></td>
+<td>Other provider tokens</td>
+<td>Custom <code>BaseAuthentication</code> in <code>heritage_data</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="current-auth-modes">Current Auth Modes</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Next.js UI</strong></td>
+<td>Google only — <code>GOOGLE_CLIENT_ID</code> + <code>GOOGLE_CLIENT_SECRET</code> required for <code>/auth/login</code></td>
+</tr>
+<tr>
+<td><strong>Django</strong></td>
+<td>Ordered chain (Google, optional GitHub, session/JWT) — see <a href="../AUTH/">AUTH.md</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="quick-start-local-google-sign-in">Quick Start — Local Google sign-in</h2>
+<pre><code class="language-bash">make auth-setup \
+  GOOGLE_CLIENT_ID=123456.apps.googleusercontent.com \
+  GOOGLE_CLIENT_SECRET=GOCSPX-xxxxx
+
+# Same GOOGLE_CLIENT_ID on Django (heritage_graph/.env or your compose env)
+
+make backend    # Terminal 1
+make frontend   # Terminal 2
+# → http://localhost:3000/auth/login
+</code></pre>
+<p>API-only JWT access (no browser UI): <code>POST /api/token/</code> with Django username/password.</p>
+<pre><code class="language-bash">make auth-status   # shows whether frontend .env.local has Google vars
+</code></pre>
+<p><strong>Removed from the UI:</strong> <code>make auth-dev</code> (no OAuth), <code>make auth-github</code>, and combined <code>make auth-all</code> no longer add alternate NextAuth providers. Use <code>make auth-setup</code> only.</p>
+<hr />
+<h2 id="step-by-step-adding-a-new-oauth-provider">Step-by-Step: Adding a New OAuth Provider</h2>
+<p>Use this guide when you want to add a provider that isn't currently supported (e.g., Facebook, Discord, Microsoft, Twitter/X, GitLab).</p>
+<h3 id="step-1-get-oauth-credentials">Step 1: Get OAuth Credentials</h3>
+<p>Every OAuth provider requires you to register an "app" or "client" in their developer console:</p>
+<ol>
+<li>Go to the provider's developer settings</li>
+<li>Create a new OAuth application</li>
+<li>Note the <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+<li>Set the <strong>callback/redirect URL</strong> to:
+   <code>http://localhost:3000/api/auth/callback/&lt;provider_id&gt;</code>
+   For production:
+   <code>https://yourdomain.com/api/auth/callback/&lt;provider_id&gt;</code></li>
+</ol>
+<p>Common provider developer consoles:</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Developer Console URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Google</td>
+<td>https://console.cloud.google.com/apis/credentials</td>
+</tr>
+<tr>
+<td>GitHub</td>
+<td>https://github.com/settings/developers</td>
+</tr>
+<tr>
+<td>Facebook</td>
+<td>https://developers.facebook.com/apps/</td>
+</tr>
+<tr>
+<td>Discord</td>
+<td>https://discord.com/developers/applications</td>
+</tr>
+<tr>
+<td>Microsoft</td>
+<td>https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps</td>
+</tr>
+<tr>
+<td>GitLab</td>
+<td>https://gitlab.com/-/profile/applications</td>
+</tr>
+<tr>
+<td>Twitter/X</td>
+<td>https://developer.twitter.com/en/portal/projects-and-apps</td>
+</tr>
+</tbody>
+</table>
+<h3 id="step-2-add-to-frontend-nextauth">Step 2: Add to Frontend (NextAuth)</h3>
+<p>NextAuth has 60+ built-in providers. See the full list at:
+https://next-auth.js.org/providers/</p>
+<p><strong>File to edit:</strong> <code>heritage_graph_ui/src/lib/auth.ts</code> (and keep <code>src/app/api/auth/[...nextauth]/route.ts</code> importing <code>authOptions</code>)</p>
+<h4 id="2a-import-the-provider">2a. Import the provider</h4>
+<pre><code class="language-typescript">import MyProvider from &quot;next-auth/providers/&lt;provider_id&gt;&quot;;
+</code></pre>
+<h4 id="2b-add-provider-detection">2b. Add provider detection</h4>
+<pre><code class="language-typescript">const isMyProviderEnabled =
+  !!process.env.MY_PROVIDER_CLIENT_ID &amp;&amp; !!process.env.MY_PROVIDER_CLIENT_SECRET;
+</code></pre>
+<p>Ensure your new provider is registered in the <code>providers</code> array (today only Google is registered for the product app).</p>
+<h4 id="2c-push-the-provider">2c. Push the provider</h4>
+<pre><code class="language-typescript">if (isMyProviderEnabled) {
+  providers.push(
+    MyProvider({
+      clientId: process.env.MY_PROVIDER_CLIENT_ID!,
+      clientSecret: process.env.MY_PROVIDER_CLIENT_SECRET!,
+    })
+  );
+}
+</code></pre>
+<h4 id="2d-handle-the-token-in-the-jwt-callback">2d. Handle the token in the <code>jwt</code> callback</h4>
+<p>Different providers return different token types:
+- <strong>ID token providers</strong> (Google, Microsoft): Use <code>account.id_token</code>
+- <strong>Access token providers</strong> (GitHub, Facebook, Discord): Use <code>account.access_token</code></p>
+<pre><code class="language-typescript">async jwt({ token, user, account }) {
+  // ... existing code ...
+  } else if (account?.provider === &quot;&lt;provider_id&gt;&quot;) {
+    // Use id_token or access_token depending on the provider
+    token.accessToken = account.access_token; // or account.id_token
+    token.authProvider = &quot;&lt;provider_id&gt;&quot;;
+  }
+  // ...
+}
+</code></pre>
+<h4 id="2e-also-update-heritage_graph_uisrclibauthts">2e. Also update <code>heritage_graph_ui/src/lib/auth.ts</code></h4>
+<p>This file mirrors the route handler and is used for <code>getServerSession()</code>. Apply the same changes there.</p>
+<h3 id="step-3-add-to-backend-django-drf">Step 3: Add to Backend (Django DRF)</h3>
+<p><strong>File to edit:</strong> <code>heritage_graph/apps/heritage_data/authentication.py</code></p>
+<p>Create a new authentication class that:
+1. Reads the <code>Authorization: Bearer &lt;token&gt;</code> header
+2. Verifies the token with the provider's API
+3. Extracts user info (email, name)
+4. Creates or syncs a Django <code>User</code> + <code>UserProfile</code>
+5. Returns <code>(user, None)</code> if valid, or <code>None</code> if the token isn't for this provider</p>
+<h4 id="template-for-a-new-auth-backend">Template for a new auth backend:</h4>
+<pre><code class="language-python"># ====================================================================
+# Production Authentication — &lt;ProviderName&gt; OAuth
+# ====================================================================
+
+MY_PROVIDER_CLIENT_ID = os.environ.get(&quot;MY_PROVIDER_CLIENT_ID&quot;, &quot;&quot;)
+
+
+class MyProviderTokenAuthentication(authentication.BaseAuthentication):
+    &quot;&quot;&quot;
+    Authenticate requests using &lt;ProviderName&gt; OAuth tokens.
+    &quot;&quot;&quot;
+
+    def authenticate(self, request):
+        auth_header = request.headers.get(&quot;Authorization&quot;)
+        if not auth_header or not auth_header.startswith(&quot;Bearer &quot;):
+            return None
+
+        # Skip if provider is not configured
+        if not MY_PROVIDER_CLIENT_ID:
+            return None
+
+        token = auth_header.split(&quot; &quot;)[1]
+
+        # ── Verify the token with the provider ──
+        # Option A: For access tokens — call the provider's user info API
+        try:
+            resp = http_requests.get(
+                &quot;https://provider.example.com/api/userinfo&quot;,
+                headers={&quot;Authorization&quot;: f&quot;Bearer {token}&quot;},
+                timeout=10,
+            )
+        except http_requests.RequestException:
+            return None
+
+        if resp.status_code != 200:
+            return None  # Not a token for this provider — let next auth class try
+
+        user_data = resp.json()
+
+        # Option B: For ID tokens (JWT) — verify the signature
+        # import jwt
+        # payload = jwt.decode(token, options={&quot;verify_signature&quot;: True}, ...)
+
+        # ── Extract user info ──
+        email = user_data.get(&quot;email&quot;)
+        if not email:
+            raise exceptions.AuthenticationFailed(&quot;Token missing email.&quot;)
+
+        first_name = user_data.get(&quot;first_name&quot;, &quot;&quot;)
+        last_name = user_data.get(&quot;last_name&quot;, &quot;&quot;)
+
+        # ── Map to Django user ──
+        username = email
+
+        user, created = User.objects.get_or_create(
+            username=username,
+            defaults={&quot;email&quot;: email},
+        )
+
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+
+        if created:
+            logger.info(&quot;Created new user from &lt;Provider&gt; sign-in: %s&quot;, email)
+
+        # ── Sync UserProfile ──
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        profile.first_name = first_name
+        profile.last_name = last_name
+        profile.email = email
+        profile.save()
+
+        return (user, None)
+</code></pre>
+<h4 id="key-rules-for-the-backend-class">Key rules for the backend class:</h4>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Return <code>None</code> if <code>MY_PROVIDER_CLIENT_ID</code> is not set</td>
+<td>Skip gracefully when provider isn't configured</td>
+</tr>
+<tr>
+<td>Return <code>None</code> if the provider rejects the token</td>
+<td>Let the next auth class in the chain try</td>
+</tr>
+<tr>
+<td><strong>Raise</strong> <code>AuthenticationFailed</code> only for verified-but-invalid tokens</td>
+<td>E.g., email missing, email not verified</td>
+</tr>
+<tr>
+<td>Use <code>get_or_create</code> for Users</td>
+<td>Auto-create on first login</td>
+</tr>
+<tr>
+<td>Always sync <code>UserProfile</code></td>
+<td>Downstream code expects it to exist</td>
+</tr>
+<tr>
+<td>Use <code>username = email</code></td>
+<td>Consistent with Google/GitHub backends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="step-4-register-in-django-settings">Step 4: Register in Django Settings</h3>
+<p>Add your new class to the DRF authentication chain in <strong>both</strong> settings files:</p>
+<p><strong><code>heritage_graph/settings/development.py</code>:</strong></p>
+<pre><code class="language-python">REST_FRAMEWORK[&quot;DEFAULT_AUTHENTICATION_CLASSES&quot;] = (
+    &quot;apps.heritage_data.authentication.DevSessionAuthentication&quot;,
+    &quot;apps.heritage_data.authentication.GoogleTokenAuthentication&quot;,
+    &quot;apps.heritage_data.authentication.GitHubTokenAuthentication&quot;,
+    &quot;apps.heritage_data.authentication.MyProviderTokenAuthentication&quot;,  # ← ADD
+    &quot;rest_framework_simplejwt.authentication.JWTAuthentication&quot;,
+)
+</code></pre>
+<p><strong><code>heritage_graph/settings/production.py</code>:</strong></p>
+<pre><code class="language-python">REST_FRAMEWORK[&quot;DEFAULT_AUTHENTICATION_CLASSES&quot;] = (
+    &quot;apps.heritage_data.authentication.GoogleTokenAuthentication&quot;,
+    &quot;apps.heritage_data.authentication.GitHubTokenAuthentication&quot;,
+    &quot;apps.heritage_data.authentication.MyProviderTokenAuthentication&quot;,  # ← ADD
+    &quot;rest_framework_simplejwt.authentication.JWTAuthentication&quot;,
+)
+</code></pre>
+<blockquote>
+<p><strong>Order matters:</strong> Put custom providers BEFORE <code>JWTAuthentication</code> because SimpleJWT raises <code>AuthenticationFailed</code> for any invalid JWT, which stops the chain. Custom providers return <code>None</code> to pass through.</p>
+</blockquote>
+<h3 id="step-5-add-environment-variables">Step 5: Add Environment Variables</h3>
+<p>Update <strong>three</strong> files:</p>
+<ol>
+<li><strong>Root</strong> <code>.env.example</code> — Add the backend env vars</li>
+<li><strong>Frontend</strong> <code>heritage_graph_ui/.env.example</code> — Add the NextAuth env vars</li>
+<li><strong>Backend</strong> <code>heritage_graph/.env.example</code> — Add the verification env vars</li>
+</ol>
+<p>Example:</p>
+<pre><code class="language-dotenv"># .env.example (root)
+MY_PROVIDER_CLIENT_ID=your-client-id
+MY_PROVIDER_CLIENT_SECRET=your-client-secret
+
+# heritage_graph_ui/.env.example
+MY_PROVIDER_CLIENT_ID=your-client-id
+MY_PROVIDER_CLIENT_SECRET=your-client-secret
+
+# heritage_graph/.env.example
+MY_PROVIDER_CLIENT_ID=your-client-id
+</code></pre>
+<blockquote>
+<p><strong>Naming convention:</strong> NextAuth uses specific env var names for some providers. Check the <a href="https://next-auth.js.org/providers/">NextAuth provider docs</a> for the expected names. For example, GitHub uses <code>GITHUB_ID</code> and <code>GITHUB_SECRET</code>.</p>
+</blockquote>
+<h3 id="step-6-add-makefile-command">Step 6: Add Makefile Command</h3>
+<p>Add a new target in the <code>Makefile</code> under the <code>AUTHENTICATION</code> section:</p>
+<pre><code class="language-makefile">auth-myprovider: ## Enable MyProvider OAuth
+    @echo &quot;==&gt; Configuring MyProvider OAuth...&quot;
+    @if [ -z &quot;$(MY_PROVIDER_CLIENT_ID)&quot; ] || [ -z &quot;$(MY_PROVIDER_CLIENT_SECRET)&quot; ]; then \
+        echo &quot;&quot;; \
+        echo &quot;  Usage: make auth-myprovider MY_PROVIDER_CLIENT_ID=xxx MY_PROVIDER_CLIENT_SECRET=yyy&quot;; \
+        echo &quot;&quot;; \
+        echo &quot;  Get credentials from: https://provider.example.com/developers&quot;; \
+        echo &quot;  Set callback URL to:  http://localhost:3000/api/auth/callback/myprovider&quot;; \
+        echo &quot;&quot;; \
+        exit 1; \
+    fi
+    @rm -f $(FRONTEND_ENV)
+    @echo '# Auth mode: MyProvider OAuth' &gt; $(FRONTEND_ENV)
+    @echo 'NEXTAUTH_URL=http://localhost:3000' &gt;&gt; $(FRONTEND_ENV)
+    @echo &quot;NEXTAUTH_SECRET=$$(openssl rand -base64 32)&quot; &gt;&gt; $(FRONTEND_ENV)
+    @echo 'NEXT_PUBLIC_API_URL=http://localhost:8000' &gt;&gt; $(FRONTEND_ENV)
+    @echo &quot;MY_PROVIDER_CLIENT_ID=$(MY_PROVIDER_CLIENT_ID)&quot; &gt;&gt; $(FRONTEND_ENV)
+    @echo &quot;MY_PROVIDER_CLIENT_SECRET=$(MY_PROVIDER_CLIENT_SECRET)&quot; &gt;&gt; $(FRONTEND_ENV)
+    @echo &quot;&quot;
+    @echo &quot;  ✓ Auth mode: MyProvider OAuth&quot;
+    @echo &quot;&quot;
+</code></pre>
+<p>Also update:
+- The <code>.PHONY</code> list at the top
+- The <code>help</code> target to show the new command
+- The <code>auth-status</code> target to check for the new env var
+- The <code>auth-all</code> target if it should also include the new provider</p>
+<h3 id="step-7-test-end-to-end">Step 7: Test End-to-End</h3>
+<pre><code class="language-bash"># 1. Set up the provider
+make auth-myprovider MY_PROVIDER_CLIENT_ID=xxx MY_PROVIDER_CLIENT_SECRET=yyy
+
+# 2. Set backend env
+echo &quot;MY_PROVIDER_CLIENT_ID=xxx&quot; &gt;&gt; heritage_graph/.env
+
+# 3. Start servers
+make backend   # Terminal 1
+make frontend  # Terminal 2
+
+# 4. Open http://localhost:3000
+#    → Click &quot;Sign in with MyProvider&quot;
+#    → Should redirect to provider → back to app
+
+# 5. Verify Django user was created
+make shell
+&gt;&gt;&gt; from django.contrib.auth.models import User
+&gt;&gt;&gt; User.objects.last()
+
+# 6. Verify API call works
+# From the browser console or another component, check that
+# fetch() with the Bearer token returns 200, not 401.
+
+# 7. Check auth status
+make auth-status
+</code></pre>
+<hr />
+<h2 id="reference-existing-providers">Reference: Existing Providers</h2>
+<h3 id="credentials-dev">Credentials (Dev)</h3>
+<ul>
+<li><strong>Frontend:</strong> <code>CredentialsProvider</code> in NextAuth — calls <code>POST /api/token/</code> with username/password</li>
+<li><strong>Backend:</strong> <code>DevSessionAuthentication</code> + <code>JWTAuthentication</code></li>
+<li><strong>Token:</strong> SimpleJWT access token</li>
+<li><strong>Login page:</strong> <code>/auth/login</code></li>
+<li><strong>No external setup needed</strong></li>
+</ul>
+<h3 id="google-oauth">Google OAuth</h3>
+<ul>
+<li><strong>Frontend:</strong> <code>GoogleProvider</code> in NextAuth</li>
+<li><strong>Backend:</strong> <code>GoogleTokenAuthentication</code> — verifies with <code>google.oauth2.id_token.verify_oauth2_token()</code></li>
+<li><strong>Token type:</strong> Google ID token (JWT signed by Google)</li>
+<li><strong>Env vars (frontend):</strong> <code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code></li>
+<li><strong>Env vars (backend):</strong> <code>GOOGLE_CLIENT_ID</code></li>
+<li><strong>Callback URL:</strong> <code>/api/auth/callback/google</code></li>
+<li><strong>Console:</strong> https://console.cloud.google.com/apis/credentials</li>
+</ul>
+<h3 id="github-oauth">GitHub OAuth</h3>
+<ul>
+<li><strong>Frontend:</strong> <code>GitHubProvider</code> in NextAuth</li>
+<li><strong>Backend:</strong> <code>GitHubTokenAuthentication</code> — verifies by calling <code>https://api.github.com/user</code></li>
+<li><strong>Token type:</strong> GitHub access token (opaque string)</li>
+<li><strong>Env vars (frontend):</strong> <code>GITHUB_ID</code>, <code>GITHUB_SECRET</code></li>
+<li><strong>Env vars (backend):</strong> <code>GITHUB_CLIENT_ID</code>, <code>GITHUB_CLIENT_SECRET</code></li>
+<li><strong>Callback URL:</strong> <code>/api/auth/callback/github</code></li>
+<li><strong>Console:</strong> https://github.com/settings/developers → OAuth Apps</li>
+</ul>
+<hr />
+<h2 id="token-flow-diagrams">Token Flow Diagrams</h2>
+<h3 id="google-oauth-flow">Google OAuth Flow</h3>
+<pre><code>Browser → NextAuth → Google OAuth consent screen
+                     ↓
+              Google returns: { id_token, access_token }
+                     ↓
+              NextAuth stores id_token in JWT cookie
+                     ↓
+Browser → fetch(&quot;/data/api/...&quot;, { Authorization: &quot;Bearer &lt;id_token&gt;&quot; })
+                     ↓
+Django → GoogleTokenAuthentication
+         → google.oauth2.id_token.verify_oauth2_token(id_token, GOOGLE_CLIENT_ID)
+         → Extracts email, name from JWT claims
+         → User.objects.get_or_create(username=email)
+         → Returns (user, None)
+</code></pre>
+<h3 id="github-oauth-flow">GitHub OAuth Flow</h3>
+<pre><code>Browser → NextAuth → GitHub OAuth authorization page
+                     ↓
+              GitHub returns: { access_token }
+                     ↓
+              NextAuth stores access_token in JWT cookie
+                     ↓
+Browser → fetch(&quot;/data/api/...&quot;, { Authorization: &quot;Bearer &lt;access_token&gt;&quot; })
+                     ↓
+Django → GitHubTokenAuthentication
+         → GET https://api.github.com/user  (with Bearer token)
+         → Extracts login, email, name from response
+         → User.objects.get_or_create(username=email)
+         → Returns (user, None)
+</code></pre>
+<h3 id="jwt-dev-flow">JWT Dev Flow</h3>
+<pre><code>Browser → /auth/login → POST /api/token/ { username, password }
+                         ↓
+                  SimpleJWT returns { access, refresh }
+                         ↓
+                  NextAuth stores access in JWT cookie
+                         ↓
+Browser → fetch(&quot;/data/api/...&quot;, { Authorization: &quot;Bearer &lt;jwt_access&gt;&quot; })
+                         ↓
+Django → JWTAuthentication (SimpleJWT)
+         → Verifies JWT signature with Django SECRET_KEY
+         → Extracts user_id from token payload
+         → Returns (user, None)
+</code></pre>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="invalid-character-or-unexpected-token-after-setting-env-vars">"Invalid character" or "Unexpected token" after setting env vars</h3>
+<p>The <code>.env.local</code> file may have special characters. Make sure env values don't have quotes:</p>
+<pre><code class="language-dotenv"># ✅ Correct
+GITHUB_ID=Ov23lixxx
+
+# ❌ Wrong
+GITHUB_ID=&quot;Ov23lixxx&quot;
+</code></pre>
+<h3 id="csrf-check-failed-callback-url-mismatch">"CSRF check failed" / "Callback URL mismatch"</h3>
+<p>Your OAuth app's callback URL must <strong>exactly</strong> match what NextAuth expects:</p>
+<pre><code>http://localhost:3000/api/auth/callback/&lt;provider_id&gt;
+</code></pre>
+<p>For production:</p>
+<pre><code>https://yourdomain.com/api/auth/callback/&lt;provider_id&gt;
+</code></pre>
+<h3 id="401-unauthorized-on-api-calls-after-successful-oauth-login">"401 Unauthorized" on API calls after successful OAuth login</h3>
+<p>Check that:
+1. The <strong>backend</strong> env var for the provider is set (e.g., <code>GITHUB_CLIENT_ID</code> in <code>heritage_graph/.env</code>)
+2. The auth class is listed in <code>REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"]</code> in your settings file
+3. The auth class is listed <strong>before</strong> <code>JWTAuthentication</code> in the chain</p>
+<h3 id="nextjs-server_error-on-sign-in">Next.js "SERVER_ERROR" on sign-in</h3>
+<p>Check the Next.js server logs (terminal running <code>make frontend</code>). Common causes:
+- Missing <code>NEXTAUTH_SECRET</code> — generate one: <code>openssl rand -base64 32</code>
+- Missing <code>NEXTAUTH_URL</code> — should be <code>http://localhost:3000</code></p>
+<h3 id="sign-in-shows-an-error-on-authlogin-backend_-codes">Sign-in shows an error on <code>/auth/login</code> (<code>BACKEND_*</code> codes)</h3>
+<p>After OAuth, NextAuth verifies the token against Django (<code>GET /data/api/testme/</code>). The login page maps query param <code>error</code> to user-visible text (see <code>src/lib/auth-errors.ts</code>):</p>
+<table>
+<thead>
+<tr>
+<th><code>error</code> value</th>
+<th>Typical cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BACKEND_REJECTED</code></td>
+<td><code>401</code>/<code>403</code> from Django — mismatched <code>GOOGLE_CLIENT_ID</code> (frontend vs backend), wrong <code>DJANGO_ENV</code>, or backend not accepting the provider token</td>
+</tr>
+<tr>
+<td><code>BACKEND_HANDSHAKE_NOT_FOUND</code></td>
+<td><code>404</code> on <code>GET /data/api/testme/</code> — wrong internal API base URL, proxy routing, or path</td>
+</tr>
+<tr>
+<td><code>BACKEND_UNAVAILABLE</code></td>
+<td>Django returned <code>5xx</code> during the handshake (retries apply to <code>502</code>/<code>503</code>/<code>504</code>/<code>429</code>)</td>
+</tr>
+<tr>
+<td><code>BACKEND_UNREACHABLE</code></td>
+<td>Next.js could not reach <code>INTERNAL_BACKEND_URL</code> (Docker: use <code>http://backend:8000</code>, not <code>localhost</code>)</td>
+</tr>
+<tr>
+<td><code>BACKEND_SYNC</code></td>
+<td>Other HTTP errors during the handshake (e.g. <code>400</code> <strong>DisallowedHost</strong>) — check API logs and Next.js server logs for <code>[next-auth] Django handshake non-OK response</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="session-banner-session-needs-attention">Session banner: “Session needs attention”</h3>
+<p>If <code>session.error</code> is set (e.g. <code>RefreshAccessTokenError</code> after Google token refresh fails), the app shows <code>AuthSessionMonitor</code> and <strong>Sign in again</strong>. See <strong>Errors and Recovery</strong> in <a href="../AUTH/">AUTH.md</a>.</p>
+<h3 id="wrong-api-path-after-login-404-on-test-endpoints">Wrong API path after login (404 on “test” endpoints)</h3>
+<p>Authenticated checks must use the real routes: <strong><code>/data/api/testme/</code></strong> and <strong><code>GET /data/api/testthelogin</code></strong> (not <code>/data/testme/</code> or <code>/data/testthelogin</code> without <code>api/</code>).</p>
+<h3 id="could-not-retrieve-email-from-github">"Could not retrieve email" from GitHub</h3>
+<p>Some GitHub users have private emails. The <code>GitHubTokenAuthentication</code> backend already handles this by calling <code>/user/emails</code>, but the GitHub OAuth app must request the <code>user:email</code> scope. NextAuth's GitHub provider does this by default.</p>
+<h3 id="django-user-created-with-wrong-username">Django user created with wrong username</h3>
+<p>All OAuth backends use <code>username = email</code> for consistency. If a user signs in with Google first and GitHub second (with the same email), they'll map to the same Django user — this is intentional.</p>
+<h3 id="how-to-switch-back-to-jwt-dev-mode">How to switch back to JWT dev mode</h3>
+<pre><code class="language-bash">make auth-dev
+</code></pre>
+<p>This clears the OAuth env vars and switches back to username/password login.</p>
+<hr />
+<h2 id="file-reference">File Reference</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts</code></td>
+<td>NextAuth route handler — provider selection + callbacks</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/lib/auth.ts</code></td>
+<td>NextAuth config for <code>getServerSession()</code></td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/app/auth/login/page.tsx</code></td>
+<td>OAuth entry + <code>?error=</code> display and retry</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/app/auth/error/page.tsx</code></td>
+<td>NextAuth error page (<code>pages.error</code>)</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/lib/auth-errors.ts</code></td>
+<td>User-facing auth error strings</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/components/auth-session-monitor.tsx</code></td>
+<td>Banner when session/JWT has <code>error</code></td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/types/next-auth.d.ts</code></td>
+<td>TypeScript type augmentations</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/heritage_data/authentication.py</code></td>
+<td>Django DRF auth backends (all providers)</td>
+</tr>
+<tr>
+<td><code>heritage_graph/settings/development.py</code></td>
+<td>Dev DRF auth class chain</td>
+</tr>
+<tr>
+<td><code>heritage_graph/settings/production.py</code></td>
+<td>Prod DRF auth class chain</td>
+</tr>
+<tr>
+<td><code>Makefile</code></td>
+<td><code>make auth-*</code> commands for switching providers</td>
+</tr>
+<tr>
+<td><code>.env.example</code> (root)</td>
+<td>Full env var template</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/.env.example</code></td>
+<td>Frontend env var template</td>
+</tr>
+<tr>
+<td><code>heritage_graph/.env.example</code></td>
+<td>Backend env var template</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

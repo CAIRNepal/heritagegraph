@@ -1,0 +1,4360 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/deployment/DEPLOYMENT/">
+      
+      
+        <link rel="prev" href="../../api/VERSIONING/">
+      
+      
+        <link rel="next" href="../DOKPLOY/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Production - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#heritagegraph-deployment-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Production
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dokploy-compose-and-ci-redeploy-hook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dokploy compose and CI redeploy hook
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#domain-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain Routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-requirements-ubuntu-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Requirements (Ubuntu VM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-you-need-before-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What You Need Before Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start (Development)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-deployment-on-heritagegraphxyz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Deployment on heritagegraph.xyz
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Production Deployment on heritagegraph.xyz">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-prepare-the-ubuntu-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Prepare the Ubuntu VM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1: Prepare the Ubuntu VM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1a-system-updates-essentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1a. System updates &amp; essentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1b-install-docker-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1b. Install Docker Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1c-create-a-deploy-user-recommended-dont-run-as-root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1c. Create a deploy user (recommended — don't run as root)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1d-configure-firewall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1d. Configure firewall
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-configure-dns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Configure DNS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Configure DNS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-dns-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify DNS propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-clone-configure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Clone &amp; Configure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Clone &amp; Configure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3a-create-the-env-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3a. Create the .env file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3b-prepare-lets-encrypt-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3b. Prepare Let's Encrypt directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-build-launch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Build &amp; Launch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-verify-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Verify Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: Verify Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-each-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test each service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-in-browser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test in browser
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-google-oauth-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Google OAuth Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#post-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-a-convenience-alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create a convenience alias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-up-automatic-database-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set up automatic database backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-up-automatic-docker-log-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set up automatic Docker log rotation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-up-automatic-security-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set up automatic security updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-the-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updating the Application
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating the Application">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-update-pull-latest-code-rebuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard update (pull latest code + rebuild)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-a-single-service-eg-backend-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update a single service (e.g., backend only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup &amp; Recovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backup &amp; Recovery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-database-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual database backup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restore-database-from-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restore database from backup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-restore-volumes-full-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup &amp; restore volumes (full system)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring &amp; Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring &amp; Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#traefik-not-issuing-certificates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traefik not issuing certificates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-wont-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container won't start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-connection-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database connection errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-shows-502-bad-gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend shows 502 Bad Gateway
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-oauth-not-working" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google OAuth not working
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#out-of-disk-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of disk space
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Hardening
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Hardening">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-ssh-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. SSH hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-fail2ban-block-brute-force-attempts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Fail2ban (block brute-force attempts)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-secret-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Secret management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-cors-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. CORS configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-regular-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Regular updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-monitor-for-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Monitor for issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands cheat sheet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-urls-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service URLs (Production)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-urls-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service URLs (Development)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support &amp; Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dokploy-compose-and-ci-redeploy-hook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dokploy compose and CI redeploy hook
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#domain-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Domain Routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-requirements-ubuntu-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Requirements (Ubuntu VM)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-you-need-before-starting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What You Need Before Starting
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start (Development)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-deployment-on-heritagegraphxyz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Deployment on heritagegraph.xyz
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Production Deployment on heritagegraph.xyz">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-prepare-the-ubuntu-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Prepare the Ubuntu VM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1: Prepare the Ubuntu VM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1a-system-updates-essentials" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1a. System updates &amp; essentials
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1b-install-docker-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1b. Install Docker Engine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1c-create-a-deploy-user-recommended-dont-run-as-root" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1c. Create a deploy user (recommended — don't run as root)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1d-configure-firewall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1d. Configure firewall
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-configure-dns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Configure DNS
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: Configure DNS">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-dns-propagation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify DNS propagation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-clone-configure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Clone &amp; Configure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Clone &amp; Configure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3a-create-the-env-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3a. Create the .env file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3b-prepare-lets-encrypt-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3b. Prepare Let's Encrypt directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-build-launch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Build &amp; Launch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-verify-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Verify Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: Verify Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-each-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test each service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-in-browser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test in browser
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-google-oauth-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Google OAuth Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#post-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-a-convenience-alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create a convenience alias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-up-automatic-database-backups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set up automatic database backups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-up-automatic-docker-log-rotation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set up automatic Docker log rotation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set-up-automatic-security-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Set up automatic security updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#updating-the-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Updating the Application
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Updating the Application">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-update-pull-latest-code-rebuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard update (pull latest code + rebuild)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-a-single-service-eg-backend-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update a single service (e.g., backend only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backup-recovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup &amp; Recovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backup &amp; Recovery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#manual-database-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual database backup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#restore-database-from-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restore database from backup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backup-restore-volumes-full-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backup &amp; restore volumes (full system)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring &amp; Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Monitoring &amp; Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health checks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#traefik-not-issuing-certificates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Traefik not issuing certificates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#container-wont-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container won't start
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#database-connection-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database connection errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-shows-502-bad-gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend shows 502 Bad Gateway
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#google-oauth-not-working" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Google OAuth not working
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#out-of-disk-space" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of disk space
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Hardening
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Hardening">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-ssh-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. SSH hardening
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-fail2ban-block-brute-force-attempts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Fail2ban (block brute-force attempts)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-secret-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Secret management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-cors-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. CORS configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-regular-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Regular updates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-monitor-for-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Monitor for issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#commands-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands cheat sheet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-urls-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service URLs (Production)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-urls-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service URLs (Development)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Support &amp; Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="heritagegraph-deployment-guide">🚀 HeritageGraph Deployment Guide</h1>
+<blockquote>
+<p><strong>Domain:</strong> <code>heritagegraph.xyz</code> — Ubuntu cloud VM with Docker Compose + Traefik + Let's Encrypt</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">📋 Table of Contents</h2>
+<ul>
+<li><a href="#architecture-overview">Architecture Overview</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#quick-start-development">Quick Start (Development)</a></li>
+<li><a href="#production-deployment-on-heritagegraphxyz">Production Deployment on heritagegraph.xyz</a></li>
+<li><a href="#step-1-prepare-the-ubuntu-vm">Step 1: Prepare the Ubuntu VM</a></li>
+<li><a href="#step-2-configure-dns">Step 2: Configure DNS</a></li>
+<li><a href="#step-3-clone--configure">Step 3: Clone &amp; Configure</a></li>
+<li><a href="#step-4-build--launch">Step 4: Build &amp; Launch</a></li>
+<li><a href="#step-5-verify-deployment">Step 5: Verify Deployment</a></li>
+<li><a href="#step-6-google-oauth-setup">Step 6: Google OAuth Setup</a></li>
+<li><a href="#post-deployment">Post-Deployment</a></li>
+<li><a href="#updating-the-application">Updating the Application</a></li>
+<li><a href="#backup--recovery">Backup &amp; Recovery</a></li>
+<li><a href="#monitoring--logs">Monitoring &amp; Logs</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#security-hardening">Security Hardening</a></li>
+<li><a href="#quick-reference">Quick Reference</a></li>
+<li><a href="#dokploy-compose-and-ci-redeploy-hook">Dokploy compose and CI redeploy hook</a></li>
+</ul>
+<hr />
+<h2 id="dokploy-compose-and-ci-redeploy-hook">Dokploy compose and CI redeploy hook</h2>
+<p>The same application stack can run on managed PaaS platforms. Platform-specific runbooks:
+<strong><a href="../DOKPLOY/">Dokploy</a></strong> (<code>docker-compose-dokploy.yml</code>) and
+<strong><a href="../deploy_on_coolify/">Coolify</a></strong> — both terminate TLS and route to
+the containers; follow them for secrets, domains, and migrations.</p>
+<p>When <strong><code>v1</code></strong> advances on GitHub, redeploy Dokploy automatically by either:</p>
+<ol>
+<li><strong>GitHub Actions (recommended, only <code>v1</code> pushes)</strong> — Workflow <a href="../../.github/workflows/dokploy-deploy.yml"><code>.github/workflows/dokploy-deploy.yml</code></a> POSTs the Dokploy <strong>Deployments → Webhook URL</strong> if the Actions secret <strong><code>DOKPLOY_WEBHOOK_URL</code></strong> is set (<a href="../DOKPLOY/#automatic-redeploy-on-v1"><strong>DOKPLOY.md – Automatic redeploy on <code>v1</code></strong></a>), or  </li>
+<li><strong>GitHub repository webhook</strong> — Use the same URL in <strong>Settings → Webhooks</strong> (<a href="../DOKPLOY/"><strong>DOKPLOY.md</strong></a>: do not duplicate with the Actions secret or you trigger two deploys).</li>
+</ol>
+<hr />
+<h2 id="architecture-overview">Architecture Overview</h2>
+<pre><code>                    Internet
+                       │
+                       ▼
+              ┌─────────────────┐
+              │   heritagegraph │
+              │       .xyz      │
+              │   (Ubuntu VM)   │
+              └────────┬────────┘
+                       │ :80 / :443
+              ┌────────▼────────┐
+              │     Traefik     │  ← Reverse proxy + auto HTTPS (Let's Encrypt)
+              │  (entry point)  │
+              └────────┬────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        ▼              ▼              ▼
+   ┌─────────┐   ┌─────────┐   ┌─────────┐
+   │Frontend │   │ Backend │   │ Landing │
+   │Next.js  │   │ Django  │   │Next.js  │
+   │  :3000  │   │  :8000  │   │  :3000  │
+   └─────────┘   └────┬────┘   └─────────┘
+                       │
+           ┌──────────┼──────────┐
+           ▼          ▼          ▼
+      ┌─────────┐ ┌────────┐ ┌──────────┐
+      │PostgreSQL│ │ Redis  │ │ Oxigraph │
+      │  :5432   │ │ :6379  │ │  :7878   │
+      └─────────┘ └────────┘ └──────────┘
+</code></pre>
+<p>Active compose services: <code>postgres</code>, <code>traefik</code>, <code>backend</code>, <code>frontend</code>, <code>landing</code>, <code>redis</code>, <code>oxigraph</code>. OCR worker is suspended.</p>
+<h3 id="domain-routing">Domain Routing</h3>
+<table>
+<thead>
+<tr>
+<th>URL</th>
+<th>Service</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>https://heritagegraph.xyz</code></td>
+<td>Frontend</td>
+<td>Main dashboard &amp; app</td>
+</tr>
+<tr>
+<td><code>https://www.heritagegraph.xyz</code></td>
+<td>Frontend</td>
+<td>Alias for root domain</td>
+</tr>
+<tr>
+<td><code>https://api.heritagegraph.xyz</code></td>
+<td>Backend</td>
+<td>Django REST API</td>
+</tr>
+<tr>
+<td><code>https://landing.heritagegraph.xyz</code></td>
+<td>Landing</td>
+<td>Marketing / landing page</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="prerequisites">Prerequisites</h2>
+<h3 id="system-requirements-ubuntu-vm">System Requirements (Ubuntu VM)</h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Minimum</th>
+<th>Recommended</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OS</strong></td>
+<td>Ubuntu 22.04 LTS</td>
+<td>Ubuntu 24.04 LTS</td>
+</tr>
+<tr>
+<td><strong>RAM</strong></td>
+<td>4 GB</td>
+<td>8 GB+</td>
+</tr>
+<tr>
+<td><strong>CPU</strong></td>
+<td>2 vCPUs</td>
+<td>4 vCPUs</td>
+</tr>
+<tr>
+<td><strong>Disk</strong></td>
+<td>20 GB</td>
+<td>40 GB+ SSD</td>
+</tr>
+<tr>
+<td><strong>Ports</strong></td>
+<td>22, 80, 443 open</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-you-need-before-starting">What You Need Before Starting</h3>
+<ul>
+<li>[ ] Ubuntu VM with root/sudo access (cloud provider: AWS, DigitalOcean, Hetzner, etc.)</li>
+<li>[ ] Domain <code>heritagegraph.xyz</code> with DNS access</li>
+<li>[ ] Google OAuth credentials (Client ID + Secret) from <a href="https://console.cloud.google.com/apis/credentials">Google Cloud Console</a></li>
+<li>[ ] SSH access to the VM</li>
+</ul>
+<hr />
+<h2 id="quick-start-development">Quick Start (Development)</h2>
+<p>For local development (no domain or SSL needed):</p>
+<pre><code class="language-bash"># 1. Clone
+git clone https://github.com/CAIRNepal/heritagegraph.git
+cd heritagegraph
+
+# 2. Configure
+cp .env.example .env
+# Edit .env — defaults are fine for dev, just change POSTGRES_PASSWORD and DJANGO_SECRET_KEY
+
+# 3. Run
+docker compose up -d --build
+
+# 4. Access
+# Frontend:  http://frontend.localhost
+# Backend:   http://backend.localhost
+# Dashboard: http://traefik.localhost:8080
+</code></pre>
+<p><strong>Default dev credentials:</strong> <code>admin</code> / <code>changeme123!</code></p>
+<pre><code class="language-bash"># Stop
+docker compose down
+
+# Stop + wipe data
+docker compose down -v
+</code></pre>
+<hr />
+<h2 id="production-deployment-on-heritagegraphxyz">Production Deployment on heritagegraph.xyz</h2>
+<h3 id="step-1-prepare-the-ubuntu-vm">Step 1: Prepare the Ubuntu VM</h3>
+<p>SSH into your VM and run these commands:</p>
+<pre><code class="language-bash">ssh root@&lt;YOUR_VM_IP&gt;
+</code></pre>
+<h4 id="1a-system-updates-essentials">1a. System updates &amp; essentials</h4>
+<pre><code class="language-bash">apt update &amp;&amp; apt upgrade -y
+apt install -y curl git ufw apt-transport-https ca-certificates gnupg lsb-release
+</code></pre>
+<h4 id="1b-install-docker-engine">1b. Install Docker Engine</h4>
+<pre><code class="language-bash"># Add Docker's official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+# Add Docker repository
+echo &quot;deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable&quot; | \
+  tee /etc/apt/sources.list.d/docker.list &gt; /dev/null
+
+# Install Docker
+apt update
+apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+# Verify
+docker --version
+docker compose version
+</code></pre>
+<h4 id="1c-create-a-deploy-user-recommended-dont-run-as-root">1c. Create a deploy user (recommended — don't run as root)</h4>
+<pre><code class="language-bash">adduser deploy
+usermod -aG docker deploy
+usermod -aG sudo deploy
+
+# Switch to deploy user for the rest
+su - deploy
+</code></pre>
+<h4 id="1d-configure-firewall">1d. Configure firewall</h4>
+<pre><code class="language-bash">sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp    # SSH
+sudo ufw allow 80/tcp    # HTTP (for Let's Encrypt challenge + redirect)
+sudo ufw allow 443/tcp   # HTTPS
+sudo ufw enable
+sudo ufw status
+</code></pre>
+<hr />
+<h3 id="step-2-configure-dns">Step 2: Configure DNS</h3>
+<p>Go to your domain registrar's DNS management panel for <code>heritagegraph.xyz</code> and create these <strong>A records</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Host/Name</th>
+<th>Value</th>
+<th>TTL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td><code>@</code></td>
+<td><code>&lt;YOUR_VM_IP&gt;</code></td>
+<td>300</td>
+</tr>
+<tr>
+<td>A</td>
+<td><code>www</code></td>
+<td><code>&lt;YOUR_VM_IP&gt;</code></td>
+<td>300</td>
+</tr>
+<tr>
+<td>A</td>
+<td><code>api</code></td>
+<td><code>&lt;YOUR_VM_IP&gt;</code></td>
+<td>300</td>
+</tr>
+<tr>
+<td>A</td>
+<td><code>landing</code></td>
+<td><code>&lt;YOUR_VM_IP&gt;</code></td>
+<td>300</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip:</strong> Set TTL to 300 (5 min) initially for fast propagation. Increase later.</p>
+</blockquote>
+<h4 id="verify-dns-propagation">Verify DNS propagation</h4>
+<pre><code class="language-bash"># Run from your local machine or the VM
+dig +short heritagegraph.xyz
+dig +short api.heritagegraph.xyz
+dig +short www.heritagegraph.xyz
+dig +short landing.heritagegraph.xyz
+</code></pre>
+<p>All should return your VM's IP address. DNS can take 5–30 minutes to propagate.</p>
+<hr />
+<h3 id="step-3-clone-configure">Step 3: Clone &amp; Configure</h3>
+<pre><code class="language-bash"># As the deploy user on the VM
+cd /home/deploy
+git clone https://github.com/CAIRNepal/heritagegraph.git
+cd heritagegraph
+git checkout v1
+</code></pre>
+<h4 id="3a-create-the-env-file">3a. Create the <code>.env</code> file</h4>
+<pre><code class="language-bash">cp .env.example .env
+nano .env
+</code></pre>
+<p><strong>Set these values</strong> (replace placeholders):</p>
+<pre><code class="language-bash"># ================================================================
+# ENVIRONMENT
+# ================================================================
+ENVIRONMENT=production
+DEBUG=False
+
+# ================================================================
+# DOMAIN — This drives all Traefik routing
+# ================================================================
+DOMAIN=heritagegraph.xyz
+
+# ================================================================
+# DJANGO
+# ================================================================
+DJANGO_SECRET_KEY=&lt;generate-with: openssl rand -base64 50&gt;
+DJANGO_SETTINGS_MODULE=heritage_graph.settings.production
+ALLOWED_HOSTS=heritagegraph.xyz,www.heritagegraph.xyz,api.heritagegraph.xyz
+
+# Django superuser (created on first boot)
+DJANGO_SUPERUSER_USERNAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@heritagegraph.xyz
+DJANGO_SUPERUSER_PASSWORD=&lt;strong-password-here&gt;
+
+# ================================================================
+# DATABASE
+# ================================================================
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=heritage_db
+DB_USER=heritage_user
+DB_PASSWORD=&lt;generate-with: openssl rand -base64 20&gt;
+DB_HOST=postgres
+DB_PORT=5432
+
+POSTGRES_DB=heritage_db
+POSTGRES_USER=heritage_user
+POSTGRES_PASSWORD=&lt;same-as-DB_PASSWORD&gt;
+
+# ================================================================
+# GOOGLE OAUTH
+# ================================================================
+GOOGLE_CLIENT_ID=&lt;your-google-client-id&gt;.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=&lt;your-google-client-secret&gt;
+
+# ================================================================
+# FRONTEND (Next.js)
+# ================================================================
+NEXT_PUBLIC_API_URL=https://api.heritagegraph.xyz
+NEXTAUTH_URL=https://heritagegraph.xyz
+NEXTAUTH_SECRET=&lt;generate-with: openssl rand -base64 32&gt;
+
+# ================================================================
+# CORS
+# ================================================================
+CORS_ALLOWED_ORIGINS=https://heritagegraph.xyz,https://www.heritagegraph.xyz
+
+# ================================================================
+# TRAEFIK
+# ================================================================
+TRAEFIK_ACME_EMAIL=admin@heritagegraph.xyz
+TRAEFIK_DASHBOARD_USER=admin
+TRAEFIK_DASHBOARD_PASSWORD=&lt;generate-with: htpasswd -nb admin yourpassword&gt;
+</code></pre>
+<blockquote>
+<p><strong>Heritage Atlas (Cesium):</strong> Production frontend builds must run <strong><code>npm run build</code></strong> inside <code>heritage_graph_ui</code> (or the repo Docker frontend target), so the <code>prebuild</code> step copies static Cesium workers into <code>public/cesium</code>. Using <strong><code>next build</code> alone</strong> or <strong><code>npm ci --ignore-scripts</code></strong> without also running <strong><code>npm run copy-cesium</code></strong> in <code>heritage_graph_ui</code> breaks <strong><code>/atlas</code></strong> when the browser cannot load <strong><code>/cesium/Workers/</code></strong>.</p>
+<p><strong>Generate secrets</strong> (run these one by one and paste into <code>.env</code>):
+<code>bash
+openssl rand -base64 50   # DJANGO_SECRET_KEY
+openssl rand -base64 20   # DB_PASSWORD / POSTGRES_PASSWORD
+openssl rand -base64 32   # NEXTAUTH_SECRET
+htpasswd -nb admin your-dashboard-password  # TRAEFIK_DASHBOARD_PASSWORD</code></p>
+</blockquote>
+<h4 id="3b-prepare-lets-encrypt-directory">3b. Prepare Let's Encrypt directory</h4>
+<pre><code class="language-bash">mkdir -p infra/traefik/acme
+touch infra/traefik/acme/acme.json
+chmod 600 infra/traefik/acme/acme.json
+</code></pre>
+<hr />
+<h3 id="step-4-build-launch">Step 4: Build &amp; Launch</h3>
+<pre><code class="language-bash"># Build all images
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+
+# Start all services
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Watch the logs (wait for &quot;ready&quot; messages)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
+</code></pre>
+<blockquote>
+<p><strong>First boot takes 2–5 minutes</strong> as it:
+1. Starts PostgreSQL and waits for it to be healthy
+2. Runs Django migrations
+3. Creates superuser
+4. Collects static files
+5. Traefik requests Let's Encrypt certificates</p>
+</blockquote>
+<hr />
+<h3 id="step-5-verify-deployment">Step 5: Verify Deployment</h3>
+<pre><code class="language-bash"># Check all containers are running
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+
+# Expected: all services show &quot;Up (healthy)&quot;
+</code></pre>
+<h4 id="test-each-service">Test each service</h4>
+<pre><code class="language-bash"># Backend health
+curl -s https://api.heritagegraph.xyz/health/ | head
+# Expected: {&quot;status&quot;: &quot;ok&quot;, ...}
+
+# Frontend
+curl -s -o /dev/null -w &quot;%{http_code}&quot; https://heritagegraph.xyz
+# Expected: 200
+
+# Landing page
+curl -s -o /dev/null -w &quot;%{http_code}&quot; https://landing.heritagegraph.xyz
+# Expected: 200
+
+# HTTPS certificate check
+echo | openssl s_client -connect heritagegraph.xyz:443 -servername heritagegraph.xyz 2&gt;/dev/null | openssl x509 -noout -dates
+# Should show valid Let's Encrypt dates
+</code></pre>
+<h4 id="test-in-browser">Test in browser</h4>
+<ol>
+<li>Open <code>https://heritagegraph.xyz</code> — should load the dashboard</li>
+<li>Open <code>https://api.heritagegraph.xyz/docs</code> — should load Swagger UI</li>
+<li>Open <code>https://landing.heritagegraph.xyz</code> — should load the landing page</li>
+<li>Check the padlock icon — HTTPS should be valid</li>
+</ol>
+<hr />
+<h3 id="step-6-google-oauth-setup">Step 6: Google OAuth Setup</h3>
+<ol>
+<li>Go to <a href="https://console.cloud.google.com/apis/credentials">Google Cloud Console → Credentials</a></li>
+<li>Edit your OAuth 2.0 Client ID</li>
+<li>Add these <strong>Authorized redirect URIs</strong>:</li>
+<li><code>https://heritagegraph.xyz/api/auth/callback/google</code></li>
+<li>Add these <strong>Authorized JavaScript origins</strong>:</li>
+<li><code>https://heritagegraph.xyz</code></li>
+<li>Save and test sign-in at <code>https://heritagegraph.xyz</code></li>
+</ol>
+<hr />
+<h2 id="post-deployment">Post-Deployment</h2>
+<h3 id="create-a-convenience-alias">Create a convenience alias</h3>
+<p>Add to <code>/home/deploy/.bashrc</code>:</p>
+<pre><code class="language-bash">alias hg-up=&quot;cd /home/deploy/heritagegraph &amp;&amp; docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d&quot;
+alias hg-down=&quot;cd /home/deploy/heritagegraph &amp;&amp; docker compose -f docker-compose.yml -f docker-compose.prod.yml down&quot;
+alias hg-logs=&quot;cd /home/deploy/heritagegraph &amp;&amp; docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f&quot;
+alias hg-ps=&quot;cd /home/deploy/heritagegraph &amp;&amp; docker compose -f docker-compose.yml -f docker-compose.prod.yml ps&quot;
+alias hg-restart=&quot;cd /home/deploy/heritagegraph &amp;&amp; docker compose -f docker-compose.yml -f docker-compose.prod.yml restart&quot;
+</code></pre>
+<h3 id="set-up-automatic-database-backups">Set up automatic database backups</h3>
+<pre><code class="language-bash"># Create backup directory
+sudo mkdir -p /backups/heritage
+sudo chown deploy:deploy /backups/heritage
+
+# Create backup script
+cat &gt; /home/deploy/backup-heritage.sh &lt;&lt; 'SCRIPT'
+#!/bin/bash
+set -e
+BACKUP_DIR=&quot;/backups/heritage&quot;
+COMPOSE_DIR=&quot;/home/deploy/heritagegraph&quot;
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+cd &quot;$COMPOSE_DIR&quot;
+docker compose exec -T postgres pg_dump -U heritage_user heritage_db | gzip &gt; &quot;$BACKUP_DIR/db-$TIMESTAMP.sql.gz&quot;
+
+# Keep only last 14 days
+find &quot;$BACKUP_DIR&quot; -name &quot;db-*.sql.gz&quot; -mtime +14 -delete
+
+echo &quot;[$(date)] Backup completed: db-$TIMESTAMP.sql.gz&quot;
+SCRIPT
+
+chmod +x /home/deploy/backup-heritage.sh
+
+# Add to crontab — daily at 3 AM
+(crontab -l 2&gt;/dev/null; echo &quot;0 3 * * * /home/deploy/backup-heritage.sh &gt;&gt; /var/log/heritage-backup.log 2&gt;&amp;1&quot;) | crontab -
+</code></pre>
+<h3 id="set-up-automatic-docker-log-rotation">Set up automatic Docker log rotation</h3>
+<p>Docker JSON logs are already limited to 10MB × 3 files per container (configured in <code>docker-compose.yml</code>). No extra config needed.</p>
+<h3 id="set-up-automatic-security-updates">Set up automatic security updates</h3>
+<pre><code class="language-bash">sudo apt install -y unattended-upgrades
+sudo dpkg-reconfigure -plow unattended-upgrades
+</code></pre>
+<hr />
+<h2 id="updating-the-application">Updating the Application</h2>
+<h3 id="standard-update-pull-latest-code-rebuild">Standard update (pull latest code + rebuild)</h3>
+<pre><code class="language-bash">cd /home/deploy/heritagegraph
+
+# Pull latest changes
+git pull origin v1
+
+# Rebuild and restart (zero-downtime for stateless services)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Run migrations if needed
+docker compose exec backend python manage.py migrate
+
+# Check logs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=50
+</code></pre>
+<h3 id="update-a-single-service-eg-backend-only">Update a single service (e.g., backend only)</h3>
+<pre><code class="language-bash">docker compose -f docker-compose.yml -f docker-compose.prod.yml build backend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d backend
+</code></pre>
+<h3 id="rollback">Rollback</h3>
+<pre><code class="language-bash"># Revert to previous commit
+git log --oneline -5   # find the commit to revert to
+git checkout &lt;commit-hash&gt;
+
+# Rebuild and restart
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+</code></pre>
+<hr />
+<h2 id="backup-recovery">Backup &amp; Recovery</h2>
+<h3 id="manual-database-backup">Manual database backup</h3>
+<pre><code class="language-bash">cd /home/deploy/heritagegraph
+
+# Backup
+docker compose exec -T postgres pg_dump -U heritage_user heritage_db \
+  | gzip &gt; /backups/heritage/db-manual-$(date +%Y%m%d-%H%M%S).sql.gz
+
+# Verify
+ls -lh /backups/heritage/
+gzip -t /backups/heritage/db-manual-*.sql.gz &amp;&amp; echo &quot;Backup OK&quot;
+</code></pre>
+<h3 id="restore-database-from-backup">Restore database from backup</h3>
+<pre><code class="language-bash">cd /home/deploy/heritagegraph
+
+# Stop backend to prevent writes
+docker compose -f docker-compose.yml -f docker-compose.prod.yml stop backend
+
+# Restore (replace filename with your backup)
+gunzip &lt; /backups/heritage/db-20260303-030000.sql.gz \
+  | docker compose exec -T postgres psql -U heritage_user -d heritage_db
+
+# Restart backend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml start backend
+
+# Verify
+docker compose exec backend python manage.py check
+</code></pre>
+<h3 id="backup-restore-volumes-full-system">Backup &amp; restore volumes (full system)</h3>
+<pre><code class="language-bash"># Backup everything (stop first for consistency)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+sudo tar -czf /backups/heritage/full-$(date +%Y%m%d).tar.gz \
+  -C /var/lib/docker/volumes .
+
+# Restore
+sudo tar -xzf /backups/heritage/full-20260303.tar.gz \
+  -C /var/lib/docker/volumes
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+</code></pre>
+<hr />
+<h2 id="monitoring-logs">Monitoring &amp; Logs</h2>
+<h3 id="view-logs">View logs</h3>
+<pre><code class="language-bash"># All services (follow mode)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
+
+# Specific service
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f backend
+
+# Last N lines
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs --tail=100 backend
+
+# Filter errors
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs backend 2&gt;&amp;1 | grep -i &quot;error\|exception\|traceback&quot;
+</code></pre>
+<h3 id="health-checks">Health checks</h3>
+<pre><code class="language-bash"># Service status
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+
+# API health endpoints
+curl -s https://api.heritagegraph.xyz/health/           # basic
+curl -s https://api.heritagegraph.xyz/health/detailed/   # includes DB
+curl -s https://api.heritagegraph.xyz/health/ready/      # readiness
+curl -s https://api.heritagegraph.xyz/health/live/       # liveness
+</code></pre>
+<h3 id="resource-monitoring">Resource monitoring</h3>
+<pre><code class="language-bash"># Real-time container stats
+docker stats
+
+# Disk usage
+docker system df
+df -h /
+
+# Check if any container is restarting
+docker ps --format &quot;table {{.Names}}\t{{.Status}}\t{{.Ports}}&quot; | sort
+</code></pre>
+<h3 id="database-monitoring">Database monitoring</h3>
+<pre><code class="language-bash"># Connect to psql
+docker compose exec postgres psql -U heritage_user -d heritage_db
+
+# Inside psql:
+\dt                                        # List all tables
+SELECT COUNT(*) FROM django_migrations;    # Check migrations ran
+SELECT pg_database_size('heritage_db');    # Database size
+\q                                         # Quit
+</code></pre>
+<hr />
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="traefik-not-issuing-certificates">Traefik not issuing certificates</h3>
+<pre><code class="language-bash"># Check Traefik logs for ACME errors
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs traefik | grep -i &quot;acme\|certificate\|error&quot;
+
+# Common causes:
+# 1. DNS not propagated yet — wait and retry
+# 2. Port 80 blocked — check firewall: sudo ufw status
+# 3. acme.json permissions — must be 600:
+chmod 600 infra/traefik/acme/acme.json
+
+# 4. Rate limit hit — use Let's Encrypt staging first:
+#    Change caServer in traefik command to staging URL for testing
+</code></pre>
+<h3 id="container-wont-start">Container won't start</h3>
+<pre><code class="language-bash"># Check specific container logs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs &lt;service&gt;
+
+# Check if it's a resource issue
+free -h
+df -h /
+
+# Restart a specific service
+docker compose -f docker-compose.yml -f docker-compose.prod.yml restart &lt;service&gt;
+
+# Nuclear option: full rebuild
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+</code></pre>
+<h3 id="database-connection-errors">Database connection errors</h3>
+<pre><code class="language-bash"># Check PostgreSQL is running and healthy
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps postgres
+
+# Test connectivity from backend
+docker compose exec backend python -c &quot;
+import django; django.setup()
+from django.db import connection
+cursor = connection.cursor()
+cursor.execute('SELECT 1')
+print('DB OK:', cursor.fetchone())
+&quot;
+
+# Reset database (WARNING: destroys all data)
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down -v
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+</code></pre>
+<h3 id="frontend-shows-502-bad-gateway">Frontend shows 502 Bad Gateway</h3>
+<pre><code class="language-bash"># Check if frontend container is running
+docker compose -f docker-compose.yml -f docker-compose.prod.yml ps frontend
+
+# Check frontend logs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs frontend
+
+# Common cause: NEXT_PUBLIC_API_URL was wrong at build time
+# Fix: rebuild with correct env
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build frontend
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d frontend
+</code></pre>
+<h3 id="google-oauth-not-working">Google OAuth not working</h3>
+<pre><code class="language-bash"># Verify env vars are set
+docker compose exec backend printenv GOOGLE_CLIENT_ID
+docker compose exec frontend printenv GOOGLE_CLIENT_ID
+
+# Check NextAuth logs
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs frontend | grep -i &quot;auth\|oauth\|google&quot;
+
+# Verify redirect URI in Google Console matches exactly:
+# https://heritagegraph.xyz/api/auth/callback/google
+</code></pre>
+<h3 id="out-of-disk-space">Out of disk space</h3>
+<pre><code class="language-bash"># Check disk usage
+df -h /
+docker system df
+
+# Clean up unused Docker resources
+docker system prune -f          # Remove stopped containers, dangling images
+docker image prune -a -f        # Remove all unused images
+docker volume prune -f          # Remove unused volumes (careful!)
+</code></pre>
+<hr />
+<h2 id="security-hardening">Security Hardening</h2>
+<h3 id="1-ssh-hardening">1. SSH hardening</h3>
+<pre><code class="language-bash"># Disable root login and password auth
+sudo nano /etc/ssh/sshd_config
+# Set: PermitRootLogin no
+# Set: PasswordAuthentication no
+sudo systemctl restart sshd
+</code></pre>
+<h3 id="2-fail2ban-block-brute-force-attempts">2. Fail2ban (block brute-force attempts)</h3>
+<pre><code class="language-bash">sudo apt install -y fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+</code></pre>
+<h3 id="3-secret-management">3. Secret management</h3>
+<ul>
+<li><strong>Never commit <code>.env</code></strong> to git — it's in <code>.gitignore</code></li>
+<li>Rotate <code>DJANGO_SECRET_KEY</code> and <code>NEXTAUTH_SECRET</code> periodically</li>
+<li>Use unique, generated passwords for all services</li>
+</ul>
+<h3 id="4-cors-configuration">4. CORS configuration</h3>
+<p>Only allow your domain:</p>
+<pre><code class="language-env">CORS_ALLOWED_ORIGINS=https://heritagegraph.xyz,https://www.heritagegraph.xyz
+</code></pre>
+<h3 id="5-regular-updates">5. Regular updates</h3>
+<pre><code class="language-bash"># Update OS packages
+sudo apt update &amp;&amp; sudo apt upgrade -y
+
+# Update Docker images
+docker compose -f docker-compose.yml -f docker-compose.prod.yml pull
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+</code></pre>
+<h3 id="6-monitor-for-issues">6. Monitor for issues</h3>
+<pre><code class="language-bash"># Check for auth failures
+docker compose -f docker-compose.yml -f docker-compose.prod.yml logs backend | grep -i &quot;401\|403\|forbidden&quot;
+
+# Check container restarts
+docker ps --format &quot;{{.Names}} {{.Status}}&quot; | grep -i &quot;restarting&quot;
+</code></pre>
+<hr />
+<h2 id="quick-reference">Quick Reference</h2>
+<h3 id="commands-cheat-sheet">Commands cheat sheet</h3>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Start production</td>
+<td><code>docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d</code></td>
+</tr>
+<tr>
+<td>Stop production</td>
+<td><code>docker compose -f docker-compose.yml -f docker-compose.prod.yml down</code></td>
+</tr>
+<tr>
+<td>View logs</td>
+<td><code>docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f</code></td>
+</tr>
+<tr>
+<td>Rebuild &amp; restart</td>
+<td><code>docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build</code></td>
+</tr>
+<tr>
+<td>Run migrations</td>
+<td><code>docker compose exec backend python manage.py migrate</code></td>
+</tr>
+<tr>
+<td>Create superuser</td>
+<td><code>docker compose exec backend python manage.py createsuperuser</code></td>
+</tr>
+<tr>
+<td>Django shell</td>
+<td><code>docker compose exec backend python manage.py shell</code></td>
+</tr>
+<tr>
+<td>Database shell</td>
+<td><code>docker compose exec postgres psql -U heritage_user -d heritage_db</code></td>
+</tr>
+<tr>
+<td>Backup database</td>
+<td><code>docker compose exec -T postgres pg_dump -U heritage_user heritage_db \| gzip &gt; backup.sql.gz</code></td>
+</tr>
+<tr>
+<td>Container stats</td>
+<td><code>docker stats</code></td>
+</tr>
+<tr>
+<td>Disk usage</td>
+<td><code>docker system df</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="service-urls-production">Service URLs (Production)</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend (Dashboard)</td>
+<td><code>https://heritagegraph.xyz</code></td>
+</tr>
+<tr>
+<td>Backend API</td>
+<td><code>https://api.heritagegraph.xyz</code></td>
+</tr>
+<tr>
+<td>API Docs (Swagger)</td>
+<td><code>https://api.heritagegraph.xyz/docs</code></td>
+</tr>
+<tr>
+<td>API Docs (ReDoc)</td>
+<td><code>https://api.heritagegraph.xyz/redoc/</code></td>
+</tr>
+<tr>
+<td>Landing Page</td>
+<td><code>https://landing.heritagegraph.xyz</code></td>
+</tr>
+<tr>
+<td>Health Check</td>
+<td><code>https://api.heritagegraph.xyz/health/</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="service-urls-development">Service URLs (Development)</h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td><code>http://frontend.localhost</code></td>
+</tr>
+<tr>
+<td>Backend API</td>
+<td><code>http://backend.localhost</code></td>
+</tr>
+<tr>
+<td>Traefik Dashboard</td>
+<td><code>http://traefik.localhost:8080</code></td>
+</tr>
+<tr>
+<td>Landing Page</td>
+<td><code>http://landing.localhost</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="support-documentation">Support &amp; Documentation</h2>
+<ul>
+<li><strong>GitHub</strong>: https://github.com/CAIRNepal/heritagegraph</li>
+<li><strong>Issues</strong>: https://github.com/CAIRNepal/heritagegraph/issues</li>
+<li><strong>Contributing</strong>: See <a href="../../CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a></li>
+</ul>
+<hr />
+<p><strong>Last Updated</strong>: March 2026</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

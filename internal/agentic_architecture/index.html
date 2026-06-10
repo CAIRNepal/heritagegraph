@@ -12,22 +12,24 @@
         <meta name="author" content="CAIR-Nepal">
       
       
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/internal/agentic_architecture/">
+      
       
       
       
         
       
       
-      <link rel="icon" href="/heritagegraph/images/logo.svg">
+      <link rel="icon" href="../../images/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>HeritageGraph Documentation</title>
+        <title>HeritageGraph — Agentic KG Ingestion Architecture - HeritageGraph Documentation</title>
       
     
     
-      <link rel="stylesheet" href="/heritagegraph/assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
       
 
@@ -46,7 +48,7 @@
       
     
     
-    <script>__md_scope=new URL("/heritagegraph/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -63,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#heritagegraph-agentic-kg-ingestion-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -73,9 +80,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/heritagegraph/." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
       
-  <img src="/heritagegraph/images/logo.svg" alt="logo">
+  <img src="../../images/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -92,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              HeritageGraph — Agentic KG Ingestion Architecture
             
           </span>
         </div>
@@ -179,7 +186,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="/heritagegraph/." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -200,7 +207,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/SYSTEM_OVERVIEW/" class="md-tabs__link">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
           
   
   
@@ -220,7 +227,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/contribution/FORMS/" class="md-tabs__link">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
           
   
   
@@ -240,7 +247,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
           
   
   
@@ -260,7 +267,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/ontology/ONTOLOGY/" class="md-tabs__link">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
           
   
   
@@ -280,7 +287,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/auth/AUTH/" class="md-tabs__link">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
           
   
   
@@ -300,7 +307,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/api/VERSIONING/" class="md-tabs__link">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
           
   
   
@@ -320,7 +327,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/deployment/DEPLOYMENT/" class="md-tabs__link">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
           
   
   
@@ -340,7 +347,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/developer/CONVENTIONS/" class="md-tabs__link">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
           
   
   
@@ -360,7 +367,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/performance/CACHING/" class="md-tabs__link">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
           
   
   
@@ -380,7 +387,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/i18n/TRANSLATION/" class="md-tabs__link">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
           
   
   
@@ -400,7 +407,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/pipelines/OCR/" class="md-tabs__link">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
           
   
   
@@ -420,7 +427,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="/heritagegraph/TECHNICAL_DEBT/" class="md-tabs__link">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
           
   
   
@@ -454,9 +461,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/heritagegraph/." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
       
-  <img src="/heritagegraph/images/logo.svg" alt="logo">
+  <img src="../../images/logo.svg" alt="logo">
 
     </a>
     HeritageGraph Documentation
@@ -483,7 +490,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -562,7 +569,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/SYSTEM_OVERVIEW/" class="md-nav__link">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
         
   
   
@@ -590,7 +597,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/FEATURE_WALKTHROUGH/" class="md-nav__link">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
         
   
   
@@ -618,7 +625,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/TROUBLESHOOTING/" class="md-nav__link">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
         
   
   
@@ -705,7 +712,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/contribution/FORMS/" class="md-nav__link">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
         
   
   
@@ -733,7 +740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/testing/TESTING/" class="md-nav__link">
+      <a href="../../testing/TESTING/" class="md-nav__link">
         
   
   
@@ -820,7 +827,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
         
   
   
@@ -848,7 +855,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/knowledge-graph/PIPELINE/" class="md-nav__link">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
         
   
   
@@ -935,7 +942,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/ontology/ONTOLOGY/" class="md-nav__link">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
         
   
   
@@ -1022,7 +1029,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/auth/AUTH/" class="md-nav__link">
+      <a href="../../auth/AUTH/" class="md-nav__link">
         
   
   
@@ -1050,7 +1057,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
         
   
   
@@ -1078,7 +1085,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/auth/AUTH_GUIDE/" class="md-nav__link">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
         
   
   
@@ -1165,7 +1172,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/api/VERSIONING/" class="md-nav__link">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
         
   
   
@@ -1252,7 +1259,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/deployment/DEPLOYMENT/" class="md-nav__link">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
         
   
   
@@ -1280,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/deployment/DOKPLOY/" class="md-nav__link">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
         
   
   
@@ -1308,7 +1315,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/deployment/deploy_on_coolify/" class="md-nav__link">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
         
   
   
@@ -1395,7 +1402,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/developer/CONVENTIONS/" class="md-nav__link">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
         
   
   
@@ -1423,7 +1430,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/developer/SKILLS/" class="md-nav__link">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
         
   
   
@@ -1510,7 +1517,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/performance/CACHING/" class="md-nav__link">
+      <a href="../../performance/CACHING/" class="md-nav__link">
         
   
   
@@ -1538,7 +1545,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/performance/SEARCH/" class="md-nav__link">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
         
   
   
@@ -1625,7 +1632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/i18n/TRANSLATION/" class="md-nav__link">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
         
   
   
@@ -1712,7 +1719,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/pipelines/OCR/" class="md-nav__link">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
         
   
   
@@ -1799,7 +1806,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/TECHNICAL_DEBT/" class="md-nav__link">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
         
   
   
@@ -1827,7 +1834,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/heritagegraph/ARCHIVED/" class="md-nav__link">
+      <a href="../../ARCHIVED/" class="md-nav__link">
         
   
   
@@ -1872,6 +1879,138 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-core-architectural-insight" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Core Architectural Insight
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Core Architectural Insight">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assertion-first-extraction-afe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assertion-First Extraction (AFE)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-five-agent-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Five-Agent Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Stack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluation-methodology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluation Methodology
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Evaluation Methodology">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intrinsic-metrics-automated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Intrinsic Metrics (automated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extrinsic-metrics-downstream-task" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extrinsic Metrics (downstream task)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ablation-studies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ablation Studies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#baseline-comparisons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Baseline Comparisons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-one-diagram-for-the-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The One Diagram for the Paper
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -1884,8 +2023,306 @@
               
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+  
+  
+
+
+<h1 id="heritagegraph-agentic-kg-ingestion-architecture">HeritageGraph — Agentic KG Ingestion Architecture</h1>
+<h2 id="the-core-architectural-insight">The Core Architectural Insight</h2>
+<p>Most published pipelines treat extraction and validation as <strong>sequential pipeline stages</strong>.  architecture makes them <strong>concurrent and bidirectional</strong> through what we call:</p>
+<h3 id="assertion-first-extraction-afe">Assertion-First Extraction (AFE)</h3>
+<p>Instead of extracting entities and then validating them, every extracted fact is immediately wrapped in a <code>HeritageAssertion</code> (<code>crminf:I2_Belief</code>) with:
+- Source provenance (PDF page, paragraph offset)
+- Extraction agent identity (which LLM, which prompt version)
+- Confidence score (entropy-based)
+- Reconciliation status (<code>unverified</code> → <code>confirmed</code> / <code>conflicting</code>)</p>
+<hr />
+<h2 id="the-five-agent-architecture">The Five-Agent Architecture</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────┐
+│                         HERITAGE DOCUMENT                                │
+│              (PDF / Archive / Field Notes / Inscription)                 │
+└─────────────────────────┬───────────────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  AGENT 1 — DOCUMENT INTELLIGENCE AGENT                                   │
+│                                                                          │
+│  • Classifies document type:                                             │
+│    inscription | chronicle | survey_report | oral_history | gazette      │
+│  • Semantic chunking (not fixed-size): splits at section boundaries,     │
+│    paragraph turns, and named entity density shifts                      │
+│  • Language detection: Nepali / Sanskrit / Newari / English              │
+│  • Selects RELEVANT ontology subset (&quot;ontology snippet&quot;) from            │
+│    HeritageGraph.yaml based on document type                             │
+│  • Output: List[DocumentChunk] with metadata + ontology_hint            │
+│                                                                          │
+│  Tool: docling (IBM) + langdetect +  HeritageGraph.yaml parser      │
+└─────────────────────────┬───────────────────────────────────────────────┘
+                          │  DocumentChunk stream
+                          ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  AGENT 2 — ONTOLOGY-GROUNDED EXTRACTION AGENT                            │
+│                                                                          │
+│  • Receives: chunk text + ontology_hint (only relevant CIDOC classes)    │
+│  • Prompt = ontology snippet + few-shot Nepalese heritage examples       │
+│  • Extracts candidate (subject, predicate, object) triples               │
+│  • Runs TWICE with different temperature (0.1 and 0.4)                  │
+│  • Computes per-triple agreement score between two runs                  │
+│    → agreement = confidence signal (entropy-based)                       │
+│  • Wraps each triple in HeritageAssertion with confidence + source_page  │
+│  • Output: List[CandidateAssertion]                                      │
+│                                                                          │
+│  LLM: Llama 3.1 70B (Ollama) — reproducible, open weights, citable     │
+└─────────────────────────┬───────────────────────────────────────────────┘
+                          │  CandidateAssertion stream
+                          ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  AGENT 3 — SHACL VALIDATOR AGENT                                         │
+│                                                                          │
+│  • Runs pySHACL against your Heritage.ttl OWL shapes                    │
+│  • Checks:                                                               │
+│    - Domain/range compliance (E53_Place cannot be subject of P14)        │
+│    - Cardinality constraints (a LivingGoddessTenure must have            │
+│      had_participant exactly one Person)                                 │
+│    - Enum conformance (condition must be in ConditionTypeEnum)           │
+│    - Cross-class consistency (SyncreticRelationship requires two deities)│
+│  • REJECTS invalid triples with structured error reason                  │
+│  • CORRECTS recoverable errors (wrong direction, missing inverse)        │
+│  • Output: ValidatedAssertion | RejectedAssertion with reason            │
+│                                                                          │
+│  Tool: pySHACL + Heritage.ttl                                       │
+└─────────────────────────┬───────────────────────────────────────────────┘
+                          │  ValidatedAssertion stream
+                          ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  AGENT 4 — ENTITY RESOLUTION AGENT                                       │
+│                                                                          │
+│  • SPARQL queries your live Oxigraph for each extracted entity:          │
+│    &quot;Does 'Pashupatinath' already exist as an E53_Place?&quot;                 │
+│  • Co-reference resolution:                                              │
+│    &quot;the temple&quot; → resolved to last mentioned temple URI                  │
+│    &quot;the king&quot; → resolved via period + context                            │
+│  • Transliteration normalization:                                        │
+│    &quot;Swayambhu&quot; = &quot;Swayambhunath&quot; = &quot;स्वयम्भू&quot; → canonical URI           │
+│  • Deduplication:                                                        │
+│    If entity exists → adds new assertion to existing node                │
+│    If entity is new → mints new URI using your heritageGraph: namespace  │
+│  • Output: ResolvedAssertion with canonical_uri + is_new flag            │
+│                                                                          │
+│  Tool: SPARQLWrapper → Oxigraph + rapidfuzz for fuzzy matching     │
+└─────────────────────────┬───────────────────────────────────────────────┘
+                          │  ResolvedAssertion stream
+                          ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  AGENT 5 — EPISTEMIC ROUTING AGENT                                       │
+│                                                                          │
+│  Decision tree based on confidence + entity type + conflict status:      │
+│                                                                          │
+│  confidence ≥ 0.90 + no conflict     → AUTO-ACCEPT → Oxigraph           │
+│  confidence 0.70–0.89 + no conflict  → COMMUNITY REVIEW queue           │
+│  confidence 0.50–0.69               → DOMAIN EXPERT review queue        │
+│  confidence &lt; 0.50                  → REJECT (log for retraining)       │
+│  any conflict detected              → CONFLICT queue (coexist/supersede) │
+│  Kumari / SyncreticRelationship     → ALWAYS expert_curator queue       │
+│                                      (these are high-stakes claims)      │
+│                                                                          │
+│  Creates ReviewFlag automatically if:                                    │
+│    - Two sources contradict each other                                   │
+│    - Entity is already in graph with different property value            │
+│    - Triple involves a Living Goddess claim                              │
+│                                                                          │
+│  Output: routes to Oxigraph OR your existing ReviewDecision workflow    │
+└─────────────────────────┬───────────────────────────────────────────────┘
+                          │
+          ┌───────────────┼────────────────┐
+          ▼               ▼                ▼
+    AUTO-ACCEPT      REVIEW QUEUE      REJECTED
+    → Oxigraph    → existing       → Logged for
+    (SPARQL       ReviewDecision     retraining
+    INSERT)       workflow           dataset
+</code></pre>
+<hr />
+<p>This positions the paper as a <strong>human-AI collaborative KG construction</strong> study — a framing that Nature journals respond well to.</p>
+<pre><code class="language-python"># Every extracted fact maps directly to your existing Django models:
+
+# Agent 2 output:
+HeritageAssertion(
+    assertion_content = &quot;Pashupatinath was built during the Lichhavi period&quot;,
+    asserts_about_entity = &lt;URI&gt;,           # minted by Agent 4
+    was_derived_from_source = DataSource(   # your existing DataSource class
+        name = &quot;Muluki Ain 1853&quot;,
+        source_citation = &quot;PDF page 47&quot;,
+        datacite_resource_type = &quot;Text&quot;
+    ),
+    was_attributed_to_agent = agent_uri,    # the LLM as a prov:Agent
+    generated_at_time = now(),
+    confidence_score = 0.87,               # from dual-temperature entropy
+    reconciliation_status = &quot;unverified&quot;   # updated by Agent 5
+)
+
+# Agent 5 routes to your existing ReviewDecision:
+ReviewDecision(
+    entity = cultural_entity,
+    verdict = &quot;pending&quot;,                   # awaiting human
+    confidence_override = &quot;likely&quot;,        # 0.87 → &quot;likely&quot;
+    verification_method = &quot;source_crosscheck&quot;
+)
+
+# With ReviewFlag if conflict:
+ReviewFlag(
+    flag_type = &quot;questionable_source&quot;,
+    description = &quot;Agent found conflicting construction date: 879 CE vs 1200 CE&quot;
+)
+</code></pre>
+<hr />
+<h2 id="implementation-stack">Implementation Stack</h2>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Tool</th>
+<th>Justification</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PDF parsing</td>
+<td><strong>docling</strong> (IBM, Apache-2.0)</td>
+<td>Preserves layout, tables, headers — better than PyMuPDF for archival texts</td>
+</tr>
+<tr>
+<td>Semantic chunking</td>
+<td><strong>chonkie</strong> (MIT)</td>
+<td>Sentence-aware, token-budget-aware chunking</td>
+</tr>
+<tr>
+<td>Language detection</td>
+<td><strong>langdetect</strong></td>
+<td>Nepali/Sanskrit/English detection for prompt selection</td>
+</tr>
+<tr>
+<td>Extraction LLM</td>
+<td><strong>Llama 3.1 70B</strong> via Ollama</td>
+<td>Open weights, fully reproducible, citable in paper</td>
+</tr>
+<tr>
+<td>Ontology validation</td>
+<td><strong>pySHACL</strong> (Apache-2.0)</td>
+<td>SHACL shapes against your Heritage.ttl</td>
+</tr>
+<tr>
+<td>Fuzzy entity matching</td>
+<td><strong>rapidfuzz</strong> (MIT)</td>
+<td>Transliteration normalization (Swayambhu variants)</td>
+</tr>
+<tr>
+<td>SPARQL queries</td>
+<td><strong>SPARQLWrapper</strong> → Oxigraph</td>
+<td>Entity resolution against live graph</td>
+</tr>
+<tr>
+<td>Pydantic validation</td>
+<td><strong>pydantic v2</strong></td>
+<td>Already in stack; schema-level type enforcement</td>
+</tr>
+<tr>
+<td>Confidence scoring</td>
+<td>Dual-temperature + cosine similarity</td>
+<td>Novel, cheap, interpretable</td>
+</tr>
+<tr>
+<td>Triple store</td>
+<td><strong>Oxigraph</strong></td>
+<td>Already in  repo</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="evaluation-methodology">Evaluation Methodology</h2>
+<h3 id="intrinsic-metrics-automated">Intrinsic Metrics (automated)</h3>
+<ul>
+<li><strong>Ontology Conformance Rate:</strong> % of extracted triples that pass SHACL validation</li>
+<li><strong>Entity Coverage:</strong> % of gold-standard entities found in test documents</li>
+<li><strong>Relation Precision/Recall/F1:</strong> Standard IE metrics on held-out annotated pages</li>
+<li><strong>Confidence Calibration:</strong> Brier score — does confidence 0.8 mean 80% correct?</li>
+<li><strong>Deduplication Accuracy:</strong> % of co-references correctly resolved</li>
+</ul>
+<h3 id="extrinsic-metrics-downstream-task">Extrinsic Metrics (downstream task)</h3>
+<ul>
+<li><strong>SPARQL KBQA:</strong> Can the resulting graph answer 50 expert-formulated questions about Nepalese heritage?</li>
+<li><strong>Expert Acceptance Rate:</strong> % of assertions accepted by domain experts without modification</li>
+<li><strong>Review Turnaround:</strong> Time to reach <code>confirmed</code> status through the review pipeline</li>
+</ul>
+<h3 id="ablation-studies">Ablation Studies</h3>
+<p>Run the pipeline with each agent removed to prove each contributes:
+1. Without Agent 1 (no ontology snippet) → measure precision drop
+2. Without Agent 3 (no SHACL) → measure conformance drop
+3. Without Agent 4 (no entity resolution) → measure duplicate rate
+4. Single-temperature vs. dual-temperature → measure calibration improvement</p>
+<h3 id="baseline-comparisons">Baseline Comparisons</h3>
+<ul>
+<li><strong>Naive LLM extraction</strong> (no ontology constraint, no validation)</li>
+<li><strong>GraphRAG</strong> (Microsoft, 2024)</li>
+<li><strong>iText2KG</strong> (zero-shot incremental approach)</li>
+<li>(HeritageGraph-AFE)</li>
+</ul>
+<h2 id="the-one-diagram-for-the-paper">The One Diagram for the Paper</h2>
+<pre><code>PDF / Archival Text
+        │
+        ▼
+[Doc Intelligence] ──ontology_snippet──┐
+        │                              │
+        ▼                              ▼
+[Extraction Agent] ←──── HeritageGraph.yaml (CIDOC-CRM + PROV-O)
+  (Llama 3.1 70B)
+  2× temperature
+        │
+        ▼
+  CandidateAssertion
+  (crminf:I2_Belief)
+  + confidence_score
+        │
+        ▼
+[SHACL Validator] ←──── Heritage.ttl (OWL shapes)
+        │
+   PASS / FAIL
+        │
+        ▼
+[Entity Resolver] ←──── Oxigraph (live SPARQL)
+        │
+   new_uri / existing_uri
+        │
+        ▼
+[Epistemic Router]
+   │           │           │
+   ▼           ▼           ▼
+AUTO-        REVIEW     REJECTED
+ACCEPT       QUEUE      (logged)
+   │           │
+   ▼           ▼
+Oxigraph   ReviewDecision
+(SPARQL    (human expert)
+INSERT)         │
+                ▼
+           CONFIRMED
+           assertion
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -1922,10 +2359,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/heritagegraph/", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "/heritagegraph/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/heritagegraph/assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

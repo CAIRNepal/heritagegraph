@@ -1,0 +1,3649 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/auth/AUTH/">
+      
+      
+        <link rel="prev" href="../../ontology/ONTOLOGY/">
+      
+      
+        <link rel="next" href="../AUTH_ROLES_DEVELOPER_GUIDE/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>OAuth & sessions - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#authmd-authentication-guide-for-developers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              OAuth & sessions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sign-in-flow-google-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign-in flow (Google only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nextjs-heritage_graph_ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next.js (heritage_graph_ui)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django (backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-audit-one-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets audit (one-time)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development-only-sign-in-no-google" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development-only sign-in (no Google)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-files-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Files at a Glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frontend-reading-the-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend: Reading the Session
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend: Reading the Session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-components-use-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Client Components ('use client')
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-components-api-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server Components / API Routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protecting-a-page-or-route" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protecting a Page or Route
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Protecting a Page or Route">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-side-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Client-Side Guard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#route-level-guard-recommended-for-contribution-forms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Route-Level Guard (recommended for contribution forms)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-side-guard-middleware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server-Side Guard (Middleware)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calling-the-django-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calling the Django Backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Calling the Django Backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-a-client-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From a Client Component
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-a-server-component-route-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From a Server Component / Route Handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend-how-django-verifies-the-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend: How Django Verifies the Token
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backend: How Django Verifies the Token">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#googletokenauthentication-what-the-nextjs-app-uses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GoogleTokenAuthentication (what the Next.js app uses)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-classes-in-the-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other classes in the chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-this-means-for-your-django-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this means for your Django views
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#typescript-types-for-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeScript Types for Session
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sign-in-sign-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign In / Sign Out
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sign In / Sign Out">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trigger-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trigger Sign In
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trigger-sign-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trigger Sign Out
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#existing-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-and-recovery-ux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors and Recovery (UX)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Errors and Recovery (UX)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-handshake-during-oauth-signin-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend handshake during OAuth (signIn callback)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backend handshake during OAuth (signIn callback)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#diagnosing-backend_sync-and-deploys-eg-devheritagegraphxyz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnosing BACKEND_SYNC and deploys (e.g. dev.heritagegraph.xyz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nextauth-and-configuration-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NextAuth and configuration errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-token-refresh-google" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session token refresh (Google)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-login-api-ping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-login API “ping”
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Pitfalls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Pitfalls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-usesidebar-must-be-used-within-a-sidebarprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. "useSidebar must be used within a SidebarProvider"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-token-expired-invalid-google-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Token expired / "Invalid Google token"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-google_client_id-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. GOOGLE_CLIENT_ID mismatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-nextauth_secret-not-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. NEXTAUTH_SECRET not set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-cors-issues-on-api-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. CORS issues on API calls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference Cheat Sheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sign-in-flow-google-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign-in flow (Google only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nextjs-heritage_graph_ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next.js (heritage_graph_ui)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django (backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-audit-one-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secrets audit (one-time)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development-only-sign-in-no-google" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development-only sign-in (no Google)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-files-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Files at a Glance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frontend-reading-the-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend: Reading the Session
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend: Reading the Session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-components-use-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Client Components ('use client')
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-components-api-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server Components / API Routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#protecting-a-page-or-route" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protecting a Page or Route
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Protecting a Page or Route">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#client-side-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Client-Side Guard
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#route-level-guard-recommended-for-contribution-forms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Route-Level Guard (recommended for contribution forms)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#server-side-guard-middleware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Server-Side Guard (Middleware)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#calling-the-django-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Calling the Django Backend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Calling the Django Backend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-a-client-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From a Client Component
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-a-server-component-route-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        From a Server Component / Route Handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#backend-how-django-verifies-the-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend: How Django Verifies the Token
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backend: How Django Verifies the Token">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#googletokenauthentication-what-the-nextjs-app-uses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GoogleTokenAuthentication (what the Next.js app uses)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#other-classes-in-the-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Other classes in the chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-this-means-for-your-django-views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What this means for your Django views
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#typescript-types-for-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TypeScript Types for Session
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sign-in-sign-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign In / Sign Out
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sign In / Sign Out">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trigger-sign-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trigger Sign In
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trigger-sign-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trigger Sign Out
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#existing-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing Components
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors-and-recovery-ux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors and Recovery (UX)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Errors and Recovery (UX)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-handshake-during-oauth-signin-callback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend handshake during OAuth (signIn callback)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backend handshake during OAuth (signIn callback)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#diagnosing-backend_sync-and-deploys-eg-devheritagegraphxyz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnosing BACKEND_SYNC and deploys (e.g. dev.heritagegraph.xyz)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nextauth-and-configuration-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NextAuth and configuration errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-token-refresh-google" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session token refresh (Google)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-login-api-ping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-login API “ping”
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-pitfalls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Pitfalls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Pitfalls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-usesidebar-must-be-used-within-a-sidebarprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. "useSidebar must be used within a SidebarProvider"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-token-expired-invalid-google-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Token expired / "Invalid Google token"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-google_client_id-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. GOOGLE_CLIENT_ID mismatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-nextauth_secret-not-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. NEXTAUTH_SECRET not set
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-cors-issues-on-api-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. CORS issues on API calls
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Reference Cheat Sheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="authmd-authentication-guide-for-developers">AUTH.md — Authentication Guide for Developers</h1>
+<blockquote>
+<p><strong>Audience:</strong> Any developer adding a new feature, page, or API call that needs to know who the user is, protect a route, or talk to the Django backend on behalf of a logged-in user.</p>
+<p><strong>Related guides:</strong> <a href="../AUTH_ROLES_DEVELOPER_GUIDE/">Roles &amp; permissions</a> ·
+<a href="../AUTH_GUIDE/">Adding a new OAuth provider</a>.</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#architecture-overview">Architecture Overview</a></li>
+<li><a href="#environment-variables">Environment Variables</a></li>
+<li><a href="#key-files-at-a-glance">Key Files at a Glance</a></li>
+<li><a href="#frontend-reading-the-session">Frontend: Reading the Session</a></li>
+<li><a href="#client-components-use-client">Client Components (<code>'use client'</code>)</a></li>
+<li><a href="#server-components--api-routes">Server Components / API Routes</a></li>
+<li><a href="#protecting-a-page-or-route">Protecting a Page or Route</a></li>
+<li><a href="#client-side-guard">Client-Side Guard</a></li>
+<li><a href="#server-side-guard-middleware">Server-Side Guard (Middleware)</a></li>
+<li><a href="#calling-the-django-backend">Calling the Django Backend</a></li>
+<li><a href="#from-a-client-component">From a Client Component</a></li>
+<li><a href="#from-a-server-component--route-handler">From a Server Component / Route Handler</a></li>
+<li><a href="#backend-how-django-verifies-the-token">Backend: How Django Verifies the Token</a></li>
+<li><a href="#typescript-types-for-session">TypeScript Types for Session</a></li>
+<li><a href="#sign-in--sign-out">Sign In / Sign Out</a></li>
+<li><a href="#errors-and-recovery-ux">Errors and Recovery (UX)</a></li>
+<li><a href="#common-pitfalls">Common Pitfalls</a></li>
+<li><a href="#quick-reference-cheat-sheet">Quick Reference Cheat Sheet</a></li>
+</ol>
+<hr />
+<h2 id="architecture-overview">Architecture Overview</h2>
+<p>The <strong>Next.js dashboard</strong> (<code>heritage_graph_ui</code>) supports <strong>Google sign-in only</strong>. NextAuth registers <code>GoogleProvider</code> when <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> are both set; there is no GitHub or username/password provider in the UI.</p>
+<p>The <strong>Django API</strong> still accepts multiple token types depending on <code>settings</code> (Google userinfo verification first, then optional GitHub, session, then SimpleJWT). For day-to-day product use, assume the browser sends a <strong>Google OAuth access token</strong> (and refresh flow) from NextAuth.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NextAuth</strong></td>
+<td>OAuth redirect with Google; JWT session cookie; optional refresh of access token</td>
+</tr>
+<tr>
+<td><strong>Django</strong></td>
+<td>Verifies <code>Authorization: Bearer …</code> via <code>GoogleTokenAuthentication</code> when <code>GOOGLE_CLIENT_ID</code> is set on the backend</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sign-in-flow-google-only">Sign-in flow (Google only)</h3>
+<pre><code>┌─────────────┐   Google OAuth   ┌──────────────┐
+│  Browser     │ ◄──────────────► │  Google      │
+│  (Next.js)   │                  │  OAuth 2.0   │
+└──────┬───────┘                  └──────────────┘
+       │
+       │  NextAuth completes OAuth and stores tokens in an encrypted session cookie
+       │
+       ▼
+┌──────────────┐  Bearer &lt;google access token&gt;  ┌──────────────────┐
+│  Next.js     │ ─────────────────────────────► │  Django (DRF)    │
+│  Frontend    │                                 │  Backend         │
+│  (port 3000) │ ◄────────────────────────────── │  (port 8000)     │
+└──────────────┘   JSON response                └──────────────────┘
+</code></pre>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>User opens <code>/auth/login</code> (or is redirected from a protected route). The app redirects to Google (or shows configuration help if OAuth env vars are missing).</li>
+<li>After Google returns, NextAuth runs a <strong>server-side handshake</strong>: <code>GET /data/api/testme/</code> with the token before the session is created. Failures map to clear <code>?error=</code> codes on <code>/auth/login</code>.</li>
+<li><code>session.accessToken</code> is the Google token used for API calls. NextAuth refreshes it while a refresh token is available.</li>
+<li>Django verifies the token (see <code>apps/heritage_data/authentication.py</code>) and attaches <code>request.user</code>.</li>
+</ol>
+<p><strong>API-only / automation:</strong> You can still obtain a SimpleJWT access token with <code>POST /api/token/</code> against Django; that path does not use the Next.js login page.</p>
+<hr />
+<h2 id="environment-variables">Environment Variables</h2>
+<h3 id="nextjs-heritage_graph_ui">Next.js (<code>heritage_graph_ui</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required?</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GOOGLE_CLIENT_ID</code></td>
+<td><strong>Yes</strong> (for any working sign-in)</td>
+<td>Google OAuth client ID</td>
+</tr>
+<tr>
+<td><code>GOOGLE_CLIENT_SECRET</code></td>
+<td><strong>Yes</strong></td>
+<td>Google OAuth client secret</td>
+</tr>
+<tr>
+<td><code>NEXTAUTH_URL</code></td>
+<td>Yes</td>
+<td>Canonical origin (e.g. <code>http://localhost:3000</code>)</td>
+</tr>
+<tr>
+<td><code>NEXTAUTH_SECRET</code></td>
+<td>Yes</td>
+<td><code>openssl rand -base64 32</code></td>
+</tr>
+<tr>
+<td><code>INTERNAL_BACKEND_URL</code></td>
+<td>Yes in Docker</td>
+<td>Server-side URL to Django (<code>http://backend:8000</code> in compose)</td>
+</tr>
+<tr>
+<td><code>NEXT_PUBLIC_API_URL</code></td>
+<td>Yes</td>
+<td>Browser-visible API origin</td>
+</tr>
+</tbody>
+</table>
+<p>If <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> are missing, <code>/auth/login</code> can still work when <strong>dev auth</strong> is enabled (see below).</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required?</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NEXT_PUBLIC_DEV_AUTH</code></td>
+<td>Dev only</td>
+<td>Set <code>true</code> to show dev email sign-in on <code>/auth/login</code> (requires backend <code>HERITAGEGRAPH_DEV_AUTH=true</code> and <code>DEBUG=True</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="django-backend">Django (backend)</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required?</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GOOGLE_CLIENT_ID</code></td>
+<td><strong>Yes</strong> (prod)</td>
+<td>Must match frontend client ID for token verification</td>
+</tr>
+<tr>
+<td><code>HERITAGEGRAPH_DEV_AUTH</code></td>
+<td>Dev only</td>
+<td>Set <code>true</code> with <code>DEBUG=True</code> to enable <code>POST /api/dev/login/</code> and <code>X-Dev-User</code> header auth</td>
+</tr>
+<tr>
+<td><code>REDIS_URL</code></td>
+<td>Recommended</td>
+<td>Redis cache + session store (e.g. <code>redis://redis:6379/2</code>)</td>
+</tr>
+<tr>
+<td><code>DJANGO_SECRET_KEY</code></td>
+<td><strong>Yes</strong> (prod)</td>
+<td>Django secret key</td>
+</tr>
+<tr>
+<td><code>SECURE_SSL_REDIRECT</code></td>
+<td>Prod</td>
+<td>Default <code>False</code> when Traefik terminates TLS; set <code>True</code> only without a reverse proxy</td>
+</tr>
+</tbody>
+</table>
+<h3 id="production-checklist">Production checklist</h3>
+<p>Same Google <strong>client ID</strong> on Next.js and Django; <code>DJANGO_ENV=production</code> on the API host; HTTPS-ready <code>NEXTAUTH_URL</code> and authorized redirect URIs in Google Cloud Console (<code>…/api/auth/callback/google</code>).</p>
+<p>Production builds set <code>HERITAGEGRAPH_DEV_AUTH=false</code> and <code>NEXT_PUBLIC_DEV_AUTH=false</code> (see <code>docker-compose.prod.yml</code>). Django enables <code>SESSION_COOKIE_SECURE</code>, <code>CSRF_COOKIE_SECURE</code>, and HSTS via <code>settings/production.py</code>.</p>
+<h3 id="secrets-audit-one-time">Secrets audit (one-time)</h3>
+<p>If secrets were ever committed, rotate them and verify history:</p>
+<pre><code class="language-bash">git log -p --all -S 'GOOGLE_CLIENT_SECRET' -- .env .env.example
+git log -p --all -S 'NEXTAUTH_SECRET' -- .
+git log -p --all -S 'DJANGO_SECRET_KEY' -- .
+</code></pre>
+<p>Generate a new NextAuth secret: <code>openssl rand -base64 32</code>.</p>
+<h3 id="development-only-sign-in-no-google">Development-only sign-in (no Google)</h3>
+<p>When <code>DEBUG=True</code>, <code>HERITAGEGRAPH_DEV_AUTH=true</code>, and <code>NEXT_PUBLIC_DEV_AUTH=true</code>:</p>
+<ol>
+<li>Seed test users: <code>python manage.py seed_dev_users</code></li>
+<li>Open <code>/auth/login</code> and use <strong>Continue with dev email</strong> (or <code>POST /api/dev/login/</code> with <code>{ "email": "dev@heritagegraph.local" }</code>)</li>
+<li>For API scripts: send header <code>X-Dev-User: dev@heritagegraph.local</code> (dev auth chain only)</li>
+</ol>
+<p><strong>Never enable dev auth in production</strong> (<code>DEBUG=False</code> blocks the endpoint even if the env var is set).</p>
+<p>Use a <strong>separate Google Cloud project</strong> for local development with redirect URI <code>http://localhost:3000/api/auth/callback/google</code> (or your <code>NEXTAUTH_URL</code> + <code>/api/auth/callback/google</code>).</p>
+<hr />
+<h2 id="key-files-at-a-glance">Key Files at a Glance</h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>heritage_graph_ui/src/app/api/auth/[...nextauth]/route.ts</code></td>
+<td>NextAuth HTTP handler</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/lib/auth.ts</code></td>
+<td><code>authOptions</code> config (importable for server-side <code>getServerSession</code>)</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/app/auth/login/page.tsx</code></td>
+<td>Google sign-in + optional dev email sign-in</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/app/auth/error/page.tsx</code></td>
+<td>NextAuth <code>pages.error</code> — maps provider/configuration errors to copy</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/lib/auth-errors.ts</code></td>
+<td>User-facing strings for URL errors, session errors, and NextAuth codes</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/components/auth-session-monitor.tsx</code></td>
+<td>Banner when <code>session.error</code> is set (e.g. token refresh failure)</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/app/SessionProvider.tsx</code></td>
+<td>Client wrapper — <code>SessionProvider</code> + <code>ThemeProvider</code> + session error monitor</td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/src/app/layout.tsx</code></td>
+<td>Root layout — wraps everything in <code>NextAuthSessionProvider</code></td>
+</tr>
+<tr>
+<td><code>heritage_graph_ui/types/next-auth.d.ts</code></td>
+<td>TypeScript augmentations for <code>Session</code>, <code>JWT</code>, and <code>User</code></td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/heritage_data/authentication.py</code></td>
+<td>Google/GitHub/dev header/session auth backends</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/heritage_data/dev_auth.py</code></td>
+<td>DEBUG-gated <code>POST /api/dev/login/</code></td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/users/auth_audit.py</code></td>
+<td><code>AuthEvent</code> audit logging helpers</td>
+</tr>
+<tr>
+<td><code>heritage_graph/settings/development.py</code></td>
+<td>Dev: dev header + Google + GitHub + session + JWT</td>
+</tr>
+<tr>
+<td><code>heritage_graph/settings/production.py</code></td>
+<td>Prod: secure cookies, HSTS, Google + JWT only</td>
+</tr>
+<tr>
+<td><code>heritage_graph/settings/base.py</code></td>
+<td>Redis sessions when <code>REDIS_URL</code> set; JWT blacklist app</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="frontend-reading-the-session">Frontend: Reading the Session</h2>
+<h3 id="client-components-use-client">Client Components (<code>'use client'</code>)</h3>
+<p>Use the <code>useSession()</code> hook from <code>next-auth/react</code>:</p>
+<pre><code class="language-tsx">'use client';
+
+import { useSession } from 'next-auth/react';
+
+export default function MyFeature() {
+  const { data: session, status } = useSession();
+
+  if (status === 'loading') return &lt;p&gt;Loading…&lt;/p&gt;;
+  if (status === 'unauthenticated') return &lt;p&gt;Please sign in.&lt;/p&gt;;
+
+  // User is authenticated
+  const userName = session?.user?.name;
+  const userEmail = session?.user?.email;
+  const username = session?.user?.username; // email-based username
+  const token = session?.accessToken;       // Google ID token for API calls
+
+  return &lt;h1&gt;Welcome, {userName}!&lt;/h1&gt;;
+}
+</code></pre>
+<p><strong><code>status</code> values:</strong>
+| Value | Meaning |
+|---|---|
+| <code>'loading'</code> | Session is being fetched (show spinner) |
+| <code>'authenticated'</code> | User is logged in — <code>session</code> is available |
+| <code>'unauthenticated'</code> | No active session — prompt sign-in |</p>
+<h3 id="server-components-api-routes">Server Components / API Routes</h3>
+<p>Use <code>getServerSession()</code> from <code>next-auth</code>:</p>
+<pre><code class="language-ts">import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // session.accessToken — Google ID token
+  // session.user.email  — user's email
+  return Response.json({ user: session.user });
+}
+</code></pre>
+<hr />
+<h2 id="protecting-a-page-or-route">Protecting a Page or Route</h2>
+<h3 id="client-side-guard">Client-Side Guard</h3>
+<p>Wrap your page component with a session check:</p>
+<pre><code class="language-tsx">'use client';
+
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+export default function ProtectedPage() {
+  const { status } = useSession();
+  const router = useRouter();
+
+  useEffect(() =&gt; {
+    if (status === 'unauthenticated') {
+      router.push('/');  // redirect to landing
+    }
+  }, [status, router]);
+
+  if (status === 'loading') return &lt;p&gt;Loading…&lt;/p&gt;;
+  if (status === 'unauthenticated') return null;
+
+  return &lt;div&gt;Secret content here&lt;/div&gt;;
+}
+</code></pre>
+<h3 id="route-level-guard-recommended-for-contribution-forms">Route-Level Guard (recommended for contribution forms)</h3>
+<p>For flows where users can spend time entering data (e.g. <code>/contribute/*</code>), prefer a route-level guard so users are redirected <strong>before</strong> the page renders.</p>
+<p>In this repo, <code>heritage_graph_ui/src/middleware.ts</code> enforces login for:</p>
+<ul>
+<li><code>/contribute/*</code> (all contribution surfaces, including QR scan contribution routes)</li>
+<li><code>/curation/*</code>, <code>/platform-admin/*</code>, and other authenticated areas</li>
+</ul>
+<p>This prevents the “fill a long form → fail at submit because you’re logged out” experience.</p>
+<h3 id="server-side-guard-middleware">Server-Side Guard (Middleware)</h3>
+<p>Create or update <code>heritage_graph_ui/src/middleware.ts</code>:</p>
+<pre><code class="language-ts">import { withAuth } from 'next-auth/middleware';
+
+export default withAuth({
+  pages: { signIn: '/' },  // redirect here if not authenticated
+});
+
+// Protect authenticated app routes (no /dashboard URL prefix)
+export const config = {
+  matcher: ['/((?!api|_next|auth).*)'],
+};
+</code></pre>
+<blockquote>
+<p>This automatically redirects unauthenticated users before the page even renders.</p>
+</blockquote>
+<hr />
+<h2 id="calling-the-django-backend">Calling the Django Backend</h2>
+<h3 id="from-a-client-component">From a Client Component</h3>
+<pre><code class="language-tsx">'use client';
+
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+
+export default function MyDataComponent() {
+  const { data: session, status } = useSession();
+  const [items, setItems] = useState([]);
+
+  useEffect(() =&gt; {
+    if (status !== 'authenticated' || !session?.accessToken) return;
+
+    const fetchData = async () =&gt; {
+      const res = await fetch('http://localhost:8000/data/submissions/', {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setItems(data.results);
+      }
+    };
+
+    fetchData();
+  }, [status, session]);
+
+  return &lt;pre&gt;{JSON.stringify(items, null, 2)}&lt;/pre&gt;;
+}
+</code></pre>
+<p><strong>Key pattern:</strong></p>
+<pre><code class="language-ts">headers: {
+  Authorization: `Bearer ${session.accessToken}`,
+}
+</code></pre>
+<h3 id="from-a-server-component-route-handler">From a Server Component / Route Handler</h3>
+<pre><code class="language-ts">import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  if (!session?.accessToken) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const backendUrl = process.env.INTERNAL_BACKEND_URL || 'http://localhost:8000';
+  const res = await fetch(`${backendUrl}/data/submissions/`, {
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
+    },
+  });
+
+  const data = await res.json();
+  return Response.json(data);
+}
+</code></pre>
+<blockquote>
+<p><strong>Tip:</strong> Use <code>INTERNAL_BACKEND_URL</code> for server-side calls (Docker networking: <code>http://backend:8000</code>). Use <code>http://localhost:8000</code> only for client-side <code>fetch</code>.</p>
+</blockquote>
+<hr />
+<h2 id="backend-how-django-verifies-the-token">Backend: How Django Verifies the Token</h2>
+<p>DRF tries a <strong>chain</strong> of classes (order is in <code>settings/development.py</code> and <code>settings/production.py</code>). The first implementation that accepts the <code>Authorization: Bearer</code> token wins.</p>
+<h3 id="googletokenauthentication-what-the-nextjs-app-uses"><code>GoogleTokenAuthentication</code> (what the Next.js app uses)</h3>
+<ol>
+<li>Reads the Bearer token and calls Google’s <strong>userinfo</strong> endpoint; a 200 response proves the token is valid for Google.</li>
+<li>Requires a verified email, then <code>get_or_create</code>s <code>User</code> + <code>UserProfile</code>.</li>
+<li>If <code>GOOGLE_CLIENT_ID</code> is unset on Django, this class skips itself so JWT or session auth can run.</li>
+</ol>
+<h3 id="other-classes-in-the-chain">Other classes in the chain</h3>
+<p><strong>Development</strong> also registers <code>GitHubTokenAuthentication</code>, <code>DevSessionAuthentication</code>, and <code>JWTAuthentication</code>. <strong>Production</strong> registers GitHub + JWT after Google. Use JWT or session when debugging APIs without the browser OAuth flow.</p>
+<h3 id="what-this-means-for-your-django-views">What this means for your Django views</h3>
+<p>Treat <code>request.user</code> the same regardless of how the user authenticated:</p>
+<pre><code class="language-python">from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def my_protected_view(request):
+    # request.user is a Django User object — works in both dev and prod
+    return Response({
+        'message': f'Hello, {request.user.email}!',
+        'user_id': request.user.id,
+    })
+</code></pre>
+<p>Auth classes are configured globally per-environment. You do <strong>not</strong> need to add any authentication class per-view unless you want to override.</p>
+<hr />
+<h2 id="typescript-types-for-session">TypeScript Types for Session</h2>
+<p>The session object is type-augmented in <code>types/next-auth.d.ts</code>:</p>
+<pre><code class="language-ts">// What's available on session
+session.accessToken       // string | undefined — Google OAuth access token for API calls
+session.user.name         // string | null      — full name
+session.user.email        // string | null      — email
+session.user.username     // string | null      — same as email
+session.user.image        // string | null      — Google avatar URL
+session.error             // string | optional — e.g. RefreshAccessTokenError
+session.errorDescription  // string | optional — safe UI copy for session.error
+</code></pre>
+<p>If you add new fields to the session, update <strong>both</strong>:
+1. <code>types/next-auth.d.ts</code> — type declarations
+2. <code>src/lib/auth.ts</code> — <code>jwt()</code> and <code>session()</code> callbacks</p>
+<hr />
+<h2 id="sign-in-sign-out">Sign In / Sign Out</h2>
+<h3 id="trigger-sign-in">Trigger Sign In</h3>
+<p>Always pass the Google provider id (the app does not register other providers):</p>
+<pre><code class="language-tsx">import { signIn } from 'next-auth/react';
+
+&lt;Button onClick={() =&gt; signIn('google')}&gt;Sign In with Google&lt;/Button&gt;
+
+&lt;Button onClick={() =&gt; signIn('google', { callbackUrl: '/' })}&gt;
+  Sign In
+&lt;/Button&gt;
+</code></pre>
+<p><code>signIn()</code> with no provider id is not used in this codebase; prefer <code>/auth/login?callbackUrl=…</code> for redirects from guards.</p>
+<h3 id="trigger-sign-out">Trigger Sign Out</h3>
+<pre><code class="language-tsx">import { signOut } from 'next-auth/react';
+
+&lt;Button onClick={() =&gt; signOut({ callbackUrl: '/' })}&gt;Sign Out&lt;/Button&gt;
+</code></pre>
+<h3 id="existing-components">Existing Components</h3>
+<ul>
+<li><code>AuthSection</code> (<code>src/components/AuthButtons.tsx</code>) — standalone Google sign-in / user menu for public or simple layouts.</li>
+<li>Dashboard sidebar uses <code>NavUser</code> + similar patterns; call <code>signIn('google', …)</code> consistently.</li>
+</ul>
+<hr />
+<h2 id="errors-and-recovery-ux">Errors and Recovery (UX)</h2>
+<p>Sign-in and session maintenance now fail <strong>loudly</strong> with actionable copy instead of only logging to the server console.</p>
+<h3 id="backend-handshake-during-oauth-signin-callback">Backend handshake during OAuth (<code>signIn</code> callback)</h3>
+<p>After Google returns tokens, NextAuth calls Django <code>GET /data/api/testme/</code> with <code>Authorization: Bearer &lt;token&gt;</code> before the session is finalized.</p>
+<table>
+<thead>
+<tr>
+<th>Result</th>
+<th>What the user sees</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>401</code> / <code>403</code></td>
+<td>Redirect to <code>/auth/login?error=BACKEND_REJECTED</code> with guidance (matching OAuth client IDs, <code>DJANGO_ENV</code>, etc.)</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td><code>?error=BACKEND_HANDSHAKE_NOT_FOUND</code> — routing or wrong <code>INTERNAL_BACKEND_URL</code> path (see below)</td>
+</tr>
+<tr>
+<td><code>5xx</code></td>
+<td><code>?error=BACKEND_UNAVAILABLE</code> (handshake retries a few times on <code>502</code> / <code>503</code> / <code>504</code> / <code>429</code>)</td>
+</tr>
+<tr>
+<td>Network failure from Next.js → Django</td>
+<td><code>?error=BACKEND_UNREACHABLE</code> (check <code>INTERNAL_BACKEND_URL</code> in Docker)</td>
+</tr>
+<tr>
+<td>Other non-success HTTP (e.g. <code>400</code> <strong>DisallowedHost</strong>)</td>
+<td><code>?error=BACKEND_SYNC</code> — <strong>check Django/API logs for the HTTP status</strong>; the Next.js server also logs a short body snippet (<code>[next-auth] Django handshake non-OK response</code>).</td>
+</tr>
+</tbody>
+</table>
+<p>Profile enrichment (<code>GET /data/api/user/me/</code>) is <strong>best-effort</strong>: if it fails, sign-in still succeeds and the failure is logged.</p>
+<h4 id="diagnosing-backend_sync-and-deploys-eg-devheritagegraphxyz">Diagnosing <code>BACKEND_SYNC</code> and deploys (e.g. <code>dev.heritagegraph.xyz</code>)</h4>
+<ol>
+<li><strong>grep API access logs</strong> for <code>GET /data/api/testme/</code> at the time of sign-in and note the <strong>status code</strong> (400 from <code>DisallowedHost</code>, 404 from path/proxy, etc.).</li>
+<li><strong><code>INTERNAL_BACKEND_URL</code></strong> on the <strong>frontend</strong> service must be reachable from the Next.js server process (in Docker Compose, typically <code>http://backend:8000</code> with <strong>no</strong> extra path prefix). Redirects that drop the <code>Authorization</code> header break the handshake.</li>
+<li><strong><code>ALLOWED_HOSTS</code></strong> on Django must include <code>backend</code> (and your public API host). See <code>DOKPLOY.md</code>.</li>
+<li><strong>Bisect with curl</strong> from the same host/container as Next.js (use a short-lived Google access token you trust):</li>
+</ol>
+<pre><code class="language-bash">curl -sS -o /dev/null -w &quot;%{http_code}\n&quot; \
+  -H &quot;Authorization: Bearer YOUR_GOOGLE_ACCESS_TOKEN&quot; \
+  -H &quot;Accept: application/json&quot; \
+  &quot;${INTERNAL_BACKEND_URL%/}/data/api/testme/&quot;
+</code></pre>
+<p>Expect <code>200</code> JSON when <code>GOOGLE_CLIENT_ID</code> matches on Django and the token is valid.</p>
+<h3 id="nextauth-and-configuration-errors">NextAuth and configuration errors</h3>
+<ul>
+<li>Custom <strong><code>pages.error</code></strong> is <code>/auth/error</code>. Query param <code>error</code> uses <a href="https://next-auth.js.org/configuration/pages">NextAuth’s documented values</a> (<code>Configuration</code>, <code>OAuthCallback</code>, …), mapped to readable text in <code>src/lib/auth-errors.ts</code>.</li>
+<li><strong><code>/auth/login</code></strong> uses <strong>Continue with Google</strong> with a full-page redirect to the provider (reliable account chooser). Use <strong>Try again with Google</strong> after an error.</li>
+</ul>
+<h3 id="session-token-refresh-google">Session token refresh (Google)</h3>
+<p>When Google’s refresh token exchange fails, the JWT carries <code>error: 'RefreshAccessTokenError'</code> and the session exposes <code>session.error</code> / <code>session.errorDescription</code>. <strong><code>AuthSessionMonitor</code></strong> renders a top-of-screen alert with <strong>Sign in again</strong> (calls <code>signOut</code> → <code>/auth/login</code>).</p>
+<p>If the access token expires and cannot be refreshed, <strong><code>AccessTokenExpiredError</code></strong> uses the same banner pattern.</p>
+<h3 id="post-login-api-ping">Post-login API “ping”</h3>
+<p>Components that sync the Django user after OAuth (e.g. <code>AuthButtons</code>, <code>NavUser</code>) use <strong><code>GET /data/api/testthelogin</code></strong> (authenticated list endpoint). Failures surface as an inline alert or <code>toast</code> with the message from <code>getApiErrorMessage()</code> — not only <code>console.error</code>.</p>
+<hr />
+<h2 id="common-pitfalls">Common Pitfalls</h2>
+<h3 id="1-usesidebar-must-be-used-within-a-sidebarprovider">1. "useSidebar must be used within a SidebarProvider"</h3>
+<p><strong>Cause:</strong> <code>NavUser</code> (used by <code>AuthButtons</code>) calls <code>useSidebar()</code>, which requires <code>&lt;SidebarProvider&gt;</code>.</p>
+<p><strong>Fix:</strong> Only use <code>AuthButtons</code> inside layouts wrapped with <code>SidebarProvider</code> (like <code>(dashboard)/layout.tsx</code>). For standalone pages, create a simpler auth button that doesn't depend on sidebar context.</p>
+<h3 id="2-token-expired-invalid-google-token">2. Token expired / "Invalid Google token"</h3>
+<p>Google ID tokens expire after ~1 hour. NextAuth automatically refreshes the session cookie, but if a long-lived tab has a stale token, the backend will reject it.</p>
+<p><strong>Fix:</strong> Re-fetch the session before making API calls, or handle 401 responses by calling <code>signIn('google')</code> again.</p>
+<h3 id="3-google_client_id-mismatch">3. <code>GOOGLE_CLIENT_ID</code> mismatch</h3>
+<p>If the frontend and backend use different <code>GOOGLE_CLIENT_ID</code> values, token verification will fail with an "audience mismatch" error.</p>
+<p><strong>Fix:</strong> Ensure the <strong>same</strong> <code>GOOGLE_CLIENT_ID</code> is set in both <code>.env.local</code> (frontend) and the backend environment.</p>
+<h3 id="4-nextauth_secret-not-set">4. <code>NEXTAUTH_SECRET</code> not set</h3>
+<p>Without this, NextAuth can't sign/verify its JWT cookies. Sessions will silently fail.</p>
+<p><strong>Fix:</strong> Generate a secret: <code>openssl rand -base64 32</code> and set it in <code>.env.local</code>.</p>
+<h3 id="5-cors-issues-on-api-calls">5. CORS issues on API calls</h3>
+<p>Client-side <code>fetch</code> to <code>localhost:8000</code> may fail due to CORS if the Django backend doesn't allow the frontend origin.</p>
+<p><strong>Fix:</strong> Ensure Django's CORS settings include <code>http://localhost:3000</code> (dev) or the production frontend URL.</p>
+<hr />
+<h2 id="quick-reference-cheat-sheet">Quick Reference Cheat Sheet</h2>
+<pre><code>┌────────────────────────────────────────────────────────────────────────┐
+│  NEED                       │  USE                                    │
+├────────────────────────────────────────────────────────────────────────┤
+│  Read user in client comp   │  useSession()                           │
+│  Read user in server comp   │  getServerSession(authOptions)          │
+│  Protect a client page      │  useSession() + redirect                │
+│  Protect app routes         │  middleware.ts (pathRequiresLogin)     │
+│  Call Django from browser   │  Bearer ${session.accessToken}          │
+│  Call Django from server    │  Bearer + INTERNAL_BACKEND_URL          │
+│  Trigger login              │  signIn('google', …) or /auth/login    │
+│  Trigger logout             │  signOut({ callbackUrl: '/' })          │
+│  Add new session fields     │  next-auth.d.ts + auth.ts callbacks     │
+│  Protect Django view        │  @permission_classes([IsAuthenticated]) │
+│  Local OAuth env            │  make auth-setup (see Makefile)       │
+└────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3154 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/i18n/TRANSLATION/">
+      
+      
+        <link rel="prev" href="../../performance/SEARCH/">
+      
+      
+        <link rel="next" href="../../pipelines/OCR/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Translation workflow - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#translationmd-internationalization-i18n-guide-for-contributors" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Translation workflow
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-i18n-works-in-heritagegraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📖 How i18n Works in HeritageGraph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📁 File Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-translate-a-page-step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ How to Translate a Page (Step-by-Step)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ How to Translate a Page (Step-by-Step)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-1-add-translation-keys-to-enjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Add translation keys to en.json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-add-nepali-translations-to-nejson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Add Nepali translations to ne.json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-replace-hardcoded-strings-in-the-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Replace hardcoded strings in the component
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Replace hardcoded strings in the component">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3a-import-usetranslations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3a. Import useTranslations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3b-initialize-the-translation-function-with-your-namespace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3b. Initialize the translation function with your namespace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3c-replace-every-hardcoded-string-with-tkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3c. Replace every hardcoded string with t('key')
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-before-after-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Complete Before &amp; After Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Complete Before &amp; After Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-hardcoded-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Before (hardcoded English):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-i18n-enabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After (i18n-enabled):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#existing-namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Existing Namespaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🌏 Adding a New Language
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🌏 Adding a New Language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-the-message-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Create the message file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-register-the-locale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Register the locale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-update-the-language-switcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Update the language switcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Tips &amp; Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Tips &amp; Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DO:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dont" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DON'T:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verifying-your-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Verifying Your Translation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Quick Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-i18n-works-in-heritagegraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📖 How i18n Works in HeritageGraph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📁 File Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-translate-a-page-step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ How to Translate a Page (Step-by-Step)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="✅ How to Translate a Page (Step-by-Step)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-1-add-translation-keys-to-enjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Add translation keys to en.json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-add-nepali-translations-to-nejson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: Add Nepali translations to ne.json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-replace-hardcoded-strings-in-the-component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Replace hardcoded strings in the component
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Replace hardcoded strings in the component">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3a-import-usetranslations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3a. Import useTranslations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3b-initialize-the-translation-function-with-your-namespace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3b. Initialize the translation function with your namespace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3c-replace-every-hardcoded-string-with-tkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3c. Replace every hardcoded string with t('key')
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complete-before-after-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔧 Complete Before &amp; After Example
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔧 Complete Before &amp; After Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-hardcoded-english" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Before (hardcoded English):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-i18n-enabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After (i18n-enabled):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#existing-namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Existing Namespaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🌏 Adding a New Language
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🌏 Adding a New Language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-the-message-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Create the message file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-register-the-locale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Register the locale
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-update-the-language-switcher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Update the language switcher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        💡 Tips &amp; Best Practices
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="💡 Tips &amp; Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DO:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dont" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DON'T:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verifying-your-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🧪 Verifying Your Translation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Quick Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📚 Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="translationmd-internationalization-i18n-guide-for-contributors">TRANSLATION.md — Internationalization (i18n) Guide for Contributors</h1>
+<blockquote>
+<p><strong>Purpose:</strong> Step-by-step guide for contributors who want to translate HeritageGraph pages into Nepali (or add new languages).</p>
+</blockquote>
+<hr />
+<h2 id="how-i18n-works-in-heritagegraph">📖 How i18n Works in HeritageGraph</h2>
+<p>HeritageGraph uses <a href="https://next-intl.dev/"><strong>next-intl v4</strong></a> for internationalization in the Next.js frontend (<code>heritage_graph_ui/</code>).</p>
+<p><strong>Key design decisions:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>How it works</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Locale detection</td>
+<td><strong>Cookie-based</strong> — a <code>NEXT_LOCALE</code> cookie stores the user's language preference</td>
+</tr>
+<tr>
+<td>URL structure</td>
+<td><strong>No URL prefix</strong> — <code>/dashboard</code> stays <code>/dashboard</code> in all languages (no <code>/ne/dashboard</code>)</td>
+</tr>
+<tr>
+<td>Default locale</td>
+<td><code>en</code> (English)</td>
+</tr>
+<tr>
+<td>Supported locales</td>
+<td><code>en</code>, <code>ne</code> (Nepali)</td>
+</tr>
+<tr>
+<td>Message files</td>
+<td><code>heritage_graph_ui/messages/en.json</code> and <code>heritage_graph_ui/messages/ne.json</code></td>
+</tr>
+<tr>
+<td>Language switching</td>
+<td><code>LanguageSwitcher</code> component in the dashboard header sets the cookie and refreshes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="file-structure">📁 File Structure</h2>
+<pre><code>heritage_graph_ui/
+├── messages/
+│   ├── en.json                          # English translations (source of truth)
+│   └── ne.json                          # Nepali translations
+├── src/
+│   ├── i18n/
+│   │   ├── routing.ts                   # Locale constants, cookie name, Nepali digit helpers
+│   │   ├── request.ts                   # Server-side locale resolution (reads cookie)
+│   │   ├── navigation.ts               # Re-exports next/link and next/navigation
+│   │   └── index.ts                     # Barrel exports
+│   ├── app/
+│   │   └── layout.tsx                   # Root layout — wraps app in NextIntlClientProvider
+│   └── components/
+│       └── language-switcher.tsx         # UI for toggling between EN ↔ NE
+</code></pre>
+<hr />
+<h2 id="how-to-translate-a-page-step-by-step">✅ How to Translate a Page (Step-by-Step)</h2>
+<h3 id="overview">Overview</h3>
+<p>Converting a page to support i18n is a 3-step process:</p>
+<ol>
+<li><strong>Add translation keys</strong> to <code>messages/en.json</code></li>
+<li><strong>Add Nepali translations</strong> to <code>messages/ne.json</code></li>
+<li><strong>Replace hardcoded strings</strong> in the component with <code>t('key')</code> calls</li>
+</ol>
+<hr />
+<h3 id="step-1-add-translation-keys-to-enjson">Step 1: Add translation keys to <code>en.json</code></h3>
+<p>Open <code>heritage_graph_ui/messages/en.json</code> and add a new <strong>namespace</strong> (top-level key) for the page. Use an existing namespace if the page already has one.</p>
+<p><strong>Example:</strong> Translating the Team page (<code>/team</code>)</p>
+<pre><code class="language-json">{
+  &quot;team&quot;: {
+    &quot;title&quot;: &quot;Meet the Team&quot;,
+    &quot;subtitle&quot;: &quot;The researchers, engineers, and cultural heritage advocates behind HeritageGraph.&quot;,
+    &quot;coreTeam&quot;: &quot;Core Team&quot;,
+    &quot;githubContributors&quot;: &quot;GitHub Contributors&quot;,
+    &quot;githubSubtitle&quot;: &quot;Open-source contributors who have helped build HeritageGraph.&quot;,
+    &quot;viewProfile&quot;: &quot;View Profile&quot;,
+    &quot;contributions&quot;: &quot;{count} contributions&quot;,
+    &quot;loading&quot;: &quot;Loading contributors…&quot;,
+    &quot;viewOnGithub&quot;: &quot;View on GitHub&quot;
+  }
+}
+</code></pre>
+<p><strong>Naming rules:</strong>
+- <strong>Namespace</strong> = page name in camelCase (<code>team</code>, <code>dashboard</code>, <code>contribute</code>, <code>about</code>)
+- <strong>Keys</strong> = descriptive camelCase (<code>heroTitle</code>, <code>submitButton</code>, <code>noResults</code>)
+- <strong>Dynamic values</strong> use <code>{placeholder}</code> syntax: <code>"Welcome, {name}!"</code> → <code>t('welcome', { name: userName })</code></p>
+<hr />
+<h3 id="step-2-add-nepali-translations-to-nejson">Step 2: Add Nepali translations to <code>ne.json</code></h3>
+<p>Open <code>heritage_graph_ui/messages/ne.json</code> and add the <strong>exact same keys</strong> with Nepali values:</p>
+<pre><code class="language-json">{
+  &quot;team&quot;: {
+    &quot;title&quot;: &quot;टोलीलाई भेट्नुहोस्&quot;,
+    &quot;subtitle&quot;: &quot;हेरिटेजग्राफ पछाडिका अनुसन्धानकर्ता, इन्जिनियर, र सांस्कृतिक सम्पदा अधिवक्ताहरू।&quot;,
+    &quot;coreTeam&quot;: &quot;मुख्य टोली&quot;,
+    &quot;githubContributors&quot;: &quot;GitHub योगदानकर्ताहरू&quot;,
+    &quot;githubSubtitle&quot;: &quot;हेरिटेजग्राफ निर्माण गर्न मद्दत गर्ने ओपन-सोर्स योगदानकर्ताहरू।&quot;,
+    &quot;viewProfile&quot;: &quot;प्रोफाइल हेर्नुहोस्&quot;,
+    &quot;contributions&quot;: &quot;{count} योगदान&quot;,
+    &quot;loading&quot;: &quot;योगदानकर्ताहरू लोड हुँदैछ…&quot;,
+    &quot;viewOnGithub&quot;: &quot;GitHub मा हेर्नुहोस्&quot;
+  }
+}
+</code></pre>
+<blockquote>
+<p><strong>Important:</strong> Both JSON files must have the <strong>exact same key structure</strong>. If a key exists in <code>en.json</code> but not in <code>ne.json</code>, it will fall back to the English value.</p>
+</blockquote>
+<hr />
+<h3 id="step-3-replace-hardcoded-strings-in-the-component">Step 3: Replace hardcoded strings in the component</h3>
+<h4 id="3a-import-usetranslations">3a. Import <code>useTranslations</code></h4>
+<pre><code class="language-tsx">import { useTranslations } from 'next-intl';
+</code></pre>
+<blockquote>
+<p>The component must be a client component (<code>'use client'</code>) to use <code>useTranslations</code> in event handlers and JSX. For server components, use <code>getTranslations</code> from <code>next-intl/server</code> instead.</p>
+</blockquote>
+<h4 id="3b-initialize-the-translation-function-with-your-namespace">3b. Initialize the translation function with your namespace</h4>
+<pre><code class="language-tsx">export default function TeamPage() {
+  const t = useTranslations('team');
+  // ...
+}
+</code></pre>
+<h4 id="3c-replace-every-hardcoded-string-with-tkey">3c. Replace every hardcoded string with <code>t('key')</code></h4>
+<p><strong>Before:</strong></p>
+<pre><code class="language-tsx">&lt;h1&gt;Meet the Team&lt;/h1&gt;
+&lt;p&gt;The researchers, engineers, and cultural heritage advocates behind HeritageGraph.&lt;/p&gt;
+&lt;span&gt;{contributor.contributions} contributions&lt;/span&gt;
+</code></pre>
+<p><strong>After:</strong></p>
+<pre><code class="language-tsx">&lt;h1&gt;{t('title')}&lt;/h1&gt;
+&lt;p&gt;{t('subtitle')}&lt;/p&gt;
+&lt;span&gt;{t('contributions', { count: contributor.contributions })}&lt;/span&gt;
+</code></pre>
+<hr />
+<h2 id="complete-before-after-example">🔧 Complete Before &amp; After Example</h2>
+<p>Here's a minimal example showing the full conversion of a component:</p>
+<h3 id="before-hardcoded-english">Before (hardcoded English):</h3>
+<pre><code class="language-tsx">'use client';
+
+export default function ProgressionPage() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Your Progression&lt;/h1&gt;
+      &lt;p&gt;Track your heritage contribution journey&lt;/p&gt;
+      &lt;span&gt;Level 3: Heritage Guardian&lt;/span&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h3 id="after-i18n-enabled">After (i18n-enabled):</h3>
+<pre><code class="language-tsx">'use client';
+
+import { useTranslations } from 'next-intl';
+
+export default function ProgressionPage() {
+  const t = useTranslations('progression');
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{t('title')}&lt;/h1&gt;
+      &lt;p&gt;{t('subtitle')}&lt;/p&gt;
+      &lt;span&gt;{t('currentLevel', { level: 3, rank: t('ranks.heritageGuardian') })}&lt;/span&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<p>With these entries in the message files:</p>
+<p><strong>en.json:</strong></p>
+<pre><code class="language-json">{
+  &quot;progression&quot;: {
+    &quot;title&quot;: &quot;Your Progression&quot;,
+    &quot;subtitle&quot;: &quot;Track your heritage contribution journey&quot;,
+    &quot;currentLevel&quot;: &quot;Level {level}: {rank}&quot;,
+    &quot;ranks&quot;: {
+      &quot;heritageGuardian&quot;: &quot;Heritage Guardian&quot;
+    }
+  }
+}
+</code></pre>
+<p><strong>ne.json:</strong></p>
+<pre><code class="language-json">{
+  &quot;progression&quot;: {
+    &quot;title&quot;: &quot;तपाईंको प्रगति&quot;,
+    &quot;subtitle&quot;: &quot;तपाईंको सम्पदा योगदान यात्रा ट्र्याक गर्नुहोस्&quot;,
+    &quot;currentLevel&quot;: &quot;स्तर {level}: {rank}&quot;,
+    &quot;ranks&quot;: {
+      &quot;heritageGuardian&quot;: &quot;सम्पदा संरक्षक&quot;
+    }
+  }
+}
+</code></pre>
+<hr />
+<h2 id="existing-namespaces">📋 Existing Namespaces</h2>
+<p>These namespaces already exist in both <code>en.json</code> and <code>ne.json</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Namespace</th>
+<th>Used by</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>common</code></td>
+<td>Shared UI (buttons, labels, status)</td>
+<td>✅ Translated</td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>HTML meta tags</td>
+<td>✅ Translated</td>
+</tr>
+<tr>
+<td><code>auth</code></td>
+<td>Login/signup pages</td>
+<td>✅ Translated</td>
+</tr>
+<tr>
+<td><code>nav</code></td>
+<td>Sidebar navigation labels</td>
+<td>✅ Translated</td>
+</tr>
+<tr>
+<td><code>user</code></td>
+<td>User menu (profile, settings)</td>
+<td>✅ Translated</td>
+</tr>
+<tr>
+<td><code>dashboard</code></td>
+<td>Dashboard home page</td>
+<td>✅ Keys exist (page not yet wired)</td>
+</tr>
+<tr>
+<td><code>contribute</code></td>
+<td>Contribution forms</td>
+<td>✅ Keys exist (page not yet wired)</td>
+</tr>
+<tr>
+<td><code>knowledge</code></td>
+<td>Knowledge base pages</td>
+<td>✅ Keys exist (pages not yet wired)</td>
+</tr>
+<tr>
+<td><code>review</code></td>
+<td>Review/moderation UI</td>
+<td>✅ Keys exist (page not yet wired)</td>
+</tr>
+<tr>
+<td><code>calendar</code></td>
+<td>Bikram Sambat calendar</td>
+<td>✅ Translated</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>Language switcher</td>
+<td>✅ Translated</td>
+</tr>
+<tr>
+<td><code>landing</code></td>
+<td>Frontend landing page</td>
+<td>✅ Keys exist (page not yet wired)</td>
+</tr>
+<tr>
+<td><code>about</code></td>
+<td>About page</td>
+<td>✅ Fully wired</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pages that still need translation work:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Namespace to use</th>
+<th>What's needed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard Home</td>
+<td><code>/dashboard</code></td>
+<td><code>dashboard</code></td>
+<td>Wire existing keys + add missing ones</td>
+</tr>
+<tr>
+<td>Team</td>
+<td><code>/team</code></td>
+<td><code>team</code></td>
+<td>Add keys + wire</td>
+</tr>
+<tr>
+<td>Contribute</td>
+<td><code>/contribute</code></td>
+<td><code>contribute</code></td>
+<td>Wire existing keys + add missing ones</td>
+</tr>
+<tr>
+<td>Progression</td>
+<td><code>/progression</code></td>
+<td><code>progression</code></td>
+<td>Add keys + wire</td>
+</tr>
+<tr>
+<td>Leaderboard</td>
+<td><code>/leaderboard</code></td>
+<td><code>leaderboard</code></td>
+<td>Add keys + wire</td>
+</tr>
+<tr>
+<td>Notifications</td>
+<td><code>/notification</code></td>
+<td><code>notifications</code></td>
+<td>Add keys + wire</td>
+</tr>
+<tr>
+<td>Knowledge pages</td>
+<td><code>/knowledge/*</code></td>
+<td><code>knowledge</code></td>
+<td>Wire existing keys</td>
+</tr>
+<tr>
+<td>Curation pages</td>
+<td><code>/curation/*</code></td>
+<td><code>review</code></td>
+<td>Wire existing keys + add missing ones</td>
+</tr>
+<tr>
+<td>Community pages</td>
+<td><code>/community/*</code></td>
+<td><code>community</code></td>
+<td>Add keys + wire</td>
+</tr>
+<tr>
+<td>Graph View</td>
+<td><code>/graphview</code></td>
+<td><code>graphview</code></td>
+<td>Add keys + wire</td>
+</tr>
+<tr>
+<td>Landing page</td>
+<td><code>/</code></td>
+<td><code>landing</code></td>
+<td>Wire existing keys</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="adding-a-new-language">🌏 Adding a New Language</h2>
+<p>To add support for a new language (e.g., Hindi <code>hi</code>):</p>
+<h3 id="1-create-the-message-file">1. Create the message file</h3>
+<pre><code class="language-bash">cp heritage_graph_ui/messages/en.json heritage_graph_ui/messages/hi.json
+</code></pre>
+<p>Then translate all values in <code>hi.json</code> to Hindi.</p>
+<h3 id="2-register-the-locale">2. Register the locale</h3>
+<p>Edit <code>heritage_graph_ui/src/i18n/routing.ts</code>:</p>
+<pre><code class="language-diff">- export const locales = ['en', 'ne'] as const;
++ export const locales = ['en', 'ne', 'hi'] as const;
+</code></pre>
+<h3 id="3-update-the-language-switcher">3. Update the language switcher</h3>
+<p>Edit <code>heritage_graph_ui/src/components/language-switcher.tsx</code>:</p>
+<pre><code class="language-diff">  const localeLabels: Record&lt;Locale, { label: string; flag: string }&gt; = {
+    en: { label: 'English', flag: '🇬🇧' },
+    ne: { label: 'नेपाली', flag: '🇳🇵' },
++   hi: { label: 'हिन्दी', flag: '🇮🇳' },
+  };
+</code></pre>
+<h3 id="4-test">4. Test</h3>
+<p>Switch to the new language using the globe icon in the dashboard header and verify all pages render correctly.</p>
+<hr />
+<h2 id="tips-best-practices">💡 Tips &amp; Best Practices</h2>
+<h3 id="do">DO:</h3>
+<ul>
+<li><strong>Keep keys flat within a namespace</strong> — avoid nesting deeper than 2 levels</li>
+<li><strong>Use <code>{placeholder}</code> for dynamic values</strong> — never concatenate strings</li>
+<li><strong>Reuse <code>common</code> namespace</strong> for shared UI text (Save, Cancel, Delete, etc.)</li>
+<li><strong>Use multiple namespaces in one component</strong> when needed:
+  <code>tsx
+  const t = useTranslations('team');
+  const tc = useTranslations('common');
+  // ...
+  &lt;Button&gt;{tc('save')}&lt;/Button&gt;</code></li>
+<li><strong>Test with both languages</strong> after making changes</li>
+<li><strong>Keep both JSON files in sync</strong> — every key in <code>en.json</code> must exist in <code>ne.json</code></li>
+</ul>
+<h3 id="dont">DON'T:</h3>
+<ul>
+<li><strong>Don't translate inside <code>data</code> arrays/objects</strong> defined outside the component — move them inside or use a pattern like:
+  ```tsx
+  // Instead of this (won't work — t() can only be called inside React components):
+  const items = [{ title: t('item1') }]; // ❌ outside component</li>
+</ul>
+<p>// Do this:
+  export default function MyPage() {
+    const t = useTranslations('myPage');
+    const items = [{ title: t('item1') }]; // ✅ inside component
+  }
+  <code>- **Don't hardcode locale-specific formatting** — use `next-intl`'s date/number formatters
+- **Don't modify `en.json` keys** without updating `ne.json` (and all other locale files)
+- **Don't add HTML inside translation strings** — use rich text formatting instead:</code>tsx
+  // In JSON: "message": "Visit <link>our site</link>"
+  t.rich('message', {
+    link: (chunks) =&gt; <a href="/site">{chunks}</a>
+  })
+  ```</p>
+<hr />
+<h2 id="verifying-your-translation">🧪 Verifying Your Translation</h2>
+<ol>
+<li>
+<p><strong>Start the dev server:</strong>
+   <code>bash
+   cd heritage_graph_ui &amp;&amp; npm run dev</code></p>
+</li>
+<li>
+<p><strong>Switch languages</strong> using the globe (🌐) icon in the dashboard header</p>
+</li>
+<li>
+<p><strong>Check for:</strong></p>
+</li>
+<li>Missing translations (will show the English fallback or the raw key)</li>
+<li>Layout breakage (Nepali text is often longer than English)</li>
+<li>Placeholder values rendering correctly (<code>{name}</code>, <code>{count}</code>, etc.)</li>
+<li>
+<p>Text not overflowing containers</p>
+</li>
+<li>
+<p><strong>Validate JSON syntax:</strong>
+   <code>bash
+   # Quick check for valid JSON
+   python3 -c "import json; json.load(open('messages/en.json')); print('en.json OK')"
+   python3 -c "import json; json.load(open('messages/ne.json')); print('ne.json OK')"</code></p>
+</li>
+<li>
+<p><strong>Check for missing keys</strong> (keys in en.json but not in ne.json):
+   ```bash
+   # Compare key structures
+   python3 -c "
+   import json</p>
+</li>
+</ol>
+<p>def get_keys(obj, prefix=''):
+       keys = set()
+       for k, v in obj.items():
+           full = f'{prefix}.{k}' if prefix else k
+           if isinstance(v, dict):
+               keys |= get_keys(v, full)
+           else:
+               keys.add(full)
+       return keys</p>
+<p>en = get_keys(json.load(open('messages/en.json')))
+   ne = get_keys(json.load(open('messages/ne.json')))
+   missing = en - ne
+   if missing:
+       print(f'Missing {len(missing)} keys in ne.json:')
+       for k in sorted(missing):
+           print(f'  - {k}')
+   else:
+       print('All keys present in both files ✅')
+   "
+   ```</p>
+<hr />
+<h2 id="quick-reference">🔍 Quick Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Use translations in a client component</td>
+<td><code>import { useTranslations } from 'next-intl'</code> → <code>const t = useTranslations('namespace')</code></td>
+</tr>
+<tr>
+<td>Use translations in a server component</td>
+<td><code>import { getTranslations } from 'next-intl/server'</code> → <code>const t = await getTranslations('namespace')</code></td>
+</tr>
+<tr>
+<td>Dynamic values</td>
+<td><code>t('greeting', { name: 'Nabin' })</code> → <code>"Hello, {name}!"</code> → <code>"Hello, Nabin!"</code></td>
+</tr>
+<tr>
+<td>Nested keys</td>
+<td><code>t('knowledge.entity.title')</code> or use nested namespace <code>useTranslations('knowledge.entity')</code></td>
+</tr>
+<tr>
+<td>Plural forms</td>
+<td><code>t('items', { count: 5 })</code> with ICU syntax in JSON: <code>"{count, plural, one {# item} other {# items}}"</code></td>
+</tr>
+<tr>
+<td>Rich text (inline JSX)</td>
+<td><code>t.rich('msg', { bold: (chunks) =&gt; &lt;strong&gt;{chunks}&lt;/strong&gt; })</code></td>
+</tr>
+<tr>
+<td>Raw HTML</td>
+<td><code>t.raw('htmlContent')</code> — use sparingly</td>
+</tr>
+<tr>
+<td>Locale cookie name</td>
+<td><code>NEXT_LOCALE</code></td>
+</tr>
+<tr>
+<td>Supported locales</td>
+<td><code>en</code>, <code>ne</code> (defined in <code>src/i18n/routing.ts</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="further-reading">📚 Further Reading</h2>
+<ul>
+<li><a href="https://next-intl.dev/docs/getting-started">next-intl documentation</a></li>
+<li><a href="https://unicode-org.github.io/icu/userguide/format_parse/messages/">ICU Message Format</a></li>
+<li><a href="../../CONTRIBUTING.md">HeritageGraph Contributing Guide</a></li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

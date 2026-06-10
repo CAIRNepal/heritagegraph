@@ -1,0 +1,2373 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/internal/UI_UX_NOTES/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>UI/UX notes (internal) - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#uiux-notes-internal" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              UI/UX notes (internal)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="uiux-notes-internal">UI/UX notes (internal)</h1>
+<blockquote>
+<p>Merged from UI_UX_REVIEW_localhost_3000.md and UI_UX_AUDIT_ALL_PAGES.md. Not user-facing.</p>
+</blockquote>
+<hr />
+<h1 id="uiux-review-httplocalhost3000-dashboard-home">UI/UX Review — <code>http://localhost:3000/</code> (Dashboard Home)</h1>
+<blockquote>
+<p>Scope: Review based on the actual page composition and components in <code>heritage_graph_ui</code> (dashboard home <code>/</code>).<br />
+Focus: usability, clarity, perceived reliability, and production-readiness.</p>
+</blockquote>
+<h2 id="first-impression-first-35-seconds">First impression (first 3–5 seconds)</h2>
+<ul>
+<li><strong>Feels “designed” and modern</strong> (gradient hero, glass cards, icons, motion).</li>
+<li><strong>But it reads like a marketing landing page inside a dashboard</strong>, not an operational tool UI. That reduces perceived seriousness/reliability.</li>
+<li>It communicates “go somewhere/do something” more than it communicates <strong>system state</strong> (what changed, what needs attention, what’s next).</li>
+</ul>
+<h2 id="what-works-well-keep">What works well (keep)</h2>
+<ul>
+<li><strong>Clear primary CTAs</strong>: “New Contribution” and “Explore Knowledge Graph” are obvious and appropriately prominent.</li>
+<li><strong>Chunked information architecture</strong>: Quick Actions, Browse by Category, Curation &amp; Review sections are easy to scan.</li>
+<li><strong>Consistent interaction pattern</strong>: card = clickable, icon + title + description, arrow affordance.</li>
+<li><strong>Strong application shell</strong>: sticky header + persistent sidebar makes it feel like a real product environment.</li>
+<li><strong>Credibility anchors</strong>: footer has CAIR-Nepal branding + GitHub + contact links (good trust signals).</li>
+</ul>
+<h2 id="what-is-extremely-good-standout">What is extremely good (standout)</h2>
+<ul>
+<li><strong>Task-oriented homepage structure</strong>: Quick Actions + Category shortcuts + Curation shortcuts is an effective “jumping off” layout for returning users.</li>
+<li><strong>Role-aware navigation</strong> in the sidebar (moderator/reviewer/platform admin gating) is a major reliability signal <em>when it behaves predictably</em>.</li>
+<li><strong>Sidebar scroll-to-top affordance</strong> is rare and genuinely useful for long nav lists.</li>
+</ul>
+<h2 id="what-is-good-but-could-be-improved">What is good but could be improved</h2>
+<ul>
+<li><strong>Hero section</strong>: visually strong, but it’s doing more aesthetic work than product work.</li>
+<li>Improve by adding 1–2 high-signal operational items: <strong>pending reviews</strong>, <strong>your drafts</strong>, <strong>last activity</strong>, <strong>system status</strong>, etc.</li>
+<li><strong>Motion/animation</strong>: fine when subtle; current usage risks feeling “demo-ish.”</li>
+<li>Reduce animation count/duration; avoid multiple hover scales across the whole page.</li>
+<li><strong>Section headings</strong>: clear but repetitive in gradient emphasis.</li>
+<li>Keep gradients as accents; avoid making every heading “special.”</li>
+<li><strong>Glassmorphism</strong>: can feel premium, but is fragile.</li>
+<li>Any contrast slip (especially in dark mode) quickly reads as unprofessional/unreliable.</li>
+<li><strong>Header controls cluster</strong> (progress badge, notifications, auth, theme):</li>
+<li>Useful, but can become visually noisy.</li>
+<li>Add tooltips/labels, ensure distinct states, and tighten spacing.</li>
+</ul>
+<h2 id="what-is-bad-usability-issues-confusion-hierarchy">What is bad (usability issues, confusion, hierarchy)</h2>
+<ul>
+<li><strong>Navigation-heavy, state-light</strong>: the homepage doesn’t answer core dashboard questions:</li>
+<li>What changed since my last visit?</li>
+<li>What is blocked or needs review?</li>
+<li>What is the next recommended action?</li>
+<li>Is my work saved / synced / approved?</li>
+<li><strong>Perceived reliability hit from debug behavior</strong>:</li>
+<li>The home page performs a backend call to a <code>testthelogin</code> endpoint and logs to console. This reads like prototype scaffolding.</li>
+<li>It also falls back to <code>http://localhost:8000</code> if env isn’t set, which can cause real “it’s broken” experiences in non-local environments.</li>
+<li><strong>Overuse of gradients + glass + hover scale</strong>:</li>
+<li>Too many “effects” makes it harder to see what matters most. Everything competes for attention.</li>
+<li><strong>Sidebar density</strong>:</li>
+<li>The knowledgebase list is long; for new users it’s intimidating and hurts findability (high cognitive load).</li>
+<li><strong>Typography hierarchy inside cards isn’t tight</strong>:</li>
+<li>Titles/descriptions across sections feel similarly weighted, so users can’t quickly rank importance/urgency.</li>
+</ul>
+<h2 id="what-should-be-removed-unnecessary-distracting-harmful">What should be removed (unnecessary / distracting / harmful)</h2>
+<ul>
+<li><strong>Remove the homepage “test login” fetch + console logging</strong>. It’s actively harmful to trust and can create noisy failures.</li>
+<li><strong>Remove redundant decorative layers</strong> that don’t convey meaning (multiple hero “orbs,” hover overlays on everything).</li>
+<li>If “Browse by Category” mirrors the sidebar 1:1, <strong>remove or shrink it</strong> to only the top 3–5 most-used categories.</li>
+</ul>
+<h2 id="specific-uiux-issues-layout-spacing-typography-color-responsiveness-accessibility">Specific UI/UX issues (layout, spacing, typography, color, responsiveness, accessibility)</h2>
+<h3 id="layout-spacing">Layout &amp; spacing</h3>
+<ul>
+<li>The page is airy with many large sections and generous spacing. Looks nice, but increases scrolling before users see “work state.”</li>
+<li>Action: add an above-the-fold status panel; compress or collapse one navigation-heavy section.</li>
+</ul>
+<h3 id="typography-hierarchy">Typography &amp; hierarchy</h3>
+<ul>
+<li>Heavy hero styling (very bold, large, gradient emphasis) reads marketing-first.</li>
+<li>Action: reduce hero weight and shift emphasis to operational metrics and “next actions.”</li>
+</ul>
+<h3 id="color-contrast">Color &amp; contrast</h3>
+<ul>
+<li>White text on bright gradients + translucent surfaces is easy to get wrong for accessibility.</li>
+<li>Action: run contrast checks on hero badge text and buttons; consider a darker overlay behind text.</li>
+</ul>
+<h3 id="responsiveness">Responsiveness</h3>
+<ul>
+<li>“Browse by Category” becomes many small targets on mobile (<code>grid-cols-2</code>), increasing mis-taps.</li>
+<li>Action: use a short list, or horizontally scrollable chips with larger tap targets on small screens.</li>
+</ul>
+<h3 id="accessibility">Accessibility</h3>
+<ul>
+<li>Card-as-link UX needs strong focus styles and keyboard navigation clarity.</li>
+<li>Motion should respect <code>prefers-reduced-motion</code>.</li>
+<li>Action: ensure visible focus rings on all clickable cards/links; implement reduced-motion behavior for major animations.</li>
+</ul>
+<h3 id="feedback-states">Feedback states</h3>
+<ul>
+<li>The home page itself is mostly static navigation; the app shell has “live” elements (notifications/progression).</li>
+<li>Action: if key panels fail to load, show a small, non-alarming status indicator so users don’t assume the whole platform is unstable.</li>
+</ul>
+<h2 id="trust-reliability-signals-credible-safe-professional">Trust &amp; reliability signals (credible, safe, professional?)</h2>
+<h3 id="positive-signals">Positive signals</h3>
+<ul>
+<li>CAIR-Nepal logo + outbound links (GitHub, organization site, email) increase legitimacy.</li>
+<li>Role-based navigation suggests real access control and governance.</li>
+</ul>
+<h3 id="negative-signals">Negative signals</h3>
+<ul>
+<li>Prototype smells (console logging, <code>testthelogin</code> endpoint) reduce professional credibility.</li>
+<li>Marketing copy inside an authenticated dashboard can feel like filler rather than function.</li>
+<li>Too many gradients/effects can read as “template UI,” not a stable tool used daily.</li>
+</ul>
+<h2 id="suggestions-to-feel-more-reliable-polished-production-ready-high-impact">Suggestions to feel more reliable, polished, production-ready (high impact)</h2>
+<ul>
+<li><strong>Replace hero paragraph with operational content</strong>:</li>
+<li>Pending reviews, your drafts, last submission status, “needs attention,” system status.</li>
+<li><strong>Add a “Today / Next actions” panel</strong> above the fold:</li>
+<li>Max 3 items, each with a clear CTA. This instantly raises usability and maturity.</li>
+<li><strong>Reduce effects density</strong>:</li>
+<li>Use gradients as accents; make most surfaces neutral/stable; remove most hover scaling.</li>
+<li><strong>Tighten navigation</strong>:</li>
+<li>Sidebar: collapse knowledgebase or add a “More…” section; consider a nav search.</li>
+<li>Homepage: avoid mirroring full sidebar; show only the most-used destinations.</li>
+<li><strong>Kill debug behavior on <code>/</code></strong>:</li>
+<li>Remove test fetch/logging; ensure API base URL never silently falls back in production; surface failures only when actionable.</li>
+<li><strong>Accessibility polish pass</strong>:</li>
+<li>Improve focus visibility on glass backgrounds; implement reduced-motion; verify contrast in both themes.</li>
+</ul>
+<hr />
+<h1 id="uiux-robustness-audit-all-pages">UI/UX Robustness Audit — All Pages</h1>
+<blockquote>
+<p>Scope: All <code>page.tsx</code> / <code>page-client.tsx</code> routes in:
+- <code>heritage_graph_ui/src/app/**</code>
+- <code>heritage_graph_landing/src/app/**</code></p>
+<p>Goal: Make the product feel <strong>robust, credible, and production-ready</strong> (states, consistency, accessibility, and trust signals).</p>
+</blockquote>
+<h2 id="global-findings-top-10-prioritized">Global findings (top 10, prioritized)</h2>
+<p>1) <strong>Hardcoded API fallbacks (<code>http://localhost:8000</code>, <code>http://backend.localhost</code>) are widespread</strong>
+   - <strong>Why it hurts</strong>: production misconfig can silently “work” against localhost or fail in confusing ways.
+   - <strong>Fix</strong>: centralize API base resolution in one helper, <strong>remove localhost fallbacks</strong>, and fail fast with a clear UI banner/toast.</p>
+<p>2) <strong>Console logs + debug-only behavior are present in real user routes</strong>
+   - <strong>Why it hurts</strong>: “prototype smell,” noisy failures, and users/devtools showing instability.
+   - <strong>Fix</strong>: add an ESLint rule to block <code>console.*</code> in production builds and replace with user-facing errors + optional telemetry.</p>
+<p>3) <strong>Auth/permissions gating is inconsistent</strong>
+   - <strong>Why it hurts</strong>: users see blank/partial screens or generic errors when they actually need to sign in / request access.
+   - <strong>Fix</strong>: shared <code>RequireAuth</code> + <code>RequireRole</code> wrappers with consistent messaging and CTAs.</p>
+<p>4) <strong>Loading/error/empty states are inconsistent and often not actionable</strong>
+   - <strong>Why it hurts</strong>: “Error.” without next steps feels unreliable.
+   - <strong>Fix</strong>: standard <code>StatePanel</code> (loading/empty/error) with <strong>Retry</strong>, <strong>Go back</strong>, and <strong>Report issue</strong> link.</p>
+<p>5) <strong>Accessibility gaps: non-semantic clickable rows/divs, missing labels, focus clarity</strong>
+   - <strong>Fix</strong>: use <code>&lt;button&gt;</code>/<code>&lt;a&gt;</code> for interactive elements, add proper <code>&lt;Label htmlFor&gt;</code> for inputs, ensure visible focus rings, and add <code>aria-label</code> for icon-only buttons.</p>
+<p>6) <strong>Reduced-motion support is inconsistent</strong>
+   - <strong>Fix</strong>: one animation helper that auto-disables heavy motion under <code>prefers-reduced-motion</code>.</p>
+<p>7) <strong>Visual consistency drift due to repeated copy-pasted “hero/section” patterns</strong>
+   - <strong>Fix</strong>: extract shared <code>PageHero</code>, <code>PageSectionTitle</code>, <code>PageContainer</code>, and “glass card” wrappers.</p>
+<p>8) <strong>Table-only pages lack page-level context</strong>
+   - <strong>Fix</strong>: enforce per-page <code>h1</code>, short description, and consistent padding/breadcrumb/help links.</p>
+<p>9) <strong>Trust/provenance/status is not consistently surfaced across record views</strong>
+   - <strong>Fix</strong>: standard “Record status / provenance / confidence / sources” panel across all view pages.</p>
+<p>10) <strong>Responsive risks on dense tables and multi-panel screens</strong>
+   - <strong>Fix</strong>: stack panels on mobile, make tabs scrollable, and add card-layout fallbacks for tables under <code>md</code>.</p>
+<hr />
+<h2 id="per-page-recommendations">Per-page recommendations</h2>
+<h3 id="heritage_graph_uisrcappdashboardpagetsx"><code>/</code> — <code>heritage_graph_ui/src/app/(dashboard)/page.tsx</code></h3>
+<ul>
+<li><strong>Auth clarity</strong>: if unauthenticated, show a clear “Sign in” CTA or “Guest mode” copy (avoid silently generic UI).</li>
+<li><strong>A11y</strong>: ensure card links have strong focus styles and meaningful accessible names.</li>
+<li><strong>Consistency</strong>: keep this page as the baseline; extract shared hero/section components to reduce drift.</li>
+</ul>
+<h3 id="authlogin-heritage_graph_uisrcappauthloginpagetsx"><code>/auth/login</code> — <code>heritage_graph_ui/src/app/auth/login/page.tsx</code></h3>
+<ul>
+<li><strong>Consistency</strong>: match app shell visuals (centered card, consistent typography).</li>
+<li><strong>Callback safety</strong>: keep sanitization consistent across auth entrypoints.</li>
+</ul>
+<h3 id="authlogin-heritage_graph_uisrcappauthloginpage-clienttsx"><code>/auth/login</code> — <code>heritage_graph_ui/src/app/auth/login/page-client.tsx</code></h3>
+<ul>
+<li><strong>A11y</strong>: add visible labels (not placeholders-only) for username/password.</li>
+<li><strong>Clarity</strong>: explain Dev auth vs Google OAuth (when each applies).</li>
+<li><strong>Supportability</strong>: add “Copy error details” + link to common fixes (auth guide).</li>
+</ul>
+<h3 id="autherror-heritage_graph_uisrcappautherrorpagetsx"><code>/auth/error</code> — <code>heritage_graph_ui/src/app/auth/error/page.tsx</code></h3>
+<ul>
+<li><strong>Fallback UX</strong>: use a consistent loading card and <code>role="status"</code>.</li>
+</ul>
+<h3 id="autherror-heritage_graph_uisrcappautherrorpage-clienttsx"><code>/auth/error</code> — <code>heritage_graph_ui/src/app/auth/error/page-client.tsx</code></h3>
+<ul>
+<li><strong>Trust</strong>: show raw error code in a copyable block for support.</li>
+<li><strong>Navigation</strong>: ensure “Home” doesn’t send unauthenticated users into a redirect loop.</li>
+</ul>
+<h3 id="services-heritage_graph_uisrcappservicespagetsx"><code>/services</code> — <code>heritage_graph_ui/src/app/services/page.tsx</code></h3>
+<ul>
+<li><strong>Hardcoded URLs</strong>: remove <code>http://localhost*</code>/<code>backend.localhost</code>/Keycloak placeholders or gate behind dev-only.</li>
+<li><strong>Design drift</strong>: rebuild with the current design system (shadcn, <code>glassCard</code>) or remove from prod routes.</li>
+</ul>
+<h3 id="contributescanid-heritage_graph_uisrcappcontributescanidpagetsx"><code>/contribute/scan/[id]</code> — <code>heritage_graph_ui/src/app/contribute/scan/[id]/page.tsx</code></h3>
+<ul>
+<li><strong>Trust-killer</strong>: <code>/terms</code> and <code>/privacy</code> links appear missing—either implement pages or remove links.</li>
+<li><strong>Bug</strong>: errors are set but not rendered; show an error panel + retry.</li>
+<li><strong>A11y</strong>: add labels for contact inputs; add privacy/retention copy if collecting email/phone.</li>
+</ul>
+<h3 id="communitycontributors-heritage_graph_uisrcappdashboardcommunitycontributorspagetsx"><code>/community/contributors</code> — <code>heritage_graph_ui/src/app/(dashboard)/community/contributors/page.tsx</code></h3>
+<ul>
+<li><strong>Remove localhost fallback</strong> and centralize API base.</li>
+<li><strong>A11y</strong>: icon-only pagination needs <code>aria-label</code>.</li>
+<li><strong>Empty state</strong>: add “Clear search” CTA when filters produce no results.</li>
+</ul>
+<h3 id="communityorganizations-heritage_graph_uisrcappdashboardcommunityorganizationspagetsx"><code>/community/organizations</code> — <code>heritage_graph_ui/src/app/(dashboard)/community/organizations/page.tsx</code></h3>
+<ul>
+<li><strong>Auth gating</strong>: when signed out, show “Sign in to create/join”.</li>
+<li><strong>Validation</strong>: show inline validation (not toast-only).</li>
+<li><strong>A11y</strong>: clickable cards must be keyboard reachable.</li>
+</ul>
+<h3 id="leaderboard-heritage_graph_uisrcappdashboardleaderboardpagetsx"><code>/leaderboard</code> — <code>heritage_graph_ui/src/app/(dashboard)/leaderboard/page.tsx</code></h3>
+<ul>
+<li><strong>API base</strong>: remove localhost fallback.</li>
+<li><strong>Consistency</strong>: use shadcn <code>Button</code> for retry.</li>
+<li><strong>Perf</strong>: consider virtualization for large lists; honor reduced motion.</li>
+</ul>
+<h3 id="progression-heritage_graph_uisrcappdashboardprogressionpagetsx"><code>/progression</code> — <code>heritage_graph_ui/src/app/(dashboard)/progression/page.tsx</code></h3>
+<ul>
+<li><strong>Auth story</strong>: either make public safely or show “Sign in for personalized progression”.</li>
+<li><strong>Reduced motion</strong>: progress animations should respect user preference.</li>
+<li><strong>Copy density</strong>: collapse long explanations into “Learn more”.</li>
+</ul>
+<h3 id="team-heritage_graph_uisrcappdashboardteampagetsx"><code>/team</code> — <code>heritage_graph_ui/src/app/(dashboard)/team/page.tsx</code></h3>
+<ul>
+<li><strong>Security/trust</strong>: ensure external links are <code>https://</code> (not <code>http://</code>).</li>
+<li><strong>Recovery</strong>: add retry for contributor fetch errors.</li>
+<li><strong>Reduced motion</strong>: disable pulse effects under reduced-motion.</li>
+</ul>
+<h3 id="notification-heritage_graph_uisrcappdashboardnotificationpagetsx"><code>/notification</code> — <code>heritage_graph_ui/src/app/(dashboard)/notification/page.tsx</code></h3>
+<ul>
+<li><strong>Auth clarity</strong>: explicit sign-in prompt if unauthenticated.</li>
+<li><strong>A11y</strong>: clickable <code>&lt;li&gt;</code> needs keyboard support or use <code>&lt;button&gt;/&lt;a&gt;</code>.</li>
+<li><strong>Pagination</strong>: remove <code>href="#"</code> and use real buttons/routes.</li>
+</ul>
+<h3 id="account-heritage_graph_uisrcappdashboardaccountpagetsx"><code>/account</code> — <code>heritage_graph_ui/src/app/(dashboard)/account/page.tsx</code></h3>
+<ul>
+<li><strong>Critical trust issue</strong>: hardcoded user/devices data should not appear in production UI.</li>
+<li><strong>Implementation</strong>: wire to real session/profile data or gate behind “Not implemented” messaging.</li>
+</ul>
+<h3 id="platform-admin-heritage_graph_uisrcappdashboardplatform-adminpagetsx"><code>/platform-admin</code> — <code>heritage_graph_ui/src/app/(dashboard)/platform-admin/page.tsx</code></h3>
+<ul>
+<li><strong>Redirect UX</strong>: add a small loading skeleton while redirecting.</li>
+</ul>
+<h3 id="platform-adminusers-heritage_graph_uisrcappdashboardplatform-adminuserspagetsx"><code>/platform-admin/users</code> — <code>heritage_graph_ui/src/app/(dashboard)/platform-admin/users/page.tsx</code></h3>
+<ul>
+<li><strong>403 handling</strong>: show explicit “Forbidden” panel with next steps.</li>
+<li><strong>Loading</strong>: use skeleton rows (reduces layout shift).</li>
+</ul>
+<h3 id="platform-adminusersid-heritage_graph_uisrcappdashboardplatform-adminusersidpagetsx"><code>/platform-admin/users/[id]</code> — <code>heritage_graph_ui/src/app/(dashboard)/platform-admin/users/[id]/page.tsx</code></h3>
+<ul>
+<li><strong>Error recovery</strong>: show the failure reason + retry, not just “no user”.</li>
+<li><strong>UX</strong>: after role changes, show inline confirmation + updated badge.</li>
+</ul>
+<h3 id="usersslug-heritage_graph_uisrcappdashboardusersslugpagetsx"><code>/users/[slug]</code> — <code>heritage_graph_ui/src/app/(dashboard)/users/[slug]/page.tsx</code></h3>
+<ul>
+<li><strong>A11y</strong>: icon-only actions need <code>aria-label</code>.</li>
+<li><strong>Empty tabs</strong>: hide “Coming soon” tabs or show a clear placeholder panel.</li>
+<li><strong>Upload validation</strong>: add file size/type constraints + user feedback.</li>
+</ul>
+<h3 id="graphview-heritage_graph_uisrcappdashboardgraphviewpagetsx"><code>/graphview</code> — <code>heritage_graph_ui/src/app/(dashboard)/graphview/page.tsx</code></h3>
+<ul>
+<li><strong>Good</strong>: loader uses <code>role="status"</code>. Consider skeleton toolbar to reduce jump.</li>
+</ul>
+<h3 id="moderate-heritage_graph_uisrcappdashboardmoderatepagetsx"><code>/moderate</code> — <code>heritage_graph_ui/src/app/(dashboard)/moderate/page.tsx</code></h3>
+<ul>
+<li><strong>Missing context</strong>: add title, description, and permission gating.</li>
+<li><strong>States</strong>: add page-level loading/error/empty if table component doesn’t.</li>
+</ul>
+<h3 id="infobox-heritage_graph_uisrcappdashboardinfoboxpagetsx"><code>/infobox</code> — <code>heritage_graph_ui/src/app/(dashboard)/infobox/page.tsx</code></h3>
+<ul>
+<li><strong>Production risk</strong>: looks like a mock (“Banana”)—remove/gate behind dev flag.</li>
+<li><strong>A11y</strong>: tabs should be buttons with keyboard interaction, not clickable list items.</li>
+</ul>
+<h3 id="versionviewer-heritage_graph_uisrcappdashboardversionviewerpagetsx"><code>/versionviewer</code> — <code>heritage_graph_ui/src/app/(dashboard)/versionviewer/page.tsx</code></h3>
+<ul>
+<li><strong>Clarity</strong>: add “What is this?” explanation; “version viewer” is ambiguous.</li>
+<li><strong>Robustness</strong>: ensure import target exists and has error boundaries.</li>
+</ul>
+<h3 id="test-heritage_graph_uisrcappdashboardtestpagetsx-and-page-clienttsx"><code>/test</code> — <code>heritage_graph_ui/src/app/(dashboard)/test/page.tsx</code> and <code>page-client.tsx</code></h3>
+<ul>
+<li><strong>Remove from production</strong> or gate behind env flag.</li>
+<li>Replace <code>alert()</code> with toast if kept for demos; align styling with app theme.</li>
+</ul>
+<hr />
+<h2 id="knowledge-base-list-pages-table-only">Knowledge base list pages (table-only)</h2>
+<p>These pages are mostly “render a table and nothing else,” which feels thin/fragile and hurts usability:
+- <code>/knowledge/entity</code> — <code>heritage_graph_ui/src/app/(dashboard)/knowledge/entity/page.tsx</code>
+- <code>/knowledge/person</code> — <code>.../knowledge/person/page.tsx</code>
+- <code>/knowledge/location</code> — <code>.../knowledge/location/page.tsx</code>
+- <code>/knowledge/event</code> — <code>.../knowledge/event/page.tsx</code>
+- <code>/knowledge/period</code> — <code>.../knowledge/period/page.tsx</code>
+- <code>/knowledge/tradition</code> — <code>.../knowledge/tradition/page.tsx</code>
+- <code>/knowledge/source</code> — <code>.../knowledge/source/page.tsx</code>
+- <code>/knowledge/structure</code> — <code>.../knowledge/structure/page.tsx</code>
+- <code>/knowledge/monument</code> — <code>.../knowledge/monument/page.tsx</code>
+- <code>/knowledge/festival</code> — <code>.../knowledge/festival/page.tsx</code>
+- <code>/knowledge/iconography</code> — <code>.../knowledge/iconography/page.tsx</code>
+- <code>/knowledge/deity</code> — <code>.../knowledge/deity/page.tsx</code>
+- <code>/knowledge/ritual</code> — <code>.../knowledge/ritual/page.tsx</code>
+- <code>/knowledge/guthi</code> — <code>.../knowledge/guthi/page.tsx</code></p>
+<p><strong>Fix for all of them</strong>
+- Add a consistent <code>h1</code> + 1–2 line description (“what is this list?”).
+- Provide “How to contribute” and “What do these statuses mean?” links.
+- Ensure consistent page-level loading/error/empty states (don’t rely on the table alone).</p>
+<hr />
+<h2 id="knowledge-base-view-pages-dynamic-id">Knowledge base view pages (dynamic <code>[id]</code>)</h2>
+<h3 id="knowledgeentityviewid-heritage_graph_uisrcappdashboardknowledgeentityviewidpage-clienttsx"><code>/knowledge/entity/view/[id]</code> — <code>heritage_graph_ui/src/app/(dashboard)/knowledge/entity/view/[id]/page-client.tsx</code></h3>
+<ul>
+<li>Centralize API base (remove localhost fallback).</li>
+<li>Improve error state to distinguish <strong>unauthenticated</strong> vs <strong>not found</strong> vs <strong>server error</strong>, and add Retry.</li>
+<li>Render objects as readable panels (collapsible JSON with copy) instead of raw <code>JSON.stringify</code>.</li>
+</ul>
+<h3 id="knowledgedomainviewid-heritage_graph_uisrcappdashboardknowledgedomainviewidpage-clienttsx"><code>/knowledge/[domain]/view/[id]</code> — <code>heritage_graph_ui/src/app/(dashboard)/knowledge/[domain]/view/[id]/page-client.tsx</code></h3>
+<ul>
+<li>Sticky action bar: ensure it doesn’t cover content on small screens; add <code>scroll-margin-top</code>.</li>
+<li>Add clearer explanations when reactions/forks/comments are disabled (with CTA to create a proper cultural entity).</li>
+<li>Replace plain paragraph errors with a consistent error panel + retry.</li>
+</ul>
+<h3 id="knowledgestructureviewid-heritage_graph_uisrcappdashboardknowledgestructureviewidpage-clienttsx"><code>/knowledge/structure/view/[id]</code> — <code>heritage_graph_ui/src/app/(dashboard)/knowledge/structure/view/[id]/page-client.tsx</code></h3>
+<ul>
+<li>Unify env var usage (<code>NEXT_PUBLIC_API_*</code>): it currently differs from the rest.</li>
+<li>Remove console error logs; show UI-only error with retry.</li>
+<li>Hide “Coming Soon” tabs (or clearly gate them) to avoid dead ends.</li>
+</ul>
+<hr />
+<h2 id="curation-pages">Curation pages</h2>
+<h3 id="curationdashboard-heritage_graph_uisrcappdashboardcurationdashboardpagetsx"><code>/curation/dashboard</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/dashboard/page.tsx</code></h3>
+<ul>
+<li>Ensure reviewer/moderator terminology matches actual permissions.</li>
+<li>Add “Request reviewer access” CTA when denied.</li>
+</ul>
+<h3 id="curationactivity-heritage_graph_uisrcappdashboardcurationactivitypagetsx"><code>/curation/activity</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/activity/page.tsx</code></h3>
+<ul>
+<li>Add sticky filters or jump navigation for long timelines.</li>
+<li>Centralize API base (remove localhost fallback).</li>
+</ul>
+<h3 id="curationcontributions-heritage_graph_uisrcappdashboardcurationcontributionspagetsx"><code>/curation/contributions</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/contributions/page.tsx</code></h3>
+<ul>
+<li><strong>Misleading counts</strong>: tab counts are computed from current results, not total; fix before relying on it.</li>
+<li>Add role gating and 403 handling.</li>
+<li>Ensure clickable table rows are keyboard accessible.</li>
+</ul>
+<h3 id="curationreview-heritage_graph_uisrcappdashboardcurationreviewpagetsx"><code>/curation/review</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/review/page.tsx</code></h3>
+<ul>
+<li>Make tabs horizontally scrollable on mobile.</li>
+<li>Prefer skeleton list over a single spinner.</li>
+</ul>
+<h3 id="curationreviewid-heritage_graph_uisrcappdashboardcurationreviewidpagetsx"><code>/curation/review/[id]</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/review/[id]/page.tsx</code></h3>
+<ul>
+<li>Enforce required conflict resolution before allowing submit when conflicts exist.</li>
+<li>Add confirm dialogs for destructive actions (merge/promote/reject).</li>
+<li>Implement mobile layout (panel tabs) for the 3-panel workspace.</li>
+</ul>
+<h3 id="curationconflicts-heritage_graph_uisrcappdashboardcurationconflictspagetsx"><code>/curation/conflicts</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/conflicts/page.tsx</code></h3>
+<ul>
+<li>Use real links/buttons (keyboard access) for list items.</li>
+<li>Put Retry in a consistent place.</li>
+</ul>
+<h3 id="curationqr-contributions-heritage_graph_uisrcappdashboardcurationqr-contributionspagetsx"><code>/curation/qr-contributions</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/qr-contributions/page.tsx</code></h3>
+<ul>
+<li>Role check before showing contributor emails; minimize sensitive data by default.</li>
+<li>Fix action handler state flow (avoid stale state when approving/rejecting).</li>
+</ul>
+<h3 id="curationforks-heritage_graph_uisrcappdashboardcurationforkspagetsx"><code>/curation/forks</code> — <code>heritage_graph_ui/src/app/(dashboard)/curation/forks/page.tsx</code></h3>
+<ul>
+<li>Add role gating and 403 UI.</li>
+<li>Improve large-tree performance (collapse/virtualize) and add <code>aria-expanded</code> semantics.</li>
+</ul>
+<hr />
+<h2 id="contribute-pages">Contribute pages</h2>
+<p>Most contribute routes rely heavily on shared form components. The “robustness” win is mostly <strong>standardizing UX and guardrails</strong>:</p>
+<ul>
+<li>Add consistent page headers (“What you’re submitting”, “What happens next”).</li>
+<li>Provide save/progress affordances, clear required-field marking, and inline validation (not toast-only).</li>
+<li>Decide and communicate whether submissions are allowed while signed out (and provide consistent “Sign in to submit” UX if required).</li>
+<li>Ensure date/coordinates fields are structured (avoid free-text where it matters).</li>
+</ul>
+<p>Notable high-impact pages:</p>
+<h3 id="contributeentityedit-and-contributeentityrevise"><code>/contribute/entity/edit</code> and <code>/contribute/entity/revise</code></h3>
+<ul>
+<li>Stop passing full JSON via URL query strings (fragile). Prefer entity ID + refetch.</li>
+<li>Remove debug logs; add inline parse/validation error panel.</li>
+</ul>
+<h3 id="contributestructure-and-contributeritual-page-client-wizards"><code>/contribute/structure</code> and <code>/contribute/ritual</code> (page-client wizards)</h3>
+<ul>
+<li>Add reduced-motion support.</li>
+<li>Add step change announcements for screen readers.</li>
+<li>Validate date formats and coordinate formats with examples and inline errors.</li>
+</ul>
+<h3 id="contributecaste-group-and-kumari-related-routes"><code>/contribute/caste-group</code> and Kumari-related routes</h3>
+<ul>
+<li>Add sensitivity/provenance guidance and moderation expectations.</li>
+<li>Consider stricter role gating and explicit privacy notices.</li>
+</ul>
+<hr />
+<h2 id="community-reviewer-request">Community: reviewer request</h2>
+<h3 id="communityreviewer-request-heritage_graph_uisrcappdashboardcommunityreviewer-requestpagetsx"><code>/community/reviewer-request</code> — <code>heritage_graph_ui/src/app/(dashboard)/community/reviewer-request/page.tsx</code></h3>
+<ul>
+<li>Add <code>h1</code> + short explanation; ensure clear post-submit confirmation and next steps.</li>
+</ul>
+<hr />
+<h2 id="landing-app-heritage_graph_landing">Landing app (<code>heritage_graph_landing</code>)</h2>
+<h3 id="heritage_graph_landingsrcapppagetsx"><code>/</code> — <code>heritage_graph_landing/src/app/page.tsx</code></h3>
+<ul>
+<li>Add <code>aria-expanded</code>/<code>aria-controls</code> for the filter panel toggle.</li>
+<li>Ensure “API down” states include a <strong>Retry</strong> button.</li>
+</ul>
+<h3 id="viewresourceid-heritage_graph_landingsrcappviewresourceidpagetsx"><code>/view/[resource]/[id]</code> — <code>heritage_graph_landing/src/app/view/[resource]/[id]/page.tsx</code></h3>
+<ul>
+<li>Improve invalid resource UX (“Back to discovery” CTA).</li>
+<li>Show error type (404 vs 500) and render JSON in structured, collapsible sections.</li>
+<li>Add warning if “Open in app” requires login.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

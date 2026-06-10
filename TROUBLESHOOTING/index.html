@@ -1,0 +1,3078 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/TROUBLESHOOTING/">
+      
+      
+        <link rel="prev" href="../FEATURE_WALKTHROUGH/">
+      
+      
+        <link rel="next" href="../contribution/FORMS/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Troubleshooting - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#troubleshootingmd-known-issues-gotchas-fixes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Troubleshooting
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#critical-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 Critical Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚨 Critical Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-dashboard-layout-nested-html-tags-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Dashboard layout nested &lt;html&gt; tags — Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-duplicate-nextauth-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Duplicate NextAuth configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-hardcoded-backend-urls-in-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hardcoded backend URLs in frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-middleware-session-gate-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Middleware session gate — Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Configuration Gotchas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Configuration Gotchas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sign-in-backend_sync-backend_handshake_not_found-after-google-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign-in: BACKEND_SYNC / BACKEND_HANDSHAKE_NOT_FOUND after Google OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-root_urlconf-is-urls-not-heritage_graphurls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ROOT_URLCONF is "urls" not "heritage_graph.urls"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-settingspy-vs-settings-two-settings-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. settings.py vs settings/ — two settings systems
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-wsgiasgi-django_settings_module-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. WSGI/ASGI DJANGO_SETTINGS_MODULE mismatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-duplicate-commonmiddleware-in-middleware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Duplicate CommonMiddleware in MIDDLEWARE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-legacy-auth-files-with-outdated-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Legacy auth files with outdated names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-inconsistentmigrationhistory-during-make-setup-migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. InconsistentMigrationHistory during make setup / migrate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. InconsistentMigrationHistory during make setup / migrate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix-local-sqlite-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix — local SQLite (development)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-postgresql-docker-coolify-production-or-shared-db" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix — PostgreSQL / Docker / Coolify (production or shared DB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-repair-docker-dokploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated repair (Docker / Dokploy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#behavioral-quirks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 Behavioral Quirks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐛 Behavioral Quirks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-userstatistics-auto-updates-only-on-submission-save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. UserStatistics auto-updates only on Submission save
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-personrevision-auto-creation-fires-on-every-save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. PersonRevision auto-creation fires on every save
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-submission-submission_id-is-auto-generated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Submission submission_id is auto-generated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-frontend-envlocal-is-in-wrong-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Frontend .env.local is in wrong location
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐳 Docker Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐳 Docker Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#15-google-oauth-requires-correct-redirect-uris" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Google OAuth requires correct redirect URIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-frontend-volume-mounts-override-built-assets-in-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Frontend volume mounts override built assets in dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-postgresql-init-script-only-runs-on-first-boot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. PostgreSQL init script only runs on first boot
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Debugging Tips
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Debugging Tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-django-settings-being-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check Django settings being used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-if-database-is-reachable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check if database is reachable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-google-id-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify Google ID token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-traefik-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check Traefik routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-all-traefik-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View all Traefik routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-django-management-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Django management commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-build-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend build errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-before-deploying" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist Before Deploying
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#critical-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🚨 Critical Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🚨 Critical Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-dashboard-layout-nested-html-tags-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Dashboard layout nested &lt;html&gt; tags — Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-duplicate-nextauth-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Duplicate NextAuth configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-hardcoded-backend-urls-in-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hardcoded backend URLs in frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-middleware-session-gate-fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Middleware session gate — Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Configuration Gotchas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="⚠️ Configuration Gotchas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sign-in-backend_sync-backend_handshake_not_found-after-google-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sign-in: BACKEND_SYNC / BACKEND_HANDSHAKE_NOT_FOUND after Google OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-root_urlconf-is-urls-not-heritage_graphurls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ROOT_URLCONF is "urls" not "heritage_graph.urls"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-settingspy-vs-settings-two-settings-systems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. settings.py vs settings/ — two settings systems
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-wsgiasgi-django_settings_module-mismatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. WSGI/ASGI DJANGO_SETTINGS_MODULE mismatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-duplicate-commonmiddleware-in-middleware" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Duplicate CommonMiddleware in MIDDLEWARE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-legacy-auth-files-with-outdated-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Legacy auth files with outdated names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-inconsistentmigrationhistory-during-make-setup-migrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. InconsistentMigrationHistory during make setup / migrate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. InconsistentMigrationHistory during make setup / migrate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fix-local-sqlite-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix — local SQLite (development)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-postgresql-docker-coolify-production-or-shared-db" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fix — PostgreSQL / Docker / Coolify (production or shared DB)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automated-repair-docker-dokploy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated repair (Docker / Dokploy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#behavioral-quirks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐛 Behavioral Quirks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐛 Behavioral Quirks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-userstatistics-auto-updates-only-on-submission-save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. UserStatistics auto-updates only on Submission save
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-personrevision-auto-creation-fires-on-every-save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. PersonRevision auto-creation fires on every save
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-submission-submission_id-is-auto-generated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Submission submission_id is auto-generated
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-frontend-envlocal-is-in-wrong-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Frontend .env.local is in wrong location
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#docker-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐳 Docker Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🐳 Docker Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#15-google-oauth-requires-correct-redirect-uris" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Google OAuth requires correct redirect URIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-frontend-volume-mounts-override-built-assets-in-dev" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Frontend volume mounts override built assets in dev
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-postgresql-init-script-only-runs-on-first-boot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. PostgreSQL init script only runs on first boot
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Debugging Tips
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Debugging Tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-django-settings-being-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check Django settings being used
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-if-database-is-reachable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check if database is reachable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-google-id-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify Google ID token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-traefik-routing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Check Traefik routing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-all-traefik-routes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View all Traefik routes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-django-management-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run Django management commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-build-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend build errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-before-deploying" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist Before Deploying
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="troubleshootingmd-known-issues-gotchas-fixes">TROUBLESHOOTING.md — Known Issues, Gotchas &amp; Fixes</h1>
+<blockquote>
+<p><strong>Purpose:</strong> This file documents known issues, edge cases, and non-obvious behaviors in the codebase. AI agents should read this to avoid re-introducing bugs or spending time debugging known problems.</p>
+</blockquote>
+<hr />
+<h2 id="critical-issues">🚨 Critical Issues</h2>
+<h3 id="1-dashboard-layout-nested-html-tags-fixed">1. Dashboard layout nested <code>&lt;html&gt;</code> tags — Fixed</h3>
+<ul>
+<li><strong>Where:</strong> Was <code>src/app/dashboard/layout.tsx</code> (old path).</li>
+<li><strong>Status:</strong> ✅ Fixed — dashboard shell is now <code>(dashboard)/layout.tsx</code> and does not re-declare <code>&lt;html&gt;</code>/<code>&lt;body&gt;</code>.</li>
+</ul>
+<h3 id="2-duplicate-nextauth-configuration">2. Duplicate NextAuth configuration</h3>
+<ul>
+<li><strong>Where:</strong> <code>src/lib/auth.ts</code> AND <code>src/app/api/auth/[...nextauth]/route.ts</code></li>
+<li><strong>Problem:</strong> Google provider + callbacks are defined in BOTH files independently, with slightly different callback logic. The API route file doesn't import from <code>auth.ts</code>.</li>
+<li><strong>Impact:</strong> Behavior discrepancies between session handling and API route auth.</li>
+<li><strong>Fix:</strong> <code>route.ts</code> should import <code>authOptions</code> from <code>@/lib/auth</code> instead of redefining it.</li>
+<li><strong>Status:</strong> ⚠️ Known, not yet fixed.</li>
+</ul>
+<h3 id="3-hardcoded-backend-urls-in-frontend">3. Hardcoded backend URLs in frontend</h3>
+<ul>
+<li><strong>Where:</strong> Multiple frontend components</li>
+<li><strong>Problem:</strong> <code>http://localhost:8000</code> and <code>http://127.0.0.1:8000</code> are hardcoded instead of using <code>process.env.NEXT_PUBLIC_API_URL</code>.</li>
+<li><strong>Impact:</strong> Breaks when deployed behind Traefik or to production.</li>
+<li><strong>Fix:</strong> Replace all hardcoded URLs with <code>process.env.NEXT_PUBLIC_API_URL</code>.</li>
+<li><strong>Status:</strong> ⚠️ Known, not yet fixed.</li>
+</ul>
+<h3 id="4-middleware-session-gate-fixed">4. Middleware session gate — Fixed</h3>
+<ul>
+<li><strong>Where:</strong> <code>heritage_graph_ui/src/middleware.ts</code></li>
+<li><strong>Behavior:</strong> Redirects unauthenticated users from <code>/curation</code>, <code>/platform-admin</code>, <code>/moderate</code>, <code>/account</code>, <code>/notification</code>, <code>/progression</code>, and <code>/community/reviewer-request</code> to <code>/auth/login</code>. <code>/contribute</code> is gated by <code>RequireAuth</code> in <code>(dashboard)/contribute/layout.tsx</code> (client-side, after OAuth callback).</li>
+<li><strong>Note:</strong> Public browse routes (<code>/knowledge/*</code>, <code>/graphview</code>, <code>/atlas</code>, etc.) remain reachable without login; APIs still enforce permissions.</li>
+<li><strong>Status:</strong> ✅ Implemented.</li>
+</ul>
+<hr />
+<h2 id="configuration-gotchas">⚠️ Configuration Gotchas</h2>
+<h3 id="sign-in-backend_sync-backend_handshake_not_found-after-google-oauth">Sign-in: <code>BACKEND_SYNC</code> / <code>BACKEND_HANDSHAKE_NOT_FOUND</code> after Google OAuth</h3>
+<ul>
+<li><strong>Where:</strong> NextAuth <code>signIn</code> callback in <code>heritage_graph_ui/src/lib/auth.ts</code> calls Django <code>GET /data/api/testme/</code> with <code>Authorization: Bearer &lt;Google access or ID token&gt;</code>.</li>
+<li><strong>Symptoms:</strong> Google succeeds, then redirect to <code>/auth/login?error=BACKEND_SYNC</code> (or <code>BACKEND_HANDSHAKE_NOT_FOUND</code> for <code>404</code>).</li>
+<li><strong>What to do:</strong></li>
+<li>Read <strong>Django/API logs</strong> for the HTTP status on <code>/data/api/testme/</code> (400 often means <code>DisallowedHost</code>; 404 means routing or wrong <code>INTERNAL_BACKEND_URL</code> path).</li>
+<li>On the <strong>frontend</strong> service, set <code>INTERNAL_BACKEND_URL</code> to an internal base URL the Node server can reach (e.g. <code>http://backend:8000</code> in Compose), not a public URL that redirects and strips <code>Authorization</code>.</li>
+<li>Ensure <strong><code>ALLOWED_HOSTS</code></strong> includes <code>backend</code> and <strong><code>GOOGLE_CLIENT_ID</code></strong> matches on Django and Next.js (<a href="../auth/AUTH/"><code>auth/AUTH.md</code></a>, <a href="../deployment/DOKPLOY/"><code>deployment/DOKPLOY.md</code></a>).</li>
+<li>Next.js logs a snippet on failure: <code>[next-auth] Django handshake non-OK response</code>.</li>
+</ul>
+<h3 id="5-root_urlconf-is-urls-not-heritage_graphurls">5. <code>ROOT_URLCONF</code> is <code>"urls"</code> not <code>"heritage_graph.urls"</code></h3>
+<ul>
+<li><strong>Where:</strong> <code>heritage_graph/settings/base.py</code></li>
+<li><strong>Problem:</strong> Looks wrong but is correct — Django's working directory in Docker is <code>/app</code> (which is <code>heritage_graph/</code>), so <code>urls.py</code> is a top-level module.</li>
+<li><strong>Impact:</strong> If you run Django outside Docker with a different working directory, URL routing breaks.</li>
+<li><strong>Fix:</strong> Not needed — this is intentional. But if running locally, ensure you <code>cd heritage_graph</code> first, or set <code>PYTHONPATH</code> appropriately.</li>
+</ul>
+<h3 id="6-settingspy-vs-settings-two-settings-systems">6. <code>settings.py</code> vs <code>settings/</code> — two settings systems</h3>
+<ul>
+<li><strong>Where:</strong> <code>heritage_graph/settings/settings.py</code> AND <code>heritage_graph/settings/__init__.py</code></li>
+<li><strong>Problem:</strong> <code>settings.py</code> is a legacy standalone settings file. The <code>__init__.py</code> dispatches to <code>development.py</code> or <code>production.py</code>. Both exist and can cause confusion.</li>
+<li><strong>Impact:</strong> <code>DJANGO_SETTINGS_MODULE</code> should be <code>settings</code> (dispatches via <code>settings/__init__.py</code> on <code>DJANGO_ENV</code>) or <code>settings.development</code> / <code>settings.production</code> directly. The legacy <code>settings/settings.py</code> startproject file was removed.</li>
+<li><strong>Fix:</strong> Use <code>__init__.py</code> dispatch (set <code>DJANGO_ENV=development</code> or <code>DJANGO_ENV=production</code>). Don't use <code>settings.py</code> directly.</li>
+</ul>
+<h3 id="7-wsgiasgi-django_settings_module-mismatch">7. WSGI/ASGI <code>DJANGO_SETTINGS_MODULE</code> mismatch</h3>
+<ul>
+<li><strong>Where:</strong> <code>heritage_graph/wsgi.py</code> and <code>heritage_graph/asgi.py</code></li>
+<li><strong>Problem:</strong> Historically <code>manage.py</code> forced <code>settings.development</code> while WSGI used <code>heritage_graph.settings</code>, skipping <code>__init__.py</code> dispatch.</li>
+<li><strong>Fix:</strong> <code>manage.py</code> now defaults to <code>DJANGO_SETTINGS_MODULE=settings</code> (loads <code>settings/__init__.py</code> + <code>DJANGO_ENV</code>). Gunicorn still uses <code>heritage_graph.settings</code> with <code>PYTHONPATH=/app</code>; both resolve to the same dispatch package.</li>
+<li><strong>Status:</strong> Fixed for CLI (<code>manage.py</code>); WSGI/ASGI unchanged and aligned in intent.</li>
+</ul>
+<h3 id="8-duplicate-commonmiddleware-in-middleware">8. Duplicate <code>CommonMiddleware</code> in MIDDLEWARE</h3>
+<ul>
+<li><strong>Where:</strong> <code>heritage_graph/settings/base.py</code></li>
+<li><strong>Problem:</strong> <code>django.middleware.common.CommonMiddleware</code> appears twice in the MIDDLEWARE list.</li>
+<li><strong>Impact:</strong> Minor — Django handles it, but it processes requests/responses twice through CommonMiddleware.</li>
+<li><strong>Fix:</strong> Remove the duplicate.</li>
+<li><strong>Status:</strong> Fixed (duplicate removed from <code>MIDDLEWARE</code>).</li>
+</ul>
+<h3 id="9-legacy-auth-files-with-outdated-names">9. Legacy auth files with outdated names</h3>
+<ul>
+<li><strong>Where:</strong> ~~<code>heritage_graph/apps/heritage_data/clerk_auth.py</code>~~ (removed)</li>
+<li><strong>Problem:</strong> This legacy file contained old Clerk authentication code. The active auth class is <code>GoogleTokenAuthentication</code> in <code>authentication.py</code>.</li>
+<li><strong>Impact:</strong> Confusing for developers. AI agents might look for auth code in the wrong file.</li>
+<li><strong>Fix:</strong> Delete <code>clerk_auth.py</code> since <code>authentication.py</code> now handles all auth via Google OAuth.</li>
+<li><strong>Status:</strong> Fixed (file removed).</li>
+</ul>
+<h3 id="10-inconsistentmigrationhistory-during-make-setup-migrate">10. <code>InconsistentMigrationHistory</code> during <code>make setup</code> / <code>migrate</code></h3>
+<ul>
+<li><strong>Error:</strong> <code>django.db.migrations.exceptions.InconsistentMigrationHistory: Migration admin.0001_initial is applied before its dependency users.0001_initial</code></li>
+<li><strong>Cause:</strong> Django’s <code>django_migrations</code> table says <code>admin.0001_initial</code> ran, but <code>users.0001_initial</code> (required for the custom <code>AUTH_USER_MODEL</code>) is not recorded as applied. Typical cases:</li>
+<li>Stale <strong>SQLite</strong> dev DB from before the custom user model.</li>
+<li><strong>PostgreSQL</strong> volume reused after a failed or partial migrate, or a DB restored from another environment.</li>
+</ul>
+<h4 id="fix-local-sqlite-development">Fix — local SQLite (development)</h4>
+<pre><code class="language-bash">make reset-dev-db
+</code></pre>
+<p>Or manual:</p>
+<pre><code class="language-bash">mv heritage_graph/db.sqlite3 heritage_graph/db.sqlite3.bak-$(date +%Y%m%d-%H%M%S)
+make migrate
+</code></pre>
+<h4 id="fix-postgresql-docker-coolify-production-or-shared-db">Fix — PostgreSQL / Docker / Coolify (production or shared DB)</h4>
+<p><strong>A. No data to keep (empty or disposable DB)</strong> — simplest:</p>
+<ol>
+<li>In Coolify (or <code>docker compose</code>), remove the Postgres <strong>volume</strong> for this stack, or run:</li>
+</ol>
+<pre><code class="language-bash">docker exec -it &lt;postgres_container&gt; psql -U &quot;$POSTGRES_USER&quot; -d &quot;$POSTGRES_DB&quot; -c &quot;DROP SCHEMA public CASCADE; CREATE SCHEMA public;&quot;
+</code></pre>
+<ol>
+<li>Redeploy the <strong>backend</strong> so <code>migrate</code> runs on a clean schema.</li>
+</ol>
+<p><strong>B. You need to keep data</strong> — repair history, then migrate (get a backup first):</p>
+<ol>
+<li>Open a shell on the Postgres container and run SQL (adjust user/db names):</li>
+</ol>
+<pre><code class="language-sql">-- Remove the bogus admin row so Django can apply users.* then admin.* in order
+DELETE FROM django_migrations WHERE app = 'admin';
+</code></pre>
+<ol>
+<li>From the <strong>backend</strong> container:</li>
+</ol>
+<pre><code class="language-bash">python manage.py migrate --noinput
+</code></pre>
+<ol>
+<li>If <code>migrate</code> errors with <strong>“relation users_user already exists”</strong> (table present but migration row missing), align with fakes (only if the schema matches <code>users.0001_initial</code>):</li>
+</ol>
+<pre><code class="language-bash">python manage.py migrate users 0001 --fake-initial
+python manage.py migrate --noinput
+</code></pre>
+<p>If problems persist, compare <code>django_migrations</code> rows for <code>users</code> and <code>admin</code> with a known-good fresh migrate on a throwaway database.</p>
+<h4 id="automated-repair-docker-dokploy">Automated repair (Docker / Dokploy)</h4>
+<p>For <strong>Dokploy</strong>, <code>docker-compose-dokploy.yml</code> sets <code>MIGRATION_AUTO_REPAIR=1</code> on the backend so the entrypoint runs <code>python manage.py repair_migration_history</code> before <code>migrate</code>. The command is defined in <code>apps/heritage_data/management/commands/repair_migration_history.py</code>. You can run it manually or set the same env on other compose stacks. Set <code>MIGRATION_AUTO_REPAIR=0</code> once the DB is healthy if you want to skip the check.</p>
+<hr />
+<h2 id="behavioral-quirks">🐛 Behavioral Quirks</h2>
+<h3 id="11-userstatistics-auto-updates-only-on-submission-save">11. UserStatistics auto-updates only on Submission save</h3>
+<ul>
+<li><strong>Where:</strong> <code>heritage_data/signals.py</code></li>
+<li><strong>Problem:</strong> The <code>post_save</code> signal on <code>Submission</code> recalculates <code>UserStatistics</code>, but there's no signal for <code>CulturalEntity</code> saves.</li>
+<li><strong>Impact:</strong> If using the new <code>CulturalEntity</code> workflow, <code>UserStatistics</code> won't update.</li>
+<li><strong>Fix:</strong> Add a <code>post_save</code> signal for <code>CulturalEntity</code> that also recalculates statistics.</li>
+<li><strong>Status:</strong> Fixed — <code>refresh_user_stats()</code> aggregates submissions + cultural entities; both models trigger it.</li>
+</ul>
+<h3 id="12-personrevision-auto-creation-fires-on-every-save">12. PersonRevision auto-creation fires on every save</h3>
+<ul>
+<li><strong>Where:</strong> <code>cidoc_data/signals.py</code></li>
+<li><strong>Problem:</strong> The <code>post_save</code> signal creates a <code>PersonRevision</code> on every <code>Person.save()</code>, even if no fields changed.</li>
+<li><strong>Impact:</strong> Could create unnecessary revision records.</li>
+<li><strong>Fix:</strong> Compare old and new field values before creating revision.</li>
+</ul>
+<h3 id="13-submission-submission_id-is-auto-generated">13. Submission <code>submission_id</code> is auto-generated</h3>
+<ul>
+<li><strong>Where:</strong> <code>heritage_data/models.py</code> → <code>Submission.save()</code></li>
+<li><strong>Problem:</strong> <code>submission_id</code> is generated as <code>random.choices(string.ascii_uppercase + string.digits, k=11)</code> — not guaranteed unique (though collisions are rare with 11 chars from 36-char alphabet).</li>
+<li><strong>Impact:</strong> Very unlikely collision, but not enforced at DB level beyond <code>unique=True</code> (which would raise an IntegrityError).</li>
+</ul>
+<h3 id="14-frontend-envlocal-is-in-wrong-location">14. Frontend <code>.env.local</code> is in wrong location</h3>
+<ul>
+<li><strong>Where:</strong> Should be at <code>heritage_graph_ui/.env.local</code></li>
+<li><strong>Problem:</strong> Next.js expects <code>.env.local</code> at the project root (next to <code>package.json</code>). If it's elsewhere, env vars won't load.</li>
+<li><strong>Fix:</strong> Ensure <code>.env.local</code> is in <code>heritage_graph_ui/</code> directory.</li>
+</ul>
+<hr />
+<h2 id="docker-issues">🐳 Docker Issues</h2>
+<h3 id="15-google-oauth-requires-correct-redirect-uris">15. Google OAuth requires correct redirect URIs</h3>
+<ul>
+<li><strong>Where:</strong> Google Cloud Console → API Credentials</li>
+<li><strong>Problem:</strong> Google OAuth will reject sign-in attempts if the redirect URIs don't match exactly. For development, you need <code>http://localhost:3000/api/auth/callback/google</code>.</li>
+<li><strong>Fix:</strong> In Google Cloud Console, add all redirect URIs:</li>
+<li>Dev: <code>http://localhost:3000/api/auth/callback/google</code></li>
+<li>Prod: <code>https://yourdomain.com/api/auth/callback/google</code></li>
+<li><strong>Status:</strong> ℹ️ Configuration requirement.</li>
+</ul>
+<h3 id="16-frontend-volume-mounts-override-built-assets-in-dev">16. Frontend volume mounts override built assets in dev</h3>
+<ul>
+<li><strong>Where:</strong> <code>docker-compose.yml</code> → <code>frontend</code> service</li>
+<li><strong>Problem:</strong> Volume mounts (<code>./heritage_graph_ui:/app</code>) override the built <code>.next</code> directory. Anonymous volumes (<code>/app/node_modules</code>, <code>/app/.next</code>) are used to prevent this, but can cause stale cache issues.</li>
+<li><strong>Fix:</strong> In development, use <code>docker-compose up --build</code> to rebuild. Or remove volume mounts and rely on image rebuilds.</li>
+</ul>
+<h3 id="17-postgresql-init-script-only-runs-on-first-boot">17. PostgreSQL init script only runs on first boot</h3>
+<ul>
+<li><strong>Where:</strong> <code>infra/postgres/init-scripts/01-init-databases.sh</code></li>
+<li><strong>Problem:</strong> Docker's <code>docker-entrypoint-initdb.d</code> scripts only run when the data directory is empty (first <code>docker-compose up</code>).</li>
+<li><strong>Impact:</strong> If you need to re-run init scripts, you must delete the volume: <code>docker-compose down -v</code>.</li>
+</ul>
+<hr />
+<h2 id="debugging-tips">🔍 Debugging Tips</h2>
+<h3 id="check-django-settings-being-used">Check Django settings being used</h3>
+<pre><code class="language-bash">docker-compose exec backend python -c &quot;from django.conf import settings; print(settings.SETTINGS_MODULE)&quot;
+</code></pre>
+<h3 id="check-if-database-is-reachable">Check if database is reachable</h3>
+<pre><code class="language-bash">docker-compose exec backend python -c &quot;
+import django; django.setup()
+from django.db import connection
+connection.ensure_connection()
+print('DB OK')
+&quot;
+</code></pre>
+<h3 id="verify-google-id-token">Verify Google ID token</h3>
+<pre><code class="language-bash"># Decode a Google ID token (for debugging)
+python3 -c &quot;import jwt; print(jwt.decode('YOUR_TOKEN', options={'verify_signature': False}))&quot;
+</code></pre>
+<h3 id="check-traefik-routing">Check Traefik routing</h3>
+<pre><code class="language-bash">curl -H &quot;Host: backend.localhost&quot; http://localhost/health/
+curl -H &quot;Host: frontend.localhost&quot; http://localhost
+</code></pre>
+<h3 id="view-all-traefik-routes">View all Traefik routes</h3>
+<p>Open http://traefik.localhost:8080/dashboard/ in browser.</p>
+<h3 id="run-django-management-commands">Run Django management commands</h3>
+<pre><code class="language-bash">docker-compose exec backend python manage.py shell
+docker-compose exec backend python manage.py showmigrations
+docker-compose exec backend python manage.py check --deploy
+</code></pre>
+<h3 id="frontend-build-errors">Frontend build errors</h3>
+<pre><code class="language-bash"># Check Next.js build output
+docker-compose logs frontend | tail -50
+
+# Rebuild with no cache
+docker-compose build --no-cache frontend
+</code></pre>
+<hr />
+<h2 id="checklist-before-deploying">📋 Checklist Before Deploying</h2>
+<ul>
+<li>[ ] <code>.env</code> file created from <code>.env.example</code> with production values</li>
+<li>[ ] <code>DJANGO_SECRET_KEY</code> is randomly generated (not the default)</li>
+<li>[ ] <code>POSTGRES_PASSWORD</code> is a strong password</li>
+<li>[ ] <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code> are configured</li>
+<li>[ ] <code>NEXTAUTH_SECRET</code> is randomly generated</li>
+<li>[ ] <code>DEBUG=False</code> in <code>.env</code></li>
+<li>[ ] <code>ALLOWED_HOSTS</code> contains your production domain</li>
+<li>[ ] <code>NEXT_PUBLIC_API_URL</code> points to production API URL</li>
+<li>[ ] Google OAuth redirect URIs configured for production domain</li>
+<li>[ ] SSL/TLS is configured (Let's Encrypt or custom certs)</li>
+<li>[ ] Firewall allows only ports 80 and 443</li>
+<li>[ ] Database backups are scheduled</li>
+<li>[ ] Log rotation is configured</li>
+<li>[ ] Health check endpoints are accessible</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

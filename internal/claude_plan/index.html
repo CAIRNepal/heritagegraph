@@ -1,0 +1,2209 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/internal/claude_plan/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Claude plan - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Claude plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Claude plan</h1>
+
+<ol>
+<li>UI/UX Redesign — Robustness on the List and Detail Pages</li>
+</ol>
+<p>1.1 Skeleton Loading (List Page)</p>
+<p>Problem: page.tsx:155 shows <div>Loading projects…</div> — a plain text spinner is the worst user experience during the most common cold-load.</p>
+<p>Fix: Replace with ProjectCardSkeleton components that mirror the exact card shape:</p>
+<p>// src/components/projects/project-card-skeleton.tsx
+  export function ProjectCardSkeleton() {
+    return (
+      <div className="rounded-2xl border bg-white/60 dark:bg-slate-900/60 p-5 animate-pulse space-y-3">
+        <div className="flex justify-between">
+          <div className="h-4 w-2/3 bg-slate-200 dark:bg-slate-700 rounded" />
+          <div className="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-full" />
+        </div>
+        <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded" />
+        <div className="h-3 w-4/5 bg-slate-100 dark:bg-slate-800 rounded" />
+        <div className="flex gap-4">
+          <div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 rounded" />
+          <div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 rounded" />
+        </div>
+      </div>
+    );
+  }</p>
+<p>Render 4 of these in a sm:grid-cols-2 grid during loading. Total cost: ~30 lines.</p>
+<p>1.2 Pagination on the List</p>
+<p>Problem: listProjects fetches everything with /?ordering=-updated_at — at scale this is unbounded. The backend already returns { results: [...] } (DRF pagination format) but the frontend
+  flattens it with Array.isArray(data) ? data : data.results ?? [].</p>
+<p>Fix (frontend): Switch listProjects to accept a page parameter and thread ?page=N into the URL. Add a simple "Load more" button below the grid — no page numbers needed for this use case.</p>
+<p>Fix (backend): Confirm ProjectViewSet uses PageNumberPagination with page_size = 20. If it uses the default unpaginated response, add pagination_class = StandardResultsSetPagination to the
+   viewset. This is a one-line backend change.</p>
+<p>1.3 Optimistic State on Transitions</p>
+<p>Problem: [slug]/page.tsx:118–130 — handleTransition calls setProject(updated) only after the API resolves, so the button stays enabled and shows no intermediate feedback.</p>
+<p>Fix: Set a per-transition pending state immediately, disable all transition buttons during the call, and update the badge optimistically:</p>
+<p>// Immediately reflect the transition visually
+  const optimisticBadge = PROJECT_STATE_LABELS[targetState] ?? targetState;
+  setProject((prev) =&gt; prev ? { ...prev, state: targetState } : prev);
+  // Roll back on error
+  setProject(prev =&gt; prev ? { ...prev, state: project.state } : prev);</p>
+<p>The transitioning boolean already exists at line 91; extend it to a string | null holding the targetState so each button can show its own spinner.</p>
+<p>1.4 Form Validation on New Project</p>
+<p>Problem: new/page.tsx:53–56 validates only title and slug with a bare if check. The slug character rules, max-length enforcement, and uniqueness aren't surfaced until the server rejects
+  the request.</p>
+<p>Fix — client-side field-level validation:</p>
+<p>const slugErrors: string[] = [];
+  if (slug.length &gt; 80) slugErrors.push("Max 80 characters.");
+  if (!/^[a-z0-9-]+$/.test(slug)) slugErrors.push("Only lowercase letters, digits, and hyphens.");
+  if (slug.startsWith("-") || slug.endsWith("-")) slugErrors.push("Cannot start or end with a hyphen.");</p>
+<p>Render these inline under the field with aria-describedby — no extra libraries needed. Block the submit button while errors exist.</p>
+<p>Fix — draft persistence: Save form state to sessionStorage on every change, restore on mount. This prevents losing a half-written project description on an accidental browser refresh.</p>
+<p>useEffect(() =&gt; {
+    sessionStorage.setItem("project-draft", JSON.stringify({ title, slug, abstract, intendedSubject, visibility, tagsRaw }));
+  }, [title, slug, abstract, intendedSubject, visibility, tagsRaw]);</p>
+<p>Clear on successful submit.</p>
+<p>1.5 Empty State — Discovery vs. Zero State</p>
+<p>The current empty state page.tsx:159–166 shows only "You have no projects yet." There is no way to discover public projects or see what others are working on.</p>
+<p>Add a "Public Projects" tab at the top of the list:</p>
+<p>[ My Projects ] [ Public Projects ]</p>
+<p>Public Projects hits a new endpoint GET /api/v1/data/projects/?visibility=public (no auth required, filtered queryset). This is the face of the project — showing community work here makes
+  the page feel alive, not empty.</p>
+<hr />
+<ol>
+<li>Project-Based Contribution Workflow</li>
+</ol>
+<p>2.1 Contribution Types Supported</p>
+<p>The ProjectAsset model handles files; ProjectEntity links ontology entities. The full contribution workflow is:</p>
+<p>┌───────────────────────────────┬──────────────────────────────────────────────────────┬──────────────────────────────────────────────┐
+  │       Contribution Type       │                  Current Mechanism                   │                     Gap                      │
+  ├───────────────────────────────┼──────────────────────────────────────────────────────┼──────────────────────────────────────────────┤
+  │ Evidence files (photos, PDFs) │ ProjectAssetUploader — drag-drop, role, caption, OCR │ File type validation is backend-only         │
+  ├───────────────────────────────┼──────────────────────────────────────────────────────┼──────────────────────────────────────────────┤
+  │ Ontology entities             │ "Add Entity" redirects to /contribute?project=<slug> │ No in-project entity creation modal          │
+  ├───────────────────────────────┼──────────────────────────────────────────────────────┼──────────────────────────────────────────────┤
+  │ Textual annotations           │ Comments tab                                         │ No structured annotation on a specific asset │
+  ├───────────────────────────────┼──────────────────────────────────────────────────────┼──────────────────────────────────────────────┤
+  │ Bulk tabular data             │ Separate /contribute/ingestion/tabular               │ Not linked to a project                      │
+  └───────────────────────────────┴──────────────────────────────────────────────────────┴──────────────────────────────────────────────┘</p>
+<p>2.2 File Handling Hardening</p>
+<p>Current: project-asset-uploader.tsx sends multipart to /assets/upload/. There is no client-side file type or size check.</p>
+<p>Add before the fetch call:</p>
+<p>const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf", "audio/mpeg", "video/mp4"];</p>
+<p>if (file.size &gt; MAX_BYTES) throw new Error(<code>File exceeds 50 MB limit.</code>);
+  if (!ALLOWED_TYPES.includes(file.type)) throw new Error(<code>Unsupported file type: ${file.type}</code>);</p>
+<p>On the backend, add Django's validate_file_extension and a byte-level MIME check using python-magic — this is the actual security boundary. File extension lies; MIME sniffing from the
+  first 512 bytes does not.</p>
+<p>2.3 Upload Progress</p>
+<p>The current uploader has no progress indication. Add an XMLHttpRequest wrapper so onprogress fires:</p>
+<p>function uploadWithProgress(url: string, formData: FormData, onProgress: (pct: number) =&gt; void): Promise<Response> {
+    return new Promise((resolve, reject) =&gt; {
+      const xhr = new XMLHttpRequest();
+      xhr.upload.onprogress = (e) =&gt; { if (e.lengthComputable) onProgress(e.loaded / e.total * 100); };
+      xhr.onload = () =&gt; resolve(new Response(xhr.responseText, { status: xhr.status }));
+      xhr.onerror = () =&gt; reject(new Error("Upload failed"));
+      xhr.open("POST", url);
+      xhr.send(formData);
+    });
+  }</p>
+<p>Drive a shadcn Progress bar in the uploader UI.</p>
+<p>2.4 Asset Metadata — Versioning</p>
+<p>Each asset currently stores role, caption, media_type. Add a version_label field (e.g., "v1", "revised-2026-05-21") to ProjectAsset and expose it in the upload form. When a file is
+  replaced (same caption, same role), create a new ProjectAsset rather than overwriting — this gives a full file history. The model already uses UUID PKs so old asset IDs remain stable as
+  permanent links.</p>
+<hr />
+<ol>
+<li>Submission Mechanism — API, Rate Limiting, Idempotency, Queues</li>
+</ol>
+<p>3.1 Idempotency on Project Creation</p>
+<p>Problem: new/page.tsx:49 — handleSubmit has no guard against double-submit beyond the submitting boolean. If the network is slow and the user somehow submits twice, two projects could be
+  created with different auto-slugified slugs.</p>
+<p>Fix: The slug is already unique at the DB level (slug = models.SlugField(max_length=80, unique=True)). A second identical submit will get a 400 from Django. But surface this better:</p>
+<ol>
+<li>Disable the submit button immediately on first click (already done via submitting).</li>
+<li>On 400 with { slug: ["already exists"] }, redirect to the existing project instead of showing an error.</li>
+</ol>
+<p>For the broader case, pass a client-generated idempotency key header:</p>
+<p>headers: {
+    "Idempotency-Key": crypto.randomUUID(), // generated once on form mount, stable across retries
+    Authorization: <code>Bearer ${token}</code>,
+    "Content-Type": "application/json",
+  }</p>
+<p>On the backend, store the key in a short-lived cache (Redis, 24 h) keyed to (user_id, idempotency_key) → project_id. On replay, return the cached project instead of creating a new one.</p>
+<p>3.2 Rate Limiting</p>
+<p>The OCR quota is already implemented in project_services.py:110–117 (assert_project_ocr_quota). Apply the same pattern to project creation and asset upload at the API layer using
+  django-ratelimit or DRF throttling:</p>
+<p># In the ProjectViewSet
+  from rest_framework.throttling import UserRateThrottle</p>
+<p>class ProjectCreateThrottle(UserRateThrottle):
+      rate = "10/hour"  # 10 new projects per user per hour</p>
+<p>class ProjectAssetUploadThrottle(UserRateThrottle):
+      rate = "50/day"   # 50 asset uploads per user per day</p>
+<p>Return 429 Too Many Requests with Retry-After header. The frontend's getApiErrorMessage in api-client.ts should handle 429 explicitly: "You've reached the upload limit. Try again in X
+  minutes."</p>
+<p>3.3 Background Processing — OCR and Entity Inference</p>
+<p>project_services.py:143–175 already queues OCR via classify_and_route_document.delay(str(doc.id)) using Celery. The frontend polls ocr_status on the asset. This is the right pattern —
+  extend it:</p>
+<p>Entity suggestion queue: When an asset is uploaded (image/PDF), after OCR completes, trigger a second Celery task:</p>
+<p>@shared_task
+  def suggest_entities_from_asset(asset_id: str) -&gt; None:
+      """Run NER + ontology matching on OCR text, store candidates on the ProjectAsset."""</p>
+<p>Store suggestions in a JSONField on ProjectAsset: entity_suggestions: [{ label, ontology_class, confidence }]. The frontend renders these in a collapsible "Suggested Entities" section in
+  the asset card — contributor clicks to accept and link them.</p>
+<p>3.4 Webhook on State Transition</p>
+<p>When a project transitions to in_review, fire a webhook to notify the moderation system. Add this to project_services.py:</p>
+<p>def notify_review_queue(project: Project) -&gt; None:
+      if not settings.REVIEW_WEBHOOK_URL:
+          return
+      payload = {"project_id": str(project.id), "slug": project.slug, "title": project.title}
+      requests.post(settings.REVIEW_WEBHOOK_URL, json=payload, timeout=5)</p>
+<p>Call this inside the transition view, wrapped in a try/except so webhook failure never blocks the user-facing response. For production, move this to a Celery task.</p>
+<hr />
+<ol>
+<li>Acceptance Process — Review, Automated Checks, Merge, Rollback</li>
+</ol>
+<p>4.1 Pre-Submission Automated Checks</p>
+<p>Before a project can transition to in_review, run a checklist server-side:</p>
+<p>def validate_project_for_review(project: Project) -&gt; list[str]:
+      errors = []
+      if not project.assets.exists():
+          errors.append("At least one evidence asset is required.")
+      if not project.entities.exists():
+          errors.append("At least one ontology entity must be linked.")
+      if not project.abstract.strip():
+          errors.append("Abstract is required before submission.")
+      if project.assets.filter(ocr_status="processing").exists():
+          errors.append("Wait for all OCR jobs to finish before submitting.")
+      return errors</p>
+<p>Return these as a 400 with { "blockers": [...] } when the transition endpoint is called with target_state=in_review. The frontend should surface blockers as a pre-flight checklist on the
+  ProjectStepStrip — green check = passed, red = blocked.</p>
+<p>4.2 Moderator Dashboard</p>
+<p>The curation route at (dashboard)/curation/contributions/ already exists. Extend it into a moderation queue specifically for projects:</p>
+<p>New page: /curation/review-queue</p>
+<ul>
+<li>List of projects in in_review state, sorted by submitted_at</li>
+<li>Each row: title, owner, entity count, asset count, days in queue, tag filter</li>
+<li>Actions per row: "Open", "Approve", "Request Revision", "Reject"</li>
+</ul>
+<p>The transition endpoint at /api/v1/data/projects/<slug>/transition/ already handles these — the moderator dashboard is purely a frontend concern calling the same API. The permission guards
+   in project_services.py:38–56 enforce that only Reviewers and Moderators groups can approve/merge.</p>
+<p>4.3 Revision Cycle</p>
+<p>When a project transitions to needs_revision, the reviewer must supply a reason. Currently transitionProject in projects-api.ts:142 accepts an optional comment param but the frontend
+  transition button ([slug]/page.tsx:188–197) never prompts for one.</p>
+<p>Fix: When targetState === "needs_revision", open a Dialog with a required <Textarea> before calling handleTransition. Pass the entered text as the comment field to the API. Store this in
+  ProjectActivity with action="needs_revision" and payload.reason.</p>
+<p>4.4 Merge Strategy and Rollback</p>
+<p>The STATE_MERGED transition is irreversible (_PROJECT_TRANSITIONS[STATE_MERGED] = set()). On merge:</p>
+<p>Step 1 — Snapshot: Create a ProjectSnapshot record (new model) capturing the full project state as a JSON blob before merging into the main knowledge graph. This is the rollback artifact.</p>
+<p>class ProjectSnapshot(models.Model):
+      id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+      project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="snapshots")
+      state_at_merge = models.JSONField()  # serialized project + entities + assets
+      merged_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+      created_at = models.DateTimeField(auto_now_add=True)</p>
+<pre><code>  class Meta:
+      db_table = "project_snapshots"
+</code></pre>
+<p>Step 2 — Atomic write: The merge transaction that writes entities to the main KG must be wrapped in transaction.atomic(). If any entity write fails, the merge rolls back entirely — the
+  project stays approved, the user gets a 500 with a human-readable error.</p>
+<p>Step 3 — Rollback endpoint: Add POST /api/v1/data/projects/<slug>/rollback/ accessible only to Moderators. This reads ProjectSnapshot.state_at_merge, deletes the merged triples from the KG
+   (using the project's entity IDs as a deletion set), and resets the project state to needs_revision. Add a confirmation dialog on the frontend.</p>
+<p>4.5 Notification at Each Stage</p>
+<p>The Notification model already exists (migration 0009). Add signal-based notifications:</p>
+<p>┌────────────────┬───────────────────────────────────┐
+  │     Event      │          Who is notified          │
+  ├────────────────┼───────────────────────────────────┤
+  │ in_review      │ All users in Reviewers group      │
+  ├────────────────┼───────────────────────────────────┤
+  │ needs_revision │ Project owner + all editors       │
+  ├────────────────┼───────────────────────────────────┤
+  │ approved       │ Project owner                     │
+  ├────────────────┼───────────────────────────────────┤
+  │ merged         │ Project owner + all collaborators │
+  └────────────────┴───────────────────────────────────┘</p>
+<p>@receiver(post_save, sender=ProjectActivity)
+  def notify_on_project_activity(sender, instance, created, **kwargs):
+      if not created:
+          return
+      if instance.action == "in_review":
+          _notify_reviewers(instance.project)
+      elif instance.action in ("needs_revision", "approved", "merged"):
+          _notify_project_team(instance.project, instance.action)</p>
+<hr />
+<p>Summary — Priority Order</p>
+<p>┌──────────┬────────────────────────────────────────────────────────┬────────┐
+  │ Priority │                         Change                         │ Effort │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P0       │ Skeleton loaders on list page                          │ 1 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P0       │ Client-side slug + file validation                     │ 2 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P0       │ Pre-submission blockers checklist (backend + frontend) │ 3 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P1       │ Optimistic transition buttons                          │ 2 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P1       │ Draft persistence in sessionStorage                    │ 1 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P1       │ Rate limiting throttle classes                         │ 1 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P1       │ Revision reason dialog                                 │ 2 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P2       │ Upload progress bar                                    │ 2 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P2       │ Idempotency key header + Redis cache                   │ 3 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P2       │ Moderator review-queue page                            │ 4 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P2       │ ProjectSnapshot + merge rollback                       │ 4 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P3       │ Entity suggestion Celery task                          │ 6 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P3       │ Public project discovery tab                           │ 2 h    │
+  ├──────────┼────────────────────────────────────────────────────────┼────────┤
+  │ P3       │ Signal-based notifications                             │ 3 h    │
+  └──────────┴────────────────────────────────────────────────────────┴────────┘</p>
+<p>Every P0 item is a bug or gap in the current code that affects a user on their first visit. P1 items improve reliability and prevent data loss. P2/P3 items are what make this the face of
+  the project.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

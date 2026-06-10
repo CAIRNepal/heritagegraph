@@ -1,0 +1,3198 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/auth/AUTH_ROLES_DEVELOPER_GUIDE/">
+      
+      
+        <link rel="prev" href="../AUTH/">
+      
+      
+        <link rel="next" href="../AUTH_GUIDE/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Roles & permissions - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#auth-roles-developer-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Roles & permissions
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-how-authentication-is-structured" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. How authentication is structured
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. How authentication is structured">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-request-authentication-who-is-this-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Request authentication (who is this user?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-authorization-what-may-this-user-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Authorization (what may this user do?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-where-role-information-is-exposed-to-the-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Where role information is exposed to the frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-roles-and-access-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Roles and access boundaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Roles and access boundaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-contributor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Contributor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-reviewer-and-moderator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Reviewer (and moderator)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-permission-class-quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Permission class quick reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-django-groups-vs-reviewerrole-critical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Django Groups vs ReviewerRole (critical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-protecting-a-new-endpoint-django-rest-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Protecting a new endpoint (Django REST Framework)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Protecting a new endpoint (Django REST Framework)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-pick-the-right-permission-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Pick the right permission stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-apply-to-a-modelviewset-or-apiview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Apply to a ModelViewSet or APIView
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-object-level-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Object-level permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-verify-with-curl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Verify with curl
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-protecting-a-new-nextjs-15-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Protecting a new Next.js 15 page
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Protecting a new Next.js 15 page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-authenticated-only-page-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Authenticated-only page (client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-reviewer-or-moderator-only-page-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Reviewer- or moderator-only page (client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-server-component-or-route-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Server Component or route handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-copy-paste-patterns-middleware-guards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Copy-paste patterns (middleware &amp; guards)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Copy-paste patterns (middleware &amp; guards)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-optional-nextauth-withauth-middleware-not-currently-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Optional: NextAuth withAuth middleware (not currently global)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-curation-style-layout-session-roles-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Curation-style layout (session + roles provider)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-page-level-role-gate-accessdenied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Page-level role gate + AccessDenied
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-backend-authenticated-fetch-helper-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Backend: authenticated fetch helper (client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Common mistakes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Common mistakes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-ui-only-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 UI-only protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-assuming-django-groups-match-backend-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Assuming Django Groups match backend permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-react-hooks-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 React hooks order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-wrong-base-url-or-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Wrong base URL or token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-dev-vs-prod-token-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Dev vs prod token type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-forgetting-get_permissions-on-custom-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Forgetting get_permissions() on custom actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-files-quick-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related files (quick index)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-how-authentication-is-structured" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. How authentication is structured
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. How authentication is structured">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-request-authentication-who-is-this-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Request authentication (who is this user?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-authorization-what-may-this-user-do" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Authorization (what may this user do?)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-where-role-information-is-exposed-to-the-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Where role information is exposed to the frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-roles-and-access-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Roles and access boundaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Roles and access boundaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-contributor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Contributor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-reviewer-and-moderator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Reviewer (and moderator)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Admin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-permission-class-quick-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Permission class quick reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-django-groups-vs-reviewerrole-critical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 Django Groups vs ReviewerRole (critical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-protecting-a-new-endpoint-django-rest-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Protecting a new endpoint (Django REST Framework)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Protecting a new endpoint (Django REST Framework)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-pick-the-right-permission-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Pick the right permission stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-apply-to-a-modelviewset-or-apiview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Apply to a ModelViewSet or APIView
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-object-level-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Object-level permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-verify-with-curl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Verify with curl
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-protecting-a-new-nextjs-15-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Protecting a new Next.js 15 page
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Protecting a new Next.js 15 page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-authenticated-only-page-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Authenticated-only page (client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-reviewer-or-moderator-only-page-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Reviewer- or moderator-only page (client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-server-component-or-route-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Server Component or route handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-copy-paste-patterns-middleware-guards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Copy-paste patterns (middleware &amp; guards)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Copy-paste patterns (middleware &amp; guards)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-optional-nextauth-withauth-middleware-not-currently-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Optional: NextAuth withAuth middleware (not currently global)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-curation-style-layout-session-roles-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Curation-style layout (session + roles provider)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-page-level-role-gate-accessdenied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Page-level role gate + AccessDenied
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-backend-authenticated-fetch-helper-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Backend: authenticated fetch helper (client)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-common-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Common mistakes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Common mistakes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-ui-only-protection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 UI-only protection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-assuming-django-groups-match-backend-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Assuming Django Groups match backend permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-react-hooks-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 React hooks order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-wrong-base-url-or-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Wrong base URL or token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-dev-vs-prod-token-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Dev vs prod token type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-forgetting-get_permissions-on-custom-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Forgetting get_permissions() on custom actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-files-quick-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related files (quick index)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="auth-roles-developer-guide">Auth &amp; roles — developer guide</h1>
+<p><strong>Audience:</strong> Developers adding API endpoints, dashboard pages, or navigation that depends on <strong>contributor</strong>, <strong>reviewer</strong>, or <strong>admin</strong> access.</p>
+<p>This document complements <a href="../AUTH/">AUTH.md</a>, which covers login flows (Google OAuth vs dev JWT), tokens, and calling the API. Read AUTH.md first if you are new to how the Bearer token reaches Django.</p>
+<hr />
+<h2 id="table-of-contents">Table of contents</h2>
+<ol>
+<li><a href="#1-how-authentication-is-structured">How authentication is structured</a></li>
+<li><a href="#2-roles-and-access-boundaries">Roles and access boundaries</a></li>
+<li><a href="#3-protecting-a-new-endpoint-django-rest-framework">Protecting a new endpoint (Django REST Framework)</a></li>
+<li><a href="#4-protecting-a-new-nextjs-15-page">Protecting a new Next.js 15 page</a></li>
+<li><a href="#5-copy-paste-patterns-middleware--guards">Copy-paste patterns (middleware &amp; guards)</a></li>
+<li><a href="#6-common-mistakes">Common mistakes</a></li>
+</ol>
+<hr />
+<h2 id="1-how-authentication-is-structured">1. How authentication is structured</h2>
+<h3 id="11-request-authentication-who-is-this-user">1.1 Request authentication (who is this user?)</h3>
+<p>Django REST Framework resolves <code>request.user</code> using an <strong>authentication class chain</strong> configured per environment in <code>heritage_graph/settings/development.py</code> and <code>production.py</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Order (typical)</th>
+<th>Class</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>GoogleTokenAuthentication</code></td>
+<td>Production-style: validates Google <strong>ID token</strong> in <code>Authorization: Bearer …</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>GitHubTokenAuthentication</code></td>
+<td>Optional secondary (returns <code>None</code> if token is not a GitHub token)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>DevSessionAuthentication</code></td>
+<td><strong>Development only:</strong> Django session (e.g. after <code>/admin/</code> login)</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>JWTAuthentication</code></td>
+<td>SimpleJWT access token from <code>POST /api/token/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Important:</strong> Authentication only establishes <strong>identity</strong>. It does <strong>not</strong> grant feature access by itself—that is the job of <strong>permission classes</strong> (see below).</p>
+<p>Details and diagrams: <a href="../AUTH/#architecture-overview">AUTH.md — Architecture</a>.</p>
+<p><strong>Sign-in failures and session errors in the UI</strong> (banner, <code>/auth/login?error=</code>, token refresh): see <a href="../AUTH/#errors-and-recovery-ux">AUTH.md — Errors and Recovery</a>.</p>
+<h3 id="12-authorization-what-may-this-user-do">1.2 Authorization (what may this user do?)</h3>
+<p>HeritageGraph uses <strong>DRF <code>permission_classes</code></strong> on views/viewsets (and <code>@action(permission_classes=…)</code> for ad-hoc actions).</p>
+<p>There is <strong>no</strong> global <code>DEFAULT_PERMISSION_CLASSES</code> “lock” in <code>settings/base.py</code>; each view should declare what it needs. If you omit permissions, you may accidentally expose an endpoint—always set them explicitly.</p>
+<h3 id="13-where-role-information-is-exposed-to-the-frontend">1.3 Where role information is exposed to the frontend</h3>
+<ul>
+<li><strong><code>GET /api/user/info</code></strong> (<code>CurrentUserView</code> in <code>heritage_graph/apps/heritage_data/views.py</code>) — requires <code>IsAuthenticated</code>. Returns:</li>
+<li><code>username</code>, <code>email</code></li>
+<li><code>groups</code> — Django auth <code>Group</code> names</li>
+<li><code>is_staff</code></li>
+<li><code>reviewer_role</code> — serialized <code>ReviewerRole</code> fields (or <code>null</code>)</li>
+</ul>
+<p>The dashboard hook <strong><code>useUserRoles</code></strong> (<code>heritage_graph_ui/src/hooks/use-user-roles.ts</code>) calls this endpoint and derives booleans used for UI gating.</p>
+<hr />
+<h2 id="2-roles-and-access-boundaries">2. Roles and access boundaries</h2>
+<p>The product vocabulary is <strong>contributor</strong>, <strong>reviewer</strong>, and <strong>admin</strong>. In code these map as follows.</p>
+<h3 id="21-contributor">2.1 Contributor</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Typical meaning</strong></td>
+<td>Any <strong>authenticated</strong> user who can create or edit <strong>their own</strong> contributions</td>
+</tr>
+<tr>
+<td><strong>Backend</strong></td>
+<td><code>IsAuthenticated</code>, plus <strong>object-level</strong> rules (e.g. <code>IsContributorOrReadOnly</code> — unsafe methods only if <code>obj.contributor == request.user</code>)</td>
+</tr>
+<tr>
+<td><strong>Frontend</strong></td>
+<td><code>useUserRoles().isContributor</code> — <code>true</code> if the user counts as a reviewer <strong>or</strong> is in the <code>Contributors</code> group (see hook implementation)</td>
+</tr>
+</tbody>
+</table>
+<p>Contributors are not a separate Django “role table”; capability is mostly “logged in + ownership / serializer rules.”</p>
+<h3 id="22-reviewer-and-moderator">2.2 Reviewer (and moderator)</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Reviewer personas (data model)</strong></td>
+<td><code>ReviewerRole</code> with <code>role</code> ∈ <code>community_reviewer</code>, <code>domain_expert</code>, <code>expert_curator</code> (<code>heritage_graph/apps/heritage_data/models.py</code>)</td>
+</tr>
+<tr>
+<td><strong>Backend permission classes</strong></td>
+<td><code>IsReviewerOrAdmin</code>, <code>IsCommunityReviewer</code>, <code>IsDomainExpert</code>, <code>IsExpertCurator</code> (<code>heritage_graph/apps/heritage_data/permissions.py</code>) — see <a href="#24-permission-class-quick-reference">§2.4</a></td>
+</tr>
+<tr>
+<td><strong>Staff shortcut</strong></td>
+<td>Most reviewer permissions treat <strong><code>request.user.is_staff</code> as allowed</strong> (treat as operational bypass for admins/staff)</td>
+</tr>
+<tr>
+<td><strong>Frontend</strong></td>
+<td><code>useUserRoles().isReviewer</code> — <code>isModerator \|\| 'Reviewers' in groups \|\| active reviewer_role</code></td>
+</tr>
+<tr>
+<td><strong>“Moderator” in UI</strong></td>
+<td><code>isModerator</code> — <code>is_staff \|\| 'Moderators' in groups</code> (used for stricter pages like reviewer dashboard)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="23-admin">2.3 Admin</h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Platform admin</strong></td>
+<td>Django <strong><code>user.is_staff</code></strong> or <strong><code>user.is_superuser</code></strong> — full Django admin, and DRF <code>IsAdminUser</code> / <code>IsEditor</code> (staff-only) where applied</td>
+</tr>
+<tr>
+<td><strong>DRF</strong></td>
+<td><code>IsAdminUser</code>, <code>IsEditor</code></td>
+</tr>
+</tbody>
+</table>
+<p>For operational setup (groups + optional <code>ReviewerRole</code> for superusers), see:</p>
+<pre><code class="language-bash">python manage.py setup_roles --assign-superuser
+</code></pre>
+<p>(<code>heritage_graph/apps/heritage_data/management/commands/setup_roles.py</code>)</p>
+<h3 id="24-permission-class-quick-reference">2.4 Permission class quick reference</h3>
+<p>Defined in <code>heritage_graph/apps/heritage_data/permissions.py</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Effect (summary)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IsContributorOrReadOnly</code></td>
+<td><strong>Object-level:</strong> SAFE methods allowed; writes only if <code>obj.contributor == request.user</code></td>
+</tr>
+<tr>
+<td><code>IsReviewerOrAdmin</code></td>
+<td><strong>View-level:</strong> <code>is_staff</code> OR active <code>reviewer_role</code></td>
+</tr>
+<tr>
+<td><code>IsCommunityReviewer</code></td>
+<td><code>is_staff</code> OR active role in <code>community_reviewer</code>, <code>domain_expert</code>, <code>expert_curator</code></td>
+</tr>
+<tr>
+<td><code>IsDomainExpert</code></td>
+<td><code>is_staff</code> OR active role in <code>domain_expert</code>, <code>expert_curator</code></td>
+</tr>
+<tr>
+<td><code>IsExpertCurator</code></td>
+<td><code>is_staff</code> OR active <code>expert_curator</code></td>
+</tr>
+<tr>
+<td><code>IsEditor</code></td>
+<td><strong><code>is_staff</code> only</strong> (object-level staff check too)</td>
+</tr>
+</tbody>
+</table>
+<p>DRF built-ins in use elsewhere: <code>IsAuthenticated</code>, <code>IsAuthenticatedOrReadOnly</code>, <code>AllowAny</code>, <code>IsAdminUser</code>.</p>
+<h3 id="25-django-groups-vs-reviewerrole-critical">2.5 Django Groups vs <code>ReviewerRole</code> (critical)</h3>
+<p>Management command <strong><code>setup_roles</code></strong> creates groups: <strong><code>Contributors</code></strong>, <strong><code>Reviewers</code></strong>, <strong><code>Moderators</code></strong>.</p>
+<p><strong>Custom DRF permission classes in <code>permissions.py</code> do not check Django Group membership</strong> — they check <strong><code>is_staff</code></strong> and <strong><code>ReviewerRole</code></strong>.</p>
+<p>The <strong>frontend</strong> <code>useUserRoles</code> hook <strong>does</strong> use group names for UX (e.g. <code>Reviewers</code>, <code>Moderators</code>).</p>
+<p><strong>Implication:</strong> A user may be in the <code>Reviewers</code> group and see reviewer UI, yet receive <strong>403</strong> from an API that only checks <code>ReviewerRole</code>. Keep backend and <code>/api/user/info</code> data in sync, or align checks (e.g. add group checks to permissions if product requires it).</p>
+<hr />
+<h2 id="3-protecting-a-new-endpoint-django-rest-framework">3. Protecting a new endpoint (Django REST Framework)</h2>
+<h3 id="step-1-pick-the-right-permission-stack">Step 1 — Pick the right permission stack</h3>
+<ul>
+<li><strong>Public read, authenticated write:</strong> <code>IsAuthenticatedOrReadOnly</code> or method-specific <code>get_permissions()</code>.</li>
+<li><strong>Login required:</strong> <code>[IsAuthenticated]</code>.</li>
+<li><strong>Staff / admin only:</strong> <code>[IsAdminUser]</code> or <code>[IsAuthenticated, IsEditor]</code>.</li>
+<li><strong>Reviewer capability:</strong> stack <code>IsAuthenticated</code> with the narrowest class: <code>IsCommunityReviewer</code>, <code>IsDomainExpert</code>, or <code>IsExpertCurator</code>.</li>
+</ul>
+<h3 id="step-2-apply-to-a-modelviewset-or-apiview">Step 2 — Apply to a <code>ModelViewSet</code> or <code>APIView</code></h3>
+<p><strong>APIView example:</strong></p>
+<pre><code class="language-python">from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+from apps.heritage_data.permissions import IsCommunityReviewer
+
+
+class MyReviewerView(APIView):
+    permission_classes = [IsAuthenticated, IsCommunityReviewer]
+
+    def get(self, request):
+        return Response({&quot;ok&quot;: True})
+</code></pre>
+<p><strong>ViewSet with action-specific permissions</strong> (pattern used in <code>ReviewerRoleViewSet</code>):</p>
+<pre><code class="language-python">from rest_framework import viewsets, permissions
+from apps.heritage_data.permissions import IsExpertCurator
+
+
+class MyViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in (&quot;create&quot;, &quot;update&quot;, &quot;partial_update&quot;, &quot;destroy&quot;):
+            return [permissions.IsAuthenticated(), IsExpertCurator()]
+        return [permissions.IsAuthenticated()]
+</code></pre>
+<h3 id="step-3-object-level-permissions">Step 3 — Object-level permissions</h3>
+<p>If ownership matters, implement or reuse <strong><code>has_object_permission</code></strong> (see <code>IsContributorOrReadOnly</code>, <code>IsEditor</code>).</p>
+<h3 id="step-4-verify-with-curl">Step 4 — Verify with curl</h3>
+<pre><code class="language-bash">curl -s -o /dev/null -w &quot;%{http_code}&quot; \
+  -H &quot;Authorization: Bearer YOUR_TOKEN&quot; \
+  http://localhost:8000/your/path/
+</code></pre>
+<p>Expect <strong>401</strong> if the token is missing/invalid, <strong>403</strong> if authenticated but not permitted.</p>
+<hr />
+<h2 id="4-protecting-a-new-nextjs-15-page">4. Protecting a new Next.js 15 page</h2>
+<p>Principles:</p>
+<ol>
+<li><strong>Never rely on the UI alone</strong> — the API must enforce the same rules (see <a href="#6-common-mistakes">§6</a>).</li>
+<li>Prefer <strong>layout-level</strong> session + role loading for whole sections (curation already does this).</li>
+<li>Use <strong><code>useUserRoles</code></strong> only under a provider that supplies real data (see curation layout).</li>
+</ol>
+<h3 id="41-authenticated-only-page-client">4.1 Authenticated-only page (client)</h3>
+<p>See <a href="../AUTH/#client-side-guard">AUTH.md — Client-side guard</a>: <code>useSession</code>, loading state, redirect if <code>unauthenticated</code>.</p>
+<h3 id="42-reviewer-or-moderator-only-page-client">4.2 Reviewer- or moderator-only page (client)</h3>
+<p>Existing pages use <strong><code>AccessDenied</code></strong> (<code>heritage_graph_ui/src/components/access-denied.tsx</code>) with <code>requiredRole="reviewer" | "moderator"</code> and <strong><code>useUserRoles()</code></strong> from <code>@/hooks/use-user-roles</code>.</p>
+<p><strong>Important:</strong> The <strong><code>UserRolesContext</code></strong> is provided by <strong><code>heritage_graph_ui/src/app/(dashboard)/curation/layout.tsx</code></strong>. Pages under <code>/curation/...</code> can call <code>useUserRoles()</code> safely. For other route trees, either:</p>
+<ul>
+<li>Add a similar <code>UserRolesContext.Provider</code> wrapper in that segment’s <code>layout.tsx</code>, or  </li>
+<li>Call <code>/api/user/info</code> inside the page with <code>useSession</code> (duplicated logic — prefer a provider).</li>
+</ul>
+<h3 id="43-server-component-or-route-handler">4.3 Server Component or route handler</h3>
+<p>Use <code>getServerSession(authOptions)</code> (<a href="../AUTH/#server-components--api-routes">AUTH.md — Server Components</a>), then forward <code>Authorization: Bearer ${session.accessToken}</code> to Django for server-side fetches. <strong>Role checks on the server</strong> are not centralized in this repo today—either call <code>/api/user/info</code> from the server with the same Bearer token or duplicate minimal checks (prefer a small shared helper if you add many routes).</p>
+<hr />
+<h2 id="5-copy-paste-patterns-middleware-guards">5. Copy-paste patterns (middleware &amp; guards)</h2>
+<h3 id="51-optional-nextauth-withauth-middleware-not-currently-global">5.1 Optional: NextAuth <code>withAuth</code> middleware (not currently global)</h3>
+<p><code>heritage_graph_ui/src/middleware.ts</code> today handles <strong>locale</strong> only. To gate paths at the edge (optional), you can use NextAuth’s middleware (<strong>adjust <code>matcher</code></strong> to your real routes, e.g. dashboard prefix):</p>
+<pre><code class="language-typescript">// Example only — align with your route structure before enabling.
+import { withAuth } from &quot;next-auth/middleware&quot;;
+
+export default withAuth({
+  pages: { signIn: &quot;/api/auth/signin&quot; },
+});
+
+export const config = {
+  matcher: [&quot;/(dashboard)/:path*&quot;],
+};
+</code></pre>
+<p>Edge middleware <strong>does not</strong> know Django <code>ReviewerRole</code> unless you encode it in the session (not standard here). Use middleware for <strong>authentication</strong>; use <strong>page/layout + API</strong> for <strong>roles</strong>.</p>
+<h3 id="52-curation-style-layout-session-roles-provider">5.2 Curation-style layout (session + roles provider)</h3>
+<p>Pattern from <code>heritage_graph_ui/src/app/(dashboard)/curation/layout.tsx</code>:</p>
+<ol>
+<li><code>useSession()</code> — block on <code>loading</code>, then require <code>session</code> (sign-in card if missing).  </li>
+<li><code>useUserRolesProvider()</code> — wait for <code>roles.isLoading</code>.  </li>
+<li>Render <code>children</code> inside <code>UserRolesContext.Provider value={roles}</code>.</li>
+</ol>
+<h3 id="53-page-level-role-gate-accessdenied">5.3 Page-level role gate + <code>AccessDenied</code></h3>
+<p>After hooks have run (see <a href="#63-react-hooks-order">§6.3</a>), branch:</p>
+<pre><code class="language-tsx">&quot;use client&quot;;
+
+import { useSession } from &quot;next-auth/react&quot;;
+import { useUserRoles } from &quot;@/hooks/use-user-roles&quot;;
+import { AccessDenied } from &quot;@/components/access-denied&quot;;
+
+export function ReviewerOnlyContent() {
+  const { data: session } = useSession();
+  const { isReviewer, isLoading } = useUserRoles();
+
+  if (isLoading) return null; // or a spinner
+  if (!isReviewer) {
+    return &lt;AccessDenied requiredRole=&quot;reviewer&quot; userEmail={session?.user?.email} /&gt;;
+  }
+  return &lt;div&gt;…&lt;/div&gt;;
+}
+</code></pre>
+<p>For <strong>moderator-only</strong> UI, use <code>isModerator</code> and <code>requiredRole="moderator"</code>.</p>
+<h3 id="54-backend-authenticated-fetch-helper-client">5.4 Backend: authenticated fetch helper (client)</h3>
+<pre><code class="language-tsx">const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
+const token = session?.accessToken;
+
+await fetch(`${API_BASE}/data/your-endpoint/`, {
+  headers: {
+    &quot;Content-Type&quot;: &quot;application/json&quot;,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  },
+});
+</code></pre>
+<hr />
+<h2 id="6-common-mistakes">6. Common mistakes</h2>
+<h3 id="61-ui-only-protection">6.1 UI-only protection</h3>
+<p><strong>Symptom:</strong> Hidden menu links but API still returns 200 for everyone.<br />
+<strong>Fix:</strong> Add DRF <code>permission_classes</code> on every new endpoint. Treat the frontend as a hint for users, not a security boundary.</p>
+<h3 id="62-assuming-django-groups-match-backend-permissions">6.2 Assuming Django Groups match backend permissions</h3>
+<p><strong>Symptom:</strong> User has <code>Reviewers</code> group, sees reviewer pages, but API returns 403.<br />
+<strong>Fix:</strong> Ensure <code>ReviewerRole</code> (or staff) is assigned, or extend permission classes to include group checks if product requires groups.</p>
+<h3 id="63-react-hooks-order">6.3 React hooks order</h3>
+<p><strong>Symptom:</strong> “Rendered more hooks than during the previous render” or inconsistent state.<br />
+<strong>Fix:</strong> <strong>Never</strong> <code>return</code> early (e.g. <code>&lt;AccessDenied /&gt;</code>) <strong>before</strong> all <code>useState</code> / <code>useEffect</code> hooks in that component. Either:</p>
+<ul>
+<li>Move the role gate <strong>after</strong> all hooks, or  </li>
+<li>Split into a parent that only renders children when allowed, or  </li>
+<li>Use a small wrapper component for denied state.</li>
+</ul>
+<h3 id="64-wrong-base-url-or-token">6.4 Wrong base URL or token</h3>
+<p><strong>Symptom:</strong> 401 on all requests.<br />
+<strong>Fix:</strong> Use <code>NEXT_PUBLIC_API_URL</code> on the client and <code>INTERNAL_BACKEND_URL</code> from server-side fetch (<a href="../AUTH/">AUTH.md</a>). Always send <code>Authorization: Bearer &lt;session.accessToken&gt;</code>.</p>
+<h3 id="65-dev-vs-prod-token-type">6.5 Dev vs prod token type</h3>
+<p><strong>Symptom:</strong> Works locally, fails in production (or vice versa).<br />
+<strong>Fix:</strong> In dev, NextAuth may store a <strong>SimpleJWT</strong> access token; in production, typically a <strong>Google ID token</strong>. The backend chain supports both when configured—ensure <code>DJANGO_ENV</code> and <code>GOOGLE_CLIENT_ID</code> match the intended mode (<a href="../AUTH/">AUTH.md</a>).</p>
+<h3 id="66-forgetting-get_permissions-on-custom-actions">6.6 Forgetting <code>get_permissions()</code> on custom actions</h3>
+<p><strong>Symptom:</strong> A <code>ViewSet</code> default is strict, but a custom <code>@action</code> is too open.<br />
+<strong>Fix:</strong> Set <code>permission_classes</code> on each <code>@action</code> that differs from the class default.</p>
+<hr />
+<h2 id="related-files-quick-index">Related files (quick index)</h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DRF permissions</td>
+<td><code>heritage_graph/apps/heritage_data/permissions.py</code></td>
+</tr>
+<tr>
+<td><code>ReviewerRole</code> model</td>
+<td><code>heritage_graph/apps/heritage_data/models.py</code></td>
+</tr>
+<tr>
+<td>Current user + groups API</td>
+<td><code>GET /api/user/info</code> → <code>CurrentUserView</code></td>
+</tr>
+<tr>
+<td>Auth class chain</td>
+<td><code>heritage_graph/settings/development.py</code>, <code>production.py</code></td>
+</tr>
+<tr>
+<td>Frontend roles hook</td>
+<td><code>heritage_graph_ui/src/hooks/use-user-roles.ts</code></td>
+</tr>
+<tr>
+<td>Curation provider + sign-in gate</td>
+<td><code>heritage_graph_ui/src/app/(dashboard)/curation/layout.tsx</code></td>
+</tr>
+<tr>
+<td>Access denied UI</td>
+<td><code>heritage_graph_ui/src/components/access-denied.tsx</code></td>
+</tr>
+<tr>
+<td>Group bootstrap</td>
+<td><code>python manage.py setup_roles</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>Last reviewed: 2026-04-08 — align this document when adding new permission classes or changing <code>/api/user/info</code>.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

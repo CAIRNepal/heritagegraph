@@ -1,0 +1,3494 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/testing/TESTING/">
+      
+      
+        <link rel="prev" href="../../contribution/FORMS/">
+      
+      
+        <link rel="next" href="../../knowledge-graph/RDF_ENGINE/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Testing guide - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#heritagegraph-testing-validation-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Testing guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Pipeline overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Pipeline overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-flow-what-working-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow (what “working” means)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-rdf-write-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single RDF write path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-venv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local (venv)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-stack-recommended-for-postgres-oxigraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker stack (recommended for Postgres + Oxigraph)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-ontology-change-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Ontology change workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-automated-backend-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Automated backend validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Automated backend validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-end-to-end-contribution-viz-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 End-to-end contribution → viz command
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-knowledge-list-api-smoke-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Knowledge list API smoke test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-platform-e2e-recommended-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Platform E2E (recommended gate)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-django-unit-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Django unit / integration tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-registry-api-smoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Registry API smoke
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-what-the-e2e-command-checks-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 What the E2E command checks (mapping)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-oxigraph-and-rdf-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Oxigraph and RDF validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Oxigraph and RDF validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-configuration-diagnostic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Configuration diagnostic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-full-triplestore-rebuild-after-schema-or-bulk-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Full triplestore rebuild (after schema or bulk import)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-sparql-sanity-docker-oxigraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 SPARQL sanity (Docker Oxigraph)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-semantic-alignment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Semantic alignment checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-frontend-visualization-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Frontend visualization validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Frontend visualization validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-shared-live-data-loader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Shared live data loader
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-graphview-graphview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Graphview (/graphview)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-heritage-atlas-atlas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Heritage Atlas (/atlas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-frontend-ontology-artifact-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Frontend ontology artifact check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-manual-ui-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Manual UI checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-ci-and-regression-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. CI and regression gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structure-create-returns-400-with-has_current_location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structure create returns 400 with has_current_location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structure_type-validation-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        structure_type validation error
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#atlas-shows-no-entities-in-live-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Atlas shows “No entities” in live mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxigraph-empty-but-postgres-has-rows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Oxigraph empty but Postgres has rows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-entityrefs-schema-rebuild-fails-with-no-module-named-django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make entityrefs / schema-rebuild fails with “No module named django”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicate-or-missing-triples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duplicate or missing triples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphview-has-nodes-but-atlas-globe-is-empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graphview has nodes but Atlas globe is empty
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-reference-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Reference commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Pipeline overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Pipeline overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-flow-what-working-means" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow (what “working” means)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#single-rdf-write-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Single RDF write path
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-venv" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local (venv)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-stack-recommended-for-postgres-oxigraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker stack (recommended for Postgres + Oxigraph)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-ontology-change-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Ontology change workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-automated-backend-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Automated backend validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Automated backend validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-end-to-end-contribution-viz-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 End-to-end contribution → viz command
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-knowledge-list-api-smoke-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Knowledge list API smoke test
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-platform-e2e-recommended-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Platform E2E (recommended gate)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-django-unit-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Django unit / integration tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-registry-api-smoke" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Registry API smoke
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-what-the-e2e-command-checks-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 What the E2E command checks (mapping)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-oxigraph-and-rdf-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Oxigraph and RDF validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Oxigraph and RDF validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-configuration-diagnostic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Configuration diagnostic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-full-triplestore-rebuild-after-schema-or-bulk-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Full triplestore rebuild (after schema or bulk import)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-sparql-sanity-docker-oxigraph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 SPARQL sanity (Docker Oxigraph)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-semantic-alignment-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Semantic alignment checklist
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-frontend-visualization-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Frontend visualization validation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Frontend visualization validation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-shared-live-data-loader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Shared live data loader
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-graphview-graphview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Graphview (/graphview)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-heritage-atlas-atlas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Heritage Atlas (/atlas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-frontend-ontology-artifact-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Frontend ontology artifact check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-manual-ui-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Manual UI checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-ci-and-regression-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. CI and regression gates
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structure-create-returns-400-with-has_current_location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structure create returns 400 with has_current_location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structure_type-validation-error" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        structure_type validation error
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#atlas-shows-no-entities-in-live-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Atlas shows “No entities” in live mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oxigraph-empty-but-postgres-has-rows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Oxigraph empty but Postgres has rows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#make-entityrefs-schema-rebuild-fails-with-no-module-named-django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make entityrefs / schema-rebuild fails with “No module named django”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#duplicate-or-missing-triples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Duplicate or missing triples
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graphview-has-nodes-but-atlas-globe-is-empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graphview has nodes but Atlas globe is empty
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-reference-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Reference commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="heritagegraph-testing-validation-guide">HeritageGraph — Testing &amp; Validation Guide</h1>
+<p>This document describes how to <strong>test and validate</strong> the HeritageGraph data path from frontend contribution through PostgreSQL, registry-aligned RDF, Oxigraph, and live visualization (Atlas + Graphview).</p>
+<p><strong>Out of scope here:</strong> OCR / document ingestion and the legacy <code>Submission</code> flat-field workflow unless noted.</p>
+<p><strong>Canonical ontology:</strong> <a href="../../ontology/HeritageGraph.yaml"><code>ontology/HeritageGraph.yaml</code></a></p>
+<hr />
+<h2 id="table-of-contents">Table of contents</h2>
+<ol>
+<li><a href="#1-pipeline-overview">Pipeline overview</a></li>
+<li><a href="#2-prerequisites">Prerequisites</a></li>
+<li><a href="#3-ontology-change-workflow">Ontology change workflow</a></li>
+<li><a href="#4-automated-backend-validation">Automated backend validation</a></li>
+<li><a href="#5-oxigraph-and-rdf-validation">Oxigraph and RDF validation</a></li>
+<li><a href="#6-frontend-visualization-validation">Frontend visualization validation</a></li>
+<li><a href="#7-manual-ui-checklist">Manual UI checklist</a></li>
+<li><a href="#8-ci-and-regression-gates">CI and regression gates</a></li>
+<li><a href="#9-troubleshooting">Troubleshooting</a></li>
+<li><a href="#10-reference-commands">Reference commands</a></li>
+</ol>
+<hr />
+<h2 id="1-pipeline-overview">1. Pipeline overview</h2>
+<h3 id="data-flow-what-working-means">Data flow (what “working” means)</h3>
+<pre><code class="language-mermaid">flowchart LR
+  UI[Next.js contribute / OntologyForm]
+  API[&quot;DRF POST /api/v1/cidoc/...&quot;]
+  PG[(PostgreSQL)]
+  REG[LinkML registry validation]
+  RDF[rdf_signals + rdf_entity_projection]
+  OXI[(Oxigraph)]
+  LIVE[Atlas + Graphview live mode]
+
+  UI --&gt; API
+  API --&gt; REG
+  REG --&gt; PG
+  PG --&gt; RDF
+  RDF --&gt; OXI
+  PG --&gt; LIVE
+  API --&gt; LIVE
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Responsibility</th>
+<th>Source of truth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Forms &amp; API validation</td>
+<td>Field types, enums, <code>slot_uri</code></td>
+<td><code>ontology/HeritageGraph.yaml</code> → <code>linkml_loader</code></td>
+</tr>
+<tr>
+<td>Postgres</td>
+<td>Authoritative records</td>
+<td>Django ORM (<code>cidoc_data</code>, <code>heritage_data</code>)</td>
+</tr>
+<tr>
+<td>RDF projection</td>
+<td>Triples on save</td>
+<td>Registry <code>class_uri</code> / <code>slot_uri</code> via <code>rdf_entity_projection</code></td>
+</tr>
+<tr>
+<td>Oxigraph</td>
+<td>Queryable graph</td>
+<td><code>RDF_ENDPOINT_URL</code> / <code>RDF_QUERY_URL</code> (Docker) or local <code>oxigraph_db/</code></td>
+</tr>
+<tr>
+<td>Atlas / Graphview</td>
+<td>Live corpus</td>
+<td><code>fetchInstanceGraphData</code> → CIDOC list APIs</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Scientific rule:</strong> Do not hand-edit generated registry files or duplicate RDF mappers. Regenerate artifacts with <code>make generate</code> and prove consistency with <code>make check</code> and the E2E command below.</p>
+<h3 id="single-rdf-write-path">Single RDF write path</h3>
+<p>Registry-driven projection is handled only by:</p>
+<ul>
+<li><code>heritage_graph/apps/cidoc_data/rdf_signals.py</code></li>
+<li><code>heritage_graph/apps/cidoc_data/rdf_entity_projection.py</code></li>
+</ul>
+<p>Legacy <code>graph_client</code> inserts for Person/Structure in <code>cidoc_data/signals.py</code> were removed to avoid duplicate subjects (<code>Person/</code> vs <code>person/</code> IRIs).</p>
+<hr />
+<h2 id="2-prerequisites">2. Prerequisites</h2>
+<h3 id="local-venv">Local (venv)</h3>
+<pre><code class="language-bash">cd heritagegraph
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r heritage_graph/requirements.txt linkml pyyaml
+</code></pre>
+<h3 id="docker-stack-recommended-for-postgres-oxigraph">Docker stack (recommended for Postgres + Oxigraph)</h3>
+<pre><code class="language-bash">docker compose up -d postgres backend oxigraph frontend
+</code></pre>
+<p>Relevant environment (see <a href="../../docker-compose.yml"><code>docker-compose.yml</code></a> and <a href="../../.env.example"><code>.env.example</code></a>):</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Typical value (Compose)</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RDF_SYNC_ENABLED</code></td>
+<td><code>true</code></td>
+<td>Project triples on CIDOC save</td>
+</tr>
+<tr>
+<td><code>RDF_ENDPOINT_URL</code></td>
+<td><code>http://oxigraph:7878/update</code></td>
+<td>SPARQL UPDATE</td>
+</tr>
+<tr>
+<td><code>RDF_QUERY_URL</code></td>
+<td><code>http://oxigraph:7878/query</code></td>
+<td>SPARQL SELECT (proxy + diagnostics)</td>
+</tr>
+<tr>
+<td><code>RDF_RESOURCE_BASE_URI</code></td>
+<td><code>https://w3id.org/heritagegraph/resource/</code></td>
+<td>Instance IRIs</td>
+</tr>
+<tr>
+<td><code>HERITAGEGRAPH_SCHEMA_PATH</code></td>
+<td><code>ontology/HeritageGraph.yaml</code></td>
+<td>Registry build</td>
+</tr>
+</tbody>
+</table>
+<h3 id="frontend">Frontend</h3>
+<pre><code class="language-bash">cd heritage_graph_ui
+cp .env.example .env.local
+# Set NEXT_PUBLIC_API_URL to your backend (e.g. http://localhost:8000)
+npm install
+npm run dev
+</code></pre>
+<p>Sign in with Google so Atlas/Graphview can call authenticated list endpoints when required.</p>
+<hr />
+<h2 id="3-ontology-change-workflow">3. Ontology change workflow</h2>
+<p>After editing <strong><code>ontology/HeritageGraph.yaml</code></strong> (and optionally <code>tools/ui-classmap.yaml</code>, <code>tools/contribute-hub.yaml</code>, <code>tools/ui-presentation.yaml</code>):</p>
+<pre><code class="language-bash"># From repo root — regenerates all derived artifacts
+make generate
+</code></pre>
+<p>This runs, in order:</p>
+<ol>
+<li><code>make ontology</code> — <code>registry.generated.json</code> / <code>.ts</code> (UI offline fallback)</li>
+<li><code>make viz-config</code> — <code>enums.ts</code>, <code>heritage-viz-config.ts</code>, <code>apps/graph/ontology_config.py</code></li>
+<li><code>make shacl</code> — <code>ontology/shapes/generated-heritagegraph-minimal-shacl.ttl</code></li>
+<li><code>make serializers</code> — <code>serializers.generated.py</code></li>
+<li><code>make entityrefs</code> — <code>EntityRef</code> backfill</li>
+<li><code>make schema-rebuild</code> — <code>SchemaRegistry</code> row in Postgres</li>
+</ol>
+<p>Verify nothing is stale (same as CI):</p>
+<pre><code class="language-bash">make check
+</code></pre>
+<p>Commit <strong>YAML + all generated files</strong> in one PR.</p>
+<p><strong>Still manual when adding a new entity type:</strong> Django model, migration, ViewSet + <code>urls.py</code>, and a row in <code>heritage_graph/apps/cidoc_data/cidoc_registry_keys.py</code>.</p>
+<p>More detail: <a href="../../ontology/README.md"><code>ontology/README.md</code></a>, <a href="../../tools/README.md"><code>tools/README.md</code></a>, <a href="../../specs/004-yaml-driven-schema/quickstart.md"><code>specs/004-yaml-driven-schema/quickstart.md</code></a>.</p>
+<hr />
+<h2 id="4-automated-backend-validation">4. Automated backend validation</h2>
+<h3 id="41-end-to-end-contribution-viz-command">4.1 End-to-end contribution → viz command</h3>
+<p>Simulates frontend-style API posts and validates Postgres, RDF projection, list APIs, and Atlas/Graphview visibility rules.</p>
+<pre><code class="language-bash">cd heritage_graph
+DJANGO_ENV=development python manage.py validate_contribution_pipeline
+</code></pre>
+<p><strong>Options:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--json</code></td>
+<td>Machine-readable report on stdout</td>
+</tr>
+<tr>
+<td><code>--keep-data</code></td>
+<td>Leave seeded rows in DB for manual UI inspection</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example success output:</strong></p>
+<pre><code class="language-text">Contribution → Viz pipeline
+  [PASS] api_post_location: ...
+  [PASS] api_post_structure: ...
+  [PASS] api_post_person: ...
+  [PASS] postgres_location: ...
+  [PASS] postgres_structure: ...
+  [PASS] postgres_person: ...
+  [PASS] postgres_cultural_entity: ...
+  [PASS] rdf_projection_registry: ...
+  [PASS] review_accept_publish: ...
+  [PASS] oxigraph_store: ...
+  [PASS] kg_graph_api: ...
+  [PASS] api_list_location: ...
+  [PASS] api_list_structure: ...
+  [PASS] api_list_person: ...
+  [PASS] graphview_nodes: ...
+  [PASS] atlas_hydrate_entities: ...
+  [PASS] atlas_globe_spatial: ...
+  [PASS] atlas_location_coords: ...
+Overall: PASSED
+</code></pre>
+<p>Implementation: <a href="../../heritage_graph/apps/cidoc_data/management/commands/validate_contribution_pipeline.py"><code>heritage_graph/apps/cidoc_data/management/commands/validate_contribution_pipeline.py</code></a></p>
+<p><strong>Note:</strong> Records are created as <code>pending_review</code> (same as the UI), then the command <strong>publishes</strong> them (<code>CIDOC.status=accepted</code> + <code>CulturalEntity.accept_contribution</code>) before RDF/Atlas checks — matching the real reviewer workflow. It uses a <strong>temporary local Oxigraph directory</strong> when <code>RDF_ENDPOINT_URL</code> is empty. For Docker Oxigraph, use <a href="#5-oxigraph-and-rdf-validation">§5</a> after a run with <code>--keep-data</code> or contribute via the UI.</p>
+<h3 id="42-knowledge-list-api-smoke-test">4.2 Knowledge list API smoke test</h3>
+<p>Every navigable ontology class used by <code>/knowledge/&lt;domain&gt;</code> tables must return HTTP 200 from its DRF list endpoint (see <a href="../../contribution/KNOWLEDGE_PAGES/"><code>../contribution/KNOWLEDGE_PAGES.md</code></a>):</p>
+<pre><code class="language-bash">cd heritage_graph
+DJANGO_ENV=development python manage.py test apps.cidoc_data.test_knowledge_list_apis -v2
+</code></pre>
+<p>Included in <code>make test-e2e</code> via <code>tests/config.py</code>.</p>
+<h3 id="43-platform-e2e-recommended-gate">4.3 Platform E2E (recommended gate)</h3>
+<p>Single command that runs <strong>42 automated tests</strong> across health, discovery, KG APIs, contribution + identity resolution, <strong>CIDOC form → reviewer <code>decide</code> accept → kg/graph</strong>, duplicate handling, review queue, RDF projection, museum enrichment, and cultural-entity sync:</p>
+<pre><code class="language-bash">make test-e2e
+# or:
+./tests/run_e2e.sh
+</code></pre>
+<p><strong>Faster smoke</strong> (core pipeline only, 11 tests):</p>
+<pre><code class="language-bash">./tests/run_e2e.sh --skip-unit
+</code></pre>
+<p><strong>Optional live HTTP probes</strong> (backend must already be running):</p>
+<pre><code class="language-bash">PLATFORM_E2E_LIVE_URL=http://127.0.0.1:8000 ./tests/run_e2e.sh
+</code></pre>
+<p><strong>Runners &amp; config:</strong> <a href="../../tests/run_platform_e2e.py"><code>tests/run_platform_e2e.py</code></a>, <a href="../../tests/config.py"><code>tests/config.py</code></a>, <a href="../../tests/README.md"><code>tests/README.md</code></a>.</p>
+<p><strong>Test modules</strong> (Django discovery — stay under <code>heritage_graph/apps/</code>): <a href="../../heritage_graph/apps/graph/test_platform_e2e.py"><code>test_platform_e2e.py</code></a>, <a href="../../heritage_graph/apps/cidoc_data/test_e2e_pipeline.py"><code>test_e2e_pipeline.py</code></a>.</p>
+<p><strong>Not covered by this suite</strong> (manual or separate tooling): Next.js UI flows, Google OAuth login, OCR/document pipeline, OpenRouter assistant chat, Traefik TLS, production deploy smoke.</p>
+<h3 id="44-django-unit-integration-tests">4.4 Django unit / integration tests</h3>
+<pre><code class="language-bash">cd heritage_graph
+DJANGO_ENV=development python manage.py test apps.cidoc_data.tests.FrontendContributionPipelineTest
+DJANGO_ENV=development python manage.py test apps.cidoc_data.tests.RegistrySnapshotAlignmentTest
+DJANGO_ENV=development python manage.py test apps.cidoc_data.tests.RegistryJsonSchemaCoercionTest
+DJANGO_ENV=development python manage.py test apps.heritage_data.tests.test_contribution_queue_api
+</code></pre>
+<p>Broader CIDOC suite:</p>
+<pre><code class="language-bash">DJANGO_ENV=development python manage.py test apps.cidoc_data
+</code></pre>
+<h3 id="45-registry-api-smoke">4.5 Registry API smoke</h3>
+<pre><code class="language-bash">curl -sS -H &quot;Authorization: Bearer &lt;token&gt;&quot; \
+  &quot;http://localhost:8000/api/v1/cidoc/schema/registry/&quot; \
+  | jq '.schema_version, (.classes | keys | length)'
+</code></pre>
+<p>Expect <code>schema_version</code> and a non-empty <code>classes</code> object. Repeat with <code>If-None-Match</code> from <code>ETag</code> → expect <code>304</code> when unchanged.</p>
+<h3 id="46-what-the-e2e-command-checks-mapping">4.6 What the E2E command checks (mapping)</h3>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Validates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>api_post_*</code></td>
+<td>Same routes as UI per <code>tools/ui-classmap.yaml</code> (e.g. <code>/api/v1/cidoc/locations/</code>, <code>structures/</code>, <code>productions/</code>, <code>persons/</code>)</td>
+</tr>
+<tr>
+<td><code>postgres_*</code></td>
+<td>ORM persistence + <code>CulturalEntity</code> wrapper for persons</td>
+</tr>
+<tr>
+<td><code>rdf_projection_registry</code></td>
+<td>Triples use registry <code>classUri</code> and <code>name</code> <code>slot_uri</code></td>
+</tr>
+<tr>
+<td><code>oxigraph_store</code></td>
+<td><code>rdf_signals</code> writes quads (local store in command)</td>
+</tr>
+<tr>
+<td><code>api_list_*</code></td>
+<td>Records visible to <code>fetchInstanceGraphData</code></td>
+</tr>
+<tr>
+<td><code>graphview_nodes</code></td>
+<td>Node IDs <code>location_{id}</code>, <code>structure_{id}</code>, <code>person_{id}</code></td>
+</tr>
+<tr>
+<td><code>atlas_*</code></td>
+<td>API exposes <code>latitude</code>/<code>longitude</code>; enough entities for globe</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-oxigraph-and-rdf-validation">5. Oxigraph and RDF validation</h2>
+<h3 id="51-configuration-diagnostic">5.1 Configuration diagnostic</h3>
+<pre><code class="language-bash">cd heritage_graph
+DJANGO_ENV=development python manage.py rdf_diagnose
+</code></pre>
+<p>Optional:</p>
+<pre><code class="language-bash">python manage.py rdf_diagnose --project-first   # one-row round-trip
+python manage.py rdf_diagnose --project-all     # full rebuild (heavy)
+</code></pre>
+<h3 id="52-full-triplestore-rebuild-after-schema-or-bulk-import">5.2 Full triplestore rebuild (after schema or bulk import)</h3>
+<pre><code class="language-bash">cd heritage_graph
+DJANGO_ENV=development python manage.py rdf_rebuild --purge-imports
+</code></pre>
+<h3 id="53-sparql-sanity-docker-oxigraph">5.3 SPARQL sanity (Docker Oxigraph)</h3>
+<p>Instance IRIs use:</p>
+<pre><code class="language-text">https://w3id.org/heritagegraph/resource/{model_name_lower}/{pk}
+</code></pre>
+<p>Example (replace <code>65</code> with a real person id):</p>
+<pre><code class="language-sparql">PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+SELECT ?p ?o WHERE {
+  &lt;https://w3id.org/heritagegraph/resource/person/65&gt; ?p ?o .
+}
+LIMIT 50
+</code></pre>
+<p>Via API proxy (read-only):</p>
+<pre><code class="language-text">GET /api/v1/cidoc/sparql/?query=SELECT%20*%20WHERE%20%7B%20?s%20?p%20?o%20%7D%20LIMIT%2010
+</code></pre>
+<h3 id="54-semantic-alignment-checklist">5.4 Semantic alignment checklist</h3>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Predicates match LinkML</td>
+<td>Compare registry field <code>slot_uri</code> for a class with triple predicates in Oxigraph</td>
+</tr>
+<tr>
+<td>One subject per row</td>
+<td>No duplicate IRIs (<code>person/</code> vs <code>Person/</code>)</td>
+</tr>
+<tr>
+<td><code>RDF_SYNC_ENABLED</code></td>
+<td><code>rdf_diagnose</code> prints <code>true</code> in Compose</td>
+</tr>
+<tr>
+<td>Namespace</td>
+<td>Predicates expand from <code>ontology/HeritageGraph.yaml</code> prefixes (<code>crm:</code>, <code>heritageGraph:</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-frontend-visualization-validation">6. Frontend visualization validation</h2>
+<h3 id="61-shared-live-data-loader">6.1 Shared live data loader</h3>
+<p>Both <strong>Atlas</strong> and <strong>Graphview</strong> use:</p>
+<ul>
+<li><a href="../../heritage_graph_ui/src/lib/instance-graph.ts"><code>heritage_graph_ui/src/lib/instance-graph.ts</code></a> — <code>fetchInstanceGraphData()</code></li>
+<li>Atlas also uses <a href="../../heritage_graph_ui/src/lib/atlas-api-hydrate.ts"><code>heritage_graph_ui/src/lib/atlas-api-hydrate.ts</code></a> — <code>hydrateAtlasFromInstanceGraph()</code></li>
+</ul>
+<p>Live fetch pulls paginated CIDOC list endpoints under <code>/api/v1/cidoc/...</code> plus accepted assertions.</p>
+<h3 id="62-graphview-graphview">6.2 Graphview (<code>/graphview</code>)</h3>
+<ol>
+<li>Open <strong>Graphview</strong> in the dashboard.</li>
+<li>Ensure mode is <strong>Live</strong> / instance data (not ontology schema-only demo).</li>
+<li>Refresh data.</li>
+<li>Confirm new entities appear as nodes (<code>person_123</code>, <code>location_456</code>, etc.).</li>
+<li>Optional: export or inspect edge counts via UI stats.</li>
+</ol>
+<p><strong>Expected:</strong> Person nodes appear even without coordinates; edges depend on relations, location FKs, and description heuristics.</p>
+<h3 id="63-heritage-atlas-atlas">6.3 Heritage Atlas (<code>/atlas</code>)</h3>
+<ol>
+<li>Open <strong>Atlas</strong>.</li>
+<li>Switch corpus to <strong>Live</strong> (not Demo).</li>
+<li>Wait for “corpus ready” (see <a href="../../heritage_graph_ui/src/app/(dashboard)/atlas/hooks/use-atlas-data-source.ts"><code>use-atlas-data-source.ts</code></a>).</li>
+<li><strong>Globe:</strong> entities with <code>latitude</code> and <code>longitude</code> in API JSON show as points.</li>
+<li><strong>Graph panel:</strong> uses filtered entities and ontology edges from the same corpus.</li>
+<li><strong>Search / entity panel:</strong> should list contributed names.</li>
+</ol>
+<p><strong>Important:</strong> Persons without lat/lon appear in graph/search but <strong>not</strong> on the Cesium globe. For globe testing, contribute a <strong>Location</strong> or <strong>Structure</strong> with coordinates:</p>
+<pre><code class="language-json">{
+  &quot;latitude&quot;: 27.7172,
+  &quot;longitude&quot;: 85.324
+}
+</code></pre>
+<p>(Also accepted on create via structure <code>point</code> CharField.)</p>
+<h3 id="64-frontend-ontology-artifact-check">6.4 Frontend ontology artifact check</h3>
+<pre><code class="language-bash">cd heritage_graph_ui
+npm run check:ontology
+</code></pre>
+<p>Runs <code>gen_heritage_viz_config.py --check</code> and <code>linkml_generate_registry.py --check</code>.</p>
+<hr />
+<h2 id="7-manual-ui-checklist">7. Manual UI checklist</h2>
+<p>Use after <code>validate_contribution_pipeline --keep-data</code> or a real contribute session.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Action</th>
+<th>Pass criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Contribute a <strong>Location</strong> with lat/lon via <code>/contribute/location</code></td>
+<td><code>201</code> from API; row in knowledge list</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Contribute a <strong>Structure</strong> linked to that location</td>
+<td>No <code>400</code> on relation fields; structure in DB</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Contribute a <strong>Person</strong></td>
+<td><code>CulturalEntity</code> in <code>pending_review</code>; appears in curation queue if applicable</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>GET /api/v1/cidoc/schema/registry/</code></td>
+<td>Field definitions match form</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Atlas <strong>Live</strong> mode</td>
+<td>Location/structure visible on globe near coordinates</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Graphview <strong>Live</strong></td>
+<td>All three node types visible</td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>python manage.py rdf_diagnose</code> (Docker)</td>
+<td>Quad count increases after save</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Knowledge view → open record</td>
+<td>Detail page loads same data as form</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-ci-and-regression-gates">8. CI and regression gates</h2>
+<table>
+<thead>
+<tr>
+<th>Workflow / command</th>
+<th>What it enforces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../.github/workflows/ontology-registry.yml"><code>.github/workflows/ontology-registry.yml</code></a></td>
+<td><code>make check</code> on ontology-related changes</td>
+</tr>
+<tr>
+<td><code>make check</code></td>
+<td>Registry, viz config, SHACL, serializers, entityrefs, contribute routes</td>
+</tr>
+<tr>
+<td><code>make ontology-check</code></td>
+<td><code>registry.generated.*</code> matches YAML</td>
+</tr>
+<tr>
+<td><code>make shacl-check</code></td>
+<td>SHACL TTL matches registry snapshot</td>
+</tr>
+<tr>
+<td><code>apps.cidoc_data.tests.FrontendContributionPipelineTest</code></td>
+<td>API → Postgres → RDF → viz rules</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recommended before merge:</strong></p>
+<pre><code class="language-bash">make check
+cd heritage_graph &amp;&amp; DJANGO_ENV=development python manage.py validate_contribution_pipeline
+cd heritage_graph &amp;&amp; DJANGO_ENV=development python manage.py test apps.cidoc_data.tests.FrontendContributionPipelineTest
+</code></pre>
+<hr />
+<h2 id="9-troubleshooting">9. Troubleshooting</h2>
+<h3 id="structure-create-returns-400-with-has_current_location">Structure create returns 400 with <code>has_current_location</code></h3>
+<p><strong>Cause:</strong> Registry JSON Schema expected a scalar relation id; FK was validated as a model instance.</p>
+<p><strong>Fix:</strong> Ensure <code>coerce_for_jsonschema</code> maps Django models to <code>pk</code> (<a href="../../heritage_graph/apps/cidoc_data/registry_validation.py"><code>registry_validation.py</code></a>). Relation fields in the UI should send numeric IDs.</p>
+<h3 id="structure_type-validation-error"><code>structure_type</code> validation error</h3>
+<p>Use LinkML / model choices exactly (e.g. <code>"Temple"</code>, not <code>"temple"</code>). See <code>STRUCTURE_TYPE_CHOICES</code> in <a href="../../heritage_graph/apps/cidoc_data/models.py"><code>cidoc_data/models.py</code></a>.</p>
+<h3 id="atlas-shows-no-entities-in-live-mode">Atlas shows “No entities” in live mode</h3>
+<ul>
+<li>Confirm <code>NEXT_PUBLIC_API_URL</code> points at the backend that received the data.</li>
+<li>Confirm Atlas is on <strong>Live</strong>, not Demo.</li>
+<li>Check browser network tab: CIDOC list calls return <code>200</code> with <code>results</code>.</li>
+<li>Auth: some deployments require a signed-in user for writes; lists may be public.</li>
+</ul>
+<h3 id="oxigraph-empty-but-postgres-has-rows">Oxigraph empty but Postgres has rows</h3>
+<ul>
+<li><code>RDF_SYNC_ENABLED=false</code> in env — set <code>true</code> (see <code>.env.example</code>).</li>
+<li><code>rdf_diagnose</code> shows empty <code>RDF_ENDPOINT_URL</code> — in Docker, use <code>http://oxigraph:7878/update</code>.</li>
+<li>Run <code>python manage.py rdf_rebuild --purge-imports</code> after fixing config.</li>
+</ul>
+<h3 id="make-entityrefs-schema-rebuild-fails-with-no-module-named-django"><code>make entityrefs</code> / <code>schema-rebuild</code> fails with “No module named django”</h3>
+<p>Use the project venv (<code>make</code> targets use <code>.venv/bin/python</code>). Run <code>make setup</code> or create venv per <a href="#2-prerequisites">§2</a>.</p>
+<h3 id="duplicate-or-missing-triples">Duplicate or missing triples</h3>
+<ul>
+<li>Only one writer: <code>rdf_signals</code>. Do not re-enable legacy <code>sync_person_to_graph</code> / <code>sync_structure_to_graph</code>.</li>
+<li>Subject IRI pattern: <code>{RDF_RESOURCE_BASE_URI}/{model_lower}/{pk}</code>.</li>
+</ul>
+<h3 id="graphview-has-nodes-but-atlas-globe-is-empty">Graphview has nodes but Atlas globe is empty</h3>
+<p>Expected if records lack <code>latitude</code>/<code>longitude</code> in list API responses. Add coordinates on Location or Structure.</p>
+<hr />
+<h2 id="10-reference-commands">10. Reference commands</h2>
+<pre><code class="language-bash"># ── Ontology pipeline ──
+make generate
+make check
+make schema-diff OLD=ontology/HeritageGraph.yaml NEW=path/to/candidate.yaml
+
+# ── Platform E2E (full suite) ──
+make test-e2e
+# or: ./tests/run_e2e.sh
+
+# ── Contribution pipeline validator ──
+cd heritage_graph
+DJANGO_ENV=development python manage.py validate_contribution_pipeline
+DJANGO_ENV=development python manage.py validate_contribution_pipeline --keep-data
+DJANGO_ENV=development python manage.py validate_contribution_pipeline --json
+
+# ── RDF / Oxigraph ──
+DJANGO_ENV=development python manage.py rdf_diagnose
+DJANGO_ENV=development python manage.py rdf_diagnose --project-first
+DJANGO_ENV=development python manage.py rdf_rebuild --purge-imports
+
+# ── Tests ──
+DJANGO_ENV=development python manage.py test apps.cidoc_data.tests.FrontendContributionPipelineTest
+DJANGO_ENV=development python manage.py test apps.cidoc_data
+
+# ── Frontend ──
+cd heritage_graph_ui &amp;&amp; npm run check:ontology
+
+# ── Health ──
+curl -sS http://localhost:8000/health/detailed/ | jq .
+</code></pre>
+<hr />
+<h2 id="related-documentation">Related documentation</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Topic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../contribution/FORMS/"><code>../contribution/FORMS.md</code></a></td>
+<td>Ontology forms and registry</td>
+</tr>
+<tr>
+<td><a href="../../ontology/ONTOLOGY/"><code>../ontology/ONTOLOGY.md</code></a></td>
+<td>LinkML, SHACL, namespaces</td>
+</tr>
+<tr>
+<td><a href="../../heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md"><code>heritage_graph_ui/src/lib/ontology/ONTOLOGY_PIPELINE.md</code></a></td>
+<td>UI-side ontology artifacts</td>
+</tr>
+<tr>
+<td><a href="../../AGENTS.md"><code>../../AGENTS.md</code></a></td>
+<td>Repo map for agents</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>Last updated to reflect the unified ontology pipeline (<code>make generate</code> / <code>make check</code>), <code>validate_contribution_pipeline</code>, registry-only RDF sync, and Atlas/Graphview live corpus validation.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,3423 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/FEATURE_WALKTHROUGH/">
+      
+      
+        <link rel="prev" href="../SYSTEM_OVERVIEW/">
+      
+      
+        <link rel="next" href="../TROUBLESHOOTING/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Feature walkthrough - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#heritagegraph-feature-walkthrough-presentation-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Feature walkthrough
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-the-frontend-stack-shared-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. The frontend stack (shared foundation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0. The frontend stack (shared foundation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-cutting-patterns-the-same-everywhere" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-cutting patterns (the same everywhere)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-map-the-five-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature map — the five surfaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-the-contribution-form-knowledge-in-graph-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. The Contribution Form — "knowledge in, graph out"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. The Contribution Form — &#34;knowledge in, graph out&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-core-idea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The core idea
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-by-step-flow-what-happens-as-a-contributor-uses-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-step flow (what happens as a contributor uses it)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-happens-server-side-after-submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happens server-side after submit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack / approach
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-graph-view-global-the-whole-knowledge-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Graph View (global) — "the whole knowledge graph"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Graph View (global) — &#34;the whole knowledge graph&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow-this-is-the-important-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow (this is the important detail)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-entity-neighborhood-one-thing-and-its-world" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Entity Neighborhood — "one thing and its world"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Entity Neighborhood — &#34;one thing and its world&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flow-how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flow &amp; how it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this approach
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-heritage-museum-the-immersive-story-driven-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Heritage Museum — the immersive, story-driven experience
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Heritage Museum — the immersive, story-driven experience">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-audience-sees-how-each-piece-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the audience sees → how each piece works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-atlas-heritage-in-space-and-time-3d-globe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Atlas — heritage in space and time (3D globe)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Atlas — heritage in space and time (3D globe)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-audience-sees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the audience sees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#suggested-demo-flow-6-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suggested demo flow (≈ 6 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology-cheat-sheet-for-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology cheat-sheet (for Q&amp;A)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-the-frontend-stack-shared-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. The frontend stack (shared foundation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0. The frontend stack (shared foundation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cross-cutting-patterns-the-same-everywhere" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-cutting patterns (the same everywhere)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-map-the-five-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature map — the five surfaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-the-contribution-form-knowledge-in-graph-out" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. The Contribution Form — "knowledge in, graph out"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. The Contribution Form — &#34;knowledge in, graph out&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-core-idea" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The core idea
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-by-step-flow-what-happens-as-a-contributor-uses-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-step flow (what happens as a contributor uses it)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-happens-server-side-after-submit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happens server-side after submit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack / approach
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-graph-view-global-the-whole-knowledge-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Graph View (global) — "the whole knowledge graph"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Graph View (global) — &#34;the whole knowledge graph&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow-this-is-the-important-detail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow (this is the important detail)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-entity-neighborhood-one-thing-and-its-world" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Entity Neighborhood — "one thing and its world"
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Entity Neighborhood — &#34;one thing and its world&#34;">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#flow-how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flow &amp; how it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this approach
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-heritage-museum-the-immersive-story-driven-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Heritage Museum — the immersive, story-driven experience
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Heritage Museum — the immersive, story-driven experience">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-audience-sees-how-each-piece-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the audience sees → how each piece works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-atlas-heritage-in-space-and-time-3d-globe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Atlas — heritage in space and time (3D globe)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Atlas — heritage in space and time (3D globe)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#stack_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-the-audience-sees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What the audience sees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-this-stack_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why this stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#talking-points_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Talking points
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#suggested-demo-flow-6-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suggested demo flow (≈ 6 minutes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#technology-cheat-sheet-for-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technology cheat-sheet (for Q&amp;A)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="heritagegraph-feature-walkthrough-presentation-guide">HeritageGraph — Feature Walkthrough (Presentation Guide)</h1>
+<blockquote>
+<p><strong>Purpose:</strong> A demo-ready, <em>detailed</em> walkthrough of HeritageGraph's headline
+functionalities — the <strong>contribution form</strong>, the <strong>graph visualization</strong> surfaces, and the
+<strong>3D / immersive</strong> experiences. For each feature you get: the <strong>stack</strong>, the <strong>data flow</strong>,
+<strong>how it works step by step</strong>, <strong>why that stack was chosen</strong>, and <strong>talking points</strong>.</p>
+<p>Pairs with <a href="../SYSTEM_OVERVIEW/">SYSTEM_OVERVIEW.md</a> (the architecture map). Use this
+doc to drive a live demo or a slide deck.</p>
+</blockquote>
+<hr />
+<h2 id="contents">Contents</h2>
+<ol>
+<li><a href="#0-the-frontend-stack-shared-foundation">The frontend stack (shared foundation)</a></li>
+<li><a href="#feature-map--the-five-surfaces">Feature map — what to demo</a></li>
+<li><a href="#1-the-contribution-form--knowledge-in-graph-out">Contribution Form</a></li>
+<li><a href="#2-graph-view-global--the-whole-knowledge-graph">Graph View (global network)</a></li>
+<li><a href="#3-entity-neighborhood--one-thing-and-its-world">Entity Neighborhood</a></li>
+<li><a href="#4-heritage-museum--the-immersive-story-driven-experience">Heritage Museum (immersive + 3D panorama)</a></li>
+<li><a href="#5-atlas--heritage-in-space-and-time-3d-globe">Atlas (3D globe)</a></li>
+<li><a href="#suggested-demo-flow--6-minutes">Suggested demo flow</a></li>
+<li><a href="#technology-cheat-sheet-for-qa">Technology cheat-sheet (Q&amp;A)</a></li>
+</ol>
+<hr />
+<h2 id="0-the-frontend-stack-shared-foundation">0. The frontend stack (shared foundation)</h2>
+<p>Every feature below sits on the same foundation, so it's worth stating once.</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Choice</th>
+<th>Version</th>
+<th>Why this choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Framework</td>
+<td><strong>Next.js (App Router)</strong></td>
+<td>15.5</td>
+<td>File-based routing, React Server Components, route-group layouts, built-in code-splitting. The App Router lets us keep heavy visual code in <em>client islands</em> while the shell stays light.</td>
+</tr>
+<tr>
+<td>UI runtime</td>
+<td><strong>React</strong></td>
+<td>19.1</td>
+<td>Industry standard; concurrent features; huge ecosystem.</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td><strong>NextAuth v4</strong> + Google OAuth</td>
+<td>4.24</td>
+<td>Session handling on the edge; the <strong>Google ID token</strong> is forwarded to Django as a Bearer token — no separate auth server to run.</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td><strong>Tailwind CSS v4</strong> + <strong>shadcn/ui</strong> ("new-york")</td>
+<td>4.1</td>
+<td>Utility-first = consistent design with no bespoke CSS; shadcn gives accessible primitives we wrap, not fork. Colors live in <code>globals.css</code> (tweakcn variables).</td>
+</tr>
+<tr>
+<td>Client state</td>
+<td><strong>Zustand</strong></td>
+<td>5.0</td>
+<td>Tiny, hook-based store. Used heavily by the Atlas (camera, filters, timeline) where Redux would be overkill.</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td><strong>Zod</strong></td>
+<td>4.0</td>
+<td>Schema validation shared between form payloads and the ontology registry schema.</td>
+</tr>
+<tr>
+<td>Toasts / feedback</td>
+<td><strong>Sonner</strong></td>
+<td>2.0</td>
+<td>Lightweight notifications (<code>toast.success/error</code>).</td>
+</tr>
+<tr>
+<td>Animation</td>
+<td><strong>Framer Motion</strong></td>
+<td>12.x</td>
+<td>Step transitions in forms, story-panel motion.</td>
+</tr>
+<tr>
+<td>Graph rendering</td>
+<td><strong>Cytoscape.js</strong> &amp; <strong>D3</strong></td>
+<td>3.33 / 7.9</td>
+<td>Two tools for two jobs — see §2 and §4.</td>
+</tr>
+<tr>
+<td>3D</td>
+<td><strong>Three.js</strong> &amp; <strong>Cesium + Resium</strong></td>
+<td>0.184 / 1.123</td>
+<td>360° panoramas vs. a 3D globe — see §4 and §5.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cross-cutting-patterns-the-same-everywhere">Cross-cutting patterns (the same everywhere)</h3>
+<ul>
+<li><strong>Ontology-registry codegen is the backbone.</strong> The backend's LinkML schema is generated
+  into <code>registry.generated.json/.ts</code> (consumed at runtime by
+  <a href="../heritage_graph_ui/src/lib/ontology/OntologyProvider.tsx">OntologyProvider</a>) and into a
+  visualization config (<code>tools/gen_heritage_viz_config.py</code> → <code>heritage-viz-config</code>) that
+  drives node colors, icons, and relation labels. <strong>One schema → forms <em>and</em> visualizations.</strong></li>
+<li><strong>Heavy/visual surfaces are <code>dynamic(..., { ssr: false })</code>.</strong> Cytoscape, Cesium, and the
+  Three.js panorama never run on the server and never block first paint — they load as a lazy
+  client island with a loading fallback.</li>
+<li><strong>API calls carry the Bearer token.</strong> <code>process.env.NEXT_PUBLIC_API_URL</code> + <code>Authorization:
+  Bearer &lt;session.accessToken&gt;</code> via a shared <code>apiFetchJson</code> / <code>fetchAllPages</code> helper that
+  handles pagination and aborts.</li>
+<li><strong>Demo-first, live-on-demand.</strong> The richest visual surfaces (Atlas, Museum) ship a curated
+  <strong>demo corpus</strong> so they look great instantly, with a one-click <strong>toggle to the live CIDOC
+  graph</strong>. Great for presentations — never a blank screen.</li>
+</ul>
+<hr />
+<h2 id="feature-map-the-five-surfaces">Feature map — the five surfaces</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Route</th>
+<th>Renderer</th>
+<th>Data source</th>
+<th>One-liner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Contribution Form</strong></td>
+<td><code>/contribute/&lt;domain&gt;</code></td>
+<td>React + ontology registry</td>
+<td>REST (CIDOC / cultural-entities)</td>
+<td>Ontology-driven wizard that turns knowledge into valid graph data</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Graph View</strong> (global)</td>
+<td><code>/graphview</code></td>
+<td>Cytoscape.js</td>
+<td>REST: all CIDOC types + accepted assertions</td>
+<td>The whole knowledge graph as an explorable network</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Entity Neighborhood</strong></td>
+<td><code>/knowledge/&lt;domain&gt;/view/&lt;id&gt;/graph</code></td>
+<td>D3</td>
+<td>KG neighborhood endpoint</td>
+<td>One entity and everything connected to it</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Heritage Museum</strong></td>
+<td><code>/heritage-museum</code></td>
+<td>D3 + Three.js + Web Speech</td>
+<td>Demo corpus / live toggle</td>
+<td>Guided, story-driven, 360° museum tour of the graph</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Atlas</strong></td>
+<td><code>/atlas</code></td>
+<td>Cesium + Resium</td>
+<td>Demo corpus / live toggle</td>
+<td>Heritage placed in space <em>and</em> time on a 3D Earth</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-the-contribution-form-knowledge-in-graph-out">1. The Contribution Form — "knowledge in, graph out"</h2>
+<p><strong>Code:</strong> <a href="../heritage_graph_ui/src/components/ontology-form.tsx">ontology-form.tsx</a> ·
+wrapper <a href="../heritage_graph_ui/src/components/contribute/ContributeOntologyForm.tsx">ContributeOntologyForm.tsx</a> ·
+registry <a href="../heritage_graph_ui/src/lib/ontology/OntologyProvider.tsx">OntologyProvider.tsx</a></p>
+<h3 id="stack">Stack</h3>
+<p>React client component · ontology registry (<code>registry.generated.ts</code> + live merge) · shadcn
+form primitives · Framer Motion (step transitions) · Zod (registry-schema validation) ·
+Sonner (feedback) · <code>localStorage</code> (draft autosave).</p>
+<h3 id="the-core-idea">The core idea</h3>
+<p>The form is <strong>not hand-coded per domain</strong>. There are ~30 contribution domains (Person,
+Festival, Monument, Deity, Guthi, Kumari tenure/selection/retirement, Caste group, Calendar,
+Syncretism, …) and <strong>every one of them renders from the same component</strong>, driven by the
+ontology registry:</p>
+<pre><code>LinkML schema (backend, source of truth)
+        │  codegen (build step)
+        ▼
+registry.generated.json / .ts ──────────────┐
+        │                                     │  merged at runtime
+        ▼                                     ▼
+OntologyProvider (static baseline)  +  live registry fetch (GET schema/registry)
+        │
+        ▼
+ontologyClass = { key, apiEndpoint, sections[], fields[] }
+        │
+        ▼
+ontology-form.tsx renders → fields, steps, types, validation, JSON-LD preview
+</code></pre>
+<p><code>OntologyProvider</code> always has a <strong>static baseline</strong> (so the form works instantly and even
+offline), then merges a live registry when authenticated; if the live fetch fails it runs in a
+labeled <strong>degraded mode</strong> (<code>snapshot</code> / <code>unauthenticated</code> / …) instead of breaking.</p>
+<h3 id="step-by-step-flow-what-happens-as-a-contributor-uses-it">Step-by-step flow (what happens as a contributor uses it)</h3>
+<ol>
+<li><strong>Resolve the domain</strong> — the route (<code>/contribute/festival</code>) maps to an <code>ontologyClass</code> in
+   the registry, which carries its <code>apiEndpoint</code> (e.g. <code>/api/v1/cidoc/festivals/</code>) and its
+   <code>sections[]</code> / <code>fields[]</code>.</li>
+<li><strong>Render the wizard</strong> — fields are grouped into <strong>sections</strong>; the current step is driven by
+   <code>?step=</code> in the URL (<code>resolveOntologyFormStep</code>), so steps are deep-linkable and the back
+   button works. A <strong>progress bar</strong> + <strong>completeness meter</strong> show how far along they are.</li>
+<li><strong>Render typed fields from the schema</strong> — text, textarea, select/enum, switch, checkbox,
+   <strong>entity-search</strong> (link to an existing graph entity via that field's <code>relationEndpoint</code>),
+   and a <strong>geo-point</strong> field with a map for coordinates.</li>
+<li><strong>Autosave drafts</strong> — on every change, <code>saveOntologyFormDraft</code> writes to <code>localStorage</code>
+   under a per-class key; on return, the draft is restored with a toast ("Restored your
+   draft").</li>
+<li><strong>Live JSON-LD / graph preview</strong> — <code>deriveFormGraph(formData)</code> turns the entries into a
+   small graph (root entity + linked <code>@id</code> references), and <code>formGraphToJsonLd</code> renders the
+   <strong>actual RDF triples</strong> the contribution will produce
+   (<a href="../heritage_graph_ui/src/components/ontology-form/form-graph-preview.tsx">form-graph-preview.tsx</a>).
+   The contributor <em>sees the graph they are building.</em></li>
+<li><strong>Validate</strong> — required-field checks per section (can't skip ahead with gaps) plus
+   <code>validatePayloadAgainstRegistrySchema</code> against the registry's JSON-Schema before submit.</li>
+<li><strong>Submit</strong> — <code>buildOntologyFormPayload(fields, formData)</code> shapes the payload; the form
+   <code>POST</code>s (or <code>PUT</code>s in edit mode) to <code>${NEXT_PUBLIC_API_URL}${apiEndpoint}</code> with the Bearer
+   token, clears the draft, toasts success, and navigates (or calls <code>onContributionCreated</code>
+   for modal flows).</li>
+</ol>
+<h3 id="what-happens-server-side-after-submit">What happens server-side after submit</h3>
+<pre><code>POST /api/v1/cidoc/&lt;type&gt;/   (structured CIDOC domains)
+   └─ or /api/v1/data/cultural-entities/   (the CulturalEntity + Revision workflow)
+        → PostgreSQL (system of record)
+        → review workflow: draft → pending_review → accepted
+        → on accept: kg_engine projects the row into Oxigraph → queryable in the graph views
+</code></pre>
+<h3 id="why-this-stack-approach">Why this stack / approach</h3>
+<ul>
+<li><strong>Registry-driven = scale + consistency.</strong> 30 domains, one form component. A new ontology
+  class ships a new form with <strong>zero new UI code</strong>; the data model and UI can't drift.</li>
+<li><strong>Static baseline + live merge = resilience.</strong> The form never hard-depends on a network
+  call; degraded modes are explicit, not silent failures.</li>
+<li><strong>Entity-linking, not free text.</strong> Linking to existing entities is what makes the output a
+  <em>graph</em>, not a flat record.</li>
+<li><strong>JSON-LD preview demystifies linked data</strong> for non-technical contributors — they watch
+  triples form as they type.</li>
+</ul>
+<h3 id="talking-points">Talking points</h3>
+<ul>
+<li>"One form, every heritage domain — because the form is generated from the same ontology the
+  graph uses."</li>
+<li>"Drafts survive refreshes; steps are deep-linkable; required fields are enforced per step."</li>
+<li>"Quality is guarded by human review — nothing reaches the public graph unreviewed."</li>
+</ul>
+<hr />
+<h2 id="2-graph-view-global-the-whole-knowledge-graph">2. Graph View (global) — "the whole knowledge graph"</h2>
+<p><strong>Code:</strong> <a href="../heritage_graph_ui/src/app/(dashboard)/graphview/">graphview/</a> ·
+data builder <a href="../heritage_graph_ui/src/lib/instance-graph.ts">instance-graph.ts</a></p>
+<h3 id="stack_1">Stack</h3>
+<p><strong>Cytoscape.js</strong> 3.33 + layout plugins <strong>cose-bilkent</strong> (force-directed) and <strong>cola</strong>,
+dynamically imported with <strong>SSR disabled</strong>. Node colors/icons come from the generated viz
+config.</p>
+<h3 id="data-flow-this-is-the-important-detail">Data flow (this is the important detail)</h3>
+<p>The global graph is <strong>assembled client-side from REST</strong>, not a single graph query:</p>
+<pre><code>fetchInstanceGraphData(API_BASE, token):
+   ├─ Promise.allSettled over ~14 CIDOC type endpoints (paginated):
+   │     /api/v1/cidoc/{structures,deities,persons,locations,events,rituals,
+   │      festivals,guthis,monuments,iconographic_objects,historical_periods,
+   │      traditions,sources}/            → become NODES
+   └─ /api/v1/cidoc/assertions/?reconciliation_status=accepted   → become EDGES
+fetchForkEdges(API_BASE, token):
+   └─ /api/v1/data/cultural-entities/      → contribution-lineage edges
+        ▼
+   nodes + edges → Cytoscape elements → cose-bilkent / cola layout
+</code></pre>
+<p><code>Promise.allSettled</code> means one slow or failing endpoint never breaks the whole graph; there's
+a 30s abort guard, and pagination is followed automatically (<code>fetchAllPages</code>).</p>
+<h3 id="how-it-works">How it works</h3>
+<ul>
+<li>Loaded behind <code>dynamic(() =&gt; import('./graphview-client'), { ssr: false })</code> with a
+  "Loading graph…" fallback — the ~heavy Cytoscape bundle never touches the server.</li>
+<li>The layout plugins are registered once (<code>cytoscape.use(coseBilkent); cytoscape.use(cola)</code>).</li>
+<li>Interaction: clicking a node calls <code>node.closedNeighborhood()</code> and toggles <code>highlighted</code> /
+  <code>faded</code> classes to focus its immediate connections; pan/zoom for exploration.</li>
+</ul>
+<h3 id="why-this-stack">Why this stack</h3>
+<ul>
+<li><strong>Cytoscape over D3 here</strong> — for a large, general, interactive network you want a mature
+  graph engine with built-in pan/zoom, selection, and <em>pluggable</em> layout algorithms
+  (cose-bilkent/cola) rather than hand-writing a force simulation.</li>
+<li><strong>REST assembly over a live SPARQL dump</strong> — reuses the same authenticated, paginated CIDOC
+  endpoints the rest of the app uses, keeps the edge set governed (only
+  <code>reconciliation_status=accepted</code> assertions become edges), and degrades gracefully per type.</li>
+</ul>
+<h3 id="talking-points_1">Talking points</h3>
+<ul>
+<li>"This is the product made visible — the knowledge graph in one screen."</li>
+<li>"Edges are only <em>accepted</em> assertions, so the graph reflects reviewed knowledge."</li>
+<li>"It's resilient by construction: each entity type loads independently."</li>
+</ul>
+<hr />
+<h2 id="3-entity-neighborhood-one-thing-and-its-world">3. Entity Neighborhood — "one thing and its world"</h2>
+<p><strong>Route:</strong> <code>/knowledge/&lt;domain&gt;/view/&lt;id&gt;/graph</code></p>
+<h3 id="stack_2">Stack</h3>
+<p>D3 force layout, backed by the KG engine's <strong>neighborhood endpoint</strong>
+(<code>GET /cidoc/kg/neighborhood/?uri=…</code>), which reads inbound/outbound edges from <strong>Oxigraph
+(SPARQL)</strong>.</p>
+<h3 id="flow-how-it-works">Flow &amp; how it works</h3>
+<p>From any entity's detail page, this view centers <em>that</em> entity and pulls its direct
+relationships. Unlike the global view, this is a <strong>focused, single-entity query</strong> against the
+published graph — ideal for drill-down: list → entity page → its neighborhood → click a
+neighbor → repeat.</p>
+<h3 id="why-this-approach">Why this approach</h3>
+<p>A neighborhood is a small, bounded query — exactly what a graph store answers well — so here we
+hit the <strong>SPARQL-backed KG engine</strong> directly instead of assembling from REST. It demonstrates
+that the UI is powered by a <em>live</em> graph, not a static export.</p>
+<h3 id="talking-points_2">Talking points</h3>
+<ul>
+<li>"Natural way to explore: start at one monument, walk its connections outward."</li>
+<li>"Powered by a live SPARQL query against the published knowledge graph."</li>
+</ul>
+<hr />
+<h2 id="4-heritage-museum-the-immersive-story-driven-experience">4. Heritage Museum — the immersive, story-driven experience</h2>
+<p><strong>Code:</strong> <a href="../heritage_graph_ui/src/app/(dashboard)/heritage-museum/">heritage-museum/</a></p>
+<p>This is the <strong>showpiece</strong> — it turns the knowledge graph into a guided, cinematic tour.</p>
+<h3 id="stack_3">Stack</h3>
+<p><strong>D3</strong> (glowing force graph) · <strong>Three.js</strong> (360° panorama) · <strong>Web Speech API</strong>
+(<code>SpeechSynthesis</code> narration) · Framer Motion (overlays) · generated viz config (node
+colors/icons/relation labels). Data: a <strong>demo corpus by default</strong>, with a <strong>live toggle</strong> to
+<code>fetchInstanceGraphData</code> (the same REST builder as Graph View).</p>
+<h3 id="what-the-audience-sees-how-each-piece-works">What the audience sees → how each piece works</h3>
+<ol>
+<li><strong>Glowing knowledge graph</strong> — <code>ForceGraph.tsx</code> / <code>KnowledgeGraph.tsx</code> run a <strong>D3 force
+   simulation</strong> in SVG, with per-node-type <strong>glow filters</strong> (<code>feGaussianBlur</code> + <code>feMerge</code>) and
+   <strong>radial gradients</strong> from <code>NODE_TYPE_CONFIG</code>. D3 (not Cytoscape) is chosen here precisely
+   because we want fine-grained, bespoke visuals.</li>
+<li><strong>Filter bar + timeline strip</strong> — narrow the corpus by type and move through eras.</li>
+<li><strong>Story panel ("beats")</strong> — <code>storyBeats.ts::buildBeats(node)</code> turns an entity's data into a
+   sequence of narrative <strong>beats</strong>; <code>StoryPanel</code> auto-advances each beat (~10s) with
+   <code>requestAnimationFrame</code>, with pause/resume and progress.</li>
+<li><strong>360° immersive panorama (the in-browser 3D)</strong> — <code>xr/PanoramaViewer.tsx</code> uses <strong>Three.js</strong>
+   to texture a spherical photo onto the <em>inside</em> of a sphere; the user looks around a heritage
+   site. <code>xr/ImmersiveScene.tsx</code> orchestrates it (<code>dynamic(..., { ssr: false })</code>) with a
+   storytelling overlay and <code>PlaceNav</code> to move between places.</li>
+<li><strong>Narration</strong> — <code>useNarration</code> wraps the browser's <strong><code>SpeechSynthesisUtterance</code></strong> (en-GB
+   voice) to read the story aloud — no external TTS service, no server cost.</li>
+<li><strong>MandalaLoader</strong> — a culturally themed loading animation that sets the tone.</li>
+</ol>
+<h3 id="data-flow">Data flow</h3>
+<pre><code>demo corpus (fetchHeritageDemoData) ──► default view (instant, curated)
+                       │  user toggles &quot;live&quot;
+                       ▼
+fetchInstanceGraphData(API_BASE, token) ──► same REST-built graph as /graphview
+                       │
+                       ▼
+   D3 force graph  +  story beats  +  (on select) Three.js panorama + narration
+</code></pre>
+<h3 id="why-this-stack_1">Why this stack</h3>
+<ul>
+<li><strong>D3 over Cytoscape here</strong> — the museum is about <em>bespoke aesthetics</em> (glow, gradients,
+  story choreography), which is exactly D3's sweet spot of low-level control.</li>
+<li><strong>Three.js for panoramas</strong> — WebGL in the browser renders a 360° sphere with zero server
+  render cost and works on any modern device.</li>
+<li><strong>Web Speech API for narration</strong> — built into the browser; no API keys, no latency, no bill.</li>
+<li><strong>Demo-first</strong> — guarantees a beautiful, reliable demo regardless of live data state.</li>
+</ul>
+<h3 id="talking-points_3">Talking points</h3>
+<ul>
+<li>"Heritage deserves storytelling, not tables — this is the public, emotional face of the
+  data."</li>
+<li>"All the 3D and narration run <em>in the browser</em> — Three.js + Web Speech — so it's free to
+  serve and works offline-ish."</li>
+<li>"Same graph, two audiences: researchers use Graph View; the public gets the Museum."</li>
+</ul>
+<hr />
+<h2 id="5-atlas-heritage-in-space-and-time-3d-globe">5. Atlas — heritage in space <em>and</em> time (3D globe)</h2>
+<p><strong>Code:</strong> <a href="../heritage_graph_ui/src/app/(dashboard)/atlas/">atlas/</a> ·
+globe <a href="../heritage_graph_ui/src/app/(dashboard)/atlas/components/globe.tsx">components/globe.tsx</a> ·
+store <a href="../heritage_graph_ui/src/app/(dashboard)/atlas/hooks/use-atlas-store.ts">hooks/use-atlas-store.ts</a></p>
+<h3 id="stack_4">Stack</h3>
+<p><strong>CesiumJS</strong> 1.123 (open-source 3D-geospatial engine) via <strong>Resium</strong> 1.18 (React bindings) ·
+<strong>Zustand</strong> store for camera/filters/timeline/FX · generated ontology colors. Data: <strong>demo
+corpus by default</strong>, <strong>live CIDOC graph on demand</strong> (<code>use-atlas-data-source</code> → the same
+<code>fetchInstanceGraphData</code>).</p>
+<h3 id="what-the-audience-sees">What the audience sees</h3>
+<p>A photorealistic, spinnable <strong>3D Earth</strong> with heritage entities pinned at their real
+coordinates; a <strong>timeline</strong> filters by era, a <strong>city-jump bar</strong> flies the camera to a place, a
+<strong>spotlight</strong> highlights selected entities, and clicking a pin opens an <strong>entity panel</strong> with
+provenance.</p>
+<h3 id="how-it-works_1">How it works</h3>
+<ul>
+<li><strong>Cesium assets</strong> (workers, widgets, terrain) are copied into <code>public/</code> at build time
+  (<code>copy-cesium-assets.mjs</code>, wired into <code>predev</code>/<code>prebuild</code>/<code>postinstall</code>); a
+  <code>cesium-assets-gate</code> confirms they're present before the globe renders. The
+  <code>cesium-base-url</code> side-effect import runs <strong>before</strong> Cesium resolves its worker URLs.</li>
+<li><strong>Rendering</strong> — Resium's <code>&lt;Viewer&gt;</code> + <code>&lt;Entity&gt;</code> + camera controllers; pins are colored by
+  <strong>ontology class</strong> (<code>colorForOntologyClass</code>), with distance-based label scaling so the globe
+  stays readable.</li>
+<li><strong>Temporal dimension</strong> — <code>atlas-time-extents.ts</code> + <code>temporalGlobeAlpha</code> /
+  <code>entityExistedAtYear</code> fade entities in and out as you <strong>scrub the timeline</strong> — heritage
+  appears and disappears across history.</li>
+<li><strong>State</strong> — a single <strong>Zustand</strong> store holds camera handles, active filters, the timeline
+  year, FX presets, and the demo/live load token; selectors use <code>useShallow</code> to avoid
+  re-renders.</li>
+<li><strong>Polish</strong> — reduced-motion support (<code>atlasPrefersReducedMotion</code>), keyboard shortcuts
+  (<code>use-atlas-shortcuts</code>), fullscreen, an error boundary, optional sound + telemetry.</li>
+</ul>
+<h3 id="data-flow_1">Data flow</h3>
+<pre><code>demo corpus (ATLAS_DUMMY_ENTITIES) ──► default globe
+                  │  user requests &quot;live&quot;
+                  ▼
+fetchInstanceGraphData(API_BASE, token) ──► entities with coordinates + time extents
+                  ▼
+Zustand store ──► Cesium &lt;Entity&gt; pins (colored by class, faded by year)
+</code></pre>
+<h3 id="why-this-stack_2">Why this stack</h3>
+<ul>
+<li><strong>Cesium over a 2D map (Mapbox/Leaflet)</strong> — heritage is global and <em>temporal</em>; a true 3D
+  globe with a <strong>time dimension</strong> shows <em>where</em> <strong>and</strong> <em>when</em>, which a flat map can't.</li>
+<li><strong>Cesium is open-source and self-hostable</strong> — assets ship in our own <code>public/</code>, no
+  proprietary map dependency or per-tile billing.</li>
+<li><strong>Resium</strong> keeps the imperative Cesium API declarative and React-friendly.</li>
+<li><strong>Zustand</strong> — the globe has lots of fast-changing UI state (camera, year, filters); a tiny
+  store keeps that fluid without Redux ceremony.</li>
+</ul>
+<h3 id="talking-points_4">Talking points</h3>
+<ul>
+<li>"Two dimensions the network graph can't show: <strong>geography and time</strong>."</li>
+<li>"Scrub the timeline and watch sites appear across centuries — the demo's 'wow' moment."</li>
+<li>"Fully open-source 3D; assets are self-hosted, nothing proprietary."</li>
+</ul>
+<hr />
+<h2 id="suggested-demo-flow-6-minutes">Suggested demo flow (≈ 6 minutes)</h2>
+<ol>
+<li><strong>Contribute</strong> (1.5 min) — open <code>/contribute/festival</code>, fill two steps, show the
+   completeness meter, the <strong>entity-search</strong> link, and the <strong>live JSON-LD preview</strong> ("this is
+   the graph you're building"). Mention entity-linking and draft autosave.</li>
+<li><strong>Graph View</strong> (1 min) — open <code>/graphview</code>, pan/zoom, click a node to focus its
+   neighborhood. "This is the whole knowledge graph — edges are <em>accepted</em> assertions."</li>
+<li><strong>Entity Neighborhood</strong> (0.5 min) — from one entity's page, open its <code>/graph</code> to show the
+   live SPARQL-backed drill-down.</li>
+<li><strong>Heritage Museum</strong> (1.5 min) — open <code>/heritage-museum</code>, let a <strong>story beat</strong> play, enter a
+   <strong>360° panorama</strong>, let the <strong>narration</strong> speak. "Same data, public storytelling — all in
+   the browser."</li>
+<li><strong>Atlas</strong> (1.5 min) — open <code>/atlas</code>, fly to a city, <strong>scrub the timeline</strong> across eras.
+   Close on the 3D globe.</li>
+</ol>
+<blockquote>
+<p>Tip: both Atlas and the Museum default to the <strong>demo corpus</strong>, so the demo always looks
+great. Flip the <strong>live toggle</strong> only if you want to show real contributed data.</p>
+</blockquote>
+<hr />
+<h2 id="technology-cheat-sheet-for-qa">Technology cheat-sheet (for Q&amp;A)</h2>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Renderer</th>
+<th>State</th>
+<th>Data source</th>
+<th>Why this choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contribution form</td>
+<td>React + ontology registry</td>
+<td>local component + drafts</td>
+<td>REST (CIDOC / cultural-entities)</td>
+<td>One schema → every form; UI can't drift from the ontology</td>
+</tr>
+<tr>
+<td>Graph View (global)</td>
+<td><strong>Cytoscape.js</strong> (+ cose-bilkent, cola)</td>
+<td>client</td>
+<td>REST: all CIDOC types + accepted assertions</td>
+<td>Mature graph engine, pluggable layouts, resilient per-type loading</td>
+</tr>
+<tr>
+<td>Neighborhood</td>
+<td><strong>D3</strong></td>
+<td>client</td>
+<td>KG neighborhood (SPARQL)</td>
+<td>Bounded query → answered best by the graph store</td>
+</tr>
+<tr>
+<td>Heritage Museum</td>
+<td><strong>D3</strong> + <strong>Three.js</strong></td>
+<td>React state</td>
+<td>demo / live toggle</td>
+<td>Bespoke visuals + in-browser 360°, zero server render cost</td>
+</tr>
+<tr>
+<td>Narration</td>
+<td><strong>Web Speech API</strong></td>
+<td>—</td>
+<td>story beats</td>
+<td>Built into the browser; no external TTS</td>
+</tr>
+<tr>
+<td>Atlas</td>
+<td><strong>Cesium</strong> + <strong>Resium</strong></td>
+<td><strong>Zustand</strong></td>
+<td>demo / live toggle</td>
+<td>Open-source 3D globe with a real time dimension</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Recurring engineering decisions, in one line each:</strong>
+- <strong>SSR-off dynamic imports</strong> for Cytoscape / Cesium / Three.js → heavy code never blocks first
+  paint.
+- <strong>Ontology-registry codegen</strong> → forms <em>and</em> visualization colors/labels come from one source.
+- <strong>Demo-first, live-on-demand</strong> → reliable demos, real data one click away.
+- <strong>Bearer-token REST + governed edges</strong> → the UI shows only reviewed, accepted knowledge.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

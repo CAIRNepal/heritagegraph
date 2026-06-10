@@ -1,0 +1,4425 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/contribution/FORMS/">
+      
+      
+        <link rel="prev" href="../../TROUBLESHOOTING/">
+      
+      
+        <link rel="next" href="../../testing/TESTING/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Forms system - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#formsmd-how-forms-work-in-heritagegraph" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Forms system
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-quick-start-add-a-field-in-2-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Quick Start — Add a Field in 2 Minutes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdf-projection-semantic-workflows-researchspace-aligned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RDF projection &amp; semantic workflows (ResearchSpace-aligned)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identity-resolution-duplicate-contributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity resolution &amp; duplicate contributions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-ontology-registry-single-source-of-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The Ontology Registry (Single Source of Truth)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. The Ontology Registry (Single Source of Truth)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#currently-registered-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Currently Registered Classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-how-to-add-a-new-field-to-an-existing-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. How to Add a New Field to an Existing Form
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. How to Add a New Field to an Existing Form">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-edit-linkml-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Edit LinkML (schema)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-columns-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Columns (optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-add-django-model-field-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Add Django model field (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-run-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Run migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-auto-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What auto-updates:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-how-to-add-a-new-enum-dropdown-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. How to Add a New Enum (Dropdown Options)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. How to Add a New Enum (Dropdown Options)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-define-the-enum-in-linkml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Define the enum in LinkML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-regenerate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Regenerate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-add-django-model-choices-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Add Django model choices (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-how-to-add-a-new-form-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. How to Add a New Form Section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. How to Add a New Form Section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#url-steps-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        URL steps (?step=)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-drafts-new-entries-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local drafts (new entries only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-how-to-add-a-completely-new-entity-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. How to Add a Completely New Entity Type
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. How to Add a Completely New Entity Type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-linkml-ui-classmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — LinkML + UI classmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Django
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-create-page-stubs-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Create page stubs (Frontend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-django-model-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Django model (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-serializer-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5 — Serializer (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-viewset-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6 — ViewSet (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-url-route-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7 — URL route (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-8-migration-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 8 — Migration (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-9-add-assertion-support-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 9 — Add assertion support (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary-what-you-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary — What You Created:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-field-type-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Field Type Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Field Type Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-ontologyclass-interface-full-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. OntologyClass Interface — Full Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-ontologyfield-interface-full-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. OntologyField Interface — Full Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-registry-driven-forms-vs-optional-custom-wizards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Registry-driven forms vs optional custom wizards
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-backend-checklist-django-model-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Backend Checklist — Django Model Sync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Backend Checklist — Django Model Sync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-type-mapping-frontend-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field type mapping (Frontend → Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sync-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quick-command-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick command reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-file-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. File Map
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. File Map">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frontend-form-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend (Form System)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backend-django-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend (Django API)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#form-submits-but-field-data-is-missing-in-the-api-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Form submits but field data is missing in the API response"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dropdown-options-not-saving-correctly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Dropdown options not saving correctly"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-field-doesnt-appear-on-the-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "New field doesn't appear on the form"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-returns-400-bad-request-with-field-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "API returns 400 Bad Request with field errors"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-entity-type-shows-404-on-api-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "New entity type shows 404 on API calls"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#form-pre-population-from-ocr-suspended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📄 Form pre-population from OCR (suspended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Related Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR — Cheat Sheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#table-of-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table of Contents
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-quick-start-add-a-field-in-2-minutes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Quick Start — Add a Field in 2 Minutes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Architecture Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rdf-projection-semantic-workflows-researchspace-aligned" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RDF projection &amp; semantic workflows (ResearchSpace-aligned)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identity-resolution-duplicate-contributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity resolution &amp; duplicate contributions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-the-ontology-registry-single-source-of-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. The Ontology Registry (Single Source of Truth)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. The Ontology Registry (Single Source of Truth)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#currently-registered-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Currently Registered Classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-how-to-add-a-new-field-to-an-existing-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. How to Add a New Field to an Existing Form
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. How to Add a New Field to an Existing Form">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-edit-linkml-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Edit LinkML (schema)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-columns-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Columns (optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-add-django-model-field-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Add Django model field (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-run-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Run migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-auto-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What auto-updates:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-how-to-add-a-new-enum-dropdown-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. How to Add a New Enum (Dropdown Options)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. How to Add a New Enum (Dropdown Options)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-define-the-enum-in-linkml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — Define the enum in LinkML
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-regenerate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Regenerate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-add-django-model-choices-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Add Django model choices (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-how-to-add-a-new-form-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. How to Add a New Form Section
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. How to Add a New Form Section">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#url-steps-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        URL steps (?step=)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#local-drafts-new-entries-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local drafts (new entries only)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-how-to-add-a-completely-new-entity-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. How to Add a Completely New Entity Type
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. How to Add a Completely New Entity Type">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-linkml-ui-classmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1 — LinkML + UI classmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-django" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2 — Django
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-create-page-stubs-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3 — Create page stubs (Frontend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-django-model-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4 — Django model (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-serializer-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5 — Serializer (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-viewset-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6 — ViewSet (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-url-route-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7 — URL route (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-8-migration-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 8 — Migration (Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-9-add-assertion-support-optional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 9 — Add assertion support (Optional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary-what-you-created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary — What You Created:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-field-type-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Field Type Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Field Type Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field Properties
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-ontologyclass-interface-full-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. OntologyClass Interface — Full Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-ontologyfield-interface-full-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. OntologyField Interface — Full Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-registry-driven-forms-vs-optional-custom-wizards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Registry-driven forms vs optional custom wizards
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-backend-checklist-django-model-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Backend Checklist — Django Model Sync
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Backend Checklist — Django Model Sync">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#field-type-mapping-frontend-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field type mapping (Frontend → Backend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sync-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sync validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quick-command-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick command reference
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-file-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. File Map
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. File Map">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frontend-form-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend (Form System)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backend-django-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend (Django API)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#form-submits-but-field-data-is-missing-in-the-api-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Form submits but field data is missing in the API response"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dropdown-options-not-saving-correctly" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Dropdown options not saving correctly"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-field-doesnt-appear-on-the-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "New field doesn't appear on the form"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-returns-400-bad-request-with-field-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "API returns 400 Bad Request with field errors"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#new-entity-type-shows-404-on-api-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "New entity type shows 404 on API calls"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#form-pre-population-from-ocr-suspended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📄 Form pre-population from OCR (suspended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Related Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tldr-cheat-sheet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TL;DR — Cheat Sheet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="formsmd-how-forms-work-in-heritagegraph">FORMS.md — How Forms Work in HeritageGraph</h1>
+<blockquote>
+<p><strong>Audience:</strong> Developers, AI agents, and contributors who need to add, modify, or understand forms in HeritageGraph.</p>
+</blockquote>
+<hr />
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#1-quick-start--add-a-field-in-2-minutes">Quick Start — Add a Field in 2 Minutes</a></li>
+<li><a href="#2-architecture-overview">Architecture Overview</a></li>
+<li><a href="#3-the-ontology-registry-single-source-of-truth">The Ontology Registry (Single Source of Truth)</a></li>
+<li><a href="#4-how-to-add-a-new-field-to-an-existing-form">How to Add a New Field to an Existing Form</a></li>
+<li><a href="#5-how-to-add-a-new-enum-dropdown-options">How to Add a New Enum (Dropdown Options)</a></li>
+<li><a href="#6-how-to-add-a-new-form-section">How to Add a New Form Section</a></li>
+<li><a href="#7-how-to-add-a-completely-new-entity-type">How to Add a Completely New Entity Type</a></li>
+<li><a href="#8-field-type-reference">Field Type Reference</a></li>
+<li><a href="#9-ontologyclass-interface--full-reference">OntologyClass Interface — Full Reference</a></li>
+<li><a href="#10-ontologyfield-interface--full-reference">OntologyField Interface — Full Reference</a></li>
+<li><a href="#11-custom-wizard-forms-vs-auto-generated-forms">Custom Wizard Forms vs Auto-Generated Forms</a></li>
+<li><a href="#12-backend-checklist--django-model-sync">Backend Checklist — Django Model Sync</a></li>
+<li><a href="#13-file-map">File Map</a></li>
+<li><a href="#14-troubleshooting">Troubleshooting</a></li>
+<li><a href="#15-related-documentation">Related Documentation</a></li>
+</ol>
+<hr />
+<h2 id="1-quick-start-add-a-field-in-2-minutes">1. Quick Start — Add a Field in 2 Minutes</h2>
+<p>Want to add a "Commissioner" field to the Structure form?</p>
+<ol>
+<li><strong>LinkML</strong> — In <code>ontology/HeritageGraph.yaml</code>, add a slot (e.g. <code>commissioner</code>) with <code>range</code>, <code>description</code>, and <code>slot_uri</code> where possible, and list it under <code>classes.ArchitecturalStructure.slots</code> (or <code>slot_usage</code> as needed).</li>
+<li><strong>Django</strong> — Add <code>commissioner = models.CharField(max_length=200, blank=True)</code> on the structure model, serializer, and migrations (<a href="#12-backend-checklist--django-model-sync">Section 12</a>).</li>
+<li><strong>Regenerate</strong> — From repo root:</li>
+</ol>
+<pre><code class="language-bash">make generate
+</code></pre>
+<p>That runs the full pipeline: ontology → serializers → entityrefs → schema-rebuild. It updates <code>registry.generated.json</code>/<code>.ts</code>, <code>serializers.generated.py</code>, and persists the DB snapshot. Forms and tables that use <code>OntologyProvider</code> / <code>OntologyForm</code> pick it up after refresh.</p>
+<p>Optional: use <strong>slot annotations</strong> (<code>ui_section</code>, <code>ui_order</code>, etc.) in LinkML for layout; see <code>heritage_graph/apps/cidoc_data/ontology_builder.py</code>.</p>
+<hr />
+<h2 id="2-architecture-overview">2. Architecture Overview</h2>
+<p>HeritageGraph uses a <strong>YAML-driven registry</strong> pattern:</p>
+<ul>
+<li><strong>LinkML</strong> (<code>ontology/HeritageGraph.yaml</code>) defines classes, slots, enums, and RDF URIs.</li>
+<li><strong><code>tools/ui-classmap.yaml</code></strong> maps LinkML classes to UI keys, API endpoints, icons, and nav categories.</li>
+<li><strong><code>tools/contribute-hub.yaml</code></strong> drives the contribute landing page (categories, copy, routes, quick start).</li>
+<li><strong><code>tools/semantic-patterns.yaml</code></strong> defines guided multi-step workflows surfaced as <strong><code>semantic_patterns</code></strong> alongside the hub on the registry API.</li>
+<li><strong><code>tools/linkml_generate_registry.py</code></strong> + <code>heritage_graph/apps/cidoc_data/ontology_builder.py</code> materialize a JSON/TS snapshot (<code>registry.generated.*</code>) and the same shape is served by <code>GET /api/v1/cidoc/schema/registry/</code>.</li>
+</ul>
+<p>The UI reads the effective registry via <strong><code>OntologyProvider</code></strong> and auto-generates forms, tables, and detail views.</p>
+<pre><code>   ontology/HeritageGraph.yaml  +  tools/ui-classmap.yaml  +  tools/contribute-hub.yaml
+                    +  tools/semantic-patterns.yaml
+                    │
+                    ▼
+          ontology_builder.py  /  linkml_generate_registry.py
+                    │
+                    ├── registry.generated.json  (fallback snapshot)
+                    └── Django schema registry API
+                                │
+              ┌─────────────────┼─────────────────────┐
+              │                 │                       │
+              ▼                 ▼                       ▼
+   ┌──────────────────┐ ┌─────────────────┐  ┌─────────────────────┐
+   │  OntologyForm    │ │ Knowledge tables │  │  Record detail view │
+   └────────┬─────────┘ └────────┬─────────┘  └─────────────────────┘
+            │                    │
+            ▼                    ▼
+   ┌─────────────────────────────────────────┐
+   │  Django REST Framework Backend          │
+   │  models.py → serializers.py → views.py │
+   └─────────────────────────────────────────┘
+</code></pre>
+<p><strong>Key principle:</strong> Slot <strong><code>key</code></strong> values in the generated registry <strong>must exactly match</strong> Django model field names because <code>OntologyForm</code> sends <code>{ [field.key]: value }</code> and DRF's <code>ModelSerializer</code> expects those names.</p>
+<h3 id="rdf-projection-semantic-workflows-researchspace-aligned">RDF projection &amp; semantic workflows (ResearchSpace-aligned)</h3>
+<p>HeritageGraph stores <strong>PostgreSQL/Django rows as canonical truth</strong>. When <code>RDF_SYNC_ENABLED=true</code> (<code>heritage_graph/settings</code>), optional triple materialization runs from the <strong>same ontology registry</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Module / artefact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Slot literals &amp; object links</strong> derived from persisted fields + registry <code>slot_uri</code> / <code>classUri</code></td>
+<td><code>heritage_graph/apps/cidoc_data/rdf_entity_projection.py</code> (called by <code>rdf_signals.queue_entity_projection</code>)</td>
+</tr>
+<tr>
+<td>Moderated KG edges (<code>relationship.*</code> assertions, spec <strong>007</strong>)</td>
+<td><code>queue_relationship_assertion_projection</code> — predicates under <code>${RDF_RESOURCE_BASE_URI}/property/…</code>; <strong>never</strong> wiped when slot projection clears CRM predicates</td>
+</tr>
+<tr>
+<td><strong>Guided multi-step shells</strong> (“semantic templates”) for contributors</td>
+<td><code>tools/semantic-patterns.yaml</code>, merged into <code>/api/v1/cidoc/schema/registry/</code> as <code>semantic_patterns</code>; UI at <code>/contribute</code> and <code>/contribute/pattern/&lt;key&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Re-generate offline SHACL QA shapes after <code>registry.generated.json</code> refreshes:</p>
+<pre><code class="language-bash">python3 tools/linkml_generate_registry.py
+python3 tools/emit_minimal_shacl.py
+</code></pre>
+<p>Output path: <a href="../../ontology/shapes/generated-heritagegraph-minimal-shacl.ttl"><code>ontology/shapes/generated-heritagegraph-minimal-shacl.ttl</code></a>.</p>
+<h3 id="identity-resolution-duplicate-contributions">Identity resolution &amp; duplicate contributions</h3>
+<p>When a contributor submits via any CIDOC contribute route (<code>ContributionFlowMixin.perform_create</code>):</p>
+<ol>
+<li><strong><code>contribution_entity_resolution.resolve_contribution_identity()</code></strong> runs after the row is saved (on commit).</li>
+<li><strong>Exact</strong> same label + <code>type_scope</code> → record joins the existing <code>EntityCluster</code> (may queue <code>IdentityResolutionCandidate</code> for curator review if a second contribution lands on the same cluster).</li>
+<li><strong>Similar</strong> label → new singleton cluster + identity candidate for human merge review.</li>
+<li><strong>New</strong> label → new singleton cluster.</li>
+</ol>
+<p><strong>Contributor UX:</strong> <code>DuplicateContributionAlert</code> (<code>src/components/contribute/duplicate-contribution-alert.tsx</code>) is mounted in <code>OntologyForm</code>. Before submit it can call <code>GET /api/v1/cidoc/entity-clusters/suggest-duplicates/?q=…&amp;type_scope=…</code> and recommend <strong>edit existing</strong> when a richer canonical member exists (<code>canonical_record_selection</code>).</p>
+<p><strong>Ops:</strong> <code>make identity-candidates</code> or deploy entrypoint runs <code>refresh_identity_candidates --auto-merge</code> for safe same-label merges.</p>
+<p><strong>Edit existing records:</strong> append <code>?id=&lt;pk&gt;</code> to <code>/contribute/&lt;domain&gt;</code> (same as knowledge view → Edit).</p>
+<hr />
+<h2 id="3-the-ontology-registry-single-source-of-truth">3. The Ontology Registry (Single Source of Truth)</h2>
+<h3 id="files">Files</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ontology/HeritageGraph.yaml</code></td>
+<td>LinkML schema: classes, slots, enums, URIs</td>
+</tr>
+<tr>
+<td><code>tools/ui-classmap.yaml</code></td>
+<td>Maps LinkML classes → UI key, <code>/cidoc/...</code> endpoint, icon, category</td>
+</tr>
+<tr>
+<td><code>tools/contribute-hub.yaml</code></td>
+<td>Contribute dashboard: hub categories, intents, quick start</td>
+</tr>
+<tr>
+<td><code>tools/semantic-patterns.yaml</code></td>
+<td>Semantic workflow patterns surfaced as <code>semantic_patterns</code> on the registry API + contribute UI</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/ontology_builder.py</code></td>
+<td>Builds registry payload for API + generator</td>
+</tr>
+<tr>
+<td><code>tools/linkml_generate_registry.py</code></td>
+<td>Writes <code>registry.generated.json</code> / <code>.ts</code> (run <code>make ontology</code>)</td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/registry.generated.ts</code></td>
+<td>Committed snapshot; offline / pre-auth baseline</td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/types.ts</code></td>
+<td>TypeScript interfaces: <code>OntologyField</code>, <code>OntologyColumn</code>, <code>OntologyClass</code>, <code>ContributeHubPayload</code>, <code>SemanticPattern</code></td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/__generated__/enums.ts</code></td>
+<td>Generated enums (<code>make viz-config</code>); select options also inlined on fields in the registry</td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/index.ts</code></td>
+<td>Barrel re-export</td>
+</tr>
+</tbody>
+</table>
+<h3 id="currently-registered-classes">Currently Registered Classes</h3>
+<p><strong>Authoritative table:</strong> <a href="../../ontology/ONTOLOGY/"><code>../ontology/ONTOLOGY.md</code></a> §5 (26 navigable types + <code>data_source</code> lookup). Source: <code>tools/ui-classmap.yaml</code> → <code>registry.generated.*</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Label</th>
+<th>Category</th>
+<th>API Endpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>entity</code></td>
+<td>Cultural Entity</td>
+<td>tangible</td>
+<td><code>/data/api/cultural-entities/</code></td>
+</tr>
+<tr>
+<td><code>person</code></td>
+<td>Historical Person</td>
+<td>social</td>
+<td><code>/cidoc/persons/</code></td>
+</tr>
+<tr>
+<td><code>location</code></td>
+<td>Place / Location</td>
+<td>spatiotemporal</td>
+<td><code>/cidoc/locations/</code></td>
+</tr>
+<tr>
+<td><code>event</code></td>
+<td>Historical Event</td>
+<td>event</td>
+<td><code>/cidoc/events/</code></td>
+</tr>
+<tr>
+<td><code>period</code></td>
+<td>Historical Period</td>
+<td>spatiotemporal</td>
+<td><code>/cidoc/historical_periods/</code></td>
+</tr>
+<tr>
+<td><code>tradition</code></td>
+<td>Tradition</td>
+<td>conceptual</td>
+<td><code>/cidoc/traditions/</code></td>
+</tr>
+<tr>
+<td><code>source</code></td>
+<td>Source / Document</td>
+<td>provenance</td>
+<td><code>/cidoc/sources/</code></td>
+</tr>
+<tr>
+<td><code>deity</code></td>
+<td>Deity</td>
+<td>conceptual</td>
+<td><code>/cidoc/deities/</code></td>
+</tr>
+<tr>
+<td><code>guthi</code></td>
+<td>Guthi</td>
+<td>social</td>
+<td><code>/cidoc/guthis/</code></td>
+</tr>
+<tr>
+<td><code>structure</code></td>
+<td>Architectural Structure</td>
+<td>tangible</td>
+<td><code>/cidoc/structures/</code></td>
+</tr>
+<tr>
+<td><code>iconography</code></td>
+<td>Iconographic Object</td>
+<td>tangible</td>
+<td><code>/cidoc/iconographic_objects/</code></td>
+</tr>
+<tr>
+<td><code>monument</code></td>
+<td>Monument</td>
+<td>tangible</td>
+<td><code>/cidoc/monuments/</code></td>
+</tr>
+<tr>
+<td><code>ritual</code></td>
+<td>Ritual Event</td>
+<td>event</td>
+<td><code>/cidoc/rituals/</code></td>
+</tr>
+<tr>
+<td><code>festival</code></td>
+<td>Festival</td>
+<td>event</td>
+<td><code>/cidoc/festivals/</code></td>
+</tr>
+<tr>
+<td><code>production</code></td>
+<td>Production Event</td>
+<td>event</td>
+<td><code>/cidoc/productions/</code></td>
+</tr>
+<tr>
+<td><code>consecration</code></td>
+<td>Consecration</td>
+<td>event</td>
+<td><code>/cidoc/consecrations/</code></td>
+</tr>
+<tr>
+<td><code>enshrinement</code></td>
+<td>Enshrinement</td>
+<td>event</td>
+<td><code>/cidoc/enshrinements/</code></td>
+</tr>
+<tr>
+<td><code>transfer_of_custody</code></td>
+<td>Transfer of Custody</td>
+<td>event</td>
+<td><code>/cidoc/transfers_of_custody/</code></td>
+</tr>
+<tr>
+<td><code>calendar</code></td>
+<td>Calendar System</td>
+<td>spatiotemporal</td>
+<td><code>/cidoc/calendar_systems/</code></td>
+</tr>
+<tr>
+<td><code>syncretism</code></td>
+<td>Syncretic Relationship</td>
+<td>conceptual</td>
+<td><code>/cidoc/syncretic_relationships/</code></td>
+</tr>
+<tr>
+<td><code>kumari_tenure</code></td>
+<td>Kumari Tenure</td>
+<td>kumari</td>
+<td><code>/cidoc/kumari_tenures/</code></td>
+</tr>
+<tr>
+<td><code>kumari_selection</code></td>
+<td>Kumari Selection</td>
+<td>kumari</td>
+<td><code>/cidoc/kumari_selections/</code></td>
+</tr>
+<tr>
+<td><code>kumari_retirement</code></td>
+<td>Kumari Retirement</td>
+<td>kumari</td>
+<td><code>/cidoc/kumari_retirements/</code></td>
+</tr>
+<tr>
+<td><code>caste_group</code></td>
+<td>Caste Group</td>
+<td>social</td>
+<td><code>/cidoc/caste_groups/</code></td>
+</tr>
+<tr>
+<td><code>assertion</code></td>
+<td>Heritage Assertion</td>
+<td>provenance</td>
+<td><code>/cidoc/assertions/</code></td>
+</tr>
+<tr>
+<td><code>entity_cluster</code></td>
+<td>Entity Cluster</td>
+<td>provenance</td>
+<td><code>/cidoc/entity-clusters/</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Lookup only (no contribute route):</strong> <code>data_source</code> → <code>/cidoc/data_sources/</code>.</p>
+<p><strong>LinkML-only (no registry):</strong> <code>Material</code>, <code>Technique</code>, <code>DocumentationActivity</code>, LinkedArt/LUX interop classes — see ONTOLOGY.md §5.4.</p>
+<hr />
+<h2 id="4-how-to-add-a-new-field-to-an-existing-form">4. How to Add a New Field to an Existing Form</h2>
+<h3 id="step-1-edit-linkml-schema">Step 1 — Edit LinkML (schema)</h3>
+<ol>
+<li>Add a slot under <code>slots:</code> in <code>ontology/HeritageGraph.yaml</code> (with <code>range</code>, <code>description</code>, <code>slot_uri</code> as appropriate).</li>
+<li>Add the slot name to <code>classes.&lt;YourLinkMLClass&gt;.slots</code> (or <code>slot_usage</code> for overrides).</li>
+<li>Optionally set slot annotations <code>ui_section</code>, <code>ui_order</code>, <code>ui_placeholder</code>, <code>ui_widget</code> (see <code>ontology_builder._slot_ui_overrides</code>).</li>
+<li>Run <code>make generate</code> and commit the generated files.</li>
+</ol>
+<h3 id="step-2-columns-optional">Step 2 — Columns (optional)</h3>
+<p>By default the builder emits columns from the first fields. To override, use a <strong>class annotation</strong> <code>ui_columns</code> (JSON string) on the LinkML class — see <code>ontology_builder._class_ui_overrides</code>.</p>
+<h3 id="step-3-add-django-model-field-backend">Step 3 — Add Django model field (Backend)</h3>
+<p>Open <code>heritage_graph/apps/cidoc_data/models.py</code>:</p>
+<pre><code class="language-python">class ArchitecturalStructure(MetaData):
+    # ...existing fields...
+    restoration_date = models.CharField(max_length=100, blank=True)
+</code></pre>
+<h3 id="step-4-run-migrations">Step 4 — Run migrations</h3>
+<pre><code class="language-bash">cd heritage_graph
+python manage.py makemigrations cidoc_data
+python manage.py migrate
+</code></pre>
+<h3 id="what-auto-updates">What auto-updates:</h3>
+<ul>
+<li>✅ Contribute form — field appears in the correct section</li>
+<li>✅ Knowledge data table — column shows if added to <code>columns</code></li>
+<li>✅ Detail view page — field renders in the correct section</li>
+<li>✅ API serializer — included automatically (uses <code>fields = '__all__'</code>)</li>
+</ul>
+<hr />
+<h2 id="5-how-to-add-a-new-enum-dropdown-options">5. How to Add a New Enum (Dropdown Options)</h2>
+<h3 id="step-1-define-the-enum-in-linkml">Step 1 — Define the enum in LinkML</h3>
+<p>In <code>ontology/HeritageGraph.yaml</code>, under <code>enums:</code>, add <code>permissible_values</code> with optional <code>title</code> / <code>description</code> per value. Set the slot’s <code>range</code> to that enum name.</p>
+<h3 id="step-2-regenerate">Step 2 — Regenerate</h3>
+<pre><code class="language-bash">make generate
+</code></pre>
+<p>The builder emits the enum under <code>registry.enums</code> and inlines <strong><code>options</code></strong> on each <code>select</code> field whose range is that enum.</p>
+<h3 id="step-3-add-django-model-choices-backend">Step 3 — Add Django model choices (Backend)</h3>
+<pre><code class="language-python"># In models.py
+CALENDAR_SYSTEM_CHOICES = [
+    ('Nepal_Sambat', 'Nepal Sambat'),
+    ('Bikram_Sambat', 'Bikram Sambat'),
+    ('CE', 'Common Era'),
+    ('Buddhist', 'Buddhist Calendar'),
+]
+
+class YourModel(MetaData):
+    calendar_system = models.CharField(
+        max_length=30, 
+        choices=CALENDAR_SYSTEM_CHOICES, 
+        blank=True
+    )
+</code></pre>
+<blockquote>
+<p>⚠️ <strong>Important:</strong> The <code>value</code> strings in the frontend enum <strong>must exactly match</strong> the first element of each Django <code>choices</code> tuple.</p>
+</blockquote>
+<hr />
+<h2 id="6-how-to-add-a-new-form-section">6. How to Add a New Form Section</h2>
+<p>Sections group related fields under collapsible accordion headers.</p>
+<ol>
+<li>Prefer <strong>slot annotations</strong> <code>ui_section</code> and <code>ui_order</code> on each slot in LinkML (see <code>ontology_builder</code>).</li>
+<li>Alternatively set a <strong>class annotation</strong> <code>ui_sections</code> (JSON array) on the LinkML class for full control.</li>
+<li>Run <code>make generate</code>.</li>
+</ol>
+<p>When a class has <strong>more than one</strong> section, <code>OntologyForm</code> renders a <strong>multi-step flow</strong> (one section per step): progress, step navigation, Next/Previous, and a single Submit on the last step.</p>
+<h3 id="url-steps-step">URL steps (<code>?step=</code>)</h3>
+<ul>
+<li>The active step is reflected in the query string: <strong><code>?step=&lt;section_key&gt;</code></strong> (the <code>key</code> from the class <code>sections</code> array, or from slot <code>ui_section</code>).</li>
+<li>You may also use a <strong>numeric index</strong> (<code>?step=0</code>) for the same section order; the UI normalizes the URL to the canonical section key.</li>
+<li>Invalid or missing <code>step</code> values fall back to the <strong>first</strong> section and update the URL accordingly (works with browser Back/Forward).</li>
+</ul>
+<h3 id="local-drafts-new-entries-only">Local drafts (new entries only)</h3>
+<ul>
+<li>For <strong>new</strong> contributions (no <code>?id=</code>), field values are <strong>autosaved</strong> to <code>localStorage</code> (debounced) under a key derived from user identity + ontology class key.</li>
+<li>Reloading the page restores the draft once per key (deduped toast).</li>
+<li><strong>Edit mode</strong> (<code>?id=</code>) does not read or write local drafts (server record is the source of truth).</li>
+<li>Successful <strong>Submit</strong> or <strong>Clear</strong> removes the draft for that key.</li>
+</ul>
+<hr />
+<h2 id="7-how-to-add-a-completely-new-entity-type">7. How to Add a Completely New Entity Type</h2>
+<p>This is the most involved task. Here's the full checklist:</p>
+<h3 id="step-1-linkml-ui-classmap">Step 1 — LinkML + UI classmap</h3>
+<ol>
+<li>Add a <strong>class</strong> (and its slots) in <code>ontology/HeritageGraph.yaml</code>.</li>
+<li>Add a row to <strong><code>tools/ui-classmap.yaml</code></strong>: <code>linkml</code>, <code>key</code> (URL route segment / registry key), <code>apiEndpoint</code> (must match <code>heritage_graph/apps/cidoc_data/urls.py</code>), <code>label</code>, <code>category</code>, <code>icon</code>, <code>navigable</code>.</li>
+<li>Optionally add <strong>intents</strong> to <code>tools/contribute-hub.yaml</code> if the type should appear on the contribute dashboard.</li>
+<li>Run <code>make generate</code>.</li>
+</ol>
+<h3 id="step-2-django">Step 2 — Django</h3>
+<p>Add <code>Model</code>, <code>Serializer</code>, <code>ViewSet</code>, <code>router.register(...)</code>, and migrations.</p>
+<h3 id="step-3-create-page-stubs-frontend">Step 3 — Create page stubs (Frontend)</h3>
+<p><strong>Knowledge list page</strong> — <code>src/app/(dashboard)/knowledge/inscription/page.tsx</code>:</p>
+<pre><code class="language-tsx">&quot;use client&quot;;
+import OntologyDataTable from &quot;@/components/ontology-data-table&quot;;
+import { getOntologyClass } from &quot;@/lib/ontology&quot;;
+
+export default function InscriptionKnowledgePage() {
+  const cls = getOntologyClass(&quot;inscription&quot;)!;
+  return &lt;OntologyDataTable ontologyClass={cls} /&gt;;
+}
+</code></pre>
+<p><strong>Contribute form page</strong> — <code>src/app/(dashboard)/contribute/inscription/page.tsx</code>:</p>
+<pre><code class="language-tsx">&quot;use client&quot;;
+import OntologyForm from &quot;@/components/ontology-form&quot;;
+import { getOntologyClass } from &quot;@/lib/ontology&quot;;
+
+export default function ContributeInscriptionPage() {
+  const cls = getOntologyClass(&quot;inscription&quot;)!;
+  return &lt;OntologyForm ontologyClass={cls} /&gt;;
+}
+</code></pre>
+<h3 id="step-4-django-model-backend">Step 4 — Django model (Backend)</h3>
+<p>In <code>heritage_graph/apps/cidoc_data/models.py</code>:</p>
+<pre><code class="language-python">class Inscription(MetaData):
+    &quot;&quot;&quot;Stone or copper plate inscription.&quot;&quot;&quot;
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    inscription_type = models.CharField(max_length=30)
+    language = models.CharField(max_length=100, blank=True)
+    script = models.CharField(max_length=100, blank=True)
+    date_text = models.CharField(max_length=100, blank=True)
+    location_name = models.CharField(max_length=200, blank=True)
+    coordinates = models.CharField(max_length=50, blank=True, help_text=&quot;Lat, Long&quot;)
+    note = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+</code></pre>
+<h3 id="step-5-serializer-backend">Step 5 — Serializer (Backend)</h3>
+<p>In <code>heritage_graph/apps/cidoc_data/serializers.py</code>:</p>
+<pre><code class="language-python">class InscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inscription
+        fields = '__all__'
+</code></pre>
+<h3 id="step-6-viewset-backend">Step 6 — ViewSet (Backend)</h3>
+<p>In <code>heritage_graph/apps/cidoc_data/views.py</code>:</p>
+<pre><code class="language-python">class InscriptionViewSet(viewsets.ModelViewSet):
+    queryset = Inscription.objects.all()
+    serializer_class = InscriptionSerializer
+</code></pre>
+<h3 id="step-7-url-route-backend">Step 7 — URL route (Backend)</h3>
+<p>In <code>heritage_graph/apps/cidoc_data/urls.py</code>:</p>
+<pre><code class="language-python">router.register(r'inscriptions', InscriptionViewSet)
+</code></pre>
+<h3 id="step-8-migration-backend">Step 8 — Migration (Backend)</h3>
+<pre><code class="language-bash">cd heritage_graph
+python manage.py makemigrations cidoc_data
+python manage.py migrate
+</code></pre>
+<h3 id="step-9-add-assertion-support-optional">Step 9 — Add assertion support (Optional)</h3>
+<p>To let <code>HeritageAssertion</code> (provenance tracking) reference this new model, add it to the assertion patching loop in <code>models.py</code>:</p>
+<pre><code class="language-python">for _model in [
+    # ...existing models...
+    Inscription,  # ➕ ADD
+]:
+    if not hasattr(_model, 'assertions'):
+        GenericRelation(...)
+</code></pre>
+<h3 id="summary-what-you-created">Summary — What You Created:</h3>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>How</th>
+<th>Auto-generated?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contribute form</td>
+<td>OntologyForm reads <code>inscription</code> from registry</td>
+<td>✅ Automatic</td>
+</tr>
+<tr>
+<td>Data table</td>
+<td>OntologyDataTable reads <code>inscription</code> from registry</td>
+<td>✅ Automatic</td>
+</tr>
+<tr>
+<td>Detail view</td>
+<td>Generic <code>[domain]/view/[id]</code> page works automatically</td>
+<td>✅ Automatic</td>
+</tr>
+<tr>
+<td>API endpoint</td>
+<td>Manual Django model + serializer + viewset + URL</td>
+<td>❌ Manual</td>
+</tr>
+<tr>
+<td>Page stubs</td>
+<td>3-line files per page</td>
+<td>❌ Manual (could be dynamic)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-field-type-reference">8. Field Type Reference</h2>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>HTML Rendering</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>text</code></td>
+<td><code>&lt;Input type="text"&gt;</code></td>
+<td>Default for most fields</td>
+</tr>
+<tr>
+<td><code>textarea</code></td>
+<td><code>&lt;Textarea&gt;</code></td>
+<td>Multi-line text, renders with 4 rows</td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td><code>&lt;Input type="number"&gt;</code></td>
+<td>Stores as <code>number</code>, <code>null</code> when empty</td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td><code>&lt;Input type="text"&gt;</code></td>
+<td>Text input (heritage dates are often imprecise strings like "c. 1200 CE")</td>
+</tr>
+<tr>
+<td><code>select</code></td>
+<td><code>&lt;Select&gt;</code> dropdown</td>
+<td>Requires <code>options</code> array (inline or from <code>registry.enums</code>)</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>&lt;Input type="url"&gt;</code></td>
+<td>URL input with https:// placeholder</td>
+</tr>
+<tr>
+<td><code>coordinates</code></td>
+<td>Two <code>&lt;Input&gt;</code> (lat/lng)</td>
+<td>Side-by-side lat/lng, serialized as <code>"lat, lng"</code> string</td>
+</tr>
+<tr>
+<td><code>geo_point</code></td>
+<td><code>GeoPointField</code> (Leaflet + lat/lng + GPS)</td>
+<td>OSM tiles with click-to-set; manual inputs + <strong>Use my GPS</strong>; offline-safe fallback is the lat/lng inputs</td>
+</tr>
+<tr>
+<td><code>edtf_date</code></td>
+<td><code>&lt;Input&gt;</code> + quick-pick chips</td>
+<td>EDTF-style strings plus one-tap chips (e.g. century span, “c. 1200 CE”); refine manually</td>
+</tr>
+<tr>
+<td><code>media</code></td>
+<td><code>&lt;input type="file" capture&gt;</code> + EXIF</td>
+<td>Fieldwork-oriented multi-image picker; <strong>exifr</strong> reads GPS when present (toast hint); wire uploads to your <code>Media</code> API when available</td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td><code>Switch</code> toggle</td>
+<td>Native boolean values in the payload</td>
+</tr>
+<tr>
+<td><code>multiselect</code></td>
+<td>Checkbox group</td>
+<td>Multivalued enum slots</td>
+</tr>
+<tr>
+<td><code>relation</code></td>
+<td><code>EntitySearch</code></td>
+<td>Autocomplete against <code>relationEndpoint</code>; multivalued supported</td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td><code>&lt;Input type="number"&gt;</code> (step any)</td>
+<td>Decimal values</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Client validation:</strong> <code>OntologyForm</code> merges <strong>Ajv</strong> (<code>registry_jsonschema</code>) errors with required-field checks (<code>useValidation.ts</code>). <strong>Server validation:</strong> <code>ContributionFlowMixin</code> runs <code>validate_payload_for_class_drf</code> on create/update.</p>
+<h3 id="field-properties">Field Properties</h3>
+<pre><code class="language-typescript">{
+  key: string;           // Required — must match Django model field name
+  label: string;         // Required — human-readable label
+  type: FieldType;       // Required — see table above
+  required?: boolean;    // If true, OntologyForm validates before submit
+  section?: string;      // Groups field into a section (default: &quot;basic&quot;)
+  order?: number;        // Sort order within section (default: 99)
+  description?: string;  // Help text shown below the label
+  placeholder?: string;  // Placeholder text in the input
+  options?: Array&lt;{      // Required for type: &quot;select&quot;
+    value: string;
+    label: string;
+    description?: string;
+  }&gt;;
+  defaultValue?: any;    // Default value (not yet wired in OntologyForm)
+  relationTo?: string;   // For type: &quot;relation&quot; — target entity key
+  relationEndpoint?: string;  // For type: &quot;relation&quot; — API search endpoint
+  multivalued?: boolean; // Whether field accepts multiple values
+}
+</code></pre>
+<hr />
+<h2 id="9-ontologyclass-interface-full-reference">9. OntologyClass Interface — Full Reference</h2>
+<pre><code class="language-typescript">interface OntologyClass {
+  key: string;               // URL-safe identifier (e.g., &quot;structure&quot;, &quot;deity&quot;)
+  label: string;             // Singular display name (e.g., &quot;Architectural Structure&quot;)
+  labelPlural: string;       // Plural display name (e.g., &quot;Architectural Structures&quot;)
+  description: string;       // One-line description
+  classUri?: string;         // CIDOC-CRM class URI (e.g., &quot;crm:E22_Human-Made_Object&quot;)
+  parentClass?: string;      // Key of parent class for inheritance
+  icon?: string;             // Lucide icon name
+  apiEndpoint: string;       // DRF API path (e.g., &quot;/cidoc/structures/&quot;)
+  category?: string;         // Grouping: tangible | conceptual | event | social | spatiotemporal | provenance
+  navigable?: boolean;       // Whether to show in navigation menus
+  sections?: Array&lt;{         // Form section groupings
+    key: string;
+    label: string;
+    description?: string;
+  }&gt;;
+  fields: OntologyField[];   // Field definitions (see above)
+  columns: OntologyColumn[]; // Table column definitions
+}
+</code></pre>
+<hr />
+<h2 id="10-ontologyfield-interface-full-reference">10. OntologyField Interface — Full Reference</h2>
+<p>See the <code>OntologyField</code> definition in <code>src/lib/ontology/types.ts</code>.</p>
+<p>Each field maps to:
+- A <strong>form input</strong> in <code>OntologyForm</code> (via the <code>FieldRenderer</code> switch)
+- A <strong>table cell</strong> in <code>OntologyDataTable</code> (if listed in <code>columns</code>)
+- A <strong>detail row</strong> in the generic record view page
+- A <strong>Django model field</strong> in <code>models.py</code>
+- A <strong>serializer field</strong> in <code>serializers.py</code> (auto-included via <code>fields = '__all__'</code>)</p>
+<hr />
+<h2 id="11-registry-driven-forms-vs-optional-custom-wizards">11. Registry-driven forms vs optional custom wizards</h2>
+<p><strong>Current default:</strong> Structure, Ritual, and all other CIDOC entity contribute routes use <strong><code>ContributeOntologyForm</code> → <code>OntologyForm</code></strong>, driven by the generated registry (<code>ontology/HeritageGraph.yaml</code> + <code>tools/ui-classmap.yaml</code>). Multi-section types use the built-in step navigation inside <code>OntologyForm</code> when a class defines multiple <code>sections</code>.</p>
+<p><strong>OCR (suspended):</strong> The document OCR pipeline is <strong>not active</strong> in default deployments (<code>OCR_ENABLED=false</code>, no <code>ocr-worker</code>). UI hooks (<code>?ce=&lt;cultural_entity_uuid&gt;</code> on contribute URLs, <code>HeritageDocumentUpload</code> in <code>OntologyForm</code>) exist for when the pipeline is restored — see <a href="../../pipelines/OCR/"><code>../pipelines/OCR.md</code></a>. <strong><code>/contribute/entity</code></strong> uses <strong><code>?id=</code></strong> for edit mode (CIDOC / wrapper id).</p>
+<p><strong>Semantic workflows:</strong> Multi-step guided paths (human-facing “templates”) live in <strong><code>tools/semantic-patterns.yaml</code></strong>. They ride on the registry as <strong><code>semantic_patterns</code></strong> (<code>GET /api/v1/cidoc/schema/registry/</code>). The contribute hub lists them under “Semantic workflows”; each opens <strong><code>/contribute/pattern/&lt;key&gt;</code></strong> with step links to ordinary contribute routes (and optionally <strong><code>/contribute/relationship-proposal</code></strong> with hints: <strong><code>subjectType</code></strong>, <strong><code>objectType</code></strong>, <strong><code>subjectId</code></strong>, <strong><code>objectId</code></strong>, <strong><code>predicateCode</code></strong>, <strong><code>temporal</code></strong>).</p>
+<p><strong>Optional building blocks</strong> for bespoke flows (new features, not used by default routes today):</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>StepWizard</code></td>
+<td><code>src/components/contribute/step-wizard.tsx</code></td>
+<td>Multi-step container with Back/Next/Submit</td>
+</tr>
+<tr>
+<td><code>StepIndicator</code></td>
+<td><code>src/components/contribute/step-indicator.tsx</code></td>
+<td>Progress bar</td>
+</tr>
+<tr>
+<td><code>TypePicker</code></td>
+<td><code>src/components/contribute/type-picker.tsx</code></td>
+<td>Visual card-based type selector</td>
+</tr>
+<tr>
+<td><code>AssertionWrapper</code></td>
+<td><code>src/components/contribute/assertion-wrapper.tsx</code></td>
+<td>Source + confidence fields</td>
+</tr>
+<tr>
+<td><code>EntitySearch</code></td>
+<td><code>src/components/contribute/entity-search.tsx</code></td>
+<td>Search-and-link for relations</td>
+</tr>
+</tbody>
+</table>
+<p>Use these when you need provenance-heavy or highly custom UX; keep field definitions in LinkML so the registry remains the contract for validation and API shape.</p>
+<p><strong>Cultural entities</strong> (<code>contribute/entity</code>) use the same <code>OntologyForm</code> with the <code>entity</code> class from the registry (<code>CulturalEntity</code> in LinkML, API <code>/data/api/cultural-entities/</code>).</p>
+<hr />
+<h2 id="12-backend-checklist-django-model-sync">12. Backend Checklist — Django Model Sync</h2>
+<p>Every registry field needs a corresponding Django model field. Here's the sync checklist:</p>
+<h3 id="field-type-mapping-frontend-backend">Field type mapping (Frontend → Backend)</h3>
+<table>
+<thead>
+<tr>
+<th>Frontend Type</th>
+<th>Django Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>text</code></td>
+<td><code>CharField(max_length=200, blank=True)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>textarea</code></td>
+<td><code>TextField(blank=True)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>number</code></td>
+<td><code>IntegerField(null=True, blank=True)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>float</code></td>
+<td><code>FloatField(null=True, blank=True)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>date</code></td>
+<td><code>CharField(max_length=100, blank=True)</code></td>
+<td>Text because heritage dates are imprecise</td>
+</tr>
+<tr>
+<td><code>select</code></td>
+<td><code>CharField(max_length=30, choices=CHOICES, blank=True)</code></td>
+<td>Add choices tuple</td>
+</tr>
+<tr>
+<td><code>url</code></td>
+<td><code>URLField(blank=True)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>coordinates</code></td>
+<td><code>CharField(max_length=50, blank=True)</code></td>
+<td>Stored as "lat, lng" string</td>
+</tr>
+<tr>
+<td><code>boolean</code></td>
+<td><code>BooleanField(default=False)</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>relation</code></td>
+<td><code>ForeignKey(Model, ...)</code> or <code>CharField</code></td>
+<td>FK not yet wired in generic form</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sync-validation">Sync validation</h3>
+<p>When adding a field, verify:</p>
+<ol>
+<li>✅ Slot / field <code>key</code> in the generated registry matches <code>field_name</code> in Django model</li>
+<li>✅ <code>select</code> options <code>value</code> strings match Django <code>choices</code> first-element strings</li>
+<li>✅ <code>required: true</code> fields have <code>blank=False</code> (or no <code>blank=True</code>) in Django</li>
+<li>✅ Run <code>makemigrations</code> + <code>migrate</code> after model changes</li>
+<li>✅ Serializer uses <code>fields = '__all__'</code> (auto-includes new fields)</li>
+</ol>
+<h3 id="quick-command-reference">Quick command reference</h3>
+<pre><code class="language-bash"># After changing models.py:
+cd heritage_graph
+python manage.py makemigrations cidoc_data
+python manage.py migrate
+
+# Verify the field appears in the API schema:
+# Visit http://backend.localhost/docs/ and check the endpoint
+</code></pre>
+<hr />
+<h2 id="13-file-map">13. File Map</h2>
+<h3 id="frontend-form-system">Frontend (Form System)</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/lib/ontology/types.ts</code></td>
+<td>TypeScript interfaces for the ontology type system</td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/__generated__/enums.ts</code></td>
+<td>Generated controlled vocabularies (from <code>make viz-config</code>)</td>
+</tr>
+<tr>
+<td><code>src/components/contribute/duplicate-contribution-alert.tsx</code></td>
+<td>Pre-submit duplicate hint + edit-existing steer</td>
+</tr>
+<tr>
+<td><code>ontology/HeritageGraph.yaml</code> + <code>tools/ui-classmap.yaml</code></td>
+<td><strong>Single source of truth</strong> for generated registry</td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/index.ts</code></td>
+<td>Barrel re-exports</td>
+</tr>
+<tr>
+<td><code>src/components/ontology-form.tsx</code></td>
+<td>Generic contribute form (Ajv, completeness meter, duplicate alert, assist)</td>
+</tr>
+<tr>
+<td><code>src/components/ontology-form/geo-point-field.tsx</code></td>
+<td>Leaflet map + GPS for <code>geo_point</code></td>
+</tr>
+<tr>
+<td><code>src/components/ontology-form/completeness-meter.tsx</code></td>
+<td>Required / weighted optional completeness</td>
+</tr>
+<tr>
+<td><code>src/components/ontology-form/step-nav.tsx</code></td>
+<td>Section stepper (mobile short labels)</td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/form-drafts.ts</code></td>
+<td>IndexedDB-backed drafts (<code>idb-keyval</code>) with localStorage migration</td>
+</tr>
+<tr>
+<td><code>src/lib/ontology/validate-registry-payload.ts</code></td>
+<td>Ajv validation against <code>registry_jsonschema</code></td>
+</tr>
+<tr>
+<td><code>src/components/pwa-register.tsx</code></td>
+<td>Registers <code>/public/sw.js</code> in production</td>
+</tr>
+<tr>
+<td><code>src/components/knowledge/why-we-believe-panel.tsx</code></td>
+<td>Public “Why we believe this” assertions panel</td>
+</tr>
+<tr>
+<td><code>src/app/(dashboard)/review/page.tsx</code></td>
+<td>Reviewer workspace (queue + bulk open)</td>
+</tr>
+<tr>
+<td><code>src/components/ontology-data-table.tsx</code></td>
+<td>Generic auto-generated knowledge data table</td>
+</tr>
+<tr>
+<td><code>src/components/contribute/step-wizard.tsx</code></td>
+<td>Multi-step form container</td>
+</tr>
+<tr>
+<td><code>src/components/contribute/step-indicator.tsx</code></td>
+<td>Step progress bar</td>
+</tr>
+<tr>
+<td><code>src/components/contribute/type-picker.tsx</code></td>
+<td>Visual type selector cards</td>
+</tr>
+<tr>
+<td><code>src/components/contribute/assertion-wrapper.tsx</code></td>
+<td>Source + confidence provenance fields</td>
+</tr>
+<tr>
+<td><code>src/components/contribute/entity-search.tsx</code></td>
+<td>Entity search-and-link component</td>
+</tr>
+<tr>
+<td><code>src/app/(dashboard)/contribute/page-client.tsx</code></td>
+<td>Contribute hub (intents + <strong>semantic workflows</strong> cards)</td>
+</tr>
+<tr>
+<td><code>src/app/(dashboard)/contribute/pattern/[slug]/page.tsx</code></td>
+<td>Guided semantic pattern steps</td>
+</tr>
+<tr>
+<td><code>src/app/(dashboard)/knowledge/&lt;domain&gt;/page.tsx</code></td>
+<td>Per-domain knowledge table page stubs</td>
+</tr>
+<tr>
+<td><code>src/app/(dashboard)/knowledge/[domain]/page.tsx</code></td>
+<td>Generic knowledge table fallback (registry-driven columns)</td>
+</tr>
+<tr>
+<td><code>src/app/(dashboard)/knowledge/[domain]/view/[id]/page.tsx</code></td>
+<td>Generic entity detail/record view</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Knowledge tables (browse accepted data):</strong> see <a href="../KNOWLEDGE_PAGES/"><code>KNOWLEDGE_PAGES.md</code></a> for the full <code>/knowledge/*</code> matrix, status-tab behavior, API endpoints, and verification commands.</p>
+<h3 id="backend-django-api">Backend (Django API)</h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/models.py</code></td>
+<td>All entity Django models</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/serializers.py</code></td>
+<td>Hand-written serializers</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/serializers.generated.py</code></td>
+<td>Registry-generated serializers (<code>make serializers</code>)</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/contribution_entity_resolution.py</code></td>
+<td>Post-create identity linking</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/views.py</code></td>
+<td>DRF ViewSets, SPARQL proxy, assist, <strong>CIDOC revert</strong> (<code>CidocRevertView</code>), registry validation mixin</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/urls.py</code></td>
+<td>Router URL registration + <code>sparql/</code>, <code>assist/suggest-field/</code>, <code>&lt;resource&gt;/&lt;pk&gt;/revert/</code></td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/rdf_signals.py</code></td>
+<td>RDF sidecar hooks: CIDOC slot triples (+ <code>rdfs:label</code>, <code>rdf:type</code>); moderated <code>relationship.*</code> edges (007)</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/rdf_entity_projection.py</code></td>
+<td>Registry-driven triple materialization from <code>slot_uri</code> / <code>classUri</code> (+ relation targets)</td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/cidoc_data/linkml_loader.py</code></td>
+<td>Builds effective registry payload (includes <code>semantic_patterns</code>)</td>
+</tr>
+<tr>
+<td><code>tools/semantic-patterns.yaml</code></td>
+<td>Multi-step semantic workflow definitions for <code>/contribute</code> + <code>/contribute/pattern/&lt;key&gt;</code></td>
+</tr>
+<tr>
+<td><code>tools/emit_minimal_shacl.py</code></td>
+<td>Generates <code>ontology/shapes/generated-heritagegraph-minimal-shacl.ttl</code> from <code>registry.generated.json</code></td>
+</tr>
+<tr>
+<td><code>heritage_graph/apps/heritage_data/views.py</code></td>
+<td><code>RevisionDiffView</code> (field diffs + metadata), <code>RevisionViewSet</code> (<code>?entity=</code> filter)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="14-troubleshooting">14. Troubleshooting</h2>
+<h3 id="form-submits-but-field-data-is-missing-in-the-api-response">"Form submits but field data is missing in the API response"</h3>
+<p><strong>Cause:</strong> The <code>key</code> in the registry field doesn't match the Django model field name.</p>
+<p><strong>Fix:</strong> Ensure the registry <code>key</code> (e.g., <code>construction_date</code>) exactly matches the model's field name:</p>
+<pre><code class="language-python">construction_date = models.CharField(...)  # Must match key
+</code></pre>
+<h3 id="dropdown-options-not-saving-correctly">"Dropdown options not saving correctly"</h3>
+<p><strong>Cause:</strong> The <code>value</code> strings in <code>ontologyEnums</code> don't match Django <code>choices</code> values.</p>
+<p><strong>Fix:</strong> Make them identical:</p>
+<pre><code class="language-typescript">// Frontend
+{ value: &quot;SiGuthi&quot;, label: &quot;Si Guthi&quot; }
+</code></pre>
+<pre><code class="language-python"># Backend
+('SiGuthi', 'Si Guthi')  # First element must match frontend value
+</code></pre>
+<h3 id="new-field-doesnt-appear-on-the-form">"New field doesn't appear on the form"</h3>
+<p><strong>Cause:</strong> Field is missing from the <code>fields</code> array in the registry, or it has <code>section</code> pointing to a non-existent section key.</p>
+<p><strong>Fix:</strong> Ensure the field's <code>section</code> value matches one of the entries in the <code>sections</code> array.</p>
+<h3 id="api-returns-400-bad-request-with-field-errors">"API returns 400 Bad Request with field errors"</h3>
+<p><strong>Cause:</strong> Required field validation mismatch between frontend and backend.</p>
+<p><strong>Fix:</strong> If a field is <code>required: true</code> in the registry, it needs <code>blank=False</code> (default) in Django. If a Django field has <code>blank=True</code>, the registry field should not be <code>required: true</code>.</p>
+<h3 id="new-entity-type-shows-404-on-api-calls">"New entity type shows 404 on API calls"</h3>
+<p><strong>Cause:</strong> Missing URL registration in <code>urls.py</code>.</p>
+<p><strong>Fix:</strong> Ensure <code>router.register(r'your_endpoint', YourViewSet)</code> is in <code>heritage_graph/apps/cidoc_data/urls.py</code>, and the <code>apiEndpoint</code> in the registry matches (e.g., <code>/cidoc/your_endpoint/</code>).</p>
+<hr />
+<h2 id="form-pre-population-from-ocr-suspended">📄 Form pre-population from OCR (suspended)</h2>
+<blockquote>
+<p><strong>Status:</strong> Infrastructure exists; pipeline is <strong>paused</strong> in active deployments. Document uploads succeed but OCR does not run unless <code>OCR_ENABLED=true</code> and <code>ocr-worker</code> is restored.</p>
+</blockquote>
+<p>When re-enabled, the intended flow is:
+1. Async OCR (Tesseract, EasyOCR, TrOCR, Claude Vision) via Celery
+2. NER → <code>ExtractedField</code> rows mapped to registry field <code>key</code> values
+3. <code>OntologyForm</code> shows suggestions with confidence badges</p>
+<p><strong>Current APIs (when pipeline runs):</strong> <code>POST /data/ocr-documents/upload/</code>, <code>GET /data/ocr-documents/&lt;uuid&gt;/suggestions/</code>.</p>
+<p><strong>See:</strong> <a href="../../pipelines/OCR/"><code>../pipelines/OCR.md</code></a>, <a href="../../AGENTS.md"><code>../../AGENTS.md</code></a> (OCR section).</p>
+<hr />
+<h2 id="15-related-documentation">15. Related Documentation</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../README.md">../../README.md</a></td>
+<td>Project overview and getting started</td>
+</tr>
+<tr>
+<td><a href="../../AGENTS.md">../../AGENTS.md</a></td>
+<td>AI agent instructions — critical rules, API summary</td>
+</tr>
+<tr>
+<td><a href="../../ARCHITECTURE.md">../../ARCHITECTURE.md</a></td>
+<td>System design — network, auth, data models</td>
+</tr>
+<tr>
+<td><a href="../../knowledge-graph/PIPELINE/">../knowledge-graph/PIPELINE.md</a></td>
+<td>Full KG pipeline ingestion → museum</td>
+</tr>
+<tr>
+<td><a href="../../knowledge-graph/RDF_ENGINE/">../knowledge-graph/RDF_ENGINE.md</a></td>
+<td>Oxigraph engine, SPARQL API, ops commands</td>
+</tr>
+<tr>
+<td><a href="../../auth/AUTH/">../auth/AUTH.md</a></td>
+<td>NextAuth + Google OAuth + Django verification</td>
+</tr>
+<tr>
+<td><a href="../../CLAUDE.md">../../CLAUDE.md</a></td>
+<td>Coding conventions</td>
+</tr>
+<tr>
+<td><a href="../../developer/CONVENTIONS/">../developer/CONVENTIONS.md</a></td>
+<td>Naming and file organization</td>
+</tr>
+<tr>
+<td><a href="../../developer/SKILLS/">../developer/SKILLS.md</a></td>
+<td>Feature → files matrix</td>
+</tr>
+<tr>
+<td><a href="../../testing/TESTING/">../testing/TESTING.md</a></td>
+<td><code>make test-e2e</code>, validation checklist</td>
+</tr>
+<tr>
+<td><a href="../../pipelines/OCR/">../pipelines/OCR.md</a></td>
+<td>OCR pipeline (suspended)</td>
+</tr>
+<tr>
+<td><a href="../../deployment/DEPLOYMENT/">../deployment/DEPLOYMENT.md</a></td>
+<td>Production Docker, SSL</td>
+</tr>
+<tr>
+<td><a href="../../TROUBLESHOOTING/">../TROUBLESHOOTING.md</a></td>
+<td>Known issues, debugging</td>
+</tr>
+<tr>
+<td><a href="../../CONTRIBUTING.md">../../CONTRIBUTING.md</a></td>
+<td>Contributor instructions</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="tldr-cheat-sheet">TL;DR — Cheat Sheet</h2>
+<table>
+<thead>
+<tr>
+<th>I want to...</th>
+<th>Do this</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Add a text field</td>
+<td>Add LinkML slot + class slots; <code>make ontology</code>; Django model</td>
+</tr>
+<tr>
+<td>Add a dropdown</td>
+<td>Add enum to LinkML <code>enums:</code> in YAML; <code>make ontology</code></td>
+</tr>
+<tr>
+<td>Add a form section</td>
+<td>Add to <code>sections[]</code> in the class definition</td>
+</tr>
+<tr>
+<td>Add a new entity type</td>
+<td>Follow <a href="#7-how-to-add-a-completely-new-entity-type">Section 7</a> (8 steps)</td>
+</tr>
+<tr>
+<td>See all entity types</td>
+<td>Inspect <code>registry.generated.json</code> or <code>tools/ui-classmap.yaml</code></td>
+</tr>
+<tr>
+<td>Change form layout</td>
+<td>Edit <code>sections</code> and field <code>order</code> values</td>
+</tr>
+<tr>
+<td>Add table column</td>
+<td>Add to <code>columns[]</code> in the class definition</td>
+</tr>
+<tr>
+<td>Build a complex wizard</td>
+<td>Use <code>StepWizard</code> + <code>TypePicker</code> components</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

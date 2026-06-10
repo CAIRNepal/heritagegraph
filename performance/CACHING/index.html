@@ -1,0 +1,2814 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/performance/CACHING/">
+      
+      
+        <link rel="prev" href="../../developer/SKILLS/">
+      
+      
+        <link rel="next" href="../SEARCH/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Caching - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#backend-caching-heritagegraph" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Caching
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-configured" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is configured
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What is configured">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cached-endpoints-initial-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cached endpoints (initial set)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#invalidation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invalidation strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-contribute-on-top-of-this" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to contribute on top of this
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How to contribute on top of this">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-add-a-new-cached-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Add a new cached read
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-invalidate-when-data-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Invalidate when data changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-register-invalidation-in-signals-or-save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Register invalidation in signals or save()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-optional-cache-decorators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Optional: cache decorators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-local-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Local Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operations-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-configured" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is configured
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What is configured">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cached-endpoints-initial-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cached endpoints (initial set)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#invalidation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invalidation strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-contribute-on-top-of-this" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to contribute on top of this
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How to contribute on top of this">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-add-a-new-cached-read" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Add a new cached read
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-invalidate-when-data-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Invalidate when data changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-register-invalidation-in-signals-or-save" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Register invalidation in signals or save()
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-optional-cache-decorators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Optional: cache decorators
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-local-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Local Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#operations-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="backend-caching-heritagegraph">Backend caching (HeritageGraph)</h1>
+<p>This project uses <strong>Django’s cache framework</strong> with a small wrapper in <code>heritage_graph/cache_utils.py</code>. Defaults are safe for development; production can enable <strong>Redis</strong> for a shared cache across multiple Gunicorn workers.</p>
+<h2 id="what-is-configured">What is configured</h2>
+<table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>heritage_graph/settings/caching.py</code></td>
+<td>Chooses <strong>LocMemCache</strong> (no extra service) or <strong>Redis</strong> when <code>REDIS_URL</code> is set.</td>
+</tr>
+<tr>
+<td><code>heritage_graph/settings/base.py</code></td>
+<td>Assigns <code>CACHES = build_caches_config()</code>.</td>
+</tr>
+<tr>
+<td><code>heritage_graph/cache_utils.py</code></td>
+<td>Key naming, TTLs, <code>bump_leaderboard_cache()</code>, <code>invalidate_review_queue_counts()</code>.</td>
+</tr>
+<tr>
+<td><code>apps/heritage_data/views.py</code></td>
+<td><strong>Leaderboard</strong> and <strong>review queue counts</strong> read through the cache after computing.</td>
+</tr>
+<tr>
+<td><code>apps/heritage_data/signals.py</code></td>
+<td>Bumps leaderboard version or deletes queue-count keys when related models change.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dependencies">Dependencies</h3>
+<ul>
+<li><strong>Redis backend:</strong> Django’s built-in <code>django.core.cache.backends.redis.RedisCache</code> (Django 5.x) requires the <strong><code>redis</code></strong> PyPI package (listed in <code>heritage_graph/requirements.txt</code>).</li>
+</ul>
+<h3 id="environment-variables">Environment variables</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REDIS_URL</code></td>
+<td>If non-empty, use Redis (e.g. <code>redis://redis:6379/1</code>). If unset, use in-process LocMemCache.</td>
+</tr>
+<tr>
+<td><code>DJANGO_CACHE_KEY_PREFIX</code></td>
+<td>Optional prefix for all keys (default <code>hg</code>).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why Redis in production:</strong> LocMemCache is <strong>per process</strong>. With Gunicorn <code>--workers 4</code>, each worker has its own cache and invalidation in one worker is invisible to others. Redis (or Memcached) gives one shared store.</p>
+<h2 id="cached-endpoints-initial-set">Cached endpoints (initial set)</h2>
+<ol>
+<li><strong><code>GET /data/leaderboard/</code></strong> (<code>LeaderboardView</code>)  </li>
+<li>Key includes a <strong>version</strong> segment (see below) and normalized <code>?search=</code> (max 200 chars, lowercased).  </li>
+<li>
+<p>TTL: <code>LEADERBOARD_CACHE_TTL</code> (120 seconds), refreshed on writes via signals.</p>
+</li>
+<li>
+<p><strong><code>GET /data/review-queue/queue_counts/</code></strong> (<code>ReviewQueueViewSet.queue_counts</code>)  </p>
+</li>
+<li>Single key <code>review_queue_counts_key()</code>.  </li>
+<li>TTL: <code>REVIEW_QUEUE_COUNTS_TTL</code> (30 seconds), plus immediate invalidation when queue-related models change.</li>
+</ol>
+<h2 id="invalidation-strategy">Invalidation strategy</h2>
+<ul>
+<li><strong>Leaderboard:</strong> We do <strong>not</strong> delete every search key. Instead, <code>bump_leaderboard_cache()</code> increments a version stored at <code>heritage:leaderboard:__version__</code>. All leaderboard keys include that version, so old entries become unreachable and expire naturally.  </li>
+<li><strong>Queue counts:</strong> <code>invalidate_review_queue_counts()</code> calls <code>cache.delete(...)</code> on the single counts key.</li>
+</ul>
+<p>Signals wired today (see <code>apps/heritage_data/signals.py</code>):</p>
+<ul>
+<li><code>Submission</code> create/update/delete → leaderboard bump (create/update also run existing user-stats logic).  </li>
+<li><code>CulturalEntity</code>, <code>ReviewDecision</code> → leaderboard bump + queue counts invalidation.  </li>
+<li><code>ReviewFlag</code> → queue counts invalidation.  </li>
+<li><code>Revision</code> → leaderboard bump.</li>
+</ul>
+<p>If you add new endpoints or data that must stay fresh, extend these lists or call the same helpers from your write paths.</p>
+<h2 id="how-to-contribute-on-top-of-this">How to contribute on top of this</h2>
+<h3 id="1-add-a-new-cached-read">1. Add a new cached read</h3>
+<ul>
+<li>Prefer <strong>small JSON-serializable payloads</strong> (dict/list), not ORM instances.</li>
+<li>Build keys with <code>make_cache_key("heritage", "&lt;feature&gt;", ...)</code> or add a dedicated helper next to <code>leaderboard_cache_key</code> in <code>cache_utils.py</code>.</li>
+<li>Use <code>cache.get</code> / <code>cache.set</code> with a documented TTL constant at the top of <code>cache_utils.py</code>.</li>
+<li>In <strong>tests</strong>, use <code>django.test.override_settings</code> with <code>CACHES</code> → <code>LocMemCache</code> if needed, or call <code>cache.clear()</code>.</li>
+</ul>
+<h3 id="2-invalidate-when-data-changes">2. Invalidate when data changes</h3>
+<ul>
+<li><strong>One key:</strong> <code>cache.delete(your_key)</code>.</li>
+<li><strong>Many keys / search variants:</strong> use a <strong>version key</strong> pattern like the leaderboard (<code>bump_leaderboard_cache()</code>), or document a short TTL-only approach if stale reads are acceptable.</li>
+</ul>
+<h3 id="3-register-invalidation-in-signals-or-save">3. Register invalidation in signals or <code>save()</code></h3>
+<ul>
+<li>Add receivers in <code>apps/heritage_data/signals.py</code> (or the owning app’s <code>signals.py</code>, imported from <code>AppConfig.ready()</code>).  </li>
+<li>Avoid importing heavy models inside <code>cache_utils.py</code> to prevent circular imports.</li>
+</ul>
+<h3 id="4-optional-cache-decorators">4. Optional: cache decorators</h3>
+<p>Django provides <code>cache_page</code> for <strong>whole responses</strong>; it is less common in DRF than explicit <code>cache.get/set</code> because many APIs are user-specific. Use <code>cache_page</code> only for truly public, anonymous-safe endpoints.</p>
+<h3 id="5-local-docker">5. Local Docker</h3>
+<p><code>docker-compose.yml</code> defines a <strong><code>redis</code></strong> service on the backend network. To use it, set in <code>.env</code>:</p>
+<p><code>REDIS_URL=redis://redis:6379/1</code></p>
+<p>Leave <code>REDIS_URL</code> unset to keep <strong>LocMemCache</strong> (no extra dependency). With Gunicorn <strong>multiple workers</strong>, Redis is recommended so cache invalidation and hits are consistent across processes.</p>
+<h2 id="operations-notes">Operations notes</h2>
+<ul>
+<li><strong>Monitoring:</strong> Cache misses and latency are not logged by default; add logging around <code>cache.get</code> if you need visibility during tuning.</li>
+<li><strong>Security:</strong> Do not put secrets or per-user privileged data in cache keys or values unless you also use <strong>per-user key segments</strong> and appropriate TTLs.</li>
+</ul>
+<hr />
+<h1 id="appendix-caching-strategy-without-redis-cto-notes">Appendix: Caching strategy without Redis (CTO notes)</h1>
+<p><strong>Audience:</strong> CTO / Engineering leadership<br />
+<strong>Goal:</strong> Reduce latency and database load for fetch-heavy, high-read pages (leaderboard, knowledge browse/view, review queues, discovery endpoints) without introducing Redis.</p>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>HeritageGraph’s slow pages are primarily a symptom of <strong>repeated expensive database work</strong> (aggregation, joins, counts, revision lookups) and <strong>lack of coherent caching boundaries</strong> across Django/DRF and the frontend. We can achieve meaningful performance gains by layering caching in four places—<strong>query</strong>, <strong>API response</strong>, <strong>materialized/summary tables</strong>, and <strong>HTTP/browser</strong>—using only existing infrastructure:</p>
+<ul>
+<li><strong>PostgreSQL</strong>: precomputed summary tables/materialized views, and optionally Django’s database-backed cache.</li>
+<li><strong>Filesystem</strong>: shared file-based cache for multi-worker deployments.</li>
+<li><strong>In-process memory</strong>: micro-caches inside each Gunicorn worker for ultra-hot keys.</li>
+<li><strong>HTTP caching semantics</strong>: <code>ETag</code> / <code>Last-Modified</code>, <code>Cache-Control</code>, and <code>Vary</code> (especially for auth).</li>
+</ul>
+<p>This approach is pragmatic: it improves performance quickly, remains operationally simple, and preserves a clean upgrade path to Redis later if scale demands it.</p>
+<hr />
+<h2 id="1-problem-analysis">1) Problem Analysis</h2>
+<h3 id="why-pages-are-slow-today">Why pages are slow today</h3>
+<p>Common causes in fetch-heavy Django/DRF systems (and consistent with HeritageGraph’s usage patterns):</p>
+<ul>
+<li><strong>Repeated identical queries per request</strong></li>
+<li>The same expensive computation (counts, leaderboard aggregation, “latest revision”) is executed multiple times across serializers, nested relationships, and list endpoints.</li>
+<li><strong>N+1 query patterns</strong></li>
+<li>List endpoints serialize related objects (profiles, statistics, revisions) without adequate <code>select_related()</code> / <code>prefetch_related()</code>.</li>
+<li><strong>High-cost aggregates computed on-demand</strong></li>
+<li>Leaderboards, progression metrics, queue counts, and discovery facets often require <code>COUNT</code>, grouping, filtering, and sorting across large tables.</li>
+<li><strong>No shared caching boundary</strong></li>
+<li>Frontend frequently re-fetches data (navigation, tab switches, page revisits), and the backend recomputes results each time.</li>
+<li><strong>Token-authenticated traffic complicates caching</strong></li>
+<li>Many endpoints are authenticated; naive “public cache” can leak user-specific data unless keys vary properly.</li>
+</ul>
+<h3 id="categorize-data-by-volatility">Categorize data by volatility</h3>
+<p>Define caching TTLs and invalidation per data class:</p>
+<ul>
+<li><strong>Static (days–weeks TTL)</strong></li>
+<li>Ontology metadata, help/config endpoints, rarely-changing “about” content.</li>
+<li><strong>Semi-static (minutes–hours TTL)</strong></li>
+<li>Knowledge browse lists (persons/locations/events), discovery counts, contributor directories, organization lists.</li>
+<li><strong>Dynamic (seconds–minutes TTL)</strong></li>
+<li>Leaderboards, review queue counts, dashboard stats, “my notifications”, “my role”, activity logs.</li>
+<li><strong>Strictly user-specific (very short TTL or conditional caching)</strong></li>
+<li>“Me” endpoints, permissions/roles, personalized queues, user stats tied to current user.</li>
+</ul>
+<hr />
+<h2 id="2-caching-strategy-without-redis">2) Caching Strategy (WITHOUT Redis)</h2>
+<h3 id="why-not-redis-now">Why not Redis (now)</h3>
+<p><strong>Reasons to avoid Redis for the current phase:</strong></p>
+<ul>
+<li><strong>Ops complexity</strong>: introduces a new always-on stateful service (backup, monitoring, persistence choices, upgrades).</li>
+<li><strong>Cost and reliability surface area</strong>: one more component to secure and keep healthy.</li>
+<li><strong>Good-enough alternatives exist</strong> for current scale: Postgres can store precomputed results; filesystem cache works across workers; HTTP caching reduces redundant fetches.</li>
+</ul>
+<p><strong>Trade-offs (accepted):</strong></p>
+<ul>
+<li><strong>Less ideal under horizontal scaling</strong>: in-process caches don’t share across pods/hosts; filesystem caches require shared volume to be truly global.</li>
+<li><strong>Higher latency vs Redis</strong> for cache reads if using DB cache (still often far cheaper than recomputing aggregates).</li>
+<li><strong>Invalidation complexity</strong> increases for computed artifacts (materialized views / summary tables).</li>
+</ul>
+<h3 id="layered-caching-where-it-should-occur">Layered caching: where it should occur</h3>
+<p>We should use multiple layers with clear ownership.</p>
+<h4 id="a-query-level-caching-db-work-reduction">A) Query-level caching (DB work reduction)</h4>
+<p><strong>Goal:</strong> Make each request cheaper even when cache misses occur.</p>
+<ul>
+<li>Use <code>select_related()</code> / <code>prefetch_related()</code> consistently on list endpoints.</li>
+<li>Avoid repeated aggregates inside serializers; compute once in the view and pass via serializer context.</li>
+<li>Use database indexes for common filters/sorts (queue filters, status fields, created_at).</li>
+</ul>
+<p><strong>Micro-cache (in-process) for ultra-hot reads:</strong></p>
+<ul>
+<li>Store small, safe, global-only values (e.g., “queue counts”) for 5–30 seconds per worker.</li>
+<li>Never store user-specific payloads in per-worker caches unless key includes user id and TTL is short.</li>
+</ul>
+<h4 id="b-api-level-response-caching-drf-django-cache">B) API-level response caching (DRF / Django cache)</h4>
+<p><strong>Goal:</strong> Cache the full JSON response for expensive endpoints with clear TTLs and safe variation.</p>
+<p>Recommended cache backends (no Redis):</p>
+<ul>
+<li><strong>Filesystem cache</strong> (<code>FileBasedCache</code>): works across multiple Gunicorn workers on the same host/container volume.</li>
+<li><strong>Database cache</strong> (<code>DatabaseCache</code>): centralized, uses Postgres; simplest to share across multiple backend instances (but adds DB load).</li>
+<li><strong>LocMem cache</strong>: fastest but per-process only; use for tiny TTL micro-caches.</li>
+</ul>
+<p>Rule of thumb:</p>
+<ul>
+<li>Use <strong>file-based</strong> cache if the backend runs as multiple Gunicorn workers on a single host and can share a volume.</li>
+<li>Use <strong>DB cache</strong> if you need cross-instance sharing and can accept some extra Postgres writes/reads.</li>
+</ul>
+<h4 id="c-viewpage-level-caching-django-view-cache">C) View/page-level caching (Django view cache)</h4>
+<p><strong>Goal:</strong> Cache entire DRF responses via decorators for endpoints with stable request shapes.</p>
+<ul>
+<li>Use <code>cache_page()</code> for safe endpoints.</li>
+<li>Use <code>@vary_on_headers("Authorization")</code> when the same URL returns different results depending on auth token.</li>
+<li>For endpoints that are effectively public but allow optional auth, prefer <strong>two separate endpoints</strong> (<code>/public/...</code> vs <code>/me/...</code>) so caching remains clean and safe.</li>
+</ul>
+<h4 id="d-http-caching-clientbrowserproxies">D) HTTP caching (client/browser/proxies)</h4>
+<p><strong>Goal:</strong> Avoid hitting the backend at all on repeat fetches.</p>
+<ul>
+<li>Add <strong><code>ETag</code></strong> and/or <strong><code>Last-Modified</code></strong> for semi-static resources.</li>
+<li>Add <code>Cache-Control</code> and <code>Vary</code> headers.</li>
+<li>For authenticated endpoints, be conservative:</li>
+<li><code>Cache-Control: private, max-age=30</code> for user-specific but safe-to-cache-in-browser payloads.</li>
+<li><code>Cache-Control: no-store</code> for sensitive endpoints (tokens, anything with high-risk data).</li>
+</ul>
+<hr />
+<h2 id="3-implementation-plan-rollout">3) Implementation Plan (Rollout)</h2>
+<h3 id="phase-0-baseline-prioritization-12-days">Phase 0 — Baseline &amp; prioritization (1–2 days)</h3>
+<ul>
+<li>Identify top endpoints by:</li>
+<li>request volume (frontend pages like leaderboard, knowledge lists)</li>
+<li>p95 latency</li>
+<li>DB time (slow query logs / Django query count)</li>
+<li>Confirm which endpoints are:</li>
+<li><strong>public</strong> vs <strong>authenticated</strong></li>
+<li><strong>user-specific</strong> vs <strong>global</strong></li>
+</ul>
+<p>Deliverable: a shortlist of 5–10 endpoints to optimize first (e.g., leaderboard, contributors, discovery counts, knowledge list/view).</p>
+<h3 id="phase-1-cheap-wins-25-days">Phase 1 — Cheap wins (2–5 days)</h3>
+<p>1) <strong>Reduce N+1 and repeated work</strong>
+- Add <code>select_related/prefetch_related</code>.
+- Move aggregates out of serializers.</p>
+<p>2) <strong>Add response caching for safe endpoints</strong>
+- Apply caching to endpoints that are global and semi-static:
+  - leaderboard (global)
+  - contributor directory (global)
+  - knowledge list endpoints (global)
+  - discovery counts (global)</p>
+<p>3) <strong>Add HTTP caching headers</strong>
+- For list/view endpoints: enable conditional GET behavior (ETag) so clients revalidate cheaply.</p>
+<h3 id="phase-2-precompute-expensive-aggregates-12-weeks">Phase 2 — Precompute expensive aggregates (1–2 weeks)</h3>
+<p>For endpoints dominated by aggregation cost, caching the response helps, but <strong>precomputing</strong> is often the bigger win.</p>
+<p><strong>Targets (examples):</strong>
+- Leaderboard ranking (top N contributors)
+- Progression metrics (counts per status/time window)
+- Review queue counts per queue type
+- Discovery facet counts (per CIDOC type, search term)</p>
+<p><strong>Approach options (no Redis):</strong></p>
+<ul>
+<li><strong>Option A — Summary tables (recommended for frequent updates)</strong></li>
+<li>Maintain tables such as <code>leaderboard_snapshot</code>, <code>queue_counts_snapshot</code>, etc.</li>
+<li>Refresh via periodic job (cron / management command) plus event-triggered refresh on writes.</li>
+<li><strong>Option B — PostgreSQL materialized views (recommended for read-heavy, batch refresh)</strong></li>
+<li><code>REFRESH MATERIALIZED VIEW CONCURRENTLY</code> on a schedule.</li>
+<li>Requires unique index on the materialized view for concurrent refresh.</li>
+</ul>
+<p>Deliverable: at least one high-impact endpoint served from a precomputed artifact, with measured reduction in DB time.</p>
+<h3 id="phase-3-standardize-cache-primitives-24-days">Phase 3 — Standardize cache primitives (2–4 days)</h3>
+<ul>
+<li>Add a small internal “caching utilities” module:</li>
+<li>Key naming conventions</li>
+<li>TTL constants by data class (static/semi/dynamic)</li>
+<li>Safe helpers: <code>cache_get_or_set_json()</code>, <code>build_cache_key(request, ...)</code></li>
+<li>Add consistent response headers:</li>
+<li><code>X-Cache: hit|miss|bypass</code></li>
+<li><code>Cache-Control</code> / <code>Vary</code></li>
+</ul>
+<h3 id="phase-4-expand-coverage-harden-invalidation-ongoing">Phase 4 — Expand coverage + harden invalidation (ongoing)</h3>
+<ul>
+<li>Expand caching to additional endpoints based on measured wins.</li>
+<li>Add invalidation hooks tied to model writes (signals) for the specific cached artifacts.</li>
+<li>Add monitoring dashboards and alerting thresholds.</li>
+</ul>
+<hr />
+<h2 id="4-code-level-examples-djangodrf">4) Code-Level Examples (Django/DRF)</h2>
+<blockquote>
+<p>The examples below are intentionally “boring” and built on Django’s standard primitives to minimize risk and operational overhead.</p>
+</blockquote>
+<h3 id="41-configure-a-non-redis-cache-backend">4.1 Configure a non-Redis cache backend</h3>
+<p><strong>File-based cache (good default on a single host with multiple Gunicorn workers):</strong></p>
+<pre><code class="language-python"># heritage_graph/settings/base.py (or better: production.py / development.py)
+import os
+
+CACHES = {
+    &quot;default&quot;: {
+        &quot;BACKEND&quot;: &quot;django.core.cache.backends.filebased.FileBasedCache&quot;,
+        &quot;LOCATION&quot;: os.environ.get(&quot;DJANGO_CACHE_DIR&quot;, &quot;/tmp/django-cache&quot;),
+        &quot;TIMEOUT&quot;: 300,  # default; override per-key where needed
+        &quot;OPTIONS&quot;: {&quot;MAX_ENTRIES&quot;: 200_000},
+    }
+}
+</code></pre>
+<p><strong>Database cache (centralized, shared across instances; adds DB load):</strong></p>
+<pre><code class="language-python"># settings
+CACHES = {
+    &quot;default&quot;: {
+        &quot;BACKEND&quot;: &quot;django.core.cache.backends.db.DatabaseCache&quot;,
+        &quot;LOCATION&quot;: &quot;django_cache&quot;,
+        &quot;TIMEOUT&quot;: 300,
+        &quot;OPTIONS&quot;: {&quot;MAX_ENTRIES&quot;: 200_000},
+    }
+}
+
+# one-time
+# python manage.py createcachetable django_cache
+</code></pre>
+<p><strong>Recommendation:</strong> start with <strong>file-based</strong> in production if the backend is co-located and has a shared volume; otherwise use <strong>DB cache</strong>.</p>
+<h3 id="42-cache-an-expensive-global-drf-endpoint-response-caching">4.2 Cache an expensive global DRF endpoint (response caching)</h3>
+<pre><code class="language-python">from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+@method_decorator(cache_page(60 * 5), name=&quot;dispatch&quot;)
+class LeaderboardView(APIView):
+    authentication_classes = []  # if truly public
+    permission_classes = []
+
+    def get(self, request):
+        data = build_leaderboard_payload()  # expensive
+        response = Response(data)
+        response[&quot;Cache-Control&quot;] = &quot;public, max-age=300&quot;
+        return response
+</code></pre>
+<h3 id="43-cache-an-authenticated-endpoint-safely-vary-by-auth">4.3 Cache an authenticated endpoint safely (vary by auth)</h3>
+<p>If the endpoint returns <strong>different output per user</strong>, either:
+- do <strong>not</strong> response-cache server-side, or
+- ensure cache keys vary by user identity, not just URL.</p>
+<p>For endpoints where auth changes the response shape, use <code>Vary</code>:</p>
+<pre><code class="language-python">from django.utils.decorators import method_decorator
+from django.views.decorators.vary import vary_on_headers
+from django.views.decorators.cache import cache_page
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+@method_decorator(vary_on_headers(&quot;Authorization&quot;), name=&quot;dispatch&quot;)
+@method_decorator(cache_page(30), name=&quot;dispatch&quot;)
+class MyRoleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = {&quot;role&quot;: get_role_for_user(request.user)}
+        response = Response(data)
+        response[&quot;Cache-Control&quot;] = &quot;private, max-age=30&quot;
+        return response
+</code></pre>
+<p><strong>Important trade-off:</strong> <code>vary_on_headers("Authorization")</code> can explode cardinality if many distinct tokens hit the same endpoint. Prefer instead to:
+- split endpoints into <code>/public/...</code> and <code>/me/...</code>, and/or
+- cache per-user with a stable user id key.</p>
+<h3 id="44-per-user-key-caching-with-cacheget_or_set">4.4 Per-user key caching with <code>cache.get_or_set()</code></h3>
+<pre><code class="language-python">from django.core.cache import cache
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class MyStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        key = f&quot;user:{request.user.id}:stats:v1&quot;
+        data = cache.get_or_set(key, lambda: compute_stats(request.user), timeout=60)
+
+        response = Response(data)
+        response[&quot;Cache-Control&quot;] = &quot;private, max-age=60&quot;
+        return response
+</code></pre>
+<h3 id="45-add-cache-hitmiss-visibility-via-headers">4.5 Add cache hit/miss visibility via headers</h3>
+<pre><code class="language-python">from django.core.cache import cache
+from rest_framework.response import Response
+
+def cached_json_response(key: str, compute, ttl: int) -&gt; Response:
+    value = cache.get(key)
+    if value is not None:
+        resp = Response(value)
+        resp[&quot;X-Cache&quot;] = &quot;hit&quot;
+        return resp
+
+    value = compute()
+    cache.set(key, value, ttl)
+    resp = Response(value)
+    resp[&quot;X-Cache&quot;] = &quot;miss&quot;
+    return resp
+</code></pre>
+<hr />
+<h2 id="5-cache-invalidation-strategy">5) Cache Invalidation Strategy</h2>
+<p>Caching is only valuable if invalidation is predictable and safe. We will use a <strong>hybrid</strong> strategy:</p>
+<h3 id="51-ttl-first-for-most-endpoints">5.1 TTL-first for most endpoints</h3>
+<ul>
+<li>Static: 24h–7d</li>
+<li>Semi-static: 5–60 min</li>
+<li>Dynamic: 10–120 sec</li>
+<li>User-specific: 10–60 sec (unless strong invalidation exists)</li>
+</ul>
+<p>This prevents “stuck forever” bugs and simplifies ops.</p>
+<h3 id="52-event-driven-invalidation-for-critical-artifacts">5.2 Event-driven invalidation for critical artifacts</h3>
+<p>For caches that must reflect writes quickly (leaderboard, queue counts), invalidate on writes:</p>
+<ul>
+<li>On <code>Submission</code>, <code>CulturalEntity</code>, <code>Revision</code>, <code>ReviewDecision</code>, <code>ReviewFlag</code> changes:</li>
+<li>delete known global keys:<ul>
+<li><code>leaderboard:v1</code></li>
+<li><code>review_queue_counts:v1</code></li>
+</ul>
+</li>
+<li>delete per-user keys as needed:<ul>
+<li><code>user:{id}:stats:v1</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Pattern: signals (with guard rails):</strong></p>
+<pre><code class="language-python">from django.core.cache import cache
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+
+from .models import CulturalEntity, ReviewDecision
+
+@receiver([post_save, post_delete], sender=CulturalEntity)
+def invalidate_entity_caches(sender, instance, **kwargs):
+    cache.delete(&quot;leaderboard:v1&quot;)
+    cache.delete(&quot;review_queue_counts:v1&quot;)
+</code></pre>
+<p>Guard rails:
+- Keep invalidation lists small and explicit.
+- Prefer deleting a small set of “top-level” keys over complex per-object graphs.</p>
+<h3 id="53-avoid-race-conditions-stampedes">5.3 Avoid race conditions / stampedes</h3>
+<p>Common failure mode: cache miss causes many workers to recompute simultaneously.</p>
+<p>Mitigations without Redis:
+- Use <code>cache.get_or_set()</code> where supported.
+- Use “stale-while-revalidate” behavior at the app layer:
+  - Store <code>{value, computed_at}</code>; serve stale for a short window while one worker refreshes.
+- For expensive recompute jobs: refresh in background via management command schedule.</p>
+<h3 id="54-partial-updates">5.4 Partial updates</h3>
+<p>If a write only affects part of a cached list:
+- Prefer invalidating the whole list unless the cache is extremely large.
+- For large caches, move to summary tables/materialized views so reads are always consistent.</p>
+<hr />
+<h2 id="6-performance-scalability-considerations">6) Performance &amp; Scalability Considerations</h2>
+<h3 id="expected-improvements-typical-ranges">Expected improvements (typical ranges)</h3>
+<ul>
+<li><strong>Leaderboard / heavy aggregates</strong>: 5–50× faster on cache hit; DB load drops proportionally.</li>
+<li><strong>Knowledge list endpoints</strong>: 2–10× faster via query optimization + response caching.</li>
+<li><strong>Discovery counts</strong>: significant improvement if moved to precomputed artifacts.</li>
+</ul>
+<h3 id="limitations-of-non-redis-caching">Limitations of non-Redis caching</h3>
+<ul>
+<li><strong>LocMem caches</strong> don’t share between Gunicorn workers → lower hit rate.</li>
+<li><strong>File-based cache</strong> shares on a single host but not across hosts unless a shared volume exists.</li>
+<li><strong>DB cache</strong> can become self-defeating if it adds too much write/read pressure to Postgres.</li>
+</ul>
+<h3 id="when-this-approach-starts-to-break-down">When this approach starts to break down</h3>
+<p>Consider a distributed cache (Redis) when:</p>
+<ul>
+<li>Backend runs on <strong>multiple hosts/containers</strong> and cache hit rate suffers due to no shared cache.</li>
+<li>Cache table or file cache becomes hot and adds measurable overhead.</li>
+<li>You need advanced features: distributed locks, pub/sub invalidation, large keyspace, eviction policies tuned for workload.</li>
+</ul>
+<hr />
+<h2 id="7-monitoring-reliability">7) Monitoring &amp; Reliability</h2>
+<h3 id="what-to-measure">What to measure</h3>
+<ul>
+<li><strong>Cache effectiveness</strong></li>
+<li>hit rate per endpoint/key class</li>
+<li>miss rate and recompute time</li>
+<li><strong>Backend health</strong></li>
+<li>p95/p99 latency per endpoint</li>
+<li>DB query count/time per request (sampling)</li>
+<li>Postgres CPU/IO, slow query logs</li>
+</ul>
+<h3 id="how-to-implement-hitmiss-tracking-no-new-infra-required">How to implement hit/miss tracking (no new infra required)</h3>
+<ul>
+<li>Add <code>X-Cache</code> response header on cached endpoints (<code>hit|miss|bypass</code>).</li>
+<li>Log structured entries for cache events:</li>
+<li>key prefix, ttl, hit/miss, compute duration</li>
+</ul>
+<p>If you already have centralized logs, this becomes a dashboard; if not, it’s still queryable in container logs.</p>
+<h3 id="fallback-mechanisms">Fallback mechanisms</h3>
+<ul>
+<li>If cache backend errors:</li>
+<li><strong>fail open</strong> for read endpoints: compute fresh and return response.</li>
+<li><strong>fail closed</strong> only for endpoints where stale data is unacceptable (rare).</li>
+<li>Always set reasonable timeouts and catch cache backend exceptions.</li>
+</ul>
+<hr />
+<h2 id="8-future-upgrade-path-to-redis">8) Future Upgrade Path (to Redis)</h2>
+<p>Design choices to keep migration small:</p>
+<ul>
+<li>Keep caching behind a thin wrapper (<code>cached_json_response</code>, stable key naming).</li>
+<li>Keep invalidation centralized (one module listing keys to delete).</li>
+<li>Avoid relying on backend-specific features (e.g., filesystem-only semantics).</li>
+</ul>
+<p>Migration steps:</p>
+<p>1) Introduce Redis service and switch <code>CACHES["default"]["BACKEND"]</code> to <code>django-redis</code>.
+2) Keep keys/TTLs/invalidation the same.
+3) Add distributed locking for stampede control (optional but recommended).
+4) Remove DB cache table or filesystem cache volume once stable.</p>
+<hr />
+<h2 id="appendix-practical-cache-policy-suggested-defaults">Appendix: Practical Cache Policy (Suggested Defaults)</h2>
+<ul>
+<li><strong>Leaderboard (global)</strong>: <code>public</code>, TTL 60–300s, invalidate on relevant writes.</li>
+<li><strong>Discovery counts (global)</strong>: TTL 5–30 min, or serve from materialized view refreshed every 5–15 min.</li>
+<li><strong>Knowledge lists (global)</strong>: TTL 5–30 min, add ETag for cheap revalidation.</li>
+<li><strong>Review queue counts (global)</strong>: TTL 10–30s, prefer precomputed snapshot updated on writes.</li>
+<li><strong>User stats (per-user)</strong>: <code>private</code>, TTL 30–120s, invalidate on user’s contributions/reviews.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
