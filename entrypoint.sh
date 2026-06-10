@@ -11,6 +11,10 @@ fi
 
 python manage.py migrate --noinput
 
+# Seed controlled vocabularies that the UI depends on (idempotent). Without this,
+# the relationship-proposal form ships with an empty predicate dropdown.
+python manage.py seed_relationship_predicates --prune || echo "seed_relationship_predicates failed (continuing)."
+
 if [ -z "$DJANGO_SUPERUSER_USERNAME" ] || [ -z "$DJANGO_SUPERUSER_EMAIL" ] || [ -z "$DJANGO_SUPERUSER_PASSWORD" ]; then
   echo "Superuser env vars not set. Skipping superuser creation."
 else
@@ -50,5 +54,11 @@ if [ "${RDF_SYNC_ENABLED:-true}" = "true" ]; then
 else
   echo "RDF_SYNC_ENABLED is not 'true'; skipping triplestore bootstrap."
 fi
+
+# Identity resolution: ensure every clusterable row has a singleton EntityCluster
+# (so the curation Identity Queue is live) and refresh duplicate candidates. Both
+# are idempotent (skip existing) and non-fatal.
+python manage.py bootstrap_identity_clusters || echo "bootstrap_identity_clusters failed (continuing)."
+python manage.py refresh_identity_candidates || echo "refresh_identity_candidates failed (continuing)."
 
 exec "$@"
