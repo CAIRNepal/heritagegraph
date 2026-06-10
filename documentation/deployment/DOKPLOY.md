@@ -5,7 +5,7 @@ Use the repository file **`docker-compose-dokploy.yml`** as the Compose definiti
 ## Quick checklist
 
 1. **Compose file:** `docker-compose-dokploy.yml` at repo root; use the **monorepo root** as the Docker build context for **backend** and **frontend** (the Next.js `frontend` image needs `tools/` + `ontology/` for the `npm run build` prebuild).
-2. **Secrets in Dokploy:** `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. For the **in-app assistant**, set **`OPENROUTER_API_KEY`** and at least **`OPENROUTER_MODEL_STANDARD`** (and optional `OPENROUTER_MODEL_FAST` / `OPENROUTER_MODEL_PREMIUM`). For **Claude Vision OCR rescue**, set **`ANTHROPIC_API_KEY`** on **`backend` and `ocr-worker`** (same value in both services).
+2. **Secrets in Dokploy:** `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`. For the **in-app assistant**, set **`OPENROUTER_API_KEY`** and at least **`OPENROUTER_MODEL_STANDARD`** (and optional `OPENROUTER_MODEL_FAST` / `OPENROUTER_MODEL_PREMIUM`). **`ANTHROPIC_API_KEY`** is only needed if you restore the suspended OCR worker.
 3. **URLs:** `NEXT_PUBLIC_API_URL` (public `https://…` API), `NEXTAUTH_URL` (public `https://…` app), `CORS_ALLOWED_ORIGINS` (comma-separated **app** origins, e.g. `https://dev.heritagegraph.xyz` — required for browser API calls after sign-in).
 4. **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`:** Set on **both** `frontend` and `backend` (same OAuth client). Missing `GOOGLE_CLIENT_ID` on the backend yields failed sign-in (`BACKEND_REJECTED`).
 5. **`ALLOWED_HOSTS`:** Must list every **API** hostname that hits Django **plus** `backend` (NextAuth uses `INTERNAL_BACKEND_URL=http://backend:8000`). Example:  
@@ -81,19 +81,19 @@ If the secret is not set, the workflow skips the POST (no failure) so you can re
 
 ## OCR and async tasks
 
-The stack runs **`backend`** (lean API image) plus **`redis`** and **`ocr-worker`** (heavy image with PyTorch). Document uploads enqueue Celery tasks on Redis; the worker must be running for OCR to progress beyond `pending`.
+**Current status:** The OCR / document-ingestion pipeline is **suspended** in active compose files (`OCR_ENABLED` defaults `false`; `ocr-worker` is not in the running stack). The active stack runs **`backend`**, **`postgres`**, **`frontend`**, **`landing`**, **`redis`**, and **`oxigraph`**.
 
 | Variable | Service(s) | Notes |
 |----------|------------|--------|
-| `CELERY_BROKER_URL` / `CELERY_RESULT_BACKEND` | Set in compose to `redis://redis:6379/0` and `…/1` | Override only if you run an external Redis |
-| `OCR_ENABLED` | `backend`, `ocr-worker` | Default `true`; set `false` to disable pipeline |
-| `ANTHROPIC_API_KEY` | `backend`, `ocr-worker` | Optional; needed for Claude Vision rescue path |
-| `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, etc. | `backend`, `ocr-worker`, others | Required |
-| `GRAFANA_ADMIN_PASSWORD` | `grafana` | Required by compose for monitoring |
+| `RDF_SYNC_ENABLED` | `backend` | Default `true` — projects accepted records to Oxigraph |
+| `RDF_ENDPOINT_URL` / `RDF_QUERY_URL` | `backend` | Point at internal `http://oxigraph:7878/...` in compose |
+| `CELERY_BROKER_URL` / `CELERY_RESULT_BACKEND` | `backend` (when async enabled) | `redis://redis:6379/0` and `…/1` |
+| `OCR_ENABLED` | `backend` | Default `false` — set `true` only after restoring `ocr-worker` |
+| `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, etc. | `backend`, others | Required |
 
-**Sizing:** Prefer at least **4 GB RAM** on the host for `backend` + `postgres` + `frontend` + `ocr-worker` (the worker limit is 2 GB in compose). The first **`ocr-worker` image build** can take **15–30+ minutes** on a small builder; cache makes later deploys faster. If the platform build times out, raise the build timeout or push pre-built images to a registry.
+**To revive OCR:** restore the `ocr-worker` service in compose, build the `ocr-worker` Docker target, set `OCR_ENABLED=true`, and add `ANTHROPIC_API_KEY` for Claude Vision rescue. See [`../pipelines/OCR.md`](../pipelines/OCR.md).
 
-**Verify OCR:** Upload a PDF or image on a project that triggers document processing. `UploadedDocument` rows should move `pending` → `processing` → `completed` (or check `ocr-worker` logs for Celery activity).
+**Identity bootstrap:** `heritage_graph/entrypoint.sh` runs `bootstrap_identity_clusters` and `refresh_identity_candidates --auto-merge` on every backend start (idempotent).
 
 ## Migrations
 

@@ -43,3 +43,24 @@ def registry_class_key_for_model(model_class) -> str | None:
     if not name:
         return None
     return DJANGO_MODEL_TO_REGISTRY_CLASS_KEY.get(name)
+
+
+def type_scope_for_registry_key(registry_key: str) -> str | None:
+    """Map ontology registry key → EntityCluster.type_scope (ContentType.model)."""
+    from django.apps import apps
+    from django.contrib.contenttypes.models import ContentType
+
+    key = (registry_key or "").strip().lower()
+    if not key:
+        return None
+    for model_name, reg_key in DJANGO_MODEL_TO_REGISTRY_CLASS_KEY.items():
+        if reg_key != key:
+            continue
+        try:
+            model = apps.get_model("cidoc_data", model_name)
+        except LookupError:
+            return None
+        if model is None:
+            return None
+        return ContentType.objects.get_for_model(model, for_concrete_model=True).model
+    return None

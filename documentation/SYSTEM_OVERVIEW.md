@@ -3,8 +3,8 @@
 > **Purpose:** A single, top-to-bottom map of HeritageGraph: what the platform is, the
 > parts it is built from, what each part does, how data flows between them, and — most
 > importantly — *why* each major design choice was made. Start here, then drill into the
-> focused docs ([ARCHITECTURE.md](../ARCHITECTURE.md), [RDF_KG_ENGINE.md](../RDF_KG_ENGINE.md),
-> [ONTOLOGY.md](../ONTOLOGY.md), [AUTH.md](../AUTH.md), [FORMS.md](../FORMS.md))
+> focused docs ([ARCHITECTURE.md](../ARCHITECTURE.md), [knowledge-graph/RDF_ENGINE.md](knowledge-graph/RDF_ENGINE.md),
+> [ontology/ONTOLOGY.md](ontology/ONTOLOGY.md), [auth/AUTH.md](auth/AUTH.md), [contribution/FORMS.md](contribution/FORMS.md))
 > when you need detail.
 
 ---
@@ -38,7 +38,7 @@ The platform is not just a database — it is a **knowledge graph** built on the
             ▼                   ▼                     ▼
      ┌────────────┐      ┌────────────┐        ┌────────────┐
      │  Frontend   │      │  Landing    │        │  Backend    │
-     │  Next.js 15 │      │  Next.js 14 │        │  Django DRF │
+     │  Next.js 15 │      │  Next.js 15 │        │  Django DRF │
      │  (dashboard)│      │  (marketing)│        │  (the API)  │
      └─────┬───────┘      └────────────┘        └─────┬──────┘
            │  Bearer (Google ID token)                │
@@ -74,7 +74,7 @@ The API and data brain. Organized into focused Django apps under `heritage_graph
 | App | Responsibility |
 |-----|----------------|
 | **`heritage_data`** | The contribution & governance core: `CulturalEntity` → `Revision` workflow, `ReviewerRole` / `ReviewDecision` / `ReviewFlag` (epistemic review), `Submission` (legacy), `Project`, `Organization`, schema-extension proposals, notifications, auth views |
-| **`cidoc_data`** | The ontology layer: CIDOC-CRM structured models (`Person`, `Location`, `Event`, `Festival`, `Monument`, `Deity`, `Guthi`, `Kumari*`, …), `HeritageAssertion`, identity resolution (`EntityCluster`), the LinkML schema registry, SHACL validation, and RDF projection |
+| **`cidoc_data`** | Ontology **v1.0.0** (event-centric CIDOC-CRM + PROV-O): 26 navigable registry types including lifecycle events (`Production`, `Consecration`, `Enshrinement`, `TransferOfCustody`), tangible heritage (`ArchitecturalStructure`, `IconographicObject`, `Monument`), Kumari lifecycle, `HeritageAssertion`, identity (`EntityCluster`), LinkML schema registry, SHACL, RDF projection — see [ontology/ONTOLOGY.md](ontology/ONTOLOGY.md) |
 | **`graph`** | The Knowledge Graph engine (`kg_engine/`): projects Postgres → RDF, talks to Oxigraph, serves KG stats / neighborhood / SPARQL, retries via outbox |
 | **`document_processing`** | Document upload (storage/metadata). *(OCR and AI document-to-graph ingestion are currently **suspended** — `OCR_ENABLED` defaults to false and the `ocr-worker` service is removed from the active stack.)* |
 | **`assistant`** | In-app chatbot — retrieval + grounding + OpenRouter chat completion, with a navigation allowlist |
@@ -86,37 +86,40 @@ dispatched by `DJANGO_ENV`). Secrets come from the environment; never hardcoded.
 ### 3.2 Frontend — Next.js 15 dashboard (`heritage_graph_ui/`)
 
 The App-Router UI where authenticated users browse, contribute, review, and visualize.
-Major route groups under `src/app/dashboard/`:
+Major route groups under `src/app/(dashboard)/` (URLs have **no** `/dashboard` prefix):
 
-- **`knowledge/`** — read/browse pages per domain (entity, person, location, event,
-  period, tradition, source, places).
+- **`knowledge/`** — read/browse per domain (entity, person, location, structure, monument,
+  production, consecration, festival, guthi, deity, ritual, entity_cluster, … — one route per registry key).
 - **`contribute/`** — create/edit forms per domain (forms are **ontology-driven**, generated
-  from the registry — see [FORMS.md](../FORMS.md)).
+  from the registry — see [contribution/FORMS.md](contribution/FORMS.md)).
 - **`curation/`** — the review & moderation tools: triaged review queue, three-panel
   review workspace, conflict resolution, identity curation, reviewer dashboard.
-- **`community/`**, **`graphview/`**, **`leaderboard/`**, **`notification/`**, **`account/`** — engagement and visualization.
+- **`atlas/`**, **`heritage-museum/`**, **`graphview/`** — globe, museum XR, and Cytoscape graph.
+- **`platform-admin/`** — in-app user/reviewer management (staff or expert curator).
+- **`community/`**, **`leaderboard/`**, **`notification/`**, **`account/`** — engagement.
 
 UI conventions: TypeScript + Tailwind v4 + shadcn/ui ("new-york"), named exports,
 `process.env.NEXT_PUBLIC_API_URL` for the API base, Bearer-token fetches via NextAuth.
 
-### 3.3 Landing — Next.js 14 marketing site (`heritage_graph_landing/`)
+### 3.3 Landing — Next.js 15 marketing site (`heritage_graph_landing/`)
 
 A separate app with different needs (Three.js, heavy animation, independent deploy cadence).
 Kept apart so its build weight never slows the dashboard.
 
 ### 3.4 Ontology assets (`ontology/`, `tools/`, `Heritage.ttl`)
 
-The semantic backbone: the CIDOC-CRM-based TBox (`Heritage.ttl`), the LinkML schema
-registry, generated SHACL shapes, and codegen tooling. A generated registry is also
-shipped to the frontend (`registry.generated.json/.ts`) so forms and validation stay in
-sync with the backend. See [ONTOLOGY.md](../ONTOLOGY.md).
+The semantic backbone: **`ontology/HeritageGraph.yaml`** (LinkML v1.0.0), the CIDOC-CRM TBox
+(`Heritage.ttl`), generated SHACL shapes, and codegen tooling (`make generate`). UI exposure
+is driven by **`tools/ui-classmap.yaml`** (26 navigable types). A generated registry ships to
+the frontend (`registry.generated.json/.ts`) so forms and validation stay in sync. LinkedArt/LUX
+interop classes in the YAML are RDF-only (not in the classmap). See [ontology/ONTOLOGY.md](ontology/ONTOLOGY.md).
 
 ### 3.5 Infrastructure
 
 - **Traefik** — reverse proxy / TLS / routing via Docker labels.
 - **PostgreSQL** — single database, system of record.
 - **Oxigraph** — RDF triple store + SPARQL endpoint.
-- **Redis + Celery** — async task queue (OCR and other background work).
+- **Redis** — Django cache (when `REDIS_URL` set) and Celery broker. OCR worker is **suspended** in active compose.
 - **OpenRouter** — external LLM for the in-app assistant (chat).
 
 ---
@@ -196,7 +199,7 @@ Browser → Backend  (Bearer id_token) → google-auth verifies → auto-create 
 
 The frontend obtains a Google **ID token** through NextAuth and sends it as a Bearer token.
 Django's `GoogleTokenAuthentication` verifies signature/expiry/issuer/audience and
-auto-provisions the Django user. See [AUTH.md](../AUTH.md).
+auto-provisions the Django user. See [auth/AUTH.md](auth/AUTH.md).
 
 ### 5.2 Contribution → Graph
 
@@ -226,7 +229,7 @@ It partitions the graph for clean governance:
 
 Operations: `make rdf-rebuild`, `make rdf-load-tbox`, `make rdf-diagnose`,
 `make rdf-drain-outbox`. Master switch: `RDF_SYNC_ENABLED`. Full detail in
-[RDF_KG_ENGINE.md](../RDF_KG_ENGINE.md).
+[knowledge-graph/RDF_ENGINE.md](knowledge-graph/RDF_ENGINE.md).
 
 ---
 
@@ -274,12 +277,12 @@ This is the section to read if you're wondering *why* the system looks the way i
 | Topic | Doc |
 |-------|-----|
 | Services, networks, data model, auth flow (detailed) | [ARCHITECTURE.md](../ARCHITECTURE.md) |
-| Knowledge graph engine, partitions, SPARQL API | [RDF_KG_ENGINE.md](../RDF_KG_ENGINE.md) |
-| Ontology, CIDOC-CRM mapping, LinkML registry | [ONTOLOGY.md](../ONTOLOGY.md) |
-| Ontology-driven contribution forms | [FORMS.md](../FORMS.md) |
-| Authentication & roles | [AUTH.md](../AUTH.md), [AUTH_ROLES_DEVELOPER_GUIDE.md](auth/AUTH_ROLES_DEVELOPER_GUIDE.md) |
-| OCR pipeline | [OCR_PIPELINE.md](../OCR_PIPELINE.md) |
-| Deployment | [DEPLOYMENT.md](../DEPLOYMENT.md) |
+| Knowledge graph engine, partitions, SPARQL API | [knowledge-graph/RDF_ENGINE.md](knowledge-graph/RDF_ENGINE.md) |
+| Ontology, CIDOC-CRM mapping, LinkML registry | [ontology/ONTOLOGY.md](ontology/ONTOLOGY.md) |
+| Ontology-driven contribution forms | [contribution/FORMS.md](contribution/FORMS.md) |
+| Authentication & roles | [auth/AUTH.md](auth/AUTH.md), [AUTH_ROLES_DEVELOPER_GUIDE.md](auth/AUTH_ROLES_DEVELOPER_GUIDE.md) |
+| OCR pipeline | [pipelines/OCR.md](pipelines/OCR.md) |
+| Deployment | [deployment/DEPLOYMENT.md](deployment/DEPLOYMENT.md) |
 | Coding conventions for contributors / AI agents | [CLAUDE.md](../CLAUDE.md), [AGENTS.md](../AGENTS.md) |
-| Testing & validation | [TESTING_AND_VALIDATION.md](../TESTING_AND_VALIDATION.md) |
+| Testing & validation | [testing/TESTING.md](testing/TESTING.md) |
 ```

@@ -10,10 +10,21 @@ import { NODE_TYPE_CONFIG, RELATION_LABELS, HG_CATEGORY_CONFIG } from '@/lib/ont
 export type { NodeType, HgCategory };
 export { NODE_TYPE_CONFIG, RELATION_LABELS, HG_CATEGORY_CONFIG };
 
+/** Assertion-backed edge metadata (live KG from HeritageAssertion). */
+export interface RelationProvenance {
+  source?: string | null;
+  confidence?: string | null;
+  confidenceScore?: number | null;
+  assertedBy?: string | null;
+  temporalScope?: string | null;
+  assertedAt?: string | null;
+}
+
 export interface HeritageRelation {
   predicate: string;
   targetId: string;
   targetLabel?: string;
+  provenance?: RelationProvenance | null;
 }
 
 /**
@@ -67,6 +78,14 @@ export interface HeritageNode {
   culturalRole?: string;
   visitNote?: string;
   relations: HeritageRelation[];
+  /** Identity cluster (live KG): UUID string from EntityCluster. */
+  clusterId?: string;
+  /** Evidence-weighted canonical record IRI within the cluster (museum display). */
+  canonicalMemberId?: string;
+  clusterLabel?: string;
+  typeScope?: string;
+  /** Other merged record labels (museum dedup). */
+  clusterAliases?: string[];
 }
 
 export interface GraphNode extends HeritageNode {
@@ -83,6 +102,7 @@ export interface GraphLink {
   source: string | GraphNode;
   target: string | GraphNode;
   predicate: string;
+  provenance?: RelationProvenance | null;
   index?: number;
 }
 

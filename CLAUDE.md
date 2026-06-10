@@ -133,7 +133,7 @@ def handle_my_model_save(sender, instance, created, **kwargs):
 
 ### File Naming
 ```
-src/app/dashboard/knowledge/entity/page.tsx    # Page routes
+src/app/(dashboard)/knowledge/entity/page.tsx  # Page routes (route group; no /dashboard URL prefix)
 src/components/ui/button.tsx                    # shadcn components (lowercase)
 src/components/DataTable.tsx                    # Custom components (PascalCase)
 src/hooks/use-mobile.ts                        # Hooks (kebab-case, use- prefix)
@@ -225,10 +225,10 @@ export function MyDataComponent() {
 - Type augmentations in `types/next-auth.d.ts`.
 
 ### Routing
-- All authenticated pages are under `/dashboard/`.
-- Knowledge domain pages: `/dashboard/knowledge/<domain>/` with co-located `data.tsx` files.
-- Contribute pages: `/dashboard/contribute/<domain>/`.
-- Layouts: root `layout.tsx` (providers) and `dashboard/layout.tsx` (sidebar).
+- Authenticated shell uses the `(dashboard)` route group — URLs are at the site root (e.g. `/knowledge/entity`, not `/dashboard/...`).
+- Knowledge pages: `/knowledge/<domain>/` with optional co-located `data.tsx`.
+- Contribute pages: `/contribute/<domain>/` (gated by `RequireAuth` in contribute layout).
+- Layouts: root `layout.tsx` (providers) and `(dashboard)/layout.tsx` (sidebar).
 
 ---
 
@@ -263,7 +263,7 @@ export function MyDataComponent() {
 
 ### Documentation
 - Update `AGENTS.md` when adding new apps, models, or major features.
-- Update `SKILLS.md` when adding new capabilities.
+- Update `documentation/developer/SKILLS.md` when adding new capabilities.
 - Update `ARCHITECTURE.md` when changing service topology.
 
 ### When Adding a New Django App
@@ -274,8 +274,15 @@ export function MyDataComponent() {
 5. Create and run migrations
 6. Document in `AGENTS.md`
 
+### When Adding a New Ontology Contribute/Knowledge Domain
+1. Add LinkML class + row in `tools/ui-classmap.yaml` (registry key, `apiEndpoint`)
+2. Run `make ontology` and commit `registry.generated.*`
+3. Add Django model, serializer, ViewSet in `cidoc_data`, register in `urls.py`
+4. Add thin pages: `src/app/(dashboard)/contribute/<key>/page.tsx` and `knowledge/<key>/`
+5. Document in `documentation/ontology/ONTOLOGY.md` and `AGENTS.md`
+
 ### When Adding a New Frontend Page
-1. Create directory under `src/app/dashboard/<section>/`
+1. Create directory under `src/app/(dashboard)/<section>/`
 2. Add `page.tsx` (and optionally `data.tsx` for local data)
 3. Add navigation link in `src/components/dashboard/app-sidebar.tsx`
 4. Use existing layout (dashboard layout provides sidebar)

@@ -188,7 +188,7 @@ export default function LeaderboardPage() {
               </div>
               <h1 className="text-3xl md:text-4xl font-black text-white">
                 Leader
-                <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">
+                <span className="text-white/90">
                   board
                 </span>
               </h1>

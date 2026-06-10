@@ -8,6 +8,7 @@ import { useSession } from 'next-auth/react';
 
 import {
   IconChartBar,
+  IconCompass,
   IconLayoutDashboard,
   IconTrophy,
   IconPlus,
@@ -226,6 +227,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           navtitle={t('describe')}
           items={[
             { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
+            { title: 'Discover', url: '/discover', icon: IconCompass },
             { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
             { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
             { title: t('heritageMuseum'), url: '/heritage-museum', icon: IconBuildingMonument },

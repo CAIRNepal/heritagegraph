@@ -1,6 +1,6 @@
 /**
  * Canonical API URL builders — prefer versioned prefixes; both are mounted on Django,
- * but `/api/v1/...` is the stable contract for new clients (see API_VERSIONING.md).
+ * but `/api/v1/...` is the stable contract for new clients (see documentation/api/VERSIONING.md).
  */
 
 import { getInternalBackendUrl, getPublicApiUrl } from "@/lib/api-base";

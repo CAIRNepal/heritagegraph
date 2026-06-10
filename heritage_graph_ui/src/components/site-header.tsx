@@ -28,7 +28,7 @@ export function SiteHeader() {
         <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm">
           <BookOpen className="w-3.5 h-3.5 text-white" />
         </div>
-        <span className="font-semibold text-sm hidden sm:inline bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
+        <span className="font-serif font-semibold text-sm hidden sm:inline text-foreground">
           HeritageGraph
         </span>
       </Link>

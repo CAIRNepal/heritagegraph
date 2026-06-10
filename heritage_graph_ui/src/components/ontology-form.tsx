@@ -33,6 +33,7 @@ import { cn } from "@/lib/utils";
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 import { EntitySearch, type SearchResult } from "@/components/contribute/entity-search";
+import { DuplicateContributionAlert } from "@/components/contribute/duplicate-contribution-alert";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getPublicApiUrl } from "@/lib/api-base";
@@ -1843,6 +1844,16 @@ export default function OntologyForm({
       ontologyClass.description ||
       `Add a new ${ontologyClass.label.toLowerCase()} to the knowledge base.`;
 
+  const duplicateLabel = inferRootLabel(ontologyClass, formData);
+  const accessToken = (session as { accessToken?: string } | null)?.accessToken;
+  const duplicateAlert = !isEditMode ? (
+    <DuplicateContributionAlert
+      label={duplicateLabel}
+      registryKey={ontologyClass.key}
+      accessToken={accessToken}
+    />
+  ) : null;
+
   const submitConfirmDialogs = (
     <>
       <ConfirmActionDialog
@@ -1921,6 +1932,8 @@ export default function OntologyForm({
             {mainDescription}
           </p>
         </div>
+
+        {duplicateAlert}
 
         <details className="rounded-2xl border border-blue-200/70 bg-blue-50/30 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">
           <summary className="cursor-pointer text-xs font-semibold text-blue-700 dark:text-blue-300">
@@ -2072,6 +2085,8 @@ export default function OntologyForm({
           {mainDescription}
         </p>
       </div>
+
+      {duplicateAlert}
 
       {/* Mobile preview — sits at the top of the form, collapsible. */}
       <details className="rounded-2xl border border-blue-200/70 bg-blue-50/30 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">

@@ -341,13 +341,13 @@ export default function ProgressionPage() {
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                 {!sessionPending && isAuthenticated ? (
                   <>Track Your Scholarly{' '}
-                    <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
+                    <span className="text-foreground">
                       Contributions
                     </span>
                   </>
                 ) : (
                   <>Heritage{' '}
-                    <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
+                    <span className="text-foreground">
                       Progression System
                     </span>
                   </>

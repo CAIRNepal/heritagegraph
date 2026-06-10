@@ -2,7 +2,7 @@
 
 **Audience:** Developers adding API endpoints, dashboard pages, or navigation that depends on **contributor**, **reviewer**, or **admin** access.
 
-This document complements [AUTH.md](../../AUTH.md), which covers login flows (Google OAuth vs dev JWT), tokens, and calling the API. Read AUTH.md first if you are new to how the Bearer token reaches Django.
+This document complements [AUTH.md](AUTH.md), which covers login flows (Google OAuth vs dev JWT), tokens, and calling the API. Read AUTH.md first if you are new to how the Bearer token reaches Django.
 
 ---
 
@@ -32,9 +32,9 @@ Django REST Framework resolves `request.user` using an **authentication class ch
 
 **Important:** Authentication only establishes **identity**. It does **not** grant feature access by itself—that is the job of **permission classes** (see below).
 
-Details and diagrams: [AUTH.md — Architecture](../../AUTH.md#architecture-overview).
+Details and diagrams: [AUTH.md — Architecture](AUTH.md#architecture-overview).
 
-**Sign-in failures and session errors in the UI** (banner, `/auth/login?error=`, token refresh): see [AUTH.md — Errors and Recovery](../../AUTH.md#errors-and-recovery-ux).
+**Sign-in failures and session errors in the UI** (banner, `/auth/login?error=`, token refresh): see [AUTH.md — Errors and Recovery](AUTH.md#errors-and-recovery-ux).
 
 ### 1.2 Authorization (what may this user do?)
 
@@ -190,7 +190,7 @@ Principles:
 
 ### 4.1 Authenticated-only page (client)
 
-See [AUTH.md — Client-side guard](../../AUTH.md#client-side-guard): `useSession`, loading state, redirect if `unauthenticated`.
+See [AUTH.md — Client-side guard](AUTH.md#client-side-guard): `useSession`, loading state, redirect if `unauthenticated`.
 
 ### 4.2 Reviewer- or moderator-only page (client)
 
@@ -203,7 +203,7 @@ Existing pages use **`AccessDenied`** (`heritage_graph_ui/src/components/access-
 
 ### 4.3 Server Component or route handler
 
-Use `getServerSession(authOptions)` ([AUTH.md — Server Components](../../AUTH.md#server-components--api-routes)), then forward `Authorization: Bearer ${session.accessToken}` to Django for server-side fetches. **Role checks on the server** are not centralized in this repo today—either call `/api/user/info` from the server with the same Bearer token or duplicate minimal checks (prefer a small shared helper if you add many routes).
+Use `getServerSession(authOptions)` ([AUTH.md — Server Components](AUTH.md#server-components--api-routes)), then forward `Authorization: Bearer ${session.accessToken}` to Django for server-side fetches. **Role checks on the server** are not centralized in this repo today—either call `/api/user/info` from the server with the same Bearer token or duplicate minimal checks (prefer a small shared helper if you add many routes).
 
 ---
 
@@ -301,12 +301,12 @@ await fetch(`${API_BASE}/data/your-endpoint/`, {
 ### 6.4 Wrong base URL or token
 
 **Symptom:** 401 on all requests.  
-**Fix:** Use `NEXT_PUBLIC_API_URL` on the client and `INTERNAL_BACKEND_URL` from server-side fetch ([AUTH.md](../../AUTH.md)). Always send `Authorization: Bearer <session.accessToken>`.
+**Fix:** Use `NEXT_PUBLIC_API_URL` on the client and `INTERNAL_BACKEND_URL` from server-side fetch ([AUTH.md](AUTH.md)). Always send `Authorization: Bearer <session.accessToken>`.
 
 ### 6.5 Dev vs prod token type
 
 **Symptom:** Works locally, fails in production (or vice versa).  
-**Fix:** In dev, NextAuth may store a **SimpleJWT** access token; in production, typically a **Google ID token**. The backend chain supports both when configured—ensure `DJANGO_ENV` and `GOOGLE_CLIENT_ID` match the intended mode ([AUTH.md](../../AUTH.md)).
+**Fix:** In dev, NextAuth may store a **SimpleJWT** access token; in production, typically a **Google ID token**. The backend chain supports both when configured—ensure `DJANGO_ENV` and `GOOGLE_CLIENT_ID` match the intended mode ([AUTH.md](AUTH.md)).
 
 ### 6.6 Forgetting `get_permissions()` on custom actions
 

@@ -2,7 +2,7 @@
 
 > **Audience:** Developers who want to add a new OAuth provider (e.g., Facebook, Discord, Microsoft) to HeritageGraph.
 
-> **Current main app:** `heritage_graph_ui` ships with **Google sign-in only** in NextAuth (`src/lib/auth.ts`). Treat this guide as the pattern for *adding* another provider later; day-to-day setup is in **AUTH.md** and `make auth-setup`.
+> **Current main app:** `heritage_graph_ui` ships with **Google sign-in only** in NextAuth (`src/lib/auth.ts`). Treat this guide as the pattern for *adding* another provider later; day-to-day setup is in [AUTH.md](AUTH.md) and `make auth-setup`.
 
 ---
 
@@ -63,7 +63,7 @@ HeritageGraph auth has **two layers** — a **frontend** (NextAuth v4) and a **b
 | Layer | Behavior |
 |-------|-----------|
 | **Next.js UI** | Google only — `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` required for `/auth/login` |
-| **Django** | Ordered chain (Google, optional GitHub, session/JWT) — see AUTH.md |
+| **Django** | Ordered chain (Google, optional GitHub, session/JWT) — see [AUTH.md](AUTH.md) |
 
 ---
 
@@ -540,7 +540,7 @@ After OAuth, NextAuth verifies the token against Django (`GET /data/api/testme/`
 
 ### Session banner: “Session needs attention”
 
-If `session.error` is set (e.g. `RefreshAccessTokenError` after Google token refresh fails), the app shows `AuthSessionMonitor` and **Sign in again**. See **Errors and Recovery** in `AUTH.md`.
+If `session.error` is set (e.g. `RefreshAccessTokenError` after Google token refresh fails), the app shows `AuthSessionMonitor` and **Sign in again**. See **Errors and Recovery** in [AUTH.md](AUTH.md).
 
 ### Wrong API path after login (404 on “test” endpoints)
 

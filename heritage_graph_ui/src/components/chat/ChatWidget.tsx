@@ -26,18 +26,9 @@ export function ChatWidget() {
     setLauncherVisible(true);
   }, [surface, currentPath]);
 
-  // Cmd+K / Ctrl+K on dashboard
-  useEffect(() => {
-    if (surface !== 'dashboard') return;
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        toggle();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [surface, toggle]);
+  // Note: ⌘K / Ctrl-K is owned by the global command palette (CommandMenu).
+  // The chat is opened via its launcher button or the "Ask AI assistant" entry
+  // in the command palette.
 
   return (
     <>

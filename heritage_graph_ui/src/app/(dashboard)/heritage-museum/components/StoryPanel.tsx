@@ -1,21 +1,41 @@
 'use client';
 
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
+import { IconExternalLink, IconShieldCheck } from '@tabler/icons-react';
 
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  isCuratedResourceIri,
+  resourceIriToDetailHref,
+} from '@/lib/heritage-museum/museum-rigor';
 
-import { NODE_TYPE_CONFIG, RELATION_LABELS, type GraphNode, type GraphData } from '../heritage-data';
+import {
+  NODE_TYPE_CONFIG,
+  RELATION_LABELS,
+  type GraphNode,
+  type GraphData,
+  type RelationProvenance,
+} from '../heritage-data';
 import { MediaViewer } from './MediaViewer';
 import { NodeGlyph } from '../node-icons';
+import type { MuseumDataSource } from './museum-toolbar';
 
 interface StoryPanelProps {
   node: GraphNode | null;
   graphData: GraphData;
   onRelatedNodeClick: (nodeId: string) => void;
+  dataSource?: MuseumDataSource;
 }
 
-export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelProps) {
+export function StoryPanel({
+  node,
+  graphData,
+  onRelatedNodeClick,
+  dataSource = 'demo',
+}: StoryPanelProps) {
   const t = useTranslations('heritageMuseum.panel');
   const scrollRootRef = useRef<HTMLDivElement>(null);
 
@@ -51,15 +71,20 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
   }
 
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
+  const detailHref = resourceIriToDetailHref(node.id);
+  const showReviewed =
+    dataSource === 'live' && isCuratedResourceIri(node.id);
 
   const relatedNodes = node.relations
     .map((r) => ({ rel: r, rn: graphData.nodes.find((n) => n.id === r.targetId) }))
     .filter((x) => x.rn !== undefined);
 
-  const grouped = relatedNodes.reduce<Record<string, GraphNode[]>>((acc, { rel, rn }) => {
+  const grouped = relatedNodes.reduce<
+    Record<string, Array<{ node: GraphNode; provenance?: RelationProvenance | null }>>
+  >((acc, { rel, rn }) => {
     if (!rn) return acc;
     if (!acc[rel.predicate]) acc[rel.predicate] = [];
-    acc[rel.predicate].push(rn);
+    acc[rel.predicate].push({ node: rn, provenance: rel.provenance });
     return acc;
   }, {});
 
@@ -95,6 +120,25 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
               {cfg.label}
             </span>
             <h2 className="text-foreground font-bold text-lg leading-tight">{node.label}</h2>
+            {showReviewed ? (
+              <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium text-primary">
+                <IconShieldCheck className="w-3.5 h-3.5" aria-hidden />
+                {t('reviewedBadge')}
+              </span>
+            ) : null}
+            {detailHref ? (
+              <Button
+                asChild
+                variant="link"
+                size="sm"
+                className="h-auto p-0 mt-1 text-xs text-primary"
+              >
+                <Link href={detailHref}>
+                  {t('openRecord')}
+                  <IconExternalLink className="w-3 h-3 ml-1 inline" aria-hidden />
+                </Link>
+              </Button>
+            ) : null}
             {node.unescoStatus && (
               <div className="flex items-center gap-1 mt-1">
                 <span className="w-3 h-3 bg-blue-600 rounded-full inline-block" />
@@ -247,7 +291,7 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
             <a
               href={`https://www.openstreetmap.org/?mlat=${node.lat}&mlon=${node.long}&zoom=15`}
               target="_blank" rel="noopener noreferrer"
-              className="text-blue-400 hover:text-primary ml-auto"
+              className="text-primary hover:underline ml-auto"
             >
               {t('mapLink')}
             </a>
@@ -263,26 +307,31 @@ export function StoryPanel({ node, graphData, onRelatedNodeClick }: StoryPanelPr
               🔗 {t('connections')}
             </h3>
             <div className="space-y-3">
-              {Object.entries(grouped).map(([pred, nodes]) => (
+              {Object.entries(grouped).map(([pred, entries]) => (
                 <div key={pred}>
-                  <p className="text-xs text-muted-foreground mb-1.5">{RELATION_LABELS[pred] || pred}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {nodes.map((rn) => {
+                  <p className="text-xs text-muted-foreground mb-1.5">
+                    {RELATION_LABELS[pred] || pred}
+                  </p>
+                  <div className="space-y-2">
+                    {entries.map(({ node: rn, provenance: relProv }) => {
                       const rcfg = NODE_TYPE_CONFIG[rn.nodeType];
                       return (
-                        <button
-                          key={rn.id}
-                          onClick={() => onRelatedNodeClick(rn.id)}
-                          className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all hover:scale-105 active:scale-95"
-                          style={{
-                            borderColor: `${rcfg.color}66`,
-                            background: `${rcfg.color}11`,
-                            color: rcfg.glowColor,
-                          }}
-                        >
-                          <NodeGlyph nodeType={rn.nodeType} size={14} color={rcfg.glowColor} />
-                          <span>{rn.label}</span>
-                        </button>
+                        <div key={rn.id} className="space-y-1">
+                          <button
+                            type="button"
+                            onClick={() => onRelatedNodeClick(rn.id)}
+                            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all hover:scale-105 active:scale-95"
+                            style={{
+                              borderColor: `${rcfg.color}66`,
+                              background: `${rcfg.color}11`,
+                              color: rcfg.glowColor,
+                            }}
+                          >
+                            <NodeGlyph nodeType={rn.nodeType} size={14} color={rcfg.glowColor} />
+                            <span>{rn.label}</span>
+                          </button>
+                          {relProv ? <ProvenanceBlock prov={relProv} /> : null}
+                        </div>
                       );
                     })}
                   </div>
@@ -317,6 +366,31 @@ function Divider({ color }: { color: string }) {
       className="h-px w-full"
       style={{ background: `linear-gradient(to right, transparent, ${color}66, transparent)` }}
     />
+  );
+}
+
+function ProvenanceBlock({ prov }: { prov: RelationProvenance }) {
+  const t = useTranslations('heritageMuseum.panel');
+  if (!prov.source && !prov.assertedBy && prov.confidenceScore == null && !prov.assertedAt) {
+    return null;
+  }
+  return (
+    <div className="rounded-md border border-border/80 bg-muted/30 px-2.5 py-2 text-[10px] text-muted-foreground space-y-0.5">
+      <p className="font-semibold uppercase tracking-wide text-foreground/80">{t('provenance')}</p>
+      {prov.source ? <p>{t('provSource', { value: prov.source })}</p> : null}
+      {prov.confidence || prov.confidenceScore != null ? (
+        <p>
+          {t('provConfidence', {
+            value: prov.confidence ?? String(prov.confidenceScore),
+          })}
+        </p>
+      ) : null}
+      {prov.assertedBy ? <p>{t('provAgent', { value: prov.assertedBy })}</p> : null}
+      {prov.temporalScope ? <p>{t('provTemporal', { value: prov.temporalScope })}</p> : null}
+      {prov.assertedAt ? (
+        <p className="font-mono opacity-80">{t('provDate', { value: prov.assertedAt })}</p>
+      ) : null}
+    </div>
   );
 }
 

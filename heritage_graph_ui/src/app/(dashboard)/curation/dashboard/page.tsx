@@ -113,7 +113,7 @@ export default function ReviewerDashboardPage() {
               <IconSparkles className="w-4 h-4" /> Reviewer Dashboard
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white">
-              Welcome, <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">{userName}</span>
+              Welcome, <span className="text-white/90">{userName}</span>
             </h1>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="bg-white/20 text-white border-white/30 gap-1"><Shield className="h-3 w-3" /> {roleName}</Badge>
@@ -133,7 +133,7 @@ export default function ReviewerDashboardPage() {
         {/* ── Stats Row ── */}
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
           <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-4 text-blue-900 dark:text-blue-100">
-            Your <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Stats</span>
+            Your <span className="text-foreground">Stats</span>
           </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
@@ -193,7 +193,7 @@ export default function ReviewerDashboardPage() {
               <div className="flex items-center gap-2 mb-1">
                 <Clock className="h-5 w-5 text-blue-500" />
                 <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100">
-                  Recent Activity in Your <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Domain</span>
+                  Recent Activity in Your <span className="text-foreground">Domain</span>
                 </h2>
               </div>
               <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">Latest submissions, reviews, and updates across heritage entities</p>
@@ -229,7 +229,7 @@ export default function ReviewerDashboardPage() {
         {/* ── Quick Navigation ── */}
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
           <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-4 text-blue-900 dark:text-blue-100">
-            Quick <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Navigation</span>
+            Quick <span className="text-foreground">Navigation</span>
           </motion.h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[

@@ -261,7 +261,7 @@ export default function ContributionQueuePage() {
               <IconSparkles className="w-4 h-4" /> Curation Queues
             </div>
             <h1 className="text-3xl font-black text-white">
-              Curation <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">Queues</span>
+              Curation <span className="text-white/90">Queues</span>
             </h1>
             <p className="text-blue-100 max-w-2xl">
               New submitted entities and contributions must be accepted by an editor. These queues list items in need of moderation.

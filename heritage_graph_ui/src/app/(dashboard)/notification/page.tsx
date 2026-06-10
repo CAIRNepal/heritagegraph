@@ -196,7 +196,7 @@ export default function NotificationPage() {
               <BellIcon className="w-4 h-4" /> {unreadCount} unread
             </div>
             <h1 className="text-3xl md:text-4xl font-black text-white">
-              Notifi<span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">cations</span>
+              Notifi<span className="text-white/90">cations</span>
             </h1>
             <p className="text-blue-100 max-w-lg text-base">Stay updated with submissions, reviews, and platform activity.</p>
           </div>
@@ -234,7 +234,7 @@ export default function NotificationPage() {
       <motion.div initial="initial" animate="animate" variants={staggerContainer} className={`${glassCard} p-6`}>
         <div className="flex items-baseline justify-between mb-4">
           <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100">
-            Recent <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Notifications</span>
+            Recent <span className="text-foreground">Notifications</span>
           </h2>
           <span className="text-sm text-muted-foreground">
             {totalCount > 0 ? `${start}–${end} of ${totalCount}` : `${totalCount} total`}

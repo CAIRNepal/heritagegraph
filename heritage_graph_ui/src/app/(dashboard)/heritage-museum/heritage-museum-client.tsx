@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
+import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { IconX } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
@@ -32,6 +34,18 @@ import { MandalaLoader } from './components/MandalaLoader';
 import { TimelineStrip } from './components/TimelineStrip';
 import { GraphLegend } from './components/GraphLegend';
 import { MuseumToolbar, type MuseumDataSource, type MuseumViewMode } from './components/museum-toolbar';
+import {
+  datasetMetaFromKgResponse,
+  downloadJson,
+  exportVisibleGraphPayload,
+  type MuseumDatasetMeta,
+} from '@/lib/heritage-museum/museum-rigor';
+import {
+  collapseClusterDuplicates,
+  enrichKgNodeForMuseum,
+  enrichMuseumGraph,
+} from '@/lib/heritage-museum/museum-graph';
+import { buildTimelineLayout } from '@/lib/heritage-museum/timeline-layout';
 import { cn } from '@/lib/utils';
 
 const API_BASE = getPublicApiUrl();
@@ -57,20 +71,27 @@ function kgToGraphData(resp: KgGraphResponse): GraphData {
     const cfg = NODE_TYPE_CONFIG[nodeType];
     kept.add(n.id);
     const isLux = n.sourceLayer === 'lux';
+    const narrative = enrichKgNodeForMuseum(n, nodeType);
     nodes.push({
       id: n.id,
       label: n.label,
       nodeType,
       cidocMapping: cfg.cidocMapping,
       hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
-      description: n.comment ?? (isLux ? 'Linked Yale LUX collection record.' : ''),
-      storyText: n.comment ?? (isLux ? 'Linked Yale LUX collection record.' : ''),
+      description: narrative.description,
+      storyText: narrative.storyText,
+      imageUrl: narrative.imageUrl,
+      images: narrative.images,
+      imageCredits: narrative.imageCredits,
       lat: n.lat ?? undefined,
       long: n.long ?? undefined,
+      inceptionYear: n.inceptionYear ?? undefined,
       tags: isLux ? ['Yale LUX', 'Collection link'] : undefined,
-      keyFacts: isLux && n.externalUri
-        ? [{ label: 'Yale LUX', value: n.externalUri }]
-        : undefined,
+      keyFacts: narrative.keyFacts,
+      clusterId: n.clusterId ?? undefined,
+      clusterLabel: n.clusterLabel ?? undefined,
+      typeScope: n.typeScope ?? undefined,
+      canonicalMemberId: n.canonicalMemberId ?? undefined,
       relations: [],
     });
   }
@@ -81,9 +102,10 @@ function kgToGraphData(resp: KgGraphResponse): GraphData {
       source: e.source,
       target: e.target,
       predicate: (e.predicateLocal || 'associated_with').replace(/-/g, '_'),
+      provenance: e.provenance ?? null,
     }));
 
-  return { nodes, links };
+  return collapseClusterDuplicates({ nodes, links });
 }
 
 // Local name of an IRI (after the last # or /).
@@ -111,14 +133,28 @@ function kgNeighborhoodToGraph(
       seen.add(e.value);
       const cfg = NODE_TYPE_CONFIG[nodeType];
       const isLux = e.value.includes('/imported/lux/');
+      const narrative = enrichKgNodeForMuseum(
+        {
+          id: e.value,
+          types: e.valueType ? [e.valueType] : [],
+          label: e.valueLabel || iriLocalName(e.value),
+          comment: null,
+          lat: null,
+          long: null,
+          sourceLayer: isLux ? 'lux' : 'curated',
+          externalUri: isLux ? e.value : null,
+        },
+        nodeType,
+      );
       nodes.push({
         id: e.value,
         label: e.valueLabel || iriLocalName(e.value),
         nodeType,
         cidocMapping: cfg.cidocMapping,
         hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
-        description: isLux ? 'Linked Yale LUX collection record.' : '',
-        storyText: isLux ? 'Linked Yale LUX collection record.' : '',
+        description: narrative.description,
+        storyText: narrative.storyText,
+        keyFacts: narrative.keyFacts,
         tags: isLux ? ['Yale LUX', 'Collection link'] : undefined,
         relations: [],
       });
@@ -147,7 +183,12 @@ function attachRelations(nodes: GraphNode[], links: GraphLink[]): void {
     const src = byId.get(sourceId);
     const tgt = byId.get(targetId);
     if (src && tgt) {
-      src.relations.push({ predicate: l.predicate, targetId, targetLabel: tgt.label });
+      src.relations.push({
+        predicate: l.predicate,
+        targetId,
+        targetLabel: tgt.label,
+        provenance: l.provenance ?? null,
+      });
     }
   }
 }
@@ -178,6 +219,10 @@ const MapView = dynamic(
 export function HeritageMindMapClient() {
   const { data: session } = useSession();
   const t = useTranslations('heritageMuseum');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const bootstrappedRef = useRef(false);
+  const urlSyncedRef = useRef(false);
 
   // ── Demo data ──────────────────────────────────────────────────────────────
   const [demoGraph,   setDemoGraph]   = useState<GraphData | null>(null);
@@ -194,6 +239,7 @@ export function HeritageMindMapClient() {
   const [liveGraph,   setLiveGraph]   = useState<GraphData | null>(null);
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveError,   setLiveError]   = useState<string | null>(null);
+  const [datasetMeta, setDatasetMeta] = useState<MuseumDatasetMeta | null>(null);
 
   // ── UI state ───────────────────────────────────────────────────────────────
   const [dataSource,   setDataSource]   = useState<DataSource>('demo');
@@ -235,9 +281,11 @@ export function HeritageMindMapClient() {
       const token = (session as any)?.accessToken as string | undefined;
       const resp = await fetchKgGraph(API_BASE, token, { includeLux: 'linked' });
       const { nodes, links } = kgToGraphData(resp);
+      setDatasetMeta(datasetMetaFromKgResponse(resp, API_BASE));
       // Populate node.relations so the StoryPanel "Connections" section
       // and the neighbor-highlight logic both work for live data.
       attachRelations(nodes, links);
+      enrichMuseumGraph({ nodes, links });
       setLiveGraph({ nodes, links });
     } catch {
       setLiveError('live');
@@ -267,6 +315,31 @@ export function HeritageMindMapClient() {
     loadLiveData();
   }, [loadLiveData]);
 
+  // Default to live reviewed KG when API is configured (Nature-rigor honesty).
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+    const viewParam = searchParams.get('view');
+    if (viewParam === '2d' || viewParam === 'map' || viewParam === 'xr') {
+      setViewMode(viewParam);
+    }
+    if (searchParams.get('source') === 'demo') return;
+    if (API_BASE && isPublicApiUrlConfigured()) {
+      setDataSource('live');
+      void loadLiveData();
+    }
+  }, [searchParams, loadLiveData]);
+
+  const switchToLive = useCallback(() => {
+    if (!API_BASE || !isPublicApiUrlConfigured()) {
+      setLiveError('unconfigured');
+      return;
+    }
+    setDataSource('live');
+    setSelectedNode(null);
+    if (!liveGraph) void loadLiveData();
+  }, [liveGraph, loadLiveData]);
+
   // ── Click-to-expand (live KG only) ─────────────────────────────────────────
   // Pull a node's neighbourhood from Oxigraph and merge any new typed entities +
   // real edges into the live graph, so large graphs grow on demand instead of
@@ -292,6 +365,7 @@ export function HeritageMindMapClient() {
           const nodes = [...base.nodes, ...newNodes];
           const links = [...base.links, ...newLinks];
           attachRelations(nodes, links);
+          enrichMuseumGraph({ nodes, links });
           return { nodes, links };
         });
       } catch {
@@ -338,6 +412,41 @@ export function HeritageMindMapClient() {
       ),
     };
   }, [fullGraph, activeTypes, activeCats, searchQuery]);
+
+  // Deep-link: ?node=<iri> after graph is available.
+  useEffect(() => {
+    const nodeParam = searchParams.get('node');
+    if (!nodeParam || !fullGraph) return;
+    const decoded = decodeURIComponent(nodeParam);
+    const match = fullGraph.nodes.find((n) => n.id === decoded);
+    if (match) {
+      setSelectedNode(match);
+      setPanelOpen(true);
+      urlSyncedRef.current = true;
+    }
+  }, [searchParams, fullGraph]);
+
+  // Sync museum state → URL for citable figure links.
+  useEffect(() => {
+    if (!bootstrappedRef.current) return;
+    const p = new URLSearchParams();
+    p.set('source', dataSource);
+    if (viewMode !== '2d') p.set('view', viewMode);
+    if (selectedNode) p.set('node', selectedNode.id);
+    const next = `/heritage-museum?${p.toString()}`;
+    const current = `/heritage-museum?${searchParams.toString()}`;
+    if (next !== current) {
+      router.replace(next, { scroll: false });
+    }
+  }, [dataSource, viewMode, selectedNode, router, searchParams]);
+
+  const handleExportJson = useCallback(() => {
+    if (!filteredGraph) return;
+    downloadJson(
+      `heritagegraph-museum-${dataSource}-${new Date().toISOString().slice(0, 10)}.json`,
+      exportVisibleGraphPayload(filteredGraph, datasetMeta, dataSource),
+    );
+  }, [filteredGraph, datasetMeta, dataSource]);
 
   // ── Neighbour highlight ────────────────────────────────────────────────────
   // Important: read links from `fullGraph`, not `filteredGraph`. D3's
@@ -400,6 +509,12 @@ export function HeritageMindMapClient() {
   const nodeCount = filteredGraph?.nodes.length ?? 0;
   const linkCount = filteredGraph?.links.length ?? 0;
 
+  const timelineLayout = useMemo(
+    () => (filteredGraph ? buildTimelineLayout(filteredGraph.nodes) : null),
+    [filteredGraph],
+  );
+  const showTimeline = Boolean(timelineLayout);
+
   // Per-type counts for the legend
   const typeCounts = useMemo<Record<string, number>>(() => {
     const counts: Record<string, number> = {};
@@ -422,12 +537,45 @@ export function HeritageMindMapClient() {
   const provenanceText =
     dataSource === 'demo' && demoProv?.retrieved
       ? `Demo corpus frozen ${demoProv.retrieved}${demoProv.imageSource ? ` · Images: ${demoProv.imageSource}` : ''}`
-      : dataSource === 'live'
-        ? (API_BASE ? `Live API: ${API_BASE}` : null)
-        : null;
+      : dataSource === 'live' && datasetMeta
+        ? `${t('methods.scopeReviewed')} · ${datasetMeta.nodeCount} nodes · graph ${datasetMeta.graphUri}`
+        : dataSource === 'live' && API_BASE
+          ? `Live API: ${API_BASE}`
+          : null;
+
+  const sparseLive =
+    dataSource === 'live' && !liveLoading && !liveError && liveGraph && liveGraph.nodes.length < 20;
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background text-foreground">
+
+      {dataSource === 'demo' ? (
+        <div
+          className="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b border-amber-500/30 bg-amber-500/10 text-xs text-foreground z-20"
+          role="status"
+        >
+          <span>{t('demoBanner')}</span>
+          <Button type="button" size="sm" variant="outline" className="ml-auto h-7 text-xs" onClick={switchToLive}>
+            {t('demoBannerAction')}
+          </Button>
+        </div>
+      ) : null}
+
+      {sparseLive ? (
+        <div
+          className="flex-shrink-0 px-4 py-2 border-b border-border bg-muted/40 text-xs text-muted-foreground z-20"
+          role="status"
+        >
+          {t('sparseLive', { count: liveGraph.nodes.length })}{' '}
+          <Link href="/contribute/entity" className="text-primary underline underline-offset-2">
+            {t('sparseLiveContribute')}
+          </Link>
+          {' · '}
+          <Link href="/methods" className="text-primary underline underline-offset-2">
+            {t('methods.fullMethodsPage')}
+          </Link>
+        </div>
+      ) : null}
 
       <MuseumToolbar
         viewMode={viewMode}
@@ -441,6 +589,8 @@ export function HeritageMindMapClient() {
         provenanceText={provenanceText}
         provenance={dataSource === 'demo' ? demoProv : null}
         liveApiBase={dataSource === 'live' ? API_BASE : null}
+        datasetMeta={dataSource === 'live' ? datasetMeta : null}
+        onExportJson={dataSource === 'live' ? handleExportJson : undefined}
       />
 
       {liveError && (
@@ -498,7 +648,9 @@ export function HeritageMindMapClient() {
             className={cn(
               'grid min-h-0 flex-1',
               viewMode === '2d'
-                ? 'grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(11rem,28vh)] lg:grid-cols-[minmax(0,1fr)_24rem]'
+                ? showTimeline
+                  ? 'grid-cols-1 grid-rows-[minmax(0,1fr)_minmax(11rem,28vh)] lg:grid-cols-[minmax(0,1fr)_24rem]'
+                  : 'grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1fr)_24rem]'
                 // Map mode: single row. The story panel must be the right COLUMN
                 // (lg) — not an implicit stacked row — or it steals the map's
                 // height and collapses it to a thin strip.
@@ -637,12 +789,18 @@ export function HeritageMindMapClient() {
                 node={selectedNode}
                 graphData={fullGraph ?? EMPTY}
                 onRelatedNodeClick={handleRelatedNodeClick}
+                dataSource={dataSource}
               />
             </div>
 
-            {/* Timeline: fixed footer band — always visible above site footer (2D only) */}
+            {/* Timeline: footer band when dated nodes exist (2D only) */}
             {viewMode === '2d' && !loading && !error && (
-              <div className="flex min-h-[11rem] max-h-[28vh] flex-shrink-0 flex-col overflow-hidden border-t border-border bg-background lg:col-span-2">
+              <div
+                className={cn(
+                  'flex flex-shrink-0 flex-col overflow-hidden border-t border-border bg-background lg:col-span-2',
+                  showTimeline ? 'min-h-[11rem] max-h-[28vh]' : 'min-h-0',
+                )}
+              >
                 <TimelineStrip
                   nodes={filteredGraph?.nodes ?? []}
                   selectedId={selectedNode?.id ?? null}
@@ -656,32 +814,42 @@ export function HeritageMindMapClient() {
 
       {/* ── XR Mode ── */}
       {viewMode === 'xr' && (
-        <div className="flex flex-1 min-h-0 relative">
-          <div className="w-52 flex-shrink-0">
+        <div className="relative flex min-h-0 flex-1">
+          <div className="hidden w-52 flex-shrink-0 md:block lg:w-56">
             <PlaceNav
               nodes={filteredGraph?.nodes ?? []}
               selectedId={selectedNode?.id ?? null}
               onSelect={handleNodeSelect}
             />
           </div>
-          <div className="flex-1 min-w-0 relative">
-            {loading ? <MandalaLoader /> : (
+          <div className="relative min-w-0 flex-1">
+            {loading ? (
+              <MandalaLoader />
+            ) : (
               <ImmersiveScene
                 node={selectedNode}
                 allNodes={filteredGraph?.nodes ?? []}
                 onSelect={handleNodeSelect}
+                dataSource={dataSource}
               />
             )}
-            {/* Back-to-graph contextual button inside the 3D scene */}
-            <Button
-              onClick={() => setViewMode('2d')}
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="absolute top-3 left-3 z-20 text-xs"
-            >
-              {t('backToGraph')}
-            </Button>
+            <div className="absolute left-3 top-3 z-30 flex flex-wrap items-center gap-2">
+              <Button
+                onClick={() => setViewMode('2d')}
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="text-xs shadow-sm"
+              >
+                {t('backToGraph')}
+              </Button>
+              {dataSource === 'live' && !loading ? (
+                <Badge className="gap-1.5 text-[10px] font-semibold shadow-sm">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" aria-hidden />
+                  {t('liveBadge')}
+                </Badge>
+              ) : null}
+            </div>
           </div>
         </div>
       )}
@@ -703,6 +871,7 @@ export function HeritageMindMapClient() {
                   handleRelatedNodeClick(id);
                   setPanelOpen(true);
                 }}
+                dataSource={dataSource}
               />
             </div>
           </div>

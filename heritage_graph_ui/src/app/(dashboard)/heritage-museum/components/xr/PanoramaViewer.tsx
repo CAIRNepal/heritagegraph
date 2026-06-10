@@ -1,9 +1,25 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useXrTranslations } from '@/lib/heritage-museum/xr-theme';
 import * as THREE from 'three';
+import {
+  IconPlayerPlay,
+  IconPlayerStop,
+  IconX,
+} from '@tabler/icons-react';
+
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  xrChip,
+  xrGlassPanel,
+  xrSubtlePanel,
+} from '@/lib/heritage-museum/xr-theme';
+import { cn } from '@/lib/utils';
+
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
-import { buildBeats } from '../../utils/storyBeats';
+import { buildBeats, clampBeatIndex } from '../../utils/storyBeats';
 import { ImageAttribution } from '../ImageAttribution';
 import { NodeGlyph } from '../../node-icons';
 
@@ -14,9 +30,6 @@ interface PanoramaViewerProps {
   onClose: () => void;
 }
 
-// An equirectangular (true 360°) panorama has a 2:1 width:height ratio. Anything
-// else is a standard photograph; wrapping it on a sphere is an immersive *effect*,
-// not a real 360° capture, and we must say so rather than imply VR-grade fidelity.
 function isEquirectangular(width: number, height: number): boolean {
   if (!width || !height) return false;
   return Math.abs(width / height - 2) <= 0.15;
@@ -41,7 +54,6 @@ async function resolveWikimediaDirectUrl(originalUrl: string): Promise<string | 
   api.searchParams.set('prop', 'imageinfo');
   api.searchParams.set('iiprop', 'url');
   api.searchParams.set('redirects', '1');
-  // Required for browser CORS on MediaWiki.
   api.searchParams.set('origin', '*');
   api.searchParams.set('titles', title);
 
@@ -58,31 +70,41 @@ async function resolveWikimediaDirectUrl(originalUrl: string): Promise<string | 
   return null;
 }
 
-// ── Narration ─────────────────────────────────────────────────────────────────
 function useNarration(text: string) {
   const [playing, setPlaying] = useState(false);
   const play = useCallback(() => {
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis || !text.trim()) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.88; u.pitch = 1; u.lang = 'en-GB';
+    u.rate = 0.88;
+    u.pitch = 1;
+    u.lang = 'en-GB';
     const voices = window.speechSynthesis.getVoices();
-    const v = voices.find((v) => v.lang.startsWith('en-GB')) ?? null;
+    const v = voices.find((voice) => voice.lang.startsWith('en-GB')) ?? null;
     if (v) u.voice = v;
     u.onend = () => setPlaying(false);
     u.onerror = () => setPlaying(false);
     window.speechSynthesis.speak(u);
     setPlaying(true);
   }, [text]);
-  const stop = useCallback(() => { window.speechSynthesis?.cancel(); setPlaying(false); }, []);
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, [text]);
+  const stop = useCallback(() => {
+    window.speechSynthesis?.cancel();
+    setPlaying(false);
+  }, []);
+  useEffect(() => () => window.speechSynthesis?.cancel(), [text]);
   return { playing, play, stop };
 }
 
-// ── Story overlay inside panorama ─────────────────────────────────────────────
 const BEAT_MS = 9_000;
 
-function PanoramaStory({ node }: { node: GraphNode }) {
+function PanoramaStory({
+  node,
+  reducedMotion,
+}: {
+  node: GraphNode;
+  reducedMotion: boolean;
+}) {
+  const t = useXrTranslations();
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   const beats = useMemo(() => buildBeats(node), [node]);
   const [idx, setIdx] = useState(0);
@@ -94,15 +116,25 @@ function PanoramaStory({ node }: { node: GraphNode }) {
   const pausedProgRef = useRef(0);
 
   useEffect(() => {
-    if (paused) { pausedProgRef.current = progress; return; }
+    setIdx(0);
+    setProgress(0);
+    pausedProgRef.current = 0;
+  }, [node.id, beats.length]);
+
+  useEffect(() => {
+    if (reducedMotion || paused) {
+      pausedProgRef.current = progress;
+      return;
+    }
     const startProg = pausedProgRef.current || progress;
     startRef.current = performance.now() - (startProg / 100) * BEAT_MS;
     const tick = (now: number) => {
       const p = Math.min(100, ((now - startRef.current) / BEAT_MS) * 100);
       setProgress(p);
-      if (p >= 100) {
-        setIdx((i) => (i + 1) % beats.length);
-        setProgress(0); pausedProgRef.current = 0;
+      if (p >= 100 && beats.length > 0) {
+        setIdx((i) => clampBeatIndex(i + 1, beats.length));
+        setProgress(0);
+        pausedProgRef.current = 0;
         startRef.current = performance.now();
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -110,55 +142,81 @@ function PanoramaStory({ node }: { node: GraphNode }) {
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paused, idx, beats.length]);
+  }, [paused, idx, beats.length, reducedMotion]);
 
   const go = useCallback((i: number) => {
-    setIdx(i); setProgress(0); pausedProgRef.current = 0; startRef.current = performance.now();
+    setIdx(i);
+    setProgress(0);
+    pausedProgRef.current = 0;
+    startRef.current = performance.now();
   }, []);
 
-  const beat = beats[idx];
+  const safeIdx = clampBeatIndex(idx, beats.length);
+  const beat = beats[safeIdx];
+  if (!beat) return null;
+
   const isBullet = beat.lines.length > 1;
 
   return (
-    <div className="absolute bottom-6 left-6 z-20 w-[420px] max-w-[calc(100vw-3rem)]">
+    <div className="absolute bottom-6 left-4 z-20 w-[min(420px,calc(100vw-2rem))] sm:left-6">
       {collapsed ? (
-        <button
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          className="gap-2 backdrop-blur-md"
           onClick={() => setCollapsed(false)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold backdrop-blur-md border border-white/20 bg-black/60 text-white hover:bg-black/80 transition-all"
-          style={{ boxShadow: `0 0 20px ${cfg.color}33` }}
         >
-          <span style={{ color: cfg.glowColor }}>{beat.icon}</span>
+          <span style={{ color: cfg.color }}>{beat.icon}</span>
           {beat.title}
-          <span className="ml-auto text-gray-500">expand ↑</span>
-        </button>
+          <span className="ml-auto text-muted-foreground">{t('panoramaExpand')}</span>
+        </Button>
       ) : (
         <div
-          className="rounded-2xl border overflow-hidden"
-          style={{
-            background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(24px)',
-            borderColor: `${cfg.color}55`,
-            boxShadow: `0 8px 60px rgba(0,0,0,0.6), 0 0 40px ${cfg.color}22`,
-          }}
+          className={cn(xrGlassPanel, 'overflow-hidden')}
+          style={{ boxShadow: `0 8px 48px rgba(0,0,0,0.35), 0 0 32px ${cfg.color}18` }}
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
-          <div className="h-0.5 bg-white/5">
-            <div className="h-full" style={{ width: `${progress}%`, background: `linear-gradient(to right, ${cfg.color}, ${cfg.glowColor})` }} />
+          <div className="h-0.5 bg-muted">
+            <div
+              className="h-full"
+              style={{
+                width: `${progress}%`,
+                background: `linear-gradient(to right, ${cfg.color}, ${cfg.glowColor})`,
+              }}
+            />
           </div>
 
           <div className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ background: `${cfg.color}33`, color: cfg.glowColor }}>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span
+                className="rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-widest"
+                style={{ background: `${cfg.color}22`, color: cfg.color }}
+              >
                 {beat.icon} {beat.title}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-600 tabular-nums">{idx + 1}/{beats.length}</span>
-                {paused && <span className="text-xs text-gray-600 border border-white/10 px-1.5 py-0.5 rounded-full">⏸</span>}
-                <button onClick={() => setCollapsed(true)} className="text-gray-600 hover:text-white transition-colors text-xs px-1" title="Minimise">↓</button>
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {t('beatProgress', { current: safeIdx + 1, total: beats.length })}
+                </span>
+                {paused && !reducedMotion ? (
+                  <span className={xrChip}>{t('paused')}</span>
+                ) : null}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => setCollapsed(true)}
+                  title={t('panoramaCollapse')}
+                >
+                  ↓
+                </Button>
               </div>
             </div>
 
-            <div key={`${node.id}-${idx}`} style={{ animation: 'fadeInUp 0.35s ease both' }}>
+            <div key={`${node.id}-${safeIdx}`}>
               {isBullet ? (
                 <ul className="space-y-1.5">
                   {beat.lines.map((line, i) => {
@@ -166,41 +224,67 @@ function PanoramaStory({ node }: { node: GraphNode }) {
                     const [label, value] = parts.length === 2 ? parts : [null, line];
                     return (
                       <li key={i} className="flex items-start gap-2 text-sm">
-                        <span className="mt-1.5 w-1 h-1 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
+                        <span
+                          className="mt-1.5 h-1 w-1 flex-shrink-0 rounded-full"
+                          style={{ background: cfg.color }}
+                        />
                         {label ? (
                           <>
-                            <span className="text-gray-500 w-24 shrink-0 truncate">{label}</span>
-                            <span className="text-gray-100 font-medium">{value}</span>
+                            <span className="w-24 shrink-0 truncate text-muted-foreground">
+                              {label}
+                            </span>
+                            <span className="font-medium text-foreground">{value}</span>
                           </>
                         ) : (
-                          <span className="text-gray-200 leading-relaxed">{line}</span>
+                          <span className="leading-relaxed text-foreground/90">{line}</span>
                         )}
                       </li>
                     );
                   })}
                 </ul>
               ) : (
-                <p className="text-gray-200 text-sm leading-7">{beat.lines[0]}</p>
+                <p className="text-sm leading-7 text-foreground/90">{beat.lines[0]}</p>
               )}
             </div>
 
-            <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/[0.08]">
-              <button onClick={() => go(Math.max(0, idx - 1))} disabled={idx === 0}
-                className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/30 disabled:opacity-25 transition-all">
-                ← Prev
-              </button>
-              <div className="flex items-center gap-1 flex-wrap justify-center max-w-[140px]">
+            <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={safeIdx === 0}
+                onClick={() => go(Math.max(0, safeIdx - 1))}
+              >
+                ← {t('prev')}
+              </Button>
+              <div className="flex max-w-[140px] flex-wrap items-center justify-center gap-1">
                 {beats.map((b, i) => (
-                  <button key={i} onClick={() => go(i)} title={b.title}
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => go(i)}
+                    title={b.title}
                     className="rounded-full transition-all hover:scale-125"
-                    style={{ width: i === idx ? 14 : 5, height: 5, background: i === idx ? cfg.color : 'rgba(255,255,255,0.2)' }}
+                    style={{
+                      width: i === safeIdx ? 14 : 5,
+                      height: 5,
+                      background: i === safeIdx ? cfg.color : 'var(--muted-foreground)',
+                      opacity: i === safeIdx ? 1 : 0.35,
+                    }}
                   />
                 ))}
               </div>
-              <button onClick={() => go(Math.min(beats.length - 1, idx + 1))} disabled={idx === beats.length - 1}
-                className="text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/30 disabled:opacity-25 transition-all">
-                Next →
-              </button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs"
+                disabled={safeIdx === beats.length - 1}
+                onClick={() => go(Math.min(beats.length - 1, safeIdx + 1))}
+              >
+                {t('next')} →
+              </Button>
             </div>
           </div>
         </div>
@@ -209,35 +293,34 @@ function PanoramaStory({ node }: { node: GraphNode }) {
   );
 }
 
-// ── Key-fact badges ───────────────────────────────────────────────────────────
 function PanoramaFacts({ node }: { node: GraphNode }) {
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   if (!node.keyFacts?.length) return null;
   return (
-    <div className="absolute top-20 right-5 z-20 flex flex-col items-end gap-2 pointer-events-none">
+    <div className="pointer-events-none absolute right-4 top-20 z-20 flex flex-col items-end gap-2 sm:right-5">
       {node.keyFacts.slice(0, 4).map((f, i) => (
         <div
           key={i}
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs backdrop-blur-md border"
-          style={{
-            background: 'rgba(0,0,0,0.65)', borderColor: `${cfg.color}55`,
-            animation: `fadeInUp 0.4s ease ${i * 0.08}s both`,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
-          }}
+          className={cn(xrSubtlePanel, 'flex items-center gap-2 px-3 py-1.5 text-xs')}
         >
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: cfg.color }} />
-          <span className="text-gray-400">{f.label}</span>
-          <span className="text-gray-100 font-semibold">{f.value}</span>
+          <span className="h-1.5 w-1.5 rounded-full" style={{ background: cfg.color }} />
+          <span className="text-muted-foreground">{f.label}</span>
+          <span className="font-semibold text-foreground">{f.value}</span>
         </div>
       ))}
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
-export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose }: PanoramaViewerProps) {
+export function PanoramaViewer({
+  imageUrl,
+  node,
+  reducedMotion = false,
+  onClose,
+}: PanoramaViewerProps) {
+  const t = useXrTranslations();
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
-  const { playing, play, stop } = useNarration(node.storyText);
+  const { playing, play, stop } = useNarration(node.storyText ?? '');
   const mountRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
@@ -246,14 +329,14 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
   const [xrActive, setXrActive] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  // null = unknown until the texture loads; then true/false from its dimensions.
   const [equirect, setEquirect] = useState<boolean | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
-  // Close on Escape and move focus to the close button when the dialog opens.
   useEffect(() => {
     closeBtnRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
@@ -265,7 +348,8 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
     setEquirect(null);
     const urlToLoad = resolvedUrl ?? imageUrl;
     const container = mountRef.current;
-    const W = container.clientWidth, H = container.clientHeight;
+    const W = container.clientWidth;
+    const H = container.clientHeight;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, W / H, 0.1, 2000);
@@ -281,7 +365,6 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
     const geo = new THREE.SphereGeometry(500, 60, 40);
     geo.scale(-1, 1, 1);
     const loader = new THREE.TextureLoader();
-    // Required for cross-origin images used as WebGL textures (e.g. Wikimedia).
     loader.setCrossOrigin('anonymous');
     const tex = loader.load(
       urlToLoad,
@@ -292,7 +375,6 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
       },
       undefined,
       async () => {
-        // Retry once for Wikimedia Special:FilePath URLs by resolving a direct URL.
         if (!resolvedUrl && isWikimediaFilePath(urlToLoad)) {
           const direct = await resolveWikimediaDirectUrl(urlToLoad);
           if (direct) {
@@ -300,49 +382,113 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
             return;
           }
         }
-        // Avoid an infinite spinner: surface a visible error instead.
-        setLoadError('Could not load the immersive image. This is often a cross-origin or blocked-resource issue.');
+        setLoadError(t('panoramaLoadErrorBody'));
       },
     );
     tex.colorSpace = THREE.SRGBColorSpace;
     const sphere = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex }));
     scene.add(sphere);
 
-    // Auto-rotate only when motion is allowed; never fight a reduced-motion request.
-    let lon = 0, lat = 0, isDragging = false, prevX = 0, prevY = 0, autoRotate = !reducedMotion;
+    let lon = 0;
+    let lat = 0;
+    let isDragging = false;
+    let prevX = 0;
+    let prevY = 0;
+    let autoRotate = !reducedMotion;
     const AUTO_SPEED = 0.05;
     const toRad = (d: number) => (d * Math.PI) / 180;
 
     function updateCamera() {
       lat = Math.max(-85, Math.min(85, lat));
-      const phi = toRad(90 - lat), theta = toRad(lon);
-      camera.lookAt(Math.sin(phi) * Math.cos(theta), Math.cos(phi), Math.sin(phi) * Math.sin(theta));
+      const phi = toRad(90 - lat);
+      const theta = toRad(lon);
+      camera.lookAt(
+        Math.sin(phi) * Math.cos(theta),
+        Math.cos(phi),
+        Math.sin(phi) * Math.sin(theta),
+      );
     }
 
     const canvas = renderer.domElement;
-    const onMouseDown = (e: MouseEvent) => { isDragging = true; autoRotate = false; prevX = e.clientX; prevY = e.clientY; };
-    const onMouseMove = (e: MouseEvent) => { if (!isDragging) return; lon -= (e.clientX - prevX) * 0.25; lat += (e.clientY - prevY) * 0.25; prevX = e.clientX; prevY = e.clientY; };
-    const onMouseUp = () => { isDragging = false; };
-    let lastTX = 0, lastTY = 0;
-    const onTouchStart = (e: TouchEvent) => { isDragging = true; autoRotate = false; lastTX = e.touches[0].clientX; lastTY = e.touches[0].clientY; };
-    const onTouchMove = (e: TouchEvent) => { e.preventDefault(); if (!isDragging) return; lon -= (e.touches[0].clientX - lastTX) * 0.3; lat += (e.touches[0].clientY - lastTY) * 0.3; lastTX = e.touches[0].clientX; lastTY = e.touches[0].clientY; };
-    const onTouchEnd = () => { isDragging = false; };
-    const onWheel = (e: WheelEvent) => { camera.fov = Math.max(20, Math.min(100, camera.fov + e.deltaY * 0.03)); camera.updateProjectionMatrix(); };
-    const onResize = () => { const w = container.clientWidth, h = container.clientHeight; camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); };
-    // Keyboard look — arrow keys pan, +/- zoom. Lets the view be explored without
-    // a pointer drag (WCAG 2.1 Keyboard). Ignored while typing in a field.
+    const onMouseDown = (e: MouseEvent) => {
+      isDragging = true;
+      autoRotate = false;
+      prevX = e.clientX;
+      prevY = e.clientY;
+    };
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      lon -= (e.clientX - prevX) * 0.25;
+      lat += (e.clientY - prevY) * 0.25;
+      prevX = e.clientX;
+      prevY = e.clientY;
+    };
+    const onMouseUp = () => {
+      isDragging = false;
+    };
+    let lastTX = 0;
+    let lastTY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      isDragging = true;
+      autoRotate = false;
+      lastTX = e.touches[0].clientX;
+      lastTY = e.touches[0].clientY;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      if (!isDragging) return;
+      lon -= (e.touches[0].clientX - lastTX) * 0.3;
+      lat += (e.touches[0].clientY - lastTY) * 0.3;
+      lastTX = e.touches[0].clientX;
+      lastTY = e.touches[0].clientY;
+    };
+    const onTouchEnd = () => {
+      isDragging = false;
+    };
+    const onWheel = (e: WheelEvent) => {
+      camera.fov = Math.max(20, Math.min(100, camera.fov + e.deltaY * 0.03));
+      camera.updateProjectionMatrix();
+    };
+    const onResize = () => {
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    };
     const onKeyLook = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       const STEP = 6;
       switch (e.key) {
-        case 'ArrowLeft':  lon -= STEP; autoRotate = false; break;
-        case 'ArrowRight': lon += STEP; autoRotate = false; break;
-        case 'ArrowUp':    lat += STEP; autoRotate = false; break;
-        case 'ArrowDown':  lat -= STEP; autoRotate = false; break;
-        case '+': case '=': camera.fov = Math.max(20, camera.fov - 4); camera.updateProjectionMatrix(); break;
-        case '-': case '_': camera.fov = Math.min(100, camera.fov + 4); camera.updateProjectionMatrix(); break;
-        default: return;
+        case 'ArrowLeft':
+          lon -= STEP;
+          autoRotate = false;
+          break;
+        case 'ArrowRight':
+          lon += STEP;
+          autoRotate = false;
+          break;
+        case 'ArrowUp':
+          lat += STEP;
+          autoRotate = false;
+          break;
+        case 'ArrowDown':
+          lat -= STEP;
+          autoRotate = false;
+          break;
+        case '+':
+        case '=':
+          camera.fov = Math.max(20, camera.fov - 4);
+          camera.updateProjectionMatrix();
+          break;
+        case '-':
+        case '_':
+          camera.fov = Math.min(100, camera.fov + 4);
+          camera.updateProjectionMatrix();
+          break;
+        default:
+          return;
       }
       e.preventDefault();
     };
@@ -357,7 +503,11 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
     window.addEventListener('resize', onResize);
     window.addEventListener('keydown', onKeyLook);
 
-    renderer.setAnimationLoop(() => { if (autoRotate && !isDragging) lon += AUTO_SPEED; updateCamera(); renderer.render(scene, camera); });
+    renderer.setAnimationLoop(() => {
+      if (autoRotate && !isDragging) lon += AUTO_SPEED;
+      updateCamera();
+      renderer.render(scene, camera);
+    });
 
     if ('xr' in navigator && navigator.xr) {
       navigator.xr.isSessionSupported('immersive-vr').then(setVrSupported).catch(() => {});
@@ -385,141 +535,172 @@ export function PanoramaViewer({ imageUrl, node, reducedMotion = false, onClose 
   }, [imageUrl, resolvedUrl, reducedMotion]);
 
   const enterVR = useCallback(async () => {
-    const r = rendererRef.current; if (!r || !navigator.xr) return;
+    const r = rendererRef.current;
+    if (!r || !navigator.xr) return;
     try {
-      const s = await navigator.xr.requestSession('immersive-vr', { optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'] });
-      await r.xr.setSession(s); setXrActive(true);
+      const s = await navigator.xr.requestSession('immersive-vr', {
+        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'],
+      });
+      await r.xr.setSession(s);
+      setXrActive(true);
       s.addEventListener('end', () => setXrActive(false));
-    } catch (e) { console.warn('VR failed', e); }
+    } catch {
+      /* WebXR optional */
+    }
   }, []);
 
   const enterAR = useCallback(async () => {
-    const r = rendererRef.current; if (!r || !navigator.xr) return;
+    const r = rendererRef.current;
+    if (!r || !navigator.xr) return;
     try {
-      const s = await navigator.xr.requestSession('immersive-ar', { requiredFeatures: ['hit-test'] });
-      await r.xr.setSession(s); setXrActive(true);
+      const s = await navigator.xr.requestSession('immersive-ar', {
+        requiredFeatures: ['hit-test'],
+      });
+      await r.xr.setSession(s);
+      setXrActive(true);
       s.addEventListener('end', () => setXrActive(false));
-    } catch (e) { console.warn('AR failed', e); }
+    } catch {
+      /* WebXR optional */
+    }
   }, []);
 
   const exitXR = useCallback(async () => {
-    const s = rendererRef.current?.xr.getSession(); if (s) await s.end();
+    const s = rendererRef.current?.xr.getSession();
+    if (s) await s.end();
   }, []);
 
-  // Honest description of what is actually on screen, driven by image dimensions.
   const subtitle = loadError
-    ? 'Image failed to load'
+    ? t('panoramaLoadError')
     : !loaded
-      ? 'Loading image…'
-    : equirect === false
-      ? 'Standard photograph in an immersive viewer — not a true 360° capture'
-      : 'Drag or use arrow keys to look around · scroll or +/- to zoom';
+      ? t('panoramaSubtitleLoading')
+      : equirect === false
+        ? t('panoramaSubtitleFlat')
+        : t('panoramaSubtitleControls');
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black"
+      className="fixed inset-0 z-50 bg-background"
       role="dialog"
       aria-modal="true"
-      aria-label={`Immersive view of ${node.label}`}
+      aria-label={`${t('panoramaOpen')}: ${node.label}`}
     >
-      <style>{`
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
-
-      {/* Three.js canvas */}
       <div ref={mountRef} className="absolute inset-0" />
 
-      {/* Top toolbar */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-5 py-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
-        <div className="flex items-center gap-3 pointer-events-auto">
-          <button ref={closeBtnRef} onClick={onClose} aria-label="Close immersive view" className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all">✕</button>
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-background/90 to-transparent px-4 py-4 sm:px-5">
+        <div className="pointer-events-auto flex items-center gap-3">
+          <Button
+            ref={closeBtnRef}
+            type="button"
+            variant="secondary"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            onClick={onClose}
+            aria-label={t('panoramaClose')}
+          >
+            <IconX className="h-4 w-4" />
+          </Button>
           <div>
-            <p className="text-white font-semibold text-sm flex items-center gap-2">
-              <NodeGlyph nodeType={node.nodeType} size={16} color={cfg.glowColor} />
+            <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <NodeGlyph nodeType={node.nodeType} size={16} color={cfg.color} />
               {node.label}
-              {equirect === true && <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-900/50 border border-emerald-400/40 text-emerald-300">360°</span>}
-              {node.unescoStatus && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-900/50 border border-blue-400/40 text-blue-300">UNESCO</span>}
+              {equirect === true ? (
+                <Badge variant="secondary" className="text-[10px]">
+                  {t('badge360')}
+                </Badge>
+              ) : null}
+              {node.unescoStatus ? (
+                <Badge variant="outline" className="text-[10px]">
+                  {t('badgeUnesco')}
+                </Badge>
+              ) : null}
             </p>
-            <p className="text-gray-400 text-xs mt-0.5">{subtitle}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {node.storyText && (
-            <button
+        <div className="pointer-events-auto flex items-center gap-2">
+          {node.storyText ? (
+            <Button
               type="button"
+              size="sm"
+              variant={playing ? 'destructive' : 'default'}
+              className="h-8 gap-1 text-xs"
               onClick={playing ? stop : play}
               aria-pressed={playing}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all hover:scale-105 active:scale-95"
-              style={{
-                background: playing ? '#991b1b' : `${cfg.color}dd`,
-                color: '#fff',
-                boxShadow: `0 0 16px ${cfg.color}44`,
-              }}
             >
-              {playing ? '⏹ Stop' : '▶ Narrate'}
-            </button>
-          )}
+              {playing ? (
+                <IconPlayerStop className="h-3.5 w-3.5" />
+              ) : (
+                <IconPlayerPlay className="h-3.5 w-3.5" />
+              )}
+              {playing ? t('stopNarration') : t('narrate')}
+            </Button>
+          ) : null}
           {!xrActive ? (
             <>
-              {vrSupported && (
-                <button onClick={enterVR} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border border-purple-400/60 bg-purple-900/60 text-purple-200 hover:bg-purple-600/70 transition-all">
-                  ◈ Enter VR
-                </button>
-              )}
-              {arSupported && (
-                <button onClick={enterAR} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border border-cyan-400/60 bg-cyan-900/60 text-cyan-200 hover:bg-cyan-600/70 transition-all">
-                  ◉ Enter AR
-                </button>
-              )}
-              {!vrSupported && !arSupported && (
-                <span className="text-xs text-gray-600 border border-white/10 px-3 py-1.5 rounded-full">WebXR not detected</span>
-              )}
+              {vrSupported ? (
+                <Button type="button" size="sm" variant="secondary" className="h-8 text-xs" onClick={enterVR}>
+                  {t('enterVr')}
+                </Button>
+              ) : null}
+              {arSupported ? (
+                <Button type="button" size="sm" variant="outline" className="h-8 text-xs" onClick={enterAR}>
+                  {t('enterAr')}
+                </Button>
+              ) : null}
+              {!vrSupported && !arSupported ? (
+                <span className={xrChip}>{t('webXrUnavailable')}</span>
+              ) : null}
             </>
           ) : (
-            <button onClick={exitXR} className="px-4 py-2 rounded-full text-xs font-semibold border border-red-400/60 bg-red-900/60 text-red-200 hover:bg-red-700/70 transition-all">
-              ✕ Exit XR
-            </button>
+            <Button type="button" size="sm" variant="destructive" className="h-8 text-xs" onClick={exitXR}>
+              {t('exitXr')}
+            </Button>
           )}
         </div>
       </div>
 
-      {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+      {!loaded && !loadError ? (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3" style={{ borderColor: `${cfg.color}66`, borderTopColor: cfg.color }} />
-            <p className="text-gray-400 text-sm">Loading {node.label}…</p>
-          </div>
-        </div>
-      )}
-
-      {loadError && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center px-6">
-          <div className="max-w-md rounded-2xl border border-white/10 bg-black/70 p-6 text-center backdrop-blur-md">
-            <p className="text-white text-sm font-semibold mb-1">Immersive view failed to load</p>
-            <p className="text-gray-400 text-xs leading-relaxed">{loadError}</p>
-            <p className="text-gray-500 text-[11px] mt-3 break-all">
-              {imageUrl}
+            <div
+              className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-t-transparent"
+              style={{ borderColor: `${cfg.color}55`, borderTopColor: cfg.color }}
+            />
+            <p className="text-sm text-muted-foreground">
+              {t('panoramaLoading', { label: node.label })}
             </p>
           </div>
         </div>
-      )}
+      ) : null}
+
+      {loadError ? (
+        <div className="absolute inset-0 z-30 flex items-center justify-center px-6">
+          <div className={cn(xrGlassPanel, 'max-w-md p-6 text-center')}>
+            <p className="mb-1 text-sm font-semibold text-foreground">{t('panoramaLoadError')}</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">{loadError}</p>
+            <p className="mt-3 break-all text-[11px] text-muted-foreground/80">{imageUrl}</p>
+            <Button type="button" variant="outline" size="sm" className="mt-4" onClick={onClose}>
+              {t('panoramaClose')}
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <PanoramaFacts node={node} />
-      <PanoramaStory node={node} />
+      <PanoramaStory node={node} reducedMotion={reducedMotion} />
 
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none max-w-[90vw]">
-        <p className="text-xs text-white/40 bg-black/40 backdrop-blur-sm rounded-full px-4 py-1 text-center">
+      <div className="pointer-events-none absolute bottom-2 left-1/2 z-10 max-w-[90vw] -translate-x-1/2">
+        <p className="rounded-full bg-card/80 px-4 py-1 text-center text-[11px] text-muted-foreground backdrop-blur-sm">
           {equirect === true
-            ? 'True 360° equirectangular panorama'
+            ? t('panoramaTrue360')
             : equirect === false
-              ? 'This is a standard photograph projected onto a sphere for immersive viewing — it is not a 360° capture'
-              : 'Preparing immersive view…'}
+              ? t('panoramaFlatDisclaimer')
+              : t('panoramaPreparing')}
         </p>
       </div>
 
-      {/* Image attribution / license (pointer-events-auto so links are clickable) */}
-      <div className="absolute bottom-2 right-3 z-10 max-w-[40vw] text-right pointer-events-auto">
+      <div className="pointer-events-auto absolute bottom-2 right-3 z-10 max-w-[40vw] text-right">
         <ImageAttribution credit={node.imageCredits?.[imageUrl]} />
       </div>
     </div>

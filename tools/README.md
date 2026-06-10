@@ -29,7 +29,7 @@ Regenerates:
 
 from `ontology/HeritageGraph.yaml`, `tools/ui-classmap.yaml`, `tools/ui-presentation.yaml` (optional slot overrides), **`tools/contribute-hub.yaml`**, and **`tools/semantic-patterns.yaml`**. Used as an offline fallback when the schema API is unavailable.
 
-After changing the ontology or patterns, regenerate the optional SHACL companion used for Fuseki/consistency QA:
+After changing the ontology or patterns, regenerate the optional SHACL companion used for Oxigraph/consistency QA:
 
 ```bash
 python3 tools/linkml_generate_registry.py

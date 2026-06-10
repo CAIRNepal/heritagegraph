@@ -7,7 +7,7 @@
 .PHONY: ontology ontology-check viz-config viz-config-check shacl shacl-check \
         crm-bridge crm-bridge-check skos-vocab skos-vocab-check \
         serializers serializers-check entityrefs entityrefs-check contribute-routes-check \
-        schema-rebuild identity-candidates schema-diff \
+        schema-rebuild identity-candidates schema-diff test-e2e \
         rdf-rebuild rdf-diagnose rdf-load-tbox kg-publish kg-verify \
         generate check \
         help setup superuser backend frontend landing landing-install dev-local kill-ports \
@@ -126,8 +126,11 @@ rdf-load-tbox: $(VENV_PY) ## Load ontology/Heritage.ttl into the schema named gr
 rdf-drain-outbox: $(VENV_PY) ## Retry failed knowledge graph writes
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_drain_outbox
 
-identity-candidates: $(VENV_PY) ## Refresh IdentityResolutionCandidate pairs from same-name heuristic
-	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py refresh_identity_candidates
+identity-candidates: $(VENV_PY) ## Refresh identity candidates + auto-merge duplicate clusters
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py refresh_identity_candidates --auto-merge
+
+test-e2e: $(VENV_PY) ## Run full platform E2E + integration test suite (RDF sync on)
+	DJANGO_ENV=development RDF_SYNC_ENABLED=true ./tests/run_e2e.sh -v 1
 
 schema-diff: ## Compare two ontology YAML files: OLD=ontology/HeritageGraph.yaml NEW=/path/to/new.yaml
 	@if [ -z "$(OLD)" ] || [ -z "$(NEW)" ]; then \
@@ -161,6 +164,7 @@ help:
 	@echo "    make shacl          Regenerate ontology/shapes/generated-heritagegraph-minimal-shacl.ttl"
 	@echo "    make schema-rebuild Persist ontology registry snapshot to DB (SchemaRegistry)"
 	@echo "    make identity-candidates Refresh IdentityResolutionCandidate pairs (same-name)"
+	@echo "    make test-e2e         Full platform E2E (health, KG, identity, RDF, museum)"
 	@echo "    make schema-diff    Compare two ontology YAML files: OLD=... NEW=..."
 	@echo ""
 	@echo "  \033[1mDAILY USE\033[0m  (local dev — open one terminal per service)"

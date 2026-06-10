@@ -354,7 +354,7 @@ export default function PipelinePage() {
             <IconSparkles className="w-4 h-4" /> KG Ingestion Pipeline
           </div>
           <h1 className="text-3xl font-black text-white">
-            5-Agent <span className="bg-gradient-to-r from-white via-purple-100 to-fuchsia-100 bg-clip-text text-transparent">AI Pipeline</span>
+            5-Agent <span className="text-white/90">AI Pipeline</span>
           </h1>
           <p className="text-purple-100 max-w-2xl">
             Runs an OCR-extracted document through Doc Intelligence → Extraction → SHACL Validation →

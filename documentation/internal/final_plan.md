@@ -372,7 +372,7 @@ The point: OCR never auto-publishes. It produces *suggestions* that a human acce
 ### 8.2 Quality knobs to tune
 
 - **Classifier confidence threshold** to invoke `vision_rescue` (Claude Vision). Track `claude_vision_invocations` (already a field) → cost dashboard.
-- **NER model selection** — keep configurable per-language; default `en` + `ne` (Devanagari). Document the model in `OCR_PIPELINE.md`.
+- **NER model selection** — keep configurable per-language; default `en` + `ne` (Devanagari). Document the model in `documentation/pipelines/OCR.md`.
 - **Tabular ingestion** (`tabular_parse.py`) for CSVs of inventory data — also produces field suggestions, not direct writes.
 - **Provenance from the upload step.** `UploadedDocument.provenance` (already exists) captures source institution, collection, languages, contributor note. This flows into `prov:wasGeneratedBy` triples on every entity later created from that doc.
 

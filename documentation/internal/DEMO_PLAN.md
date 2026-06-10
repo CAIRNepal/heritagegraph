@@ -95,15 +95,15 @@ The following files, features, and concerns are **frozen**. Do not open them, do
 - `heritage_graph/apps/document_processing/` — OCR pipeline
 - Everything touching `identity_services`, `EntityCluster`, `IdentityCandidate`
 
-**Frontend pages — do not touch:**
-- `/dashboard/contribute/` (all contribute routes)
-- `/dashboard/review/`
-- `/dashboard/moderate/`
-- `/dashboard/leaderboard/`
-- `/dashboard/progression/`
-- `/dashboard/graphview/`
-- `/dashboard/atlas/` (Cesium 3D globe)
-- `/dashboard/community/`
+**Frontend pages — do not touch:** *(routes below used `/dashboard/` prefix historically; current app uses site-root paths, e.g. `/contribute/`, `/curation/review/`, `/graphview/`, `/atlas/` — see `ARCHITECTURE.md`)*
+- `/contribute/` (all contribute routes)
+- `/curation/review/`
+- `/moderate/` (legacy)
+- `/leaderboard/`
+- `/progression/`
+- `/graphview/`
+- `/atlas/` (Cesium 3D globe)
+- `/community/`
 
 **Infrastructure — do not touch:**
 - `docker-compose-coolify.yml`

@@ -66,7 +66,7 @@ export function describeAuthUrlError(code: string | null | undefined): string | 
 /** Session / JWT `error` field surfaced to the client */
 /** Shown on `/auth/login` when `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are missing. */
 export const missingGoogleOAuthConfigMessage =
-  'Google sign-in is not configured on this server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET for the Next.js app, then restart. See AUTH.md.';
+  'Google sign-in is not configured on this server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET for the Next.js app, then restart. See documentation/auth/AUTH.md.';
 
 export function describeSessionAuthError(code: string): string {
   switch (code) {

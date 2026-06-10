@@ -248,7 +248,7 @@ export default function ForkViewerPage() {
             <IconSparkles className="w-4 h-4" /> Fork Viewer
           </div>
           <h1 className="text-3xl font-black text-white">
-            Fork <span className="bg-gradient-to-r from-white via-purple-100 to-fuchsia-100 bg-clip-text text-transparent">Lineage Tree</span>
+            Fork <span className="text-white/90">Lineage Tree</span>
           </h1>
           <p className="text-purple-100 max-w-lg">
             Explore how contributions evolve through forks, corrections, translations, and expansions.

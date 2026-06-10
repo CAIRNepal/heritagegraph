@@ -271,7 +271,7 @@ function ReviewQueuePageInner() {
                 <IconSparkles className="w-4 h-4" /> Epistemic Review
               </div>
               <h1 className="text-3xl font-black text-white">
-                Review <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">Queue</span>
+                Review <span className="text-white/90">Queue</span>
               </h1>
               <p className="text-blue-100 max-w-lg">Evaluate claims, resolve conflicts, maintain provenance</p>
             </div>

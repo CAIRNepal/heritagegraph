@@ -139,7 +139,7 @@ export default function OurTeam() {
           </div>
           <h1 className="text-3xl md:text-4xl font-black leading-tight text-white">
             The Minds Behind{' '}
-            <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">HeritageGraph</span>
+            <span className="text-white/90">HeritageGraph</span>
           </h1>
           <p className="text-blue-100 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
             A multidisciplinary team working at the intersection of artificial intelligence,
@@ -156,7 +156,7 @@ export default function OurTeam() {
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}>
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100">
           Meet the{' '}
-          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Team</span>
+          <span className="text-foreground">Team</span>
         </motion.h2>
         <div className="grid sm:grid-cols-2 gap-6">
           {teamMembers.map((member) => (
@@ -207,7 +207,7 @@ export default function OurTeam() {
             <IconBrandGithub className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
               GitHub{' '}
-              <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">Contributors</span>
+              <span className="text-foreground">Contributors</span>
             </h2>
           </div>
 

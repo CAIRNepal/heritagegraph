@@ -1,14 +1,11 @@
-Archived Sphinx documentation
-=============================
+# Archived Sphinx site (legacy)
 
-This `documentation/` folder contains an older Sphinx-based docs site that has been archived.
+The files `documentation/conf.py`, `index.rst`, `introduction.rst`, `contributing.rst`, `Makefile`, and `make.bat` are a **legacy Sphinx** docs site — do not edit them.
 
-Status
-------
-- Reason: The project has standardized on a new MkDocs Material site in `docs/`.
-- Date archived: 2026-03-03
-- Action: Do not modify these files. They remain here for historical reference.
+**Current documentation** lives in:
 
-Where to add or update docs now
---------------------------------
-Please add, edit, and translate documentation under the `docs/` directory at the repository root. The MkDocs site is published via GitHub Actions and replaces this Sphinx content.
+- [`documentation/README.md`](README.md) — topic hub
+- [`DOCS.md`](../DOCS.md) — root index
+- [`tests/README.md`](../tests/README.md) — E2E runners
+
+Add or update guides under `documentation/<topic>/`, not in the Sphinx `.rst` files.

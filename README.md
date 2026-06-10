@@ -64,20 +64,22 @@ Once running, access:
 | Authentication | NextAuth (Google OAuth in production) | Authentication provider used by the frontend and backend |
 | Traefik | http://traefik.localhost:8080 | Reverse proxy dashboard |
 
-> 📖 **Full deployment guide**: See [DEPLOYMENT.md](DEPLOYMENT.md) for production setup, SSL, backups, and more.
+> 📖 **Full deployment guide**: See [documentation/deployment/DEPLOYMENT.md](documentation/deployment/DEPLOYMENT.md) for production setup, SSL, backups, and more.
 
 > 📖 **Dokploy**: Compose stack (`docker-compose-dokploy.yml`) and automatic Dokploy redeploy when **`v1`** advances are documented in [DOKPLOY.md](documentation/deployment/DOKPLOY.md) (GitHub Actions hook + optional Git webhook).
 
 ### Useful Commands
 
 ```bash
-make help           # Show all available commands
-make up             # Start services
-make down           # Stop services
-make logs           # View logs
-make health         # Check service health
-make backup         # Backup database
-make prod-up        # Start in production mode
+make help              # Show all available commands
+make docker-up         # Start all Docker services
+make docker-down       # Stop services
+make docker-logs       # View logs
+make backend           # Local Django dev server
+make frontend          # Local Next.js dev server
+make test-e2e          # Platform E2E test suite
+make backup            # Backup database
+make prod-up           # Start in production mode
 ```
 
 ---
@@ -131,12 +133,11 @@ The backend is powered by **Django REST Framework** and uses **Google OAuth** fo
 Setup:
 
 ```bash
-cd .. # Make sure you are in main directory
-python -m venv .myvenv
-source .myvenv/bin/activate  # Linux/Mac
-pip install uv
-uv pip install -r requirements.txt
-python manage.py makemigrations
+# From repo root — or use: make setup
+python3 -m venv .venv
+source .venv/bin/activate   # Linux/Mac
+pip install -r heritage_graph/requirements.txt
+cd heritage_graph
 python manage.py migrate
 ```
 
@@ -171,20 +172,21 @@ Access the backend at (development):
 
 This project includes comprehensive documentation designed to help both human developers and AI coding assistants work effectively. **See [DOCS.md](DOCS.md) for the full categorized index;** the most-used docs are listed below.
 
-**Documentation site:** A consolidated MkDocs site lives in the `docs/` folder and is configured to publish to GitHub Pages via CI. Visit the published site at: https://cairnepal.github.io/heritagegraph/ (update if your org URL differs).
+**Documentation hub:** [`documentation/README.md`](documentation/README.md) — topic guides, testing, deployment, and internal notes.
 
 | Document | Purpose |
 |----------|---------|
 | [AGENTS.md](AGENTS.md) | 🤖 **Start here** — Master guide for AI agents. Project overview, critical rules, directory structure, API summary |
-| [FORMS.md](FORMS.md) | 📋 **How forms work** — Add fields, enums, sections, and new entity types. Registry-driven form system guide |
-| [AUTH.md](AUTH.md) | 🔐 Authentication system — NextAuth + Google OAuth + Django token verification |
-| [AUTH_ROLES_DEVELOPER_GUIDE.md](documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md) | 👥 Roles & permissions — contributor / reviewer / staff, DRF permissions, frontend guards, platform admin access |
-| [CLAUDE.md](CLAUDE.md) | 📝 Coding conventions and patterns for both Python/Django and TypeScript/Next.js |
-| [SKILLS.md](SKILLS.md) | 🗺️ Feature capability matrix — maps every feature to exact files with status indicators |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | 🏗️ System design with ASCII diagrams — network topology, auth flow, data models, Docker lifecycle |
-| [CONVENTIONS.md](CONVENTIONS.md) | 📏 Naming rules, import ordering, code style patterns for all languages in the project |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | 🔧 Known issues, gotchas, debugging tips, and deployment checklist |
-| [DEPLOYMENT.md](DEPLOYMENT.md) | 🚀 Full deployment guide — Docker setup, production config, SSL, backups, monitoring |
+| [documentation/ontology/ONTOLOGY.md](documentation/ontology/ONTOLOGY.md) | 🧬 **Ontology v1.0.0** — registry types, lifecycle events, enums, LUX interop |
+| [documentation/contribution/FORMS.md](documentation/contribution/FORMS.md) | 📋 **How forms work** — Add fields, enums, sections, and new entity types |
+| [documentation/auth/AUTH.md](documentation/auth/AUTH.md) | 🔐 Authentication — NextAuth + Google OAuth + Django token verification |
+| [documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md](documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md) | 👥 Roles & permissions — contributor / reviewer / staff |
+| [CLAUDE.md](CLAUDE.md) | 📝 Coding conventions for Python/Django and TypeScript/Next.js |
+| [documentation/developer/SKILLS.md](documentation/developer/SKILLS.md) | 🗺️ Feature capability matrix |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | 🏗️ System design — topology, auth flow, data models, Docker |
+| [documentation/testing/TESTING.md](documentation/testing/TESTING.md) | ✅ E2E tests and validation (`make test-e2e`, `tests/`) |
+| [documentation/TROUBLESHOOTING.md](documentation/TROUBLESHOOTING.md) | 🔧 Known issues, debugging, deploy checklist |
+| [documentation/deployment/DEPLOYMENT.md](documentation/deployment/DEPLOYMENT.md) | 🚀 Production Docker, SSL, backups |
 
 > **AI agents:** Read `AGENTS.md` first, then consult other files as needed for your task.
 
@@ -196,9 +198,9 @@ HeritageGraph is released under the [MIT License](LICENSE) — code, ontology, a
 use it in your research, please cite it (see [`CITATION.cff`](CITATION.cff)).
 
 
-# Nepal Cultural heritage Linked Open Data (NCHLOD)
-This repository contains the LinkML code for NCHLOD. The canonical schema is
-[`ontology/HeritageGraph.yaml`](ontology/HeritageGraph.yaml) (registry-driven; see `make ontology`).
+## Nepal Cultural Heritage Linked Open Data (NCHLOD)
 
-
-docker build -f Dockerfile.backend --target ocr-worker -t heritagegraph-ocr-worker:test .
+The canonical LinkML schema is [`ontology/HeritageGraph.yaml`](ontology/HeritageGraph.yaml) (**v1.0.0**,
+event-centric CIDOC-CRM + PROV-O). UI types are listed in `tools/ui-classmap.yaml` (see
+[`documentation/ontology/ONTOLOGY.md`](documentation/ontology/ONTOLOGY.md)). Regenerate derived
+artifacts with `make generate` or `make ontology`.

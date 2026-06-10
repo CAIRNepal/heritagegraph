@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { HERITAGE_MUSEUM_TILE_LAYER } from '@/lib/map-tiles';
+import { useMapTranslations } from '@/lib/heritage-museum/xr-theme';
 
 import { NODE_TYPE_CONFIG, type GraphNode } from '../heritage-data';
 import { nodeGlyphSvg } from '../node-icons';
@@ -55,6 +56,7 @@ function buildIconHtml(node: GraphNode, selected: boolean): string {
 }
 
 export function MapView({ nodes, selectedId, onNodeSelect }: MapViewProps) {
+  const t = useMapTranslations();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const leafletRef = useRef<LeafletNS | null>(null);
@@ -200,13 +202,11 @@ export function MapView({ nodes, selectedId, onNodeSelect }: MapViewProps) {
       >
         <div className="max-w-md text-center space-y-2">
           <p className="text-3xl" aria-hidden="true">📍</p>
-          <p className="text-gray-300 text-sm font-medium">
-            No geo-referenced nodes in the current filter
+          <p className="text-foreground text-sm font-medium">
+            {t('emptyTitle')}
           </p>
-          <p className="text-gray-500 text-xs">
-            {total === 0
-              ? 'No nodes match the active filters. Try broadening your search.'
-              : `${total} node${total === 1 ? '' : 's'} in view, but none carry valid lat/long. Contribute coordinates in the entity editor to see them here.`}
+          <p className="text-muted-foreground text-xs">
+            {total === 0 ? t('emptyFilters') : t('emptyNoCoords', { count: total })}
           </p>
         </div>
       </div>
@@ -216,11 +216,8 @@ export function MapView({ nodes, selectedId, onNodeSelect }: MapViewProps) {
   return (
     <div className="relative w-full h-full">
       <div ref={containerRef} className="w-full h-full" style={{ zIndex: 0 }} />
-      <div className="absolute top-3 right-3 z-[400] bg-gray-900/90 border border-white/10 rounded-xl px-3 py-2 text-xs text-gray-300 backdrop-blur-sm pointer-events-none">
-        <span className="text-white font-semibold">{geoNodes.length}</span>
-        {' of '}
-        <span className="text-white font-semibold">{nodes.length}</span>
-        {' nodes geo-referenced'}
+      <div className="absolute top-3 right-3 z-[400] rounded-xl border border-border bg-card/90 px-3 py-2 text-xs text-muted-foreground backdrop-blur-sm pointer-events-none">
+        {t('geoCount', { geo: geoNodes.length, total: nodes.length })}
       </div>
     </div>
   );

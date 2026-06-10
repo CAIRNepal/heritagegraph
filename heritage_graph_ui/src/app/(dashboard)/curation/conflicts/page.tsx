@@ -79,7 +79,7 @@ export default function ConflictsPage() {
                 <Scale className="w-4 h-4" /> Highest Priority
               </div>
               <h1 className="text-3xl font-black text-white">
-                Conflict <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">Resolution</span>
+                Conflict <span className="text-white/90">Resolution</span>
               </h1>
               <p className="text-blue-100 max-w-2xl">
                 Assertions that contradict existing accepted claims — highest priority for review.

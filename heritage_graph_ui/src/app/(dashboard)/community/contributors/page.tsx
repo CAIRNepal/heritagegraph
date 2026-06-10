@@ -112,7 +112,7 @@ export default function ContributorsPage() {
             <IconSparkles className="w-4 h-4" /> Community
           </div>
           <h1 className="text-3xl font-black text-white">
-            Our <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">Contributors</span>
+            Our <span className="text-white/90">Contributors</span>
           </h1>
           <p className="text-blue-100 max-w-lg">
             HeritageGraph depends on its community to explore, preserve, and contribute to cultural knowledge.
@@ -134,7 +134,7 @@ export default function ContributorsPage() {
       <motion.div initial="hidden" animate="show" variants={fadeInUp}>
         <div className={`${glassCard} overflow-hidden`}>
           <div className="p-6 border-b border-blue-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
+            <h2 className="text-xl font-bold text-foreground">
               All Contributors
             </h2>
             <div className="relative w-full sm:w-72">

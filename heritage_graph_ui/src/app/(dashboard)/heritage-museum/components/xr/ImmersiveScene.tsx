@@ -2,28 +2,69 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import {
+  useXrTranslations,
+  xrChip,
+  xrCinematicBottom,
+  xrCinematicLeft,
+  xrGlassPanel,
+  xrSubtlePanel,
+} from '@/lib/heritage-museum/xr-theme';
+import {
+  IconExternalLink,
+  IconMapPin,
+  IconPlayerPlay,
+  IconPlayerStop,
+  IconShieldCheck,
+  IconSparkles,
+} from '@tabler/icons-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import {
+  isCuratedResourceIri,
+  resourceIriToDetailHref,
+} from '@/lib/heritage-museum/museum-rigor';
+import { parseTemporalAnchor } from '@/lib/heritage-museum/temporal-parse';
+import { cn } from '@/lib/utils';
+
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
 import { NodeGlyph } from '../../node-icons';
-import { buildBeats } from '../../utils/storyBeats';
+import { buildBeats, clampBeatIndex } from '../../utils/storyBeats';
 import { ImageAttribution } from '../ImageAttribution';
-import { useReducedMotion } from '@/hooks/use-reduced-motion';
+import type { MuseumDataSource } from '../museum-toolbar';
 
-const PanoramaViewer = dynamic(() => import('./PanoramaViewer').then((m) => m.PanoramaViewer), { ssr: false });
+const PanoramaViewer = dynamic(
+  () => import('./PanoramaViewer').then((m) => m.PanoramaViewer),
+  { ssr: false },
+);
 
-// ── CSS keyframes needed by this component ───────────────────────────────────
 const XR_STYLES = `
-  @keyframes fadeInUp {
+  @keyframes xrFadeInUp {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  @keyframes kenBurns {
-    from { transform: scale(1)   translate(0, 0); }
-    to   { transform: scale(1.1) translate(-2%, -1%); }
+  @keyframes xrKenBurns {
+    from { transform: scale(1) translate(0, 0); }
+    to   { transform: scale(1.08) translate(-2%, -1%); }
   }
 `;
 
-// ── Storytelling overlay ──────────────────────────────────────────────────────
 const BEAT_MS = 10_000;
+
+function hasVisual(node: GraphNode): boolean {
+  return Boolean(node.imageUrl || node.images?.length);
+}
 
 function StorytellingOverlay({
   node,
@@ -34,6 +75,7 @@ function StorytellingOverlay({
   cfg: (typeof NODE_TYPE_CONFIG)[keyof typeof NODE_TYPE_CONFIG];
   reducedMotion: boolean;
 }) {
+  const t = useXrTranslations();
   const beats = useMemo(() => buildBeats(node), [node]);
   const [idx, setIdx] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -44,26 +86,29 @@ function StorytellingOverlay({
   const pausedProgressRef = useRef(0);
 
   useEffect(() => {
-    setIdx(0); setProgress(0);
-    // When reduced motion is requested, render immediately (no fade-in delay).
+    setIdx(0);
+    setProgress(0);
+    pausedProgressRef.current = 0;
     setVisible(reducedMotion);
     if (reducedMotion) return;
-    const t = setTimeout(() => setVisible(true), 800);
-    return () => clearTimeout(t);
-  }, [node.id, reducedMotion]);
+    const timer = setTimeout(() => setVisible(true), 600);
+    return () => clearTimeout(timer);
+  }, [node.id, beats.length, reducedMotion]);
 
   useEffect(() => {
-    // Respect prefers-reduced-motion: never auto-advance; the reader steps
-    // through beats manually via Prev/Next or the dot navigation.
-    if (reducedMotion || paused) { pausedProgressRef.current = progress; return; }
+    if (reducedMotion || paused) {
+      pausedProgressRef.current = progress;
+      return;
+    }
     const startProg = pausedProgressRef.current || progress;
     startRef.current = performance.now() - (startProg / 100) * BEAT_MS;
     const tick = (now: number) => {
       const p = Math.min(100, ((now - startRef.current) / BEAT_MS) * 100);
       setProgress(p);
-      if (p >= 100) {
-        setIdx((i) => (i + 1) % beats.length);
-        setProgress(0); pausedProgressRef.current = 0;
+      if (p >= 100 && beats.length > 0) {
+        setIdx((i) => clampBeatIndex(i + 1, beats.length));
+        setProgress(0);
+        pausedProgressRef.current = 0;
         startRef.current = performance.now();
       }
       rafRef.current = requestAnimationFrame(tick);
@@ -74,37 +119,36 @@ function StorytellingOverlay({
   }, [paused, idx, beats.length, reducedMotion]);
 
   const go = useCallback((next: number) => {
-    setIdx(next); setProgress(0);
-    pausedProgressRef.current = 0; startRef.current = performance.now();
+    setIdx(next);
+    setProgress(0);
+    pausedProgressRef.current = 0;
+    startRef.current = performance.now();
   }, []);
 
-  const beat = beats[idx];
+  const safeIdx = clampBeatIndex(idx, beats.length);
+  const beat = beats[safeIdx];
+  if (!beat) return null;
+
   const isBullet = beat.lines.length > 1;
 
   return (
     <div
-      className="w-[42%] flex flex-col justify-center py-8 pr-8 pl-4"
+      className="flex w-full flex-col justify-center py-6 pr-4 pl-2 lg:w-[42%] lg:py-8 lg:pr-8 lg:pl-4"
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? 'translateX(0)' : 'translateX(24px)',
-        transition: 'opacity 0.7s ease, transform 0.7s ease',
+        transform: visible ? 'translateX(0)' : 'translateX(16px)',
+        transition: 'opacity 0.6s ease, transform 0.6s ease',
       }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       <div
-        className="relative rounded-2xl border overflow-hidden"
-        style={{
-          background: 'rgba(0,0,0,0.55)',
-          backdropFilter: 'blur(20px)',
-          borderColor: `${cfg.color}44`,
-          boxShadow: `0 0 60px ${cfg.color}18, inset 0 0 0 1px rgba(255,255,255,0.06)`,
-        }}
+        className={cn(xrGlassPanel, 'relative overflow-hidden')}
+        style={{ boxShadow: `0 0 40px ${cfg.color}14` }}
       >
-        {/* Progress bar */}
-        <div className="h-0.5 w-full bg-white/5">
+        <div className="h-0.5 w-full bg-muted">
           <div
-            className="h-full"
+            className="h-full transition-[width] duration-100"
             style={{
               width: `${progress}%`,
               background: `linear-gradient(to right, ${cfg.color}, ${cfg.glowColor})`,
@@ -113,43 +157,55 @@ function StorytellingOverlay({
           />
         </div>
 
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+        <div className="p-5 sm:p-6">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span
-                className="text-xs font-bold uppercase tracking-[0.18em] px-2.5 py-1 rounded-full"
-                style={{ background: `${cfg.color}33`, color: cfg.glowColor }}
+                className="rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.16em]"
+                style={{ background: `${cfg.color}22`, color: cfg.color }}
               >
                 {beat.icon} {beat.title}
               </span>
-              {paused && (
-                <span className="text-xs text-gray-600 border border-white/10 px-2 py-0.5 rounded-full">⏸ paused</span>
-              )}
+              {paused && !reducedMotion ? (
+                <span className={xrChip}>{t('paused')}</span>
+              ) : null}
             </div>
-            <span className="text-xs text-gray-600 tabular-nums">{idx + 1} / {beats.length}</span>
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+              {t('beatProgress', { current: safeIdx + 1, total: beats.length })}
+            </span>
           </div>
 
           <div
-            key={`${node.id}-${idx}`}
-            style={{ animation: reducedMotion ? 'none' : 'fadeInUp 0.4s ease both' }}
+            key={`${node.id}-${safeIdx}`}
+            style={{ animation: reducedMotion ? 'none' : 'xrFadeInUp 0.4s ease both' }}
             aria-live="polite"
           >
             {isBullet ? (
               <ul className="space-y-2">
                 {beat.lines.map((line, i) => {
-                  const [label, value] = line.includes('  ·  ') ? line.split('  ·  ') : [null, line];
+                  const [label, value] = line.includes('  ·  ')
+                    ? line.split('  ·  ')
+                    : [null, line];
                   return (
                     <li key={i} className="flex items-start gap-2 text-sm">
                       {label ? (
                         <>
-                          <span className="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
-                          <span className="text-gray-400 w-28 shrink-0 truncate">{label}</span>
-                          <span className="text-gray-100 font-medium">{value}</span>
+                          <span
+                            className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full"
+                            style={{ background: cfg.color }}
+                          />
+                          <span className="w-28 shrink-0 truncate text-muted-foreground">
+                            {label}
+                          </span>
+                          <span className="font-medium text-foreground">{value}</span>
                         </>
                       ) : (
                         <>
-                          <span className="mt-1.5 w-1 h-1 rounded-full flex-shrink-0" style={{ background: cfg.glowColor }} />
-                          <span className="text-gray-200 leading-relaxed">{line}</span>
+                          <span
+                            className="mt-2 h-1 w-1 flex-shrink-0 rounded-full"
+                            style={{ background: cfg.glowColor }}
+                          />
+                          <span className="leading-relaxed text-foreground/90">{line}</span>
                         </>
                       )}
                     </li>
@@ -157,46 +213,62 @@ function StorytellingOverlay({
                 })}
               </ul>
             ) : (
-              <p className="text-gray-200 text-sm leading-7">{beat.lines[0]}</p>
+              <p className="text-sm leading-7 text-foreground/90">{beat.lines[0]}</p>
             )}
           </div>
 
-          <div className="flex items-center justify-between mt-5 pt-4 border-t border-white/[0.08]">
-            <button
-              onClick={() => go(Math.max(0, idx - 1))}
-              disabled={idx === 0}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/30 disabled:opacity-25 transition-all"
-            >← Prev</button>
+          <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              disabled={safeIdx === 0}
+              onClick={() => go(Math.max(0, safeIdx - 1))}
+            >
+              ← {t('prev')}
+            </Button>
 
-            <div className="flex items-center gap-1 flex-wrap justify-center max-w-[160px]">
+            <div className="flex max-w-[160px] flex-wrap items-center justify-center gap-1">
               {beats.map((b, i) => (
                 <button
-                  key={i} onClick={() => go(i)} title={b.title}
+                  key={i}
+                  type="button"
+                  onClick={() => go(i)}
+                  title={b.title}
+                  aria-label={b.title}
                   className="rounded-full transition-all hover:scale-125"
-                  style={{ width: i === idx ? 16 : 6, height: 6, background: i === idx ? cfg.color : 'rgba(255,255,255,0.2)' }}
+                  style={{
+                    width: i === safeIdx ? 16 : 6,
+                    height: 6,
+                    background: i === safeIdx ? cfg.color : 'var(--muted-foreground)',
+                    opacity: i === safeIdx ? 1 : 0.35,
+                  }}
                 />
               ))}
             </div>
 
-            <button
-              onClick={() => go(Math.min(beats.length - 1, idx + 1))}
-              disabled={idx === beats.length - 1}
-              className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-white/30 disabled:opacity-25 transition-all"
-            >Next →</button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              disabled={safeIdx === beats.length - 1}
+              onClick={() => go(Math.min(beats.length - 1, safeIdx + 1))}
+            >
+              {t('next')} →
+            </Button>
           </div>
         </div>
       </div>
 
-      <p className="text-xs text-gray-700 mt-3 text-center">
-        {reducedMotion
-          ? 'Use ← Prev / Next → or the dots to step through the story'
-          : 'Hover to pause · Click dots to jump · auto-advances every 10s'}
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        {reducedMotion ? t('storyHintManual') : t('storyHintAuto')}
       </p>
     </div>
   );
 }
 
-// ── Floating key-fact badges ──────────────────────────────────────────────────
 function KeyFactBadges({
   node,
   cfg,
@@ -206,86 +278,118 @@ function KeyFactBadges({
 }) {
   if (!node.keyFacts?.length) return null;
   return (
-    <div className="absolute top-5 right-5 flex flex-col items-end gap-2 z-10 pointer-events-none">
+    <div className="pointer-events-none absolute top-4 right-4 z-10 flex flex-col items-end gap-2">
       {node.keyFacts.slice(0, 4).map((f, i) => (
         <div
           key={i}
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-xs backdrop-blur-md border"
-          style={{
-            background: 'rgba(0,0,0,0.5)', borderColor: `${cfg.color}44`,
-            animation: `fadeInUp 0.4s ease ${i * 0.1}s both`,
-          }}
+          className={cn(
+            xrSubtlePanel,
+            'flex items-center gap-2 px-3 py-1.5 text-xs',
+          )}
+          style={{ animation: `xrFadeInUp 0.4s ease ${i * 0.1}s both` }}
         >
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: cfg.color }} />
-          <span className="text-gray-400">{f.label}</span>
-          <span className="text-gray-100 font-semibold">{f.value}</span>
+          <span
+            className="h-1.5 w-1.5 flex-shrink-0 rounded-full"
+            style={{ background: cfg.color }}
+          />
+          <span className="text-muted-foreground">{f.label}</span>
+          <span className="font-semibold text-foreground">{f.value}</span>
         </div>
       ))}
     </div>
   );
 }
 
-// ── Narration hook ─────────────────────────────────────────────────────────────
 function useNarration(text: string) {
   const [playing, setPlaying] = useState(false);
   const play = useCallback(() => {
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis || !text.trim()) return;
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9; u.pitch = 1; u.lang = 'en-GB';
+    u.rate = 0.9;
+    u.pitch = 1;
+    u.lang = 'en-GB';
     const voices = window.speechSynthesis.getVoices();
-    const v = voices.find((v) => v.lang.startsWith('en-GB')) ?? null;
+    const v = voices.find((voice) => voice.lang.startsWith('en-GB')) ?? null;
     if (v) u.voice = v;
     u.onend = () => setPlaying(false);
     u.onerror = () => setPlaying(false);
     window.speechSynthesis.speak(u);
     setPlaying(true);
   }, [text]);
-  const stop = useCallback(() => { window.speechSynthesis?.cancel(); setPlaying(false); }, []);
-  useEffect(() => () => { window.speechSynthesis?.cancel(); }, [text]);
+  const stop = useCallback(() => {
+    window.speechSynthesis?.cancel();
+    setPlaying(false);
+  }, []);
+  useEffect(() => () => window.speechSynthesis?.cancel(), [text]);
   return { playing, play, stop };
 }
 
-// ── Gallery card ───────────────────────────────────────────────────────────────
-function GalleryCard({ node, onSelect }: { node: GraphNode; onSelect: (n: GraphNode) => void }) {
+function GalleryCard({
+  node,
+  onSelect,
+}: {
+  node: GraphNode;
+  onSelect: (n: GraphNode) => void;
+}) {
+  const t = useXrTranslations();
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
+  const visual = hasVisual(node);
   return (
     <button
+      type="button"
       onClick={() => onSelect(node)}
-      className="relative group overflow-hidden rounded-2xl border border-white/10 hover:border-white/30 transition-all hover:scale-[1.03] focus:outline-none"
+      className={cn(
+        'group relative overflow-hidden rounded-2xl border border-border text-left transition-all',
+        'hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      )}
       style={{ aspectRatio: '4/3' }}
     >
       <div
-        className="absolute inset-0 transition-transform duration-700 group-hover:scale-110"
+        className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
         style={{
-          background: node.imageUrl
-            ? `url(${node.imageUrl}) center/cover no-repeat`
-            : `linear-gradient(135deg, ${cfg.color}44 0%, #0f172a 100%)`,
+          background: visual
+            ? `url(${node.imageUrl ?? node.images?.[0]}) center/cover no-repeat`
+            : `linear-gradient(135deg, ${cfg.color}33 0%, var(--muted) 100%)`,
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-      <div className="absolute top-3 left-3 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: `${cfg.color}cc` }}>
+      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/25 to-transparent" />
+      <div
+        className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-border/60"
+        style={{ background: `${cfg.color}cc` }}
+      >
         <NodeGlyph nodeType={node.nodeType} size={17} color="#fff" />
       </div>
       <div className="absolute bottom-0 left-0 right-0 p-4">
-        <p className="text-white font-semibold text-sm leading-tight">{node.label}</p>
-        <p className="text-xs mt-0.5 font-medium" style={{ color: cfg.glowColor }}>{cfg.label}</p>
+        <p className="text-sm font-semibold leading-tight text-foreground">{node.label}</p>
+        <p className="mt-0.5 text-xs font-medium" style={{ color: cfg.color }}>
+          {cfg.label}
+        </p>
       </div>
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <span className="bg-white/20 backdrop-blur-sm text-white text-xs px-4 py-2 rounded-full border border-white/30">Explore →</span>
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+        <span className="rounded-full border border-border bg-card/80 px-4 py-2 text-xs text-foreground backdrop-blur-sm">
+          {t('explore')} →
+        </span>
       </div>
     </button>
   );
 }
 
-// ── Main component ─────────────────────────────────────────────────────────────
 interface ImmersiveSceneProps {
   node: GraphNode | null;
   allNodes: GraphNode[];
   onSelect: (node: GraphNode) => void;
+  dataSource?: MuseumDataSource;
 }
 
-export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps) {
+export function ImmersiveScene({
+  node,
+  allNodes,
+  onSelect,
+  dataSource = 'demo',
+}: ImmersiveSceneProps) {
+  const t = useXrTranslations();
+  const tPanel = useTranslations('heritageMuseum.panel');
   const [heroIdx, setHeroIdx] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
   const [showPanorama, setShowPanorama] = useState(false);
@@ -293,40 +397,85 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
-  const { playing, play, stop } = useNarration(node?.storyText ?? '');
+  const { playing, play, stop } = useNarration(node?.storyText ?? node?.description ?? '');
 
   const images: string[] = node
-    ? node.images?.length ? node.images : node.imageUrl ? [node.imageUrl] : []
+    ? node.images?.length
+      ? node.images
+      : node.imageUrl
+        ? [node.imageUrl]
+        : []
     : [];
 
-  useEffect(() => { setHeroIdx(0); setImgLoaded(false); }, [node?.id]);
-  useEffect(() => { setImgLoaded(false); }, [heroIdx]);
+  const sortedNodes = useMemo(
+    () =>
+      [...allNodes].sort((a, b) => {
+        const av = hasVisual(a) ? 0 : 1;
+        const bv = hasVisual(b) ? 0 : 1;
+        if (av !== bv) return av - bv;
+        return a.label.localeCompare(b.label);
+      }),
+    [allNodes],
+  );
+  const withMediaCount = useMemo(() => allNodes.filter(hasVisual).length, [allNodes]);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (reducedMotion) return; // no parallax drift when reduced motion is requested
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    setParallax({
-      x: ((e.clientX - rect.left) / rect.width - 0.5) * 18,
-      y: ((e.clientY - rect.top) / rect.height - 0.5) * 12,
-    });
-  }, [reducedMotion]);
+  useEffect(() => {
+    setHeroIdx(0);
+    setImgLoaded(false);
+  }, [node?.id]);
+  useEffect(() => {
+    setImgLoaded(false);
+  }, [heroIdx]);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (reducedMotion) return;
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setParallax({
+        x: ((e.clientX - rect.left) / rect.width - 0.5) * 14,
+        y: ((e.clientY - rect.top) / rect.height - 0.5) * 10,
+      });
+    },
+    [reducedMotion],
+  );
   const handleMouseLeave = useCallback(() => setParallax({ x: 0, y: 0 }), []);
 
-  // ── Gallery (no node selected) ──────────────────────────────────────────────
   if (!node) {
     return (
       <>
         <style>{XR_STYLES}</style>
-        <div className="w-full h-full overflow-y-auto bg-gray-950 p-6">
-          <div className="max-w-5xl mx-auto">
+        <div className="h-full w-full overflow-y-auto bg-background p-4 sm:p-6">
+          <div className="mx-auto max-w-5xl">
             <div className="mb-8 text-center">
-              <p className="text-3xl font-bold text-white mb-2">Choose a Place</p>
-              <p className="text-gray-400 text-sm">Select any heritage site to enter its immersive story</p>
+              <div className="mb-3 flex justify-center">
+                <IconSparkles className="h-8 w-8 text-primary" aria-hidden />
+              </div>
+              <p className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">
+                {t('galleryTitle')}
+              </p>
+              <p className="mx-auto max-w-xl text-sm text-muted-foreground">
+                {t('gallerySubtitle')}
+              </p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {allNodes.map((n) => <GalleryCard key={n.id} node={n} onSelect={onSelect} />)}
-            </div>
+
+            {sortedNodes.length > 0 ? (
+              <>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  {t('galleryAll', { count: sortedNodes.length })}
+                  {withMediaCount > 0
+                    ? ` · ${t('galleryWithMedia', { count: withMediaCount })}`
+                    : null}
+                </p>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 md:gap-4">
+                  {sortedNodes.map((n) => (
+                    <GalleryCard key={n.id} node={n} onSelect={onSelect} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-center text-sm text-muted-foreground">{t('galleryEmpty')}</p>
+            )}
           </div>
         </div>
       </>
@@ -335,180 +484,273 @@ export function ImmersiveScene({ node, allNodes, onSelect }: ImmersiveSceneProps
 
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   const heroImage = images[heroIdx] ?? null;
+  const detailHref = resourceIriToDetailHref(node.id);
+  const showReviewed = dataSource === 'live' && isCuratedResourceIri(node.id);
+  const temporal = parseTemporalAnchor(node.inceptionYear);
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-black select-none"
+      className="relative h-full w-full select-none overflow-hidden bg-background"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
       <style>{XR_STYLES}</style>
 
-      {/* Hero background */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 40% 40%, ${cfg.color}33 0%, #000814 70%)` }} />
         <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          style={{ filter: `drop-shadow(0 0 80px ${cfg.color})` }}
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse at 40% 40%, ${cfg.color}22 0%, var(--background) 72%)`,
+          }}
+        />
+        <div
+          className="pointer-events-none absolute inset-0 flex items-center justify-center"
+          style={{ filter: `drop-shadow(0 0 60px ${cfg.color}44)` }}
         >
-          <NodeGlyph nodeType={node.nodeType} size={360} color={cfg.color} strokeWidth={0.75} className="opacity-[0.07] select-none" />
+          <NodeGlyph
+            nodeType={node.nodeType}
+            size={320}
+            color={cfg.color}
+            strokeWidth={0.75}
+            className="select-none opacity-[0.08]"
+          />
         </div>
-        {heroImage && (
-          <div className="absolute inset-[-5%]" style={{ transform: `translate(${parallax.x}px, ${parallax.y}px)`, transition: 'transform 0.15s ease-out' }}>
+        {heroImage ? (
+          <div
+            className="absolute inset-[-4%]"
+            style={{
+              transform: `translate(${parallax.x}px, ${parallax.y}px)`,
+              transition: 'transform 0.15s ease-out',
+            }}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              key={heroImage} src={heroImage} alt={node.label}
-              className="w-full h-full object-cover"
+              key={heroImage}
+              src={heroImage}
+              alt={node.label}
+              className="h-full w-full object-cover"
               style={{
-                opacity: imgLoaded ? 1 : 0, transition: 'opacity 1.2s ease',
-                animation: imgLoaded && !reducedMotion ? 'kenBurns 30s ease-in-out infinite alternate' : 'none',
+                opacity: imgLoaded ? 1 : 0,
+                transition: 'opacity 1s ease',
+                animation:
+                  imgLoaded && !reducedMotion
+                    ? 'xrKenBurns 32s ease-in-out infinite alternate'
+                    : 'none',
               }}
               onLoad={() => setImgLoaded(true)}
               onError={() => setImgLoaded(false)}
             />
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Cinematic overlays */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/15 to-black/20 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/20 pointer-events-none" />
+      <div className={xrCinematicLeft} />
+      <div className={xrCinematicBottom} />
 
       <KeyFactBadges node={node} cfg={cfg} />
 
-      {/* Main content */}
-      <div className="relative z-10 h-full flex flex-col min-h-0">
-        <div className="flex flex-1 min-h-0">
-
-          {/* Left: sticky actions at top, scrollable identity + transcript below */}
-          <div className="flex w-[58%] min-h-0 min-w-0 flex-col">
-            <div
-              className="sticky top-0 z-30 flex-shrink-0 pl-24 pr-8 pt-14 pb-3 sm:pl-28"
-              style={{
-                background: 'linear-gradient(to bottom, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.75) 70%, transparent 100%)',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={playing ? stop : play}
-                  aria-pressed={playing}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all hover:scale-105 active:scale-95"
-                  style={{ background: playing ? '#991b1b' : `${cfg.color}dd`, color: '#fff', boxShadow: `0 0 20px ${cfg.color}55` }}
-                >
-                  {playing ? '⏹ Stop' : '▶ Narrate'}
-                </button>
-                {node.storyText && (
-                  <button
+      <div className="relative z-10 flex h-full min-h-0 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            <div className="sticky top-0 z-30 flex-shrink-0 border-b border-border/60 bg-background/80 px-4 pb-3 pt-14 backdrop-blur-md sm:px-6">
+              {allNodes.length > 1 ? (
+                <div className="mb-3 md:hidden">
+                  <Select value={node.id} onValueChange={(id) => {
+                    const picked = allNodes.find((n) => n.id === id);
+                    if (picked) onSelect(picked);
+                  }}>
+                    <SelectTrigger className="h-9 w-full text-xs" aria-label={t('mobilePickerAria')}>
+                      <SelectValue placeholder={t('mobilePickerPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allNodes.map((n) => (
+                        <SelectItem key={n.id} value={n.id} className="text-xs">
+                          {n.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+              <div className="flex flex-wrap items-center gap-2">
+                {node.storyText || node.description ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={playing ? 'destructive' : 'default'}
+                    className="h-8 gap-1.5 text-xs"
+                    onClick={playing ? stop : play}
+                    aria-pressed={playing}
+                  >
+                    {playing ? (
+                      <IconPlayerStop className="h-3.5 w-3.5" />
+                    ) : (
+                      <IconPlayerPlay className="h-3.5 w-3.5" />
+                    )}
+                    {playing ? t('stopNarration') : t('narrate')}
+                  </Button>
+                ) : null}
+                {node.storyText ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs"
                     onClick={() => setShowTranscript((v) => !v)}
                     aria-expanded={showTranscript}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-white/20 bg-white/5 text-gray-200 hover:bg-white/10 transition-all"
                   >
-                    {showTranscript ? '▾ Hide transcript' : '☰ Transcript'}
-                  </button>
-                )}
-                {heroImage && (
-                  <button
+                    {showTranscript ? t('transcriptHide') : t('transcriptShow')}
+                  </Button>
+                ) : null}
+                {heroImage ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 gap-1 text-xs"
                     onClick={() => setShowPanorama(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border border-purple-400/60 bg-purple-900/40 text-purple-200 hover:bg-purple-700/60 transition-all hover:scale-105"
                   >
-                    ◈ Immersive View
-                  </button>
-                )}
+                    <IconSparkles className="h-3.5 w-3.5" />
+                    {t('panoramaOpen')}
+                  </Button>
+                ) : null}
+                {detailHref ? (
+                  <Button type="button" size="sm" variant="outline" className="h-8 gap-1 text-xs" asChild>
+                    <Link href={detailHref}>
+                      <IconExternalLink className="h-3.5 w-3.5" />
+                      {tPanel('openRecord')}
+                    </Link>
+                  </Button>
+                ) : null}
               </div>
             </div>
 
             <div
-              className="flex-1 min-h-0 overflow-y-auto px-8 pb-6 pt-2 flex flex-col gap-3"
+              className="flex flex-1 flex-col gap-3 overflow-y-auto px-4 pb-6 pt-3 sm:px-6"
               style={{ scrollbarWidth: 'thin' }}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] px-3 py-1 rounded-full"
-                  style={{ background: `${cfg.color}44`, color: cfg.glowColor }}
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]"
+                  style={{ background: `${cfg.color}22`, color: cfg.color }}
                 >
-                  <NodeGlyph nodeType={node.nodeType} size={14} color={cfg.glowColor} /> {cfg.label}
+                  <NodeGlyph nodeType={node.nodeType} size={14} color={cfg.color} />
+                  {cfg.label}
                 </span>
-                {node.unescoStatus && (
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-blue-900/50 border border-blue-400/40 text-blue-300">UNESCO ✦</span>
-                )}
+                {showReviewed ? (
+                  <Badge variant="secondary" className="gap-1 text-[10px]">
+                    <IconShieldCheck className="h-3 w-3" />
+                    {tPanel('reviewedBadge')}
+                  </Badge>
+                ) : null}
+                {node.unescoStatus ? (
+                  <Badge variant="outline" className="text-[10px]">
+                    {t('badgeUnesco')} ✦
+                  </Badge>
+                ) : null}
               </div>
 
               <h2
-                className="text-white font-extrabold leading-none"
-                style={{ fontSize: 'clamp(1.8rem, 3.5vw, 3rem)', textShadow: `0 0 40px ${cfg.color}88`, animation: 'fadeInUp 0.8s ease both' }}
+                className="font-extrabold leading-none text-foreground"
+                style={{
+                  fontSize: 'clamp(1.6rem, 3vw, 2.75rem)',
+                  textShadow: `0 0 32px ${cfg.color}33`,
+                }}
               >
                 {node.label}
               </h2>
 
               <div className="flex flex-wrap gap-2">
-                {node.religion     && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">🕉 {node.religion}</span>}
-                {node.inceptionYear && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">📅 c. {node.inceptionYear} CE</span>}
-                {node.dynasty      && <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300">👑 {node.dynasty}</span>}
+                {node.religion ? <span className={xrChip}>🕉 {node.religion}</span> : null}
+                {temporal ? (
+                  <span className={xrChip}>📅 {temporal.displayLabel}</span>
+                ) : null}
+                {node.dynasty ? <span className={xrChip}>👑 {node.dynasty}</span> : null}
               </div>
 
-              {node.lat && node.long && (
-                <div className="text-xs text-gray-500">
-                  📍 {parseFloat(node.lat).toFixed(3)}°N, {parseFloat(node.long).toFixed(3)}°E ·{' '}
-                  <a href={`https://www.openstreetmap.org/?mlat=${node.lat}&mlon=${node.long}&zoom=15`}
-                    target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                    Open map ↗
+              {node.lat && node.long ? (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <IconMapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    {t('coords', {
+                      lat: parseFloat(node.lat).toFixed(3),
+                      lng: parseFloat(node.long).toFixed(3),
+                    })}
+                  </span>
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${node.lat}&mlon=${node.long}&zoom=15`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline-offset-2 hover:underline"
+                  >
+                    {t('openMap')} ↗
                   </a>
                 </div>
-              )}
+              ) : null}
 
-              {showTranscript && node.storyText && (
-                <div
-                  className="rounded-xl border border-white/10 bg-black/50 backdrop-blur-md p-4 text-sm leading-7 text-gray-200"
-                  style={{ scrollbarWidth: 'thin' }}
-                >
+              {!heroImage ? (
+                <div className={cn(xrSubtlePanel, 'p-4')}>
+                  <p className="text-sm font-medium text-foreground">{t('noMediaTitle')}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {node.description || node.storyText || t('noMediaBody')}
+                  </p>
+                </div>
+              ) : null}
+
+              {showTranscript && node.storyText ? (
+                <div className={cn(xrSubtlePanel, 'p-4 text-sm leading-7 text-foreground/90')}>
                   {node.storyText}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
 
-          {/* Right: storytelling overlay (auto-advances unless reduced motion) */}
           <StorytellingOverlay node={node} cfg={cfg} reducedMotion={reducedMotion} />
         </div>
 
-        {/* Image filmstrip */}
-        {images.length > 1 && (
-          <div className="flex-shrink-0 px-6 pb-4">
-            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
+        {images.length > 1 ? (
+          <div className="flex-shrink-0 px-4 pb-4 sm:px-6">
+            <div
+              className="flex gap-2 overflow-x-auto pb-1"
+              style={{ scrollbarWidth: 'thin' }}
+            >
               {images.map((src, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => setHeroIdx(i)}
-                  className="flex-shrink-0 relative overflow-hidden rounded-lg border-2 transition-all hover:scale-105"
+                  className="relative flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all hover:scale-105"
                   style={{
-                    width: 80, height: 56,
-                    borderColor: i === heroIdx ? cfg.glowColor : 'transparent',
-                    boxShadow: i === heroIdx ? `0 0 12px ${cfg.color}` : 'none',
+                    width: 80,
+                    height: 56,
+                    borderColor: i === heroIdx ? cfg.color : 'transparent',
+                    boxShadow: i === heroIdx ? `0 0 10px ${cfg.color}55` : 'none',
                   }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" className="w-full h-full object-cover" />
-                  {i === heroIdx && <div className="absolute inset-0 rounded-md" style={{ background: `${cfg.color}33` }} />}
+                  <img src={src} alt="" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
-      {/* Hero image attribution / license */}
-      {heroImage && node.imageCredits?.[heroImage] && (
+      {heroImage && node.imageCredits?.[heroImage] ? (
         <div className="absolute bottom-2 right-3 z-10 max-w-[45%] text-right">
           <ImageAttribution credit={node.imageCredits[heroImage]} />
         </div>
-      )}
+      ) : null}
 
-      {/* Panorama modal */}
-      {showPanorama && heroImage && (
-        <PanoramaViewer imageUrl={heroImage} node={node} reducedMotion={reducedMotion} onClose={() => setShowPanorama(false)} />
-      )}
+      {showPanorama && heroImage ? (
+        <PanoramaViewer
+          imageUrl={heroImage}
+          node={node}
+          reducedMotion={reducedMotion}
+          onClose={() => setShowPanorama(false)}
+        />
+      ) : null}
     </div>
   );
 }

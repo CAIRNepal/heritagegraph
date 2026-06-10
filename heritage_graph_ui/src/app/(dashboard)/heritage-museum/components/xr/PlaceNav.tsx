@@ -1,5 +1,12 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+import { IconSearch } from '@tabler/icons-react';
+
+import { Input } from '@/components/ui/input';
+import { useXrTranslations, xrNavItemBase } from '@/lib/heritage-museum/xr-theme';
+import { cn } from '@/lib/utils';
+
 import { NODE_TYPE_CONFIG, type GraphNode, type NodeType } from '../../heritage-data';
 import { NodeGlyph } from '../../node-icons';
 
@@ -9,63 +16,141 @@ interface PlaceNavProps {
   onSelect: (node: GraphNode) => void;
 }
 
-function NavNode({ node, selected, onSelect }: { node: GraphNode; selected: boolean; onSelect: () => void }) {
+function hasVisual(node: GraphNode): boolean {
+  return Boolean(node.imageUrl || node.images?.length);
+}
+
+function NavNode({
+  node,
+  selected,
+  onSelect,
+}: {
+  node: GraphNode;
+  selected: boolean;
+  onSelect: () => void;
+}) {
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   return (
     <button
+      type="button"
       onClick={onSelect}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group hover:bg-white/5"
-      style={selected
-        ? { background: `${cfg.color}22`, borderLeft: `3px solid ${cfg.color}`, paddingLeft: '9px' }
-        : { borderLeft: '3px solid transparent' }
-      }
+      aria-current={selected ? 'true' : undefined}
+      className={cn(
+        xrNavItemBase,
+        'group',
+        selected && 'bg-primary/10 ring-1 ring-primary/30',
+      )}
+      style={selected ? { borderLeft: `3px solid ${cfg.color}`, paddingLeft: '9px' } : { borderLeft: '3px solid transparent' }}
     >
       <div
-        className="flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden"
-        style={node.imageUrl ? undefined : { background: `linear-gradient(135deg, ${cfg.color}44, #0f172a)` }}
+        className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border/60"
+        style={
+          node.imageUrl
+            ? undefined
+            : { background: `linear-gradient(135deg, ${cfg.color}33, var(--muted))` }
+        }
       >
         {node.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={node.imageUrl} alt="" className="w-full h-full object-cover" />
+          <img src={node.imageUrl} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center"><NodeGlyph nodeType={node.nodeType} size={20} color="#fff" /></div>
+          <NodeGlyph nodeType={node.nodeType} size={20} color={cfg.color} />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-semibold truncate leading-tight" style={{ color: selected ? cfg.glowColor : '#e5e7eb' }}>
+        <p
+          className="truncate text-xs font-semibold leading-tight"
+          style={{ color: selected ? cfg.color : undefined }}
+        >
           {node.label}
         </p>
-        <p className="text-xs mt-0.5" style={{ color: `${cfg.color}bb` }}>{cfg.label}</p>
+        <p className="mt-0.5 text-[10px] text-muted-foreground">{cfg.label}</p>
       </div>
-      <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" style={{ color: cfg.glowColor }}>→</span>
+      <span
+        className="flex-shrink-0 text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100"
+        aria-hidden
+      >
+        →
+      </span>
     </button>
   );
 }
 
 export function PlaceNav({ nodes, selectedId, onSelect }: PlaceNavProps) {
-  const typeGroups = nodes.reduce<Record<string, GraphNode[]>>((acc, n) => {
-    if (!acc[n.nodeType]) acc[n.nodeType] = [];
-    acc[n.nodeType].push(n);
-    return acc;
-  }, {});
+  const t = useXrTranslations();
+  const [query, setQuery] = useState('');
+
+  const sorted = useMemo(
+    () =>
+      [...nodes].sort((a, b) => {
+        const av = hasVisual(a) ? 0 : 1;
+        const bv = hasVisual(b) ? 0 : 1;
+        if (av !== bv) return av - bv;
+        return a.label.localeCompare(b.label);
+      }),
+    [nodes],
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sorted;
+    return sorted.filter(
+      (n) =>
+        n.label.toLowerCase().includes(q) ||
+        n.description.toLowerCase().includes(q) ||
+        n.tags?.some((tag) => tag.toLowerCase().includes(q)),
+    );
+  }, [sorted, query]);
+
+  const typeGroups = useMemo(
+    () =>
+      filtered.reduce<Record<string, GraphNode[]>>((acc, n) => {
+        if (!acc[n.nodeType]) acc[n.nodeType] = [];
+        acc[n.nodeType].push(n);
+        return acc;
+      }, {}),
+    [filtered],
+  );
 
   return (
-    <div className="h-full flex flex-col bg-gray-950/90 border-r border-white/10 backdrop-blur-md">
-      <div className="flex-shrink-0 px-4 py-4 border-b border-white/10">
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Heritage Sites</p>
-        <p className="text-xs text-gray-600 mt-0.5">{nodes.length} places</p>
+    <div className="flex h-full flex-col border-r border-border bg-card/95 backdrop-blur-md">
+      <div className="flex-shrink-0 border-b border-border px-4 py-4">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          {t('navTitle')}
+        </p>
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          {t('navCount', { count: nodes.length })}
+        </p>
+        {nodes.length > 6 ? (
+          <div className="relative mt-3">
+            <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('searchPlaceholder')}
+              aria-label={t('searchAria')}
+              className="h-8 pl-8 text-xs"
+            />
+          </div>
+        ) : null}
       </div>
       <div
-        className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5"
-        style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}
+        className="flex-1 space-y-0.5 overflow-y-auto px-2 py-2"
+        style={{ scrollbarWidth: 'thin' }}
       >
+        {filtered.length === 0 ? (
+          <p className="px-3 py-6 text-center text-xs text-muted-foreground">
+            {t('searchNoMatch')}
+          </p>
+        ) : null}
         {Object.entries(typeGroups).map(([type, group]) => {
           const cfg = NODE_TYPE_CONFIG[type as NodeType];
           return (
             <div key={type}>
-              <div className="px-3 pt-3 pb-1">
-                <span className="flex items-center gap-1.5 text-xs text-gray-600 uppercase tracking-wider">
-                  <NodeGlyph nodeType={type} size={13} color="currentColor" /> {cfg?.label}
+              <div className="px-3 pb-1 pt-3">
+                <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <NodeGlyph nodeType={type} size={13} color="currentColor" />
+                  {cfg?.label}
                 </span>
               </div>
               {group.map((node) => (

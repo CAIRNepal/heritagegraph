@@ -84,11 +84,15 @@ def graph_nodes_query(*, graph_uri: str | None, limit: int = 600) -> str:
     return f"""
 PREFIX rdf: <{RDF}>
 PREFIX rdfs: <{RDFS}>
-SELECT DISTINCT ?s ?type ?label ?comment ?wkt WHERE {{
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX schema: <https://schema.org/>
+SELECT DISTINCT ?s ?type ?label ?comment ?crmNote ?image ?wkt WHERE {{
   {graph_clause} {{
     ?s rdf:type ?type .
     OPTIONAL {{ ?s rdfs:label ?label }}
     OPTIONAL {{ ?s rdfs:comment ?comment }}
+    OPTIONAL {{ ?s crm:P3_has_note ?crmNote }}
+    OPTIONAL {{ ?s schema:image ?image }}
     OPTIONAL {{ ?s ?geop ?wkt . FILTER(isLiteral(?wkt) && CONTAINS(STR(?wkt), "POINT")) }}
     FILTER(STRSTARTS(STR(?type), "http"))
     {curated}

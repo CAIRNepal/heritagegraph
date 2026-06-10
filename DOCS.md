@@ -1,85 +1,100 @@
 # HeritageGraph — Documentation Index
 
-A map of all project documentation. Start with [README.md](README.md) for setup, then use the
-section that matches your goal. Canonical topic docs live at the repository root; specialized
-and historical material is organized under [`documentation/`](documentation/).
+A map of all project documentation. Start with [README.md](README.md) for setup.
+
+**Canonical guides** live under [`documentation/`](documentation/).
 
 ---
 
-## 🧭 Start here / overview
+## Start here / overview
+
 | Doc | What it covers |
 |-----|----------------|
 | [README.md](README.md) | Project intro, quick start, key commands |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Services, network topology, auth flow, data models, Docker lifecycle |
-| [documentation/SYSTEM_OVERVIEW.md](documentation/SYSTEM_OVERVIEW.md) | Plain-language map of the whole system and *why* each choice was made |
-| [documentation/FEATURE_WALKTHROUGH.md](documentation/FEATURE_WALKTHROUGH.md) | Demo-oriented walkthrough of the form, graph views, and 3D surfaces |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Services, topology, auth flow, data models, Docker |
+| [documentation/SYSTEM_OVERVIEW.md](documentation/SYSTEM_OVERVIEW.md) | Plain-language system map |
+| [documentation/FEATURE_WALKTHROUGH.md](documentation/FEATURE_WALKTHROUGH.md) | Demo walkthrough |
+| [documentation/README.md](documentation/README.md) | Full documentation hub |
 
-## 🕸️ Ontology & knowledge graph
+## Ontology & knowledge graph
+
 | Doc | What it covers |
 |-----|----------------|
-| [ONTOLOGY.md](ONTOLOGY.md) | CIDOC-CRM mapping, LinkML registry, SHACL, namespaces |
-| [RDF_KG_ENGINE.md](RDF_KG_ENGINE.md) | The knowledge-graph engine (Oxigraph): projection, partitions, SPARQL API |
-| [KG_PIPELINE.md](KG_PIPELINE.md) | Full KG pipeline ingestion→display, SOTA assessment & roadmap |
+| [documentation/ontology/ONTOLOGY.md](documentation/ontology/ONTOLOGY.md) | LinkML v1.0.0 — 26 registry types, lifecycle events, CulturalEntity, LUX interop |
+| [ontology/README.md](ontology/README.md) | Canonical YAML edit workflow (`make generate` / `make ontology`) |
+| [documentation/knowledge-graph/RDF_ENGINE.md](documentation/knowledge-graph/RDF_ENGINE.md) | KG engine (Oxigraph), SPARQL API |
+| [documentation/knowledge-graph/PIPELINE.md](documentation/knowledge-graph/PIPELINE.md) | KG pipeline ingestion → display |
 
-## 📝 Contribution & forms
+## Contribution & forms
+
 | Doc | What it covers |
 |-----|----------------|
-| [FORMS.md](FORMS.md) | Registry-driven contribution forms — add fields, enums, sections, entity types |
+| [documentation/contribution/FORMS.md](documentation/contribution/FORMS.md) | Registry-driven contribution forms |
 
-## 🔐 Authentication & roles
+## Authentication & roles
+
 | Doc | What it covers |
 |-----|----------------|
-| [AUTH.md](AUTH.md) | **Canonical** — using auth in features (NextAuth + Google OAuth + Django verification) |
-| [documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md](documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md) | Roles & permissions — contributor / reviewer / staff, DRF guards |
-| [documentation/auth/AUTH_GUIDE.md](documentation/auth/AUTH_GUIDE.md) | How to add a new OAuth provider |
+| [documentation/auth/AUTH.md](documentation/auth/AUTH.md) | NextAuth + Google OAuth + Django |
+| [documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md](documentation/auth/AUTH_ROLES_DEVELOPER_GUIDE.md) | Roles & permissions |
+| [documentation/auth/AUTH_GUIDE.md](documentation/auth/AUTH_GUIDE.md) | Adding a new OAuth provider |
 
-## 🔌 API
+## API
+
 | Doc | What it covers |
 |-----|----------------|
-| [API_VERSIONING.md](API_VERSIONING.md) | API versioning scheme (`/api/v1/...`) and the stable contract |
+| [documentation/api/VERSIONING.md](documentation/api/VERSIONING.md) | `/api/v1/...` versioning |
 
-## 🚀 Deployment & operations
+## Deployment & operations
+
 | Doc | What it covers |
 |-----|----------------|
-| [DEPLOYMENT.md](DEPLOYMENT.md) | **Canonical** — production Docker + Traefik + Let's Encrypt, SSL, backups |
-| [documentation/deployment/DOKPLOY.md](documentation/deployment/DOKPLOY.md) | Dokploy platform runbook |
-| [documentation/deployment/deploy_on_coolify.md](documentation/deployment/deploy_on_coolify.md) | Coolify platform runbook |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Known issues, gotchas, debugging, deploy checklist |
+| [documentation/deployment/DEPLOYMENT.md](documentation/deployment/DEPLOYMENT.md) | Production Docker + Traefik + TLS |
+| [documentation/deployment/DOKPLOY.md](documentation/deployment/DOKPLOY.md) | Dokploy runbook |
+| [documentation/deployment/deploy_on_coolify.md](documentation/deployment/deploy_on_coolify.md) | Coolify runbook |
+| [documentation/TROUBLESHOOTING.md](documentation/TROUBLESHOOTING.md) | Known issues, debugging |
 
-## ⚡ Performance, search & i18n
+## Performance, search & i18n
+
 | Doc | What it covers |
 |-----|----------------|
-| [CACHE.md](CACHE.md) | Backend caching (Django cache framework; optional Redis) |
-| [SEARCH_STRATEGY_POSTGRES.md](SEARCH_STRATEGY_POSTGRES.md) | PostgreSQL-based search strategy |
-| [TRANSLATION.md](TRANSLATION.md) | Translation / i18n workflow |
+| [documentation/performance/CACHING.md](documentation/performance/CACHING.md) | Backend caching |
+| [documentation/performance/SEARCH.md](documentation/performance/SEARCH.md) | PostgreSQL search |
+| [documentation/i18n/TRANSLATION.md](documentation/i18n/TRANSLATION.md) | i18n workflow |
 
-## 📄 Document processing
+## Document processing
+
 | Doc | What it covers |
 |-----|----------------|
-| [OCR_PIPELINE.md](OCR_PIPELINE.md) | OCR document-processing pipeline — **⚠️ suspended (future functionality)** |
+| [documentation/pipelines/OCR.md](documentation/pipelines/OCR.md) | OCR pipeline — **suspended** |
 
-## ✅ Testing & quality
+## Testing & quality
+
 | Doc | What it covers |
 |-----|----------------|
-| [TESTING_AND_VALIDATION.md](TESTING_AND_VALIDATION.md) | How to run and reason about tests and validation |
+| [documentation/testing/TESTING.md](documentation/testing/TESTING.md) | E2E tests, validation, manual checklist |
+| [tests/README.md](tests/README.md) | E2E runner scripts (repo-root `tests/`) |
 
-## 🛠️ Developer conventions & agents
+## Developer conventions & agents
+
 | Doc | What it covers |
 |-----|----------------|
-| [CLAUDE.md](CLAUDE.md) | Coding conventions for Python/Django and TypeScript/Next.js |
-| [CONVENTIONS.md](CONVENTIONS.md) | Naming, import ordering, code style |
+| [CLAUDE.md](CLAUDE.md) | Coding conventions (Python/Django, TypeScript/Next.js) |
+| [documentation/developer/CONVENTIONS.md](documentation/developer/CONVENTIONS.md) | Naming, imports, style |
 | [AGENTS.md](AGENTS.md) | Master guide for AI coding agents |
-| [SKILLS.md](SKILLS.md) | Feature → files capability matrix |
+| [documentation/developer/SKILLS.md](documentation/developer/SKILLS.md) | Feature capability matrix |
 
-## 📦 Project meta
+## Project meta
+
 | Doc | What it covers |
 |-----|----------------|
-| [LICENSE](LICENSE) | MIT license (code, ontology, data) |
+| [LICENSE](LICENSE) | MIT license |
 | [CITATION.cff](CITATION.cff) | How to cite HeritageGraph |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | How to contribute |
 
-## 🗄️ Maintenance & internal
+## Maintenance & internal
+
 | Doc | What it covers |
 |-----|----------------|
-| [documentation/TECHNICAL_DEBT.md](documentation/TECHNICAL_DEBT.md) | Known limitations / consolidation record (reviewer-facing) |
-| [documentation/internal/](documentation/internal/) | Historical planning, design-exploration, and strategy notes (not user-facing) |
+| [documentation/TECHNICAL_DEBT.md](documentation/TECHNICAL_DEBT.md) | Known limitations |
+| [documentation/internal/](documentation/internal/) | Historical planning notes |

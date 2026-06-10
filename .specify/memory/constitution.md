@@ -83,7 +83,7 @@ Sync Impact Report
 - Documentation MUST be updated when changes impact it:
   - `AGENTS.md` when adding new apps/models/major features or changing documented workflows.
   - `ARCHITECTURE.md` when service topology or major data flows change.
-  - `SKILLS.md` when adding new capabilities or automation expectations.
+  - `documentation/developer/SKILLS.md` when adding new capabilities or automation expectations.
 
 ## Governance
 

@@ -57,7 +57,7 @@ Each maps to a **guided multi-step form** with an assertion wrapper.
 - API endpoints for assertion CRUD and conflict detection
 
 **Frontend — Contribution Hub Redesign:**
-- Redesign `/dashboard/contribute` as intent-based card picker with icons
+- Redesign `/contribute` as intent-based card picker with icons (`tools/contribute-hub.yaml` — largely implemented)
 - Multi-step form wizard component (replaces single-page ontology-form)
 - Assertion wrapper component (source + confidence — bottom of every form)
 - Step indicator / progress bar component

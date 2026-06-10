@@ -1,20 +1,33 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Poppins, Fraunces, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import NextAuthSessionProvider from './SessionProvider';
 import React from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+// Align the loaded fonts with the design tokens in globals.css
+// (--font-sans: Poppins, --font-serif: Fraunces). Previously the app loaded Geist,
+// so the intended typography never rendered.
+const poppins = Poppins({
+  variable: '--font-sans',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  display: 'swap',
+});
+
+const fraunces = Fraunces({
+  variable: '--font-serif',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   subsets: ['latin'],
-  weight: ['400', '600', '700', '800'],
-  variable: '--font-poppins',
+  weight: ['400', '600', '700'],
+  variable: '--font-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -40,7 +53,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${poppins.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={locale} messages={messages}>

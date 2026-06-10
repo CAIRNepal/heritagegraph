@@ -84,7 +84,6 @@ standardising on `rdf_load_tbox`.
 
 ## 6. Documentation sprawl
 
-37 markdown files at the repo root, several of which are internal planning artifacts rather
-than user/reviewer documentation. **Recommendation:** keep a small canonical set (`README`,
-`ARCHITECTURE`, `ONTOLOGY`, `RDF_KG_ENGINE`, `AUTH`, `DEPLOYMENT`, `CONTRIBUTING`) at root and
-move the rest under `documentation/` (or remove planning scratch entirely) before submission.
+**Addressed (2026-06):** Topic guides live under `documentation/<topic>/`. E2E runners in
+`tests/`. Root keeps `README`, `DOCS`, `AGENTS`, `CLAUDE`, `ARCHITECTURE`, `CONTRIBUTING`,
+`CHANGELOG` only. Internal planning notes consolidated under `documentation/internal/`.

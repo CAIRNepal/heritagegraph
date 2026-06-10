@@ -21,22 +21,18 @@
                     │               │           │                           │
               ┌─────▼─────┐  ┌─────▼─────┐ ┌───▼───┐              ┌──────▼──────┐
               │ Frontend   │  │  Landing  │ │Backend│              │  Traefik    │
-              │ Next.js 15 │  │ Next.js 14│ │Django │              │  Dashboard  │
+              │ Next.js 15 │  │ Next.js 15│ │Django │              │  Dashboard  │
               │ :3000      │  │ :3000     │ │:8000  │              │  :8080      │
               └─────┬──────┘  └───────────┘ └───┬───┘              └─────────────┘
                     │                           │
                     │    ┌──────────────────────┘
                     │    │
                     │    ▼
-                    │  ┌───────────────┐
-                    │  │  PostgreSQL   │
-                    │  │   :5432       │
-                    │  │               │
-                    │  │ ┌───────────┐ │
-                    │  │ │heritage_db│ │  ← Django's DB
-                    │  │ │ database  │ │
-                    │  │ └───────────┘ │
-                    │  └───────────────┘
+                    │  ┌───────────────┐     ┌────────────┐     ┌────────────┐
+                    │  │  PostgreSQL   │     │   Redis    │     │ Oxigraph   │
+                    │  │   :5432       │     │   :6379    │     │   :7878    │
+                    │  │ heritage_db   │     │ cache/queue│     │ RDF/SPARQL │
+                    │  └───────────────┘     └────────────┘     └────────────┘
                     │
                     │ (API calls with Bearer token)
                     └──────────► Backend :8000
@@ -51,7 +47,7 @@
 | Network | Purpose | Services |
 |---------|---------|----------|
 | `proxy` | Traefik-routed traffic (external access) | traefik, backend, frontend, landing |
-| `backend` | Internal service-to-service communication | postgres, backend |
+| `backend` | Internal service-to-service communication | postgres, backend, redis, oxigraph |
 
 ### Routing Rules (Traefik Labels)
 
@@ -144,7 +140,7 @@ User ──creates──▶ Submission (80+ flat fields)
 ```
 - Heritage data stored as individual `CharField` fields
 - Rigid schema — adding new fields requires migrations
-- Used by the `/dashboard/contribute/places/` form
+- Used by legacy `/data/api/form-submit/` and flat-field submission APIs (no dedicated UI route)
 
 #### 2. New System: `CulturalEntity` → `Revision` (preferred)
 ```
@@ -162,23 +158,33 @@ User ──creates──▶ CulturalEntity
   draft → pending_review → accepted
                          → rejected → (revise) → pending_review
   ```
-- Used by `/dashboard/contribute/entity/` form
+- Used by `/contribute/entity/` and ontology-driven CIDOC forms
 
 #### 3. CIDOC-CRM Ontology: `cidoc_data` app
+
+Ontology **v1.0.0** in `ontology/HeritageGraph.yaml` — event-centric CIDOC-CRM + PROV-O. Exposed
+types are listed in `tools/ui-classmap.yaml` (see [`documentation/ontology/ONTOLOGY.md`](documentation/ontology/ONTOLOGY.md)).
+
 ```
-Person ──────┐
-Location ────┤
-Event ───────┤── Independent CRUD models
-Period ──────┤   following CIDOC-CRM ontology
-Tradition ───┤
-Source ──────┘
-     │
-     └──▶ PersonRevision (auto-created via signals)
+Spatiotemporal & actors          Tangible heritage              Events (lifecycle)
+────────────────────────         ─────────────────              ──────────────────
+Person, Location                 ArchitecturalStructure         HistoricalEvent
+HistoricalPeriod, CalendarSystem IconographicObject, Monument   RitualEvent, Festival
+Deity, Tradition (ReligiousTrad.)                               Production, Consecration
+Guthi, CasteGroup                                               Enshrinement, TransferOfCustody
+                                                                KumariTenure/Selection/Retirement
+
+Provenance & identity            LinkML-only (no forms)
+─────────────────────            ─────────────────────
+Source (InformationObject)       Material, Technique, DocumentationActivity
+DataSource (lookup)              LinkedArt/LUX interop classes (Acquisition, Birth, …)
+HeritageAssertion, EntityCluster
+SyncreticRelationship
 ```
-- Structured models for specific heritage domains
-- Each has its own ViewSet at `/cidoc/<model>/`
-- `PersonRevision` auto-tracks changes via `post_save` signal
-- Plans for revision models on all entities (currently commented out)
+
+- Each mapped model has a ViewSet at the path in `ui-classmap.yaml` (e.g. `/cidoc/productions/`)
+- Registry keys ↔ Django models: `cidoc_registry_keys.py`
+- `PersonRevision` auto-tracks Person changes via `post_save` signal
 - **Identity layer**: `EntityCluster` anchors referents per `type_scope`; same-referent
   membership is stored on `HeritageAssertion` rows (`asserted_property=identity.same_referent`,
   `entity_cluster` FK). Expert curators merge/split/lock clusters (optimistic `version`, append-only
@@ -212,13 +218,12 @@ Django Auth User
   │              ├──1:N──▶ VersionHistory
   │              └──1:N──▶ Notification
   │
-  ├──1:N──▶ Person (cidoc_data)
-  │              └──1:N──▶ PersonRevision
-  ├──1:N──▶ Location (cidoc_data)
-  ├──1:N──▶ Event (cidoc_data)
-  ├──1:N──▶ HistoricalPeriod (cidoc_data)
-  ├──1:N──▶ Tradition (cidoc_data)
-  └──1:N──▶ Source (cidoc_data)
+  ├──1:N──▶ Person, Location, Event, HistoricalPeriod, Tradition, Source (cidoc_data)
+  │              └── Person → PersonRevision
+  ├──1:N──▶ ArchitecturalStructure, IconographicObject, Monument, Deity, Guthi, …
+  ├──1:N──▶ Production, Consecration, Enshrinement, TransferOfCustody, RitualEvent, Festival
+  ├──1:N──▶ HeritageAssertion, EntityCluster, SyncreticRelationship
+  └── (full registry ↔ model map: `cidoc_registry_keys.py`)
 ```
 
 ---
@@ -229,59 +234,36 @@ Django Auth User
 
 ```
 src/app/
-├── layout.tsx                 ← Root: fonts, SessionProvider, ThemeProvider
-├── page.tsx                   ← Landing page (/)
-├── SessionProvider.tsx        ← NextAuth client wrapper
+├── layout.tsx                      ← Root: fonts, SessionProvider, ThemeProvider
+├── api/auth/[...nextauth]/         ← NextAuth API route
 │
-├── api/auth/[...nextauth]/    ← NextAuth API route
-│
-└── dashboard/
-    ├── layout.tsx             ← Dashboard: SidebarProvider, AppSidebar
-    ├── page.tsx               ← Dashboard home (/dashboard)
+└── (dashboard)/                    ← Route group (URLs have NO /dashboard prefix)
+    ├── layout.tsx                  ← Sidebar shell, ontology provider, chat
+    ├── page.tsx                    ← Dashboard home (/)
     │
-    ├── knowledge/             ← Knowledge base (read/browse)
-    │   ├── entity/
-    │   ├── person/
-    │   ├── location/
-    │   ├── event/
-    │   ├── period/
-    │   ├── tradition/
-    │   ├── source/
-    │   └── places/
+    ├── knowledge/                  ← Browse (entity, person, location, structure, …)
+    ├── contribute/                 ← OntologyForm per domain + semantic patterns
+    │   ├── entity/, person/, location/, structure/, production/, consecration/, …
+    │   ├── pattern/[slug]/       ← Guided semantic workflows
+    │   ├── entity-proposal/, relationship-proposal/
+    │   └── projects/             ← Contributor project dossiers
     │
-    ├── contribute/            ← Contribution forms (create/edit)
-    │   ├── entity/
-    │   │   ├── edit/
-    │   │   └── revise/
-    │   ├── person/
-    │   ├── location/
-    │   ├── event/
-    │   ├── period/
-    │   ├── tradition/
-    │   └── source/
+    ├── curation/                   ← Review & moderation
+    │   ├── contributions/, activity/, review/[id]/
+    │   ├── identity/, conflicts/, kg-proposals/, schema-extensions/
+    │   └── dashboard/            ← Reviewer metrics
     │
-    ├── curation/              ← Moderation & review tools
-    │   ├── contributions/     ← Contribution queue
-    │   ├── activity/          ← Activity log
-    │   ├── review/            ← Triaged epistemic review queue
-    │   │   └── [id]/          ← Three-panel review workspace
-    │   ├── conflicts/         ← Conflict resolution queue
-    │   └── dashboard/         ← Reviewer dashboard
-    │
-    ├── community/             ← Community pages
-    │   ├── contributors/
-    │   └── organizations/
-    │
-    ├── graphview/             ← Knowledge graph visualization
-    ├── moderate/              ← Legacy moderation page
-    ├── leaderboard/           ← Contributor leaderboard
-    ├── notification/          ← Notification center
-    ├── versionviewer/         ← Version diff viewer
-    ├── infobox/               ← Entity info display
-    ├── team/                  ← Team page
-    ├── account/               ← Account settings
-    └── test/                  ← Development test page
+    ├── atlas/                      ← Heritage Atlas (Cesium globe + live KG)
+    ├── heritage-museum/            ← Museum XR / narrative graph
+    ├── graphview/                  ← Cytoscape graph visualization
+    ├── platform-admin/             ← Staff / expert-curator user management
+    ├── community/, leaderboard/, notification/, account/, …
+    └── …
 ```
+
+**Auth gating:** `middleware.ts` protects `/curation`, `/platform-admin`, `/moderate`,
+`/account`, `/notification`, `/progression`. `/contribute` uses `RequireAuth` in
+`(dashboard)/contribute/layout.tsx`.
 
 ### Component Hierarchy
 
@@ -377,7 +359,7 @@ The **`GET /api/v1/cidoc/schema/registry/`** response includes **`classes`**, **
 
 ### Knowledge Graph Engine (Oxigraph)
 
-When **`RDF_SYNC_ENABLED`** is set, **`apps/graph/kg_engine/`** is the single orchestration layer: registry projection → **public named graph**, optional SHACL, agent promotion on auto-accept, and **`RDFSyncOutbox`** retries. HTTP: `GET /cidoc/kg/stats/`, `GET /cidoc/kg/neighborhood/?uri=…`, `POST /cidoc/kg/query/`. See **`RDF_KG_ENGINE.md`**. Ops: `make rdf-rebuild`, `make rdf-diagnose`, `make rdf-load-tbox`, `make rdf-drain-outbox`.
+When **`RDF_SYNC_ENABLED`** is set, **`apps/graph/kg_engine/`** is the single orchestration layer: registry projection → **public named graph**, optional SHACL, agent promotion on auto-accept, and **`RDFSyncOutbox`** retries. HTTP: `GET /cidoc/kg/stats/`, `GET /cidoc/kg/neighborhood/?uri=…`, `POST /cidoc/kg/query/`. See **`documentation/knowledge-graph/RDF_ENGINE.md`**. Ops: `make rdf-rebuild`, `make rdf-diagnose`, `make rdf-load-tbox`, `make rdf-drain-outbox`.
 
 ---
 
@@ -400,49 +382,51 @@ docker-compose up --build
   ├── 3. traefik starts (no dependencies)
   │       └── reads docker labels for routing
   │
-  ├── 4. backend starts (depends: postgres healthy)
-  │       └── entrypoint.sh:
+  ├── 4. oxigraph starts (no strict dependency)
+  │       └── SPARQL endpoint on :7878
+  │
+  ├── 5. backend starts (depends: postgres healthy)
+  │       └── heritage_graph/entrypoint.sh:
   │           ├── wait for DB connection
-  │           ├── run migrations
-  │           ├── collect static files
-  │           ├── create superuser
+  │           ├── run migrations (+ optional MIGRATION_AUTO_REPAIR)
+  │           ├── collect static files (production)
+  │           ├── create superuser (if env set)
+  │           ├── seed relationship predicates
+  │           ├── rdf_load_tbox + rdf_rebuild --if-empty (when RDF_SYNC_ENABLED)
+  │           ├── bootstrap_identity_clusters + refresh_identity_candidates --auto-merge
   │           └── exec gunicorn (4 workers)
   │       └── healthcheck: /health/
   │
-  ├── 5. frontend starts (no strict dependency)
+  ├── 6. frontend starts (no strict dependency)
   │       └── Next.js production server
   │       └── healthcheck: GET /
   │
-  ├── 6. landing starts (no strict dependency)
-  │       └── Next.js production server
-  │       └── healthcheck: GET /
-  │
-  └── 7. ocr-worker starts (depends: redis + postgres healthy)
-          └── entrypoint: celery worker process
-          └── listens for OCR tasks on Redis queue
-          └── processes document classification, OCR, NER
-          └── concurrency: 2 workers (limits resource usage)
+  └── 7. landing starts (no strict dependency)
+          └── Next.js production server
+          └── healthcheck: GET /
+
+  # ocr-worker — SUSPENDED (comment block in docker-compose.yml; OCR_ENABLED defaults false)
 ```
 
 ### Build Stages
 
 **Backend (`Dockerfile.backend`) — Multi-Stage Build:**
 ```
-Stage 1: base-builder (python:3.13-slim)
+Stage 1: base-builder (python:3.12-slim-bookworm)
   └── install build deps, create pip wheels for main requirements
 
-Stage 2: ocr-builder (python:3.13-slim)
+Stage 2: ocr-builder (python:3.12-slim-bookworm) — for suspended OCR worker target only
   └── install tesseract, PyTorch system deps
   └── create pip wheels for requirements-ocr.txt
 
-Stage 3: runtime-lean (python:3.13-slim) ← MAIN BACKEND IMAGE
+Stage 3: runtime-lean (python:3.12-slim-bookworm) ← MAIN BACKEND IMAGE (active)
   └── install runtime deps only (libpq, curl, postgresql-client)
   └── copy wheels from base-builder
   └── non-root user: django (1000)
   └── CMD: gunicorn with 4 workers
   └── Size: ~600MB (lightweight, no OCR)
 
-Stage 4: ocr-worker (python:3.13-slim) ← CELERY WORKER IMAGE
+Stage 4: ocr-worker (python:3.12-slim-bookworm) ← SUSPENDED (not in active compose)
   └── install full runtime + OCR deps (tesseract, libsm6, libgomp1)
   └── copy wheels from both builders
   └── non-root user: django (1000)
@@ -524,11 +508,10 @@ PostgreSQL (user-level access, connection limits)
 | Frontend | Backend | HTTP (internal) | API calls (via browser, through Traefik) |
 | Backend | Google | HTTPS | Verify ID tokens (via google-auth) |
 | Backend | PostgreSQL | TCP | Database queries |
-| Backend | Redis | TCP:6379 | Queue OCR tasks (Celery broker) |
+| Backend | Redis | TCP:6379 | Django cache (optional) + Celery broker when async tasks enabled |
+| Backend | Oxigraph | HTTP:7878 | RDF UPDATE/QUERY (`RDF_ENDPOINT_URL`, `RDF_QUERY_URL`) |
 | Backend | OpenRouter API | HTTPS | In-app chat (`/api/v1/assistant/chat/`; tiered models) |
-| OCR Worker | Redis | TCP:6379 | Dequeue tasks, store results |
-| OCR Worker | PostgreSQL | TCP | Read documents, store OCR results |
-| OCR Worker | Anthropic API | HTTPS | Claude Vision for inscription rescue (optional) |
+| *(suspended)* OCR Worker | Redis / Postgres / Anthropic | — | OCR pipeline paused; `ocr-worker` not in active compose |
 ---
 
 ## 📐 Design Decisions & Rationale

@@ -19,6 +19,15 @@ import {
  * straight from the ontology via the generated RDF_CLASS_URI_TO_NODE_TYPE table.
  */
 
+export interface KgImageCredit {
+  license?: string;
+  licenseUrl?: string;
+  artist?: string;
+  descriptionUrl?: string;
+  source?: string;
+  retrieved?: string;
+}
+
 export interface KgGraphNode {
   id: string; // resource IRI
   types: string[]; // rdf:type IRIs
@@ -26,6 +35,19 @@ export interface KgGraphNode {
   comment: string | null;
   lat: string | null;
   long: string | null;
+  /** Temporal anchor for timeline (EDTF-ish string from ORM or RDF). */
+  inceptionYear?: string | null;
+  /** Primary image for museum XR / map hero. */
+  imageUrl?: string | null;
+  images?: string[];
+  imageCredits?: Record<string, KgImageCredit>;
+  narrativeSource?: string | null;
+  imageSource?: string | null;
+  /** Identity cluster UUID (same referent within type_scope). */
+  clusterId?: string | null;
+  canonicalMemberId?: string | null;
+  clusterLabel?: string | null;
+  typeScope?: string | null;
   /** curated HeritageGraph vs linked Yale LUX stub */
   sourceLayer?: 'curated' | 'lux';
   /** Yale LUX canonical URI when this node is a linked stub */
@@ -58,7 +80,12 @@ export interface KgGraphResponse {
   luxLinkCount?: number;
   nodes: KgGraphNode[];
   edges: KgGraphEdge[];
-  counts: { nodes: number; edges: number; luxNodes?: number };
+  counts: {
+    nodes: number;
+    edges: number;
+    luxNodes?: number;
+    edgesWithProvenance?: number;
+  };
 }
 
 function expandCurie(curie: string): string {

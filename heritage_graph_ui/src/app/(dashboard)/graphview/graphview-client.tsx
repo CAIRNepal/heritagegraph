@@ -466,7 +466,7 @@ export default function GraphViewPage() {
             <div className="space-y-1">
               <h1 className="text-xl md:text-2xl font-black text-white">
                 Heritage{' '}
-                <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">
+                <span className="text-white/90">
                   Knowledge Graph
                 </span>
               </h1>

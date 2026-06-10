@@ -1,5 +1,5 @@
 {
-  "schema_version": "46d4f5133d871ee9367b277d33f996d0967b1487a96db8d2471fb3967f0af56f",
+  "schema_version": "1ecfbc334845bdfd980bf32c28976db3cef3a44a61a05e3e3562275e93bb6c23",
   "tenant_id": null,
   "degraded": false,
   "classes": {
@@ -405,82 +405,6 @@
         {
           "key": "includes_ritual_event",
           "label": "Includes Ritual Event",
-          "sortable": true,
-          "visible": true,
-          "format": "text"
-        }
-      ]
-    },
-    "period": {
-      "key": "period",
-      "label": "Historical Period",
-      "labelPlural": "Historical Periods",
-      "description": "A named, time-bounded historical period of Nepal (e.g., Lichhavi, Malla, Shah). A temporal frame within which heritage entities and events are situated \u2014 distinct from a single HistoricalEvent.",
-      "classUri": "heritageGraph:HistoricalPeriod",
-      "icon": "clock",
-      "apiEndpoint": "/cidoc/historical_periods/",
-      "category": "spatiotemporal",
-      "navigable": true,
-      "sections": [
-        {
-          "key": "basic",
-          "label": "Basic Information"
-        }
-      ],
-      "fields": [
-        {
-          "key": "name",
-          "label": "Name",
-          "type": "text",
-          "section": "basic",
-          "order": 1,
-          "required": true,
-          "multivalued": false,
-          "description": "Primary name or label",
-          "slot_uri": "rdfs:label"
-        },
-        {
-          "key": "note",
-          "label": "Note",
-          "type": "text",
-          "section": "basic",
-          "order": 2,
-          "required": false,
-          "multivalued": false,
-          "description": "Free-text note (description, reason, verification notes)",
-          "slot_uri": "crm:P3_has_note"
-        },
-        {
-          "key": "has_timespan",
-          "label": "Has Timespan",
-          "type": "relation",
-          "section": "basic",
-          "order": 3,
-          "required": false,
-          "multivalued": false,
-          "description": "Links event to its temporal extent",
-          "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
-        }
-      ],
-      "columns": [
-        {
-          "key": "name",
-          "label": "Name",
-          "sortable": true,
-          "visible": true,
-          "format": "text"
-        },
-        {
-          "key": "note",
-          "label": "Note",
-          "sortable": true,
-          "visible": true,
-          "format": "text"
-        },
-        {
-          "key": "has_timespan",
-          "label": "Has Timespan",
           "sortable": true,
           "visible": true,
           "format": "text"
@@ -5101,6 +5025,82 @@
         }
       ]
     },
+    "period": {
+      "key": "period",
+      "label": "Historical Period",
+      "labelPlural": "Historical Periods",
+      "description": "A named, time-bounded historical period of Nepal (e.g., Lichhavi, Malla, Shah). A temporal frame within which heritage entities and events are situated \u2014 distinct from a single HistoricalEvent.",
+      "classUri": "heritageGraph:HistoricalPeriod",
+      "icon": "clock",
+      "apiEndpoint": "/cidoc/historical_periods/",
+      "category": "spatiotemporal",
+      "navigable": true,
+      "sections": [
+        {
+          "key": "basic",
+          "label": "Basic Information"
+        }
+      ],
+      "fields": [
+        {
+          "key": "name",
+          "label": "Name",
+          "type": "text",
+          "section": "basic",
+          "order": 1,
+          "required": true,
+          "multivalued": false,
+          "description": "Primary name or label",
+          "slot_uri": "rdfs:label"
+        },
+        {
+          "key": "note",
+          "label": "Note",
+          "type": "text",
+          "section": "basic",
+          "order": 2,
+          "required": false,
+          "multivalued": false,
+          "description": "Free-text note (description, reason, verification notes)",
+          "slot_uri": "crm:P3_has_note"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "type": "relation",
+          "section": "basic",
+          "order": 3,
+          "required": false,
+          "multivalued": false,
+          "description": "Links event to its temporal extent",
+          "slot_uri": "crm:P4_has_time-span",
+          "relationTo": "TimeSpan"
+        }
+      ],
+      "columns": [
+        {
+          "key": "name",
+          "label": "Name",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "note",
+          "label": "Note",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        },
+        {
+          "key": "has_timespan",
+          "label": "Has Timespan",
+          "sortable": true,
+          "visible": true,
+          "format": "text"
+        }
+      ]
+    },
     "assertion": {
       "key": "assertion",
       "label": "Heritage Assertion",
@@ -7012,31 +7012,6 @@
         "required": [
           "name",
           "has_timespan"
-        ],
-        "additionalProperties": true
-      },
-      "period": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "note": {
-            "type": "string"
-          },
-          "has_timespan": {
-            "type": [
-              "string",
-              "number",
-              "integer",
-              "object",
-              "array"
-            ]
-          }
-        },
-        "required": [
-          "name"
         ],
         "additionalProperties": true
       },
@@ -9018,6 +8993,31 @@
           },
           "note": {
             "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": true
+      },
+      "period": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "has_timespan": {
+            "type": [
+              "string",
+              "number",
+              "integer",
+              "object",
+              "array"
+            ]
           }
         },
         "required": [

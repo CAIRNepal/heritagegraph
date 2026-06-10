@@ -78,7 +78,7 @@ In this repo there is a shared auth guard component:
 
 Use it to ensure consistent “sign in” UX instead of each page handling session states differently.
 
-For **high-effort user flows** (especially contribution forms), add **early gating**: middleware and/or a parent layout that wraps `RequireAuth` (see `(dashboard)/contribute/layout.tsx`) so users sign in before starting the form. See `AUTH.md` → “Route-Level Guard”.
+For **high-effort user flows** (especially contribution forms), add **early gating**: middleware and/or a parent layout that wraps `RequireAuth` (see `(dashboard)/contribute/layout.tsx`) so users sign in before starting the form. See `documentation/auth/AUTH.md` → “Route-Level Guard”.
 
 ---
 

@@ -63,9 +63,9 @@ export default function Page() {
             <IconSparkles className="w-4 h-4" />
             {t('heroBadge')}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight text-white">
+          <h1 className="font-serif text-3xl md:text-4xl font-bold leading-tight text-white">
             {greeting},{' '}
-            <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">
+            <span className="text-white/90">
               {userName}!
             </span>
           </h1>
@@ -122,7 +122,7 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
+          className="font-serif text-2xl font-semibold mb-6 text-foreground"
         >
           {t('yourOverview')}
         </motion.h2>
@@ -137,7 +137,7 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
+          className="font-serif text-2xl font-semibold mb-6 text-foreground"
         >
           {t('quickActions')}
         </motion.h2>
@@ -153,7 +153,7 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-amber-500 to-yellow-500 bg-clip-text dark:from-blue-100 dark:via-amber-300 dark:to-yellow-300"
+          className="font-serif text-2xl font-semibold mb-6 text-foreground"
         >
           {t('yourProgress')}
         </motion.h2>
@@ -177,7 +177,7 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
+          className="font-serif text-2xl font-semibold mb-6 text-foreground"
         >
           {t('browseByCategory')}
         </motion.h2>
@@ -209,7 +209,7 @@ export default function Page() {
       >
         <motion.h2
           variants={fadeInUp}
-          className="text-2xl font-bold mb-6 text-transparent bg-gradient-to-r from-blue-900 via-blue-600 to-sky-500 bg-clip-text dark:from-blue-100 dark:via-blue-300 dark:to-sky-300"
+          className="font-serif text-2xl font-semibold mb-6 text-foreground"
         >
           {t('curationReview')}
         </motion.h2>
@@ -229,7 +229,7 @@ export default function Page() {
       >
         <h2 className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100">
           Heritage{' '}
-          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
+          <span className="text-foreground">
             Entries
           </span>
         </h2>

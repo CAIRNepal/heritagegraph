@@ -156,7 +156,7 @@ export default function ActivityLogPage() {
               <IconSparkles className="w-4 h-4" /> Event Timeline
             </div>
             <h1 className="text-3xl font-black text-white">
-              Curation Event <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">Timeline</span>
+              Curation Event <span className="text-white/90">Timeline</span>
             </h1>
             <p className="text-blue-100 max-w-2xl">
               All curation activity is logged and publicly available, establishing provenance of assertions and acknowledging the work of collaborators.

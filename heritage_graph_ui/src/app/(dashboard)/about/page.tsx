@@ -143,7 +143,7 @@ export default function AboutPage() {
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight text-white">
                 {t('hero.titlePrefix')}{' '}
-                <span className="bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 bg-clip-text text-transparent">
+                <span className="text-foreground">
                   {t('hero.titleHighlight')}
                 </span>
               </h1>
@@ -215,7 +215,7 @@ export default function AboutPage() {
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t('sections.coreFeatures.prefix')}{' '}
-          <span className="text-transparent bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text">
+          <span className="text-foreground">
             {t('sections.coreFeatures.highlight')}
           </span>
         </motion.h2>
@@ -256,7 +256,7 @@ export default function AboutPage() {
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t('sections.knowledgeDomains.prefix')}{' '}
-          <span className="text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text">
+          <span className="text-foreground">
             {t('sections.knowledgeDomains.highlight')}
           </span>
         </motion.h2>
@@ -298,7 +298,7 @@ export default function AboutPage() {
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t('sections.progression.prefix')}{' '}
-          <span className="text-transparent bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text">
+          <span className="text-foreground">
             {t('sections.progression.highlight')}
           </span>
         </motion.h2>
@@ -369,7 +369,7 @@ export default function AboutPage() {
       >
         <motion.h2 variants={fadeInUp} className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t('sections.techStack.prefix')}{' '}
-          <span className="text-transparent bg-gradient-to-r from-violet-600 to-purple-500 bg-clip-text">
+          <span className="text-foreground">
             {t('sections.techStack.highlight')}
           </span>
         </motion.h2>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTimelineTranslations } from '@/lib/heritage-museum/xr-theme';
 import { IconInfoCircle } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ const TIMELINE_AXIS_RESERVE_PX = 36;
 const TIMELINE_PERIOD_BAND_PX = 22;
 
 export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProps) {
-  const t = useTranslations('heritageMuseum.timeline');
+  const t = useTimelineTranslations();
   const scrollRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLButtonElement | null>(null);
 
@@ -56,7 +56,25 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
     });
   }, [selectedId, layout]);
 
-  if (!layout) return null;
+  if (!layout) {
+    return (
+      <div
+        className={cn(
+          glassCard,
+          'flex h-full min-h-0 flex-col rounded-none border-0 px-4 py-3 shadow-none sm:px-6',
+        )}
+        role="status"
+        aria-label={t('title')}
+      >
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          {t('title')}
+        </h3>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {nodes.length === 0 ? t('emptyNoNodes') : t('emptyUndated', { count: nodes.length })}
+        </p>
+      </div>
+    );
+  }
 
   const { width, markers, periods, ticks, minYear, maxYear } = layout;
   // Start the marker lanes below the period-band strip so lane-0 markers don't

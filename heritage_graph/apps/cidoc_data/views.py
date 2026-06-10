@@ -221,6 +221,39 @@ class ContributionFlowMixin:
             logger = logging.getLogger(__name__)
             logger.warning(f"Failed to create CulturalEntity wrapper: {e}")
 
+        # Claim-first entity resolution: link exact label duplicates to an existing
+        # cluster; queue similar labels for the identity workspace (spec 005).
+        try:
+            from django.db import transaction
+
+            from .contribution_entity_resolution import resolve_contribution_identity
+
+            actor_label = getattr(self.request.user, "username", None) or "contributor"
+
+            def _resolve_identity() -> None:
+                try:
+                    resolve_contribution_identity(
+                        instance,
+                        contributed_by=actor_label,
+                    )
+                except Exception:
+                    import logging
+
+                    logging.getLogger(__name__).exception(
+                        "Entity resolution failed for %s pk=%s",
+                        instance.__class__.__name__,
+                        instance.pk,
+                    )
+
+            transaction.on_commit(_resolve_identity)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception(
+                "Failed to schedule entity resolution for %s",
+                instance.pk,
+            )
+
 
 #################################################################
 ## CIDOC_DATA — all ViewSets now use ContributionFlowMixin
@@ -550,28 +583,79 @@ class EntityClusterViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.IsAuthenticated],
     )
     def suggest_duplicates(self, request):
-        """Substring match on canonical_label for contributor duplicate hints (007)."""
+        """
+        Duplicate hints for contributors (blocking + label similarity + member ranking).
+
+        Query: q (label), type_scope or registry_key, include_members (default true).
+        """
+        from apps.cidoc_data.canonical_record_selection import (
+            rank_cluster_members,
+            select_canonical_member,
+        )
+        from apps.cidoc_data.cidoc_registry_keys import type_scope_for_registry_key
+        from apps.cidoc_data.identity_validation import label_match_tier
+
         q = (request.query_params.get("q") or "").strip()
         type_scope = (request.query_params.get("type_scope") or "").strip().lower()
-        if len(q) < 2:
-            return Response({"results": []})
-        qs = EntityCluster.objects.filter(merged_into__isnull=True).filter(
-            canonical_label__icontains=q
+        registry_key = (request.query_params.get("registry_key") or "").strip().lower()
+        if not type_scope and registry_key:
+            type_scope = type_scope_for_registry_key(registry_key) or ""
+        include_members = (
+            request.query_params.get("include_members", "true").strip().lower()
+            != "false"
         )
+        if len(q) < 2:
+            return Response({"results": [], "recommendation": "create_new"})
+
+        base_qs = EntityCluster.objects.filter(merged_into__isnull=True)
         if type_scope:
-            qs = qs.filter(type_scope=type_scope)
-        qs = qs.order_by("canonical_label")[:20]
-        results = [
-            {
-                "id": str(c.id),
-                "canonical_label": c.canonical_label,
-                "type_scope": c.type_scope,
-                "curated_aliases": c.curated_aliases or [],
-                "external_identifiers": c.external_identifiers or {},
-            }
-            for c in qs
-        ]
-        return Response({"results": results})
+            base_qs = base_qs.filter(type_scope=type_scope)
+
+        scored: list[tuple[int, str, EntityCluster]] = []
+        for cluster in base_qs.iterator(chunk_size=300):
+            labels = [cluster.canonical_label, *(cluster.curated_aliases or [])]
+            best_tier: str | None = None
+            for cand in labels:
+                tier = label_match_tier(q, cand)
+                if tier == "exact":
+                    best_tier = "exact"
+                    break
+                if tier == "similar" and best_tier != "exact":
+                    best_tier = "similar"
+            if best_tier is None and q.casefold() in (cluster.canonical_label or "").casefold():
+                best_tier = "similar"
+            if best_tier is None:
+                continue
+            tier_rank = 0 if best_tier == "exact" else 1
+            scored.append((tier_rank, cluster.canonical_label or "", cluster))
+
+        scored.sort(key=lambda row: (row[0], row[1]))
+        top = [c for _, _, c in scored[:20]]
+
+        results = []
+        for c in top:
+            canonical = select_canonical_member(c) if include_members else None
+            members = rank_cluster_members(c) if include_members else []
+            results.append(
+                {
+                    "id": str(c.id),
+                    "canonical_label": c.canonical_label,
+                    "type_scope": c.type_scope,
+                    "registry_key": canonical.get("registry_key") if canonical else None,
+                    "curated_aliases": c.curated_aliases or [],
+                    "external_identifiers": c.external_identifiers or {},
+                    "member_count": len(members),
+                    "canonical_member": canonical,
+                    "members": members[:8],
+                    "recommendation": "edit_existing" if members else "review_merge",
+                }
+            )
+
+        recommendation = "create_new"
+        if results:
+            recommendation = results[0].get("recommendation") or "edit_existing"
+
+        return Response({"results": results, "recommendation": recommendation})
 
     def destroy(self, request, *args, **kwargs):
         return Response(

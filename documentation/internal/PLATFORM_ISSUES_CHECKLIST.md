@@ -23,7 +23,7 @@
 
 ## 1. Review queue & triage (product)
 
-These map to `GET /data/review-queue/?queue_type=<value>` and the triaged review UI (`/dashboard/curation/review`). Counts: `GET /data/review-queue/queue_counts/`.
+These map to `GET /data/review-queue/?queue_type=<value>` and the triaged review UI (`/curation/review`). Counts: `GET /data/review-queue/queue_counts/`.
 
 | Queue tab (`queue_type`) | Meaning | Implementation note |
 |--------------------------|---------|---------------------|

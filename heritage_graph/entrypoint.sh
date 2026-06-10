@@ -140,6 +140,46 @@ except:
 EOF
 
 # ================================================================
+# Controlled vocabularies + knowledge graph bootstrap (idempotent)
+# ================================================================
+log_info "Seeding relationship predicates (idempotent)..."
+python manage.py seed_relationship_predicates --prune \
+    || log_warn "seed_relationship_predicates failed (continuing)."
+
+if [ "${RDF_SYNC_ENABLED:-true}" = "true" ]; then
+    OX_URL="${OXIGRAPH_URL:-http://oxigraph:7878}"
+    log_info "Waiting for Oxigraph at ${OX_URL} (up to 30s)..."
+    ox_i=0
+    until curl -sf -o /dev/null "${OX_URL}/query?query=ASK%7B%7D" || [ "$ox_i" -ge 30 ]; do
+        ox_i=$((ox_i + 1))
+        sleep 1
+    done
+    log_info "Bootstrapping RDF triplestore (TBox + public graph if empty)..."
+    python manage.py rdf_load_tbox \
+        || log_warn "rdf_load_tbox failed (continuing; data is safe in PostgreSQL)."
+    python manage.py rdf_rebuild --if-empty \
+        || log_warn "rdf_rebuild failed (continuing; data is safe in PostgreSQL)."
+else
+    log_warn "RDF_SYNC_ENABLED is not 'true'; skipping triplestore bootstrap."
+fi
+
+# Identity resolution: singleton clusters for new rows, refresh duplicate candidates,
+# auto-merge high-confidence same-type label pairs. Runs on every deploy/restart;
+# skips work already done. Non-fatal so API always starts.
+log_info "Bootstrapping identity clusters (idempotent)..."
+python manage.py bootstrap_identity_clusters \
+    || log_warn "bootstrap_identity_clusters failed (continuing)."
+log_info "Running entity resolution (candidates + safe auto-merge)..."
+python manage.py refresh_identity_candidates --auto-merge \
+    || log_warn "refresh_identity_candidates --auto-merge failed (continuing)."
+
+log_info "Backfilling assertion provenance (idempotent)..."
+python manage.py backfill_assertion_provenance \
+    || log_warn "backfill_assertion_provenance failed (continuing)."
+python manage.py kg_rigor_audit \
+    || log_warn "kg_rigor_audit reported violations (see above)."
+
+# ================================================================
 # Start the application
 # ================================================================
 log_info "Starting Django application..."

@@ -159,7 +159,7 @@ export default function OrganizationsPage() {
                 <IconSparkles className="w-4 h-4" /> Community
               </div>
               <h1 className="text-3xl font-black text-white">
-                <span className="bg-gradient-to-r from-white via-blue-100 to-sky-100 bg-clip-text text-transparent">Organizations</span>
+                <span className="text-white/90">Organizations</span>
               </h1>
               <p className="text-blue-100 max-w-lg">Browse and join organizations contributing to cultural heritage preservation.</p>
             </div>

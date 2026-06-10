@@ -25,10 +25,11 @@ heritagegraph/
 ├── heritage_graph/              # Django backend (DRF)
 │   ├── apps/
 │   │   ├── heritage_data/       # Main app: submissions, moderation, profiles
-│   │   ├── cidoc_data/          # CIDOC-CRM ontology app: persons, events, locations
-│   │   ├── document_processing/ # **NEW** OCR & document processing pipeline
-│   │   ├── assistant/        # In-app LLM chat (grounded: site copy + public graph search)
-│   │   └── health_check.py     # /health/ endpoints for Docker/Traefik
+│   │   ├── cidoc_data/          # CIDOC-CRM ontology, identity layer, RDF projection
+│   │   ├── graph/               # KG engine (Oxigraph), museum enrichment, KG APIs
+│   │   ├── document_processing/ # Document upload (OCR pipeline suspended)
+│   │   ├── assistant/           # Grounded in-app chat (OpenRouter)
+│   │   └── health_check.py      # /health/ endpoints for Docker/Traefik
 │   ├── celery_app.py            # **NEW** Celery app initialization (imported from `heritage_graph/__init__.py`)
 │   ├── settings/
 │   │   ├── __init__.py          # Env-based dispatch (DJANGO_ENV → dev or prod)
@@ -78,13 +79,14 @@ heritagegraph/
 ├── docker-compose.yml           # Main compose: all services (dev)
 ├── docker-compose-coolify.yml   # Coolify (platform proxy; no in-repo Traefik)
 ├── docker-compose-dokploy.yml   # Dokploy (same + MIGRATION_AUTO_REPAIR, landing build args)
-├── DOKPLOY.md                   # Dokploy checklist and env notes
+├── documentation/deployment/    # DEPLOYMENT.md, DOKPLOY.md, Coolify runbooks
 ├── docker-compose.prod.yml      # Production override (HTTPS, Let's Encrypt)
 ├── Dockerfile.backend           # Backend multi-stage build
 ├── Dockerfile.frontend          # Same as heritage_graph_ui/Dockerfile (repo-root `-f` alias)
 ├── Makefile                     # Convenience commands
 ├── .env.example                 # Environment variable template
-└── DEPLOYMENT.md                # Full deployment guide
+├── tests/                       # E2E runners (see documentation/testing/TESTING.md)
+└── documentation/               # Topic guides (see DOCS.md)
 ```
 
 ---
@@ -161,13 +163,15 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `GET /data/api/personal-stats/` — current user stats
 - `GET /data/api/progression/` — progression metrics
 
-**CIDOC Data (prefix: `/cidoc/`):**
-- `/cidoc/persons/` — historical persons CRUD
-- `/cidoc/locations/` — heritage locations CRUD
-- `/cidoc/events/` — cultural events CRUD
-- `/cidoc/historical_periods/` — time periods CRUD
-- `/cidoc/traditions/` — cultural traditions CRUD
-- `/cidoc/sources/` — documentary sources CRUD
+**CIDOC Data (prefix: `/cidoc/`):** Ontology **v1.0.0** — full registry in [`documentation/ontology/ONTOLOGY.md`](documentation/ontology/ONTOLOGY.md) §5 and `tools/ui-classmap.yaml`. Registry keys ↔ Django models: `cidoc_registry_keys.py`.
+
+- **Actors & spatiotemporal:** `/cidoc/persons/`, `/cidoc/locations/`, `/cidoc/events/`, `/cidoc/historical_periods/`, `/cidoc/traditions/`, `/cidoc/calendar_systems/`
+- **Tangible heritage:** `/cidoc/structures/`, `/cidoc/iconographic_objects/`, `/cidoc/monuments/`
+- **Conceptual & social:** `/cidoc/deities/`, `/cidoc/guthis/`, `/cidoc/caste_groups/`, `/cidoc/syncretic_relationships/`
+- **Lifecycle events:** `/cidoc/rituals/`, `/cidoc/festivals/`, `/cidoc/productions/`, `/cidoc/consecrations/`, `/cidoc/enshrinements/`, `/cidoc/transfers_of_custody/`
+- **Kumari tradition:** `/cidoc/kumari_tenures/`, `/cidoc/kumari_selections/`, `/cidoc/kumari_retirements/`
+- **Provenance & identity:** `/cidoc/sources/` (LinkML `InformationObject`), `/cidoc/data_sources/` (lookup), `/cidoc/assertions/`, `/cidoc/entity-clusters/`, `/cidoc/identity-candidates/`
+- **Schema registry:** `GET /api/v1/cidoc/schema/registry/` — classes, enums, `contribute_hub`, `semantic_patterns`, `registry_jsonschema`
 - `/cidoc/search/?q=<query>` — cross-model search
 - `/cidoc/discovery/?type=<persons|monuments|...>&q=<optional>` — public faceted browse + counts (landing)
 - **Ontology edit (UI):** From `/knowledge/<domain>/view/<id>`, **Edit** opens `/contribute/<domain>?id=<id>`. The form **GET**s the same detail resource as the view, then **PATCH**es with `Authorization: Bearer` (NextAuth). **Mutations** require an authenticated user who is **staff/superuser** or the row’s `contributor` (see `CidocObjectEditPermission` in `heritage_graph/apps/cidoc_data/permissions.py` and `ContributionFlowMixin.get_permissions` in `heritage_graph/apps/cidoc_data/views.py`).
@@ -249,7 +253,9 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/curation/dashboard` — reviewer dashboard
 - `/community/contributors` — contributor list
 - `/graphview` — graph visualization
-- `/atlas` — Heritage Atlas command center (Cesium globe + Esri imagery, ontology-linked dummy corpus): globe disc with FX/city docks and surrounding panels for Graph, Documents, Time, Search, AI stub, and Ops; panels can maximize over the disc; CommandBar toggles transparent vs opaque disc backdrop; provenance badges + `ontology/HeritageGraph.yaml`-aligned types
+- `/atlas` — Heritage Atlas (Cesium globe + live KG corpus)
+- `/heritage-museum` — Museum XR / narrative knowledge graph
+- `/platform-admin` — In-app user and reviewer role management (staff / expert curator)
 
 ---
 
@@ -263,19 +269,19 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 | `backend` | custom (Dockerfile.backend, runtime-lean target) | 8000 | `backend.localhost` |
 | `frontend` | custom (heritage_graph_ui/Dockerfile) | 3000 | `frontend.localhost` |
 | `landing` | custom (heritage_graph_landing/Dockerfile) | 3000 | `landing.localhost` |
-| `ocr-worker` | custom (Dockerfile.backend, ocr-worker target) | — | — (background, OCR processing) |
+| `oxigraph` | ghcr.io/oxigraph/oxigraph | 7878 | — (internal RDF/SPARQL) |
 
 ---
 
 ## 🔄 Celery & Async Task Processing
 
-**Status:** Infrastructure complete (Phase 0 & 1)
+**Status:** Infrastructure present; **OCR worker suspended** in active Docker compose.
 
-HeritageGraph uses **Celery + Redis** for async task processing:
+HeritageGraph uses **Celery + Redis** when async tasks are enabled:
 - Broker: Redis (`redis://localhost:6379` in dev, env-based in prod)
 - Result backend: Redis (separate database)
 - Development: `CELERY_TASK_ALWAYS_EAGER=True` (tasks run synchronously for debugging)
-- Production: Tasks queued async, processed by `ocr-worker` service
+- Production: OCR `ocr-worker` service is **not** in the active stack (`OCR_ENABLED` defaults false)
 
 **Key Files:**
 - `heritage_graph/celery_app.py` — Celery app initialization
@@ -287,7 +293,7 @@ HeritageGraph uses **Celery + Redis** for async task processing:
 
 ## 📄 OCR & Document Processing Pipeline
 
-**Status:** Infrastructure complete, engines pending implementation (Phase 0-1 ✅, Phase 2+ TODO)
+**Status:** ⚠️ **Suspended** — `OCR_ENABLED` defaults false; `ocr-worker` removed from active compose. See [`documentation/pipelines/OCR.md`](documentation/pipelines/OCR.md).
 
 **Purpose:** Automatically extract and structure text from uploaded documents (PDFs, images, handwritten notes, stone inscriptions) to pre-populate heritage contribution forms.
 
@@ -364,8 +370,8 @@ HeritageGraph uses **Celery + Redis** for async task processing:
 
 ## 🧪 Testing
 
-- Backend: `cd heritage_graph && python manage.py test apps.cidoc_data`
-- OCR: (incoming) `python manage.py test apps.document_processing`
+- Platform E2E: `make test-e2e` (see [`tests/README.md`](tests/README.md))
+- Backend unit: `cd heritage_graph && python manage.py test apps.cidoc_data`
 - Frontend: No test framework configured yet
 - Docker validation: `docker compose config --quiet`
 
@@ -375,18 +381,18 @@ HeritageGraph uses **Celery + Redis** for async task processing:
 
 | File | Purpose |
 |------|---------|
-| `FORMS.md` | **How forms work** — fields/enums/sections/entities; registry-driven **`OntologyForm`**; **`tools/semantic-patterns.yaml`**; optional RDF projection + SHACL (see RDF section) |
-| `AUTH.md` | Authentication system — NextAuth + Google OAuth + Django token verification; includes **Errors and Recovery** (`/auth/login` codes, `session.error`, `/auth/error`) |
-| `AUTH_GUIDE.md` | **How to add new auth providers** — step-by-step guide with templates |
-| `API_VERSIONING.md` | **API versioning** — `/api/v1/...` conventions and how to add `v2+` safely |
-| `CLAUDE.md` | Coding conventions and style guide for AI agents |
-| `SKILLS.md` | Feature capabilities matrix and implementation guide |
-| `ARCHITECTURE.md` | System design, data flow, and component relationships |
-| `CONVENTIONS.md` | Code style, naming, and file organization rules |
-| `PLATFORM_PLAN.md` | Contributing platform vision and phased roadmap |
-| `TROUBLESHOOTING.md` | Known issues, gotchas, and their fixes |
-| `TRANSLATION.md` | **i18n guide** — how to translate pages to Nepali or add new languages |
-| `DEPLOYMENT.md` | Production deployment guide |
-| [`specs/007-entity-relationship-proposals/README.md`](specs/007-entity-relationship-proposals/README.md) | **Entity & relationship proposals (007)** — overview, links to spec kit and related docs |
-| `OCR_INTEGRATION_SUMMARY.md` | **OCR pipeline details** — architecture, implementation guide, phase tracking |
-| `contributing.md` | Contributor instructions |
+| [`documentation/contribution/FORMS.md`](documentation/contribution/FORMS.md) | **How forms work** — registry-driven **`OntologyForm`**, semantic patterns |
+| [`documentation/auth/AUTH.md`](documentation/auth/AUTH.md) | Authentication — NextAuth + Google OAuth + Django verification |
+| [`documentation/auth/AUTH_GUIDE.md`](documentation/auth/AUTH_GUIDE.md) | How to add new OAuth providers |
+| [`documentation/api/VERSIONING.md`](documentation/api/VERSIONING.md) | API versioning (`/api/v1/...`) |
+| [`documentation/testing/TESTING.md`](documentation/testing/TESTING.md) | E2E tests and validation (`make test-e2e`) |
+| `CLAUDE.md` | Coding conventions for AI agents |
+| [`documentation/developer/SKILLS.md`](documentation/developer/SKILLS.md) | Feature capabilities matrix |
+| `ARCHITECTURE.md` | System design, data flow, component relationships |
+| [`documentation/developer/CONVENTIONS.md`](documentation/developer/CONVENTIONS.md) | Code style and file organization |
+| [`documentation/TROUBLESHOOTING.md`](documentation/TROUBLESHOOTING.md) | Known issues and debugging |
+| [`documentation/i18n/TRANSLATION.md`](documentation/i18n/TRANSLATION.md) | i18n workflow |
+| [`documentation/deployment/DEPLOYMENT.md`](documentation/deployment/DEPLOYMENT.md) | Production deployment |
+| [`documentation/pipelines/OCR.md`](documentation/pipelines/OCR.md) | OCR pipeline (suspended) |
+| [`specs/007-entity-relationship-proposals/README.md`](specs/007-entity-relationship-proposals/README.md) | Entity & relationship proposals (007) |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Contributor instructions |

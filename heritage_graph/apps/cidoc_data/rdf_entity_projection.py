@@ -468,6 +468,22 @@ def tripleset_for_metadata_instance(
     triples.extend(same_triples)
     managed |= same_managed
 
+    from apps.graph.kg_engine.museum_media import representation_triples_for_instance
+
+    museum_triples, museum_managed = representation_triples_for_instance(
+        instance,
+        subj_uri,
+    )
+    for subj, pred, lit in museum_triples:
+        if lit is None:
+            continue
+        if pred == RDF_PREFIXES["rdfs"] + "comment" and any(
+            t.pred == pred and t.literal == lit for t in triples
+        ):
+            continue
+        triples.append(_Triple(subj, pred, None, lit))
+    managed |= museum_managed
+
     if not any(t.pred == RDF_TYPE_URI and t.obj_uri for t in triples):
         type_curie = None
         if cls_def:

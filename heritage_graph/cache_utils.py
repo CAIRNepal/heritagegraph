@@ -2,7 +2,7 @@
 Application-level cache helpers (keys, TTLs, invalidation).
 
 Use ``django.core.cache.cache`` only through helpers here where possible
-so key shapes stay consistent. See CACHE.md for extending the cache layer.
+so key shapes stay consistent. See documentation/performance/CACHING.md for extending the cache layer.
 """
 
 from __future__ import annotations

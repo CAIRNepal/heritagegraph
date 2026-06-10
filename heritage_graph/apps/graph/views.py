@@ -11,6 +11,7 @@ from apps.graph.kg_engine.lux_museum import (
     lux_imported_graph_uri,
     museum_include_lux_default,
 )
+from apps.graph.kg_engine.museum_graph_enrichment import enrich_museum_graph_nodes
 from apps.graph.kg_engine.partitions import GraphPartition
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -196,6 +197,12 @@ class KnowledgeGraphGraphView(APIView):
                     "comment": None,
                     "lat": None,
                     "long": None,
+                    "inceptionYear": None,
+                    "imageUrl": None,
+                    "images": [],
+                    "imageCredits": {},
+                    "narrativeSource": None,
+                    "imageSource": None,
                     "sourceLayer": "lux" if is_lux_stub_uri(iri) else "curated",
                     "externalUri": external_by_lux.get(iri),
                 },
@@ -207,6 +214,18 @@ class KnowledgeGraphGraphView(APIView):
                 node["label"] = row["label"]
             if not node["comment"] and row.get("comment"):
                 node["comment"] = row["comment"]
+            if not node["comment"] and row.get("crmNote"):
+                node["comment"] = row["crmNote"]
+                node["narrativeSource"] = node.get("narrativeSource") or "rdf_p3_note"
+            image = row.get("image")
+            if image:
+                imgs: list[str] = node["images"]
+                if image not in imgs:
+                    imgs.append(image)
+                if not node["imageUrl"]:
+                    node["imageUrl"] = image
+                if not node.get("imageSource"):
+                    node["imageSource"] = "rdf_schema_image"
             wkt = row.get("wkt")
             if wkt and node["lat"] is None:
                 m = _POINT_RE.search(str(wkt))
@@ -240,11 +259,28 @@ class KnowledgeGraphGraphView(APIView):
                 ):
                     del nodes[iri]
 
+        node_ids = set(nodes)
+        edges_raw = []
+        for row in projection["edges"]:
+            s, p, o = row.get("s"), row.get("p"), row.get("o")
+            if not (s and p and o) or s == o:
+                continue
+            if s not in node_ids or o not in node_ids:
+                continue
+            edges_raw.append(
+                {
+                    "source": s,
+                    "target": o,
+                    "predicate": p,
+                    "predicateLocal": _local_name(p),
+                }
+            )
+        enrich_museum_graph_nodes(nodes, edges_raw)
+
         # Provenance per edge (source/confidence/asserter/temporal) from accepted
         # assertions — makes every relationship citable, a research-grade requirement.
         provenance = _assertion_provenance_map()
 
-        node_ids = set(nodes)
         edges = []
         edges_with_prov = 0
         for row in projection["edges"]:

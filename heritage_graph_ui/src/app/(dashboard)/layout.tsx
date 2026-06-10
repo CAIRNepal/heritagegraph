@@ -20,6 +20,8 @@ import { UserProgressBadge } from '@/components/progression-widgets';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { ChatContextWrapper } from '@/providers/ChatContextWrapper';
 import { ApiBaseWarning } from '@/components/api-base-warning';
+import { CommandMenu, CommandMenuTrigger } from '@/components/command-menu';
+import { WelcomeDialog } from '@/components/welcome-dialog';
 import { OntologyProvider } from '@/lib/ontology/OntologyProvider';
 import { DegradedSchemaBanner } from '@/components/ontology/DegradedSchemaBanner';
 import { PwaRegister } from '@/components/pwa-register';
@@ -59,9 +61,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           <div className="ml-auto flex items-center gap-3 flex-shrink-0">
 
+            <CommandMenuTrigger />
             {showAuthedHeader ? <UserProgressBadge /> : null}
             {showAuthedHeader ? <NotificationBell /> : null}
-            {/* <LanguageSwitcher /> */}
+            <LanguageSwitcher />
             <AuthButtons />
             <ThemeToggle />
           </div>
@@ -114,6 +117,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           duration: 4000,
         }}
       />
+
+      {/* Global ⌘K command palette + first-visit onboarding */}
+      <CommandMenu />
+      <WelcomeDialog />
 
       {/* Chat Widget */}
       <ChatContextWrapper surface="dashboard">
