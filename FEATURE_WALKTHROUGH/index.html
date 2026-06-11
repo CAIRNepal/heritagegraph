@@ -3232,8 +3232,9 @@ store <a href="../heritage_graph_ui/src/app/(dashboard)/atlas/hooks/use-atlas-st
 <h3 id="stack_4">Stack</h3>
 <p><strong>CesiumJS</strong> 1.123 (open-source 3D-geospatial engine) via <strong>Resium</strong> 1.18 (React bindings) ·
 <strong>Zustand</strong> store for camera/filters/timeline/FX · generated ontology colors. Data: <strong>demo
-corpus by default</strong>, <strong>live CIDOC graph on demand</strong> (<code>use-atlas-data-source</code> → the same
-<code>fetchInstanceGraphData</code>).</p>
+corpus by default</strong>, <strong>live KG projection on demand</strong> (<code>use-atlas-data-source</code> →
+<code>fetchKgGraph(/api/v1/cidoc/kg/graph/)</code> → <code>hydrateAtlasFromKgGraph</code> — the same authoritative
+endpoint as the Heritage Museum).</p>
 <h3 id="what-the-audience-sees">What the audience sees</h3>
 <p>A photorealistic, spinnable <strong>3D Earth</strong> with heritage entities pinned at their real
 coordinates; a <strong>timeline</strong> filters by era, a <strong>city-jump bar</strong> flies the camera to a place, a
@@ -3259,12 +3260,22 @@ provenance.</p>
 </ul>
 <h3 id="data-flow_1">Data flow</h3>
 <pre><code>demo corpus (ATLAS_DUMMY_ENTITIES) ──► default globe
-                  │  user requests &quot;live&quot;
+                  │  user requests &quot;live&quot; (or ?source=live)
                   ▼
-fetchInstanceGraphData(API_BASE, token) ──► entities with coordinates + time extents
+fetchKgGraph(/api/v1/cidoc/kg/graph/?scope=reviewed&amp;include_lux=linked)
+                  │   one call — Oxigraph projection + enrich_museum_graph_nodes
+                  ▼   (server-side WKT coords, narrative, media, edge provenance)
+hydrateAtlasFromKgGraph ──► entities (IRI ids, coord tiers verified/inherited/
+                  │          gazetteer/unmapped) + assertion-backed edges +
+                  │          sources/agents derived from PROV-O edge provenance
                   ▼
 Zustand store ──► Cesium &lt;Entity&gt; pins (colored by class, faded by year)
 </code></pre>
+<p>Live mode shares <code>lib/kg-geo.ts</code> (location-edge coordinate propagation) with the Museum,
+caches the projection in <code>sessionStorage</code> for 5 minutes, syncs <code>source</code>/<code>selected</code>/<code>panel</code>/
+<code>year</code> to the URL for shareable views, and offers signed-in curators a <strong>Reviewed/All</strong>
+scope toggle. No synthetic assertions: the provenance and sources tabs show real citations,
+confidence scores, asserters, and temporal scope from the knowledge graph.</p>
 <h3 id="why-this-stack_2">Why this stack</h3>
 <ul>
 <li><strong>Cesium over a 2D map (Mapbox/Leaflet)</strong> — heritage is global and <em>temporal</em>; a true 3D
