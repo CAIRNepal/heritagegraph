@@ -41,10 +41,27 @@ export function GraphView({ compact = false, className }: GraphViewProps) {
 
   const displayEntities = useMemo(() => {
     if (filteredEntities.length <= GRAPH_NODE_SOFT_CAP) return filteredEntities;
-    const selected = selectedId ? filteredEntities.find((e) => e.id === selectedId) : undefined;
-    const rest = filteredEntities.filter((e) => e.id !== selectedId).slice(0, GRAPH_NODE_SOFT_CAP - (selected ? 1 : 0));
-    return selected ? [selected, ...rest] : rest;
-  }, [filteredEntities, selectedId]);
+    // Over the cap: keep the selected entity, its direct neighbourhood, then
+    // the best-connected nodes, so truncation preserves the useful subgraph.
+    const degree = new Map<string, number>();
+    const neighborsOfSelected = new Set<string>();
+    for (const ed of viewEdges) {
+      degree.set(ed.source, (degree.get(ed.source) ?? 0) + 1);
+      degree.set(ed.target, (degree.get(ed.target) ?? 0) + 1);
+      if (selectedId) {
+        if (ed.source === selectedId) neighborsOfSelected.add(ed.target);
+        if (ed.target === selectedId) neighborsOfSelected.add(ed.source);
+      }
+    }
+    const rank = (e: (typeof filteredEntities)[0]): number => {
+      if (e.id === selectedId) return 3;
+      if (neighborsOfSelected.has(e.id)) return 2;
+      return 0;
+    };
+    return [...filteredEntities]
+      .sort((a, b) => rank(b) - rank(a) || (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0))
+      .slice(0, GRAPH_NODE_SOFT_CAP);
+  }, [filteredEntities, viewEdges, selectedId]);
 
   const classCounts = useMemo(() => {
     const counts: Partial<Record<OntologyClass, number>> = {};
@@ -88,6 +105,7 @@ export function GraphView({ compact = false, className }: GraphViewProps) {
           source: ed.source,
           target: ed.target,
           label: ed.predicate.replace(/_/g, ' '),
+          hasProvenance: ed.hasProvenance === true,
         },
       });
     }
@@ -154,6 +172,17 @@ export function GraphView({ compact = false, className }: GraphViewProps) {
             'text-background-opacity': 0.88,
             'text-background-color': '#111821',
             'text-background-shape': 'roundrectangle',
+          },
+        },
+        {
+          // Assertion-backed edges (with PROV-O provenance) read stronger than
+          // structural FK edges.
+          selector: 'edge[?hasProvenance]',
+          style: {
+            width: 2,
+            'line-color': '#7fb069',
+            'target-arrow-color': '#7fb069',
+            opacity: 1,
           },
         },
       ],

@@ -37,6 +37,84 @@ class MuseumGraphEnrichmentTests(TestCase):
         self.assertAlmostEqual(float(lat), 27.7149, places=2)
         self.assertAlmostEqual(float(lng), 85.2903, places=2)
 
+    def test_coords_from_settlement_labels(self):
+        """Valley settlements + national anchors backfill from the gazetteer."""
+        for name, expected_lat in [
+            ("Kirtipur", 27.6717),
+            ("Lumbini", 27.4833),
+            ("Janakpur", 26.7288),
+        ]:
+            loc = Location.objects.create(
+                name=name,
+                type="settlement",
+                current_status="active",
+            )
+            coords = coords_from_instance(loc)
+            self.assertIsNotNone(coords, name)
+            self.assertAlmostEqual(float(coords[0]), expected_lat, places=2)
+
+    def test_coords_from_stored_point_preferred_over_gazetteer(self):
+        """A stored point field wins over a label match."""
+        loc = Location.objects.create(
+            name="Patan",
+            type="settlement",
+            current_status="active",
+            point="POINT(85.9999 27.9999)",
+        )
+        coords = coords_from_instance(loc)
+        self.assertIsNotNone(coords)
+        lat, lng = coords
+        self.assertAlmostEqual(float(lat), 27.9999, places=3)
+        self.assertAlmostEqual(float(lng), 85.9999, places=3)
+
+    def test_propagate_coords_chain_two_hops(self):
+        """Coordinates flow along chained location edges (A→B→C)."""
+        base = resource_base().rstrip("/")
+        place_iri = f"{base}/location/10"
+        structure_iri = f"{base}/structure/11"
+        object_iri = f"{base}/iconography/12"
+        nodes = {
+            place_iri: {
+                "id": place_iri,
+                "label": "Boudhanath",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+            structure_iri: {
+                "id": structure_iri,
+                "label": "Unmapped Shrine",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+            object_iri: {
+                "id": object_iri,
+                "label": "Unmapped Murti",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+        }
+        edges = [
+            {
+                "source": structure_iri,
+                "target": place_iri,
+                "predicate": f"{base}/located_at",
+                "predicateLocal": "located_at",
+            },
+            {
+                "source": object_iri,
+                "target": structure_iri,
+                "predicate": f"{base}/has_current_location",
+                "predicateLocal": "has_current_location",
+            },
+        ]
+        enrich_museum_graph_nodes(nodes, edges)
+        self.assertIsNotNone(nodes[place_iri]["lat"])
+        self.assertEqual(nodes[structure_iri]["lat"], nodes[place_iri]["lat"])
+        self.assertEqual(nodes[object_iri]["lat"], nodes[place_iri]["lat"])
+
     def test_propagate_coords_along_location_edge(self):
         base = resource_base().rstrip("/")
         place_iri = f"{base}/location/1"

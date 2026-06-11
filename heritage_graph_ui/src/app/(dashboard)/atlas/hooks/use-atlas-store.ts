@@ -31,6 +31,7 @@ import {
 import { entityExistedAtYear } from '@/lib/atlas-temporal';
 
 import type { AtlasLocationCatalogStats } from '@/lib/atlas-api-hydrate';
+import type { MuseumDatasetMeta } from '@/lib/heritage-museum/museum-rigor';
 
 import { computeAtlasTimelineExtents } from '../atlas-time-extents';
 
@@ -213,8 +214,14 @@ interface AtlasState {
   dataSource: AtlasDataSource;
   corpusStatus: AtlasCorpusStatus;
   corpusError: string | null;
+  /** Set when the live load failed due to missing/invalid auth (401/403). */
+  corpusErrorAuth: boolean;
   /** Live corpus place-mapping coverage (undefined in demo mode). */
   locationStats: AtlasLocationCatalogStats | null;
+  /** Dataset provenance for the live KG projection (null in demo mode). */
+  datasetMeta: MuseumDatasetMeta | null;
+  /** Live projection scope: reviewed public graph vs curator preview (auth-gated). */
+  liveScope: 'reviewed' | 'all';
   /** Increment to invalidate in-flight live corpus loads. */
   liveLoadToken: number;
   /** When true, timeline year hides entities outside their existence span. */
@@ -303,6 +310,7 @@ interface AtlasState {
   closeSidebarPanel: () => void;
 
   setDataSource: (source: AtlasDataSource) => void;
+  setLiveScope: (scope: 'reviewed' | 'all') => void;
   setTemporalFilterEnabled: (enabled: boolean) => void;
   resetDemoCorpus: () => void;
   loadLiveCorpus: () => void;
@@ -332,7 +340,10 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   dataSource: 'demo',
   corpusStatus: 'ready',
   corpusError: null,
+  corpusErrorAuth: false,
   locationStats: null,
+  datasetMeta: null,
+  liveScope: 'reviewed',
   liveLoadToken: 0,
   temporalFilterEnabled: true,
 
@@ -716,9 +727,13 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
         dataSource: 'demo',
         entities: entitiesSeed,
         edges: ATLAS_ONTOLOGY_EDGES,
+        sources: ATLAS_SOURCES,
+        agents: ATLAS_AGENTS,
         corpusStatus: 'ready',
         corpusError: null,
+        corpusErrorAuth: false,
         locationStats: null,
+        datasetMeta: null,
         minYear: extents.minYear,
         maxYear: extents.maxYear,
         selectedId: null,
@@ -730,6 +745,18 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
     set((s) => ({ dataSource: 'live', corpusStatus: 'idle', liveLoadToken: s.liveLoadToken + 1 }));
     atlasTrack('corpus_mode', { mode: 'live' });
     atlasSound.play('click');
+  },
+
+  setLiveScope(scope) {
+    if (scope === get().liveScope) return;
+    set((s) => ({
+      liveScope: scope,
+      liveLoadToken: s.liveLoadToken + 1,
+      // Reload when already in live mode; demo keeps the preference for later.
+      corpusStatus: s.dataSource === 'live' ? 'idle' : s.corpusStatus,
+    }));
+    atlasTrack('corpus_scope', { scope });
+    atlasSound.play('tick');
   },
 
   setTemporalFilterEnabled(enabled) {

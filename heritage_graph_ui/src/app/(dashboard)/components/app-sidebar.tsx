@@ -213,7 +213,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="pointer-events-none sticky top-0 z-10 h-8 -mb-8 bg-gradient-to-b from-sidebar to-transparent" />
             <button
               onClick={scrollToTop}
-              className="sticky top-1 z-20 mx-auto flex items-center gap-1 rounded-full bg-blue-500/90 dark:bg-blue-600/90 px-3 py-1 text-[11px] font-medium text-white shadow-md backdrop-blur-sm transition-all hover:bg-blue-600 dark:hover:bg-blue-500 hover:shadow-lg"
+              className="sticky top-1 z-20 mx-auto flex items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-[11px] font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary hover:shadow-md"
             >
               <IconChevronUp className="size-3.5" />
               {!isCollapsed && <span>Scroll to top</span>}

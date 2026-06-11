@@ -11,6 +11,7 @@ import {
   IconVolume,
   IconVolumeOff,
 } from '@tabler/icons-react';
+import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ interface CommandBarProps {
 
 export function CommandBar({ isFullscreen = false, onToggleFullscreen }: CommandBarProps) {
   const t = useTranslations('Atlas');
+  const { data: session } = useSession();
 
   const focusedView = useAtlasStore((s) => s.focusedView);
   const getFilteredEntities = useAtlasStore((s) => s.getFilteredEntities);
@@ -60,7 +62,11 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
   const dataSource = useAtlasStore((s) => s.dataSource);
   const corpusStatus = useAtlasStore((s) => s.corpusStatus);
   const corpusError = useAtlasStore((s) => s.corpusError);
+  const corpusErrorAuth = useAtlasStore((s) => s.corpusErrorAuth);
   const locationStats = useAtlasStore((s) => s.locationStats);
+  const datasetMeta = useAtlasStore((s) => s.datasetMeta);
+  const liveScope = useAtlasStore((s) => s.liveScope);
+  const setLiveScope = useAtlasStore((s) => s.setLiveScope);
   const setDataSource = useAtlasStore((s) => s.setDataSource);
   const loadLiveCorpus = useAtlasStore((s) => s.loadLiveCorpus);
 
@@ -123,6 +129,31 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
             {corpusStatus === 'loading' ? t('dataLoading') : t('dataLive')}
           </ToggleGroupItem>
         </ToggleGroup>
+        {dataSource === 'live' && session?.user ?
+          <ToggleGroup
+            type="single"
+            value={liveScope}
+            onValueChange={(v) => {
+              if (v === 'reviewed' || v === 'all') {
+                atlasSound.init();
+                setLiveScope(v);
+              }
+            }}
+            className="ml-1 h-7 gap-0.5"
+            title={t('liveScopeHint')}
+          >
+            <ToggleGroupItem value="reviewed" className="h-6 px-1.5 text-[9px] uppercase">
+              {t('liveScopeReviewed')}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="all"
+              className="h-6 px-1.5 text-[9px] uppercase"
+              disabled={corpusStatus === 'loading'}
+            >
+              {t('liveScopeAll')}
+            </ToggleGroupItem>
+          </ToggleGroup>
+        : null}
       </div>
 
       <div className="pointer-events-none flex min-w-0 flex-1 items-center gap-x-2 overflow-hidden font-mono text-[10px] uppercase tracking-wide text-muted-foreground md:gap-x-3">
@@ -139,6 +170,17 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
           </span>
         : null}
         <span className="hidden shrink-0 whitespace-nowrap lg:inline">{t('statusAssertions', { count: assertionCount })}</span>
+        {dataSource === 'live' && datasetMeta ?
+          <span
+            className="hidden shrink-0 whitespace-nowrap lg:inline"
+            title={t('datasetMetaHint', {
+              graph: datasetMeta.graphUri,
+              fetchedAt: datasetMeta.fetchedAt.replace('T', ' ').slice(0, 16),
+            })}
+          >
+            {t('statusProvenance', { count: datasetMeta.edgesWithProvenance ?? 0 })}
+          </span>
+        : null}
         <span className="hidden shrink-0 whitespace-nowrap lg:inline">{t('statusCorpus', { count: entities.length })}</span>
         <span className="hidden shrink-0 whitespace-nowrap xl:inline">
           {t('floors')} {reliabilityFloor} · {(confidenceFloor * 100).toFixed(0)}%
@@ -170,8 +212,18 @@ export function CommandBar({ isFullscreen = false, onToggleFullscreen }: Command
         </span>
         <span className="hidden whitespace-nowrap opacity-70 md:inline">1–6 · 7 · T</span>
         {corpusStatus === 'error' && corpusError ?
-          <span className="max-w-[14rem] truncate text-destructive normal-case" title={corpusError}>
-            {corpusError}
+          <span className="pointer-events-auto flex max-w-[16rem] items-center gap-1.5">
+            <span className="min-w-0 truncate text-destructive normal-case" title={corpusError}>
+              {corpusError}
+            </span>
+            {corpusErrorAuth ?
+              <a
+                href="/auth/login"
+                className="shrink-0 rounded border border-border/60 px-1.5 py-px text-[10px] uppercase text-foreground hover:bg-muted/50"
+              >
+                {t('signInCta')}
+              </a>
+            : null}
           </span>
         : null}
       </div>

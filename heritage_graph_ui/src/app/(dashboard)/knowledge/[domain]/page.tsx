@@ -75,7 +75,7 @@ export default function GenericKnowledgePage() {
   columns.push(...displayFields.map((field) => ({
     accessorKey: field.key,
     header: field.label,
-    cell: ({ row }) => {
+    cell: ({ row }: { row: { original: Record<string, unknown> } }) => {
       const value = row.original[field.key];
       const text = value == null ? '' : String(value);
       if (field.key === labelFieldKey) {

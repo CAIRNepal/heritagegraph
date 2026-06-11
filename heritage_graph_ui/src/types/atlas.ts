@@ -79,10 +79,22 @@ export interface OntologyEdge {
   source: string;
   target: string;
   predicate: string;
+  /** True when the edge is backed by an accepted HeritageAssertion (live KG). */
+  hasProvenance?: boolean;
 }
 
 /** How WGS84 coordinates were resolved (research-grade epistemic labeling). */
 export type AtlasCoordProvenance = 'verified' | 'gazetteer' | 'inherited' | 'unmapped';
+
+/** Image attribution metadata (mirrors KG projection imageCredits). */
+export interface AtlasImageCredit {
+  license?: string;
+  licenseUrl?: string;
+  artist?: string;
+  descriptionUrl?: string;
+  source?: string;
+  retrieved?: string;
+}
 
 /** Shared entity fields; spatial coords optional when anchorEntityIds present. */
 export interface AtlasEntity {
@@ -115,6 +127,14 @@ export interface AtlasEntity {
   knowledgeDomain?: string;
   /** CIDOC record primary key for deep links */
   cidocRecordId?: string;
+  /** Primary image from the KG projection (live corpus). */
+  imageUrl?: string;
+  images?: string[];
+  imageCredits?: Record<string, AtlasImageCredit>;
+  /** Curated HeritageGraph node vs linked Yale LUX stub (live corpus). */
+  sourceLayer?: 'curated' | 'lux';
+  /** External canonical URI when this entity is a linked LUX stub. */
+  externalUri?: string;
 }
 
 export type AtlasViewId =

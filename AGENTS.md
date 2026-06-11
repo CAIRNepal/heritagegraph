@@ -253,7 +253,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/curation/dashboard` — reviewer dashboard
 - `/community/contributors` — contributor list
 - `/graphview` — graph visualization
-- `/atlas` — Heritage Atlas (Cesium globe + live KG corpus)
+- `/atlas` — Heritage Atlas (Cesium globe): demo corpus by default; **live mode consumes the authoritative KG projection** `GET /api/v1/cidoc/kg/graph/` (same as the Museum) via `lib/atlas-kg-hydrate.ts` — IRI node ids, tiered coord provenance (verified/inherited/gazetteer/unmapped, shared `lib/kg-geo.ts`), real comments/media, assertion-backed edge provenance (no synthetic assertions); URL-synced `source`/`selected`/`panel`/`year`; curator Reviewed/All scope toggle; 5-min sessionStorage cache
 - `/heritage-museum` — Museum XR / narrative knowledge graph
 - `/platform-admin` — In-app user and reviewer role management (staff / expert curator)
 

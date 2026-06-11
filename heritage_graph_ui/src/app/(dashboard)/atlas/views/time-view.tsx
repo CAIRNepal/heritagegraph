@@ -30,7 +30,11 @@ export function TimeView({ compact = false }: TimeViewProps) {
   const currentYear = useAtlasStore((s) => s.currentYear);
   const minYear = useAtlasStore((s) => s.minYear);
   const maxYear = useAtlasStore((s) => s.maxYear);
+  const dataSource = useAtlasStore((s) => s.dataSource);
 
+  // Projected continuation bands are demo-corpus storytelling; live KG rows
+  // only show documented spans.
+  const showPredictive = dataSource === 'demo';
   const span = maxYear - minYear || 1;
 
   return (
@@ -40,14 +44,16 @@ export function TimeView({ compact = false }: TimeViewProps) {
         compact ? 'h-full px-1 pb-1' : 'px-2 pb-2 md:pl-16 md:pr-2 md:pt-14',
       )}
     >
-      <p
-        className={cn(
-          'rounded-lg border border-dashed border-border/70 bg-muted/30 px-3 py-2 font-mono text-muted-foreground leading-snug',
-          compact ? 'text-[9px]' : 'text-[10px]',
-        )}
-      >
-        {t('timePredictiveDisclaimer')}
-      </p>
+      {showPredictive ?
+        <p
+          className={cn(
+            'rounded-lg border border-dashed border-border/70 bg-muted/30 px-3 py-2 font-mono text-muted-foreground leading-snug',
+            compact ? 'text-[9px]' : 'text-[10px]',
+          )}
+        >
+          {t('timePredictiveDisclaimer')}
+        </p>
+      : null}
 
       <div
         className={cn(
@@ -89,14 +95,16 @@ export function TimeView({ compact = false }: TimeViewProps) {
                     style={{ left: `${leftPct}%`, width: `${widthHist}%` }}
                     title={`${start}–${endHist}`}
                   />
-                  <span
-                    className="absolute top-1 z-0 h-7 rounded border border-dashed border-chart-4/70 bg-chart-4/15"
-                    style={{
-                      left: `${predLeft}%`,
-                      width: `${predWidth}%`,
-                    }}
-                    title={t('predictiveBand')}
-                  />
+                  {showPredictive ?
+                    <span
+                      className="absolute top-1 z-0 h-7 rounded border border-dashed border-chart-4/70 bg-chart-4/15"
+                      style={{
+                        left: `${predLeft}%`,
+                        width: `${predWidth}%`,
+                      }}
+                      title={t('predictiveBand')}
+                    />
+                  : null}
                   <div className="absolute inset-x-0 bottom-0 flex justify-between px-1 font-mono text-[9px] text-muted-foreground">
                     <span>{e.class}</span>
                     <span>{currentYear <= endHist ? '●' : '○'}</span>

@@ -361,6 +361,8 @@ The **`GET /api/v1/cidoc/schema/registry/`** response includes **`classes`**, **
 
 When **`RDF_SYNC_ENABLED`** is set, **`apps/graph/kg_engine/`** is the single orchestration layer: registry projection → **public named graph**, optional SHACL, agent promotion on auto-accept, and **`RDFSyncOutbox`** retries. HTTP: `GET /cidoc/kg/stats/`, `GET /cidoc/kg/neighborhood/?uri=…`, `POST /cidoc/kg/query/`. See **`documentation/knowledge-graph/RDF_ENGINE.md`**. Ops: `make rdf-rebuild`, `make rdf-diagnose`, `make rdf-load-tbox`, `make rdf-drain-outbox`.
 
+**Shared live projection:** `GET /api/v1/cidoc/kg/graph/?scope=reviewed|all&include_lux=linked` returns render-ready nodes (rdf:type IRIs, labels, comments, WKT-derived `lat`/`long`, media) and edges (predicate + PROV-O provenance), enriched server-side by `enrich_museum_graph_nodes` (ORM coord backfill, gazetteer, location-edge propagation). Both the **Heritage Museum** and the **Heritage Atlas** live modes consume this single endpoint (`lib/kg-graph.ts` → `hydrateAtlasFromKgGraph` / museum graph builder; shared geo propagation in `lib/kg-geo.ts`), so globe pins, map pins, and provenance panels stay consistent across surfaces.
+
 ---
 
 ## 🐳 Docker Architecture

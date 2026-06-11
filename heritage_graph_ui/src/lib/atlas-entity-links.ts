@@ -32,8 +32,11 @@ export function parseLiveNodeId(nodeId: string): { domain: string; recordId: str
 /** `/knowledge/<domain>/view/<id>` when the entity is backed by a CIDOC row. */
 export function getAtlasKnowledgeHref(entity: AtlasEntity): string | null {
   if (entity.knowledgeDomain && entity.cidocRecordId) {
-    return `/knowledge/${entity.knowledgeDomain}/view/${entity.cidocRecordId}`;
+    return `/knowledge/${entity.knowledgeDomain}/view/${encodeURIComponent(entity.cidocRecordId)}`;
   }
+  // KG-projection ids are resource IRIs; without a parsed domain there is no
+  // knowledge page (e.g. linked LUX stubs expose `externalUri` instead).
+  if (entity.id.startsWith('http://') || entity.id.startsWith('https://')) return null;
   const parsed = parseLiveNodeId(entity.id);
   if (!parsed) return null;
   return `/knowledge/${parsed.domain}/view/${parsed.recordId}`;

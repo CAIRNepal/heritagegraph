@@ -94,7 +94,7 @@ import {
 } from './create-status-tabs';
 import type { DataTableConfig, DataTableTab } from './types';
 
-function useServerListMode(config: DataTableConfig<unknown>) {
+function useServerListMode<T>(config: DataTableConfig<T>) {
   return config.serverPagination ?? config.endpoint.startsWith('/cidoc/');
 }
 

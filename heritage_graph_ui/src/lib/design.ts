@@ -30,10 +30,12 @@ export function motionInitialWhenEnabled(reduceMotion: boolean | null): false | 
   return 'hidden';
 }
 
-/* ── glassmorphic card base ── */
+/* ── card base ── one card language, token-based (no glassmorphism, no
+   hardcoded colors). Subtle elevation; raise on hover at the call site. ── */
 export const glassCard =
-  'bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg';
+  'bg-card text-card-foreground border border-border rounded-xl shadow-xs';
 
-/* ── gradient hero overlay used on page header sections ── */
+/* ── hero header treatment ── a single restrained brand gradient (one hue
+   family) instead of a multi-stop rainbow; white foreground stays legible. ── */
 export const heroGradient =
-  'bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl';
+  'bg-gradient-to-br from-primary to-accent rounded-xl';

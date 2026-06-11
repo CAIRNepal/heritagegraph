@@ -19,6 +19,8 @@ export function OpsDashboardView({ compact = false }: OpsDashboardViewProps) {
 
   const entities = useAtlasStore((s) => s.entities);
   const sources = useAtlasStore((s) => s.sources);
+  const dataSource = useAtlasStore((s) => s.dataSource);
+  const datasetMeta = useAtlasStore((s) => s.datasetMeta);
 
   const kpis = useMemo(() => {
     let assertions = 0;
@@ -151,9 +153,19 @@ export function OpsDashboardView({ compact = false }: OpsDashboardViewProps) {
             </div>
           ))}
         </div>
-        <p className={cn('mt-3 font-mono text-muted-foreground', compact ? 'text-[9px]' : 'text-[10px]')}>
-          {t('opsRestorationAlerts', { n: kpis.restorationAlerts })}
-        </p>
+        {dataSource === 'live' && datasetMeta ?
+          <p className={cn('mt-3 font-mono text-muted-foreground', compact ? 'text-[9px]' : 'text-[10px]')}>
+            {t('opsDatasetMeta', {
+              nodes: datasetMeta.nodeCount,
+              edges: datasetMeta.edgeCount,
+              prov: datasetMeta.edgesWithProvenance ?? 0,
+            })}
+          </p>
+        : (
+          <p className={cn('mt-3 font-mono text-muted-foreground', compact ? 'text-[9px]' : 'text-[10px]')}>
+            {t('opsRestorationAlerts', { n: kpis.restorationAlerts })}
+          </p>
+        )}
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border/60 bg-background/70 backdrop-blur-md">

@@ -216,7 +216,7 @@ export function CommandMenuTrigger() {
       type="button"
       onClick={dispatch}
       aria-label="Open search (Command or Control + K)"
-      className="hidden sm:inline-flex items-center gap-2 rounded-md border border-blue-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-white dark:hover:bg-gray-800 transition-colors"
+      className="hidden sm:inline-flex items-center gap-2 rounded-md border border-border bg-muted/50 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
     >
       <IconSearch className="h-3.5 w-3.5" />
       <span>Search…</span>

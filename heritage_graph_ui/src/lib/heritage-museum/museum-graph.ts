@@ -1,10 +1,8 @@
 import type { GraphData, GraphLink, GraphNode, ImageCredit } from '@/app/(dashboard)/heritage-museum/heritage-data';
 import { NODE_TYPE_CONFIG } from '@/app/(dashboard)/heritage-museum/heritage-data';
+import { parseCoord, propagateCoordsAlongLocationEdges, type GeoCoord } from '@/lib/kg-geo';
 import type { KgGraphNode } from '@/lib/kg-graph';
 import type { NodeType } from '@/lib/ontology/__generated__/heritage-viz-config';
-
-const LOCATION_PREDICATE_RE =
-  /location|located|place_at|took_place_at|has_current_location|residence|form_of/i;
 
 function linkEndpointId(endpoint: string | GraphNode): string {
   return typeof endpoint === 'string' ? endpoint : endpoint.id;
@@ -83,34 +81,28 @@ export function enrichKgNodeForMuseum(
 /** Copy lat/long from geo-referenced neighbours along location predicates. */
 export function propagateGeoFromLinks(nodes: GraphNode[], links: GraphLink[]): void {
   const byId = new Map(nodes.map((n) => [n.id, n]));
-  const coordById = new Map<string, { lat: string; long: string }>();
+  const coordById = new Map<string, GeoCoord>();
 
   for (const n of nodes) {
-    if (n.lat != null && n.long != null) {
-      coordById.set(n.id, { lat: String(n.lat), long: String(n.long) });
+    const lat = parseCoord(n.lat);
+    const lon = parseCoord(n.long);
+    if (lat != null && lon != null) {
+      coordById.set(n.id, { lat, lon });
     }
   }
 
-  for (const link of links) {
-    if (!LOCATION_PREDICATE_RE.test(link.predicate)) continue;
-    const src = linkEndpointId(link.source);
-    const tgt = linkEndpointId(link.target);
-    const srcCoords = coordById.get(src);
-    const tgtCoords = coordById.get(tgt);
-    if (srcCoords && !tgtCoords) {
-      coordById.set(tgt, srcCoords);
-      const node = byId.get(tgt);
-      if (node) {
-        node.lat = srcCoords.lat;
-        node.long = srcCoords.long;
-      }
-    } else if (tgtCoords && !srcCoords) {
-      coordById.set(src, tgtCoords);
-      const node = byId.get(src);
-      if (node) {
-        node.lat = tgtCoords.lat;
-        node.long = tgtCoords.long;
-      }
+  const geoLinks = links.map((l) => ({
+    source: linkEndpointId(l.source),
+    target: linkEndpointId(l.target),
+    predicate: l.predicate,
+  }));
+
+  const inherited = propagateCoordsAlongLocationEdges(coordById, geoLinks);
+  for (const [id, coords] of inherited) {
+    const node = byId.get(id);
+    if (node) {
+      node.lat = String(coords.lat);
+      node.long = String(coords.lon);
     }
   }
 }

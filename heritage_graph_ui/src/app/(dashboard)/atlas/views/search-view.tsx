@@ -66,6 +66,8 @@ export function SearchView({ compact = false }: SearchViewProps) {
       if (scopeFilter === 'places' && !atlasEntityIsPlace(e)) return false;
       if (scopeFilter === 'mapped' && !atlasEntityIsOnGlobe(e)) return false;
       if (scopeFilter === 'unmapped' && atlasEntityIsOnGlobe(e)) return false;
+      if (scopeFilter === 'curated' && e.sourceLayer === 'lux') return false;
+      if (scopeFilter === 'lux' && e.sourceLayer !== 'lux') return false;
       if (!q) return true;
       const rName = rankItem(e.name, q);
       const rNe = e.nameNe ? rankItem(e.nameNe, q) : { passed: false };
@@ -125,6 +127,12 @@ export function SearchView({ compact = false }: SearchViewProps) {
                 <SelectItem value="places">{t('scopePlaces')}</SelectItem>
                 <SelectItem value="mapped">{t('scopeMapped')}</SelectItem>
                 <SelectItem value="unmapped">{t('scopeUnmapped')}</SelectItem>
+                {dataSource === 'live' ?
+                  <>
+                    <SelectItem value="curated">{t('scopeCurated')}</SelectItem>
+                    <SelectItem value="lux">{t('scopeLux')}</SelectItem>
+                  </>
+                : null}
               </SelectContent>
             </Select>
           </div>

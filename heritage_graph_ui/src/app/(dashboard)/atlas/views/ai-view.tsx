@@ -36,6 +36,7 @@ export function AiReasoningView({ compact = false }: AiReasoningViewProps) {
   const t = useTranslations('Atlas');
   const { data: session } = useSession();
   const entities = useAtlasStore((s) => s.entities);
+  const sources = useAtlasStore((s) => s.sources);
   const selectedId = useAtlasStore((s) => s.selectedId);
   const currentYear = useAtlasStore((s) => s.currentYear);
   const dataSource = useAtlasStore((s) => s.dataSource);
@@ -81,7 +82,7 @@ export function AiReasoningView({ compact = false }: AiReasoningViewProps) {
       }));
 
       const focused = selectedId ? getEntityById(selectedId) : undefined;
-      const systemCtx = buildAtlasAssistantContext(focused, currentYear, dataSource);
+      const systemCtx = buildAtlasAssistantContext(focused, currentYear, dataSource, sources);
       const payload: ApiChatMessage[] =
         systemCtx ? [{ role: 'system', content: systemCtx }, ...history] : history;
 
@@ -123,6 +124,7 @@ export function AiReasoningView({ compact = false }: AiReasoningViewProps) {
       selectedId,
       currentYear,
       dataSource,
+      sources,
       getEntityById,
       session,
     ],

@@ -307,8 +307,9 @@ store [hooks/use-atlas-store.ts](<../heritage_graph_ui/src/app/(dashboard)/atlas
 ### Stack
 **CesiumJS** 1.123 (open-source 3D-geospatial engine) via **Resium** 1.18 (React bindings) ·
 **Zustand** store for camera/filters/timeline/FX · generated ontology colors. Data: **demo
-corpus by default**, **live CIDOC graph on demand** (`use-atlas-data-source` → the same
-`fetchInstanceGraphData`).
+corpus by default**, **live KG projection on demand** (`use-atlas-data-source` →
+`fetchKgGraph(/api/v1/cidoc/kg/graph/)` → `hydrateAtlasFromKgGraph` — the same authoritative
+endpoint as the Heritage Museum).
 
 ### What the audience sees
 A photorealistic, spinnable **3D Earth** with heritage entities pinned at their real
@@ -336,12 +337,23 @@ provenance.
 ### Data flow
 ```
 demo corpus (ATLAS_DUMMY_ENTITIES) ──► default globe
-                  │  user requests "live"
+                  │  user requests "live" (or ?source=live)
                   ▼
-fetchInstanceGraphData(API_BASE, token) ──► entities with coordinates + time extents
+fetchKgGraph(/api/v1/cidoc/kg/graph/?scope=reviewed&include_lux=linked)
+                  │   one call — Oxigraph projection + enrich_museum_graph_nodes
+                  ▼   (server-side WKT coords, narrative, media, edge provenance)
+hydrateAtlasFromKgGraph ──► entities (IRI ids, coord tiers verified/inherited/
+                  │          gazetteer/unmapped) + assertion-backed edges +
+                  │          sources/agents derived from PROV-O edge provenance
                   ▼
 Zustand store ──► Cesium <Entity> pins (colored by class, faded by year)
 ```
+
+Live mode shares `lib/kg-geo.ts` (location-edge coordinate propagation) with the Museum,
+caches the projection in `sessionStorage` for 5 minutes, syncs `source`/`selected`/`panel`/
+`year` to the URL for shareable views, and offers signed-in curators a **Reviewed/All**
+scope toggle. No synthetic assertions: the provenance and sources tabs show real citations,
+confidence scores, asserters, and temporal scope from the knowledge graph.
 
 ### Why this stack
 - **Cesium over a 2D map (Mapbox/Leaflet)** — heritage is global and *temporal*; a true 3D

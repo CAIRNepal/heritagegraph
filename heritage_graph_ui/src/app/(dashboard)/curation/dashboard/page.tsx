@@ -75,8 +75,8 @@ export default function ReviewerDashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-500" />
-          <p className="text-blue-700 dark:text-blue-300">Loading reviewer dashboard...</p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+          <p className="text-muted-foreground">Loading reviewer dashboard...</p>
         </div>
       </div>
     );
@@ -87,8 +87,8 @@ export default function ReviewerDashboardPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-blue-700 dark:text-blue-300 mb-4">{error || 'Failed to load dashboard'}</p>
-          <Button onClick={fetchDashboard} className="bg-gradient-to-r from-blue-600 to-sky-500 text-white">Try Again</Button>
+          <p className="text-muted-foreground mb-4">{error || 'Failed to load dashboard'}</p>
+          <Button onClick={fetchDashboard}>Try Again</Button>
         </div>
       </div>
     );
@@ -104,7 +104,7 @@ export default function ReviewerDashboardPage() {
       <div className="space-y-6">
         {/* ── Hero Welcome ── */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-sky-300/20 rounded-full blur-2xl animate-pulse" />
@@ -118,12 +118,12 @@ export default function ReviewerDashboardPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="bg-white/20 text-white border-white/30 gap-1"><Shield className="h-3 w-3" /> {roleName}</Badge>
               {expertiseAreas.map((area) => (
-                <Badge key={area} variant="outline" className="capitalize text-xs text-blue-100 border-white/30">{area.replace(/_/g, ' ')}</Badge>
+                <Badge key={area} variant="outline" className="capitalize text-xs text-primary-foreground/80 border-white/30">{area.replace(/_/g, ' ')}</Badge>
               ))}
             </div>
             <div className="pt-2">
               <Button onClick={() => router.push('/curation/review')}
-                className="bg-white text-blue-700 hover:bg-blue-50 rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 gap-2">
+                className="bg-white text-primary hover:bg-white/90 rounded-full font-semibold shadow-sm transition-all gap-2">
                 <FileText className="h-4 w-4" /> Open Review Queue
               </Button>
             </div>
@@ -132,7 +132,7 @@ export default function ReviewerDashboardPage() {
 
         {/* ── Stats Row ── */}
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
-          <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-4 text-blue-900 dark:text-blue-100">
+          <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-4 text-foreground">
             Your <span className="text-foreground">Stats</span>
           </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -162,12 +162,11 @@ export default function ReviewerDashboardPage() {
               <motion.div key={stat.title} variants={scaleIn} className="group relative">
                 <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.02] overflow-hidden hover:shadow-xl ${stat.onClick ? 'cursor-pointer' : ''}`}
                   onClick={stat.onClick}>
-                  <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`} />
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="text-sm text-blue-600 dark:text-blue-400">{stat.title}</p>
-                      <p className="text-4xl font-black mt-1 text-blue-900 dark:text-blue-100">{stat.value}</p>
-                      {stat.subtitle && <p className="text-xs text-blue-600 dark:text-blue-400">{stat.subtitle}</p>}
+                      <p className="text-sm text-muted-foreground">{stat.title}</p>
+                      <p className="text-4xl font-black mt-1 text-foreground">{stat.value}</p>
+                      {stat.subtitle && <p className="text-xs text-muted-foreground">{stat.subtitle}</p>}
                       <div className="mt-2 space-y-1 text-sm">
                         {stat.details.map((d: any, i: number) => d && (
                           <div key={i} className={`flex items-center gap-1 ${d.color}`}>
@@ -176,8 +175,8 @@ export default function ReviewerDashboardPage() {
                         ))}
                       </div>
                     </div>
-                    <div className={`p-3 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-lg`}>
-                      <stat.icon className="h-6 w-6 text-white" />
+                    <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                      <stat.icon className="h-6 w-6" />
                     </div>
                   </div>
                 </div>
@@ -191,33 +190,33 @@ export default function ReviewerDashboardPage() {
           <div className={glassCard}>
             <div className="p-6">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="h-5 w-5 text-blue-500" />
-                <h2 className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                <Clock className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-bold text-foreground">
                   Recent Activity in Your <span className="text-foreground">Domain</span>
                 </h2>
               </div>
-              <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">Latest submissions, reviews, and updates across heritage entities</p>
+              <p className="text-sm text-muted-foreground mb-4">Latest submissions, reviews, and updates across heritage entities</p>
               {dashboard.recent_domain_activity.length === 0 ? (
-                <p className="text-sm text-blue-600 dark:text-blue-400 text-center py-4">No recent activity in your domain</p>
+                <p className="text-sm text-muted-foreground text-center py-4">No recent activity in your domain</p>
               ) : (
                 <div className="space-y-3">
                   {dashboard.recent_domain_activity.map((activity, idx) => (
                     <div key={`${activity.entity_id}-${idx}`}
-                      className="flex items-start gap-3 py-2 border-b border-blue-100 dark:border-gray-800 last:border-0 cursor-pointer hover:bg-blue-50/50 dark:hover:bg-gray-800/50 rounded-xl px-2 -mx-2 transition-all duration-300"
+                      className="flex items-start gap-3 py-2 border-b border-border last:border-0 cursor-pointer hover:bg-accent/40 rounded-xl px-2 -mx-2 transition-colors"
                       onClick={() => router.push(`/curation/review/${activity.entity_id}`)}>
                       <ActivityIcon type={activity.activity_type} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-sm truncate text-blue-900 dark:text-blue-100">{activity.entity_name}</span>
+                          <span className="font-medium text-sm truncate text-foreground">{activity.entity_name}</span>
                           <Badge variant="secondary" className="text-[10px]">{activity.activity_type.replace(/_/g, ' ')}</Badge>
                         </div>
-                        {activity.comment && <p className="text-xs text-blue-600 dark:text-blue-400 line-clamp-1 mt-0.5">{activity.comment}</p>}
-                        <div className="flex items-center gap-2 text-xs text-blue-500 dark:text-blue-400 mt-0.5">
+                        {activity.comment && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{activity.comment}</p>}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                           <span>by @{activity.user}</span><span>·</span>
                           <span>{new Date(activity.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-blue-400 shrink-0 mt-1" />
+                      <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
                     </div>
                   ))}
                 </div>
@@ -228,7 +227,7 @@ export default function ReviewerDashboardPage() {
 
         {/* ── Quick Navigation ── */}
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer}>
-          <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-4 text-blue-900 dark:text-blue-100">
+          <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-4 text-foreground">
             Quick <span className="text-foreground">Navigation</span>
           </motion.h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -241,14 +240,13 @@ export default function ReviewerDashboardPage() {
               <motion.div key={item.title} variants={scaleIn} className="group relative">
                 <div className={`relative p-5 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.02] overflow-hidden hover:shadow-xl cursor-pointer`}
                   onClick={item.onClick}>
-                  <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`} />
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl bg-gradient-to-br ${item.gradient} shadow-lg`}>
-                      <item.icon className="h-5 w-5 text-white" />
+                    <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                      <item.icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-bold text-sm text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">{item.title}</p>
-                      <p className="text-xs text-blue-700 dark:text-blue-300">{item.desc}</p>
+                      <p className="font-bold text-sm text-foreground group-hover:text-primary transition-all duration-300">{item.title}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
                     </div>
                   </div>
                 </div>

@@ -53,8 +53,8 @@ export default function Page() {
         variants={staggerContainer}
         className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}
       >
-        {/* Gradient overlay like landing page sections */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+        {/* Single-hue brand gradient (one accent, not a rainbow) */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl" />
         {/* Decorative orb (keep subtle; avoid visual noise) */}
         <div className="absolute -top-12 -right-14 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
 

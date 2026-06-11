@@ -27,18 +27,38 @@ _LOCATION_PRED_RE = re.compile(
 
 # Well-known Kathmandu Valley heritage sites (WGS84). Used when DB point fields
 # are empty but the place label matches a canonical site name.
+# Mirrored client-side in heritage_graph_ui/src/lib/atlas-place-coords.ts.
 _KNOWN_PLACE_COORDS: dict[str, tuple[str, str]] = {
     "kathmandu durbar square": ("27.7042", "85.3076"),
     "patan durbar square": ("27.6729", "85.3265"),
     "bhaktapur durbar square": ("27.6721", "85.4298"),
     "pashupatinath": ("27.7104", "85.3486"),
+    "pashupatinath temple": ("27.7104", "85.3486"),
     "boudhanath": ("27.7215", "85.3620"),
+    "boudhanath stupa": ("27.7215", "85.3620"),
     "swayambhunath": ("27.7149", "85.2903"),
     "changu narayan": ("27.7164", "85.4277"),
+    "changu narayan temple": ("27.7164", "85.4277"),
     "hanuman dhoka": ("27.7047", "85.3073"),
     "kathmandu valley": ("27.7172", "85.3240"),
     "basantapur": ("27.7047", "85.3073"),
+    "basantapur tower": ("27.7047", "85.3073"),
     "taleju temple precinct": ("27.7045", "85.3078"),
+    # Valley settlements + national heritage anchors.
+    "kathmandu": ("27.7172", "85.3240"),
+    "patan": ("27.6766", "85.3250"),
+    "lalitpur": ("27.6766", "85.3250"),
+    "bhaktapur": ("27.6710", "85.4298"),
+    "kirtipur": ("27.6717", "85.2783"),
+    "thimi": ("27.6800", "85.3833"),
+    "madhyapur thimi": ("27.6800", "85.3833"),
+    "sankhu": ("27.7167", "85.5167"),
+    "nuwakot durbar": ("27.9167", "85.1667"),
+    "lumbini": ("27.4833", "83.2756"),
+    "janakpur": ("26.7288", "85.9266"),
+    "gorkha": ("28.0000", "84.6333"),
+    "pokhara": ("28.2096", "83.9856"),
+    "mustang": ("28.9985", "83.8473"),
 }
 
 _REGISTRY_KEY_TO_MODEL: dict[str, str] = {
@@ -284,20 +304,29 @@ def enrich_museum_graph_nodes(
         if lat is not None and lng is not None:
             coord_by_id[iri] = (str(lat), str(lng))
 
-    for edge in edges:
-        pred_local = str(edge.get("predicateLocal") or "")
-        if not _LOCATION_PRED_RE.search(pred_local):
-            continue
-        src, tgt = edge.get("source"), edge.get("target")
-        if not src or not tgt:
-            continue
-        src_coords = coord_by_id.get(src)
-        tgt_coords = coord_by_id.get(tgt)
-        if src_coords and tgt not in coord_by_id:
-            coord_by_id[tgt] = src_coords
-            nodes[tgt]["lat"], nodes[tgt]["long"] = src_coords
-        elif tgt_coords and src not in coord_by_id:
-            coord_by_id[src] = tgt_coords
-            nodes[src]["lat"], nodes[src]["long"] = tgt_coords
+    location_edges = [
+        edge
+        for edge in edges
+        if _LOCATION_PRED_RE.search(str(edge.get("predicateLocal") or ""))
+        and edge.get("source")
+        and edge.get("target")
+    ]
+    # Iterate to fixpoint so coordinates flow along chained location edges
+    # (object → structure → place) regardless of edge ordering.
+    changed = True
+    while changed:
+        changed = False
+        for edge in location_edges:
+            src, tgt = edge["source"], edge["target"]
+            src_coords = coord_by_id.get(src)
+            tgt_coords = coord_by_id.get(tgt)
+            if src_coords and tgt not in coord_by_id:
+                coord_by_id[tgt] = src_coords
+                nodes[tgt]["lat"], nodes[tgt]["long"] = src_coords
+                changed = True
+            elif tgt_coords and src not in coord_by_id:
+                coord_by_id[src] = tgt_coords
+                nodes[src]["lat"], nodes[src]["long"] = tgt_coords
+                changed = True
 
     enrich_museum_cluster_identity(nodes)

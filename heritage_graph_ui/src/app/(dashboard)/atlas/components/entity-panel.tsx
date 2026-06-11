@@ -28,26 +28,15 @@ import { ProvenancePanel } from './provenance-panel';
 
 type DetailTab = 'overview' | 'provenance' | 'timeline' | 'relations' | 'sources';
 
-function eventKindLabel(kind: string): string {
-  switch (kind) {
-    case 'built':
-      return 'Built';
-    case 'renovated':
-      return 'Renovated';
-    case 'damaged':
-      return 'Damaged';
-    case 'restored':
-      return 'Restored';
-    case 'rediscovered':
-      return 'Rediscovered';
-    case 'consecrated':
-      return 'Consecrated';
-    case 'documented':
-      return 'Documented';
-    default:
-      return kind;
-  }
-}
+const EVENT_KIND_KEYS = {
+  built: 'eventKindBuilt',
+  renovated: 'eventKindRenovated',
+  damaged: 'eventKindDamaged',
+  restored: 'eventKindRestored',
+  rediscovered: 'eventKindRediscovered',
+  consecrated: 'eventKindConsecrated',
+  documented: 'eventKindDocumented',
+} as const;
 
 const RAIL_TABS: { id: DetailTab; icon: typeof IconArticle; titleKey: 'tabOverview' | 'tabProvenance' | 'tabTimeline' | 'tabRelations' | 'tabSources' }[] = [
   { id: 'overview', icon: IconArticle, titleKey: 'tabOverview' },
@@ -218,6 +207,13 @@ export function EntityPanel() {
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <AtlasKnowledgeLink entity={entity} className="h-7 text-[11px]" />
+                      {entity.sourceLayer === 'lux' && entity.externalUri ?
+                        <Button asChild variant="outline" size="sm" className="h-7 text-[11px]">
+                          <a href={entity.externalUri} target="_blank" rel="noopener noreferrer">
+                            {t('luxExternalLink')}
+                          </a>
+                        </Button>
+                      : null}
                     </div>
                     <div className="grid grid-cols-4 gap-1 font-mono text-[9px] uppercase leading-none tracking-wide text-muted-foreground">
                       <span className="truncate rounded border border-border/40 bg-muted/25 px-1 py-1 text-center tabular-nums">
@@ -242,6 +238,15 @@ export function EntityPanel() {
                           <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
                             {t('yearFilteredHint', { year: currentYear })}
                           </p>
+                          {entity.imageUrl ?
+                            // eslint-disable-next-line @next/next/no-img-element -- remote KG media with unknown dimensions
+                            <img
+                              src={entity.imageUrl}
+                              alt={entity.name}
+                              loading="lazy"
+                              className="max-h-44 w-full rounded-md border border-border/50 object-cover"
+                            />
+                          : null}
                           <p className="text-[13px] leading-snug">{entity.summary}</p>
                           <div className="rounded-md border border-border/50 bg-muted/20 px-2.5 py-2 text-[11px]">
                             <p className="font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
@@ -299,7 +304,9 @@ export function EntityPanel() {
                                   <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
                                     {ev.year}
                                   </span>{' '}
-                                  <span className="font-medium">{eventKindLabel(ev.kind)}</span>
+                                  <span className="font-medium">
+                                    {EVENT_KIND_KEYS[ev.kind] ? t(EVENT_KIND_KEYS[ev.kind]) : ev.kind}
+                                  </span>
                                   <p className="mt-0.5 text-[12px] text-muted-foreground">{ev.description}</p>
                                 </li>
                               ))}
@@ -316,6 +323,9 @@ export function EntityPanel() {
                               {relatedEdges.map((ed) => {
                                 const other = ed.source === entity.id ? ed.target : ed.source;
                                 const otherRow = getEntityById(other);
+                                const hasProvenance =
+                                  ed.source === entity.id &&
+                                  entity.assertions.some((a) => a.assertedProperty === ed.predicate);
                                 return (
                                   <li key={ed.id}>
                                     <Button
@@ -327,6 +337,11 @@ export function EntityPanel() {
                                     >
                                       <span className="block w-full font-mono text-[10px] text-muted-foreground">
                                         {ed.predicate}
+                                        {hasProvenance ?
+                                          <span className="ml-1 rounded border border-primary/40 px-1 text-[9px] uppercase text-primary">
+                                            prov
+                                          </span>
+                                        : null}
                                       </span>
                                       <span className="block text-[13px] font-medium">
                                         {otherRow?.name ?? other}
