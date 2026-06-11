@@ -153,14 +153,14 @@ export default function AboutPage() {
               {t('hero.titlePrefix')}{' '}
               <span className="text-white/90">{t('hero.titleHighlight')}</span>
             </h1>
-            <p className="mx-auto max-w-2xl text-base leading-relaxed text-blue-100 md:mx-0 md:text-lg">
+            <p className="mx-auto max-w-2xl text-base leading-relaxed text-white/90 md:mx-0 md:text-lg">
               {t('hero.description')}
             </p>
             <div className="flex flex-wrap justify-center gap-3 pt-1 md:justify-start">
               <Link href="/contribute">
                 <Button
                   size="lg"
-                  className="rounded-full bg-white font-semibold text-blue-700 shadow-lg hover:bg-blue-50"
+                  className="rounded-full bg-white font-semibold text-primary shadow-sm hover:bg-white/90"
                 >
                   <IconPlus className="mr-2 h-4 w-4" />
                   {t('hero.startContributing')}
@@ -436,12 +436,12 @@ export default function AboutPage() {
           <div className={cn('absolute inset-0', heroGradient)} />
           <CardContent className="relative z-10 p-8 text-center">
             <h2 className="font-serif text-2xl font-bold text-white md:text-3xl">{t('cta.title')}</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-blue-100">{t('cta.description')}</p>
+            <p className="mx-auto mt-3 max-w-2xl text-white/90">{t('cta.description')}</p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link href="/contribute">
                 <Button
                   size="lg"
-                  className="rounded-full bg-white font-semibold text-blue-700 hover:bg-blue-50"
+                  className="rounded-full bg-white font-semibold text-primary hover:bg-white/90"
                 >
                   <IconPlus className="mr-2 h-4 w-4" />
                   {t('cta.contribute')}

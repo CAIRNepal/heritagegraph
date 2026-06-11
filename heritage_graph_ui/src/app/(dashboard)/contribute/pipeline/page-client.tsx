@@ -203,7 +203,7 @@ function agentStatusIcon(status: AgentStatus | undefined) {
   if (!status || status === 'pending')
     return <IconClock className="h-4 w-4 text-muted-foreground" />;
   if (status === 'running')
-    return <IconLoader2 className="h-4 w-4 animate-spin text-blue-500" />;
+    return <IconLoader2 className="h-4 w-4 animate-spin text-primary" />;
   if (status === 'complete')
     return <IconCheck className="h-4 w-4 text-emerald-500" />;
   return <IconX className="h-4 w-4 text-red-500" />;
@@ -213,7 +213,7 @@ function agentStatusBadge(status: AgentStatus | undefined) {
   if (!status || status === 'pending')
     return <Badge variant="secondary" className="text-[10px]">Pending</Badge>;
   if (status === 'running')
-    return <Badge className="text-[10px] bg-blue-500 text-white animate-pulse">Running</Badge>;
+    return <Badge className="text-[10px] bg-primary text-primary-foreground animate-pulse">Running</Badge>;
   if (status === 'complete')
     return <Badge className="text-[10px] bg-emerald-500 text-white">Done</Badge>;
   return <Badge variant="destructive" className="text-[10px]">Failed</Badge>;
@@ -345,18 +345,18 @@ export default function PipelinePage() {
         initial="hidden" animate="show" variants={staggerContainer}
         className={`relative overflow-hidden ${glassCard} p-8`}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-500 to-fuchsia-500 opacity-95 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl" />
         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
         <motion.div variants={fadeInUp} className="relative z-10 space-y-2">
-          <p className="text-sm text-purple-200">Contribute / AI Pipeline</p>
+          <p className="text-sm text-white/70">Contribute / AI Pipeline</p>
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
             <IconSparkles className="w-4 h-4" /> KG Ingestion Pipeline
           </div>
           <h1 className="text-3xl font-black text-white">
             5-Agent <span className="text-white/90">AI Pipeline</span>
           </h1>
-          <p className="text-purple-100 max-w-2xl">
+          <p className="text-white/90 max-w-2xl">
             Runs an OCR-extracted document through Doc Intelligence → Extraction → SHACL Validation →
             Entity Resolution → Epistemic Router. Auto-accepted triples are written to the Django database
             and Oxigraph knowledge graph.
@@ -367,10 +367,10 @@ export default function PipelinePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ── Document selector ── */}
         <motion.div initial="hidden" animate="show" variants={fadeInUp}>
-          <Card className="border-purple-200 dark:border-purple-900">
+          <Card className="border-border">
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
-                <IconFileUpload className="h-4 w-4 text-purple-500" />
+                <IconFileUpload className="h-4 w-4 text-primary" />
                 Select Document
               </CardTitle>
             </CardHeader>
@@ -395,7 +395,7 @@ export default function PipelinePage() {
                         onClick={() => selectDoc(doc)}
                         className={`w-full text-left rounded-lg px-3 py-2 text-sm transition-all border ${
                           isSelected
-                            ? 'border-purple-400 bg-purple-50 dark:bg-purple-950/50 dark:border-purple-700'
+                            ? 'border-primary/50 bg-primary/5'
                             : 'border-transparent hover:bg-muted'
                         }`}
                       >
@@ -411,7 +411,7 @@ export default function PipelinePage() {
                                 docPipelineStatus === 'complete'
                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                                   : docPipelineStatus === 'running'
-                                  ? 'bg-blue-100 text-blue-800 animate-pulse'
+                                  ? 'bg-primary/10 text-primary animate-pulse'
                                   : docPipelineStatus === 'failed'
                                   ? 'bg-red-100 text-red-800'
                                   : ''
@@ -428,7 +428,7 @@ export default function PipelinePage() {
               )}
               <Button
                 variant="outline" size="sm"
-                className="w-full mt-2 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300"
+                className="w-full mt-2 border-primary/40 text-primary"
                 onClick={loadDocs}
                 disabled={docsLoading}
               >
@@ -442,7 +442,7 @@ export default function PipelinePage() {
         {/* ── Pipeline panel ── */}
         <motion.div initial="hidden" animate="show" variants={fadeInUp} className="lg:col-span-2 space-y-4">
           {/* Run controls */}
-          <Card className="border-purple-200 dark:border-purple-900">
+          <Card className="border-border">
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="space-y-0.5">
@@ -463,14 +463,13 @@ export default function PipelinePage() {
                 </div>
                 <div className="flex gap-2">
                   {pipelineStatus === 'running' ? (
-                    <Button disabled className="bg-gradient-to-r from-violet-600 to-purple-500 text-white">
+                    <Button disabled>
                       <IconLoader2 className="h-4 w-4 mr-2 animate-spin" /> Running…
                     </Button>
                   ) : (
                     <Button
                       onClick={runPipeline}
                       disabled={!selectedDoc || running}
-                      className="bg-gradient-to-r from-violet-600 to-purple-500 hover:from-violet-700 hover:to-purple-600 text-white"
                     >
                       <IconPlayerPlay className="h-4 w-4 mr-2" />
                       {pipelineStatus === 'complete' ? 'Re-run Pipeline' : 'Run Pipeline'}
@@ -499,7 +498,7 @@ export default function PipelinePage() {
                   initial="hidden" animate="show" variants={fadeInUp}
                   className={`rounded-xl border transition-all ${
                     status === 'running'
-                      ? 'border-blue-300 dark:border-blue-700 shadow-sm shadow-blue-200 dark:shadow-blue-900'
+                      ? 'border-primary/40 shadow-sm'
                       : status === 'complete'
                       ? 'border-emerald-200 dark:border-emerald-900'
                       : status === 'failed'
@@ -511,7 +510,7 @@ export default function PipelinePage() {
                     className="w-full flex items-center gap-3 px-4 py-3 text-left"
                     onClick={() => result && toggleAgent(agent.key)}
                   >
-                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${agent.color} text-white text-xs font-bold`}>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
                       {idx + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -546,17 +545,17 @@ export default function PipelinePage() {
       {pipelineStatus === 'complete' && (
         <motion.div initial="hidden" animate="show" variants={fadeInUp}>
           <Tabs defaultValue="assertions">
-            <TabsList className="h-auto p-1 gap-1 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-purple-200 dark:border-purple-900 rounded-xl">
-              <TabsTrigger value="assertions" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-500 data-[state=active]:text-white rounded-lg">
+            <TabsList className="h-auto p-1 gap-1 bg-muted border border-border rounded-xl">
+              <TabsTrigger value="assertions" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
                 <IconDatabase className="h-4 w-4" />
                 Assertions
                 <Badge variant="secondary" className="ml-1 text-xs">{assertions.length}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="graph" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-500 data-[state=active]:text-white rounded-lg">
+              <TabsTrigger value="graph" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
                 <IconNetwork className="h-4 w-4" />
                 Graph Preview
               </TabsTrigger>
-              <TabsTrigger value="summary" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-600 data-[state=active]:to-purple-500 data-[state=active]:text-white rounded-lg">
+              <TabsTrigger value="summary" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg">
                 <IconBrain className="h-4 w-4" />
                 Routing Summary
               </TabsTrigger>
@@ -568,20 +567,20 @@ export default function PipelinePage() {
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-purple-50/50 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900">
-                        <TableHead className="text-purple-800 dark:text-purple-200 w-36">Route</TableHead>
-                        <TableHead className="text-purple-800 dark:text-purple-200">Subject</TableHead>
-                        <TableHead className="text-purple-800 dark:text-purple-200">Predicate</TableHead>
-                        <TableHead className="text-purple-800 dark:text-purple-200">Object</TableHead>
-                        <TableHead className="text-purple-800 dark:text-purple-200 w-20 text-center">Conf.</TableHead>
-                        <TableHead className="text-purple-800 dark:text-purple-200 w-16 text-center">Flags</TableHead>
+                      <TableRow className="bg-muted/50 border-border">
+                        <TableHead className="text-muted-foreground w-36">Route</TableHead>
+                        <TableHead className="text-muted-foreground">Subject</TableHead>
+                        <TableHead className="text-muted-foreground">Predicate</TableHead>
+                        <TableHead className="text-muted-foreground">Object</TableHead>
+                        <TableHead className="text-muted-foreground w-20 text-center">Conf.</TableHead>
+                        <TableHead className="text-muted-foreground w-16 text-center">Flags</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {assertions.map((a, i) => (
                         <TableRow
                           key={i}
-                          className="border-purple-100 dark:border-purple-900 hover:bg-purple-50/30 dark:hover:bg-purple-950/20"
+                          className="border-border hover:bg-accent/40"
                         >
                           <TableCell>
                             <Badge variant="secondary" className={`text-[10px] ${ROUTE_STYLE[a.route] ?? ''}`}>
@@ -595,7 +594,7 @@ export default function PipelinePage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <p className="text-xs font-mono truncate max-w-[160px] text-purple-700 dark:text-purple-300">{a.predicate}</p>
+                            <p className="text-xs font-mono truncate max-w-[160px] text-muted-foreground">{a.predicate}</p>
                           </TableCell>
                           <TableCell>
                             <div>
@@ -813,7 +812,7 @@ function GraphPreview({
       <div className="relative" style={{ height: 480 }}>
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/60 z-10">
-            <IconLoader2 className="h-8 w-8 animate-spin text-purple-500" />
+            <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         )}
         {error && (
@@ -944,7 +943,7 @@ function Stat({ label, value, highlight }: { label: string; value: string; highl
   return (
     <div>
       <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
-      <p className={`text-sm font-semibold ${highlight ? 'text-purple-700 dark:text-purple-300' : ''}`}>
+      <p className={`text-sm font-semibold ${highlight ? 'text-primary' : ''}`}>
         {value}
       </p>
     </div>

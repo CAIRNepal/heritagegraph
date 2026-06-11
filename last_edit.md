@@ -47,6 +47,18 @@ remove the multi-hue "rainbow," and use semantic tokens instead of hardcoded
 - Remaining blue is intentional: the inline `gradient:` array keys are now unused (dead, harmless),
   and two detail/activity status colours stay semantic.
 
+### Fix 5 — about + AI-pipeline pages to single accent
+- `about/page.tsx`: heroes already use `heroGradient` (now single-hue) and tiles use
+  `ShortcutGrid` (now primary chips), so only hero text + white CTAs needed work:
+  `text-blue-100` → `text-white/90`; CTA `text-blue-700 hover:bg-blue-50` → `text-primary hover:bg-white/90`.
+- `contribute/pipeline/page-client.tsx` (was violet/purple-themed): hero rainbow
+  `from-violet-600 via-purple-500 to-fuchsia-500` → `from-primary to-accent`; gradient
+  Run/Running buttons → default primary Button; tab triggers' violet active state → `bg-primary`;
+  step-number badge `bg-gradient-to-br ${agent.color}` → `bg-primary`; running spinner/badge,
+  running-state borders, table headers/rows, selected-doc highlight, TabsList glass → tokens.
+  Kept emerald=complete / red=failed status colours (semantic). Dead `color:` step keys remain (harmless).
+- `services/page.tsx` SKIPPED — dev-only page (`notFound()` in production, never user-facing).
+
 ### Deliberately NOT changed (semantic, not amateur)
 - Progression/rank/tier gradients (`progression/page.tsx`, `progression-widgets.tsx`,
   `rank-avatar.tsx`): bronze→diamond tier colours are legitimate gamification semantics.
@@ -58,7 +70,6 @@ remove the multi-hue "rainbow," and use semantic tokens instead of hardcoded
 - Pages render 200: `/`, `/leaderboard`, `/contribute`, `/about`.
 
 ### Remaining (optional follow-ups from the audit)
-- Decorative gradients on one-off marketing pages (`about`, `services`) and
-  `contribute/pipeline` — candidates for the same single-accent treatment.
 - Larger bets: collapse the ~35-item sidebar to ~7 + progressive disclosure;
   type scale + spacing tokens; a11y AA pass; mobile sidebar drawer.
+- Long-tail: progression/rank gradients are intentionally kept (semantic tiers).
