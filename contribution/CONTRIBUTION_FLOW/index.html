@@ -1,0 +1,2688 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/contribution/CONTRIBUTION_FLOW/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>HeritageGraph — Contribution Flow, Endpoints & De-fragmentation Plan - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#heritagegraph-contribution-flow-endpoints-de-fragmentation-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              HeritageGraph — Contribution Flow, Endpoints &amp; De-fragmentation Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#0-the-headline-four-parallel-contribution-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. The headline: four parallel contribution paths
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-path-a-the-primary-structured-flow-form-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Path A — the primary structured flow (form → graph)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Path A — the primary structured flow (form → graph)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1a-submission-http-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1a. Submission (HTTP POST)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1b-review-acceptance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1b. Review / acceptance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1b-editing-a-published-record-staged-revisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1b′. Editing a published record (staged revisions)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1c-publication-to-the-graph-automatic-signal-driven-transactional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1c. Publication to the graph (automatic, signal-driven, transactional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-how-it-appears-in-browse-by-type-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. How it appears in "Browse by type" pages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-publication-gate-canonical-status-single-source-of-truth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Publication gate &amp; canonical status (single source of truth)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-oxigraph-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Oxigraph storage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-path-c-qr-contribution-now-promoted-into-the-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Path C — QR contribution (now promoted into the pipeline)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-endpoint-reference-contribution-related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Endpoint reference (contribution-related)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Endpoint reference (contribution-related)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#structured-cidoc-path-a-base-apiv1cidoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured CIDOC (Path A) — base /api/v1/cidoc/
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-queues-path-b-base-apiv1data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review / queues (Path B) — base /api/v1/data/
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qr-path-c-base-apiv1data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QR (Path C) — base /api/v1/data/
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#legacy-other" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Legacy / other
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-end-to-end-sequence-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. End-to-end sequence diagrams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. End-to-end sequence diagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#7a-path-a-structured-contribution-the-happy-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7a. Path A — structured contribution (the happy path)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7b-path-c-qr-contribution-promoted-into-path-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7b. Path C — QR contribution (promoted into Path A)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-fragmentation-issues-status-after-de-fragmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Fragmentation issues — status after de-fragmentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-de-fragmentation-plan-implemented-2026-06-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. De-fragmentation plan — implemented 2026-06-12
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. De-fragmentation plan — implemented 2026-06-12">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-0-correctness-landed-first-prerequisites-for-everything-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 0 — Correctness (landed first; prerequisites for everything else)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-canonical-status-vocabulary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — Canonical status vocabulary ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-qr-rides-the-same-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — QR rides the same pipeline ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3a-real-fk-replaces-the-string-back-link" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3a — Real FK replaces the string back-link ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-legacy-submission-write-path-retired" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 — Legacy Submission write path retired ✅
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria-for-de-fragmented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance criteria for "de-fragmented"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="heritagegraph-contribution-flow-endpoints-de-fragmentation-plan">HeritageGraph — Contribution Flow, Endpoints &amp; De-fragmentation Plan</h1>
+<blockquote>
+<p><strong>Scope:</strong> How a contribution travels from a form to the knowledge graph, every endpoint
+involved, how it surfaces in "browse by type" pages, the QR-code path, Oxigraph storage —
+and the de-fragmentation plan. Status date: 2026-06-12.</p>
+<p><strong>Update 2026-06-12 — the de-fragmentation plan (§9) is implemented.</strong> Phases 0–4
+landed: accepted-lineage publication (published records never vanish or change during
+re-review), transactional RDF projection (<code>transaction.on_commit</code>), a canonical status
+vocabulary with an enforced transition table (<code>apps/cidoc_data/canonical_status.py</code>),
+a real ContentType FK replacing the <code>_cidoc_model</code>/<code>_cidoc_id</code> string back-link
+(still written for compatibility), QR promotion into the structured pipeline, and the
+retirement of the legacy <code>Submission</code> write path (read-only archive, 410 on writes).
+Tests: <code>apps.cidoc_data.test_pipeline_phases</code> + extended <code>test_e2e_pipeline</code>.
+Frontend audit &amp; live verification of every contribution UI surface:
+<a href="../CONTRIBUTION_UI_REPORT/">CONTRIBUTION_UI_REPORT.md</a>.</p>
+</blockquote>
+<hr />
+<h2 id="0-the-headline-four-parallel-contribution-paths">0. The headline: four parallel contribution paths</h2>
+<p>This was the root of the "fragmented" feeling. The paths were built at different times, use
+different models and status vocabularies. After de-fragmentation, A/B/C all flow through
+the <strong>same accept gate</strong> into the graph; D is a read-only archive.</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Entry (UI)</th>
+<th>Backing model(s)</th>
+<th>Auto-flows to graph?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>A. Structured CIDOC form</strong> (primary)</td>
+<td><code>/contribute/&lt;domain&gt;</code></td>
+<td><code>cidoc_data.MetaData</code> subclasses <strong>+</strong> a <code>heritage_data.CulturalEntity</code> wrapper</td>
+<td>✅ on accept</td>
+</tr>
+<tr>
+<td><strong>B. CulturalEntity / Revision</strong></td>
+<td>review queue</td>
+<td><code>CulturalEntity</code> + <code>Revision</code></td>
+<td>✅ (it <em>is</em> A's wrapper)</td>
+</tr>
+<tr>
+<td><strong>C. QR public contribution</strong></td>
+<td><code>/contribute/scan/&lt;id&gt;</code></td>
+<td><code>heritage_data.PublicContribution</code></td>
+<td>✅ promoted on review (<code>target_type</code>) → rides Path A</td>
+</tr>
+<tr>
+<td><strong>D. Legacy <code>Submission</code></strong></td>
+<td>— (write path retired)</td>
+<td><code>heritage_data.Submission</code></td>
+<td>❌ read-only archive; POST → 410</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-path-a-the-primary-structured-flow-form-graph">1. Path A — the primary structured flow (form → graph)</h2>
+<h3 id="1a-submission-http-post">1a. Submission (HTTP POST)</h3>
+<p>The ontology-driven form POSTs to the CIDOC endpoint declared in the registry
+(<code>ontologyClass.apiEndpoint</code>):</p>
+<pre><code>POST /api/v1/cidoc/&lt;type&gt;/      # e.g. /api/v1/cidoc/festivals/, /api/v1/cidoc/caste_groups/
+</code></pre>
+<p><code>ContributionFlowMixin.perform_create</code> (<code>apps/cidoc_data/views.py</code>):
+1. <strong>Requires authentication.</strong>
+2. Validates the payload against the LinkML <strong><code>registry_jsonschema</code></strong> for that class.
+3. Saves the <strong>CIDOC row</strong>: <code>contributor=&lt;username&gt;</code>, <strong><code>status="pending_review"</code></strong>.
+4. Creates a <strong><code>CulturalEntity</code></strong> wrapper (<code>status="pending_review"</code>) — the review-queue item.
+5. Creates <strong><code>Revision</code> #1</strong> whose JSON <code>data</code> includes the fields <strong>plus <code>_cidoc_model</code> and
+   <code>_cidoc_id</code></strong> (the back-link to the CIDOC row).
+6. Logs an <strong><code>Activity</code></strong> ("submitted") and fires <strong><code>Notification</code>s</strong> to the contributor and
+   every active reviewer.</p>
+<h3 id="1b-review-acceptance">1b. Review / acceptance</h3>
+<p>A reviewer accepts the <code>CulturalEntity</code>. <code>CulturalEntity.accept_contribution()</code>
+(<code>apps/heritage_data/models.py</code>), atomically:
+1. Guards the move with the canonical transition table (<code>IllegalStatusTransition</code> → 400).
+2. <code>CulturalEntity.status = "accepted"</code>; <code>current_revision</code> <strong>and</strong> <code>accepted_revision</code>
+   point at the reviewed revision (the head of the accepted lineage).
+3. Resolves the CIDOC row via the real FK (<code>cidoc_content_type</code>/<code>cidoc_object_id</code>;
+   the legacy <code>_cidoc_model</code>/<code>_cidoc_id</code> JSON back-link is a logged fallback that
+   heals the FK), <strong>applies the accepted revision's fields to the row</strong>, and sets its
+   <code>status="accepted"</code>. Every resolution failure logs at ERROR — never silent.</p>
+<h3 id="1b-editing-a-published-record-staged-revisions">1b′. Editing a published record (staged revisions)</h3>
+<p><code>PATCH /api/v1/cidoc/&lt;type&gt;/&lt;id&gt;/</code> on a published row <strong>never edits it in place</strong>:
+- The accepted content stays live in browse <strong>and</strong> in the public graph.
+- The proposal is appended as a new <code>Revision</code>; the wrapper returns to
+  <code>pending_review</code> pointing at it (this is what the reviewer sees).
+- <strong>Accept</strong> applies the staged revision to the CIDOC row and re-projects it.
+- <strong>Reject</strong> restores the wrapper to <code>accepted</code>/<code>accepted_revision</code>; the row and the
+  graph were never touched. (Rejecting a wrapper with <em>no</em> pending edit is a curator
+  <strong>withdrawal</strong> and unpublishes the row.)</p>
+<h3 id="1c-publication-to-the-graph-automatic-signal-driven-transactional">1c. Publication to the graph (automatic, signal-driven, transactional)</h3>
+<p>Saving the CIDOC row → <code>post_save</code> → <code>rdf_signals.queue_entity_projection</code>
+(<code>apps/cidoc_data/rdf_signals.py</code>):
+- The store write is deferred to <strong><code>transaction.on_commit</code></strong> — a rolled-back save can
+  never leave ghost triples in Oxigraph (deletes capture the IRI before commit).
+- Checks <strong><code>is_published_for_rdf(instance)</code></strong> (see §3).
+- <strong>Published</strong> → projects triples (<code>rdf:type</code>, <code>rdfs:label</code>, slot values, <code>owl:sameAs</code>) into the
+  Oxigraph <strong>public named graph</strong> via <code>kg_engine</code>.
+- <strong>Not published</strong> → <em>removes</em> the subject from the public graph.</p>
+<p><strong>→ A contribution enters the knowledge graph exactly when a reviewer accepts it.</strong> Until then
+it lives only in PostgreSQL.</p>
+<hr />
+<h2 id="2-how-it-appears-in-browse-by-type-pages">2. How it appears in "Browse by type" pages</h2>
+<p><code>/knowledge/&lt;domain&gt;</code> reads the same CIDOC list endpoint the form posts to:</p>
+<pre><code>GET /api/v1/cidoc/&lt;type&gt;/        # server-paginated, status tabs
+</code></pre>
+<p>Server-side visibility (<code>apps/cidoc_data/list_visibility.py</code>):
+- <strong>Public default:</strong> only published — <code>status ∈ {accepted, merged, published}</code> <strong>or</strong> legacy
+  <code>null</code>/empty (seed corpus). Pending/rejected never leak.
+- <strong><code>?status=&lt;x&gt;</code></strong> explicit filter (withheld statuses → owner or staff only).
+- <strong><code>?mine=1</code></strong> the contributor's own rows (any status).
+- <strong>staff + <code>?all=1</code></strong> the full curation table.</p>
+<p>The table defaults to the <strong>"approved"</strong> tab, so a contribution appears in browse <strong>only after
+acceptance</strong> — consistent with the graph.</p>
+<hr />
+<h2 id="3-publication-gate-canonical-status-single-source-of-truth">3. Publication gate &amp; canonical status (single source of truth)</h2>
+<p><code>apps/cidoc_data/canonical_status.py</code> defines <strong>one</strong> vocabulary; every legacy raw value
+maps onto it at the boundary (<code>to_canonical_status</code>), and review decisions are guarded
+by an explicit transition table (<code>can_transition</code>):</p>
+<pre><code class="language-python">CanonicalStatus: draft → pending_review → accepted | rejected   (+ superseded)
+# raw → canonical: approved/incorporated/merged/published → accepted,
+#                  pending/pending_revision → pending_review,
+#                  null/empty → None (legacy curated corpus, published),
+#                  anything else → UNKNOWN_STATUS (withheld + logged; default-deny)
+</code></pre>
+<p>Serializers expose the unified value as <code>canonical_status</code> (CulturalEntity,
+PublicContribution) while DB values stay model-specific — no data migration needed.</p>
+<p><code>apps/cidoc_data/publication_policy.py</code> derives the gate from the canonical vocabulary
+and governs both browse and graph projection:</p>
+<pre><code class="language-python">PUBLISHED_STATUSES = {&quot;accepted&quot;, &quot;merged&quot;, &quot;published&quot;}   # raw values, for query filters
+WITHHELD_STATUSES  = {&quot;pending_review&quot;, &quot;draft&quot;, &quot;rejected&quot;, &quot;pending_revision&quot;, &quot;superseded&quot;}
+# null/empty status == legacy curated corpus == treated as published
+</code></pre>
+<hr />
+<h2 id="4-oxigraph-storage">4. Oxigraph storage</h2>
+<ul>
+<li><strong>System of record = PostgreSQL.</strong> Oxigraph stores only the <em>published</em> projection.</li>
+<li>Triggers: <code>post_save</code>/<code>post_delete</code> on every CIDOC <code>MetaData</code> model; a <code>HeritageAssertion</code>
+  <code>post_save</code> for relationship <strong>edges</strong>.</li>
+<li>Entity → triples in the <strong>public named graph</strong> (<code>…/graph/public</code>).</li>
+<li>Relationship edge: accepted <code>HeritageAssertion</code> with <code>asserted_property="relationship.&lt;P&gt;"</code> →
+  one edge triple, gated by <code>is_curated_assertion</code> (excludes test-seed contributors).</li>
+<li>Failures → <strong><code>RDFSyncOutbox</code></strong> retry. Full reproject: <code>make rdf-rebuild</code>.</li>
+<li>Dev uses embedded pyoxigraph; prod uses the HTTP Oxigraph service.</li>
+</ul>
+<hr />
+<h2 id="5-path-c-qr-contribution-now-promoted-into-the-pipeline">5. Path C — QR contribution (now promoted into the pipeline)</h2>
+<p><code>PublicContribution</code> model + <code>PublicContributionViewSet</code>:
+- <strong>Submit (anonymous):</strong> <code>POST /api/v1/data/public-contributions/</code> is <strong><code>AllowAny</code></strong> — a QR scan
+  at a site lets the public send <code>content</code>, <code>contributor_name</code>, <code>entity_reference_id</code>/
+  <code>entity_name</code>, GPS, <code>submitted_via="qr_scan"</code>. UI: <code>/contribute/scan/&lt;id&gt;</code>. (Unchanged.)
+- Statuses map onto the canonical vocabulary (<code>approved</code>/<code>incorporated</code> → <code>accepted</code>),
+  exposed as <code>canonical_status</code>.
+- <strong>Review:</strong> <code>POST /api/v1/data/public-contributions/&lt;id&gt;/review/</code> (reviewer/admin).
+  Passing <strong><code>target_type</code></strong> (a CIDOC model name, e.g. <code>"Monument"</code>) with an
+  <code>approved</code>/<code>incorporated</code> decision runs <strong>promotion</strong>
+  (<code>apps/heritage_data/qr_promotion.py</code>), atomically with the status change:
+  1. Creates the <strong>CIDOC row</strong> (<code>status="pending_review"</code>, <code>contributor="qr:&lt;name&gt;"</code>),
+     pre-filled from the note's name/content.
+  2. Creates the <strong><code>CulturalEntity</code> wrapper</strong> (FK-linked) + <strong>Revision #1</strong> whose data
+     carries full provenance back to the field observation: <code>_public_contribution_id</code>,
+     <code>_contributor_name</code>, <code>_source</code> (qr_scan), GPS, <code>_contributed_at</code>.
+  3. Links <code>PublicContribution.promoted_entity</code> → the wrapper and returns
+     <code>promoted_entity_id</code> in the review response.
+  The promoted record then rides the <strong>same accept→publish gate as Path A</strong> — the
+  curator verifies/edits in the normal review queue instead of re-entering by hand.
+- Curation UI: <code>/curation/qr-contributions</code>.</p>
+<hr />
+<h2 id="6-endpoint-reference-contribution-related">6. Endpoint reference (contribution-related)</h2>
+<h3 id="structured-cidoc-path-a-base-apiv1cidoc">Structured CIDOC (Path A) — base <code>/api/v1/cidoc/</code></h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/cidoc/&lt;type&gt;/</code> (persons, festivals, caste_groups, monuments, deities, guthis, structures, rituals, …)</td>
+<td>GET</td>
+<td>Browse-by-type (published default; <code>?status</code>,<code>?mine</code>,<code>?all</code>)</td>
+</tr>
+<tr>
+<td><code>/cidoc/&lt;type&gt;/</code></td>
+<td>POST</td>
+<td>Submit (auth) → <code>pending_review</code></td>
+</tr>
+<tr>
+<td><code>/cidoc/&lt;type&gt;/&lt;id&gt;/</code></td>
+<td>GET</td>
+<td>View one record</td>
+</tr>
+<tr>
+<td><code>/cidoc/&lt;type&gt;/&lt;id&gt;/</code></td>
+<td>PATCH/PUT</td>
+<td>Edit published → resets to <code>pending_review</code></td>
+</tr>
+<tr>
+<td><code>/cidoc/contribute/&lt;type&gt;/</code> (structures, rituals, deities, guthis)</td>
+<td>GET/POST</td>
+<td>Assertion-aware variants</td>
+</tr>
+<tr>
+<td><code>/cidoc/assertions/</code></td>
+<td>GET/POST</td>
+<td>Relationship assertions (graph <strong>edges</strong>); <code>?reconciliation_status=accepted</code></td>
+</tr>
+<tr>
+<td><code>/cidoc/schema/registry/</code></td>
+<td>GET</td>
+<td>Ontology registry that drives the forms</td>
+</tr>
+<tr>
+<td><code>/cidoc/kg/stats/</code>, <code>/cidoc/kg/neighborhood/</code>, <code>/cidoc/kg/query/</code>, <code>/cidoc/kg/graph/</code></td>
+<td>GET/POST</td>
+<td>Knowledge-graph read surface</td>
+</tr>
+</tbody>
+</table>
+<h3 id="review-queues-path-b-base-apiv1data">Review / queues (Path B) — base <code>/api/v1/data/</code></h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/data/cultural-entities/</code></td>
+<td>GET/POST</td>
+<td>CulturalEntity CRUD</td>
+</tr>
+<tr>
+<td><code>/data/contribution-queue/</code>, <code>/data/contribution-queue/queue-counts/</code></td>
+<td>GET</td>
+<td>Pending contributions</td>
+</tr>
+<tr>
+<td><code>/data/review-queue/</code></td>
+<td>GET</td>
+<td>Triaged epistemic review queue</td>
+</tr>
+<tr>
+<td><code>/data/review-flags/</code>, <code>/data/reviewer-roles/</code>, <code>/data/reviewer-roles/assign/</code></td>
+<td>various</td>
+<td>Flags &amp; reviewer roles</td>
+</tr>
+<tr>
+<td><code>/data/revisions/</code>, <code>/data/activities/</code>, <code>/data/notifications/</code></td>
+<td>GET</td>
+<td>Versions, audit, alerts</td>
+</tr>
+</tbody>
+</table>
+<h3 id="qr-path-c-base-apiv1data">QR (Path C) — base <code>/api/v1/data/</code></h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Permission</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/data/public-contributions/</code></td>
+<td>POST</td>
+<td><strong>AllowAny</strong></td>
+<td>Anonymous QR submission</td>
+</tr>
+<tr>
+<td><code>/data/public-contributions/</code></td>
+<td>GET</td>
+<td>reviewer</td>
+<td>List queue (<code>?status=</code>)</td>
+</tr>
+<tr>
+<td><code>/data/public-contributions/&lt;id&gt;/review/</code></td>
+<td>POST</td>
+<td>reviewer</td>
+<td>approve / reject / incorporate; <strong><code>target_type</code> → promote into Path A</strong> (returns <code>promoted_entity_id</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="legacy-other">Legacy / other</h3>
+<p><code>/data/submissions/</code> (Path D — <strong>read-only archive</strong>; POST/PUT/PATCH/DELETE and
+<code>/data/form-submit/</code> return <strong>410 Gone</strong>) · <code>/data/projects/…</code> (project-based contribution) ·
+<code>/api/v1/document-processing/…</code> (uploads/ingestion — <strong>OCR currently suspended</strong>).</p>
+<hr />
+<h2 id="7-end-to-end-sequence-diagrams">7. End-to-end sequence diagrams</h2>
+<h3 id="7a-path-a-structured-contribution-the-happy-path">7a. Path A — structured contribution (the happy path)</h3>
+<pre><code>Contributor        Frontend (form)        Django API                 Postgres                 Signals / kg_engine        Oxigraph
+    |                    |                     |                          |                          |                        |
+    |  fill form         |                     |                          |                          |                        |
+    |───────────────────&gt;|                     |                          |                          |                        |
+    |  submit            |  POST /api/v1/cidoc/&lt;type&gt;/                     |                          |                        |
+    |                    |────────────────────&gt;| perform_create           |                          |                        |
+    |                    |                     |  validate vs registry     |                          |                        |
+    |                    |                     |  CIDOC row (pending)──────&gt;| insert MetaData          |                        |
+    |                    |                     |  CulturalEntity (pending)─&gt;| insert + Revision#1      |                        |
+    |                    |                     |                          |  (_cidoc_model/_cidoc_id)  |                        |
+    |                    |                     |  Activity + Notifications─&gt;|                          |                        |
+    |                    |  201 Created        |                          | post_save(MetaData)───────&gt;| is_published? NO       |
+    |                    |&lt;────────────────────|                          |                          |  -&gt; delete_projection  |  (nothing public)
+    |                    |                     |                          |                          |                        |
+    |                    |                     |   ... later, a reviewer accepts in /curation ...     |                        |
+Reviewer ──── POST accept ───&gt; CulturalEntity.accept_contribution()  (atomic, transition-guarded)    |
+    |                    |                     |  status=accepted ────────&gt;| update CulturalEntity    |                        |
+    |                    |                     |  resolve CIDOC row via FK |  (+ accepted_revision)    |                        |
+    |                    |                     |  apply staged revision ──&gt;|                          |                        |
+    |                    |                     |  CIDOC row status=accepted&gt;| update MetaData          |                        |
+    |                    |                     |                          | post_save(MetaData)───────&gt;| is_published? YES      |
+    |                    |                     |                          |                          |  project triples ──────&gt;| INSERT into graph/public
+    |                    |                     |                          |                          |                        |
+    |  browse /knowledge/&lt;type&gt;  ── GET /api/v1/cidoc/&lt;type&gt;/ (published) ─&gt; now visible             |  /cidoc/kg/* now returns it
+</code></pre>
+<h3 id="7b-path-c-qr-contribution-promoted-into-path-a">7b. Path C — QR contribution (promoted into Path A)</h3>
+<pre><code>Public (QR scan)     Frontend /contribute/scan/&lt;id&gt;     Django API                  Postgres
+     |                        |                              |                            |
+     |  scan + write note     |                              |                            |
+     |───────────────────────&gt;|  POST /api/v1/data/public-contributions/ (AllowAny)       |
+     |                        |─────────────────────────────&gt;| create PublicContribution──&gt;| insert (status=pending)
+     |                        |  201                          |                            |
+     |                        |                              |                            |
+Reviewer ── POST /public-contributions/&lt;id&gt;/review/ {status, target_type: &quot;Monument&quot;}     |
+     |                        |                              | promote_public_contribution (atomic with status change)
+     |                        |                              |  CIDOC row (pending_review)─&gt;| insert MetaData
+     |                        |                              |  CulturalEntity (FK-linked)─&gt;| insert + Revision#1
+     |                        |                              |    (provenance: _public_contribution_id, GPS, _source)
+     |                        |                              |  promoted_entity ──────────&gt;| link back to contribution
+     |                        |                              |                            |
+     |          ... from here it IS Path A: review queue → accept → graph (see 7a) ...
+</code></pre>
+<hr />
+<h2 id="8-fragmentation-issues-status-after-de-fragmentation">8. Fragmentation issues — status after de-fragmentation</h2>
+<ol>
+<li><strong>Double write</strong> — ✅ <em>mitigated (Phase 3a)</em>: the wrapper now carries a real
+   <code>cidoc_content_type</code>/<code>cidoc_object_id</code> FK (indexed; backfilled by migration
+   <code>heritage_data.0027</code>); the JSON back-link is still written for compatibility but is
+   only a logged, self-healing fallback. A broken link <strong>logs at ERROR</strong> instead of
+   silently skipping publication. The two-model double write itself remains (see
+   Phase 3 end-state below).</li>
+<li><strong>Multiple review surfaces</strong> — ⚠️ <em>reduced</em>: legacy <code>Submission</code> moderation is gone
+   (write path retired); <code>ContributionQueueViewSet</code> and <code>ReviewQueueViewSet</code> both apply
+   the same canonical transition guard. Folding them into one queue is still open.</li>
+<li><strong>QR is an island</strong> — ✅ <em>fixed (Phase 2)</em>: reviewer promotion (<code>target_type</code>)
+   creates the CIDOC row + wrapper + provenance revision; QR notes reach the graph
+   through the same accept gate.</li>
+<li><strong>Status-vocabulary drift</strong> — ✅ <em>fixed (Phase 1)</em>: one canonical enum + transition
+   table in <code>apps/cidoc_data/canonical_status.py</code>; raw values translate at the boundary
+   and surface as <code>canonical_status</code>.</li>
+</ol>
+<hr />
+<h2 id="9-de-fragmentation-plan-implemented-2026-06-12">9. De-fragmentation plan — implemented 2026-06-12</h2>
+<p>What landed, by phase (tests: <code>apps.cidoc_data.test_pipeline_phases</code>, plus the
+extended <code>apps.cidoc_data.test_e2e_pipeline</code> / <code>test_list_visibility</code>):</p>
+<h3 id="phase-0-correctness-landed-first-prerequisites-for-everything-else">Phase 0 — Correctness (landed first; prerequisites for everything else)</h3>
+<ul>
+<li><strong>Accepted-lineage publication:</strong> editing a published CIDOC record stages the
+  proposal as a <code>Revision</code> (wrapper → <code>pending_review</code>) and <strong>never</strong> touches the live
+  row, so accepted content stays in browse and in the public graph during re-review.
+  Accept applies the staged revision to the row; reject restores the wrapper to its
+  <code>accepted_revision</code> (new FK on <code>CulturalEntity</code>). Rejecting a wrapper with no
+  pending edit = curator <strong>withdrawal</strong> (unpublishes).</li>
+<li><strong>Transactional projection:</strong> all Oxigraph writes from signals are deferred to
+  <code>transaction.on_commit</code>; rollbacks can no longer leave ghost triples.</li>
+<li><strong>No silent failures:</strong> CIDOC-row resolution on accept/reject logs every failure
+  mode at ERROR; <code>perform_create</code> writes CIDOC row + wrapper + Revision #1 atomically
+  (no more orphaned, unreviewable rows); notifications are best-effort only.</li>
+</ul>
+<h3 id="phase-1-canonical-status-vocabulary">Phase 1 — Canonical status vocabulary ✅</h3>
+<p><code>apps/cidoc_data/canonical_status.py</code>: <code>CanonicalStatus</code> enum, <code>to_canonical_status()</code>
+boundary mapping (DB values unchanged), <code>ALLOWED_TRANSITIONS</code> + <code>can_transition()</code>
+enforced by <code>accept_contribution</code>/<code>reject_contribution</code> (<code>IllegalStatusTransition</code> →
+HTTP 400). Serializers expose <code>canonical_status</code>.</p>
+<h3 id="phase-2-qr-rides-the-same-pipeline">Phase 2 — QR rides the same pipeline ✅</h3>
+<p><code>apps/heritage_data/qr_promotion.py</code> + <code>target_type</code> on the review endpoint (see §5).
+Status change and promotion commit atomically; invalid <code>target_type</code> rolls back the
+whole decision.</p>
+<h3 id="phase-3a-real-fk-replaces-the-string-back-link">Phase 3a — Real FK replaces the string back-link ✅</h3>
+<p><code>CulturalEntity.cidoc_content_type/cidoc_object_id</code> (GenericForeignKey, indexed),
+set on create/staging/promotion, backfilled from revision JSON (migration 0027),
+self-healing when legacy rows resolve via JSON. <strong>End-state (3 final) still open:</strong>
+collapse the double write entirely — CIDOC-canonical, with <code>CulturalEntity</code>/<code>Revision</code>
+as a thin review/versioning side-table, one review queue, one accept action; long term,
+<code>HeritageAssertion</code> (crminf:I2_Belief) becomes the atomic unit of knowledge.</p>
+<h3 id="phase-4-legacy-submission-write-path-retired">Phase 4 — Legacy <code>Submission</code> write path retired ✅</h3>
+<p><code>SubmissionViewSet</code> is a read-only archive; POST/PUT/PATCH/DELETE and
+<code>/data/form-submit/</code> return <strong>410 Gone</strong> pointing at the structured endpoints. The
+model/table stay for audit; full deletion can follow once stats/leaderboard consumers
+are migrated (see <code>documentation/TECHNICAL_DEBT.md</code>).</p>
+<h3 id="acceptance-criteria-for-de-fragmented">Acceptance criteria for "de-fragmented"</h3>
+<ul>
+<li>✅ One status vocabulary across all entry points (<code>canonical_status</code>).</li>
+<li>⚠️ One review queue / one accept action — one accept action (<code>accept_contribution</code>,
+  guarded) is done; folding <code>ContributionQueueViewSet</code> + <code>ReviewQueueViewSet</code> into one
+  queue surface is the remaining UI/API consolidation.</li>
+<li>✅ QR submissions reach the graph via the same gate (no manual re-entry).</li>
+<li>✅ The <code>_cidoc_model</code>/<code>_cidoc_id</code> string back-link is no longer load-bearing (real FK,
+  backfilled + self-healing); it is still <em>written</em> for compatibility and can be dropped
+  with the Phase-3 end-state.</li>
+<li>✅ Pipeline tests cover the QR path, edit-during-review, reject-restore, withdrawal,
+  and legacy-410 (<code>apps.cidoc_data.test_pipeline_phases</code>).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
