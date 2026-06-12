@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { OPENSTREETMAP_TILE_LAYER } from "@/lib/map-tiles";
+import { MAP_DEFAULT } from "@/lib/map-config";
 
 type LatLng = { lat?: string; lng?: string };
 
@@ -64,14 +65,16 @@ export function GeoPointField({
         const el = mapHostRef.current;
         const initLat = parseFloat(String(value?.lat ?? "").replace(",", "."));
         const initLng = parseFloat(String(value?.lng ?? "").replace(",", "."));
-        const center: [number, number] =
-          Number.isFinite(initLat) && Number.isFinite(initLng)
-            ? [initLat, initLng]
-            : [27.7172, 85.324]; // Kathmandu fallback
+        const hasValue = Number.isFinite(initLat) && Number.isFinite(initLng);
+        // When the field has no value, open at the deployment's configured default
+        // (a neutral world view unless re-homed via NEXT_PUBLIC_MAP_DEFAULT_*).
+        const center: [number, number] = hasValue
+          ? [initLat, initLng]
+          : [MAP_DEFAULT.lat, MAP_DEFAULT.lon];
         const map = L.map(el, {
           zoomControl: true,
           attributionControl: true,
-        }).setView(center, 12);
+        }).setView(center, hasValue ? 12 : MAP_DEFAULT.zoom);
         L.tileLayer(OPENSTREETMAP_TILE_LAYER.url, {
           maxZoom: OPENSTREETMAP_TILE_LAYER.maxZoom,
           attribution: OPENSTREETMAP_TILE_LAYER.attribution,

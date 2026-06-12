@@ -162,8 +162,11 @@ class FormToKnowledgeGraphToVisualizationTest(APITestCase):
         )
 
         # ── STAGE 6: RETRACTION (delete propagates out of the graph) ──────────────
+        # Store writes are deferred to transaction.on_commit (Phase 0), so run
+        # the on-commit callbacks like a real committed request would.
         before = engine.stats().public_triples
-        self.client.delete(f"/api/v1/cidoc/persons/{person_id}/")
+        with self.captureOnCommitCallbacks(execute=True):
+            self.client.delete(f"/api/v1/cidoc/persons/{person_id}/")
         self.assertFalse(Person.objects.filter(pk=person_id).exists())
         after = engine.stats().public_triples
         self.assertLess(after, before, "Person triples not retracted from the graph on delete")

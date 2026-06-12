@@ -291,6 +291,13 @@ def _project_rdf_merge(project):
 
             from .models import CulturalEntity
 
+            # Promote status so the contributor UI ("My contributions") and the
+            # public graph agree: a merged project's entities ARE published.
+            # Without this they'd appear in the public KG but still read "draft".
+            CulturalEntity.objects.filter(id__in=entity_ids).exclude(
+                status__in=["accepted", "merged", "published"]
+            ).update(status="merged")
+
             for entity in CulturalEntity.objects.filter(id__in=entity_ids):
                 try:
                     persist_cultural_entity_projection(entity)

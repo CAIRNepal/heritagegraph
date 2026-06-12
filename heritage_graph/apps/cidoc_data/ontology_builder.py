@@ -341,6 +341,8 @@ def _slot_ui_overrides(slot: Any) -> dict[str, Any]:
         "ui_section",
         "ui_order",
         "ui_placeholder",
+        "ui_help",
+        "ui_example",
         "ui_widget",
         "ui_inline_authoring",
         "ui_pattern",
@@ -489,6 +491,8 @@ def build_classes(
                     "ui_section",
                     "ui_order",
                     "ui_placeholder",
+                    "ui_help",
+                    "ui_example",
                     "ui_widget",
                     "ui_inline_authoring",
                     "ui_pattern",
@@ -511,6 +515,10 @@ def build_classes(
                     pass
             if "ui_placeholder" in ui:
                 field["placeholder"] = ui["ui_placeholder"]
+            if "ui_help" in ui:
+                field["help"] = ui["ui_help"]
+            if "ui_example" in ui:
+                field["example"] = ui["ui_example"]
             if "ui_widget" in ui:
                 field["type"] = ui["ui_widget"]
             if ui.get("ui_inline_authoring"):

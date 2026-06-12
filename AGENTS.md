@@ -154,9 +154,8 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 
 **Heritage Data (prefix: `/data/`):**
 - **Routing note**: Most endpoints are available under both `/data/api/...` (legacy/canonical for existing clients) and `/data/...` (clean prefix). New clients should prefer `/data/...` when possible.
-- `GET/POST /data/api/submissions/` — list/create submissions (legacy workflow)
-- `GET/PUT/PATCH/DELETE /data/api/submissions/<id>/` — submission CRUD (legacy workflow)
-- `POST /data/api/form-submit/` — full heritage form submission (legacy workflow)
+- `GET /data/api/submissions/`, `GET /data/api/submissions/<id>/` — **read-only legacy archive**; all writes (POST/PUT/PATCH/DELETE) return **410 Gone**
+- `POST /data/api/form-submit/` — **retired**, returns 410 Gone (use `POST /api/v1/cidoc/<type>/`)
 - `GET/POST /data/api/comments/` — comments on submissions/entities (legacy workflow)
 - `GET /data/api/leaderboard/` — ranked contributors
 - `GET /data/api/contributors/` — contributor directory
@@ -180,6 +179,14 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/data/cultural-entities/` — CRUD + submit/review actions
 - `/data/contribution-queue/` — pending contributions queue
 - `/data/revisions/` — revision history
+- **Unified contribution pipeline (2026-06):** one canonical status vocabulary +
+  transition guard (`apps/cidoc_data/canonical_status.py`, exposed as `canonical_status`);
+  wrappers FK-link their CIDOC row (`cidoc_content_type`/`cidoc_object_id`); published
+  records are never edited in place — edits stage a `Revision` for re-review while the
+  accepted content stays live (`accepted_revision`); RDF projection is deferred to
+  `transaction.on_commit`. QR notes promote into this pipeline via
+  `POST /data/public-contributions/<id>/review/` with `target_type` (returns
+  `promoted_entity_id`). Details: `documentation/contribution/CONTRIBUTION_FLOW.md`.
 
 **Contributor projects (API: `/api/v1/data/projects/`):**
 - List/detail support DRF limit-offset pagination; unauthenticated `GET` may list/retrieve **public** dossiers only
@@ -382,6 +389,8 @@ HeritageGraph uses **Celery + Redis** when async tasks are enabled:
 | File | Purpose |
 |------|---------|
 | [`documentation/contribution/FORMS.md`](documentation/contribution/FORMS.md) | **How forms work** — registry-driven **`OntologyForm`**, semantic patterns |
+| [`documentation/contribution/CONTRIBUTION_FLOW.md`](documentation/contribution/CONTRIBUTION_FLOW.md) | Contribution pipeline (form → review → graph), endpoints, de-fragmentation record |
+| [`documentation/contribution/CONTRIBUTION_UI_REPORT.md`](documentation/contribution/CONTRIBUTION_UI_REPORT.md) | Contribution UI audit + live functionality verification matrix |
 | [`documentation/auth/AUTH.md`](documentation/auth/AUTH.md) | Authentication — NextAuth + Google OAuth + Django verification |
 | [`documentation/auth/AUTH_GUIDE.md`](documentation/auth/AUTH_GUIDE.md) | How to add new OAuth providers |
 | [`documentation/api/VERSIONING.md`](documentation/api/VERSIONING.md) | API versioning (`/api/v1/...`) |

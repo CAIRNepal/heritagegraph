@@ -46,6 +46,7 @@ import {
   // IconBrain, // re-import when the sidebar AI Pipeline entry is restored below
   IconFolders,
   IconBriefcase,
+  IconClipboardList,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -251,6 +252,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             { title: t('contribute'), url: '/contribute', icon: IconPlus },
             ...(showAuthedNav
               ? [
+                  {
+                    title: 'My contributions',
+                    url: '/contribute/my-contributions',
+                    icon: IconClipboardList,
+                  },
                   {
                     title: 'My Projects',
                     url: '/contribute/projects',

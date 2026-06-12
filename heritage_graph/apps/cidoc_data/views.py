@@ -150,10 +150,22 @@ class ContributionFlowMixin:
     def _find_cultural_entity_for_instance(self, instance):
         from django.db import connection
 
-        from apps.heritage_data.models import Revision
+        from apps.heritage_data.models import CulturalEntity, Revision
 
         model_name = instance.__class__.__name__
         cidoc_id = instance.pk
+
+        # Real FK first; the revision-JSON back-link is the legacy fallback.
+        ct = ContentType.objects.get_for_model(instance.__class__)
+        entity = (
+            CulturalEntity.objects.filter(
+                cidoc_content_type=ct, cidoc_object_id=cidoc_id
+            )
+            .order_by("-created_at")
+            .first()
+        )
+        if entity is not None:
+            return entity
 
         if connection.vendor == "postgresql":
             rev = (
@@ -204,28 +216,47 @@ class ContributionFlowMixin:
                 link=f"/curation/review/{entity.entity_id}",
             )
 
-    def _resubmit_published_edit(self, instance, serializer):
-        from apps.heritage_data.models import Activity, CulturalEntity, Revision
+    def _proposed_update_payload(self, serializer, instance) -> dict:
+        """Full record state the edit proposes, JSON-safe, without writing the row."""
+        data = dict(serializer.to_representation(instance))
+        for key, value in serializer.validated_data.items():
+            data[key] = coerce_for_jsonschema(value)
+        return data
+
+    def _append_wrapper_revision(self, instance, revision_data, *, entity=None):
+        """Append a Revision (with the CIDOC back-link) to the wrapper entity,
+        creating the wrapper if it does not exist yet. Returns (entity, revision)."""
+        from apps.heritage_data.models import CulturalEntity, Revision
 
         entity_name = (
-            getattr(instance, "name", None)
+            revision_data.get("name")
+            or revision_data.get("title")
+            or getattr(instance, "name", None)
             or getattr(instance, "title", "")
             or str(instance)
         )
-        entity_description = getattr(instance, "description", "") or ""
-        category = _get_category_for_model(instance.__class__)
-
-        entity = self._find_cultural_entity_for_instance(instance)
+        if entity is None:
+            entity = self._find_cultural_entity_for_instance(instance)
         if entity is None:
             entity = CulturalEntity.objects.create(
                 name=entity_name,
-                description=entity_description,
-                category=category,
+                description=revision_data.get("description") or "",
+                category=_get_category_for_model(instance.__class__),
                 status="pending_review",
                 contributor=self.request.user,
+                cidoc_content_type=ContentType.objects.get_for_model(
+                    instance.__class__
+                ),
+                cidoc_object_id=instance.pk,
             )
+        elif entity.cidoc_content_type_id is None or entity.cidoc_object_id is None:
+            entity.cidoc_content_type = ContentType.objects.get_for_model(
+                instance.__class__
+            )
+            entity.cidoc_object_id = instance.pk
+            entity.save(update_fields=["cidoc_content_type", "cidoc_object_id"])
 
-        revision_data = serializer.data.copy()
+        revision_data = dict(revision_data)
         revision_data["_cidoc_model"] = instance.__class__.__name__
         revision_data["_cidoc_id"] = instance.pk
 
@@ -237,52 +268,89 @@ class ContributionFlowMixin:
             revision_number=next_number,
             created_by=self.request.user,
         )
+        return entity, revision
+
+    def _stage_published_edit(self, instance, serializer) -> dict:
+        """Stage an edit to a published record for re-review.
+
+        The CIDOC row is NOT touched: the accepted content stays live in
+        browse and in the public graph. The proposal lives in a new Revision;
+        the wrapper goes back to pending_review pointing at it.
+        """
+        from apps.heritage_data.models import Activity
+
+        proposed = self._proposed_update_payload(serializer, instance)
+        entity, revision = self._append_wrapper_revision(instance, proposed)
         entity.status = "pending_review"
         entity.current_revision = revision
         entity.save(update_fields=["status", "current_revision"])
 
+        entity_name = proposed.get("name") or proposed.get("title") or entity.name
         Activity.objects.create(
             entity=entity,
             user=self.request.user,
             activity_type="submitted",
-            comment=f'Re-submitted "{entity_name}" after in-place edit',
+            comment=f'Proposed edit to published record "{entity_name}" (revision {revision.revision_number})',
         )
         self._notify_review_resubmission(entity, instance, entity_name)
+        return proposed
 
-    def perform_update(self, serializer):
-        self._validate_registry_payload(serializer, instance=serializer.instance)
-        instance = serializer.instance
-        was_public = is_published_for_rdf(instance)
-        updated = serializer.save()
-        if was_public:
-            updated.status = "pending_review"
-            updated.save(update_fields=["status"])
-            try:
-                self._resubmit_published_edit(updated, serializer)
-            except Exception:
-                import logging
+    def update(self, request, *args, **kwargs):
+        from django.db import transaction
 
-                logging.getLogger(__name__).exception(
-                    "Failed to re-queue published edit for %s pk=%s",
-                    updated.__class__.__name__,
-                    updated.pk,
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self._validate_registry_payload(serializer, instance=instance)
+
+        if is_published_for_rdf(instance):
+            # Published records are never edited in place — see _stage_published_edit.
+            with transaction.atomic():
+                proposed = self._stage_published_edit(instance, serializer)
+            return Response(proposed)
+
+        serializer.save()
+        # Keep the wrapper's revision history in lockstep with direct edits
+        # to a not-yet-published row, so accept applies the latest data.
+        try:
+            with transaction.atomic():
+                entity, revision = self._append_wrapper_revision(
+                    instance, dict(serializer.data)
                 )
+                entity.current_revision = revision
+                entity.save(update_fields=["current_revision"])
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception(
+                "Failed to append wrapper revision for %s pk=%s",
+                instance.__class__.__name__,
+                instance.pk,
+            )
+        if getattr(instance, "_prefetched_objects_cache", None):
+            instance._prefetched_objects_cache = {}
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
-        self._validate_registry_payload(serializer, instance=None)
-        # Set contributor info on the CIDOC record
-        instance = serializer.save(
-            contributor=self.request.user.username,
-            status="pending_review",
+        from django.db import transaction
+
+        from apps.heritage_data.models import (
+            Activity,
+            CulturalEntity,
+            Notification,
+            Revision,
         )
 
-        # Create a CulturalEntity wrapper for the review queue
-        try:
-            from apps.heritage_data.models import (
-                Activity,
-                CulturalEntity,
-                Notification,
-                Revision,
+        self._validate_registry_payload(serializer, instance=None)
+
+        # The CIDOC row, its review-queue wrapper, and the first revision are
+        # one logical contribution: an orphaned row (saved but unreviewable)
+        # must never exist, so all three commit or none do.
+        with transaction.atomic():
+            instance = serializer.save(
+                contributor=self.request.user.username,
+                status="pending_review",
             )
 
             entity_name = (
@@ -299,6 +367,10 @@ class ContributionFlowMixin:
                 category=category,
                 status="pending_review",
                 contributor=self.request.user,
+                cidoc_content_type=ContentType.objects.get_for_model(
+                    instance.__class__
+                ),
+                cidoc_object_id=instance.pk,
             )
 
             # Build revision data from the serialized instance
@@ -322,6 +394,9 @@ class ContributionFlowMixin:
                 comment=f'Submitted "{entity_name}" via {instance.__class__.__name__} form',
             )
 
+        # Notifications are best-effort: a notification failure must not roll
+        # back an already-reviewed-queue-visible contribution.
+        try:
             # Determine where the user should land when clicking this notification.
             # For CIDOC "Source", we route directly to the source details page rather than
             # the generic CulturalEntity wrapper page.
@@ -350,13 +425,14 @@ class ContributionFlowMixin:
                     entity=entity,
                     link=f"/curation/review/{entity.entity_id}",
                 )
-
-        except Exception as e:
-            # Log but don't fail the CIDOC save — the data is still persisted
+        except Exception:
             import logging
 
-            logger = logging.getLogger(__name__)
-            logger.warning(f"Failed to create CulturalEntity wrapper: {e}")
+            logging.getLogger(__name__).exception(
+                "Failed to send submission notifications for %s pk=%s",
+                instance.__class__.__name__,
+                instance.pk,
+            )
 
         # Claim-first entity resolution: link exact label duplicates to an existing
         # cluster; queue similar labels for the identity workspace (spec 005).

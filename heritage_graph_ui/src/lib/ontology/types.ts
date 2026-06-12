@@ -30,8 +30,12 @@ export interface OntologyField {
   label: string;
   /** Field input type */
   type: FieldType;
-  /** Help text shown below the field */
+  /** Help text shown below the field (always visible, one line) */
   description?: string;
+  /** Richer plain-language explanation shown in the "What's this?" popover (falls back to description) */
+  help?: string;
+  /** A concrete example of a valid value, shown as "Example: …" */
+  example?: string;
   /** Whether the field is required */
   required?: boolean;
   /** For select/multiselect: the enum values */

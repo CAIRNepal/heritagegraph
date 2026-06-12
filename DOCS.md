@@ -31,6 +31,7 @@ A map of all project documentation. Start with [README.md](README.md) for setup.
 |-----|----------------|
 | [documentation/contribution/FORMS.md](documentation/contribution/FORMS.md) | Registry-driven contribution forms |
 | [documentation/contribution/KNOWLEDGE_PAGES.md](documentation/contribution/KNOWLEDGE_PAGES.md) | `/knowledge/*` tabular browse pages (26 types) |
+| [documentation/contribution/CONTRIBUTION_FLOW.md](documentation/contribution/CONTRIBUTION_FLOW.md) | End-to-end contribution flow, all endpoints, QR path, Oxigraph storage, de-fragmentation plan |
 
 ## Authentication & roles
 

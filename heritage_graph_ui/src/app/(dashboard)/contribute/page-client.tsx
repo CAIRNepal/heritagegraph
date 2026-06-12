@@ -14,7 +14,7 @@ import {
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { AlertCircle, /* FileText, */ FolderKanban } from "lucide-react";
+import { AlertCircle, /* FileText, */ FolderKanban, Plus, GitMerge, Link2 } from "lucide-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { ContributeHubIntentRow } from "@/lib/ontology/types";
@@ -165,7 +165,7 @@ function ContributionCard({
       transition={{ duration: 0.2 }}
     >
       <div
-        className={`relative ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-300 hover:shadow-xl cursor-pointer ${
+        className={`relative ${glassCard} transition-all duration-200 hover:border-primary/30 hover:shadow-sm cursor-pointer ${
           compact ? "p-4" : "p-5"
         }`}
         onClick={() => router.push(intent.route)}
@@ -177,7 +177,7 @@ function ContributionCard({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3
-                className={`font-semibold text-blue-900 dark:text-blue-100 truncate ${
+                className={`font-semibold text-foreground truncate ${
                   compact ? "text-sm" : "text-base"
                 }`}
               >
@@ -191,14 +191,14 @@ function ContributionCard({
               </Badge>
             </div>
             <p
-              className={`text-blue-600/70 dark:text-blue-300/70 leading-relaxed ${
+              className={`text-muted-foreground leading-relaxed ${
                 compact ? "text-xs" : "text-sm"
               }`}
             >
               {compact ? intent.shortDescription : intent.description}
             </p>
           </div>
-          <IconArrowRight className="w-4 h-4 text-blue-300 dark:text-blue-600 group-hover:text-blue-500 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-1" />
+          <IconArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-1" />
         </div>
       </div>
     </motion.div>
@@ -351,50 +351,88 @@ export default function ContributeDashboard() {
         variants={fadeInUp}
         className={`relative overflow-hidden ${glassCard} p-6 md:p-8`}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl" />
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
         <div className="relative z-10 text-center space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-xs font-medium text-white">
             <IconSparkles className="w-3.5 h-3.5" /> Contribute Knowledge
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">
-            Preserve Nepal&apos;s Cultural Heritage
+            Preserve and share cultural heritage
           </h1>
-          <p className="text-blue-100 max-w-lg mx-auto text-sm">
-            Navigate contribution journeys as Describe, Record, Claim, and Verify.
-            Every entry is reviewed by experts before publication.
+          <p className="text-white/90 max-w-lg mx-auto text-sm">
+            Pick what you want to do below. Every entry is reviewed by experts before it&apos;s published.
           </p>
         </div>
       </motion.div>
 
+      {/* Primary chooser — the 4 things a contributor can do. The first is the
+          80% path (add a single entity); the others cover identity, relationships,
+          and multi-entity projects. */}
       <motion.div
         initial="hidden"
         animate="show"
-        variants={fadeInUp}
-        className={`${glassCard} p-5 md:p-6`}
+        variants={staggerContainer}
+        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
       >
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600">
-              <FolderKanban className="size-5" aria-hidden />
-            </span>
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">Contribution projects</h2>
-              <p className="text-sm text-muted-foreground max-w-xl">
-                Work in a project dossier: upload evidence, author entities, run OCR when you choose,
-                and submit for review.
-              </p>
+        {[
+          {
+            icon: <Plus className="size-5" aria-hidden />,
+            title: "Add a heritage entity",
+            desc: "Document a temple, deity, ritual, person, place, festival, and more. Start here.",
+            onClick: () =>
+              document
+                .getElementById("browse-types")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+            primary: true,
+          },
+          {
+            icon: <GitMerge className="size-5" aria-hidden />,
+            title: "Link or fix an identity",
+            desc: "Two records that mean the same thing? Merge them under one canonical identity.",
+            onClick: () => router.push("/contribute/entity-proposal"),
+          },
+          {
+            icon: <Link2 className="size-5" aria-hidden />,
+            title: "Propose a relationship",
+            desc: "Connect two entities — e.g. “this temple honours this deity.”",
+            onClick: () => router.push("/contribute/relationship-proposal"),
+          },
+          {
+            icon: <FolderKanban className="size-5" aria-hidden />,
+            title: "Run a project",
+            desc: "Work on many entities together with evidence, then submit the set for review.",
+            onClick: () => router.push("/contribute/projects"),
+          },
+        ].map((card) => (
+          <motion.button
+            key={card.title}
+            type="button"
+            variants={scaleIn}
+            onClick={card.onClick}
+            className={`group text-left ${glassCard} p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-sm ${
+              card.primary ? "ring-1 ring-primary/30" : ""
+            }`}
+          >
+            <div className="flex items-start gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                {card.icon}
+              </span>
+              <div className="min-w-0 space-y-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-foreground">{card.title}</h2>
+                  {card.primary ? (
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      Most common
+                    </Badge>
+                  ) : null}
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
+              </div>
+              <IconArrowRight className="ml-auto mt-1 size-4 shrink-0 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
             </div>
-          </div>
-          <div className="flex flex-wrap gap-2 shrink-0">
-            <Button type="button" variant="outline" onClick={() => router.push("/contribute/projects")}>
-              My projects
-            </Button>
-            <Button type="button" onClick={() => router.push("/contribute/projects/new")}>
-              Start a heritage project
-            </Button>
-          </div>
-        </div>
+          </motion.button>
+        ))}
       </motion.div>
 
       {/* ─────────────────────────────────────────────────────────────────────
@@ -446,7 +484,7 @@ export default function ContributeDashboard() {
           placeholder="Search contribution types... (e.g. temple, festival, person)"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 pr-9 h-11 rounded-xl bg-white/80 dark:bg-gray-900/80 border-blue-200 dark:border-gray-700"
+          className="pl-9 pr-9 h-11 rounded-xl bg-card border-border"
         />
         {search && (
           <button
@@ -482,7 +520,7 @@ export default function ContributeDashboard() {
                   key={p.key}
                   type="button"
                   onClick={() => router.push(`/contribute/pattern/${encodeURIComponent(p.key)}`)}
-                  className={`text-left ${glassCard} p-4 hover:bg-white/70 dark:hover:bg-gray-900 transition-colors cursor-pointer rounded-xl border border-blue-100/60 dark:border-gray-800`}
+                  className={`text-left ${glassCard} p-4 transition-colors cursor-pointer hover:border-primary/30`}
                 >
                   <div className="flex items-start gap-2">
                     <span className="text-xl shrink-0" role="img">
@@ -528,7 +566,7 @@ export default function ContributeDashboard() {
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="mt-3 text-sm text-blue-600 hover:underline"
+                className="mt-3 text-sm text-primary hover:underline"
               >
                 Clear search
               </button>
@@ -547,7 +585,7 @@ export default function ContributeDashboard() {
               className="flex items-center gap-2 mb-3"
             >
               <span className="text-lg">💡</span>
-              <h2 className="text-base font-semibold text-blue-900 dark:text-blue-100">
+              <h2 className="text-base font-semibold text-foreground">
                 Start Here
               </h2>
               <span className="text-xs text-muted-foreground">
@@ -564,13 +602,18 @@ export default function ContributeDashboard() {
           </motion.div>
 
           <motion.div
+            id="browse-types"
             initial="hidden"
             animate="show"
             variants={fadeInUp}
+            className="scroll-mt-24"
           >
-            <h2 className="text-base font-semibold text-blue-900 dark:text-blue-100 mb-3">
-              Browse by Workflow
+            <h2 className="text-base font-semibold text-foreground mb-1">
+              Add a heritage entity — browse all types
             </h2>
+            <p className="text-xs text-muted-foreground mb-3">
+              Grouped by what you&apos;re doing: describing an item, recording an event, making a claim, or adding a source.
+            </p>
             <Tabs
               value={activeJourney}
               onValueChange={(value) =>
@@ -578,7 +621,7 @@ export default function ContributeDashboard() {
               }
               className="space-y-4"
             >
-              <TabsList className="flex-wrap h-auto gap-1 p-1 bg-blue-50/80 dark:bg-gray-800/80">
+              <TabsList className="flex-wrap h-auto gap-1 p-1 bg-muted">
                 {(Object.keys(journeyMeta) as Array<
                   "describe" | "record" | "claim" | "verify"
                 >).map((journeyKey) => {
@@ -615,7 +658,7 @@ export default function ContributeDashboard() {
                 >
                   {journeyCategoryGroups.map((group) => (
                     <div key={group.categoryKey} className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-blue-800/90 dark:text-blue-200/90">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                         {group.categoryIcon} {group.categoryLabel}
                       </p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

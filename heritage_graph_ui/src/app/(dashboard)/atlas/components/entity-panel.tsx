@@ -24,6 +24,7 @@ import {
 import { useAtlasStore, useAtlasViewEdges, useFilteredAtlasEntities } from '../hooks/use-atlas-store';
 import { AtlasKnowledgeLink } from './atlas-knowledge-link';
 import { CoordProvenanceBadge } from './coord-provenance-badge';
+import { ImageCredit } from '@/components/knowledge/image-credit';
 import { ProvenancePanel } from './provenance-panel';
 
 type DetailTab = 'overview' | 'provenance' | 'timeline' | 'relations' | 'sources';
@@ -239,13 +240,16 @@ export function EntityPanel() {
                             {t('yearFilteredHint', { year: currentYear })}
                           </p>
                           {entity.imageUrl ?
-                            // eslint-disable-next-line @next/next/no-img-element -- remote KG media with unknown dimensions
-                            <img
-                              src={entity.imageUrl}
-                              alt={entity.name}
-                              loading="lazy"
-                              className="max-h-44 w-full rounded-md border border-border/50 object-cover"
-                            />
+                            <div className="space-y-1">
+                              {/* eslint-disable-next-line @next/next/no-img-element -- remote KG media with unknown dimensions */}
+                              <img
+                                src={entity.imageUrl}
+                                alt={entity.name}
+                                loading="lazy"
+                                className="max-h-44 w-full rounded-md border border-border/50 object-cover"
+                              />
+                              <ImageCredit credit={entity.imageUrl ? entity.imageCredits?.[entity.imageUrl] : undefined} />
+                            </div>
                           : null}
                           <p className="text-[13px] leading-snug">{entity.summary}</p>
                           <div className="rounded-md border border-border/50 bg-muted/20 px-2.5 py-2 text-[11px]">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,7 @@ import {
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
-import { apiFetch, apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 import { getPublicApiUrl } from '@/lib/api-base';
 import { RequireAuth } from '@/components/require-auth';
 
@@ -52,9 +53,30 @@ interface PublicContribution {
   reviewed_by_username: string | null;
   reviewed_at: string | null;
   review_notes: string;
+  promoted_entity: string | null;
   created_at: string;
   updated_at: string;
 }
+
+/**
+ * CIDOC types a QR note can be promoted into (review `target_type`).
+ * Must be Django model names accepted by the backend promotion service
+ * (apps/heritage_data/qr_promotion.py).
+ */
+const PROMOTION_TARGETS: { value: string; label: string }[] = [
+  { value: 'Monument', label: 'Monument' },
+  { value: 'ArchitecturalStructure', label: 'Architectural structure' },
+  { value: 'Location', label: 'Location / site' },
+  { value: 'Person', label: 'Person' },
+  { value: 'Deity', label: 'Deity' },
+  { value: 'Event', label: 'Historical event' },
+  { value: 'Festival', label: 'Festival' },
+  { value: 'RitualEvent', label: 'Ritual' },
+  { value: 'Tradition', label: 'Tradition' },
+  { value: 'Guthi', label: 'Guthi' },
+  { value: 'IconographicObject', label: 'Iconographic object' },
+  { value: 'CasteGroup', label: 'Caste group' },
+];
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected' | 'incorporated';
 type TypeFilter = 'all' | 'history' | 'story' | 'tradition' | 'memory' | 'photo' | 'correction' | 'other';
@@ -95,6 +117,7 @@ function relDate(d: string) {
 }
 
 export default function QRContributionsPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const [contributions, setContributions] = useState<PublicContribution[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,6 +132,7 @@ export default function QRContributionsPage() {
   const [selectedContribution, setSelectedContribution] = useState<PublicContribution | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [reviewAction, setReviewAction] = useState<'approved' | 'rejected' | 'incorporated'>('approved');
+  const [targetType, setTargetType] = useState<string>('none');
   const [submittingReview, setSubmittingReview] = useState(false);
 
   const headers = useCallback(() => {
@@ -169,24 +193,57 @@ export default function QRContributionsPage() {
     setSelectedContribution(contribution);
     setReviewNotes('');
     setReviewAction('approved');
+    setTargetType('none');
     setReviewDialogOpen(true);
   };
 
-  const handleReview = async () => {
-    if (!selectedContribution) return;
-    
+  /**
+   * Submit a review decision. Pass `contribution`/`action` explicitly for the
+   * quick-action buttons (state set in the same click is not yet committed);
+   * the dialog path falls back to the dialog state.
+   */
+  const handleReview = async (
+    contribution?: PublicContribution,
+    action?: 'approved' | 'rejected' | 'incorporated'
+  ) => {
+    const target = contribution ?? selectedContribution;
+    const decision = action ?? reviewAction;
+    if (!target) return;
+
+    const promoteAs =
+      !contribution && decision !== 'rejected' && targetType !== 'none'
+        ? targetType
+        : null;
+
     setSubmittingReview(true);
     try {
-      await apiFetch(`${API}/data/api/public-contributions/${selectedContribution.id}/review/`, {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({
-          status: reviewAction,
-          review_notes: reviewNotes,
-        }),
-      });
+      const result = await apiFetchJson<{ promoted_entity_id?: string | null }>(
+        `${API}/data/api/public-contributions/${target.id}/review/`,
+        {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({
+            status: decision,
+            review_notes: contribution ? '' : reviewNotes,
+            ...(promoteAs ? { target_type: promoteAs } : {}),
+          }),
+        }
+      );
 
-      toast.success(`Contribution ${reviewAction}`);
+      const promotedId = result?.promoted_entity_id;
+      if (promotedId) {
+        toast.success(`Contribution ${decision} and promoted to ${promoteAs}`, {
+          description:
+            'A structured record is now in the review queue with provenance back to this QR note.',
+          duration: 8000,
+          action: {
+            label: 'Open in review queue',
+            onClick: () => router.push(`/curation/review/${promotedId}`),
+          },
+        });
+      } else {
+        toast.success(`Contribution ${decision}`);
+      }
       setReviewDialogOpen(false);
       fetchContributions();
       fetchStats();
@@ -363,6 +420,16 @@ export default function QRContributionsPage() {
                     <Badge className={STATUS_STYLES[c.status] || STATUS_STYLES.pending}>
                       {c.status_display}
                     </Badge>
+                    {c.promoted_entity && (
+                      <Badge
+                        variant="outline"
+                        className="ml-1 cursor-pointer"
+                        title="Promoted into the structured review pipeline"
+                        onClick={() => router.push(`/curation/review/${c.promoted_entity}`)}
+                      >
+                        Promoted
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">{relDate(c.created_at)}</div>
@@ -386,11 +453,7 @@ export default function QRContributionsPage() {
                             variant="ghost"
                             size="icon"
                             className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                            onClick={() => {
-                              setSelectedContribution(c);
-                              setReviewAction('approved');
-                              handleReview();
-                            }}
+                            onClick={() => handleReview(c, 'approved')}
                             title="Approve"
                           >
                             <CheckCircle className="h-4 w-4" />
@@ -399,11 +462,7 @@ export default function QRContributionsPage() {
                             variant="ghost"
                             size="icon"
                             className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => {
-                              setSelectedContribution(c);
-                              setReviewAction('rejected');
-                              handleReview();
-                            }}
+                            onClick={() => handleReview(c, 'rejected')}
                             title="Reject"
                           >
                             <XCircle className="h-4 w-4" />
@@ -495,7 +554,31 @@ export default function QRContributionsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
+              {/* Promote into the structured pipeline (Path A) */}
+              {reviewAction !== 'rejected' && (
+                <div>
+                  <Label>Promote to structured record (optional)</Label>
+                  <Select value={targetType} onValueChange={setTargetType}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Don&apos;t promote</SelectItem>
+                      {PROMOTION_TARGETS.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Creates a pre-filled record of this type in the review queue, with
+                    provenance back to this QR note — no manual re-entry needed.
+                  </p>
+                </div>
+              )}
+
               {/* Review Notes */}
               <div>
                 <Label>Review Notes (optional)</Label>
@@ -515,7 +598,7 @@ export default function QRContributionsPage() {
               Cancel
             </Button>
             <Button 
-              onClick={handleReview} 
+              onClick={() => handleReview()} 
               disabled={submittingReview}
               className={
                 reviewAction === 'approved' ? 'bg-green-600 hover:bg-green-700' :

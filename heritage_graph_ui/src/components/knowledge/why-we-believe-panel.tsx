@@ -20,6 +20,31 @@ import {
   CompetingIdentitiesPanel,
   type IdentitySummaryPayload,
 } from "@/components/knowledge/competing-identities-panel";
+import { ConfidenceIndicator } from "@/components/knowledge/confidence-indicator";
+
+/** Render a citation string, turning any embedded URL/DOI into a link. */
+function CitationText({ text }: { text: string }) {
+  const parts = text.split(/(https?:\/\/[^\s]+)/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        /^https?:\/\//.test(part) ? (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="break-all text-primary hover:underline"
+          >
+            {part}
+          </a>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 type HeritageAssertionRow = {
   id: string;
@@ -216,15 +241,16 @@ export function WhyWeBelievePanel({
                       <div className="break-words font-medium">{r.asserted_value || "—"}</div>
                       <div className="text-xs text-muted-foreground">
                         {r.contributed_by ? `By ${r.contributed_by}` : null}
-                        {r.source_citation ? ` · ${r.source_citation}` : null}
+                        {r.source_citation ? (
+                          <>
+                            {r.contributed_by ? " · " : null}
+                            <CitationText text={r.source_citation} />
+                          </>
+                        ) : null}
                       </div>
                     </div>
                     <div className="flex shrink-0 flex-col items-end gap-1">
-                      {r.confidence ? (
-                        <Badge variant="secondary" className="text-[10px]">
-                          {r.confidence}
-                        </Badge>
-                      ) : null}
+                      {r.confidence ? <ConfidenceIndicator value={r.confidence} /> : null}
                       {r.reconciliation_status ? (
                         <Badge variant="outline" className="text-[10px]">
                           {r.reconciliation_status}

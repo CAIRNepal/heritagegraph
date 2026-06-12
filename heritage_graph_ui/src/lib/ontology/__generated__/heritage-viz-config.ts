@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml + tools/ui-vizmap.yaml
 // Regen:   python3 tools/gen_heritage_viz_config.py
-// Hash:    130355f83bf8eb68
+// Hash:    926fcfd1486d5def
 //
 // This file is the single source of truth for graph-visualization ontology
 // config consumed by:

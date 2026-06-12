@@ -1797,7 +1797,11 @@ slots:
   has_timespan:
     slot_uri: crm:P4_has_time-span
     range: TimeSpan
-    description: "Links event to its temporal extent"
+    description: "When this happened. Use a year, a range, or an approximate date — precision is optional."
+    annotations:
+      ui_help: "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out."
+      ui_example: "1200/1300 (13th century), or 1857~ (about 1857)"
+      ui_weight: 8
 
   date_earliest:
     slot_uri: crm:P82a_begin_of_the_begin
@@ -1892,7 +1896,10 @@ slots:
   existence_status:
     slot_uri: heritageGraph:existence_status
     range: ExistenceStatusEnum
-    description: "Current physical status of the structure"
+    description: "Is this item still standing today? Choose from the list."
+    annotations:
+      ui_help: "Pick the option that best matches the item's current state: Extant (still standing), Partially Extant (some original parts remain), Destroyed, Lost (existence uncertain / no longer locatable), Hypothetical (known only from records), or Unknown."
+      ui_weight: 7
 
   last_known_existence_date:
     slot_uri: heritageGraph:last_known_existence_date
@@ -1921,7 +1928,9 @@ slots:
   was_produced_by_event:
     slot_uri: crm:P108i_was_produced_by
     range: Production
-    description: "Event that created this object or structure"
+    description: "The making of this item — links it to the construction or creation event (who made it, when)."
+    annotations:
+      ui_help: "Use this to connect the item to the event that produced it — its building, carving, casting, or painting. Optional: leave it empty if you only know the item itself, not a separate creation event."
     inverse: produced_object
 
   produced_object:
@@ -1934,7 +1943,10 @@ slots:
     slot_uri: crm:P14_carried_out_by
     range: Actor
     multivalued: true
-    description: "Actor(s) who performed this event"
+    description: "Who performed this — the person(s) or group(s) that carried out the event."
+    annotations:
+      ui_help: "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one."
+      ui_weight: 6
     inverse: carried_out_activity
 
   used_by:
@@ -1961,7 +1973,10 @@ slots:
     slot_uri: heritageGraph:invokes_deity
     range: Deity
     multivalued: true
-    description: "Deity invoked or made present through ritual"
+    description: "Which deity or deities this ritual calls upon or honours."
+    annotations:
+      ui_help: "Select the deity (or deities) that this ritual invokes, worships, or makes present. You can add more than one."
+      ui_weight: 8
     broad_mappings:
       - crm:P12_occurred_in_the_presence_of
 
@@ -2347,7 +2362,10 @@ slots:
     slot_uri: heritageGraph:has_provenance_assertion
     range: HeritageAssertion
     multivalued: true
-    description: "All factual claims about this structure with full provenance"
+    description: "Sourced statements about this item — who claimed what, and where it is documented. Optional for most contributors."
+    annotations:
+      ui_help: "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty — reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite."
+      ui_example: "Founded in the 17th century (source: National Archives, ref. 2014/231)"
 
   assertion_content:
     slot_uri: prov:value

@@ -3,6 +3,11 @@ import type { AtlasCoordProvenance } from '@/types/atlas';
 /**
  * WGS84 coordinates for well-known heritage places when API rows lack point fields.
  * Mirrors `museum_graph_enrichment._KNOWN_PLACE_COORDS` plus valley settlements.
+ *
+ * NOTE: This is a last-resort *demo* backfill for the seeded Nepal corpus only —
+ * it is NOT a global constraint. Production entities carry their own lat/long from
+ * the DB; worldwide records never depend on this table. Re-home the map defaults
+ * via NEXT_PUBLIC_MAP_DEFAULT_* (see src/lib/map-config.ts), not this file.
  */
 export const KNOWN_PLACE_COORDS: Record<string, { lat: number; lon: number }> = {
   'kathmandu durbar square': { lat: 27.7042, lon: 85.3076 },

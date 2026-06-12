@@ -40,6 +40,21 @@ from .models import (
 )
 
 
+class CanonicalStatusSerializerMixin(serializers.Serializer):
+    """Adds the unified workflow status (see cidoc_data.canonical_status).
+
+    Raw DB values stay model-specific; clients that want one vocabulary read
+    ``canonical_status``.
+    """
+
+    canonical_status = serializers.SerializerMethodField(read_only=True)
+
+    def get_canonical_status(self, obj):
+        from apps.cidoc_data.canonical_status import to_canonical_status
+
+        return to_canonical_status(getattr(obj, "status", None))
+
+
 class SubmissionSerializer(serializers.ModelSerializer):
     contributor_username = serializers.SerializerMethodField(read_only=True)
 
@@ -492,7 +507,9 @@ class ActivitySerializer(serializers.ModelSerializer):
         ]
 
 
-class CulturalEntityListSerializer(serializers.ModelSerializer):
+class CulturalEntityListSerializer(
+    CanonicalStatusSerializerMixin, serializers.ModelSerializer
+):
     contributor = UserSerializer(read_only=True)
     current_revision = serializers.SerializerMethodField()
     is_fork = serializers.SerializerMethodField()
@@ -504,6 +521,7 @@ class CulturalEntityListSerializer(serializers.ModelSerializer):
             "name",
             "category",
             "status",
+            "canonical_status",
             "contributor",
             "created_at",
             "current_revision",
@@ -533,7 +551,45 @@ class CulturalEntityListSerializer(serializers.ModelSerializer):
         return obj.parent_entity_id is not None
 
 
-class CulturalEntityDetailSerializer(serializers.ModelSerializer):
+class MyContributionSerializer(CulturalEntityListSerializer):
+    """List serializer for the contributor's own work — adds the review
+    timeline (Activity log) and the latest reviewer feedback so a contributor
+    can see what happened after they submitted, without reviewer access."""
+
+    activities = serializers.SerializerMethodField()
+    latest_feedback = serializers.SerializerMethodField()
+    updated_at = serializers.DateTimeField(read_only=True)
+
+    class Meta(CulturalEntityListSerializer.Meta):
+        fields = CulturalEntityListSerializer.Meta.fields + [
+            "updated_at",
+            "activities",
+            "latest_feedback",
+        ]
+
+    def _activities(self, obj):
+        # Activity.Meta orders by -created_at; prefetched relation preserves it.
+        return list(obj.activities.all())
+
+    def get_activities(self, obj):
+        return ActivitySerializer(self._activities(obj), many=True).data
+
+    def get_latest_feedback(self, obj):
+        for a in self._activities(obj):
+            if a.activity_type in ("rejected", "changes_requested", "accepted", "commented") and (
+                a.comment or ""
+            ).strip():
+                return {
+                    "activity_type": a.activity_type,
+                    "comment": a.comment,
+                    "created_at": a.created_at,
+                }
+        return None
+
+
+class CulturalEntityDetailSerializer(
+    CanonicalStatusSerializerMixin, serializers.ModelSerializer
+):
     contributor = UserSerializer(read_only=True)
     current_revision = RevisionSerializer(read_only=True)
     revisions = RevisionSerializer(many=True, read_only=True)
@@ -554,6 +610,7 @@ class CulturalEntityDetailSerializer(serializers.ModelSerializer):
             "description",
             "category",
             "status",
+            "canonical_status",
             "contributor",
             "current_revision",
             "created_at",
@@ -1645,7 +1702,9 @@ class PublicContributionCreateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class PublicContributionListSerializer(serializers.ModelSerializer):
+class PublicContributionListSerializer(
+    CanonicalStatusSerializerMixin, serializers.ModelSerializer
+):
     """Serializer for listing/viewing public contributions (for reviewers)."""
 
     entity_name_display = serializers.SerializerMethodField()
@@ -1675,11 +1734,13 @@ class PublicContributionListSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "status",
+            "canonical_status",
             "status_display",
             "reviewed_by",
             "reviewed_by_username",
             "reviewed_at",
             "review_notes",
+            "promoted_entity",
             "created_at",
             "updated_at",
         ]
@@ -1704,6 +1765,14 @@ class PublicContributionReviewSerializer(serializers.Serializer):
     link_to_entity_id = serializers.UUIDField(
         required=False,
         help_text="Optionally link to an existing entity when incorporating",
+    )
+    target_type = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        help_text=(
+            "CIDOC model name (e.g. 'Monument') to promote this contribution "
+            "into the structured review pipeline when incorporating"
+        ),
     )
 
 

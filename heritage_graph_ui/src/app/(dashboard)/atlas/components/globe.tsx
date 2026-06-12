@@ -32,6 +32,7 @@ import 'cesium/Build/Cesium/Widgets/widgets.css';
 
 import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
 import { colorForOntologyClass } from '@/lib/atlas-globe-colors';
+import { MAP_DEFAULT, GLOBE_DEFAULT_HEIGHT } from '@/lib/map-config';
 import { atlasPrefersReducedMotion } from '@/lib/atlas-motion';
 import { temporalGlobeAlpha } from '@/lib/atlas-temporal';
 import type { AtlasEntity } from '@/types/atlas';
@@ -271,7 +272,7 @@ export function AtlasGlobe({ globeHandlesRef }: AtlasGlobeProps) {
 
   const resetView = useCallback(() => {
     flyToPosition(
-      Cartesian3.fromDegrees(85.324, 27.716, 3_950_000),
+      Cartesian3.fromDegrees(MAP_DEFAULT.lon, MAP_DEFAULT.lat, GLOBE_DEFAULT_HEIGHT),
       DEFAULT_HEADING_DEG,
       DEFAULT_PITCH_DEG,
     );

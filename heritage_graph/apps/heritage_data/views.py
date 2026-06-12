@@ -72,7 +72,6 @@ User = get_user_model()
 from .models import (
     ActivityLog,
     Comments,
-    CulturalHeritage,
     Moderation,
     Submission,
     SubmissionEditSuggestion,
@@ -164,138 +163,11 @@ class FormSubmissionAPIView(APIView):
         },
     )
     def post(self, request):
-        data = request.data
-        user = request.user
-
-        title = data.get("title") or data.get("heritage", {}).get("title", "")
-        description = data.get("description") or data.get("heritage", {}).get(
-            "description", ""
+        # Path D is retired: no new flat-field submissions (see SubmissionViewSet).
+        return Response(
+            {"error": _SUBMISSION_DEPRECATION},
+            status=status.HTTP_410_GONE,
         )
-
-        # Optional CulturalHeritage linkage
-        cultural_heritage = None
-        cultural_heritage_id = data.get("cultural_heritage_id")
-        if cultural_heritage_id:
-            try:
-                cultural_heritage = CulturalHeritage.objects.get(
-                    id=cultural_heritage_id
-                )
-            except CulturalHeritage.DoesNotExist:
-                return Response(
-                    {"error": "Invalid cultural_heritage_id"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        # Prepare submission data
-        submission_data = {
-            "title": title,
-            "description": description,
-            "contributor": user,
-            "cultural_heritage": cultural_heritage,
-            "status": "pending",
-        }
-
-        # List of all new fields added to Submission model
-        new_fields = [
-            "Activity",
-            "Alternative_name_s",
-            "Anglicized_name",
-            "Base_plinth_depth",
-            "Base_plinth_height",
-            "Base_plinth_width",
-            "Cakula_depth",
-            "Cakula_height",
-            "Cakula_width",
-            "Capital_depth",
-            "Capital_height",
-            "Capital_width",
-            "Circumference",
-            "City_quarter_tola",
-            "Column_depth",
-            "Column_height",
-            "Column_width",
-            "Commentary",
-            "Date_BCE_CE",
-            "Date_VS_NS",
-            "Depth",
-            "Description_for_past_interventions",
-            "Description_in_Nepali",
-            "Details",
-            "District",
-            "Edge_at_platform",
-            "Editorial_team",
-            "End_date",
-            "Event_name",
-            "Forms_of_columns",
-            "Gate",
-            "Height",
-            "Heritage_focus_area",
-            "Identified_threats",
-            "Image_declaration",
-            "Inscription_identification_number",
-            "Lintel_depth",
-            "Lintel_height",
-            "Main_deity_in_the_sanctum",
-            "Maps_and_drawing_type",
-            "Monument_assessment",
-            "Monument_depth",
-            "Monument_diameter",
-            "Monument_height_approximate",
-            "Monument_length",
-            "Monument_name",
-            "Monument_shape",
-            "Monument_type",
-            "Municipality_village_council",
-            "Name",
-            "Name_in_Devanagari",
-            "Nepali_month",
-            "Number_of_bays_front",
-            "Number_of_bays_sides",
-            "Number_of_doors",
-            "Number_of_plinth",
-            "Number_of_roofs",
-            "Number_of_storeys",
-            "Number_of_struts",
-            "Number_of_wood_carved_windows",
-            "Object_ID_number",
-            "Object_location",
-            "Object_material",
-            "Object_type",
-            "Paksa",
-            "Peculiarities",
-            "Period",
-            "Platforms_floor",
-            "Profile_at_base",
-            "Province_number",
-            "Reference_source",
-            "Religion",
-            "Roofing",
-            "Short_description",
-            "Sources",
-            "Thickness_of_main_wall",
-            "Tithi",
-            "Top_plinth_depth",
-            "Top_plinth_height",
-            "Top_plinth_width",
-            "Type_of_bricks",
-            "Type_of_roof",
-            "Width",
-            "Year_SS_NS_VS",
-        ]
-
-        # Populate new fields if provided
-        for field in new_fields:
-            if field in data:
-                submission_data[field] = data[field]
-
-        # Store all extra fields in contribution_data
-        submission_data["contribution_data"] = data
-
-        # Create submission
-        submission = Submission.objects.create(**submission_data)
-
-        serializer = SubmissionSerializer(submission)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # Public view: List all submissions (pending and reviewed)
@@ -309,9 +181,20 @@ class SubmissionListView(generics.ListAPIView):
 # ---------------------------------------------------------------------
 
 
+_SUBMISSION_DEPRECATION = (
+    "The legacy flat-field submission path is retired. Submit through the "
+    "structured contribution forms (POST /api/v1/cidoc/<type>/), which feed "
+    "the review queue and the knowledge graph."
+)
+
+
 class SubmissionViewSet(viewsets.ModelViewSet):
     """
-    Legacy `Submission` CRUD.
+    Legacy `Submission` archive (Path D) — read-only.
+
+    The flat-field submission pipeline is retired: existing rows remain
+    browsable for audit/history, but every write action returns 410 Gone
+    and points at the structured CIDOC contribution endpoints.
 
     Exposes:
       - /data/submissions/
@@ -320,22 +203,22 @@ class SubmissionViewSet(viewsets.ModelViewSet):
 
     queryset = Submission.objects.all().order_by("-created_at")
     serializer_class = SubmissionSerializer
+    permission_classes = [permissions.AllowAny]
 
-    def get_permissions(self):
-        if self.action in (
-            "create",
-            "update",
-            "partial_update",
-            "destroy",
-            "form_submit",
-        ):
-            return [permissions.IsAuthenticated()]
-        return [permissions.AllowAny()]
+    def _gone(self, request, *args, **kwargs):
+        return Response(
+            {"error": _SUBMISSION_DEPRECATION},
+            status=status.HTTP_410_GONE,
+        )
+
+    create = _gone
+    update = _gone
+    partial_update = _gone
+    destroy = _gone
 
     @action(detail=False, methods=["post"], url_path="form-submit")
     def form_submit(self, request):
-        # Reuse the existing implementation to avoid behavior drift.
-        return FormSubmissionAPIView().post(request)
+        return self._gone(request)
 
 
 class ActivityLogViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1320,9 +1203,29 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = CulturalEntity.objects.all()
 
-        # For list action, only show accepted entities to non-staff users
-        if self.action == "list" and not self.request.user.is_staff:
-            queryset = queryset.filter(status="accepted")
+        # Visibility for the list action:
+        #  - staff see everything (a status= filter, if any, is applied by the filter backend);
+        #  - an authenticated contributor viewing a non-accepted tab (e.g. "Pending"
+        #    sends status=pending_review, or "All" sends all=1) also sees THEIR OWN
+        #    non-accepted work alongside the public accepted set — so a just-submitted
+        #    entity shows up under Pending instead of vanishing;
+        #  - everyone else sees only accepted (the public, reviewed corpus).
+        if self.action == "list":
+            user = self.request.user
+            params = self.request.query_params
+            requested_status = (params.get("status") or "").strip().lower()
+            wants_all = str(params.get("all", "")).lower() in ("1", "true", "yes")
+            wants_nonpublic = wants_all or (
+                bool(requested_status) and requested_status != "accepted"
+            )
+            if user.is_staff:
+                pass
+            elif user.is_authenticated and wants_nonpublic:
+                from django.db.models import Q
+
+                queryset = queryset.filter(Q(status="accepted") | Q(contributor=user))
+            else:
+                queryset = queryset.filter(status="accepted")
 
         # Prefetch related data for performance
         if self.action == "list":
@@ -1355,9 +1258,17 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
             entity=entity,
             link=f"/knowledge/entity/view/{entity.entity_id}",
         )
-        reviewer_users = User.objects.filter(reviewer_role__is_active=True).exclude(
-            id=self.request.user.id
+        reviewer_users = list(
+            User.objects.filter(reviewer_role__is_active=True).exclude(
+                id=self.request.user.id
+            )
         )
+        if not reviewer_users:
+            # No active reviewers — fall back to staff so a contribution never sits
+            # in the queue with nobody notified (the "silent dead end" gap).
+            reviewer_users = list(
+                User.objects.filter(is_staff=True).exclude(id=self.request.user.id)
+            )
         for reviewer in reviewer_users:
             create_notification(
                 user=reviewer,
@@ -1386,14 +1297,17 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
                     queryset=Revision.objects.order_by("-revision_number"),
                     to_attr="prefetched_revisions_newest_first",
                 ),
+                # Activity.Meta orders by -created_at, so the review timeline and
+                # latest_feedback come back newest-first for free.
+                "activities__user",
             )
         )
         page = self.paginate_queryset(contributions)
         if page is not None:
-            serializer = CulturalEntityListSerializer(page, many=True)
+            serializer = MyContributionSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = CulturalEntityListSerializer(contributions, many=True)
+        serializer = MyContributionSerializer(contributions, many=True)
         return Response(serializer.data)
 
     @action(
@@ -1407,10 +1321,15 @@ class CulturalEntityViewSet(viewsets.ModelViewSet):
         """
         entity = self.get_object()
 
-        # Only allow revisions for rejected or draft entities
-        if entity.status not in ["rejected", "draft"]:
+        # A contributor may rework any non-published wrapper state: rejected,
+        # draft, or "changes requested" (pending_revision — the verdict the
+        # My Contributions "Revise" button is shown for).
+        if entity.status not in ["rejected", "draft", "pending_revision"]:
             return Response(
-                {"error": "Can only create revisions for rejected or draft entities"},
+                {
+                    "error": "Can only create revisions for rejected, draft, "
+                    "or changes-requested entities"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -1651,17 +1570,24 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
         action = serializer.validated_data["action"]
         comment = serializer.validated_data.get("comment", "")
 
-        if action == "accept":
-            entity.accept_contribution(request.user, comment)
-            return Response(
-                {"message": "Entity accepted successfully"}, status=status.HTTP_200_OK
-            )
+        from .models import IllegalStatusTransition
 
-        elif action == "reject":
-            entity.reject_contribution(request.user, comment)
-            return Response(
-                {"message": "Entity rejected successfully"}, status=status.HTTP_200_OK
-            )
+        try:
+            if action == "accept":
+                entity.accept_contribution(request.user, comment)
+                return Response(
+                    {"message": "Entity accepted successfully"},
+                    status=status.HTTP_200_OK,
+                )
+
+            elif action == "reject":
+                entity.reject_contribution(request.user, comment)
+                return Response(
+                    {"message": "Entity rejected successfully"},
+                    status=status.HTTP_200_OK,
+                )
+        except IllegalStatusTransition as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2578,13 +2504,20 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
             **serializer.validated_data,
         )
 
+        from .models import IllegalStatusTransition
+
         # Apply the verdict
-        if verdict == "accept":
-            entity.accept_contribution(request.user, feedback)
-        elif verdict == "accept_with_edits":
-            entity.accept_contribution(request.user, feedback)
-        elif verdict == "reject":
-            entity.reject_contribution(request.user, feedback)
+        if verdict in ("accept", "accept_with_edits", "reject"):
+            try:
+                if verdict == "reject":
+                    entity.reject_contribution(request.user, feedback)
+                else:
+                    entity.accept_contribution(request.user, feedback)
+            except IllegalStatusTransition as exc:
+                decision.delete()
+                return Response(
+                    {"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST
+                )
         elif verdict == "request_changes":
             entity.status = "pending_revision"
             entity.save()
@@ -3791,6 +3724,7 @@ class PublicContributionViewSet(viewsets.ModelViewSet):
         new_status = serializer.validated_data["status"]
         review_notes = serializer.validated_data.get("review_notes", "")
         link_to_entity_id = serializer.validated_data.get("link_to_entity_id")
+        target_type = (serializer.validated_data.get("target_type") or "").strip()
 
         # Update contribution status
         contribution.status = new_status
@@ -3806,13 +3740,32 @@ class PublicContributionViewSet(viewsets.ModelViewSet):
             except CulturalEntity.DoesNotExist:
                 pass
 
-        contribution.save()
+        # Promotion: an accepted/incorporated QR note with a target type rides
+        # the same pipeline as a structured form submission (CIDOC row +
+        # CulturalEntity + Revision #1 → review queue → accept → graph).
+        # The status change and the promotion commit together or not at all.
+        from django.db import transaction
+
+        from .qr_promotion import PromotionError, promote_public_contribution
+
+        promoted_entity_id = None
+        try:
+            with transaction.atomic():
+                contribution.save()
+                if new_status in ("approved", "incorporated") and target_type:
+                    promoted = promote_public_contribution(
+                        contribution, target_type=target_type, reviewer=request.user
+                    )
+                    promoted_entity_id = str(promoted.entity_id)
+        except PromotionError as exc:
+            return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
             {
                 "message": f"Contribution has been {new_status}.",
                 "id": str(contribution.id),
                 "status": new_status,
+                "promoted_entity_id": promoted_entity_id,
             }
         )
 

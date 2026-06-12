@@ -1,5 +1,5 @@
 {
-  "schema_version": "1ecfbc334845bdfd980bf32c28976db3cef3a44a61a05e3e3562275e93bb6c23",
+  "schema_version": "24ec8d3462e7866b101f7692b6c45bdcd036c70ac9e7ab30d3fb2592a71eedc2",
   "tenant_id": null,
   "degraded": false,
   "classes": {
@@ -319,9 +319,12 @@
           "order": 3,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "took_place_at",
@@ -1112,11 +1115,12 @@
           "order": 3,
           "required": false,
           "multivalued": false,
-          "description": "Event that created this object or structure",
+          "description": "The making of this item \u2014 links it to the construction or creation event (who made it, when).",
           "slot_uri": "crm:P108i_was_produced_by",
           "relationTo": "Production",
           "relationEndpoint": "/cidoc/productions/",
-          "relationRegistryKey": "production"
+          "relationRegistryKey": "production",
+          "help": "Use this to connect the item to the event that produced it \u2014 its building, carving, casting, or painting. Optional: leave it empty if you only know the item itself, not a separate creation event."
         },
         {
           "key": "has_current_location",
@@ -1206,8 +1210,9 @@
           "order": 8,
           "required": false,
           "multivalued": false,
-          "description": "Current physical status of the structure",
+          "description": "Is this item still standing today? Choose from the list.",
           "slot_uri": "heritageGraph:existence_status",
+          "help": "Pick the option that best matches the item's current state: Extant (still standing), Partially Extant (some original parts remain), Destroyed, Lost (existence uncertain / no longer locatable), Hypothetical (known only from records), or Unknown.",
           "options": [
             {
               "value": "Extant",
@@ -1240,7 +1245,8 @@
               "description": "Existence status uncertain"
             }
           ],
-          "enum_range": "ExistenceStatusEnum"
+          "enum_range": "ExistenceStatusEnum",
+          "ui_weight": 7
         },
         {
           "key": "last_known_existence_date",
@@ -1301,11 +1307,13 @@
           "order": 13,
           "required": false,
           "multivalued": true,
-          "description": "All factual claims about this structure with full provenance",
+          "description": "Sourced statements about this item \u2014 who claimed what, and where it is documented. Optional for most contributors.",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
           "relationEndpoint": "/cidoc/assertions/",
-          "relationRegistryKey": "assertion"
+          "relationRegistryKey": "assertion",
+          "help": "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty \u2014 reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite.",
+          "example": "Founded in the 17th century (source: National Archives, ref. 2014/231)"
         },
         {
           "key": "participates_in_ritual",
@@ -1575,9 +1583,12 @@
           "order": 5,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "lunar_date_tithi",
@@ -1609,11 +1620,13 @@
           "order": 8,
           "required": false,
           "multivalued": true,
-          "description": "Deity invoked or made present through ritual",
+          "description": "Which deity or deities this ritual calls upon or honours.",
           "slot_uri": "heritageGraph:invokes_deity",
           "relationTo": "Deity",
           "relationEndpoint": "/cidoc/deities/",
-          "relationRegistryKey": "deity"
+          "relationRegistryKey": "deity",
+          "help": "Select the deity (or deities) that this ritual invokes, worships, or makes present. You can add more than one.",
+          "ui_weight": 8
         },
         {
           "key": "carried_out_by",
@@ -1623,9 +1636,11 @@
           "order": 9,
           "required": false,
           "multivalued": true,
-          "description": "Actor(s) who performed this event",
+          "description": "Who performed this \u2014 the person(s) or group(s) that carried out the event.",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "Actor"
+          "relationTo": "Actor",
+          "help": "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one.",
+          "ui_weight": 6
         },
         {
           "key": "performed_by_group",
@@ -1687,11 +1702,13 @@
           "order": 14,
           "required": false,
           "multivalued": true,
-          "description": "All factual claims about this structure with full provenance",
+          "description": "Sourced statements about this item \u2014 who claimed what, and where it is documented. Optional for most contributors.",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
           "relationEndpoint": "/cidoc/assertions/",
-          "relationRegistryKey": "assertion"
+          "relationRegistryKey": "assertion",
+          "help": "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty \u2014 reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite.",
+          "example": "Founded in the 17th century (source: National Archives, ref. 2014/231)"
         },
         {
           "key": "occurs_before",
@@ -2028,9 +2045,12 @@
           "order": 6,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "lunar_date_tithi",
@@ -2062,11 +2082,13 @@
           "order": 9,
           "required": false,
           "multivalued": true,
-          "description": "Deity invoked or made present through ritual",
+          "description": "Which deity or deities this ritual calls upon or honours.",
           "slot_uri": "heritageGraph:invokes_deity",
           "relationTo": "Deity",
           "relationEndpoint": "/cidoc/deities/",
-          "relationRegistryKey": "deity"
+          "relationRegistryKey": "deity",
+          "help": "Select the deity (or deities) that this ritual invokes, worships, or makes present. You can add more than one.",
+          "ui_weight": 8
         },
         {
           "key": "carried_out_by",
@@ -2076,9 +2098,11 @@
           "order": 10,
           "required": false,
           "multivalued": true,
-          "description": "Actor(s) who performed this event",
+          "description": "Who performed this \u2014 the person(s) or group(s) that carried out the event.",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "Actor"
+          "relationTo": "Actor",
+          "help": "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one.",
+          "ui_weight": 6
         },
         {
           "key": "performed_by_group",
@@ -2140,11 +2164,13 @@
           "order": 15,
           "required": false,
           "multivalued": true,
-          "description": "All factual claims about this structure with full provenance",
+          "description": "Sourced statements about this item \u2014 who claimed what, and where it is documented. Optional for most contributors.",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
           "relationEndpoint": "/cidoc/assertions/",
-          "relationRegistryKey": "assertion"
+          "relationRegistryKey": "assertion",
+          "help": "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty \u2014 reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite.",
+          "example": "Founded in the 17th century (source: National Archives, ref. 2014/231)"
         },
         {
           "key": "occurs_before",
@@ -2348,10 +2374,12 @@
           "order": 3,
           "required": false,
           "multivalued": true,
-          "description": "Actor(s) who performed this event",
+          "description": "Who performed this \u2014 the person(s) or group(s) that carried out the event.",
           "slot_uri": "crm:P14_carried_out_by",
           "relationTo": "Actor",
-          "minimumCardinality": 1
+          "help": "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one.",
+          "minimumCardinality": 1,
+          "ui_weight": 6
         },
         {
           "key": "used_technique",
@@ -2387,9 +2415,12 @@
           "order": 6,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "commissioned_by",
@@ -2423,11 +2454,13 @@
           "order": 9,
           "required": false,
           "multivalued": true,
-          "description": "All factual claims about this structure with full provenance",
+          "description": "Sourced statements about this item \u2014 who claimed what, and where it is documented. Optional for most contributors.",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
           "relationEndpoint": "/cidoc/assertions/",
-          "relationRegistryKey": "assertion"
+          "relationRegistryKey": "assertion",
+          "help": "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty \u2014 reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite.",
+          "example": "Founded in the 17th century (source: National Archives, ref. 2014/231)"
         }
       ],
       "columns": [
@@ -2539,10 +2572,12 @@
           "order": 3,
           "required": false,
           "multivalued": true,
-          "description": "Actor(s) who performed this event",
+          "description": "Who performed this \u2014 the person(s) or group(s) that carried out the event.",
           "slot_uri": "crm:P14_carried_out_by",
           "relationTo": "Actor",
-          "minimumCardinality": 1
+          "help": "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one.",
+          "minimumCardinality": 1,
+          "ui_weight": 6
         },
         {
           "key": "took_place_at",
@@ -2566,9 +2601,12 @@
           "order": 5,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "makes_deity_present",
@@ -2695,9 +2733,11 @@
           "order": 4,
           "required": false,
           "multivalued": true,
-          "description": "Actor(s) who performed this event",
+          "description": "Who performed this \u2014 the person(s) or group(s) that carried out the event.",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "Actor"
+          "relationTo": "Actor",
+          "help": "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one.",
+          "ui_weight": 6
         },
         {
           "key": "has_timespan",
@@ -2707,9 +2747,12 @@
           "order": 5,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         }
       ],
       "columns": [
@@ -2851,9 +2894,12 @@
           "order": 7,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         }
       ],
       "columns": [
@@ -2969,11 +3015,12 @@
           "order": 4,
           "required": false,
           "multivalued": false,
-          "description": "Event that created this object or structure",
+          "description": "The making of this item \u2014 links it to the construction or creation event (who made it, when).",
           "slot_uri": "crm:P108i_was_produced_by",
           "relationTo": "Production",
           "relationEndpoint": "/cidoc/productions/",
-          "relationRegistryKey": "production"
+          "relationRegistryKey": "production",
+          "help": "Use this to connect the item to the event that produced it \u2014 its building, carving, casting, or painting. Optional: leave it empty if you only know the item itself, not a separate creation event."
         },
         {
           "key": "participates_in_ritual",
@@ -3161,11 +3208,12 @@
           "order": 3,
           "required": false,
           "multivalued": false,
-          "description": "Event that created this object or structure",
+          "description": "The making of this item \u2014 links it to the construction or creation event (who made it, when).",
           "slot_uri": "crm:P108i_was_produced_by",
           "relationTo": "Production",
           "relationEndpoint": "/cidoc/productions/",
-          "relationRegistryKey": "production"
+          "relationRegistryKey": "production",
+          "help": "Use this to connect the item to the event that produced it \u2014 its building, carving, casting, or painting. Optional: leave it empty if you only know the item itself, not a separate creation event."
         },
         {
           "key": "has_current_location",
@@ -3255,8 +3303,9 @@
           "order": 8,
           "required": false,
           "multivalued": false,
-          "description": "Current physical status of the structure",
+          "description": "Is this item still standing today? Choose from the list.",
           "slot_uri": "heritageGraph:existence_status",
+          "help": "Pick the option that best matches the item's current state: Extant (still standing), Partially Extant (some original parts remain), Destroyed, Lost (existence uncertain / no longer locatable), Hypothetical (known only from records), or Unknown.",
           "options": [
             {
               "value": "Extant",
@@ -3289,7 +3338,8 @@
               "description": "Existence status uncertain"
             }
           ],
-          "enum_range": "ExistenceStatusEnum"
+          "enum_range": "ExistenceStatusEnum",
+          "ui_weight": 7
         },
         {
           "key": "last_known_existence_date",
@@ -3350,11 +3400,13 @@
           "order": 13,
           "required": false,
           "multivalued": true,
-          "description": "All factual claims about this structure with full provenance",
+          "description": "Sourced statements about this item \u2014 who claimed what, and where it is documented. Optional for most contributors.",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
           "relationEndpoint": "/cidoc/assertions/",
-          "relationRegistryKey": "assertion"
+          "relationRegistryKey": "assertion",
+          "help": "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty \u2014 reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite.",
+          "example": "Founded in the 17th century (source: National Archives, ref. 2014/231)"
         },
         {
           "key": "participates_in_ritual",
@@ -3542,7 +3594,10 @@
           "multivalued": false,
           "description": "Duration of Living Goddess tenure (from selection to retirement)",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "supported_by_institution",
@@ -3712,9 +3767,12 @@
           "order": 4,
           "required": true,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "carried_out_by",
@@ -3724,9 +3782,11 @@
           "order": 5,
           "required": false,
           "multivalued": true,
-          "description": "Actor(s) who performed this event",
+          "description": "Who performed this \u2014 the person(s) or group(s) that carried out the event.",
           "slot_uri": "crm:P14_carried_out_by",
-          "relationTo": "Actor"
+          "relationTo": "Actor",
+          "help": "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one.",
+          "ui_weight": 6
         },
         {
           "key": "performed_by_group",
@@ -3773,11 +3833,13 @@
           "order": 9,
           "required": false,
           "multivalued": true,
-          "description": "All factual claims about this structure with full provenance",
+          "description": "Sourced statements about this item \u2014 who claimed what, and where it is documented. Optional for most contributors.",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
           "relationEndpoint": "/cidoc/assertions/",
-          "relationRegistryKey": "assertion"
+          "relationRegistryKey": "assertion",
+          "help": "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty \u2014 reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite.",
+          "example": "Founded in the 17th century (source: National Archives, ref. 2014/231)"
         },
         {
           "key": "was_documented_by",
@@ -3964,11 +4026,13 @@
           "order": 17,
           "required": false,
           "multivalued": true,
-          "description": "Deity invoked or made present through ritual",
+          "description": "Which deity or deities this ritual calls upon or honours.",
           "slot_uri": "heritageGraph:invokes_deity",
           "relationTo": "Deity",
           "relationEndpoint": "/cidoc/deities/",
-          "relationRegistryKey": "deity"
+          "relationRegistryKey": "deity",
+          "help": "Select the deity (or deities) that this ritual invokes, worships, or makes present. You can add more than one.",
+          "ui_weight": 8
         },
         {
           "key": "is_part_of_festival",
@@ -4205,7 +4269,10 @@
           "multivalued": false,
           "description": "When the retirement occurred",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         },
         {
           "key": "note",
@@ -4230,7 +4297,9 @@
           "slot_uri": "crm:P14_carried_out_by",
           "relationTo": "Person",
           "relationEndpoint": "/cidoc/persons/",
-          "relationRegistryKey": "person"
+          "relationRegistryKey": "person",
+          "help": "Name the people, communities, or organisations who performed or led this event (for example a priest, a guthi, or a festival committee). You can add more than one.",
+          "ui_weight": 6
         },
         {
           "key": "performed_by_group",
@@ -4266,11 +4335,13 @@
           "order": 8,
           "required": false,
           "multivalued": true,
-          "description": "All factual claims about this structure with full provenance",
+          "description": "Sourced statements about this item \u2014 who claimed what, and where it is documented. Optional for most contributors.",
           "slot_uri": "heritageGraph:has_provenance_assertion",
           "relationTo": "HeritageAssertion",
           "relationEndpoint": "/cidoc/assertions/",
-          "relationRegistryKey": "assertion"
+          "relationRegistryKey": "assertion",
+          "help": "A provenance assertion is a single sourced claim about this item (for example: 'Built in 1427, according to Slusser 1982'). You can leave this empty \u2014 reviewers and curators usually add assertions during review. Add one only if you have a specific source to cite.",
+          "example": "Founded in the 17th century (source: National Archives, ref. 2014/231)"
         },
         {
           "key": "was_documented_by",
@@ -4435,11 +4506,13 @@
           "order": 14,
           "required": false,
           "multivalued": true,
-          "description": "Deity invoked or made present through ritual",
+          "description": "Which deity or deities this ritual calls upon or honours.",
           "slot_uri": "heritageGraph:invokes_deity",
           "relationTo": "Deity",
           "relationEndpoint": "/cidoc/deities/",
-          "relationRegistryKey": "deity"
+          "relationRegistryKey": "deity",
+          "help": "Select the deity (or deities) that this ritual invokes, worships, or makes present. You can add more than one.",
+          "ui_weight": 8
         },
         {
           "key": "is_part_of_festival",
@@ -5072,9 +5145,12 @@
           "order": 3,
           "required": false,
           "multivalued": false,
-          "description": "Links event to its temporal extent",
+          "description": "When this happened. Use a year, a range, or an approximate date \u2014 precision is optional.",
           "slot_uri": "crm:P4_has_time-span",
-          "relationTo": "TimeSpan"
+          "relationTo": "TimeSpan",
+          "help": "Heritage dates are often imprecise, and that's fine. Enter a single year (1857), a range or century (1200/1300 for the 13th century), or mark a year as approximate by adding a tilde (1857~). You can leave the month and day out.",
+          "example": "1200/1300 (13th century), or 1857~ (about 1857)",
+          "ui_weight": 8
         }
       ],
       "columns": [

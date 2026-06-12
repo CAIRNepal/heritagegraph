@@ -70,7 +70,8 @@ import { OntologyFormPreviewCard } from "@/components/ontology-form/preview-card
 import { ConfirmActionDialog } from "@/components/confirm-action-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Sparkles } from "lucide-react";
-import { CidocCrmHint } from "@/components/ontology/CidocCrmHint";
+import { FieldHelpHint } from "@/components/ontology/FieldHelpHint";
+import { getDateQuickPicks, DATE_FORMAT_LEGEND } from "@/lib/ontology/date-format";
 import { HeritageDocumentUpload } from "@/components/ocr/heritage-document-upload";
 import { OcrSuggestionBadge } from "@/components/ocr/ocr-suggestion-badge";
 import { GeoPointField } from "@/components/ontology-form/geo-point-field";
@@ -106,6 +107,25 @@ function resolveOntologyFormStep(
     return { index: byKey, canonicalKey: sections[byKey].key };
   }
   return { index: 0, canonicalKey: sections[0].key };
+}
+
+/** Human-readable constraint hint ("3–200 characters", "Between 0 and 1") from
+ *  the registry field's length/range bounds, so laymen know what's accepted. */
+function buildFieldConstraintHint(field: OntologyField): string | null {
+  if (field.type === "number" || field.type === "float") {
+    const { minimum: lo, maximum: hi } = field;
+    if (lo != null && hi != null) return `Between ${lo} and ${hi}`;
+    if (lo != null) return `Minimum ${lo}`;
+    if (hi != null) return `Maximum ${hi}`;
+    return null;
+  }
+  if (field.type === "text" || field.type === "textarea") {
+    const { minLength: lo, maxLength: hi } = field;
+    if (lo != null && hi != null) return `${lo}–${hi} characters`;
+    if (hi != null) return `Up to ${hi} characters`;
+    if (lo != null) return `At least ${lo} characters`;
+  }
+  return null;
 }
 
 function FieldRenderer({
@@ -172,16 +192,34 @@ function FieldRenderer({
             <Sparkles className="h-4 w-4" />
           </Button>
         ) : null}
-        {showOntologyHint ? <CidocCrmHint slotUri={field.slot_uri} /> : null}
+        <FieldHelpHint
+          help={field.help}
+          slotUri={showOntologyHint ? field.slot_uri : undefined}
+          label={field.label}
+        />
       </div>
     </div>
   );
 
   const helpText = field.description;
+  const constraintHint = buildFieldConstraintHint(field);
 
-  const descEl = helpText ? (
-    <p className="text-xs text-muted-foreground mb-1.5">{helpText}</p>
-  ) : null;
+  const descEl =
+    helpText || field.example || constraintHint ? (
+      <div className="mb-1.5 space-y-0.5">
+        {helpText ? (
+          <p className="text-xs text-muted-foreground">{helpText}</p>
+        ) : null}
+        {field.example ? (
+          <p className="text-xs italic text-muted-foreground/90">
+            Example: {field.example}
+          </p>
+        ) : null}
+        {constraintHint ? (
+          <p className="text-xs text-muted-foreground/80">{constraintHint}</p>
+        ) : null}
+      </div>
+    ) : null;
 
   const errorFooter = errorMessage ? (
     <p className="text-xs text-red-600 dark:text-red-400" role="alert">
@@ -357,27 +395,23 @@ function FieldRenderer({
       );
     }
 
+    case "date":
     case "edtf_date": {
-      const edtfChips = [
-        { label: "c. 1200 CE", v: "1200~" },
-        { label: "13th c.", v: "1200/1300" },
-        { label: "Malla period", v: "Malla period" },
-        { label: "NS 1140", v: "NS1140" },
-      ];
+      const dateChips = getDateQuickPicks();
       return (
         <div className="space-y-1">
           {labelEl}
           {descEl}
           <div className="flex flex-wrap gap-1.5 pb-1">
-            {edtfChips.map((c) => (
+            {dateChips.map((c) => (
               <Button
-                key={c.v}
+                key={c.value}
                 type="button"
                 variant="outline"
                 size="sm"
                 className="h-7 text-xs"
                 disabled={disabled}
-                onClick={() => onChange(field.key, c.v)}
+                onClick={() => onChange(field.key, c.value)}
               >
                 {c.label}
               </Button>
@@ -387,14 +421,11 @@ function FieldRenderer({
             id={id}
             value={value || ""}
             onChange={(e) => onChange(field.key, e.target.value)}
-            placeholder={field.placeholder || "e.g. 1200/1300 or 1975-05-01"}
+            placeholder={field.placeholder || "e.g. 1857, 1200/1300, or 1975-05-01"}
             disabled={disabled}
             className={errorRing}
           />
-          <p className="text-xs text-muted-foreground">
-            Use EDTF-style strings for imprecise heritage dates (ISO 8601-2). Quick picks set common
-            patterns; refine in the field or use a NS↔BS converter in the docs.
-          </p>
+          <p className="text-xs text-muted-foreground">{DATE_FORMAT_LEGEND}</p>
           {errorFooter}
         </div>
       );
@@ -1625,21 +1656,55 @@ export default function OntologyForm({
         ?.accessToken;
       const payload = buildOntologyFormPayload(ontologyClass.fields, formData);
 
+      // The CulturalEntity endpoint ("entity" class) is not a flat CIDOC resource:
+      // its serializer expects {name, description, category, form_data}, where
+      // form_data is the revision snapshot. Wrap accordingly; CIDOC endpoints stay flat.
+      const isCulturalEntityEndpoint =
+        ontologyClass.apiEndpoint.includes("cultural-entities");
+      const body = isCulturalEntityEndpoint
+        ? { ...payload, form_data: payload }
+        : payload;
+
       if (isEditMode && recordId) {
         const detailUrl = `${baseUrl}${ontologyClass.apiEndpoint}${encodeURIComponent(recordId)}/`;
-        await apiFetchJson(detailUrl, {
+        // For a published record the backend stages the edit as a revision for
+        // re-review and returns the proposed payload — the live record (and the
+        // knowledge graph) keep the accepted content until a reviewer approves.
+        await apiFetchJson<Record<string, unknown>>(detailUrl, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(body),
         });
+        const rawStatus = (recordMeta?.status ?? "").trim().toLowerCase();
+        // CulturalEntity edits are applied in place by the backend (no staged
+        // review), so the staged-review messaging only applies to CIDOC rows.
+        const wasPublished =
+          !isCulturalEntityEndpoint &&
+          (rawStatus === "" ||
+            rawStatus === "accepted" ||
+            rawStatus === "merged" ||
+            rawStatus === "published");
+        const entryLabel =
+          (formData.name as string) || (formData.title as string) || "Entry";
         setSubmitConfirmOpen(false);
-        toast.success(
-          `"${(formData.name as string) || (formData.title as string) || "Entry"}" updated successfully!`,
-          { duration: 4000 }
-        );
+        if (wasPublished) {
+          toast.success(`"${entryLabel}" — edit submitted for review`, {
+            description:
+              "The published version stays live until a reviewer approves your changes. Track the review under My contributions.",
+            duration: 7000,
+            action: {
+              label: "Track it",
+              onClick: () => router.push("/contribute/my-contributions"),
+            },
+          });
+        } else {
+          toast.success(`"${entryLabel}" updated successfully!`, {
+            duration: 4000,
+          });
+        }
         setTimeout(
           () =>
             router.push(
@@ -1656,7 +1721,7 @@ export default function OntologyForm({
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
       });
 
       await clearOntologyFormDraft(draftStorageKey);
@@ -1666,8 +1731,12 @@ export default function OntologyForm({
         `"${(formData.name as string) || (formData.title as string) || "Entry"}" submitted successfully!`,
         {
           description:
-            "Your contribution is now in the review queue. You'll be notified when a reviewer comments or makes a decision.",
-          duration: 5000,
+            "What happens next: it's now in the review queue. A reviewer will accept it, request changes, or decline — and once accepted it's published. Track status and reviewer notes any time under My contributions.",
+          duration: 7000,
+          action: {
+            label: "Track it",
+            onClick: () => router.push("/contribute/my-contributions"),
+          },
         }
       );
 

@@ -66,14 +66,22 @@ def queue_relationship_assertion_projection(
 
 
 def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> None:
-    """Upsert slot triples when published; remove from PUBLIC when not."""
+    """Upsert slot triples when published; remove from PUBLIC when not.
+
+    The store write is deferred to ``transaction.on_commit`` so a rolled-back
+    save can never leave ghost triples in Oxigraph (Postgres stays the system
+    of record). Outside a transaction the callback runs immediately.
+    """
     if not rdf_sync_enabled() or instance is None:
         return
+    transaction.on_commit(lambda: _project_entity_now(instance))
 
+
+def _project_entity_now(instance: Any) -> None:
     from apps.cidoc_data.publication_policy import is_published_for_rdf
 
     if not is_published_for_rdf(instance):
-        _delete_projection(instance)
+        delete_subject_from_store(uri=_resource_uri(instance))
         return
 
     from apps.cidoc_data.rdf_entity_projection import tripleset_for_metadata_instance
@@ -94,7 +102,9 @@ def queue_entity_projection(instance: Any | None = None, **_kwargs: object) -> N
 def _delete_projection(instance: Any) -> None:
     if not rdf_sync_enabled() or instance is None:
         return
-    delete_subject_from_store(uri=_resource_uri(instance))
+    # Capture the IRI now: by commit time Model.delete() has cleared the pk.
+    uri = _resource_uri(instance)
+    transaction.on_commit(lambda: delete_subject_from_store(uri=uri))
 
 
 def _uri_for_generic(content_type, object_id) -> str | None:

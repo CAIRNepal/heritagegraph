@@ -145,9 +145,17 @@ class PublishedEditResubmitTest(TestCase):
         )
         self.assertEqual(resp.status_code, 200, resp.content[:300])
 
+        # Phase 0 semantics: the published row is never edited in place — the
+        # accepted content stays live while the proposal goes through review.
         self.location.refresh_from_db()
-        self.assertEqual(self.location.status, "pending_review")
+        self.assertEqual(self.location.status, "accepted")
+        self.assertNotEqual(self.location.description, "Updated after acceptance")
 
+        # The proposal itself is staged on the wrapper as a new revision.
         self.entity.refresh_from_db()
         self.assertEqual(self.entity.status, "pending_review")
         self.assertGreaterEqual(self.entity.revisions.count(), 2)
+        self.assertEqual(
+            self.entity.current_revision.data.get("description"),
+            "Updated after acceptance",
+        )

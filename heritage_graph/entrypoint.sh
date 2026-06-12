@@ -140,6 +140,21 @@ except:
 EOF
 
 # ================================================================
+# Ontology schema registry snapshot (idempotent)
+# ----------------------------------------------------------------
+# Rebuild the cached SchemaRegistry row from the current YAML inputs
+# (ontology/HeritageGraph.yaml + tools/*.yaml, incl. contribute-hub.yaml).
+# The API normally builds the registry fresh from YAML per request, but
+# falls back to the latest DB snapshot when that build raises. Refreshing
+# the snapshot here guarantees that fallback is current — fixing the stale
+# "Contribution types could not be loaded / no contribute hub data" state
+# after a deploy. Idempotent (skips when already current) and non-fatal.
+# ================================================================
+log_info "Rebuilding ontology schema registry snapshot (idempotent)..."
+python manage.py rebuild_schema_registry \
+    || log_warn "rebuild_schema_registry failed (continuing; API will build from YAML at request time)."
+
+# ================================================================
 # Controlled vocabularies + knowledge graph bootstrap (idempotent)
 # ================================================================
 log_info "Seeding relationship predicates (idempotent)..."

@@ -360,14 +360,22 @@ ARCHITECTURAL_STYLE_CHOICES = [
     ("Other", "Other"),
 ]
 
+# Canonical values mirror ontology/HeritageGraph.yaml ExistenceStatusEnum, which
+# drives the contribute form. Legacy values below are retained (not offered in new
+# forms) so pre-alignment rows stay valid on edit. Keep this list in sync with the
+# ontology enum.
 EXISTENCE_STATUS_CHOICES = [
     ("Extant", "Extant"),
+    ("PartiallyExtant", "Partially Extant"),
     ("Destroyed", "Destroyed"),
-    ("Damaged", "Damaged"),
-    ("Restored", "Restored"),
-    ("Partially_Extant", "Partially Extant"),
-    ("Relocated", "Relocated"),
+    ("Lost", "Lost"),
+    ("Hypothetical", "Hypothetical"),
     ("Unknown", "Unknown"),
+    # Legacy (pre-ontology-alignment) — retained for back-compat with existing data.
+    ("Damaged", "Damaged (legacy)"),
+    ("Restored", "Restored (legacy)"),
+    ("Relocated", "Relocated (legacy)"),
+    ("Partially_Extant", "Partially Extant (legacy)"),
 ]
 
 CONDITION_TYPE_CHOICES = [

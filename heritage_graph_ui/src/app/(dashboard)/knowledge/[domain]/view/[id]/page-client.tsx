@@ -31,6 +31,7 @@ import { EntityViewHeader } from "@/components/knowledge/entity-view-header";
 import { EntityMetadataGrid } from "@/components/knowledge/entity-metadata-grid";
 import { EntityProvenanceCard } from "@/components/knowledge/entity-provenance-card";
 import { WhyWeBelievePanel } from "@/components/knowledge/why-we-believe-panel";
+import { CiteEntityDialog } from "@/components/knowledge/cite-entity-dialog";
 import { Separator } from "@/components/ui/separator";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 import { getPublicApiUrl } from "@/lib/api-base";
@@ -263,6 +264,13 @@ export default function OntologyViewPage() {
           <EntityQRCode entityId={id} entityName={displayName} size="sm" />
         </>
       )}
+      <CiteEntityDialog
+        title={displayName}
+        typeLabel={ontologyClass.label}
+        authors={authorNames}
+        date={createdAt}
+        id={String(id)}
+      />
       <Button
         size="sm"
         onClick={() =>

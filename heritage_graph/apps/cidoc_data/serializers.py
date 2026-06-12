@@ -203,14 +203,18 @@ class LocationSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
             mutable["coordinates_legacy"] = str(pc).strip()
         lat = mutable.pop("latitude", None)
         lng = mutable.pop("longitude", None)
+        # Apply server-side defaults for required CIDOC fields the contribute
+        # form does not collect *before* field validation. DRF raises
+        # "This field is required" inside super().to_internal_value(), so
+        # defaulting afterwards never runs (see LocationSerializer history).
+        if not mutable.get("type"):
+            mutable["type"] = "temple"
+        if not mutable.get("current_status"):
+            mutable["current_status"] = "preserved"
         ret = super().to_internal_value(mutable)
         if lat is not None and lng is not None:
             lat_f, lng_f = _coerce_latlng_for_point(lat, lng)
             ret["point"] = _latlng_to_point_charfield(lat_f, lng_f)
-        if not ret.get("type"):
-            ret["type"] = "temple"
-        if not ret.get("current_status"):
-            ret["current_status"] = "preserved"
         return ret
 
 
@@ -293,9 +297,20 @@ class ArchitecturalStructureSerializer(
         return lng
 
     def to_internal_value(self, data):
-        lat = data.pop("latitude", None)
-        lng = data.pop("longitude", None)
-        ret = super().to_internal_value(data)
+        mutable = (
+            {k: v for k, v in data.items()}
+            if hasattr(data, "items")
+            else dict(data)
+        )
+        lat = mutable.pop("latitude", None)
+        lng = mutable.pop("longitude", None)
+        # The ontology models structure type via subclasses (Temple, Stupa, …)
+        # rather than a structure_type slot, so the contribute form does not
+        # collect it. Default it before field validation — DRF raises required
+        # errors inside super().to_internal_value().
+        if not mutable.get("structure_type"):
+            mutable["structure_type"] = "Other"
+        ret = super().to_internal_value(mutable)
         if lat is not None and lng is not None:
             lat_f, lng_f = _coerce_latlng_for_point(lat, lng)
             ret["point"] = _latlng_to_point_charfield(lat_f, lng_f)

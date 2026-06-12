@@ -528,8 +528,11 @@ class FrontendContributionPipelineTest(TestCase):
                 )
 
                 # Once published, rdf_signals projects it into the local store.
-                person.status = "accepted"
-                person.save()
+                # Projection is deferred to transaction.on_commit (Phase 0), so
+                # execute the on-commit callbacks like a committed request.
+                with self.captureOnCommitCallbacks(execute=True):
+                    person.status = "accepted"
+                    person.save()
                 quads = list(store.quads_for_pattern(subj, None, None, None))
                 self.assertGreater(
                     len(quads),

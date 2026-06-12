@@ -1,12 +1,17 @@
+import logging
 import secrets
 import string
 import uuid
 
 from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 
 User = get_user_model()  # noqa: F811
+
+logger = logging.getLogger(__name__)
 
 
 def generate_unique_submission_id(length=11, max_attempts=100):
@@ -41,65 +46,212 @@ def submit_for_review(self):
         comment=f'Submitted "{self.name}" for review',
     )
 
-def _sync_linked_cidoc_status(entity, *, status: str) -> None:
-    """Keep CIDOC MetaData rows in sync when a wrapper CulturalEntity is decided."""
+# Revision keys that are workflow metadata, never CIDOC model fields.
+_CIDOC_APPLY_EXCLUDED = frozenset(
+    {"id", "status", "contributor", "created_at", "_cidoc_model", "_cidoc_id"}
+)
+
+
+def _resolve_linked_cidoc_instance(entity):
+    """Resolve the CIDOC MetaData row a wrapper CulturalEntity reviews.
+
+    Prefers the real FK (cidoc_content_type/cidoc_object_id); falls back to
+    the legacy ``_cidoc_model``/``_cidoc_id`` revision-JSON back-link and
+    heals the FK when the fallback succeeds. Every failure here means a
+    reviewer decision would silently not publish, so each path logs at ERROR
+    instead of returning quietly.
+    """
+    if entity.cidoc_content_type_id and entity.cidoc_object_id is not None:
+        model = entity.cidoc_content_type.model_class()
+        if model is not None:
+            instance = model.objects.filter(pk=entity.cidoc_object_id).first()
+            if instance is not None:
+                return instance
+            logger.error(
+                "CulturalEntity %s FK-links missing CIDOC row %s pk=%s",
+                entity.entity_id,
+                model.__name__,
+                entity.cidoc_object_id,
+            )
+            return None
+
     latest_revision = entity.get_latest_revision()
     if not latest_revision:
-        return
+        logger.error(
+            "CulturalEntity %s has no revisions; cannot sync CIDOC record",
+            entity.entity_id,
+        )
+        return None
     data = latest_revision.data
     if not isinstance(data, dict):
-        return
+        logger.error(
+            "CulturalEntity %s revision %s data is not a dict; cannot sync CIDOC",
+            entity.entity_id,
+            latest_revision.revision_number,
+        )
+        return None
     model_name = (data.get("_cidoc_model") or "").strip()
-    if not model_name:
-        return
     cidoc_id = data.get("_cidoc_id")
-    if cidoc_id is None:
-        return
+    if not model_name or cidoc_id is None:
+        # Wrappers without a CIDOC back-link are legitimate for non-CIDOC
+        # contributions (e.g. promoted QR notes awaiting structuring).
+        return None
     from django.apps import apps
 
     try:
         model = apps.get_model("cidoc_data", model_name)
     except LookupError:
-        return
+        logger.error(
+            "CulturalEntity %s back-links unknown CIDOC model %r",
+            entity.entity_id,
+            model_name,
+        )
+        return None
     instance = model.objects.filter(pk=cidoc_id).first()
     if instance is None:
-        return
-    if getattr(instance, "status", None) == status:
-        return
-    instance.status = status
-    instance.save(update_fields=["status"])
+        logger.error(
+            "CulturalEntity %s back-links missing CIDOC row %s pk=%s",
+            entity.entity_id,
+            model_name,
+            cidoc_id,
+        )
+        return None
+
+    # Heal: persist the real FK so the JSON back-link is no longer load-bearing.
+    entity.cidoc_content_type = ContentType.objects.get_for_model(model)
+    entity.cidoc_object_id = instance.pk
+    entity.save(update_fields=["cidoc_content_type", "cidoc_object_id"])
+    return instance
+
+
+def _apply_revision_data_to_cidoc(instance, data: dict) -> list[str]:
+    """Write an accepted revision's fields onto the CIDOC row. Returns changed names."""
+    fields = {f.name: f for f in instance._meta.concrete_fields}
+    changed: list[str] = []
+    for key, value in data.items():
+        if key in _CIDOC_APPLY_EXCLUDED:
+            continue
+        field = fields.get(key)
+        if field is None or field.primary_key or not field.editable:
+            continue
+        if field.is_relation:
+            if not field.many_to_one:
+                continue  # m2m/o2m are managed via their own endpoints
+            if getattr(instance, field.attname) != value:
+                setattr(instance, field.attname, value)
+                changed.append(key)
+            continue
+        try:
+            value = field.to_python(value)
+        except Exception:
+            logger.warning(
+                "Revision value for %s.%s could not be coerced; applying raw",
+                instance.__class__.__name__,
+                key,
+            )
+        if getattr(instance, key) != value:
+            setattr(instance, key, value)
+            changed.append(key)
+    return changed
+
+
+class IllegalStatusTransition(ValueError):
+    """Raised when a review decision is not a legal workflow step."""
+
+
+def _require_transition(entity, new_status: str) -> None:
+    from apps.cidoc_data.canonical_status import can_transition
+
+    if not can_transition(entity.status, new_status):
+        raise IllegalStatusTransition(
+            f"Cannot move entity {entity.entity_id} from "
+            f"{entity.status!r} to {new_status!r}"
+        )
 
 
 def accept_contribution(self, editor, comment=None):
-    """Accept the contribution and set it as published"""
-    latest_revision = self.get_latest_revision()
-    if latest_revision:
-        self.current_revision = latest_revision
-    self.status = 'accepted'
-    self.save()
-    _sync_linked_cidoc_status(self, status="accepted")
+    """Accept the contribution: apply the reviewed revision to the CIDOC row
+    and publish it (status drives the RDF projection gate)."""
+    _require_transition(self, "accepted")
+    with transaction.atomic():
+        # Accept what the reviewer is looking at: current_revision (set by
+        # staging and restored by rejection). Falling back to the newest
+        # revision would resurrect a previously rejected proposal.
+        reviewed_revision = self.current_revision or self.get_latest_revision()
+        if reviewed_revision:
+            self.current_revision = reviewed_revision
+            self.accepted_revision = reviewed_revision
+        self.status = 'accepted'
 
-    # Log the activity
-    Activity.objects.create(
-        entity=self,
-        user=editor,
-        activity_type='accepted',
-        comment=comment
-    )
+        data = reviewed_revision.data if reviewed_revision else None
+        if isinstance(data, dict):
+            # Keep the wrapper's display fields in step with the accepted
+            # content so queues and My Contributions don't show stale names.
+            accepted_name = data.get("name") or data.get("title")
+            if accepted_name:
+                self.name = accepted_name
+            if data.get("description"):
+                self.description = data["description"]
+        self.save()
+
+        cidoc = _resolve_linked_cidoc_instance(self)
+        if cidoc is not None:
+            # The CIDOC row may still hold the previously accepted values
+            # (published edits are staged in revisions, not written in place).
+            if isinstance(data, dict):
+                _apply_revision_data_to_cidoc(cidoc, data)
+            cidoc.status = "accepted"
+            cidoc.save()
+
+        # Log the activity
+        Activity.objects.create(
+            entity=self,
+            user=editor,
+            activity_type='accepted',
+            comment=comment
+        )
 
 def reject_contribution(self, editor, comment):
-    """Reject the contribution"""
-    self.status = 'rejected'
-    self.save()
-    _sync_linked_cidoc_status(self, status="rejected")
+    """Reject the contribution.
 
-    # Log the activity
-    Activity.objects.create(
-        entity=self,
-        user=editor,
-        activity_type='rejected',
-        comment=comment
-    )
+    If the wrapper is awaiting review while its CIDOC row is already
+    published, the rejection targets the *staged edit*: the row keeps its
+    accepted content and status — the published record must not vanish
+    because a revision was declined. Rejecting an entity with no pending
+    review is a curator withdrawal and unpublishes the row.
+    """
+    from apps.cidoc_data.publication_policy import is_published_for_rdf
+
+    _require_transition(self, "rejected")
+    with transaction.atomic():
+        cidoc = _resolve_linked_cidoc_instance(self)
+        edit_of_published = (
+            cidoc is not None
+            and is_published_for_rdf(cidoc)
+            and self.status in ("pending_review", "pending_revision")
+        )
+
+        if edit_of_published:
+            # Wrapper returns to its accepted state; the staged revision is
+            # preserved in history but never applied to the row.
+            self.status = 'accepted'
+            if self.accepted_revision is not None:
+                self.current_revision = self.accepted_revision
+            self.save()
+        else:
+            self.status = 'rejected'
+            self.save()
+            if cidoc is not None and getattr(cidoc, "status", None) != "rejected":
+                cidoc.status = "rejected"
+                cidoc.save(update_fields=["status"])
+
+        # Log the activity
+        Activity.objects.create(
+            entity=self,
+            user=editor,
+            activity_type='rejected',
+            comment=comment
+        )
 
 def create_revision(self, user, form_data):
     """Create a new revision for this entity"""
@@ -196,6 +348,23 @@ class CulturalEntity(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
+    # Real link to the CIDOC MetaData row this wrapper reviews. Replaces the
+    # legacy string back-link (_cidoc_model/_cidoc_id in revision JSON), which
+    # is still written for backward compatibility and used as a fallback.
+    cidoc_content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+',
+        help_text="ContentType of the linked cidoc_data record",
+    )
+    cidoc_object_id = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text="Primary key of the linked cidoc_data record",
+    )
+    cidoc_record = GenericForeignKey('cidoc_content_type', 'cidoc_object_id')
+
     root_entity = models.ForeignKey(
         'self', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='all_forks',
@@ -221,6 +390,7 @@ class CulturalEntity(models.Model):
             models.Index(fields=['created_at']),
             models.Index(fields=['root_entity']),
             models.Index(fields=['parent_entity']),
+            models.Index(fields=['cidoc_content_type', 'cidoc_object_id']),
         ]
         ordering = ['-created_at']
 
@@ -336,6 +506,21 @@ CulturalEntity.add_to_class(
         blank=True,
         related_name='current_for_entity',
         verbose_name="Current Revision"
+    )
+)
+
+# Head of the accepted lineage: the last reviewer-accepted revision. Published
+# content (browse + RDF projection) always corresponds to this revision; staged
+# edits move current_revision but never this pointer until they are accepted.
+CulturalEntity.add_to_class(
+    'accepted_revision',
+    models.ForeignKey(
+        Revision,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='accepted_for_entity',
+        verbose_name="Accepted Revision"
     )
 )
 
@@ -1845,6 +2030,14 @@ class PublicContribution(models.Model):
     review_notes = models.TextField(
         blank=True,
         help_text="Notes from reviewer"
+    )
+    promoted_entity = models.ForeignKey(
+        CulturalEntity,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='promoted_from_public_contributions',
+        help_text="CulturalEntity created when this contribution was promoted "
+                  "into the structured review pipeline",
     )
     
     # Timestamps

@@ -88,7 +88,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # ── Internationalization ─────────────────────────────────────────────────────
 LANGUAGE_CODE = "en"
-TIME_ZONE = "Asia/Kathmandu"
+# Deployment-configurable; defaults to UTC. Set DJANGO_TIME_ZONE per deployment
+# (e.g. "Asia/Kathmandu") to re-home the instance.
+TIME_ZONE = os.environ.get("DJANGO_TIME_ZONE", "UTC").strip() or "UTC"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
@@ -211,7 +213,7 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localho
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Kathmandu'
+CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = True
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes hard limit

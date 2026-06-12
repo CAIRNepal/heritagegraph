@@ -50,7 +50,42 @@ function countItems(field: OntologyField, v: unknown): number {
   return 1;
 }
 
-/** Minimal required-field checks derived from the merged ontology registry. */
+/** Append a concrete example to a message when the field provides one. */
+function withExample(field: OntologyField, base: string): string {
+  return field.example ? `${base} — for example: ${field.example}` : base;
+}
+
+/** Human-readable format check (length / numeric range / pattern) for a
+ *  non-empty value. Returns an actionable message or null. */
+function validateFieldFormat(field: OntologyField, v: unknown): string | null {
+  if (field.type === "number" || field.type === "float") {
+    const n = typeof v === "number" ? v : Number(String(v));
+    if (Number.isNaN(n)) return `${field.label} must be a number`;
+    if (field.minimum != null && n < field.minimum)
+      return `${field.label} must be at least ${field.minimum}`;
+    if (field.maximum != null && n > field.maximum)
+      return `${field.label} must be at most ${field.maximum}`;
+    return null;
+  }
+  if (typeof v === "string") {
+    const s = v.trim();
+    if (field.minLength != null && s.length < field.minLength)
+      return `${field.label} must be at least ${field.minLength} characters`;
+    if (field.maxLength != null && s.length > field.maxLength)
+      return `${field.label} must be at most ${field.maxLength} characters`;
+    if (field.pattern) {
+      try {
+        if (!new RegExp(field.pattern).test(s))
+          return withExample(field, `${field.label} isn't in the expected format`);
+      } catch {
+        /* invalid pattern in registry — skip client-side check */
+      }
+    }
+  }
+  return null;
+}
+
+/** Required + cardinality + format checks derived from the merged ontology registry. */
 export function validateRequiredFields(
   ontologyClass: OntologyClass,
   values: Record<string, unknown>
@@ -61,7 +96,7 @@ export function validateRequiredFields(
     const v = values[field.key];
     const empty = isEmptyForField(field, v);
     if (empty) {
-      errors[field.key] = `${field.label} is required`;
+      errors[field.key] = withExample(field, `${field.label} is required`);
     }
   }
   for (const field of ontologyClass.fields) {
@@ -71,11 +106,24 @@ export function validateRequiredFields(
     if (errors[field.key]) continue;
     const n = countItems(field, values[field.key]);
     if (min !== undefined && n < min) {
-      errors[field.key] = `${field.label} needs at least ${min} value(s)`;
+      errors[field.key] =
+        min === 1
+          ? `${field.label} is required`
+          : `${field.label} needs at least ${min} entries`;
     }
     if (max !== undefined && n > max) {
-      errors[field.key] = `${field.label} accepts at most ${max} value(s)`;
+      errors[field.key] = `${field.label} accepts at most ${max} ${
+        max === 1 ? "entry" : "entries"
+      }`;
     }
+  }
+  // Format checks run only on filled fields without an existing error.
+  for (const field of ontologyClass.fields) {
+    if (errors[field.key]) continue;
+    const v = values[field.key];
+    if (isEmptyForField(field, v)) continue;
+    const msg = validateFieldFormat(field, v);
+    if (msg) errors[field.key] = msg;
   }
   return errors;
 }

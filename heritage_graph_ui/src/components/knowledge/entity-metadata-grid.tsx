@@ -5,6 +5,7 @@ import { ExternalLink, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { OntologyClass, OntologyField } from "@/lib/ontology";
 import { formatFieldValue } from "@/lib/knowledge/entity-view-utils";
+import { ExternalIdentifiers } from "@/components/knowledge/external-identifiers";
 import { cn } from "@/lib/utils";
 
 interface SectionSpec {
@@ -78,7 +79,38 @@ export function EntityMetadataGrid({
     "updated_at",
     "cultural_entity_id",
     "entity_id",
+    // Rendered in their own "Linked data" section below, not as raw JSON rows.
+    "external_identifiers",
+    "external_uri",
+    "externalUri",
   ]);
+
+  const externalIds = record["external_identifiers"] as
+    | Record<string, unknown>
+    | null
+    | undefined;
+  const externalUri = (record["external_uri"] ?? record["externalUri"]) as
+    | string
+    | null
+    | undefined;
+  const hasExternal =
+    (!!externalIds &&
+      typeof externalIds === "object" &&
+      !Array.isArray(externalIds) &&
+      Object.values(externalIds).some((v) => v != null && v !== "")) ||
+    !!externalUri;
+
+  // Type-aware emphasis: signature fields (high ui_weight in the ontology, e.g.
+  // a deity's iconography or a ritual's timespan) surface as a "Highlights" box.
+  const highlightFields = ontologyClass.fields
+    .filter((f) => (f.ui_weight ?? 0) >= 5)
+    .filter((f) => {
+      const v = record[f.key];
+      return v !== null && v !== undefined && v !== "";
+    })
+    .sort((a, b) => (b.ui_weight ?? 0) - (a.ui_weight ?? 0))
+    .slice(0, 4);
+  const hasHighlights = highlightFields.length > 0;
 
   const rows: GridRow[] = [];
 
@@ -113,7 +145,7 @@ export function EntityMetadataGrid({
     }
   }
 
-  if (rows.length === 0) {
+  if (rows.length === 0 && !hasExternal && !hasHighlights) {
     return (
       <p className="rounded-xl border border-dashed border-border/80 bg-muted/20 px-4 py-8 text-center text-sm text-muted-foreground">
         No fields to display.
@@ -128,6 +160,36 @@ export function EntityMetadataGrid({
         className,
       )}
     >
+      {hasHighlights ? (
+        <div className="mb-6 border-b border-border/50 pb-5">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Highlights
+          </h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {highlightFields.map((field) => (
+              <div
+                key={field.key}
+                className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2"
+              >
+                <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                  {field.label}
+                </dt>
+                <dd className="mt-0.5 text-sm font-medium text-foreground">
+                  {renderValue(field, record[field.key], formatFieldValue(record[field.key], field))}
+                </dd>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {hasExternal ? (
+        <div className="mb-6 border-b border-border/50 pb-5">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Linked data identifiers
+          </h3>
+          <ExternalIdentifiers ids={externalIds} externalUri={externalUri} />
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 gap-x-10 gap-y-6 sm:grid-cols-2">
         {rows.map((row, i) => {
           if (row.kind === "section") {

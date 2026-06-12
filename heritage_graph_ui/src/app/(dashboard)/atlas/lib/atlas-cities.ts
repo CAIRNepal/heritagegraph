@@ -2,6 +2,12 @@ import { Cartesian3 } from 'cesium';
 
 import type { AtlasEntity } from '@/types/atlas';
 
+// These curated city presets are the default "home regions" quick-jumps for the
+// seeded Nepal corpus. They do not constrain global use: the globe's home/reset
+// camera is driven by NEXT_PUBLIC_MAP_DEFAULT_* / NEXT_PUBLIC_GLOBE_DEFAULT_HEIGHT
+// (see src/lib/map-config.ts). A deployment with a different corpus can supply its
+// own presets here; treat this list as configurable sample data, not fixed UI.
+
 export interface CityPreset {
   id: string;
   label: string;

@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml + tools/ui-vizmap.yaml
 // Regen:   python3 tools/gen_heritage_viz_config.py  (or: make ontology)
-// Hash:    130355f83bf8eb68
+// Hash:    926fcfd1486d5def
 //
 // Cytoscape schema graph (/graphview → Ontology tab).
 
