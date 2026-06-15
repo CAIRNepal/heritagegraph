@@ -2316,7 +2316,7 @@ the <strong>same accept gate</strong> into the graph; D is a read-only archive.<
 - The store write is deferred to <strong><code>transaction.on_commit</code></strong> — a rolled-back save can
   never leave ghost triples in Oxigraph (deletes capture the IRI before commit).
 - Checks <strong><code>is_published_for_rdf(instance)</code></strong> (see §3).
-- <strong>Published</strong> → projects triples (<code>rdf:type</code>, <code>rdfs:label</code>, slot values, <code>owl:sameAs</code>) into the
+- <strong>Published</strong> → projects triples (<code>rdf:type</code>, <code>rdfs:label</code>, slot values, <code>skos:exactMatch</code>) into the
   Oxigraph <strong>public named graph</strong> via <code>kg_engine</code>.
 - <strong>Not published</strong> → <em>removes</em> the subject from the public graph.</p>
 <p><strong>→ A contribution enters the knowledge graph exactly when a reviewer accepts it.</strong> Until then
