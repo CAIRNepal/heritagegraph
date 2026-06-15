@@ -255,15 +255,18 @@ def reject_contribution(self, editor, comment):
 
 def create_revision(self, user, form_data):
     """Create a new revision for this entity"""
-    latest_rev = self.get_latest_revision()
-    new_revision_number = latest_rev.revision_number + 1 if latest_rev else 1
-    
-    new_revision = Revision.objects.create(
-        entity=self,
-        data=form_data,
-        revision_number=new_revision_number,
-        created_by=user
-    )
+    with transaction.atomic():
+        # Serialize numbering per entity (unique on entity+revision_number).
+        type(self).objects.select_for_update().get(pk=self.pk)
+        latest_rev = self.get_latest_revision()
+        new_revision_number = latest_rev.revision_number + 1 if latest_rev else 1
+
+        new_revision = Revision.objects.create(
+            entity=self,
+            data=form_data,
+            revision_number=new_revision_number,
+            created_by=user
+        )
     
     # Update entity status
     self.status = 'pending_revision'

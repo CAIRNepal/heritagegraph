@@ -4,7 +4,10 @@ from rest_framework import permissions
 class CidocObjectEditPermission(permissions.BasePermission):
     """
     Object-level: only the stored `contributor` username, staff, or superuser
-    may update or delete a CIDOC model instance.
+    may update or delete a CIDOC model instance. Rows promoted from anonymous
+    QR contributions (``contributor="qr:<name>"``) are curatable by any active
+    reviewer — the field visitor has no account, and the promoting reviewer
+    must be able to verify/complete the draft.
     Unauthenticated users are always denied; pair with `IsAuthenticated` for writes.
     """
 
@@ -18,4 +21,7 @@ class CidocObjectEditPermission(permissions.BasePermission):
         contributor = getattr(obj, "contributor", None)
         if contributor in (None, ""):
             return request.user.is_staff
+        if str(contributor).startswith("qr:"):
+            role = getattr(request.user, "reviewer_role", None)
+            return bool(role and role.is_active)
         return contributor == request.user.username

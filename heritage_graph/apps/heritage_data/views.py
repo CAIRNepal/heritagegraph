@@ -3662,6 +3662,16 @@ class PublicContributionViewSet(viewsets.ModelViewSet):
     search_fields = ["entity_name", "content", "contributor_name"]
     ordering_fields = ["created_at", "status"]
     ordering = ["-created_at"]
+    throttle_scope = "public_contribution"
+
+    def get_throttles(self):
+        # Per-IP guard on the anonymous submission endpoint only; reviewer
+        # list/review actions stay unthrottled.
+        if self.action == "create":
+            from rest_framework.throttling import ScopedRateThrottle
+
+            return [ScopedRateThrottle()]
+        return []
 
     def get_serializer_class(self):
         if self.action == "create":

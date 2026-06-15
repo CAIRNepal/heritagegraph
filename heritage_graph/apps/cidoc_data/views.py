@@ -260,6 +260,9 @@ class ContributionFlowMixin:
         revision_data["_cidoc_model"] = instance.__class__.__name__
         revision_data["_cidoc_id"] = instance.pk
 
+        # Serialize revision-number allocation per entity: concurrent edits
+        # otherwise race to the same number and 500 on the unique constraint.
+        CulturalEntity.objects.select_for_update().get(pk=entity.pk)
         latest = entity.get_latest_revision()
         next_number = (latest.revision_number + 1) if latest else 1
         revision = Revision.objects.create(
@@ -294,6 +297,17 @@ class ContributionFlowMixin:
         )
         self._notify_review_resubmission(entity, instance, entity_name)
         return proposed
+
+    def perform_destroy(self, instance):
+        # The staged-edit invariant extends to deletion: published knowledge
+        # must not vanish on a contributor action. Curators withdraw instead
+        # (reject with no pending edit); staff may hard-delete.
+        if is_published_for_rdf(instance) and not self.request.user.is_staff:
+            raise PermissionDenied(
+                "Published records cannot be deleted. Propose an edit, or ask "
+                "a curator to withdraw the record from publication."
+            )
+        instance.delete()
 
     def update(self, request, *args, **kwargs):
         from django.db import transaction

@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
+from apps.cidoc_data.publication_policy import PUBLISHED_STATUSES
 from django.db.models import Q, QuerySet
-
-from apps.cidoc_data.publication_policy import PUBLISHED_STATUSES, WITHHELD_STATUSES
 
 
 def _is_truthy(value: str | None) -> bool:
@@ -45,7 +44,12 @@ def apply_cidoc_list_visibility(queryset: QuerySet, request) -> QuerySet:
     status = (request.query_params.get("status") or "").strip()
     if status:
         qs = queryset.filter(status=status)
-        if status in WITHHELD_STATUSES and not is_staff and username:
+        # Any explicitly requested non-published status is private: owner or
+        # staff only. Anonymous callers get nothing — previously a missing
+        # username skipped the owner filter and leaked every pending row.
+        if status not in PUBLISHED_STATUSES and not is_staff:
+            if not username:
+                return queryset.none()
             qs = qs.filter(contributor=username)
         return qs
 

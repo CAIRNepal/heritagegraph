@@ -162,9 +162,19 @@ class FormToKnowledgeGraphToVisualizationTest(APITestCase):
         )
 
         # ── STAGE 6: RETRACTION (delete propagates out of the graph) ──────────────
-        # Store writes are deferred to transaction.on_commit (Phase 0), so run
-        # the on-commit callbacks like a real committed request would.
+        # Published records cannot be deleted by contributors (staged-edit
+        # invariant): expect 403, then retract as staff. Store writes are
+        # deferred to transaction.on_commit, so run the callbacks like a real
+        # committed request would.
         before = engine.stats().public_triples
+        denied = self.client.delete(f"/api/v1/cidoc/persons/{person_id}/")
+        self.assertEqual(denied.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(Person.objects.filter(pk=person_id).exists())
+
+        staff = User.objects.create_user(
+            username="e2e-staff", email="s@example.com", password="pw", is_staff=True
+        )
+        self.client.force_authenticate(user=staff)
         with self.captureOnCommitCallbacks(execute=True):
             self.client.delete(f"/api/v1/cidoc/persons/{person_id}/")
         self.assertFalse(Person.objects.filter(pk=person_id).exists())

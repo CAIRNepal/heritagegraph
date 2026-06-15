@@ -94,6 +94,46 @@ def cultural_entity_uri(entity_id: Any) -> str:
     return f"{resource_base()}/entity/{entity_id}"
 
 
+def metadata_model_and_pk_for_resource_uri(uri: str | None):
+    """Inverse of resource_uri_for_instance: curated IRI → (MetaData model, pk).
+
+    Returns None when the IRI is foreign, malformed, or does not map to a
+    concrete CIDOC MetaData model — callers must NOT treat that as a deleted
+    row (assertion/cluster/entity IRIs share the curated namespace).
+    """
+    base = curated_resource_uri_prefix()
+    if not uri or not str(uri).startswith(base):
+        return None
+    parts = str(uri)[len(base):].strip("/").split("/")
+    if len(parts) != 2 or not all(parts):
+        return None
+    segment, pk = parts
+
+    from apps.cidoc_data.cidoc_registry_keys import model_for_registry_key
+    from apps.cidoc_data.models import MetaData
+
+    model = model_for_registry_key(segment)
+    if (
+        model is None
+        or not issubclass(model, MetaData)
+        or model._meta.abstract
+    ):
+        return None
+    return model, pk
+
+
+def metadata_instance_for_resource_uri(uri: str | None):
+    """Live CIDOC MetaData instance for a curated IRI, or None."""
+    resolved = metadata_model_and_pk_for_resource_uri(uri)
+    if resolved is None:
+        return None
+    model, pk = resolved
+    try:
+        return model.objects.filter(pk=pk).first()
+    except (ValueError, TypeError):
+        return None
+
+
 @lru_cache(maxsize=1)
 def _slot_uri_by_key() -> dict[str, str]:
     """Map every registry field key → its ontology slot_uri (CURIE).

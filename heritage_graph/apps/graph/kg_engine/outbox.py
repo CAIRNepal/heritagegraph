@@ -133,6 +133,12 @@ def _process_row(engine, row) -> bool:
 
     assert isinstance(engine, KnowledgeGraphEngine)
     if row.operation == row.Operation.REPLACE_SLOT:
+        # The payload was captured when the write FAILED; the entity may have
+        # been rejected/withdrawn since. Re-derive from the system of record
+        # so a retry can never publish stale (now-withheld) content.
+        fresh = _fresh_replace_for_subject(engine, row)
+        if fresh is not None:
+            return fresh
         triples = payload_to_triples(row.payload.get("triples") or [])
         managed = set(row.payload.get("managed") or [])
         graph = row.graph_uri or None
@@ -154,6 +160,59 @@ def _process_row(engine, row) -> bool:
             graph_uri=row.graph_uri or None,
         )
     return False
+
+
+def _fresh_replace_for_subject(engine, row) -> bool | None:
+    """Re-derive a REPLACE_SLOT from current DB state. None → fall back to payload.
+
+    Returns the store-write result when the subject resolves to a CIDOC row:
+    withheld rows are retracted instead of replayed (the curation gate is
+    re-checked at drain time, not at enqueue time).
+    """
+    from apps.graph.kg_engine.uris import metadata_model_and_pk_for_resource_uri
+
+    try:
+        resolved = metadata_model_and_pk_for_resource_uri(row.subject_uri)
+    except Exception:
+        logger.exception("Outbox subject resolution failed for %s", row.subject_uri)
+        return None
+    if resolved is None:
+        # Not a CIDOC MetaData subject (assertion/cluster/foreign IRI):
+        # this re-derivation does not apply; fall back to the stored payload.
+        return None
+    model, pk = resolved
+    try:
+        instance = model.objects.filter(pk=pk).first()
+    except (ValueError, TypeError):
+        instance = None
+    if instance is None:
+        # The row was deleted after the failed write: retract, don't replay.
+        return engine.store.delete_subject(
+            subject_uri=row.subject_uri, graph_uri=row.graph_uri or None
+        )
+
+    from apps.cidoc_data.publication_policy import is_published_for_rdf
+
+    if not is_published_for_rdf(instance):
+        return engine.store.delete_subject(
+            subject_uri=row.subject_uri, graph_uri=row.graph_uri or None
+        )
+
+    from apps.cidoc_data.rdf_entity_projection import tripleset_for_metadata_instance
+    from apps.graph.kg_engine.uris import label_for_instance, resource_uri_for_instance
+
+    triples, managed = tripleset_for_metadata_instance(
+        instance,
+        resource_uri_fn=resource_uri_for_instance,
+        label_fn=label_for_instance,
+    )
+    return engine._store_replace(
+        subject_uri=row.subject_uri,
+        triples=triples,
+        managed_predicate_iris=managed,
+        graph_uri=row.graph_uri or None,
+        skip_shacl=True,
+    )
 
 
 def _outbox_enabled() -> bool:

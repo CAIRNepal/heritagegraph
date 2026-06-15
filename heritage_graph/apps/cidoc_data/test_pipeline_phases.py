@@ -399,6 +399,192 @@ class QRPromotionTest(APITestCase):
         self.assertEqual(contribution.status, "pending")  # decision rolled back
 
 
+class StatusLeakageTest(APITestCase):
+    """Security: explicitly requested withheld statuses must never leak."""
+
+    def setUp(self):
+        owner = User.objects.create_user(
+            username="leak-owner", email="lo@e.com", password="pw"
+        )
+        self.owner = owner
+        Person.objects.create(
+            name="Hidden Pending", contributor="leak-owner", status="pending_review"
+        )
+
+    def test_anonymous_cannot_list_withheld_status(self):
+        resp = self.client.get("/api/v1/cidoc/persons/?status=pending_review")
+        body = resp.json()
+        rows = body.get("results", body) if isinstance(body, dict) else body
+        self.assertEqual(len(rows), 0, rows)
+
+    def test_other_user_cannot_list_withheld_status(self):
+        other = User.objects.create_user(
+            username="leak-other", email="ot@e.com", password="pw"
+        )
+        self.client.force_authenticate(user=other)
+        resp = self.client.get("/api/v1/cidoc/persons/?status=pending_review")
+        body = resp.json()
+        rows = body.get("results", body) if isinstance(body, dict) else body
+        self.assertEqual(len(rows), 0, rows)
+
+    def test_owner_sees_own_withheld_rows(self):
+        self.client.force_authenticate(user=self.owner)
+        resp = self.client.get("/api/v1/cidoc/persons/?status=pending_review")
+        body = resp.json()
+        rows = body.get("results", body) if isinstance(body, dict) else body
+        self.assertEqual(len(rows), 1, rows)
+
+    def test_unknown_status_param_does_not_leak_to_anonymous(self):
+        Person.objects.create(
+            name="Weird Status", contributor="leak-owner", status="embargoed"
+        )
+        resp = self.client.get("/api/v1/cidoc/persons/?status=embargoed")
+        body = resp.json()
+        rows = body.get("results", body) if isinstance(body, dict) else body
+        self.assertEqual(len(rows), 0, rows)
+
+
+@override_settings(
+    OXIGRAPH_STORE_PATH=_TMP_STORE,
+    RDF_SYNC_ENABLED=True,
+    RDF_ENDPOINT_URL="",
+    RDF_QUERY_URL="",
+)
+class OutboxStaleReplayTest(APITestCase):
+    """RDF integrity: a queued retry must re-check the publication gate."""
+
+    def test_drain_does_not_replay_withdrawn_entity(self):
+        from apps.cidoc_data.rdf_entity_projection import _Triple
+        from apps.graph.kg_engine import get_kg_engine
+        from apps.graph.kg_engine.outbox import drain_pending, triples_to_payload
+        from apps.graph.models import RDFSyncOutbox
+
+        engine = get_kg_engine()
+        person = Person.objects.create(name="Outbox Person", status="accepted")
+        uri = resource_uri_for_instance(person)
+
+        # Simulate a write that failed while the entity was accepted: the
+        # stale payload still carries the accepted label.
+        label_pred = "http://www.w3.org/2000/01/rdf-schema#label"
+        stale = [_Triple(uri, label_pred, None, ("Outbox Person", None))]
+        RDFSyncOutbox.objects.create(
+            subject_uri=uri,
+            operation=RDFSyncOutbox.Operation.REPLACE_SLOT,
+            graph_uri="",
+            payload={"managed": [label_pred], "triples": triples_to_payload(stale)},
+            last_error="simulated failure",
+        )
+
+        # The entity is withdrawn before the retry fires.
+        Person.objects.filter(pk=person.pk).update(status="rejected")
+
+        ok, failed = drain_pending()
+        self.assertEqual(failed, 0)
+        labels = {
+            e.get("value")
+            for e in engine.neighborhood(uri)
+            if e.get("predicate", "").endswith("label")
+        }
+        self.assertEqual(labels, set(), "stale replay published withdrawn entity")
+
+
+@override_settings(
+    OXIGRAPH_STORE_PATH=_TMP_STORE,
+    RDF_SYNC_ENABLED=True,
+    RDF_ENDPOINT_URL="",
+    RDF_QUERY_URL="",
+)
+class PublishedDeleteGuardTest(APITestCase):
+    """Published rows cannot be deleted by contributors (staff only)."""
+
+    def test_contributor_delete_published_forbidden(self):
+        user = User.objects.create_user(
+            username="del-user", email="d@e.com", password="pw"
+        )
+        self.client.force_authenticate(user=user)
+        resp = self.client.post(
+            "/api/v1/cidoc/persons/",
+            {"name": "Keep Me", "description": "d"},
+            format="json",
+        )
+        pk = resp.json()["id"]
+        Person.objects.filter(pk=pk).update(status="accepted")
+
+        denied = self.client.delete(f"/api/v1/cidoc/persons/{pk}/")
+        self.assertEqual(denied.status_code, 403)
+        self.assertTrue(Person.objects.filter(pk=pk).exists())
+
+        # Unpublished rows remain deletable by their contributor.
+        Person.objects.filter(pk=pk).update(status="pending_review")
+        with self.captureOnCommitCallbacks(execute=True):
+            ok = self.client.delete(f"/api/v1/cidoc/persons/{pk}/")
+        self.assertEqual(ok.status_code, 204)
+
+
+class PromotedDraftEditPermissionTest(APITestCase):
+    """A non-staff active reviewer can edit qr:-contributed promoted drafts."""
+
+    def test_reviewer_can_edit_promoted_draft(self):
+        from apps.heritage_data.models import ReviewerRole
+
+        reviewer = User.objects.create_user(
+            username="qr-rev", email="qr@e.com", password="pw"
+        )
+        ReviewerRole.objects.create(user=reviewer, role="community_reviewer")
+        person = Person.objects.create(
+            name="Promoted Elder",
+            contributor="qr:Field Visitor",
+            status="pending_review",
+        )
+        self.client.force_authenticate(user=reviewer)
+        resp = self.client.patch(
+            f"/api/v1/cidoc/persons/{person.pk}/",
+            {"description": "Verified on site."},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 200, resp.content)
+
+        # An ordinary contributor still cannot.
+        rando = User.objects.create_user(
+            username="qr-rando", email="rr@e.com", password="pw"
+        )
+        self.client.force_authenticate(user=rando)
+        resp = self.client.patch(
+            f"/api/v1/cidoc/persons/{person.pk}/",
+            {"description": "vandalism"},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, 403)
+
+
+class ProjectionTriplesTest(APITestCase):
+    """rdf_entity_projection emits type + label with managed predicates."""
+
+    def test_tripleset_for_person(self):
+        from apps.cidoc_data.rdf_entity_projection import (
+            tripleset_for_metadata_instance,
+        )
+        from apps.graph.kg_engine.uris import label_for_instance
+
+        person = Person.objects.create(name="Projection Person", status="accepted")
+        triples, managed = tripleset_for_metadata_instance(
+            person,
+            resource_uri_fn=resource_uri_for_instance,
+            label_fn=label_for_instance,
+        )
+        preds = {t.pred for t in triples}
+        self.assertIn("http://www.w3.org/2000/01/rdf-schema#label", preds)
+        self.assertTrue(
+            any(p.endswith("type") for p in preds),
+            f"rdf:type missing from projection: {preds}",
+        )
+        label_values = {
+            t.literal[0] for t in triples if t.pred.endswith("label") and t.literal
+        }
+        self.assertIn("Projection Person", label_values)
+        self.assertIn("http://www.w3.org/2000/01/rdf-schema#label", managed)
+
+
 class LegacySubmissionRetiredTest(APITestCase):
     """Phase 4: the flat-field Submission write path returns 410 Gone."""
 

@@ -79,7 +79,7 @@ Saving the CIDOC row → `post_save` → `rdf_signals.queue_entity_projection`
 - The store write is deferred to **`transaction.on_commit`** — a rolled-back save can
   never leave ghost triples in Oxigraph (deletes capture the IRI before commit).
 - Checks **`is_published_for_rdf(instance)`** (see §3).
-- **Published** → projects triples (`rdf:type`, `rdfs:label`, slot values, `owl:sameAs`) into the
+- **Published** → projects triples (`rdf:type`, `rdfs:label`, slot values, `skos:exactMatch`) into the
   Oxigraph **public named graph** via `kg_engine`.
 - **Not published** → *removes* the subject from the public graph.
 

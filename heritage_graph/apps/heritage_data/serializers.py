@@ -635,7 +635,10 @@ class CulturalEntityCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CulturalEntity
-        fields = ["name", "description", "category", "form_data"]
+        # entity_id and status in the response let clients deep-link to the
+        # created record and reflect the review state without a second fetch.
+        fields = ["entity_id", "name", "description", "category", "status", "form_data"]
+        read_only_fields = ["entity_id", "status"]
 
     def create(self, validated_data):
         form_data = validated_data.pop("form_data")

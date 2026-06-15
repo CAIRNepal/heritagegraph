@@ -388,7 +388,8 @@ def tripleset_owl_sameas_for_metadata_instance(
     instance: Any, *, resource_uri_fn
 ) -> tuple[list[_Triple], set[str]]:
     """
-    owl:sameAs triples from the single active identity cluster's external identifiers.
+    skos:exactMatch triples from the single active identity cluster's external
+    identifiers (see EXTERNAL_MATCH_URI — function name is legacy).
     """
     from apps.cidoc_data import identity_services
     from apps.cidoc_data.models import EntityCluster

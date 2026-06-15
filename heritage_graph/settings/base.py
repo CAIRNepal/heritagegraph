@@ -136,6 +136,8 @@ REST_FRAMEWORK = {
         "token_obtain": "10/min",
         "register": "5/hour",
         "dev_login": "20/hour",
+        # Anonymous QR submissions (AllowAny POST) — per-IP abuse guard.
+        "public_contribution": "20/hour",
     },
 }
 
