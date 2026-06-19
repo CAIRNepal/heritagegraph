@@ -39,6 +39,19 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+CRM = "http://www.cidoc-crm.org/cidoc-crm/"
+HG = "https://w3id.org/heritagegraph/"
+RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+# Map property names → (CRM class IRI, linking predicate IRI, event slug)
+# Used by materialise_event_node to decide which event type to insert.
+EVENT_TRIGGER_MAP: dict[str, tuple[str, str, str]] = {
+    "was_produced_by": (CRM + "E12_Production", CRM + "P108_has_produced", "production"),
+    "enshrined_deity": (CRM + "E90_Symbolic_Object", HG + "enshrined_in_structure", "enshrinement"),
+    "makes_deity_present": (CRM + "E90_Symbolic_Object", HG + "enshrined_in_structure", "consecration"),
+    "commissioned_by": (CRM + "E12_Production", CRM + "P108_has_produced", "production"),
+}
+
 
 def resource_uri_for_instance_from_assertion(assertion: Any) -> str | None:
     inst = django_instance_from_assertion(assertion, as_object=False)
@@ -317,6 +330,76 @@ class KnowledgeGraphEngine:
                 self.store.replace_named_graph_triples(graph_uri=snap, triples=public)
 
         return bool(ok_pub and ok_assert and ok_prov)
+
+    def materialise_event_node(self, assertion: Any) -> bool:
+        """
+        INSERT a CIDOC event blank-node into the project (or assertion) named graph
+        when an assertion's property is an event-triggering predicate.
+
+        Triggered by: was_produced_by, enshrined_deity, makes_deity_present, commissioned_by.
+
+        Returns True if triples were written, False otherwise.
+        """
+        if not self.enabled():
+            return False
+
+        prop = (getattr(assertion, "asserted_property", "") or "").strip()
+        if prop not in EVENT_TRIGGER_MAP:
+            return False
+
+        crm_class_iri, link_pred_iri, event_slug = EVENT_TRIGGER_MAP[prop]
+
+        subj_uri = resource_uri_for_instance_from_assertion(assertion)
+        if not subj_uri:
+            return False
+
+        import uuid as _uuid_mod
+        from apps.graph.kg_engine.assertion_projection import resolve_assertion_named_graph
+        from apps.cidoc_data.rdf_entity_projection import _Triple
+
+        event_id = _uuid_mod.uuid4()
+        event_uri = f"{HG}{event_slug}/{event_id}"
+
+        triples: list[_Triple] = [
+            _Triple(event_uri, RDF_TYPE, crm_class_iri, None),
+            _Triple(event_uri, link_pred_iri, subj_uri, None),
+        ]
+
+        # Link the object entity (e.g. the deity) when present.
+        obj_uri = resource_uri_for_object_assertion(assertion)
+        if obj_uri:
+            triples.append(_Triple(event_uri, HG + "enshrined_deity", obj_uri, None))
+
+        # Attach TimeSpan when calendar fields are present.
+        from apps.cidoc_data.timespan import (
+            timespan_from_assertion,
+            timespan_uri_for_assertion,
+        )
+
+        ts = timespan_from_assertion(assertion)
+        if ts is not None:
+            ts_uri = timespan_uri_for_assertion(assertion.pk)
+            crm_p4 = CRM + "P4_has_time-span"
+            triples.append(_Triple(event_uri, crm_p4, ts_uri, None))
+            for s, p, o_uri, lit in ts.to_rdf_triples(timespan_uri=ts_uri):
+                triples.append(_Triple(s, p, o_uri, lit))  # type: ignore[arg-type]
+
+        target_graph = resolve_assertion_named_graph(assertion)
+        if not target_graph:
+            return False
+
+        ok = self.store.replace_named_graph_triples(
+            graph_uri=target_graph,
+            triples=triples,
+        )
+        if ok:
+            logger.info(
+                "materialise_event_node: inserted %s node %s for assertion %s",
+                event_slug,
+                event_uri,
+                assertion.pk,
+            )
+        return ok
 
     def unpublish_assertion(self, assertion: Any) -> bool:
         """Remove assertion triples from all graphs when not accepted."""

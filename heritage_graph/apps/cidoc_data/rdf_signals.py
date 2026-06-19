@@ -217,11 +217,28 @@ def schedule_identity_linked_rdf_refresh(
     transaction.on_commit(_run)
 
 
+def _maybe_materialise_event_node(instance: Any) -> None:
+    """Fire event node INSERT when the assertion property is event-triggering."""
+    from apps.graph.kg_engine.engine import EVENT_TRIGGER_MAP, get_kg_engine
+
+    prop = (instance.asserted_property or "").strip()
+    if prop not in EVENT_TRIGGER_MAP:
+        return
+
+    def _run() -> None:
+        get_kg_engine().materialise_event_node(instance)
+
+    transaction.on_commit(_run)
+
+
 def _on_assertion_saved(sender, instance, **kwargs: object) -> None:
     queue_relationship_assertion_projection(instance)
 
     if not rdf_sync_enabled():
         return
+
+    _maybe_materialise_event_node(instance)
+
     if _is_identity_same_referent_assertion(instance):
         prior = HERITAGE_ASSERTION_PRIOR_ENTITY_CLUSTER_ID.pop(instance.pk, None)
         affected: set[uuid.UUID] = set()
