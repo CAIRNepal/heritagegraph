@@ -4772,3 +4772,131 @@ class ProjectCommentViewSet(_ProjectScopedViewSet):
             target_kind="project",
             target_id=project.id,
         )
+
+
+# ── MergeRequest ViewSet ───────────────────────────────────────────────────────
+
+class MergeRequestViewSet(viewsets.ModelViewSet):
+    """
+    CRUD + lifecycle actions for MergeRequests.
+
+    Routes:
+      POST   /api/merge-requests/                   — open a MR (runs pre-flight)
+      GET    /api/merge-requests/{id}/              — retrieve
+      GET    /api/merge-requests/?project=<slug>    — list for project
+      POST   /api/merge-requests/{id}/approve/      — reviewer approves
+      POST   /api/merge-requests/{id}/reject/       — reviewer rejects
+      POST   /api/merge-requests/{id}/request-changes/
+      GET    /api/merge-requests/{id}/rdf-diff/     — live diff view
+    """
+
+    from .serializers import MergeRequestSerializer, MergeRequestCreateSerializer
+    from .models import MergeRequest as _MRModel
+    from .permissions import CannotApproveOwnMergeRequest
+
+    queryset = _MRModel.objects.select_related("project", "opened_by", "reviewed_by").all()
+
+    def get_serializer_class(self):
+        from .serializers import MergeRequestCreateSerializer, MergeRequestSerializer
+        if self.action == "create":
+            return MergeRequestCreateSerializer
+        return MergeRequestSerializer
+
+    def get_permissions(self):
+        from rest_framework.permissions import IsAuthenticated
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        from apps.graph.conflict_diff import compute_diff
+        from apps.graph.shacl_validate import check_pid_uniqueness, validate_project_graph
+        from rest_framework.exceptions import ValidationError as DRFValidationError
+
+        project = serializer.validated_data["project"]
+
+        # Pre-flight: SHACL + PID uniqueness
+        project_id = str(project.pk)
+        shacl_report = validate_project_graph(project_id)
+        if not shacl_report.conforms:
+            raise DRFValidationError(
+                {
+                    "shacl_violations": shacl_report.as_dict()["violations"],
+                    "detail": "SHACL validation failed. Resolve violations before opening a merge request.",
+                },
+                code="shacl_violation",
+            )
+
+        pid_collisions = check_pid_uniqueness(project_id)
+        diff = compute_diff(project_id)
+
+        serializer.save(
+            opened_by=self.request.user,
+            shacl_report=shacl_report.as_dict(),
+            conflict_diff=diff.as_dict(),
+            pid_collisions=pid_collisions,
+        )
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request, pk=None):
+        from .models import MergeRequest as _MR
+        from .permissions import CannotApproveOwnMergeRequest
+        from apps.graph.merge import execute_merge
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        mr = self.get_object()
+        if request.user == mr.opened_by:
+            raise DRFPermDenied("You cannot approve your own merge request.")
+        if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
+            return Response({"detail": f"Cannot approve from status '{mr.status}'."}, status=400)
+
+        reviewer_note = request.data.get("reviewer_note", "")
+        mr.status = _MR.STATUS_APPROVED
+        mr.reviewed_by = request.user
+        mr.reviewer_note = reviewer_note
+        mr.save(update_fields=["status", "reviewed_by", "reviewer_note", "updated_at"])
+
+        result = execute_merge(str(mr.pk))
+        from .serializers import MergeRequestSerializer
+        mr.refresh_from_db()
+        return Response(MergeRequestSerializer(mr, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        from .models import MergeRequest as _MR
+
+        mr = self.get_object()
+        if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
+            return Response({"detail": f"Cannot reject from status '{mr.status}'."}, status=400)
+
+        mr.status = _MR.STATUS_REJECTED
+        mr.reviewed_by = request.user
+        mr.reviewer_note = request.data.get("reviewer_note", "")
+        mr.save(update_fields=["status", "reviewed_by", "reviewer_note", "updated_at"])
+        from .serializers import MergeRequestSerializer
+        return Response(MergeRequestSerializer(mr, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], url_path="request-changes")
+    def request_changes(self, request, pk=None):
+        from .models import MergeRequest as _MR
+
+        mr = self.get_object()
+        if mr.status != _MR.STATUS_PENDING:
+            return Response({"detail": "Can only request changes on a pending MR."}, status=400)
+
+        mr.status = _MR.STATUS_CHANGES_REQUESTED
+        mr.reviewed_by = request.user
+        mr.reviewer_note = request.data.get("reviewer_note", "")
+        mr.save(update_fields=["status", "reviewed_by", "reviewer_note", "updated_at"])
+        from .serializers import MergeRequestSerializer
+        return Response(MergeRequestSerializer(mr, context={"request": request}).data)
+
+    @action(detail=True, methods=["get"], url_path="rdf-diff")
+    def rdf_diff(self, request, pk=None):
+        """Return live RDF diff triples for the reviewer diff view."""
+        mr = self.get_object()
+        project_id = str(mr.project_id)
+        try:
+            from apps.graph.conflict_diff import compute_diff
+            diff = compute_diff(project_id)
+            return Response(diff.as_dict())
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=500)

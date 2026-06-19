@@ -61,6 +61,9 @@ router.register(r"activity-logs", views.ActivityLogViewSet, basename="activity-l
 # Project-based contribution (final_plan.md §3)
 router.register(r"projects", views.ProjectViewSet, basename="project")
 
+# Merge requests (Phase 7)
+router.register(r"merge-requests", views.MergeRequestViewSet, basename="mergerequest")
+
 urlpatterns = [
     # Canonical API prefix for this app (kept for backwards compatibility)
     path("api/", include(router.urls)),
