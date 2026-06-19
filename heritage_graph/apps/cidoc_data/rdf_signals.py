@@ -231,6 +231,26 @@ def _maybe_materialise_event_node(instance: Any) -> None:
     transaction.on_commit(_run)
 
 
+def _maybe_dispatch_reconciliation(instance: Any) -> None:
+    """Enqueue Getty AAT / Wikidata reconciliation for literal slot assertions."""
+    from apps.cidoc_data.assertion_validation import is_relationship_property
+
+    prop = (instance.asserted_property or "").strip()
+    value = (instance.asserted_value or "").strip()
+    if not prop or not value or is_relationship_property(prop):
+        return
+
+    def _run() -> None:
+        try:
+            from apps.cidoc_data.tasks import reconcile_assertion_async
+
+            reconcile_assertion_async.delay(str(instance.pk))
+        except Exception as exc:
+            logger.warning("Could not enqueue reconciliation for %s: %s", instance.pk, exc)
+
+    transaction.on_commit(_run)
+
+
 def _on_assertion_saved(sender, instance, **kwargs: object) -> None:
     queue_relationship_assertion_projection(instance)
 
@@ -238,6 +258,7 @@ def _on_assertion_saved(sender, instance, **kwargs: object) -> None:
         return
 
     _maybe_materialise_event_node(instance)
+    _maybe_dispatch_reconciliation(instance)
 
     if _is_identity_same_referent_assertion(instance):
         prior = HERITAGE_ASSERTION_PRIOR_ENTITY_CLUSTER_ID.pop(instance.pk, None)
