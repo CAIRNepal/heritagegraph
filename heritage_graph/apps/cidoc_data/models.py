@@ -857,11 +857,49 @@ RECONCILIATION_STATUS_CHOICES = [
 
 SOURCE_CATEGORY_CHOICES = [
     ("archival", "Archival Record"),
-    ("field_survey", "Field Survey"),
-    ("oral_history", "Oral History"),
+    ("field_survey", "Field Survey Dataset"),
+    ("oral_history", "Oral History Recording"),
+    ("image", "Image Dataset"),
+    ("pdf", "PDF Document"),
     ("published", "Published Source"),
     ("inscription", "Inscription"),
     ("web", "Web Resource"),
+]
+
+# Map source_type → HeritageGraph ontology class IRI suffix
+SOURCE_TYPE_HG_CLASS = {
+    "field_survey": "FieldSurveyDataset",
+    "oral_history": "OralHistoryRecording",
+    "archival": "ArchivalRecord",
+    "image": "ImageDataset",
+    "pdf": "PDFDocument",
+    "published": "PublishedSource",
+    "inscription": "Inscription",
+    "web": "WebResource",
+}
+
+ACCESS_TIER_CHOICES = [
+    ("public", "Public — no restrictions"),
+    ("org_only", "Organization only"),
+    ("community_only", "Community only"),
+    ("sensitive_indigenous", "Sensitive / indigenous knowledge"),
+]
+
+DATACITE_RESOURCE_TYPE_CHOICES = [
+    ("Dataset", "Dataset"),
+    ("Image", "Image"),
+    ("Sound", "Sound"),
+    ("Text", "Text"),
+    ("PhysicalObject", "Physical Object"),
+    ("Collection", "Collection"),
+    ("Software", "Software"),
+]
+
+INGEST_STATUS_CHOICES = [
+    ("pending", "Pending"),
+    ("processing", "Processing"),
+    ("ready", "Ready"),
+    ("failed", "Failed"),
 ]
 
 
@@ -899,20 +937,108 @@ class DataSource(models.Model):
         blank=True,
         help_text="IIIF Presentation 3 manifest URL (CRMdig/Digital resource)",
     )
+    iiif_manifest = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Inline IIIF Presentation v3 manifest (populated by Celery after upload)",
+    )
     digitization_activity = models.CharField(
         max_length=300,
         blank=True,
         help_text="Label for digitization or scanning activity",
     )
+
+    # File upload
+    uploaded_file = models.FileField(
+        upload_to="sources/%Y/%m/",
+        null=True,
+        blank=True,
+        help_text="Uploaded file (image, PDF, audio, CSV, etc.)",
+    )
+    ingest_status = models.CharField(
+        max_length=20,
+        choices=INGEST_STATUS_CHOICES,
+        default="pending",
+        help_text="Processing status of the uploaded file",
+    )
+    contributed_by = models.ForeignKey(
+        "auth.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="contributed_data_sources",
+        help_text="User who uploaded this source",
+    )
+
+    # DataCite metadata (propagates to DCAT on merge)
+    datacite_identifier = models.CharField(
+        max_length=300,
+        blank=True,
+        help_text="DataCite DOI or persistent identifier (e.g. 10.5281/zenodo.xxx)",
+    )
+    datacite_creator = models.CharField(
+        max_length=300,
+        blank=True,
+        help_text="DataCite creator / author name",
+    )
+    datacite_publisher = models.CharField(
+        max_length=200,
+        blank=True,
+        default="CAIR-Nepal",
+        help_text="DataCite publisher organization",
+    )
+    datacite_publication_year = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="DataCite publication year",
+    )
+    datacite_resource_type = models.CharField(
+        max_length=30,
+        choices=DATACITE_RESOURCE_TYPE_CHOICES,
+        default="Dataset",
+        help_text="DataCite resource type (Dataset, Image, Sound, Text, …)",
+    )
+
+    # CARE / TK labels
+    access_tier = models.CharField(
+        max_length=30,
+        choices=ACCESS_TIER_CHOICES,
+        default="public",
+        help_text="Access control tier; sensitive_indigenous is excluded from public SPARQL",
+    )
+    care_labels = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="TK Label URIs (https://localcontexts.org/labels/…)",
+    )
+
+    # Persistent identifier (minted on creation)
+    pid = models.URLField(
+        max_length=300,
+        blank=True,
+        help_text="HeritageGraph PID: {RDF_RESOURCE_BASE_URI}/data_source/{uuid}",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Data Source"
         verbose_name_plural = "Data Sources"
+        indexes = [
+            models.Index(fields=["source_type"]),
+            models.Index(fields=["access_tier"]),
+            models.Index(fields=["ingest_status"]),
+        ]
 
     def __str__(self):
         return self.name
+
+    @property
+    def hg_class(self) -> str:
+        """HeritageGraph ontology class name for this source type."""
+        return SOURCE_TYPE_HG_CLASS.get(self.source_type, "DataSource")
 
 
 class RelationshipPredicate(models.Model):
@@ -1186,6 +1312,27 @@ class HeritageAssertion(models.Model):
         help_text="LLM agent identifier that produced this assertion (e.g. 'ollama/llama3.1:70b')",
     )
 
+    # Project scoping — when set, assertion is isolated to the project named graph
+    project = models.ForeignKey(
+        "heritage_data.Project",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assertions",
+        help_text=(
+            "Authoring project scope. When set, triples write to the project named "
+            "graph (hg:project/{uuid}/graph) rather than the main PUBLIC graph."
+        ),
+    )
+    named_graph = models.URLField(
+        max_length=300,
+        blank=True,
+        help_text=(
+            "Override named graph IRI. Auto-derived from project FK if blank; "
+            "set explicitly for assertions that belong to a specific sub-graph."
+        ),
+    )
+
     # Moderation
     reconciliation_status = models.CharField(
         max_length=20,
@@ -1200,6 +1347,31 @@ class HeritageAssertion(models.Model):
         blank=True,
         related_name="superseded_by",
         help_text="Previous assertion this one replaces",
+    )
+
+    # Multi-calendar TimeSpan fields (Phase 3)
+    calendar_system = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=[
+            ("gregorian", "Gregorian"),
+            ("bikram_sambat", "Bikram Sambat"),
+            ("nepal_sambat", "Nepal Sambat"),
+        ],
+        default="gregorian",
+        help_text="Calendar system for date-type assertions (Gregorian, BS, NS)",
+    )
+    date_precision = models.CharField(
+        max_length=20,
+        blank=True,
+        choices=[
+            ("exact_year", "Exact Year"),
+            ("circa", "Circa"),
+            ("decade", "Decade"),
+            ("century", "Century"),
+        ],
+        default="exact_year",
+        help_text="Temporal precision for date-type assertions",
     )
 
     # Timestamps
