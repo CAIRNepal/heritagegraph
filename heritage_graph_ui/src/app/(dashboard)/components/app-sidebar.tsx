@@ -47,6 +47,7 @@ import {
   IconFolders,
   IconBriefcase,
   IconClipboardList,
+  IconDatabase,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -263,6 +264,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     icon: IconFolders,
                   },
                   {
+                    title: 'Data Sources',
+                    url: '/contribute/data-source',
+                    icon: IconDatabase,
+                  },
+                  {
                     title: 'Entity proposal',
                     url: '/contribute/entity-proposal',
                     icon: IconFingerprint,
@@ -306,6 +312,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               icon: IconBriefcase,
             },
             { title: t('reviewWorkspace'), url: '/review', icon: IconListCheck },
+            { title: 'Merge Requests', url: '/review/merge-requests', icon: IconGitFork },
           ] : []),
           ...(isModerator
             ? [{ title: 'KG proposals', url: '/curation/kg-proposals', icon: IconLink }]
