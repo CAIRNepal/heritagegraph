@@ -43,6 +43,7 @@ import {
   IconListCheck,
   IconFingerprint,
   IconLink,
+  IconAlertTriangle,
   // IconBrain, // re-import when the sidebar AI Pipeline entry is restored below
   IconFolders,
   IconBriefcase,
@@ -316,6 +317,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ] : []),
           ...(isModerator
             ? [{ title: 'KG proposals', url: '/curation/kg-proposals', icon: IconLink }]
+            : []),
+          ...(isReviewer
+            ? [{ title: 'Stale Links', url: '/curation/stale-links', icon: IconAlertTriangle }]
             : []),
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },

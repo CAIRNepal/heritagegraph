@@ -2602,3 +2602,105 @@ class ProjectActivity(models.Model):
 
     def __str__(self):
         return f"{self.action} on project {self.project_id} by {self.actor_id}"
+
+
+class ReconciledLink(models.Model):
+    """Tracks skos:exactMatch / skos:closeMatch links to external authority files."""
+
+    MATCH_EXACT = "exact"
+    MATCH_CLOSE = "close"
+    MATCH_BROAD = "broad"
+    MATCH_CHOICES = [
+        (MATCH_EXACT, "skos:exactMatch"),
+        (MATCH_CLOSE, "skos:closeMatch"),
+        (MATCH_BROAD, "skos:broadMatch"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    entity_uri = models.URLField(max_length=1024, db_index=True)
+    match_type = models.CharField(max_length=10, choices=MATCH_CHOICES, default=MATCH_EXACT)
+    target_uri = models.URLField(max_length=1024)
+    target_label = models.CharField(max_length=512, blank=True)
+    authority = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="e.g. aat, wd, tgn, lcsh",
+    )
+    is_stale = models.BooleanField(default=False, db_index=True)
+    last_verified = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "reconciled_link"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["entity_uri", "target_uri", "match_type"],
+                name="unique_entity_target_match",
+            )
+        ]
+        indexes = [
+            models.Index(fields=["entity_uri"], name="reconciled_link_entity_uri_idx"),
+            models.Index(fields=["is_stale"], name="reconciled_link_is_stale_idx"),
+            models.Index(fields=["authority"], name="reconciled_link_authority_idx"),
+        ]
+
+    def __str__(self):
+        return f"{self.entity_uri} → {self.target_uri} ({self.match_type})"
+
+
+class CuratorAlert(models.Model):
+    """Surfaced by the re-reconciliation beat task when a linked authority record changes."""
+
+    ISSUE_STALE = "stale_link"
+    ISSUE_LABEL_DRIFT = "label_drift"
+    ISSUE_SUPERSESSION = "supersession"
+    ISSUE_CHOICES = [
+        (ISSUE_STALE, "Stale Link (404 / merged)"),
+        (ISSUE_LABEL_DRIFT, "Label Drift"),
+        (ISSUE_SUPERSESSION, "Assertion Superseded"),
+    ]
+
+    STATUS_OPEN = "open"
+    STATUS_RESOLVED = "resolved"
+    STATUS_IGNORED = "ignored"
+    STATUS_CHOICES = [
+        (STATUS_OPEN, "Open"),
+        (STATUS_RESOLVED, "Resolved"),
+        (STATUS_IGNORED, "Ignored"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reconciled_link = models.ForeignKey(
+        ReconciledLink,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="alerts",
+    )
+    issue_type = models.CharField(max_length=20, choices=ISSUE_CHOICES)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    detail = models.TextField(blank=True, help_text="Human-readable description of the issue")
+    detected_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="resolved_curator_alerts",
+    )
+    suggested_replacement_uri = models.URLField(max_length=1024, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "curator_alert"
+        ordering = ["-detected_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+            models.Index(fields=["issue_type"]),
+        ]
+
+    def __str__(self):
+        return f"[{self.issue_type}] {self.status} — {self.detail[:60]}"

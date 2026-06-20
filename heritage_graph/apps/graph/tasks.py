@@ -17,6 +17,85 @@ from celery import shared_task
 logger = logging.getLogger(__name__)
 
 
+# ── Re-reconciliation beat task ────────────────────────────────────────────────
+
+@shared_task(bind=True, max_retries=1, default_retry_delay=300)
+def rereconcile_all_entities(self) -> dict:
+    """
+    Celery beat task (Sunday 02:00 UTC): verify all active skos:exactMatch links
+    against their authority sources. Marks stale links and creates CuratorAlerts.
+
+    Schedule in settings: CELERY_BEAT_SCHEDULE = {
+        "rereconcile": {
+            "task": "apps.graph.tasks.rereconcile_all_entities",
+            "schedule": crontab(hour=2, minute=0, day_of_week=0),
+        }
+    }
+    """
+    try:
+        import requests as _requests
+        from django.utils import timezone
+
+        from apps.heritage_data.models import CuratorAlert, ReconciledLink
+
+        links = ReconciledLink.objects.filter(is_stale=False)
+        stale_count = 0
+        drift_count = 0
+        checked = 0
+
+        for link in links.iterator():
+            checked += 1
+            try:
+                resp = _requests.get(link.target_uri, timeout=10, allow_redirects=True)
+                if resp.status_code == 404:
+                    link.is_stale = True
+                    link.last_verified = timezone.now()
+                    link.save(update_fields=["is_stale", "last_verified"])
+                    CuratorAlert.objects.get_or_create(
+                        reconciled_link=link,
+                        issue_type=CuratorAlert.ISSUE_STALE,
+                        status=CuratorAlert.STATUS_OPEN,
+                        defaults={"detail": f"Target returned HTTP 404: {link.target_uri}"},
+                    )
+                    stale_count += 1
+                elif resp.status_code in (301, 302, 308):
+                    new_location = resp.headers.get("Location", "")
+                    link.is_stale = True
+                    link.last_verified = timezone.now()
+                    link.save(update_fields=["is_stale", "last_verified"])
+                    CuratorAlert.objects.get_or_create(
+                        reconciled_link=link,
+                        issue_type=CuratorAlert.ISSUE_STALE,
+                        status=CuratorAlert.STATUS_OPEN,
+                        defaults={
+                            "detail": f"Target redirected to {new_location}",
+                            "suggested_replacement_uri": new_location,
+                        },
+                    )
+                    stale_count += 1
+                else:
+                    link.last_verified = timezone.now()
+                    link.save(update_fields=["last_verified"])
+            except Exception as exc:
+                logger.warning("rereconcile: could not check %s: %s", link.target_uri, exc)
+
+        logger.info(
+            "rereconcile_all_entities: checked=%d stale=%d drift=%d",
+            checked,
+            stale_count,
+            drift_count,
+        )
+        return {
+            "status": "ok",
+            "checked": checked,
+            "stale": stale_count,
+            "drift": drift_count,
+        }
+    except Exception as exc:
+        logger.exception("rereconcile_all_entities failed")
+        raise self.retry(exc=exc)
+
+
 # ── Nanopublication export ─────────────────────────────────────────────────────
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=30)

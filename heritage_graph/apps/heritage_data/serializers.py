@@ -2557,3 +2557,58 @@ class MergeRequestCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = MergeRequest
         fields = ["project", "summary", "justification", "scope"]
+
+
+from .models import ReconciledLink, CuratorAlert  # noqa: E402
+
+
+class ReconciledLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReconciledLink
+        fields = [
+            "id",
+            "entity_uri",
+            "match_type",
+            "target_uri",
+            "target_label",
+            "authority",
+            "is_stale",
+            "last_verified",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "last_verified"]
+
+
+class CuratorAlertSerializer(serializers.ModelSerializer):
+    reconciled_link_detail = ReconciledLinkSerializer(source="reconciled_link", read_only=True)
+    resolved_by_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CuratorAlert
+        fields = [
+            "id",
+            "reconciled_link",
+            "reconciled_link_detail",
+            "issue_type",
+            "status",
+            "detail",
+            "detected_at",
+            "resolved_at",
+            "resolved_by",
+            "resolved_by_username",
+            "suggested_replacement_uri",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "detected_at",
+            "resolved_at",
+            "resolved_by",
+            "resolved_by_username",
+            "reconciled_link_detail",
+            "created_at",
+        ]
+
+    def get_resolved_by_username(self, obj):
+        return obj.resolved_by.username if obj.resolved_by else None

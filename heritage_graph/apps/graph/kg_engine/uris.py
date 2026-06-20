@@ -94,6 +94,16 @@ def cultural_entity_uri(entity_id: Any) -> str:
     return f"{resource_base()}/entity/{entity_id}"
 
 
+def project_resource_uri(project_id: Any) -> str:
+    """PID for a Project: {resource_base}/project/{uuid}."""
+    return f"{resource_base()}/project/{project_id}"
+
+
+def project_graph_uri(project_id: Any) -> str:
+    """Named graph IRI for a project's draft assertions."""
+    return GraphPartition.PROJECT.uri(suffix=str(project_id)) or ""
+
+
 def metadata_model_and_pk_for_resource_uri(uri: str | None):
     """Inverse of resource_uri_for_instance: curated IRI → (MetaData model, pk).
 

@@ -21,6 +21,8 @@ class GraphPartition(str, Enum):
     # External bulk imports (e.g. Yale LUX) — link via skos:exactMatch, never merge into PUBLIC.
     IMPORTED = "imported"
     ALIGNMENT = "alignment"
+    # Per-project draft named graphs — isolate assertions until merge
+    PROJECT = "project"
 
     def uri(self, *, suffix: str = "") -> str | None:
         """Resolve the named graph IRI for this partition."""
@@ -129,5 +131,18 @@ class GraphPartition(str, Enum):
             if not suffix:
                 return base
             return f"{base}/{suffix}"
+
+        if self is GraphPartition.PROJECT:
+            # Each project writes to its own named graph: .../project/{uuid}/graph
+            base = str(
+                getattr(
+                    settings,
+                    "RDF_RESOURCE_BASE_URI",
+                    "https://w3id.org/heritagegraph",
+                )
+            ).rstrip("/")
+            if not suffix:
+                return f"{base}/project"
+            return f"{base}/project/{suffix}/graph"
 
         return None

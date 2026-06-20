@@ -88,6 +88,34 @@ def nanopub_trig_for_assertion(assertion: Any) -> str:
     return "\n".join(lines)
 
 
+def nanopub_retraction_trig(old_assertion: Any, new_assertion: Any) -> str:
+    """Retraction nanopub: new pubinfo graph carries npx:supersedes pointer to old nanopub URI."""
+    aid_old = old_assertion.pk
+    aid_new = new_assertion.pk
+    base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
+    np_old = assertion_uri(aid_old)
+    np_new = assertion_uri(aid_new)
+    pub_graph = f"{base}/graph/pubinfo/{aid_new}"
+
+    lines = [
+        "@prefix np: <http://www.nanopub.org/nschema#> .",
+        "@prefix npx: <http://purl.org/nanopub/x/> .",
+        "@prefix prov: <http://www.w3.org/ns/prov#> .",
+        "@prefix dct: <http://purl.org/dc/terms/> .",
+        "@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .",
+        "",
+        f"<{np_new}> a np:Nanopublication ;",
+        f"  np:hasPublicationInfoGraph <{pub_graph}> .",
+        "",
+        f"<{pub_graph}> {{",
+        f'  <{pub_graph}> dct:creator "HeritageGraph" ;',
+        f"  npx:supersedes <{np_old}> .",
+        "}",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def export_nanopubs(output_dir: Path) -> int:
     from apps.cidoc_data.models import HeritageAssertion
 

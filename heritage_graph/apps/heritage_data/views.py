@@ -4900,3 +4900,169 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
             return Response(diff.as_dict())
         except Exception as exc:
             return Response({"detail": str(exc)}, status=500)
+
+
+# ── Reconciled Links & Curator Alerts ─────────────────────────────────────────
+
+class ReconciledLinkViewSet(viewsets.ModelViewSet):
+    """CRUD for skos:exactMatch / closeMatch / broadMatch links to authority files."""
+
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["authority", "is_stale", "match_type"]
+    search_fields = ["entity_uri", "target_uri", "target_label"]
+    ordering_fields = ["created_at", "last_verified"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        from apps.heritage_data.models import ReconciledLink
+        return ReconciledLink.objects.all()
+
+    def get_serializer_class(self):
+        from apps.heritage_data.serializers import ReconciledLinkSerializer
+        return ReconciledLinkSerializer
+
+    @action(detail=True, methods=["post"], url_path="mark-stale")
+    def mark_stale(self, request, pk=None):
+        link = self.get_object()
+        link.is_stale = True
+        link.save(update_fields=["is_stale", "updated_at"])
+        from apps.heritage_data.serializers import ReconciledLinkSerializer
+        return Response(ReconciledLinkSerializer(link).data)
+
+    @action(detail=True, methods=["post"], url_path="update-target")
+    def update_target(self, request, pk=None):
+        link = self.get_object()
+        new_uri = request.data.get("target_uri", "").strip()
+        new_label = request.data.get("target_label", link.target_label)
+        if not new_uri:
+            return Response({"detail": "target_uri is required."}, status=400)
+        link.target_uri = new_uri
+        link.target_label = new_label
+        link.is_stale = False
+        link.save(update_fields=["target_uri", "target_label", "is_stale", "updated_at"])
+        from apps.heritage_data.serializers import ReconciledLinkSerializer
+        return Response(ReconciledLinkSerializer(link).data)
+
+
+class CuratorAlertViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read + dismiss/resolve curator alerts created by the re-reconciliation beat task."""
+
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ["status", "issue_type"]
+    ordering_fields = ["detected_at"]
+    ordering = ["-detected_at"]
+
+    def get_queryset(self):
+        from apps.heritage_data.models import CuratorAlert
+        return CuratorAlert.objects.select_related("reconciled_link", "resolved_by").all()
+
+    def get_serializer_class(self):
+        from apps.heritage_data.serializers import CuratorAlertSerializer
+        return CuratorAlertSerializer
+
+    @action(detail=True, methods=["post"])
+    def resolve(self, request, pk=None):
+        from django.utils import timezone
+        from apps.heritage_data.models import CuratorAlert as _CA
+        alert = self.get_object()
+        alert.status = _CA.STATUS_RESOLVED
+        alert.resolved_by = request.user
+        alert.resolved_at = timezone.now()
+        alert.save(update_fields=["status", "resolved_by", "resolved_at"])
+        from apps.heritage_data.serializers import CuratorAlertSerializer
+        return Response(CuratorAlertSerializer(alert).data)
+
+    @action(detail=True, methods=["post"])
+    def ignore(self, request, pk=None):
+        from apps.heritage_data.models import CuratorAlert as _CA
+        alert = self.get_object()
+        alert.status = _CA.STATUS_IGNORED
+        alert.save(update_fields=["status"])
+        from apps.heritage_data.serializers import CuratorAlertSerializer
+        return Response(CuratorAlertSerializer(alert).data)
+
+
+# ── Project Assertion History ──────────────────────────────────────────────────
+
+class ProjectAssertionHistoryViewSet(viewsets.ViewSet):
+    """
+    Returns HeritageAssertions for a project slug ordered by created_at desc.
+    Used by the /contribute/projects/[slug]/history page.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        from apps.cidoc_data.models import HeritageAssertion
+        from apps.heritage_data.models import Project
+
+        slug = request.query_params.get("project_slug", "").strip()
+        if not slug:
+            return Response({"detail": "project_slug query param is required."}, status=400)
+
+        try:
+            project = Project.objects.get(slug=slug)
+        except Project.DoesNotExist:
+            raise NotFound("Project not found.")
+
+        if project.owner != request.user and not request.user.is_staff:
+            from apps.heritage_data.models import ProjectMembership
+            if not ProjectMembership.objects.filter(project=project, member=request.user).exists():
+                raise PermissionDenied("You are not a member of this project.")
+
+        qs = HeritageAssertion.objects.filter(
+            project_id=project.pk,
+        ).select_related(
+            "supersedes",
+        ).order_by("-created_at")
+
+        entity_type = request.query_params.get("entity_type", "").strip()
+        if entity_type:
+            from django.contrib.contenttypes.models import ContentType
+            try:
+                ct = ContentType.objects.get(model=entity_type)
+                qs = qs.filter(content_type=ct)
+            except ContentType.DoesNotExist:
+                pass
+
+        page_size = 20
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+        except (ValueError, TypeError):
+            page = 1
+        offset = (page - 1) * page_size
+        total = qs.count()
+        rows = qs[offset: offset + page_size]
+
+        def _serialize(a):
+            supersedes_info = None
+            if a.supersedes_id:
+                s = a.supersedes
+                supersedes_info = {
+                    "id": str(s.pk),
+                    "asserted_property": s.asserted_property,
+                    "asserted_value": s.asserted_value,
+                    "reconciliation_status": s.reconciliation_status,
+                }
+            return {
+                "id": str(a.pk),
+                "asserted_property": a.asserted_property,
+                "asserted_value": a.asserted_value,
+                "confidence": a.confidence,
+                "reconciliation_status": a.reconciliation_status,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+                "updated_at": a.updated_at.isoformat() if a.updated_at else None,
+                "supersedes": supersedes_info,
+                "content_type": a.content_type.model if a.content_type_id else None,
+                "object_id": a.object_id,
+            }
+
+        return Response({
+            "count": total,
+            "page": page,
+            "page_size": page_size,
+            "results": [_serialize(a) for a in rows],
+        })
+

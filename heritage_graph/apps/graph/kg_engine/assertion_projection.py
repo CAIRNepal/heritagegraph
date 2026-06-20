@@ -139,6 +139,28 @@ def assertion_uri(assertion_id: Any) -> str:
     return f"{base}/assertion/{assertion_id}"
 
 
+def resolve_assertion_named_graph(assertion: Any) -> str:
+    """Return the named graph IRI where assertion triples should be written.
+
+    Priority order:
+    1. assertion.named_graph (explicit override)
+    2. assertion.project FK → project named graph (hg:project/{uuid}/graph)
+    3. default: GraphPartition.ASSERTION per-assertion graph
+    """
+    explicit = getattr(assertion, "named_graph", "")
+    if explicit:
+        return explicit
+
+    project = getattr(assertion, "project", None)
+    if project is not None:
+        project_id = getattr(project, "pk", None) or getattr(project, "id", None)
+        if project_id:
+            return GraphPartition.PROJECT.uri(suffix=str(project_id)) or ""
+
+    aid = assertion.pk
+    return GraphPartition.ASSERTION.uri(suffix=str(aid)) or f"{_base()}/graph/assertion/{aid}"
+
+
 def data_source_uri(source_id: Any) -> str:
     base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
     return f"{base}/data_source/{source_id}"

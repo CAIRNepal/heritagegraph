@@ -251,8 +251,45 @@ def _maybe_dispatch_reconciliation(instance: Any) -> None:
     transaction.on_commit(_run)
 
 
+def _maybe_mark_superseded_assertion(instance: Any) -> None:
+    """When a new assertion references supersedes=<old>, mark the old one superseded."""
+    supersedes_id = getattr(instance, "supersedes_id", None)
+    if not supersedes_id:
+        return
+
+    def _run() -> None:
+        try:
+            from apps.cidoc_data.models import HeritageAssertion
+
+            HeritageAssertion.objects.filter(
+                pk=supersedes_id,
+            ).exclude(
+                reconciliation_status="superseded",
+            ).update(reconciliation_status="superseded")
+
+            if rdf_sync_enabled():
+                try:
+                    old_assertion = HeritageAssertion.objects.get(pk=supersedes_id)
+                    from apps.graph.kg_engine.nanopub_export import nanopub_retraction_trig
+                    from pathlib import Path
+                    from django.conf import settings
+
+                    project_id = str(getattr(instance, "project_id", "") or "shared")
+                    np_dir = Path(settings.MEDIA_ROOT) / "nanopubs" / project_id
+                    np_dir.mkdir(parents=True, exist_ok=True)
+                    trig = nanopub_retraction_trig(old_assertion, instance)
+                    (np_dir / f"retraction-{old_assertion.pk}.trig").write_text(trig, encoding="utf-8")
+                except Exception as exc:
+                    logger.warning("Could not write retraction nanopub for %s: %s", supersedes_id, exc)
+        except Exception as exc:
+            logger.warning("Could not mark assertion %s as superseded: %s", supersedes_id, exc)
+
+    transaction.on_commit(_run)
+
+
 def _on_assertion_saved(sender, instance, **kwargs: object) -> None:
     queue_relationship_assertion_projection(instance)
+    _maybe_mark_superseded_assertion(instance)
 
     if not rdf_sync_enabled():
         return

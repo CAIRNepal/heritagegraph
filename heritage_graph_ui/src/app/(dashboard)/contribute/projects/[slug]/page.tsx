@@ -25,6 +25,10 @@ import {
   IconActivity,
   IconMessageCircle,
   IconSend,
+  IconShieldCheck,
+  IconExternalLink,
+  IconCopy,
+  IconHistory,
 } from "@tabler/icons-react";
 import { fadeInUp, glassCard } from "@/lib/design";
 import { extractProjectSubmissionBlockers, getApiErrorMessage } from "@/lib/api-client";
@@ -37,6 +41,7 @@ import {
   rollbackProjectMerge,
   transitionProject,
   type ProjectCommentRow,
+  type ProjectDetail,
 } from "@/lib/projects-api";
 import { ProjectStepStrip } from "@/components/projects/project-step-strip";
 import { ProjectAssetUploader } from "@/components/projects/project-asset-uploader";
@@ -336,6 +341,8 @@ export default function ProjectDetailPage() {
         </Dialog>
       </motion.div>
 
+      <ValidationStatusPanel project={project} />
+
       <div
         className={
           showReviewerPanel ? "grid gap-6 lg:grid-cols-[1fr_280px] items-start" : undefined
@@ -343,23 +350,30 @@ export default function ProjectDetailPage() {
       >
         <div className="min-w-0">
       <Tabs defaultValue="entities">
-        <TabsList className="flex-wrap h-auto gap-1 p-1 bg-blue-50/80 dark:bg-gray-800/80">
-          <TabsTrigger value="entities" className="text-xs gap-1.5">
-            <IconGraph className="w-3.5 h-3.5" /> Entities ({project.entities.length})
-          </TabsTrigger>
-          <TabsTrigger value="assets" className="text-xs gap-1.5">
-            <IconFiles className="w-3.5 h-3.5" /> Assets ({project.assets.length})
-          </TabsTrigger>
-          <TabsTrigger value="members" className="text-xs gap-1.5">
-            <IconUsers className="w-3.5 h-3.5" /> Members ({project.memberships.length + 1})
-          </TabsTrigger>
-          <TabsTrigger value="comments" className="text-xs gap-1.5">
-            <IconMessageCircle className="w-3.5 h-3.5" /> Discussion ({comments.length})
-          </TabsTrigger>
-          <TabsTrigger value="activity" className="text-xs gap-1.5">
-            <IconActivity className="w-3.5 h-3.5" /> Activity
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex items-center gap-2 flex-wrap">
+          <TabsList className="flex-wrap h-auto gap-1 p-1 bg-blue-50/80 dark:bg-gray-800/80">
+            <TabsTrigger value="entities" className="text-xs gap-1.5">
+              <IconGraph className="w-3.5 h-3.5" /> Entities ({project.entities.length})
+            </TabsTrigger>
+            <TabsTrigger value="assets" className="text-xs gap-1.5">
+              <IconFiles className="w-3.5 h-3.5" /> Assets ({project.assets.length})
+            </TabsTrigger>
+            <TabsTrigger value="members" className="text-xs gap-1.5">
+              <IconUsers className="w-3.5 h-3.5" /> Members ({project.memberships.length + 1})
+            </TabsTrigger>
+            <TabsTrigger value="comments" className="text-xs gap-1.5">
+              <IconMessageCircle className="w-3.5 h-3.5" /> Discussion ({comments.length})
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="text-xs gap-1.5">
+              <IconActivity className="w-3.5 h-3.5" /> Activity
+            </TabsTrigger>
+          </TabsList>
+          <Button variant="outline" size="sm" className="text-xs h-8 gap-1.5" asChild>
+            <Link href={`/contribute/projects/${slug}/history`}>
+              <IconHistory className="w-3.5 h-3.5" /> History
+            </Link>
+          </Button>
+        </div>
 
         <TabsContent value="entities" className="mt-4 space-y-4">
           {canEditAssets && (
@@ -480,6 +494,99 @@ export default function ProjectDetailPage() {
         </div>
         {showReviewerPanel && (
           <ProjectReviewerPanel project={project} activity={activity} />
+        )}
+      </div>
+
+      <RdfMetadataFooter project={project} />
+    </div>
+  );
+}
+
+function ValidationStatusPanel({ project }: { project: ProjectDetail }) {
+  const hasShaclErrors = project.state === "draft" && project.entities.length > 0;
+
+  return (
+    <div className={`${glassCard} p-4 space-y-2`}>
+      <div className="flex items-center gap-2 mb-1">
+        <IconShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <span className="text-sm font-medium">Validation Status</span>
+      </div>
+      <div className="space-y-1.5 text-sm">
+        <div className="flex items-center gap-2">
+          <span className="w-16 text-xs text-muted-foreground shrink-0">LinkML</span>
+          <span className="text-emerald-600 dark:text-emerald-400 text-xs">
+            {project.entities.length > 0 ? `${project.entities.length} entities linked` : "No entities yet"}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-16 text-xs text-muted-foreground shrink-0">SHACL</span>
+          <span className={`text-xs ${hasShaclErrors ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+            {hasShaclErrors ? "Run validation to check constraints" : "—"}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-16 text-xs text-muted-foreground shrink-0">DL reason</span>
+          <span className="text-xs text-muted-foreground">— not yet run</span>
+        </div>
+      </div>
+      {project.state === "draft" && project.entities.length === 0 && (
+        <p className="text-xs text-muted-foreground pt-1">
+          Add entities and assertions before submitting for review.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function RdfMetadataFooter({ project }: { project: ProjectDetail }) {
+  if (!project.pid && !project.named_graph_uri) return null;
+
+  const copyToClipboard = (text: string) => {
+    void navigator.clipboard?.writeText(text);
+  };
+
+  return (
+    <div className={`${glassCard} p-4`}>
+      <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+        Linked Data Identifiers
+      </p>
+      <div className="space-y-2 text-xs">
+        {project.pid && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-muted-foreground w-24 shrink-0">PID</span>
+            <span className="font-mono text-blue-700 dark:text-blue-300 break-all">{project.pid}</span>
+            <button
+              type="button"
+              onClick={() => copyToClipboard(project.pid)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="Copy PID"
+            >
+              <IconCopy className="w-3.5 h-3.5" />
+            </button>
+            <a
+              href={project.pid}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="Open PID"
+            >
+              <IconExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        )}
+        {project.named_graph_uri && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-muted-foreground w-24 shrink-0">Named graph</span>
+            <span className="font-mono text-blue-700 dark:text-blue-300 break-all">{project.named_graph_uri}</span>
+            <button
+              type="button"
+              onClick={() => copyToClipboard(project.named_graph_uri)}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="Copy graph IRI"
+            >
+              <IconCopy className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
       </div>
     </div>
