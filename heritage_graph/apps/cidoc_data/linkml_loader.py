@@ -57,17 +57,18 @@ def build_fresh_payload() -> dict[str, Any]:
     classes = doc["classes"]
     enums = doc["enums"]
     version = compute_schema_version(schema_path, ext, classes, enums)
-    ui_classmap_path = Path(settings.BASE_DIR).parent / "tools" / "ui-classmap.yaml"
-    contribute_hub_path = Path(settings.BASE_DIR).parent / "tools" / "contribute-hub.yaml"
+    _tools_dir = Path(settings.BASE_DIR) / "tools"
+    ui_classmap_path = _tools_dir / "ui-classmap.yaml"
+    contribute_hub_path = _tools_dir / "contribute-hub.yaml"
     core_parts = [schema_path.read_bytes(), b"\n"]
     if ui_classmap_path.is_file():
         core_parts.append(ui_classmap_path.read_bytes())
     if contribute_hub_path.is_file():
         core_parts.extend((b"\n", contribute_hub_path.read_bytes()))
-    ui_pres_path = Path(settings.BASE_DIR).parent / "tools" / "ui-presentation.yaml"
+    ui_pres_path = _tools_dir / "ui-presentation.yaml"
     if ui_pres_path.is_file():
         core_parts.extend((b"\n", ui_pres_path.read_bytes()))
-    semantic_patterns_path = Path(settings.BASE_DIR).parent / "tools" / "semantic-patterns.yaml"
+    semantic_patterns_path = _tools_dir / "semantic-patterns.yaml"
     if semantic_patterns_path.is_file():
         core_parts.extend((b"\n", semantic_patterns_path.read_bytes()))
     core_hash = hashlib.sha256(b"".join(core_parts)).hexdigest()[:64]
