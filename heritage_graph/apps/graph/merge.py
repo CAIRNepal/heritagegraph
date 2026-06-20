@@ -92,6 +92,9 @@ def execute_merge(merge_request_id: str) -> dict[str, Any]:
     except Exception as exc:
         logger.warning("execute_merge: could not update Project.state: %s", exc)
 
+    # ── 6. Enqueue LOD publication tasks ──────────────────────────────────────
+    _enqueue_lod_tasks(merge_request_id=str(merge_request_id))
+
     logger.info(
         "execute_merge: merged project %s (%d triples, %d new PIDs)",
         project_id,
@@ -104,6 +107,33 @@ def execute_merge(merge_request_id: str) -> dict[str, Any]:
         "new_pids": new_pids,
         "merge_activity_uri": merge_activity_uri,
     }
+
+
+def _enqueue_lod_tasks(*, merge_request_id: str) -> None:
+    """Fire Celery LOD publication tasks after a successful merge."""
+    try:
+        from apps.graph.tasks import export_nanopubs_for_merge, regen_void_dcat
+
+        export_nanopubs_for_merge.delay(merge_request_id)
+        regen_void_dcat.delay()
+    except Exception as exc:
+        logger.warning("_enqueue_lod_tasks: could not enqueue tasks: %s", exc)
+
+    # mint_doi: find the ProjectSnapshot just created and enqueue DOI minting
+    try:
+        from apps.graph.tasks import mint_doi
+        from apps.heritage_data.models import MergeRequest, ProjectSnapshot
+
+        mr = MergeRequest.objects.get(pk=merge_request_id)
+        snapshot = (
+            ProjectSnapshot.objects.filter(project=mr.project)
+            .order_by("-created_at")
+            .first()
+        )
+        if snapshot is not None:
+            mint_doi.delay(str(snapshot.pk))
+    except Exception as exc:
+        logger.warning("_enqueue_lod_tasks: could not enqueue mint_doi: %s", exc)
 
 
 def _copy_project_graph_to_public(project_id: str) -> tuple[int, list[str]]:
