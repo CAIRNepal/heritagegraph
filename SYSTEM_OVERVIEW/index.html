@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -707,10 +707,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#34-ontology-assets-ontology-tools-heritagettl" class="md-nav__link">
+  <a href="#34-ontology-assets-ontology-tools-heritagegraphttl" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.4 Ontology assets (ontology/, tools/, Heritage.ttl)
+        3.4 Ontology assets (ontology/, tools/, HeritageGraph.ttl)
       
     </span>
   </a>
@@ -2285,10 +2285,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#34-ontology-assets-ontology-tools-heritagettl" class="md-nav__link">
+  <a href="#34-ontology-assets-ontology-tools-heritagegraphttl" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.4 Ontology assets (ontology/, tools/, Heritage.ttl)
+        3.4 Ontology assets (ontology/, tools/, HeritageGraph.ttl)
       
     </span>
   </a>
@@ -2639,9 +2639,9 @@ Major route groups under <code>src/app/(dashboard)/</code> (URLs have <strong>no
 <h3 id="33-landing-nextjs-15-marketing-site-heritage_graph_landing">3.3 Landing — Next.js 15 marketing site (<code>heritage_graph_landing/</code>)</h3>
 <p>A separate app with different needs (Three.js, heavy animation, independent deploy cadence).
 Kept apart so its build weight never slows the dashboard.</p>
-<h3 id="34-ontology-assets-ontology-tools-heritagettl">3.4 Ontology assets (<code>ontology/</code>, <code>tools/</code>, <code>Heritage.ttl</code>)</h3>
+<h3 id="34-ontology-assets-ontology-tools-heritagegraphttl">3.4 Ontology assets (<code>ontology/</code>, <code>tools/</code>, <code>HeritageGraph.ttl</code>)</h3>
 <p>The semantic backbone: <strong><code>ontology/HeritageGraph.yaml</code></strong> (LinkML v1.0.0), the CIDOC-CRM TBox
-(<code>Heritage.ttl</code>), generated SHACL shapes, and codegen tooling (<code>make generate</code>). UI exposure
+(<code>HeritageGraph.ttl</code>), generated SHACL shapes, and codegen tooling (<code>make generate</code>). UI exposure
 is driven by <strong><code>tools/ui-classmap.yaml</code></strong> (26 navigable types). A generated registry ships to
 the frontend (<code>registry.generated.json/.ts</code>) so forms and validation stay in sync. LinkedArt/LUX
 interop classes in the YAML are RDF-only (not in the classmap). See <a href="../ontology/ONTOLOGY/">ontology/ONTOLOGY.md</a>.</p>
@@ -2734,7 +2734,7 @@ It partitions the graph for clean governance:</p>
 </tr>
 <tr>
 <td><strong>SCHEMA</strong></td>
-<td>TBox from <code>Heritage.ttl</code></td>
+<td>TBox from <code>HeritageGraph.ttl</code></td>
 </tr>
 <tr>
 <td><strong>DOCUMENT</strong></td>
@@ -2960,7 +2960,7 @@ It partitions the graph for clean governance:</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

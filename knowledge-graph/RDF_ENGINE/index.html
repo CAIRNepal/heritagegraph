@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -947,6 +947,17 @@
   
     <nav class="md-nav" aria-label="Operations">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keeping-the-public-graph-in-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keeping the public graph in sync
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#docker" class="md-nav__link">
@@ -2109,6 +2120,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#keeping-the-public-graph-in-sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keeping the public graph in sync
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#docker" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2190,7 +2212,7 @@
 
 <h1 id="heritagegraph-knowledge-graph-engine">HeritageGraph Knowledge Graph Engine</h1>
 <p>Oxigraph is the <strong>runtime knowledge graph</strong> for HeritageGraph. PostgreSQL remains the system of record for forms and review; the <strong>KG engine</strong> materializes publishable RDF, serves SPARQL, and unifies agent + contribution writes.</p>
-<p><strong>Ontology files are unchanged</strong> — the engine uses the existing LinkML registry, <code>Heritage.ttl</code>, and generated SHACL shapes.</p>
+<p><strong>Ontology files are unchanged</strong> — the engine uses the existing LinkML registry, <code>HeritageGraph.ttl</code>, and generated SHACL shapes.</p>
 <hr />
 <h2 id="architecture">Architecture</h2>
 <pre><code>PostgreSQL (CIDOC, CulturalEntity, HeritageAssertion)
@@ -2226,7 +2248,7 @@ Oxigraph (SPARQL 1.1)
 <tr>
 <td><strong>SCHEMA</strong></td>
 <td><code>…/graph/schema</code></td>
-<td>TBox from <code>ontology/Heritage.ttl</code> (<code>rdf_load_tbox</code>)</td>
+<td>TBox from <code>ontology/HeritageGraph.ttl</code> (<code>rdf_load_tbox</code>)</td>
 </tr>
 <tr>
 <td><strong>DOCUMENT</strong></td>
@@ -2287,9 +2309,34 @@ make rdf-rebuild
 # Diagnose config + counts
 make rdf-diagnose
 
+# Remove ghost subjects whose Postgres row was deleted (dry-run without --apply)
+python manage.py kg_purge_orphans
+
 # Retry failed writes
 python manage.py rdf_drain_outbox
 </code></pre>
+<h3 id="keeping-the-public-graph-in-sync">Keeping the public graph in sync</h3>
+<p><code>rdf_rebuild</code> iterates live rows, so it refreshes or withholds any subject it
+still finds in Postgres — but it cannot see a subject whose row was deleted
+outside the delete signals (bulk SQL cleanup, fixtures torn down out of band).
+Those orphans stay in <code>graph/public</code> indefinitely and are indistinguishable from
+real heritage to every public consumer: the KG projection, the Atlas, and the
+Museum all render them. <code>kg_purge_orphans</code> reports them and, with <code>--apply</code>,
+deletes them. Run it after any out-of-band deletion:</p>
+<pre><code class="language-bash">python manage.py rdf_rebuild &amp;&amp; python manage.py kg_purge_orphans --apply
+</code></pre>
+<p>Two related guards worth knowing:</p>
+<ul>
+<li><strong>Publication requires an identifying label.</strong> <code>label_for_instance</code> falls back
+  to the primary key, so a contentless row would otherwise publish as a bare
+  digit or a stray keystroke. <code>has_publishable_label</code> in
+  <code>apps/cidoc_data/publication_policy.py</code> withholds those regardless of status.</li>
+<li><strong>An embedded reader can serve a stale snapshot.</strong> In the local pyoxigraph
+  fallback, a process holding no writer handle caches a point-in-time
+  <code>Store.read_only</code> snapshot (see <code>apps/graph/kg_engine/store.py</code>). A dev server
+  will not see writes made by a separate management-command process until it is
+  restarted. Production uses the Oxigraph HTTP endpoint and is unaffected.</li>
+</ul>
 <h3 id="docker">Docker</h3>
 <pre><code class="language-bash">docker compose up -d oxigraph backend
 docker exec heritage-backend python manage.py migrate graph
@@ -2494,7 +2541,7 @@ engine.rebuild_public_graph()
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

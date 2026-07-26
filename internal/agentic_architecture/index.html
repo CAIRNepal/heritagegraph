@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -2082,18 +2082,18 @@
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  AGENT 3 — SHACL VALIDATOR AGENT                                         │
 │                                                                          │
-│  • Runs pySHACL against your Heritage.ttl OWL shapes                    │
+│  • Runs pySHACL against your HeritageGraph.ttl OWL shapes               │
 │  • Checks:                                                               │
 │    - Domain/range compliance (E53_Place cannot be subject of P14)        │
 │    - Cardinality constraints (a LivingGoddessTenure must have            │
 │      had_participant exactly one Person)                                 │
-│    - Enum conformance (condition must be in ConditionTypeEnum)           │
+│    - Enum conformance (condition must be in ConditionType)               │
 │    - Cross-class consistency (SyncreticRelationship requires two deities)│
 │  • REJECTS invalid triples with structured error reason                  │
 │  • CORRECTS recoverable errors (wrong direction, missing inverse)        │
 │  • Output: ValidatedAssertion | RejectedAssertion with reason            │
 │                                                                          │
-│  Tool: pySHACL + Heritage.ttl                                       │
+│  Tool: pySHACL + HeritageGraph.ttl                                  │
 └─────────────────────────┬───────────────────────────────────────────────┘
                           │  ValidatedAssertion stream
                           ▼
@@ -2211,7 +2211,7 @@ ReviewFlag(
 <tr>
 <td>Ontology validation</td>
 <td><strong>pySHACL</strong> (Apache-2.0)</td>
-<td>SHACL shapes against your Heritage.ttl</td>
+<td>SHACL shapes against your HeritageGraph.ttl</td>
 </tr>
 <tr>
 <td>Fuzzy entity matching</td>
@@ -2286,7 +2286,7 @@ ReviewFlag(
   + confidence_score
         │
         ▼
-[SHACL Validator] ←──── Heritage.ttl (OWL shapes)
+[SHACL Validator] ←──── HeritageGraph.ttl (OWL shapes)
         │
    PASS / FAIL
         │
@@ -2362,7 +2362,7 @@ INSERT)         │
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

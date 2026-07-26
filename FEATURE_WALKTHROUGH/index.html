@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -3008,9 +3008,9 @@ doc to drive a live demo or a slide deck.</p>
 <td>4</td>
 <td><strong>Heritage Museum</strong></td>
 <td><code>/heritage-museum</code></td>
-<td>D3 + Three.js + Web Speech</td>
+<td>D3 + Leaflet + Three.js + Web Speech</td>
 <td>Demo corpus / live toggle</td>
-<td>Guided, story-driven, 360° museum tour of the graph</td>
+<td>Guided, story-driven tour of the graph (360° only for genuine equirectangular imagery)</td>
 </tr>
 <tr>
 <td>5</td>
@@ -3176,10 +3176,22 @@ that the UI is powered by a <em>live</em> graph, not a static export.</p>
 <p><strong>Code:</strong> <a href="../heritage_graph_ui/src/app/(dashboard)/heritage-museum/">heritage-museum/</a></p>
 <p>This is the <strong>showpiece</strong> — it turns the knowledge graph into a guided, cinematic tour.</p>
 <h3 id="stack_3">Stack</h3>
-<p><strong>D3</strong> (glowing force graph) · <strong>Three.js</strong> (360° panorama) · <strong>Web Speech API</strong>
+<p><strong>D3</strong> (glowing force graph) · <strong>Leaflet</strong> (map tab) · <strong>Three.js</strong> (360° panorama) ·
+<strong>Web Speech API</strong></p>
+<blockquote>
+<p><strong>The Stories tab is not XR.</strong> <code>ImmersiveScene</code> is a DOM/CSS cinematic reader —
+parallax and Ken-Burns over a hero image, with no canvas or WebGL. The three.js
+<code>PanoramaViewer</code> (which does hold real <code>immersive-vr</code> / <code>immersive-ar</code> WebXR
+session code) is only offered when a hero image measures ~2:1, i.e. when it is
+plausibly an equirectangular capture — see
+<a href="../heritage_graph_ui/src/lib/heritage-museum/panorama-support.ts"><code>panorama-support.ts</code></a>.
+The corpus currently contains <strong>no</strong> 360° or photogrammetry assets, so in
+practice the sphere viewer stays closed. Sourcing real panoramas is a content
+task, not a code task.
 (<code>SpeechSynthesis</code> narration) · Framer Motion (overlays) · generated viz config (node
 colors/icons/relation labels). Data: a <strong>demo corpus by default</strong>, with a <strong>live toggle</strong> to
 <code>fetchInstanceGraphData</code> (the same REST builder as Graph View).</p>
+</blockquote>
 <h3 id="what-the-audience-sees-how-each-piece-works">What the audience sees → how each piece works</h3>
 <ol>
 <li><strong>Glowing knowledge graph</strong> — <code>ForceGraph.tsx</code> / <code>KnowledgeGraph.tsx</code> run a <strong>D3 force
@@ -3190,10 +3202,13 @@ colors/icons/relation labels). Data: a <strong>demo corpus by default</strong>, 
 <li><strong>Story panel ("beats")</strong> — <code>storyBeats.ts::buildBeats(node)</code> turns an entity's data into a
    sequence of narrative <strong>beats</strong>; <code>StoryPanel</code> auto-advances each beat (~10s) with
    <code>requestAnimationFrame</code>, with pause/resume and progress.</li>
-<li><strong>360° immersive panorama (the in-browser 3D)</strong> — <code>xr/PanoramaViewer.tsx</code> uses <strong>Three.js</strong>
-   to texture a spherical photo onto the <em>inside</em> of a sphere; the user looks around a heritage
-   site. <code>xr/ImmersiveScene.tsx</code> orchestrates it (<code>dynamic(..., { ssr: false })</code>) with a
-   storytelling overlay and <code>PlaceNav</code> to move between places.</li>
+<li><strong>360° panorama (the only real 3D here)</strong> — <code>xr/PanoramaViewer.tsx</code> uses <strong>Three.js</strong> to
+   texture a spherical photo onto the <em>inside</em> of a sphere, and can hand off to a genuine
+   <code>immersive-vr</code> / <code>immersive-ar</code> WebXR session. <code>xr/ImmersiveScene.tsx</code> orchestrates it
+   (<code>dynamic(..., { ssr: false })</code>, so three.js stays out of the main bundle) with a
+   storytelling overlay and <code>PlaceNav</code> to move between places. <strong>The entry button appears only
+   when the hero image measures ~2:1</strong> — an ordinary photograph on a sphere gains no immersion
+   and distorts at the poles.</li>
 <li><strong>Narration</strong> — <code>useNarration</code> wraps the browser's <strong><code>SpeechSynthesisUtterance</code></strong> (en-GB
    voice) to read the story aloud — no external TTS service, no server cost.</li>
 <li><strong>MandalaLoader</strong> — a culturally themed loading animation that sets the tone.</li>
@@ -3302,9 +3317,10 @@ confidence scores, asserters, and temporal scope from the knowledge graph.</p>
    neighborhood. "This is the whole knowledge graph — edges are <em>accepted</em> assertions."</li>
 <li><strong>Entity Neighborhood</strong> (0.5 min) — from one entity's page, open its <code>/graph</code> to show the
    live SPARQL-backed drill-down.</li>
-<li><strong>Heritage Museum</strong> (1.5 min) — open <code>/heritage-museum</code>, let a <strong>story beat</strong> play, enter a
-   <strong>360° panorama</strong>, let the <strong>narration</strong> speak. "Same data, public storytelling — all in
-   the browser."</li>
+<li><strong>Heritage Museum</strong> (1.5 min) — open <code>/heritage-museum</code>, let a <strong>story beat</strong> play, let the
+   <strong>narration</strong> speak, then follow <strong>View on globe</strong> into the Atlas. "Same data, public
+   storytelling — all in the browser." (Skip the 360° panorama unless the entity on screen has
+   a genuine equirectangular image; the button is hidden otherwise.)</li>
 <li><strong>Atlas</strong> (1.5 min) — open <code>/atlas</code>, fly to a city, <strong>scrub the timeline</strong> across eras.
    Close on the 3D globe.</li>
 </ol>
@@ -3348,8 +3364,8 @@ great. Flip the <strong>live toggle</strong> only if you want to show real contr
 </tr>
 <tr>
 <td>Heritage Museum</td>
-<td><strong>D3</strong> + <strong>Three.js</strong></td>
-<td>React state</td>
+<td><strong>D3</strong> + <strong>Leaflet</strong> + <strong>Three.js</strong></td>
+<td>React state (17 <code>useState</code>; no store)</td>
 <td>demo / live toggle</td>
 <td>Bespoke visuals + in-browser 360°, zero server render cost</td>
 </tr>
@@ -3427,7 +3443,7 @@ great. Flip the <strong>live toggle</strong> only if you want to show real contr
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
