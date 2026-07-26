@@ -71,6 +71,42 @@ def django_instance_from_assertion(assertion: Any, *, as_object: bool = False) -
         return None
 
 
+def _linked_cidoc_instance(entity: Any) -> Any | None:
+    """The CIDOC MetaData row a CulturalEntity wrapper represents, or None.
+
+    Prefers the explicit FK link set by ContributionFlowMixin; falls back to
+    the ``_cidoc_model``/``_cidoc_id`` markers stored in the newest revision
+    (legacy wrappers created before the FK existed).
+    """
+    ct = getattr(entity, "cidoc_content_type", None)
+    pk = getattr(entity, "cidoc_object_id", None)
+    if ct is not None and pk is not None:
+        model = ct.model_class()
+        if model is not None:
+            row = model.objects.filter(pk=pk).first()
+            if row is not None:
+                return row
+
+    try:
+        from apps.heritage_data.models import Revision
+        from django.apps import apps as django_apps
+
+        revision = (
+            Revision.objects.filter(entity_id=entity.entity_id)
+            .order_by("-revision_number")
+            .first()
+        )
+        data = revision.data if revision and isinstance(revision.data, dict) else {}
+        model_name = (data.get("_cidoc_model") or "").strip()
+        cidoc_id = data.get("_cidoc_id")
+        if model_name and cidoc_id is not None:
+            model = django_apps.get_model("cidoc_data", model_name)
+            return model.objects.filter(pk=cidoc_id).first()
+    except Exception:
+        pass
+    return None
+
+
 @dataclass
 class PublishResult:
     subject_uri: str
@@ -101,6 +137,18 @@ class KnowledgeGraphEngine:
         )
 
     def publish_cultural_entity(self, entity: Any) -> PublishResult:
+        # A wrapper that is FK-linked to a CIDOC row must not project its own
+        # `resource/entity/<uuid>` node: the CIDOC row already projects the
+        # canonical node, and a second one duplicates every approved
+        # contribution in the museum/atlas (same label, no coordinates).
+        linked = _linked_cidoc_instance(entity)
+        if linked is not None:
+            from apps.graph.kg_engine.uris import cultural_entity_uri
+
+            # Remove any duplicate written by earlier code versions.
+            self.delete_resource(cultural_entity_uri(entity.entity_id))
+            return self.publish_metadata_instance(linked)
+
         triples, managed, uri = tripleset_for_cultural_entity(entity)
         stored = self.publish_slot_projection(
             subject_uri=uri,

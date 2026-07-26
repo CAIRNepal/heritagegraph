@@ -6,7 +6,7 @@ import {
   IconDatabase,
   IconGraph,
   IconMapPin,
-  IconCube,
+  IconBook,
   IconLoader2,
   IconInfoCircle,
   IconDownload,
@@ -178,7 +178,7 @@ export function MuseumToolbar({
             {t('views.map')}
           </TabsTrigger>
           <TabsTrigger value="xr" className="text-xs gap-1 px-2.5">
-            <IconCube className="w-3.5 h-3.5" aria-hidden />
+            <IconBook className="w-3.5 h-3.5" aria-hidden />
             {t('views.xr')}
           </TabsTrigger>
         </TabsList>

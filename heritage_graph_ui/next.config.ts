@@ -39,6 +39,8 @@ const MAP_TILE_HOSTS = [
   'https://server.arcgisonline.com',
   'https://services.arcgisonline.com',
   'https://*.arcgisonline.com',
+  // NASA GIBS serves the Atlas night-lights (VIIRS Black Marble) overlay tiles.
+  'https://gibs.earthdata.nasa.gov',
 ];
 
 function buildContentSecurityPolicy(): string {

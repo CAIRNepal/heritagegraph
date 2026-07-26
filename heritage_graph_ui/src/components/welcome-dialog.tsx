@@ -29,7 +29,7 @@ const STEPS = [
   {
     icon: IconBuildingMonument,
     title: 'Explore the Heritage Museum',
-    body: 'Browse the living knowledge graph as an interactive graph, map, timeline, or immersive 3D scene.',
+    body: 'Browse the living knowledge graph as an interactive graph, map, timeline, or illustrated story.',
     href: '/heritage-museum',
     cta: 'Open Museum',
   },

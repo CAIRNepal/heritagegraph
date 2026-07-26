@@ -10,7 +10,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 class Command(BaseCommand):
     help = (
-        "Load ontology/Heritage.ttl into the triplestore schema graph "
+        "Load ontology/HeritageGraph.ttl into the triplestore schema graph "
         "(read-only TBox for SPARQL and documentation)."
     )
 
@@ -18,7 +18,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--ontology-path",
             default="",
-            help="Path to Turtle file (default: repo ontology/Heritage.ttl)",
+            help="Path to Turtle file (default: repo ontology/HeritageGraph.ttl)",
         )
         parser.add_argument(
             "--graph-uri",
@@ -28,7 +28,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         repo_root = Path(settings.BASE_DIR).parent
-        ontology_path = Path(options["ontology_path"] or repo_root / "ontology" / "Heritage.ttl")
+        ontology_path = Path(
+            options["ontology_path"] or repo_root / "ontology" / "HeritageGraph.ttl"
+        )
         if not ontology_path.is_file():
             raise CommandError(f"Ontology file not found: {ontology_path}")
 

@@ -40,11 +40,15 @@ _ONTOLOGY = _REPO_ROOT / "ontology"
 
 
 def _load_schema_graph() -> Any:
-    """Heritage.ttl ∪ CRM bridge ∪ SKOS vocab as one rdflib graph."""
+    """HeritageGraph.ttl ∪ CRM bridge ∪ SKOS vocab as one rdflib graph."""
     import rdflib
 
     g = rdflib.Graph()
-    for name in ("Heritage.ttl", "heritagegraph-crm-bridge.ttl", "lod/skos-vocabularies.ttl"):
+    for name in (
+        "HeritageGraph.ttl",
+        "heritagegraph-crm-bridge.ttl",
+        "lod/skos-vocabularies.ttl",
+    ):
         p = _ONTOLOGY / name
         if p.is_file():
             try:
@@ -75,7 +79,7 @@ def crm_bridge_coverage() -> dict[str, Any]:
     """Fraction of instance types that entail a CIDOC-CRM superclass.
 
     A type is covered if it is itself a ``crm:`` IRI or reaches one through the
-    transitive ``rdfs:subClassOf`` closure of (Heritage.ttl ∪ bridge)."""
+    transitive ``rdfs:subClassOf`` closure of (HeritageGraph.ttl ∪ bridge)."""
     from rdflib import RDFS
 
     types = _instance_type_iris()

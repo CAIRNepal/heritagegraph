@@ -4,7 +4,7 @@ Emit the CIDOC-CRM alignment bridge + disjointness TBox from HeritageGraph.yaml.
 
 WHY THIS EXISTS
 ---------------
-The LinkML ``gen-owl`` export (ontology/Heritage.ttl) mints a fresh
+The LinkML ``gen-owl`` export (ontology/HeritageGraph.ttl) mints a fresh
 ``heritageGraph:`` class for every class and wires the *local* subclass tree,
 but it does **not** assert the ``rdfs:subClassOf`` links to the CIDOC-CRM
 classes named in each class's ``class_uri`` / ``broad_mappings``, and it drops
@@ -29,7 +29,7 @@ Design choices a reviewer should note:
     not conflate our entities with the full external description.
 
 Output: ontology/heritagegraph-crm-bridge.ttl  (loaded into the SCHEMA graph
-alongside Heritage.ttl by ``manage.py rdf_load_tbox``).
+alongside HeritageGraph.ttl by ``manage.py rdf_load_tbox``).
 """
 
 from __future__ import annotations

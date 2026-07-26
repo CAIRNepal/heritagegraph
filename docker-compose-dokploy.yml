@@ -59,13 +59,30 @@ services:
   # is unauthenticated, so it is NEVER published through Traefik — only the
   # backend reaches it over the internal network.
   oxigraph:
-    image: ghcr.io/oxigraph/oxigraph:latest
+    # Pinned: Oxigraph's on-disk store format changes between minor versions, so a
+    # floating tag can leave the volume unreadable after a redeploy. The GHCR
+    # mirror stopped publishing version tags at v0.3.x, so this pin comes from
+    # Docker Hub — the same build (revision d6f5b989) that `latest` resolved to.
+    image: oxigraph/oxigraph:0.5.9
     restart: always
     command: ["serve", "--location", "/data", "--bind", "0.0.0.0:7878"]
     volumes:
       - oxigraph-data:/data
     networks:
       - internal
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: "0.5"
+        reservations:
+          memory: 128M
+          cpus: "0.1"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   redis:
     image: redis:7-alpine
@@ -162,6 +179,23 @@ services:
       RDF_QUERY_URL: http://oxigraph:7878/query
       # Canonical resource IRI base (set to your public API origin for FAIR IRIs).
       RDF_RESOURCE_BASE_URI: ${RDF_RESOURCE_BASE_URI:-https://api.heritagegraph.xyz}
+      # In-app assistant (OpenRouter). Read per request rather than at boot, so an
+      # unset key fails only /api/v1/assistant/chat/ and never blocks startup.
+      # FAST/PREMIUM fall back to STANDARD in code; leave them empty unless you
+      # want a separate cheap/expensive tier.
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENROUTER_MODEL_STANDARD: ${OPENROUTER_MODEL_STANDARD:-anthropic/claude-3-5-haiku-20241022}
+      OPENROUTER_MODEL_FAST: ${OPENROUTER_MODEL_FAST:-}
+      OPENROUTER_MODEL_PREMIUM: ${OPENROUTER_MODEL_PREMIUM:-}
+      OPENROUTER_HTTP_REFERER: ${OPENROUTER_HTTP_REFERER:-}
+      OPENROUTER_X_TITLE: ${OPENROUTER_X_TITLE:-HeritageGraph Assistant}
+      # Public origins allowed to POST session-authenticated forms (Django admin).
+      # base.py hardcodes the heritagegraph.xyz set; anything else (a staging domain,
+      # a rename) fails CSRF on admin login until it is listed here.
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-}
+      # Writable LinkML overlay for published schema extension proposals (spec 006).
+      # Lives on a named volume so approved extensions survive a redeploy.
+      HERITAGEGRAPH_SCHEMA_EXTENSION_PATH: ${HERITAGEGRAPH_SCHEMA_EXTENSION_PATH:-/app/schema-overlay/extensions.yaml}
     depends_on:
       postgres:
         condition: service_healthy
@@ -172,6 +206,7 @@ services:
     volumes:
       - backend-static:/app/heritage_graph/staticfiles
       - backend-media:/app/heritage_graph/media
+      - backend-schema-overlay:/app/schema-overlay
     networks:
       - internal
     expose:
@@ -204,10 +239,15 @@ services:
     build:
       context: .
       dockerfile: heritage_graph_ui/Dockerfile
+      # NEXT_PUBLIC_* is compiled into the browser bundle, so these must be correct
+      # at build time — editing them in Dokploy later changes nothing until a
+      # rebuild. An empty arg falls through to the Dockerfile's `http://localhost:*`
+      # default, hence the explicit values, kept in step with `environment:` below.
+      # https, because a page served over TLS cannot call an http:// API.
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        NEXT_PUBLIC_APP_URL: ${NEXTAUTH_URL:-}
-        NEXTAUTH_URL: ${NEXTAUTH_URL:-}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.heritagegraph.xyz}
+        NEXT_PUBLIC_APP_URL: ${NEXTAUTH_URL:-https://heritagegraph.xyz}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-https://heritagegraph.xyz}
         NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-build-placeholder}
         GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-build-placeholder}
         GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-build-placeholder}
@@ -215,8 +255,8 @@ services:
     restart: always
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api.heritagegraph.xyz}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://heritagegraph.xyz}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.heritagegraph.xyz}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://heritagegraph.xyz}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID is required}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?GOOGLE_CLIENT_SECRET is required}
@@ -253,9 +293,12 @@ services:
     build:
       context: ./heritage_graph_landing
       dockerfile: Dockerfile
+      # Same build-time baking applies here: the landing chat widget calls the
+      # assistant API from the browser, and its Dockerfile defaults to
+      # `http://backend.localhost` when the arg arrives empty.
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
-        NEXT_PUBLIC_APP_URL: ${NEXTAUTH_URL:-}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://api.heritagegraph.xyz}
+        NEXT_PUBLIC_APP_URL: ${NEXTAUTH_URL:-https://heritagegraph.xyz}
     restart: always
     environment:
       NODE_ENV: production
@@ -281,7 +324,7 @@ services:
         max-file: "3"
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.13.1
     hostname: prometheus
     restart: always
     command:
@@ -302,9 +345,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.1.1
     hostname: grafana
     restart: always
     environment:
@@ -328,9 +381,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   postgres_exporter:
-    image: prometheuscommunity/postgres-exporter:latest
+    image: prometheuscommunity/postgres-exporter:v0.20.1
     hostname: postgres-exporter
     restart: always
     environment:
@@ -348,6 +411,16 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: "0.25"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres-data:
@@ -357,6 +430,8 @@ volumes:
   backend-static:
     driver: local
   backend-media:
+    driver: local
+  backend-schema-overlay:
     driver: local
   oxigraph-data:
     driver: local

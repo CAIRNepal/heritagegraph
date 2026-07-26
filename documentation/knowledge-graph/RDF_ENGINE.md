@@ -2,7 +2,7 @@
 
 Oxigraph is the **runtime knowledge graph** for HeritageGraph. PostgreSQL remains the system of record for forms and review; the **KG engine** materializes publishable RDF, serves SPARQL, and unifies agent + contribution writes.
 
-**Ontology files are unchanged** — the engine uses the existing LinkML registry, `Heritage.ttl`, and generated SHACL shapes.
+**Ontology files are unchanged** — the engine uses the existing LinkML registry, `HeritageGraph.ttl`, and generated SHACL shapes.
 
 ---
 
@@ -30,7 +30,7 @@ Oxigraph (SPARQL 1.1)
 | Partition | Default IRI | Contents |
 |-----------|---------------|----------|
 | **PUBLIC** | `…/graph/public` | Published CIDOC + merged entities + promoted agent assertions |
-| **SCHEMA** | `…/graph/schema` | TBox from `ontology/Heritage.ttl` (`rdf_load_tbox`) |
+| **SCHEMA** | `…/graph/schema` | TBox from `ontology/HeritageGraph.ttl` (`rdf_load_tbox`) |
 | **DOCUMENT** | `…/graph/document/{uuid}` | Per-upload OCR/agent ingest |
 | **PROV** | `…/graph/prov/…` | Reserved for provenance bundles |
 
@@ -62,9 +62,38 @@ make rdf-rebuild
 # Diagnose config + counts
 make rdf-diagnose
 
+# Remove ghost subjects whose Postgres row was deleted (dry-run without --apply)
+python manage.py kg_purge_orphans
+
 # Retry failed writes
 python manage.py rdf_drain_outbox
 ```
+
+### Keeping the public graph in sync
+
+`rdf_rebuild` iterates live rows, so it refreshes or withholds any subject it
+still finds in Postgres — but it cannot see a subject whose row was deleted
+outside the delete signals (bulk SQL cleanup, fixtures torn down out of band).
+Those orphans stay in `graph/public` indefinitely and are indistinguishable from
+real heritage to every public consumer: the KG projection, the Atlas, and the
+Museum all render them. `kg_purge_orphans` reports them and, with `--apply`,
+deletes them. Run it after any out-of-band deletion:
+
+```bash
+python manage.py rdf_rebuild && python manage.py kg_purge_orphans --apply
+```
+
+Two related guards worth knowing:
+
+- **Publication requires an identifying label.** `label_for_instance` falls back
+  to the primary key, so a contentless row would otherwise publish as a bare
+  digit or a stray keystroke. `has_publishable_label` in
+  `apps/cidoc_data/publication_policy.py` withholds those regardless of status.
+- **An embedded reader can serve a stale snapshot.** In the local pyoxigraph
+  fallback, a process holding no writer handle caches a point-in-time
+  `Store.read_only` snapshot (see `apps/graph/kg_engine/store.py`). A dev server
+  will not see writes made by a separate management-command process until it is
+  restarted. Production uses the Oxigraph HTTP endpoint and is unaffected.
 
 ### Docker
 

@@ -344,15 +344,31 @@ class PlatformContributionReviewAcceptE2ETest(APITestCase):
             "accepted cultural entity must appear in /knowledge/entity table API",
         )
 
+        # The canonical graph node is the CIDOC row's resource IRI; the wrapper
+        # must NOT project a second `entity/<uuid>` node (2026-07 dedupe fix).
+        from apps.graph.kg_engine.uris import resource_uri_for_instance
+
+        cidoc_uri = resource_uri_for_instance(loc)
         after = self.engine.query(
-            f"SELECT ?p ?o WHERE {{ GRAPH ?g {{ <{uri}> ?p ?o }} }}"
+            f"SELECT ?p ?o WHERE {{ GRAPH ?g {{ <{cidoc_uri}> ?p ?o }} }}"
         )
         self.assertGreater(len(after), 0, "accepted entity must project to RDF")
 
+        wrapper_after = self.engine.query(
+            f"SELECT ?p WHERE {{ GRAPH ?g {{ <{uri}> ?p ?o }} }}"
+        )
+        self.assertEqual(
+            len(wrapper_after),
+            0,
+            "FK-linked wrapper must not project a duplicate entity/<uuid> node",
+        )
+
         kg = self.client.get("/api/v1/cidoc/kg/graph/?scope=all&node_limit=200")
         self.assertEqual(kg.status_code, 200, kg.content)
-        node = next((n for n in kg.json().get("nodes", []) if n.get("id") == uri), None)
-        self.assertIsNotNone(node, "cultural-entity URI must appear in kg/graph")
+        node = next(
+            (n for n in kg.json().get("nodes", []) if n.get("id") == cidoc_uri), None
+        )
+        self.assertIsNotNone(node, "CIDOC resource URI must appear in kg/graph")
         self.assertEqual(node.get("label"), label)
 
 

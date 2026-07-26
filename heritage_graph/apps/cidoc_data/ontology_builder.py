@@ -271,6 +271,11 @@ def _range_to_field_type(
         return "date"
     if r in ("uri", "uriorcurie"):
         return "url"
+    # Geometry ranges get the lat/lng widget. The API's coordinate contract is
+    # the `latitude`/`longitude` pair (serializers fold it into the `point`
+    # column), so a plain text box here silently loses the value.
+    if r == "wktliteral":
+        return "geo_point"
     # LinkML class as range → relation
     if _HAS_LINKML and sv and sv.get_class(range_name, strict=False):
         return "relation"
@@ -334,10 +339,15 @@ def _slot_required_for_class(sv: SchemaView, class_name: str, slot_name: str) ->
     return False
 
 
+def _is_truthy(value: Any) -> bool:
+    return str(value).strip().lower() in ("1", "true", "yes", "on")
+
+
 def _slot_ui_overrides(slot: Any) -> dict[str, Any]:
     ann = getattr(slot, "annotations", None) or {}
     out: dict[str, Any] = {}
     for k in (
+        "ui_hidden",
         "ui_section",
         "ui_order",
         "ui_placeholder",
@@ -488,6 +498,7 @@ def build_classes(
             file_slot = (pres.get("slots") or {}).get(slot.name) or {}
             if isinstance(file_slot, dict):
                 for k in (
+                    "ui_hidden",
                     "ui_section",
                     "ui_order",
                     "ui_placeholder",
@@ -506,6 +517,10 @@ def build_classes(
                 ):
                     if file_slot.get(k) is not None:
                         ui[k] = str(file_slot[k])
+            # Ontology-only slots (e.g. the PROV-O mixins) carry no Django column,
+            # so surfacing them as form inputs would offer fields that cannot save.
+            if _is_truthy(ui.get("ui_hidden", "")):
+                continue
             if "ui_section" in ui:
                 field["section"] = ui["ui_section"]
             if "ui_order" in ui:
@@ -693,6 +708,13 @@ def build_classes_pyyaml(
             order += 1
             sdef = _slot_def(schema, slot_name)
             usage = slot_usage_root.get(slot_name) or {}
+            # Mirror the SchemaView path: ontology-only slots never reach the form.
+            _pres_slot = (pres.get("slots") or {}).get(slot_name) or {}
+            _hidden = _pres_slot.get("ui_hidden") if isinstance(_pres_slot, dict) else None
+            if _hidden is None:
+                _hidden = (sdef.get("annotations") or {}).get("ui_hidden")
+            if _hidden is not None and _is_truthy(_hidden):
+                continue
             range_name = sdef.get("range")
             if range_name in enum_names:
                 field_type = "select"
@@ -710,6 +732,8 @@ def build_classes_pyyaml(
                     field_type = "date"
                 elif r in ("uri", "uriorcurie"):
                     field_type = "url"
+                elif r == "wktliteral":
+                    field_type = "geo_point"
                 else:
                     field_type = "text"
             required = bool(usage.get("required") or sdef.get("required"))

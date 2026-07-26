@@ -35,6 +35,7 @@ import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
 } from '@/lib/heritage-museum/museum-rigor';
+import { isEquirectangular } from '@/lib/heritage-museum/panorama-support';
 import { parseTemporalAnchor } from '@/lib/heritage-museum/temporal-parse';
 import { cn } from '@/lib/utils';
 
@@ -375,6 +376,35 @@ function GalleryCard({
   );
 }
 
+function GalleryListItem({
+  node,
+  onSelect,
+}: {
+  node: GraphNode;
+  onSelect: (n: GraphNode) => void;
+}) {
+  const cfg = NODE_TYPE_CONFIG[node.nodeType];
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(node)}
+      className={cn(
+        'group flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-left transition-colors',
+        'hover:border-primary/40 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      )}
+    >
+      <span
+        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full"
+        style={{ background: `${cfg.color}cc` }}
+      >
+        <NodeGlyph nodeType={node.nodeType} size={12} color="#fff" />
+      </span>
+      <span className="text-xs font-medium text-foreground">{node.label}</span>
+      <span className="text-[11px] text-muted-foreground">{cfg.label}</span>
+    </button>
+  );
+}
+
 interface ImmersiveSceneProps {
   node: GraphNode | null;
   allNodes: GraphNode[];
@@ -392,6 +422,10 @@ export function ImmersiveScene({
   const tPanel = useTranslations('heritageMuseum.panel');
   const [heroIdx, setHeroIdx] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
+  // Only true once the hero image has loaded AND measured close to 2:1. The
+  // 360° viewer is offered on that basis alone: wrapping an ordinary
+  // photograph onto a sphere adds no immersion and looks broken at the poles.
+  const [heroIsPanoramic, setHeroIsPanoramic] = useState(false);
   const [showPanorama, setShowPanorama] = useState(false);
   const [showTranscript, setShowTranscript] = useState(false);
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
@@ -417,14 +451,23 @@ export function ImmersiveScene({
       }),
     [allNodes],
   );
-  const withMediaCount = useMemo(() => allNodes.filter(hasVisual).length, [allNodes]);
+  // A 4:3 photo tile promises a picture. Records without one render as empty
+  // pastel rectangles, so they get a compact list instead of the grid — unless
+  // nothing has imagery at all, where a list-only view would hide the corpus.
+  const visualNodes = useMemo(() => sortedNodes.filter(hasVisual), [sortedNodes]);
+  const textOnlyNodes = useMemo(() => sortedNodes.filter((n) => !hasVisual(n)), [sortedNodes]);
+  const withMediaCount = visualNodes.length;
+  const cardNodes = withMediaCount > 0 ? visualNodes : sortedNodes;
+  const listNodes = withMediaCount > 0 ? textOnlyNodes : [];
 
   useEffect(() => {
     setHeroIdx(0);
     setImgLoaded(false);
+    setHeroIsPanoramic(false);
   }, [node?.id]);
   useEffect(() => {
     setImgLoaded(false);
+    setHeroIsPanoramic(false);
   }, [heroIdx]);
 
   const handleMouseMove = useCallback(
@@ -468,10 +511,22 @@ export function ImmersiveScene({
                     : null}
                 </p>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 md:gap-4">
-                  {sortedNodes.map((n) => (
+                  {cardNodes.map((n) => (
                     <GalleryCard key={n.id} node={n} onSelect={onSelect} />
                   ))}
                 </div>
+                {listNodes.length > 0 ? (
+                  <div className="mt-8">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                      {t('galleryTextOnly', { count: listNodes.length })}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {listNodes.map((n) => (
+                        <GalleryListItem key={n.id} node={n} onSelect={onSelect} />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </>
             ) : (
               <p className="text-center text-sm text-muted-foreground">{t('galleryEmpty')}</p>
@@ -538,8 +593,19 @@ export function ImmersiveScene({
                     ? 'xrKenBurns 32s ease-in-out infinite alternate'
                     : 'none',
               }}
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgLoaded(false)}
+              onLoad={(e) => {
+                setImgLoaded(true);
+                // Measured off the element that is already loading, so the
+                // panorama test costs no extra request.
+                const img = e.currentTarget;
+                setHeroIsPanoramic(
+                  isEquirectangular(img.naturalWidth, img.naturalHeight),
+                );
+              }}
+              onError={() => {
+                setImgLoaded(false);
+                setHeroIsPanoramic(false);
+              }}
             />
           </div>
         ) : null}
@@ -603,7 +669,7 @@ export function ImmersiveScene({
                     {showTranscript ? t('transcriptHide') : t('transcriptShow')}
                   </Button>
                 ) : null}
-                {heroImage ? (
+                {heroImage && heroIsPanoramic ? (
                   <Button
                     type="button"
                     size="sm"

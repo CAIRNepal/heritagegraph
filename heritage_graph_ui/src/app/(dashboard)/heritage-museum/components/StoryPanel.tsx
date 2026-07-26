@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef } from 'react';
-import { IconExternalLink, IconShieldCheck } from '@tabler/icons-react';
+import { IconExternalLink, IconShieldCheck, IconWorld } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
@@ -74,6 +75,13 @@ export function StoryPanel({
   const detailHref = resourceIriToDetailHref(node.id);
   const showReviewed =
     dataSource === 'live' && isCuratedResourceIri(node.id);
+  // Only offered when this surface already knows the coordinates: Atlas is
+  // place-first, so linking an entity it cannot place would land the reader on
+  // the globe with nothing selected.
+  const globeHref =
+    node.lat != null && node.long != null
+      ? atlasHrefForNode(node.id, dataSource)
+      : null;
 
   const relatedNodes = node.relations
     .map((r) => ({ rel: r, rn: graphData.nodes.find((n) => n.id === r.targetId) }))
@@ -136,6 +144,19 @@ export function StoryPanel({
                 <Link href={detailHref}>
                   {t('openRecord')}
                   <IconExternalLink className="w-3 h-3 ml-1 inline" aria-hidden />
+                </Link>
+              </Button>
+            ) : null}
+            {globeHref ? (
+              <Button
+                asChild
+                variant="link"
+                size="sm"
+                className="h-auto p-0 mt-1 ml-3 text-xs text-primary"
+              >
+                <Link href={globeHref}>
+                  {t('viewOnGlobe')}
+                  <IconWorld className="w-3 h-3 ml-1 inline" aria-hidden />
                 </Link>
               </Button>
             ) : null}

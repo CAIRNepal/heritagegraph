@@ -98,7 +98,7 @@ SHACL enforcement, external-authority reconciliation, LOD publishing, evaluation
 - Optional SHACL gate (`RDF_SHACL_VALIDATE_ON_WRITE`); failed writes retried via the outbox.
 
 ### Stage 5 — KG store (Oxigraph)
-- SPARQL 1.1; partitions **PUBLIC** (published), **SCHEMA** (TBox from `Heritage.ttl`),
+- SPARQL 1.1; partitions **PUBLIC** (published), **SCHEMA** (TBox from `HeritageGraph.ttl`),
   **DOCUMENT** (per-upload ingest), **PROV** (reserved).
 - `rdf_rebuild` re-projects every entity idempotently (per-subject managed-triple replace —
   it does **not** wipe assertion edges).

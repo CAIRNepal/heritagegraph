@@ -28,20 +28,15 @@ hg:assertionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.w3.org/ns/prov#generatedAtTime> ;
-      sh:nodeKind sh:Literal ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/confidence_score> ;
+      sh:path <https://w3id.org/heritagegraph/confidenceScore> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/data_quality_note> ;
+      sh:path <https://w3id.org/heritagegraph/dataQualityNote> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/reconciliation_status> ;
+      sh:path <https://w3id.org/heritagegraph/reconciliationStatus> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -63,28 +58,28 @@ hg:assertionShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <http://www.w3.org/ns/prov#invalidated> ;
+      sh:path <http://www.w3.org/ns/prov#wasRevisionOf> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
 hg:calendarShape a sh:NodeShape ;
   rdfs:label "Shape for registry class calendar" ;
-  sh:targetClass <https://w3id.org/heritagegraph/Calendar> ;
+  sh:targetClass <https://w3id.org/heritagegraph/CalendarSystem> ;
     sh:property [
       sh:path <http://www.w3.org/2000/01/rdf-schema#label> ;
       sh:nodeKind sh:Literal ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/epoch_date_gregorian> ;
+      sh:path <https://w3id.org/heritagegraph/epochDateGregorian> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/is_primary_for_tradition> ;
+      sh:path <https://w3id.org/heritagegraph/isPrimaryForTradition> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/year_offset_from_gregorian> ;
+      sh:path <https://w3id.org/heritagegraph/yearOffsetFromGregorian> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -105,7 +100,7 @@ hg:caste_groupShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/traditional_role> ;
+      sh:path <https://w3id.org/heritagegraph/traditionalRole> ;
       sh:nodeKind sh:Literal ;
     ]  .
 
@@ -118,26 +113,20 @@ hg:consecrationShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/consecrated_object> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P16_used_specific_object> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by> ;
       sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P7_took_place_at> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/makes_deity_present> ;
+      sh:path <https://w3id.org/heritagegraph/makesDeityPresent> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
@@ -150,19 +139,19 @@ hg:data_sourceShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/identifier> ;
+      sh:path <https://w3id.org/heritagegraph/persistentIdentifier> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/identifierType> ;
+      sh:path <https://w3id.org/heritagegraph/identifierScheme> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/creator> ;
+      sh:path <https://w3id.org/heritagegraph/sourceCreator> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/publisher> ;
+      sh:path <https://w3id.org/heritagegraph/sourcePublisher> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -170,19 +159,23 @@ hg:data_sourceShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/publication_timespan> ;
+      sh:path <https://w3id.org/heritagegraph/publicationTimespan> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/source_citation> ;
+      sh:path <https://w3id.org/heritagegraph/sourceCitation> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/source_url> ;
+      sh:path <https://w3id.org/heritagegraph/sourceUrl> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P72_has_language> ;
+      sh:path <https://schema.org/inLanguage> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -192,15 +185,11 @@ hg:data_sourceShape a sh:NodeShape ;
     sh:property [
       sh:path <https://w3id.org/heritagegraph/archival_location> ;
       sh:nodeKind sh:Literal ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ;
-      sh:nodeKind sh:Literal ;
     ]  .
 
 hg:deityShape a sh:NodeShape ;
   rdfs:label "Shape for registry class deity" ;
-  sh:targetClass <http://www.cidoc-crm.org/cidoc-crm/E28_Conceptual_Object> ;
+  sh:targetClass <https://w3id.org/heritagegraph/Deity> ;
     sh:property [
       sh:path <http://www.w3.org/2000/01/rdf-schema#label> ;
       sh:nodeKind sh:Literal ;
@@ -211,7 +200,7 @@ hg:deityShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_religious_tradition> ;
+      sh:path <https://w3id.org/heritagegraph/hasReligiousTradition> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -219,11 +208,11 @@ hg:deityShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/is_invoked_in_ritual> ;
+      sh:path <https://w3id.org/heritagegraph/isInvokedInRitual> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/is_enshrined_through_event> ;
+      sh:path <https://w3id.org/heritagegraph/isEnshrinedThroughEvent> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
@@ -236,23 +225,18 @@ hg:enshrinementShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/enshrined_deity> ;
+      sh:path <https://w3id.org/heritagegraph/enshrinedDeity> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/enshrined_in_structure> ;
+      sh:path <https://w3id.org/heritagegraph/enshrinedInStructure> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by> ;
       sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
     ]  .
 
 hg:entityShape a sh:NodeShape ;
@@ -276,7 +260,7 @@ hg:entityShape a sh:NodeShape ;
 
 hg:eventShape a sh:NodeShape ;
   rdfs:label "Shape for registry class event" ;
-  sh:targetClass <http://www.cidoc-crm.org/cidoc-crm/E5_Event> ;
+  sh:targetClass <https://w3id.org/heritagegraph/HistoricalEvent> ;
     sh:property [
       sh:path <http://www.w3.org/2000/01/rdf-schema#label> ;
       sh:nodeKind sh:Literal ;
@@ -287,16 +271,11 @@ hg:eventShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P7_took_place_at> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P12_occurred_in_the_presence_of> ;
+      sh:path <https://w3id.org/heritagegraph/architecturalStructures> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -321,7 +300,7 @@ hg:festivalShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/ritual_type> ;
+      sh:path <https://w3id.org/heritagegraph/ritualType> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -329,20 +308,15 @@ hg:festivalShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/lunar_date_tithi> ;
+      sh:path <https://w3id.org/heritagegraph/lunarDateTithi> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/recurrence_pattern> ;
+      sh:path <https://w3id.org/heritagegraph/recurrencePattern> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/invokes_deity> ;
+      sh:path <https://w3id.org/heritagegraph/invokesDeity> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -350,7 +324,7 @@ hg:festivalShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/performed_by_group> ;
+      sh:path <https://w3id.org/heritagegraph/performedByGroup> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -358,15 +332,15 @@ hg:festivalShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/managed_by_guthi> ;
+      sh:path <https://w3id.org/heritagegraph/managedByGuthi> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_provenance_assertion> ;
+      sh:path <https://w3id.org/heritagegraph/hasAssertion> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -374,7 +348,7 @@ hg:festivalShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_is_occurred_before_by> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_occurs_after> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -382,19 +356,19 @@ hg:festivalShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_places> ;
+      sh:path <https://w3id.org/heritagegraph/routePlaces> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/start_place> ;
+      sh:path <https://w3id.org/heritagegraph/startPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/end_place> ;
+      sh:path <https://w3id.org/heritagegraph/endPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_description> ;
+      sh:path <https://w3id.org/heritagegraph/routeDescription> ;
       sh:nodeKind sh:Literal ;
     ]  .
 
@@ -411,16 +385,16 @@ hg:guthiShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/guthi_type> ;
+      sh:path <https://w3id.org/heritagegraph/guthiType> ;
       sh:nodeKind sh:Literal ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/performs_ritual> ;
+      sh:path <https://w3id.org/heritagegraph/performsRitual> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P50_has_current_keeper> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P50i_is_current_keeper_of> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -449,7 +423,7 @@ hg:iconographyShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/participates_in_ritual> ;
+      sh:path <https://w3id.org/heritagegraph/participatesInRitual> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -457,7 +431,7 @@ hg:iconographyShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/used_by> ;
+      sh:path <https://w3id.org/heritagegraph/usedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -469,7 +443,7 @@ hg:iconographyShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
@@ -482,12 +456,7 @@ hg:kumari_retirementShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/ended_tenure_of> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
+      sh:path <https://w3id.org/heritagegraph/endedTenureOf> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
@@ -500,7 +469,7 @@ hg:kumari_retirementShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/performed_by_group> ;
+      sh:path <https://w3id.org/heritagegraph/performedByGroup> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -512,11 +481,11 @@ hg:kumari_retirementShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/ritual_type> ;
+      sh:path <https://w3id.org/heritagegraph/ritualType> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -524,15 +493,15 @@ hg:kumari_retirementShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/lunar_date_tithi> ;
+      sh:path <https://w3id.org/heritagegraph/lunarDateTithi> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/recurrence_pattern> ;
+      sh:path <https://w3id.org/heritagegraph/recurrencePattern> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/invokes_deity> ;
+      sh:path <https://w3id.org/heritagegraph/invokesDeity> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -540,7 +509,11 @@ hg:kumari_retirementShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/managed_by_guthi> ;
+      sh:path <https://w3id.org/heritagegraph/managedByGuthi> ;
+      sh:nodeKind sh:IRI ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/hasAssertion> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -548,7 +521,7 @@ hg:kumari_retirementShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_is_occurred_before_by> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_occurs_after> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -556,19 +529,19 @@ hg:kumari_retirementShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_places> ;
+      sh:path <https://w3id.org/heritagegraph/routePlaces> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/start_place> ;
+      sh:path <https://w3id.org/heritagegraph/startPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/end_place> ;
+      sh:path <https://w3id.org/heritagegraph/endPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_description> ;
+      sh:path <https://w3id.org/heritagegraph/routeDescription> ;
       sh:nodeKind sh:Literal ;
     ]  .
 
@@ -581,17 +554,12 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/selected_person> ;
+      sh:path <https://w3id.org/heritagegraph/selectedPerson> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/initiated_tenure> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
+      sh:path <https://w3id.org/heritagegraph/initiatedTenure> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
@@ -600,7 +568,7 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/performed_by_group> ;
+      sh:path <https://w3id.org/heritagegraph/performedByGroup> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -608,7 +576,7 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/selection_criteria_met> ;
+      sh:path <https://w3id.org/heritagegraph/selectionCriteriaMet> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -616,11 +584,11 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/is_critical_for_festival> ;
+      sh:path <https://w3id.org/heritagegraph/isCriticalForFestival> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -628,7 +596,7 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/ritual_type> ;
+      sh:path <https://w3id.org/heritagegraph/ritualType> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -636,15 +604,15 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/lunar_date_tithi> ;
+      sh:path <https://w3id.org/heritagegraph/lunarDateTithi> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/recurrence_pattern> ;
+      sh:path <https://w3id.org/heritagegraph/recurrencePattern> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/invokes_deity> ;
+      sh:path <https://w3id.org/heritagegraph/invokesDeity> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -652,7 +620,11 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/managed_by_guthi> ;
+      sh:path <https://w3id.org/heritagegraph/managedByGuthi> ;
+      sh:nodeKind sh:IRI ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/hasAssertion> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -660,7 +632,7 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_is_occurred_before_by> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_occurs_after> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -668,19 +640,19 @@ hg:kumari_selectionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_places> ;
+      sh:path <https://w3id.org/heritagegraph/routePlaces> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/start_place> ;
+      sh:path <https://w3id.org/heritagegraph/startPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/end_place> ;
+      sh:path <https://w3id.org/heritagegraph/endPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_description> ;
+      sh:path <https://w3id.org/heritagegraph/routeDescription> ;
       sh:nodeKind sh:Literal ;
     ]  .
 
@@ -693,27 +665,22 @@ hg:kumari_tenureShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/had_participant> ;
+      sh:path <https://w3id.org/heritagegraph/hadParticipant> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/embodied_deity> ;
+      sh:path <https://w3id.org/heritagegraph/embodiedDeity> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/residence_structure> ;
+      sh:path <https://w3id.org/heritagegraph/residenceStructure> ;
       sh:nodeKind sh:IRI ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/supported_by_institution> ;
+      sh:path <https://w3id.org/heritagegraph/supportedByInstitution> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -721,7 +688,7 @@ hg:kumari_tenureShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
@@ -738,7 +705,7 @@ hg:locationShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/place_type> ;
+      sh:path <https://w3id.org/heritagegraph/placeType> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -759,13 +726,16 @@ hg:monumentShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
+      sh:path <http://www.opengis.net/ont/geosparql#asWKT> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P55_has_current_location> ;
       sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P34i_was_assessed_by> ;
@@ -776,35 +746,35 @@ hg:monumentShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_architectural_style> ;
+      sh:path <https://w3id.org/heritagegraph/hasArchitecturalStyle> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/existence_status> ;
+      sh:path <https://w3id.org/heritagegraph/existenceStatus> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/last_known_existence_date> ;
+      sh:path <https://w3id.org/heritagegraph/lastKnownExistenceDate> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/destruction_event> ;
+      sh:path <https://w3id.org/heritagegraph/destructionEvent> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/hypothesized_location> ;
+      sh:path <https://w3id.org/heritagegraph/hypothesizedLocation> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/documented_in_source> ;
+      sh:path <https://w3id.org/heritagegraph/mentionedInSource> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_provenance_assertion> ;
+      sh:path <https://w3id.org/heritagegraph/hasAssertion> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/participates_in_ritual> ;
+      sh:path <https://w3id.org/heritagegraph/participatesInRitual> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -812,7 +782,7 @@ hg:monumentShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
@@ -827,10 +797,6 @@ hg:periodShape a sh:NodeShape ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P3_has_note> ;
       sh:nodeKind sh:Literal ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
     ]  .
 
 hg:personShape a sh:NodeShape ;
@@ -846,11 +812,11 @@ hg:personShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/birth_timespan> ;
+      sh:path <https://w3id.org/heritagegraph/birthTimespan> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/death_timespan> ;
+      sh:path <https://w3id.org/heritagegraph/deathTimespan> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -858,15 +824,15 @@ hg:personShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/carried_out_activity> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P14i_performed> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/institutional_affiliation> ;
+      sh:path <https://w3id.org/heritagegraph/institutionalAffiliation> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/expertise_area> ;
+      sh:path <https://w3id.org/heritagegraph/expertiseArea> ;
       sh:nodeKind sh:Literal ;
     ]  .
 
@@ -886,10 +852,9 @@ hg:productionShape a sh:NodeShape ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by> ;
       sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P32_used_general_technique> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P33_used_specific_technique> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -897,20 +862,15 @@ hg:productionShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P17_was_motivated_by> ;
+      sh:path <https://w3id.org/heritagegraph/commissionedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_provenance_assertion> ;
+      sh:path <https://w3id.org/heritagegraph/hasAssertion> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
@@ -927,7 +887,7 @@ hg:ritualShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/ritual_type> ;
+      sh:path <https://w3id.org/heritagegraph/ritualType> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -935,20 +895,15 @@ hg:ritualShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/lunar_date_tithi> ;
+      sh:path <https://w3id.org/heritagegraph/lunarDateTithi> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/recurrence_pattern> ;
+      sh:path <https://w3id.org/heritagegraph/recurrencePattern> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/invokes_deity> ;
+      sh:path <https://w3id.org/heritagegraph/invokesDeity> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -956,7 +911,7 @@ hg:ritualShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/performed_by_group> ;
+      sh:path <https://w3id.org/heritagegraph/performedByGroup> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -964,15 +919,15 @@ hg:ritualShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/managed_by_guthi> ;
+      sh:path <https://w3id.org/heritagegraph/managedByGuthi> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_provenance_assertion> ;
+      sh:path <https://w3id.org/heritagegraph/hasAssertion> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -980,7 +935,7 @@ hg:ritualShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_is_occurred_before_by> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P120i_occurs_after> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -988,19 +943,19 @@ hg:ritualShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_places> ;
+      sh:path <https://w3id.org/heritagegraph/routePlaces> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/start_place> ;
+      sh:path <https://w3id.org/heritagegraph/startPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/end_place> ;
+      sh:path <https://w3id.org/heritagegraph/endPlace> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/route_description> ;
+      sh:path <https://w3id.org/heritagegraph/routeDescription> ;
       sh:nodeKind sh:Literal ;
     ]  .
 
@@ -1013,55 +968,15 @@ hg:sourceShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/is_about_entity> ;
+      sh:path <http://www.cidoc-crm.org/cidoc-crm/P129_is_about> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <http://www.w3.org/ns/prov#wasGeneratedBy> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/is_about_event> ;
-      sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
-      sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P72_has_language> ;
-      sh:nodeKind sh:Literal ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/identifier> ;
-      sh:nodeKind sh:Literal ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/identifierType> ;
-      sh:nodeKind sh:Literal ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/creator> ;
-      sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/publisher> ;
-      sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/resourceType> ;
-      sh:nodeKind sh:Literal ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/publication_timespan> ;
-      sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/source_citation> ;
-      sh:nodeKind sh:Literal ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/source_url> ;
+      sh:path <https://schema.org/inLanguage> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -1070,6 +985,38 @@ hg:sourceShape a sh:NodeShape ;
     ] ;
     sh:property [
       sh:path <https://w3id.org/heritagegraph/archival_location> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/persistentIdentifier> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/identifierScheme> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/sourceCreator> ;
+      sh:nodeKind sh:IRI ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/sourcePublisher> ;
+      sh:nodeKind sh:IRI ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/resourceType> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/publicationTimespan> ;
+      sh:nodeKind sh:IRI ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/sourceCitation> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
+      sh:path <https://w3id.org/heritagegraph/sourceUrl> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
@@ -1090,13 +1037,16 @@ hg:structureShape a sh:NodeShape ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
+      sh:path <http://www.opengis.net/ont/geosparql#asWKT> ;
+      sh:nodeKind sh:Literal ;
+    ] ;
+    sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P55_has_current_location> ;
       sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P34i_was_assessed_by> ;
@@ -1107,35 +1057,35 @@ hg:structureShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_architectural_style> ;
+      sh:path <https://w3id.org/heritagegraph/hasArchitecturalStyle> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/existence_status> ;
+      sh:path <https://w3id.org/heritagegraph/existenceStatus> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/last_known_existence_date> ;
+      sh:path <https://w3id.org/heritagegraph/lastKnownExistenceDate> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/destruction_event> ;
+      sh:path <https://w3id.org/heritagegraph/destructionEvent> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/hypothesized_location> ;
+      sh:path <https://w3id.org/heritagegraph/hypothesizedLocation> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/documented_in_source> ;
+      sh:path <https://w3id.org/heritagegraph/mentionedInSource> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/has_provenance_assertion> ;
+      sh:path <https://w3id.org/heritagegraph/hasAssertion> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/participates_in_ritual> ;
+      sh:path <https://w3id.org/heritagegraph/participatesInRitual> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
@@ -1143,13 +1093,13 @@ hg:structureShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
 hg:syncretismShape a sh:NodeShape ;
   rdfs:label "Shape for registry class syncretism" ;
-  sh:targetClass <http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment> ;
+  sh:targetClass <https://w3id.org/heritagegraph/SyncreticRelationship> ;
     sh:property [
       sh:path <http://www.w3.org/2000/01/rdf-schema#label> ;
       sh:nodeKind sh:Literal ;
@@ -1169,29 +1119,21 @@ hg:syncretismShape a sh:NodeShape ;
       sh:minCount 1 ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/syncretic_type> ;
+      sh:path <https://w3id.org/heritagegraph/syncreticType> ;
       sh:nodeKind sh:Literal ;
     ] ;
     sh:property [
-      sh:path <http://www.w3.org/ns/prov#wasDerivedFrom> ;
+      sh:path <https://w3id.org/heritagegraph/documentedBy> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/was_documented_by> ;
-      sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/documented_in_source> ;
-      sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <https://w3id.org/heritagegraph/assertion_author> ;
+      sh:path <https://w3id.org/heritagegraph/mentionedInSource> ;
       sh:nodeKind sh:IRI ;
     ]  .
 
 hg:traditionShape a sh:NodeShape ;
   rdfs:label "Shape for registry class tradition" ;
-  sh:targetClass <http://www.cidoc-crm.org/cidoc-crm/E55_Type> ;
+  sh:targetClass <https://w3id.org/heritagegraph/ReligiousTradition> ;
     sh:property [
       sh:path <http://www.w3.org/2000/01/rdf-schema#label> ;
       sh:nodeKind sh:Literal ;
@@ -1224,15 +1166,10 @@ hg:transfer_of_custodyShape a sh:NodeShape ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
-      sh:path <https://w3id.org/heritagegraph/transferred_to_guthi> ;
+      sh:path <https://w3id.org/heritagegraph/transferredToGuthi> ;
       sh:nodeKind sh:IRI ;
     ] ;
     sh:property [
       sh:path <http://www.cidoc-crm.org/cidoc-crm/P7_took_place_at> ;
       sh:nodeKind sh:IRI ;
-    ] ;
-    sh:property [
-      sh:path <http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span> ;
-      sh:nodeKind sh:IRI ;
-      sh:minCount 1 ;
     ]  .

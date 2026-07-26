@@ -330,7 +330,7 @@ class ContributionFlowMixin:
         try:
             with transaction.atomic():
                 entity, revision = self._append_wrapper_revision(
-                    instance, dict(serializer.data)
+                    instance, coerce_for_jsonschema(serializer.data)
                 )
                 entity.current_revision = revision
                 entity.save(update_fields=["current_revision"])
@@ -387,10 +387,15 @@ class ContributionFlowMixin:
                 cidoc_object_id=instance.pk,
             )
 
-            # Build revision data from the serialized instance
-            revision_data = serializer.data.copy()
+            # Build revision data from the serialized instance. `serializer.data`
+            # is render-ready rather than JSON-safe — DRF's renderer handles
+            # UUID/Decimal/date, but this goes into a JSONField via
+            # `json.dumps`, which does not. Coercing here keeps a serializer
+            # that exposes a UUID-pk relation from 500-ing the whole
+            # contribution.
+            revision_data = coerce_for_jsonschema(serializer.data)
             revision_data["_cidoc_model"] = instance.__class__.__name__
-            revision_data["_cidoc_id"] = instance.pk
+            revision_data["_cidoc_id"] = coerce_for_jsonschema(instance.pk)
 
             revision = Revision.objects.create(
                 entity=entity,
@@ -1209,7 +1214,13 @@ from apps.cidoc_data.serializers import (
     PersonSerializer,
     RitualEventSerializer,
     TraditionSerializer,
-    _get_cultural_entity_id,
+)
+from apps.cidoc_data.discovery import (
+    DISCOVERY_TYPE_MAP,
+    discovery_record_name,
+    discovery_row,
+    discovery_summary,
+    filtered_discovery_queryset,
 )
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -1218,6 +1229,14 @@ from rest_framework.response import Response
 
 @api_view(["GET"])
 def universal_search(request):
+    """Cross-model search.
+
+    Visibility matches the detail endpoints (published catalog, plus the
+    caller's own rows, plus everything for staff). Without this the view is
+    anonymous and ungated, so pending and rejected records were searchable.
+    """
+    from apps.cidoc_data.list_visibility import apply_cidoc_retrieve_visibility
+
     q = request.GET.get("q", "").strip()
 
     if not q:
@@ -1288,102 +1307,12 @@ def universal_search(request):
         for field in fields:
             q_filter |= Q(**{f"{field}__icontains": q})
 
-        queryset = model.objects.filter(q_filter).distinct()
+        queryset = apply_cidoc_retrieve_visibility(
+            model.objects.filter(q_filter), request
+        ).distinct()
         results[key] = serializer_class(queryset, many=True).data
 
     return Response(results)
-
-
-def _discovery_record_name(instance):
-    name = getattr(instance, "name", None)
-    if name and str(name).strip():
-        return str(name).strip()
-    title = getattr(instance, "title", None)
-    if title and str(title).strip():
-        return str(title).strip()
-    return str(instance.pk)
-
-
-def _discovery_summary(instance):
-    for attr in ("description", "biography", "note", "route_description"):
-        val = getattr(instance, attr, None)
-        if val and str(val).strip():
-            s = str(val).strip()
-            return f"{s[:277]}…" if len(s) > 280 else s
-    return ""
-
-
-def _discovery_location_hint(instance):
-    for attr in ("location_name", "location", "start_place"):
-        val = getattr(instance, attr, None)
-        if val and str(val).strip():
-            return str(val).strip()[:200]
-    return ""
-
-
-def _discovery_is_published(instance):
-    from apps.cidoc_data.publication_policy import is_published_for_rdf
-
-    return is_published_for_rdf(instance)
-
-
-def _discovery_row(instance, resource_key):
-    return {
-        "id": str(instance.pk),
-        "resource": resource_key,
-        "type": instance.__class__.__name__,
-        "name": _discovery_record_name(instance),
-        "summary": _discovery_summary(instance),
-        "location_hint": _discovery_location_hint(instance),
-        "cultural_entity_id": _get_cultural_entity_id(instance),
-        "status": (getattr(instance, "status", None) or "").strip(),
-        "is_published": _discovery_is_published(instance),
-        "has_media": False,
-    }
-
-
-# Maps public landing tabs → model + searchable fields (icontains).
-_DISCOVERY_TYPE_MAP = {
-    "monuments": (Monument, ["name", "description", "note", "location_name"]),
-    "festivals": (
-        Festival,
-        ["name", "description", "note", "location_name", "route_description"],
-    ),
-    "deities": (
-        Deity,
-        ["name", "description", "note", "alternate_names", "religious_tradition"],
-    ),
-    "persons": (
-        Person,
-        ["name", "description", "aliases", "occupation", "biography"],
-    ),
-    "guthis": (
-        Guthi,
-        ["name", "description", "note", "location", "managed_structures"],
-    ),
-    "rituals": (
-        RitualEvent,
-        [
-            "name",
-            "description",
-            "note",
-            "location_name",
-            "performed_by",
-            "route_description",
-        ],
-    ),
-}
-
-
-def _filtered_discovery_queryset(model, fields, q):
-    qs = model.objects.all().order_by("-id")
-    q = (q or "").strip()
-    if not q:
-        return qs
-    q_filter = Q()
-    for field in fields:
-        q_filter |= Q(**{f"{field}__icontains": q})
-    return qs.filter(q_filter).distinct()
 
 
 @api_view(["GET"])
@@ -1398,19 +1327,19 @@ def public_discovery(request):
     type_key = (request.GET.get("type") or "persons").strip()
     q = request.GET.get("q", "")
 
-    if type_key not in _DISCOVERY_TYPE_MAP:
+    if type_key not in DISCOVERY_TYPE_MAP:
         return Response(
             {"error": f"Unknown type '{type_key}'."},
             status=400,
         )
 
     counts = {}
-    for key, (model, fields) in _DISCOVERY_TYPE_MAP.items():
-        counts[key] = _filtered_discovery_queryset(model, fields, q).count()
+    for key, (model, fields) in DISCOVERY_TYPE_MAP.items():
+        counts[key] = filtered_discovery_queryset(model, fields, q).count()
 
-    model, fields = _DISCOVERY_TYPE_MAP[type_key]
-    qs = _filtered_discovery_queryset(model, fields, q)[:100]
-    results = [_discovery_row(obj, type_key) for obj in qs]
+    model, fields = DISCOVERY_TYPE_MAP[type_key]
+    qs = filtered_discovery_queryset(model, fields, q)[:100]
+    results = [discovery_row(obj, type_key) for obj in qs]
 
     return Response(
         {
@@ -1446,8 +1375,8 @@ def _related_entity_row(instance):
     return {
         "id": str(instance.pk),
         "domain_key": domain_key,
-        "name": _discovery_record_name(instance),
-        "summary": _discovery_summary(instance),
+        "name": discovery_record_name(instance),
+        "summary": discovery_summary(instance),
         "display_type": REFERRED_GROUP_LABELS.get(
             domain_key,
             instance.__class__.__name__,
@@ -2065,9 +1994,9 @@ class CidocRevertView(APIView):
             Revision.objects.filter(entity=entity).order_by("-revision_number").first()
         )
         next_num = (latest.revision_number + 1) if latest else 1
-        new_data = dict(serializer.data)
+        new_data = coerce_for_jsonschema(serializer.data)
         new_data["_cidoc_model"] = model_cls.__name__
-        new_data["_cidoc_id"] = instance.pk
+        new_data["_cidoc_id"] = coerce_for_jsonschema(instance.pk)
         new_rev = Revision.objects.create(
             entity=entity,
             data=new_data,

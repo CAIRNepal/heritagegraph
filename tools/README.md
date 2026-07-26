@@ -8,7 +8,7 @@ Run `make generate` to regenerate all schema-driven artifacts in one command:
 make generate
 ```
 
-This runs: ontology → viz-config → shacl → serializers → entityrefs → schema-rebuild.
+This runs: ontology → viz-config → shacl → owl-ttl → crm-bridge → skos-vocab → serializers → entityrefs → schema-rebuild.
 
 For CI verification (no side-effects):
 
@@ -54,6 +54,24 @@ python3 tools/linkml_generate_registry.py --check
 ```
 
 ---
+
+## `emit_owl_ttl.py`
+
+Emits **`ontology/HeritageGraph.ttl`** — the OWL/Turtle TBox loaded into Oxigraph by
+`manage.py rdf_load_tbox` and parsed by `apps.graph.kg_engine.quality` for CIDOC-CRM
+coverage metrics. Run via `make owl-ttl` (CI gate: `make owl-ttl-check`).
+
+The LinkML OWL generator mints fresh blank-node ids each run and rdflib's Turtle serializer
+does not order them stably, so this tool compares the **parsed RDF graph** (isomorphism)
+instead of the text. An unchanged schema therefore leaves the committed file untouched and
+`--check` only fails on a real semantic difference.
+
+## `merge_ontology_upgrade.py`
+
+One-shot rebase of the upstream ontology draft in `ontology/upstream/` onto the deployed
+schema, restoring the operational classes/slots/prefixes and `meaning:` annotations the draft
+dropped. See [`ontology/README.md`](../ontology/README.md) for what is carried over vs restored.
+Kept in-tree for auditability; not part of `make generate`.
 
 ## `emit_minimal_shacl.py`
 

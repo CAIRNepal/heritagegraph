@@ -1,21 +1,21 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml (enums section)
 // Regen:   python3 tools/gen_heritage_viz_config.py
-// Hash:    926fcfd1486d5def
+// Hash:    64ad8fff9a58cdf8
 //
 // Controlled vocabularies for select fields in contribution forms.
 // Edit permissible_values in the schema, then re-run the generator.
 
 
 export const ontologyEnums = {
-  ConditionTypeEnum: [
+  ConditionType: [
     { value: "Good", label: "Good", description: "No significant damage" },
     { value: "Damaged", label: "Damaged", description: "Partially damaged" },
     { value: "Ruined", label: "Ruined", description: "Severely damaged or collapsed" },
     { value: "Restored", label: "Restored", description: "Repaired and stabilized" },
   ],
 
-  ExistenceStatusEnum: [
+  ExistenceStatus: [
     { value: "Extant", label: "Extant", description: "Currently exists in physical form" },
     { value: "PartiallyExtant", label: "PartiallyExtant", description: "Fragments or ruins remain" },
     { value: "Destroyed", label: "Destroyed", description: "Known to have been destroyed; no physical remains" },
@@ -24,7 +24,7 @@ export const ontologyEnums = {
     { value: "Unknown", label: "Unknown", description: "Existence status uncertain" },
   ],
 
-  RitualTypeEnum: [
+  RitualType: [
     { value: "NityaPuja", label: "NityaPuja", description: "Daily mandatory worship" },
     { value: "NaimittikaPuja", label: "NaimittikaPuja", description: "Occasional/Festival worship" },
     { value: "KamyaPuja", label: "KamyaPuja", description: "Desire-based optional worship" },
@@ -46,7 +46,7 @@ export const ontologyEnums = {
     { value: "ProcessionalMovement", label: "ProcessionalMovement", description: "General ritual movement between locations" },
   ],
 
-  DatePrecisionEnum: [
+  DatePrecision: [
     { value: "Exact", label: "Exact", description: "Precise date known" },
     { value: "Year", label: "Year", description: "Year-level precision only" },
     { value: "Decade", label: "Decade", description: "Within 10-year range" },
@@ -54,14 +54,14 @@ export const ontologyEnums = {
     { value: "Circa", label: "Circa", description: "Approximate date" },
   ],
 
-  SyncreticTypeEnum: [
+  SyncreticType: [
     { value: "Equivalence", label: "Equivalence", description: "Same deity in different traditions (e.g., Avalokiteshvara = Matsyendranath)" },
     { value: "Appropriation", label: "Appropriation", description: "Deity borrowed from one tradition into another" },
     { value: "Fusion", label: "Fusion", description: "Intrinsically syncretic deity merging multiple traditions" },
     { value: "Historical", label: "Historical", description: "Gradual syncretism over time" },
   ],
 
-  ArchitecturalStyleEnum: [
+  ArchitecturalStyle: [
     { value: "Pagoda", label: "Pagoda", description: "Multi-tiered roof style indigenous to Nepal" },
     { value: "Shikhara", label: "Shikhara", description: "North Indian spire-shaped style" },
     { value: "Dome", label: "Dome", description: "Dome-based style (Mughal/Neo-classical influence)" },
@@ -69,7 +69,7 @@ export const ontologyEnums = {
     { value: "Stupa", label: "Stupa", description: "Buddhist dome-shaped reliquary" },
   ],
 
-  GuthiTypeEnum: [
+  GuthiType: [
     { value: "SiGuthi", label: "SiGuthi", description: "Funeral trust" },
     { value: "JatraGuthi", label: "JatraGuthi", description: "Festival organization trust" },
     { value: "PujaGuthi", label: "PujaGuthi", description: "Daily worship trust" },
@@ -80,7 +80,7 @@ export const ontologyEnums = {
     { value: "RajGuthi", label: "RajGuthi", description: "Royal endowment trust" },
   ],
 
-  CulturalEntityCategoryEnum: [
+  CulturalEntityCategory: [
     { value: "monument", label: "Monument", description: "Monument or built heritage" },
     { value: "artifact", label: "Artifact" },
     { value: "ritual", label: "Ritual" },

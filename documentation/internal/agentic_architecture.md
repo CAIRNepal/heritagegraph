@@ -61,18 +61,18 @@ Instead of extracting entities and then validating them, every extracted fact is
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  AGENT 3 — SHACL VALIDATOR AGENT                                         │
 │                                                                          │
-│  • Runs pySHACL against your Heritage.ttl OWL shapes                    │
+│  • Runs pySHACL against your HeritageGraph.ttl OWL shapes               │
 │  • Checks:                                                               │
 │    - Domain/range compliance (E53_Place cannot be subject of P14)        │
 │    - Cardinality constraints (a LivingGoddessTenure must have            │
 │      had_participant exactly one Person)                                 │
-│    - Enum conformance (condition must be in ConditionTypeEnum)           │
+│    - Enum conformance (condition must be in ConditionType)               │
 │    - Cross-class consistency (SyncreticRelationship requires two deities)│
 │  • REJECTS invalid triples with structured error reason                  │
 │  • CORRECTS recoverable errors (wrong direction, missing inverse)        │
 │  • Output: ValidatedAssertion | RejectedAssertion with reason            │
 │                                                                          │
-│  Tool: pySHACL + Heritage.ttl                                       │
+│  Tool: pySHACL + HeritageGraph.ttl                                  │
 └─────────────────────────┬───────────────────────────────────────────────┘
                           │  ValidatedAssertion stream
                           ▼
@@ -179,7 +179,7 @@ ReviewFlag(
 | Semantic chunking | **chonkie** (MIT) | Sentence-aware, token-budget-aware chunking |
 | Language detection | **langdetect** | Nepali/Sanskrit/English detection for prompt selection |
 | Extraction LLM | **Llama 3.1 70B** via Ollama | Open weights, fully reproducible, citable in paper |
-| Ontology validation | **pySHACL** (Apache-2.0) | SHACL shapes against your Heritage.ttl |
+| Ontology validation | **pySHACL** (Apache-2.0) | SHACL shapes against your HeritageGraph.ttl |
 | Fuzzy entity matching | **rapidfuzz** (MIT) | Transliteration normalization (Swayambhu variants) |
 | SPARQL queries | **SPARQLWrapper** → Oxigraph | Entity resolution against live graph |
 | Pydantic validation | **pydantic v2** | Already in stack; schema-level type enforcement |
@@ -238,7 +238,7 @@ PDF / Archival Text
   + confidence_score
         │
         ▼
-[SHACL Validator] ←──── Heritage.ttl (OWL shapes)
+[SHACL Validator] ←──── HeritageGraph.ttl (OWL shapes)
         │
    PASS / FAIL
         │

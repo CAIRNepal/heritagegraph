@@ -360,7 +360,7 @@ ARCHITECTURAL_STYLE_CHOICES = [
     ("Other", "Other"),
 ]
 
-# Canonical values mirror ontology/HeritageGraph.yaml ExistenceStatusEnum, which
+# Canonical values mirror ontology/HeritageGraph.yaml ExistenceStatus, which
 # drives the contribute form. Legacy values below are retained (not offered in new
 # forms) so pre-alignment rows stay valid on edit. Keep this list in sync with the
 # ontology enum.

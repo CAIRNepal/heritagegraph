@@ -162,7 +162,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `GET /data/api/personal-stats/` — current user stats
 - `GET /data/api/progression/` — progression metrics
 
-**CIDOC Data (prefix: `/cidoc/`):** Ontology **v1.0.0** — full registry in [`documentation/ontology/ONTOLOGY.md`](documentation/ontology/ONTOLOGY.md) §5 and `tools/ui-classmap.yaml`. Registry keys ↔ Django models: `cidoc_registry_keys.py`.
+**CIDOC Data (prefix: `/cidoc/`):** Ontology **v1.1.0** (deployed 1.0.0 schema rebased onto the upstream 0.1.0 draft — see [`ontology/README.md`](ontology/README.md)) — full registry in [`documentation/ontology/ONTOLOGY.md`](documentation/ontology/ONTOLOGY.md) §5 and `tools/ui-classmap.yaml`. Registry keys ↔ Django models: `cidoc_registry_keys.py`.
 
 - **Actors & spatiotemporal:** `/cidoc/persons/`, `/cidoc/locations/`, `/cidoc/events/`, `/cidoc/historical_periods/`, `/cidoc/traditions/`, `/cidoc/calendar_systems/`
 - **Tangible heritage:** `/cidoc/structures/`, `/cidoc/iconographic_objects/`, `/cidoc/monuments/`
@@ -217,6 +217,11 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `GET /cidoc/entity-clusters/suggest-duplicates/` — canonical-label substring hints (`q`, optional `type_scope`; authenticated)
 - Ops: `python manage.py seed_relationship_predicates` — seed predicate rows after migrate
 
+**Public graph hygiene (see [`documentation/knowledge-graph/RDF_ENGINE.md`](documentation/knowledge-graph/RDF_ENGINE.md) §Operations):**
+- `python manage.py kg_purge_orphans [--apply]` — remove `graph/public` subjects whose Postgres row was deleted. `rdf_rebuild` iterates live rows and cannot see them, so out-of-band deletions leave ghosts that render as real heritage in the KG projection, Atlas, and Museum. Pair as `rdf_rebuild && kg_purge_orphans --apply`
+- Publication requires an identifying label: `has_publishable_label` (`apps/cidoc_data/publication_policy.py`) withholds rows whose `name`/`title` is blank or a single stray character, regardless of approval status
+- Local dev only: a process with no writer handle caches a point-in-time `Store.read_only` snapshot, so a running dev server will not see writes made by a management command until restarted (`apps/graph/kg_engine/store.py`)
+
 **OCR / Document processing (prefix: `/data/`, also available under `/api/v1/data/`):**
 - `POST /data/ocr-documents/upload/` — multipart upload: creates `heritage_data.Media` and enqueues `document_processing.UploadedDocument` processing
 - `GET /data/ocr-documents/<uuid>/` — OCR run status (includes JSON `processing_progress` while jobs run)
@@ -261,7 +266,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/community/contributors` — contributor list
 - `/graphview` — graph visualization
 - `/atlas` — Heritage Atlas (Cesium globe): demo corpus by default; **live mode consumes the authoritative KG projection** `GET /api/v1/cidoc/kg/graph/` (same as the Museum) via `lib/atlas-kg-hydrate.ts` — IRI node ids, tiered coord provenance (verified/inherited/gazetteer/unmapped, shared `lib/kg-geo.ts`), real comments/media, assertion-backed edge provenance (no synthetic assertions); URL-synced `source`/`selected`/`panel`/`year`; curator Reviewed/All scope toggle; 5-min sessionStorage cache
-- `/heritage-museum` — Museum XR / narrative knowledge graph
+- `/heritage-museum` — narrative knowledge graph: **Graph** (d3-force), **Map** (Leaflet), **Stories** (cinematic photo-essay reader). The Stories tab is *not* XR — `ImmersiveScene` is DOM/CSS. The three.js + WebXR `PanoramaViewer` is offered only when a hero image measures ~2:1 (`lib/heritage-museum/panorama-support.ts`), because wrapping an ordinary photo onto a sphere adds no immersion. Cross-links to Atlas via `lib/cross-surface-links.ts` (live mode only — demo corpora have unrelated ids)
 - `/platform-admin` — In-app user and reviewer role management (staff / expert curator)
 
 ---

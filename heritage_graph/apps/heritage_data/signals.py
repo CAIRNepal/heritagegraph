@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from .models import CulturalEntity, Submission, UserProfile, UserStats
@@ -152,6 +152,32 @@ def sync_cultural_entity_to_public_graph(sender, instance, **kwargs):
             logger.exception("RDF sync failed for cultural entity %s", entity_pk)
 
     transaction.on_commit(_sync)
+
+
+@receiver(post_delete, sender=CulturalEntity)
+def remove_cultural_entity_from_public_graph(sender, instance, **kwargs):
+    """Deleting a wrapper must also remove its `resource/entity/<uuid>` node,
+    otherwise the museum/atlas keeps rendering a ghost with no backing row.
+    (CIDOC rows already get this via rdf_signals; wrappers did not.)"""
+    from django.conf import settings
+    from django.db import transaction
+
+    if not getattr(settings, "RDF_SYNC_ENABLED", False):
+        return
+
+    # Capture now: the instance is gone by commit time.
+    entity_id = instance.entity_id
+
+    def _cleanup():
+        try:
+            from apps.graph.kg_engine.uris import cultural_entity_uri
+            from apps.graph.rdf_publish import delete_subject_from_store
+
+            delete_subject_from_store(uri=cultural_entity_uri(entity_id))
+        except Exception:
+            logger.exception("RDF cleanup failed for cultural entity %s", entity_id)
+
+    transaction.on_commit(_cleanup)
 
 
 # =====================================================================

@@ -90,6 +90,14 @@ If the secret is not set, the workflow skips the POST (no failure) so you can re
 | `CELERY_BROKER_URL` / `CELERY_RESULT_BACKEND` | `backend` (when async enabled) | `redis://redis:6379/0` and `…/1` |
 | `OCR_ENABLED` | `backend` | Default `false` — set `true` only after restoring `ocr-worker` |
 | `POSTGRES_PASSWORD`, `DJANGO_SECRET_KEY`, etc. | `backend`, others | Required |
+| `OPENROUTER_API_KEY` | `backend` | Required for the in-app assistant; read per request, so an unset key fails only `/api/v1/assistant/chat/` |
+| `OPENROUTER_MODEL_STANDARD` | `backend` | Defaults to `anthropic/claude-3-5-haiku-20241022`; `…_FAST` / `…_PREMIUM` fall back to it |
+| `CSRF_TRUSTED_ORIGINS` | `backend` | Comma-separated, **scheme required** (`https://host`). Appends to the `heritagegraph.xyz` origins pinned in `settings/base.py` — set this when deploying on any other domain, or Django admin login fails CSRF |
+| `HERITAGEGRAPH_SCHEMA_EXTENSION_PATH` | `backend` | Defaults to `/app/schema-overlay/extensions.yaml` on the `backend-schema-overlay` volume, so published schema extension proposals survive a redeploy |
+
+### Build-time vs runtime variables
+
+`NEXT_PUBLIC_*` are compiled into the browser bundle, so they are read from **build args**, not the running container — changing them in Dokploy has no effect until the image is rebuilt. Compose defaults them to the public `https://` origins; an unset variable previously resolved to `http://localhost:*` inside the Dockerfile and shipped that to browsers.
 
 **To revive OCR:** restore the `ocr-worker` service in compose, build the `ocr-worker` Docker target, set `OCR_ENABLED=true`, and add `ANTHROPIC_API_KEY` for Claude Vision rescue. See [`../pipelines/OCR.md`](../pipelines/OCR.md).
 

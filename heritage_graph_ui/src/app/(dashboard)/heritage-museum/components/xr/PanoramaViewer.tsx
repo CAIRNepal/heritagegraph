@@ -11,6 +11,7 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { isEquirectangular } from '@/lib/heritage-museum/panorama-support';
 import {
   xrChip,
   xrGlassPanel,
@@ -28,11 +29,6 @@ interface PanoramaViewerProps {
   node: GraphNode;
   reducedMotion?: boolean;
   onClose: () => void;
-}
-
-function isEquirectangular(width: number, height: number): boolean {
-  if (!width || !height) return false;
-  return Math.abs(width / height - 2) <= 0.15;
 }
 
 function isWikimediaFilePath(url: string): boolean {

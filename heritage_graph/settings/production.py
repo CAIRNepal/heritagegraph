@@ -171,5 +171,17 @@ if "CORS_ALLOWED_ORIGINS" in os.environ:
 
 CORS_ALLOW_CREDENTIALS = True
 
+# --------------------------------------------------------------------
+# CSRF trusted origins
+# --------------------------------------------------------------------
+# base.py pins the known heritagegraph.xyz origins. Any deployment on another
+# domain — a staging host, a rename, a fork — then fails CSRF on Django admin
+# login with no configuration-level fix, which is why new hostnames have been
+# appended to base.py by hand. Additive, so the pinned list keeps working.
+_csrf_extra = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+for _origin in (o.strip() for o in _csrf_extra.split(",")):
+    if _origin and _origin not in CSRF_TRUSTED_ORIGINS:  # noqa: F405
+        CSRF_TRUSTED_ORIGINS.append(_origin)  # noqa: F405
+
 # OCR / document processing configuration is read from environment in `settings.base`
 # (OCR_ENABLED, OCR_MAX_FILE_BYTES, OCR_MAX_PAGES_PER_DOCUMENT, etc.)

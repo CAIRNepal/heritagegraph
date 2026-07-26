@@ -67,7 +67,7 @@ Every feature below sits on the same foundation, so it's worth stating once.
 | 1 | **Contribution Form** | `/contribute/<domain>` | React + ontology registry | REST (CIDOC / cultural-entities) | Ontology-driven wizard that turns knowledge into valid graph data |
 | 2 | **Graph View** (global) | `/graphview` | Cytoscape.js | REST: all CIDOC types + accepted assertions | The whole knowledge graph as an explorable network |
 | 3 | **Entity Neighborhood** | `/knowledge/<domain>/view/<id>/graph` | D3 | KG neighborhood endpoint | One entity and everything connected to it |
-| 4 | **Heritage Museum** | `/heritage-museum` | D3 + Three.js + Web Speech | Demo corpus / live toggle | Guided, story-driven, 360° museum tour of the graph |
+| 4 | **Heritage Museum** | `/heritage-museum` | D3 + Leaflet + Three.js + Web Speech | Demo corpus / live toggle | Guided, story-driven tour of the graph (360° only for genuine equirectangular imagery) |
 | 5 | **Atlas** | `/atlas` | Cesium + Resium | Demo corpus / live toggle | Heritage placed in space *and* time on a 3D Earth |
 
 ---
@@ -247,7 +247,18 @@ that the UI is powered by a *live* graph, not a static export.
 This is the **showpiece** — it turns the knowledge graph into a guided, cinematic tour.
 
 ### Stack
-**D3** (glowing force graph) · **Three.js** (360° panorama) · **Web Speech API**
+**D3** (glowing force graph) · **Leaflet** (map tab) · **Three.js** (360° panorama) ·
+**Web Speech API**
+
+> **The Stories tab is not XR.** `ImmersiveScene` is a DOM/CSS cinematic reader —
+> parallax and Ken-Burns over a hero image, with no canvas or WebGL. The three.js
+> `PanoramaViewer` (which does hold real `immersive-vr` / `immersive-ar` WebXR
+> session code) is only offered when a hero image measures ~2:1, i.e. when it is
+> plausibly an equirectangular capture — see
+> [`panorama-support.ts`](../heritage_graph_ui/src/lib/heritage-museum/panorama-support.ts).
+> The corpus currently contains **no** 360° or photogrammetry assets, so in
+> practice the sphere viewer stays closed. Sourcing real panoramas is a content
+> task, not a code task.
 (`SpeechSynthesis` narration) · Framer Motion (overlays) · generated viz config (node
 colors/icons/relation labels). Data: a **demo corpus by default**, with a **live toggle** to
 `fetchInstanceGraphData` (the same REST builder as Graph View).
@@ -262,10 +273,13 @@ colors/icons/relation labels). Data: a **demo corpus by default**, with a **live
 3. **Story panel ("beats")** — `storyBeats.ts::buildBeats(node)` turns an entity's data into a
    sequence of narrative **beats**; `StoryPanel` auto-advances each beat (~10s) with
    `requestAnimationFrame`, with pause/resume and progress.
-4. **360° immersive panorama (the in-browser 3D)** — `xr/PanoramaViewer.tsx` uses **Three.js**
-   to texture a spherical photo onto the *inside* of a sphere; the user looks around a heritage
-   site. `xr/ImmersiveScene.tsx` orchestrates it (`dynamic(..., { ssr: false })`) with a
-   storytelling overlay and `PlaceNav` to move between places.
+4. **360° panorama (the only real 3D here)** — `xr/PanoramaViewer.tsx` uses **Three.js** to
+   texture a spherical photo onto the *inside* of a sphere, and can hand off to a genuine
+   `immersive-vr` / `immersive-ar` WebXR session. `xr/ImmersiveScene.tsx` orchestrates it
+   (`dynamic(..., { ssr: false })`, so three.js stays out of the main bundle) with a
+   storytelling overlay and `PlaceNav` to move between places. **The entry button appears only
+   when the hero image measures ~2:1** — an ordinary photograph on a sphere gains no immersion
+   and distorts at the poles.
 5. **Narration** — `useNarration` wraps the browser's **`SpeechSynthesisUtterance`** (en-GB
    voice) to read the story aloud — no external TTS service, no server cost.
 6. **MandalaLoader** — a culturally themed loading animation that sets the tone.
@@ -380,9 +394,10 @@ confidence scores, asserters, and temporal scope from the knowledge graph.
    neighborhood. "This is the whole knowledge graph — edges are *accepted* assertions."
 3. **Entity Neighborhood** (0.5 min) — from one entity's page, open its `/graph` to show the
    live SPARQL-backed drill-down.
-4. **Heritage Museum** (1.5 min) — open `/heritage-museum`, let a **story beat** play, enter a
-   **360° panorama**, let the **narration** speak. "Same data, public storytelling — all in
-   the browser."
+4. **Heritage Museum** (1.5 min) — open `/heritage-museum`, let a **story beat** play, let the
+   **narration** speak, then follow **View on globe** into the Atlas. "Same data, public
+   storytelling — all in the browser." (Skip the 360° panorama unless the entity on screen has
+   a genuine equirectangular image; the button is hidden otherwise.)
 5. **Atlas** (1.5 min) — open `/atlas`, fly to a city, **scrub the timeline** across eras.
    Close on the 3D globe.
 
@@ -398,7 +413,7 @@ confidence scores, asserters, and temporal scope from the knowledge graph.
 | Contribution form | React + ontology registry | local component + drafts | REST (CIDOC / cultural-entities) | One schema → every form; UI can't drift from the ontology |
 | Graph View (global) | **Cytoscape.js** (+ cose-bilkent, cola) | client | REST: all CIDOC types + accepted assertions | Mature graph engine, pluggable layouts, resilient per-type loading |
 | Neighborhood | **D3** | client | KG neighborhood (SPARQL) | Bounded query → answered best by the graph store |
-| Heritage Museum | **D3** + **Three.js** | React state | demo / live toggle | Bespoke visuals + in-browser 360°, zero server render cost |
+| Heritage Museum | **D3** + **Leaflet** + **Three.js** | React state (17 `useState`; no store) | demo / live toggle | Bespoke visuals + in-browser 360°, zero server render cost |
 | Narration | **Web Speech API** | — | story beats | Built into the browser; no external TTS |
 | Atlas | **Cesium** + **Resium** | **Zustand** | demo / live toggle | Open-source 3D globe with a real time dimension |
 

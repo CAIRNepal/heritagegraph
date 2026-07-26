@@ -40,6 +40,16 @@ export function mapCidocRecordToFormData(
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const field of ontologyClass.fields) {
+    // Coordinates round-trip through `latitude`/`longitude` (see
+    // buildOntologyFormPayload); the slot key itself is not in the response.
+    if (field.type === "coordinates" || field.type === "geo_point") {
+      const lat = record.latitude;
+      const lng = record.longitude;
+      if (lat != null && lat !== "" && lng != null && lng !== "") {
+        out[field.key] = { lat: String(lat), lng: String(lng) };
+        continue;
+      }
+    }
     const v = record[field.key];
     if (v === undefined || v === null) {
       continue;
@@ -108,7 +118,12 @@ export function buildOntologyFormPayload(
       if (!c.lat && !c.lng) {
         continue;
       }
-      payload[field.key] = `${c.lat}, ${c.lng}`;
+      // The API's coordinate contract is the `latitude`/`longitude` pair: the
+      // CIDOC serializers fold it into the `point` column and read it back out
+      // the same way. Posting the slot key instead (e.g. `place_coordinates`)
+      // lands in the legacy text column at best, and is rejected under PostGIS.
+      payload.latitude = c.lat ?? "";
+      payload.longitude = c.lng ?? "";
     } else {
       const serialized = serializeFieldForApi(field, val);
       if (serialized === undefined || serialized === null || serialized === "") {

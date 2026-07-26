@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from apps.cidoc_data.views import (
-    _DISCOVERY_TYPE_MAP,
-    _discovery_row,
-    _filtered_discovery_queryset,
+from apps.cidoc_data.discovery import (
+    DISCOVERY_TYPE_MAP,
+    discovery_row,
+    filtered_discovery_queryset,
 )
 
 DEFAULT_PER_TYPE = 2
@@ -26,10 +26,10 @@ def build_graph_context(
     chunks: list[str] = []
     sources: list[dict[str, str]] = []
 
-    for type_key, (model, fields) in _DISCOVERY_TYPE_MAP.items():
-        qs = _filtered_discovery_queryset(model, fields, q)[:per_type]
+    for type_key, (model, fields) in DISCOVERY_TYPE_MAP.items():
+        qs = filtered_discovery_queryset(model, fields, q)[:per_type]
         for obj in qs:
-            row = _discovery_row(obj, type_key)
+            row = discovery_row(obj, type_key)
             name = (row.get("name") or "").strip()
             summary = (row.get("summary") or "").strip()
             if not (name or summary):

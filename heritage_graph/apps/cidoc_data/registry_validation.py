@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import uuid
 from decimal import Decimal
 from typing import Any
 
@@ -24,6 +25,11 @@ def coerce_for_jsonschema(value: Any) -> Any:
         pass
     if isinstance(value, Decimal):
         return float(value)
+    # DRF's PrimaryKeyRelatedField hands back the raw pk, so a relation to a
+    # UUID-pk model (DataSource, HeritageAssertion) yields a UUID object. The
+    # DRF renderer copes with that; `json.dumps` into a JSONField does not.
+    if isinstance(value, uuid.UUID):
+        return str(value)
     if hasattr(value, "isoformat"):
         try:
             return value.isoformat()

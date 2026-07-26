@@ -59,7 +59,7 @@ move them to a branch/sub-package if you prefer them out of the submission artif
 
 `heritage_graph/apps/graph/management/commands/oxigraph_seed_schema.py` seeds the local
 Oxigraph store from repo-root `final_schema.yaml` / `schema.yaml`. This duplicates the
-canonical TBox-loading path (`make rdf-load-tbox` → `ontology/Heritage.ttl`).
+canonical TBox-loading path (`make rdf-load-tbox` → `ontology/HeritageGraph.ttl`).
 
 **Debt:** keeps two extra root-level schema files alive (`schema.yaml`, `final_schema.yaml`)
 that otherwise look like stray scratch. They were **not** deleted during cleanup because this
@@ -82,7 +82,62 @@ standardising on `rdf_load_tbox`.
 
 ---
 
-## 6. Documentation sprawl
+## 6. Contribute forms and Django models have diverged
+
+**Found 2026-07-26** while verifying the ontology 1.1.0 upgrade. Pre-existing: the same
+counts hold on the 1.0.0 tree, so the upgrade neither caused nor worsened it.
+
+Contribute forms render from the schema registry, which projects **ontology slots**. The
+Django models implement a different, largely disjoint vocabulary. Nothing reconciles them,
+so the registry happily advertises fields the API cannot accept.
+
+**Symptom A — inputs that discard what is typed.** 171 of 262 registry form fields (65%)
+have no matching serializer field. DRF's `ModelSerializer` ignores unknown keys, so the
+value is dropped silently — no error, no stored data. Meanwhile real columns are missing
+from the form: `person` offers `birth_timespan` / `member_of_group` / `expertise_area`
+(none stored) while `biography`, `birth_date`, `death_date`, `occupation` and `aliases`
+never appear.
+
+**Symptom B — 12 forms that could not submit at all. Fixed 2026-07-26.** When such a slot
+is also marked `required`, the class becomes un-POSTable: the serializer drops the field,
+then the `registry_jsonschema` gate rejects the payload for omitting it. This affected
+`consecration`, `enshrinement`, `event`, `festival`, `kumari_retirement`,
+`kumari_selection`, `kumari_tenure`, `monument`, `production`, `ritual`, `source` and
+`transfer_of_custody`. Each blocker needed a different answer, because "unbacked" was not
+uniformly true:
+
+| Blocker | Scope | Resolution |
+| --- | --- | --- |
+| `has_timespan` | unbacked on **every** model | `ui_hidden` in `tools/ui-presentation.yaml`. No model reifies `TimeSpan`; the columns are `date_earliest` / `date_latest`. |
+| `has_current_location` | backed on `structure`, absent on `monument` | Dropped the unconditional `required: true` on `ArchitecturalStructure`, which contradicted the `rules:` block directly above it — the alpha.5 comment said enforcement should be conditional on `ExistenceStatus`, but the flag was never removed. |
+| `name` | backed everywhere except `source` | `SourceSerializer` accepts `name` as a write alias for `title`, so it survives into `validated_data` where the gate reads it. |
+
+Hiding `has_timespan` unblocks those ten forms but leaves them with **no date input at
+all**, since `date_earliest` / `date_latest` are not projected as slots. That is a
+deliberate trade — a submittable form with a missing field beats a form that returns 400
+for every contribution — but exposing the literal date columns as slots is the real fix
+and is still outstanding.
+
+Note that `ContributionFlowMixin._payload_for_registry_validation` validates
+`serializer.validated_data` rather than the request body, which is what turns a dropped
+field into a "required property missing" error. Fixing that alone is **not** an
+improvement: those endpoints would start accepting records and then discard the required
+value silently. Loud failure is preferable until the models and the registry agree.
+
+**Recommendation:** pick one contract per slot — add the backing column, or stop
+projecting the slot into forms (`ui_hidden`, as done for the PROV-O mixin slots in
+`tools/ui-presentation.yaml`), or store unbacked slots generically.
+
+The gap is now measured rather than estimated. `make registry-alignment` regenerates
+[`documentation/ontology/REGISTRY_MODEL_ALIGNMENT.md`](ontology/REGISTRY_MODEL_ALIGNMENT.md)
+with the per-domain counts, and `make check` fails when it is stale. Behaviour is pinned
+by `apps/cidoc_data/test_registry_contribution_matrix.py`, which drives every domain
+through form → review → browse → graph; all 26 now complete the round trip, so a
+regression back to an unsubmittable form fails the suite.
+
+---
+
+## 7. Documentation sprawl
 
 **Addressed (2026-06):** Topic guides live under `documentation/<topic>/`. E2E runners in
 `tests/`. Root keeps `README`, `DOCS`, `AGENTS`, `CLAUDE`, `ARCHITECTURE`, `CONTRIBUTING`,

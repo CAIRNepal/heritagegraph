@@ -59,7 +59,7 @@ const NAVIGATE: Entry[] = [
   { label: 'About', href: '/about', icon: IconInfoCircle, keywords: 'discover explore help info mission cair' },
   { label: 'Graph Visualization', href: '/graphview', icon: IconGraph, keywords: 'knowledge graph network' },
   { label: 'Heritage Atlas', href: '/atlas', icon: IconWorld, keywords: 'map globe geography' },
-  { label: 'Heritage Museum', href: '/heritage-museum', icon: IconBuildingMonument, keywords: 'explore stories live kg immersive xr 3d vr' },
+  { label: 'Heritage Museum', href: '/heritage-museum', icon: IconBuildingMonument, keywords: 'explore stories live kg immersive narrative panorama' },
   { label: 'Leaderboard', href: '/leaderboard', icon: IconTrophy, keywords: 'ranking contributors' },
   { label: 'Progression', href: '/progression', icon: IconMedal, keywords: 'badges achievements' },
   { label: 'Contributors', href: '/community/contributors', icon: IconUsers, keywords: 'community people' },

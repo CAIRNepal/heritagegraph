@@ -7,6 +7,7 @@
 .PHONY: ontology ontology-check viz-config viz-config-check shacl shacl-check \
         crm-bridge crm-bridge-check skos-vocab skos-vocab-check \
         serializers serializers-check entityrefs entityrefs-check contribute-routes-check \
+        registry-alignment registry-alignment-check \
         schema-rebuild identity-candidates schema-diff test-e2e \
         rdf-rebuild rdf-diagnose rdf-load-tbox kg-publish kg-verify \
         generate check \
@@ -60,6 +61,12 @@ shacl: ## Regenerate minimal SHACL from registry.generated.json (run after ontol
 shacl-check: ## CI: fail if generated SHACL TTL is out of date
 	python3 tools/emit_minimal_shacl.py --check
 
+owl-ttl: ## Regenerate ontology/HeritageGraph.ttl (OWL TBox) from HeritageGraph.yaml
+	python3 tools/emit_owl_ttl.py
+
+owl-ttl-check: ## CI: fail if the OWL TBox TTL is out of date
+	python3 tools/emit_owl_ttl.py --check
+
 crm-bridge: ## Emit CIDOC-CRM alignment bridge + disjointness TBox (subClassOf/disjointWith)
 	python3 tools/emit_crm_bridge.py
 
@@ -83,6 +90,12 @@ entityrefs: $(VENV_PY) ## Rebuild EntityRef edges from legacy CharField relation
 
 entityrefs-check: $(VENV_PY) ## CI: fail if any CharField relation values lack EntityRef rows
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rebuild_entityrefs --check
+
+registry-alignment: $(VENV_PY) ## Report registry slots vs Django fields that do not line up
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py report_registry_alignment
+
+registry-alignment-check: $(VENV_PY) ## CI: fail if the alignment report is out of date
+	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py report_registry_alignment --check
 
 schema-rebuild: $(VENV_PY) ## Persist ontology registry snapshot to DB (SchemaRegistry)
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rebuild_schema_registry
@@ -120,7 +133,7 @@ kg-rdfstar: $(VENV_PY) ## Export RDF-star annotation TriG
 rdf-diagnose: $(VENV_PY) ## Report RDF sync config and triple counts
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_diagnose
 
-rdf-load-tbox: $(VENV_PY) ## Load ontology/Heritage.ttl into the schema named graph
+rdf-load-tbox: $(VENV_PY) ## Load ontology/HeritageGraph.ttl into the schema named graph
 	cd $(BACKEND) && DJANGO_ENV=development ../$(VENV_PY) manage.py rdf_load_tbox
 
 rdf-drain-outbox: $(VENV_PY) ## Retry failed knowledge graph writes
@@ -139,10 +152,10 @@ schema-diff: ## Compare two ontology YAML files: OLD=ontology/HeritageGraph.yaml
 	fi
 	python3 tools/schema_diff.py $(OLD) $(NEW)
 
-generate: ontology viz-config shacl crm-bridge skos-vocab serializers entityrefs schema-rebuild ## Full pipeline from ontology/HeritageGraph.yaml
-	@echo "==> Full ontology pipeline complete (registry, viz, SHACL, CRM bridge, SKOS, serializers, entityrefs, DB snapshot)"
+generate: ontology viz-config shacl owl-ttl crm-bridge skos-vocab serializers entityrefs schema-rebuild registry-alignment ## Full pipeline from ontology/HeritageGraph.yaml
+	@echo "==> Full ontology pipeline complete (registry, viz, SHACL, CRM bridge, SKOS, serializers, entityrefs, DB snapshot, alignment report)"
 
-check: ontology-check shacl-check crm-bridge-check skos-vocab-check serializers-check entityrefs-check contribute-routes-check ## CI: verify all generated files are up to date (no side-effects)
+check: ontology-check shacl-check owl-ttl-check crm-bridge-check skos-vocab-check serializers-check entityrefs-check contribute-routes-check registry-alignment-check ## CI: verify all generated files are up to date (no side-effects)
 	@echo "==> All ontology pipeline checks passed"
 
 # ================================================================

@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml + tools/ui-vizmap.yaml
 // Regen:   python3 tools/gen_heritage_viz_config.py
-// Hash:    926fcfd1486d5def
+// Hash:    64ad8fff9a58cdf8
 //
 // This file is the single source of truth for graph-visualization ontology
 // config consumed by:
@@ -63,21 +63,21 @@ export const NODE_TYPE_CONFIG: Record<
   BuddhistMonument: { color: '#8b5cf6', glowColor: '#a78bfa', emoji: '☸', label: 'Buddhist Monument', cidocMapping: 'heritageGraph:BuddhistMonument', hgCategory: 'tangible' },
   ArchitecturalStructure: { color: '#ec4899', glowColor: '#f472b6', emoji: '🏛', label: 'Architectural Structure', cidocMapping: 'heritageGraph:ArchitecturalStructure', hgCategory: 'tangible' },
   Settlement: { color: '#06b6d4', glowColor: '#22d3ee', emoji: '🏙', label: 'Settlement', cidocMapping: 'hg:Settlement → crm:E53_Place', hgCategory: 'spatial' },
-  Deity: { color: '#ef4444', glowColor: '#f87171', emoji: '🪷', label: 'Deity', cidocMapping: 'crm:E28_Conceptual_Object', hgCategory: 'conceptual' },
+  Deity: { color: '#ef4444', glowColor: '#f87171', emoji: '🪷', label: 'Deity', cidocMapping: 'heritageGraph:Deity', hgCategory: 'conceptual' },
   Festival: { color: '#f97316', glowColor: '#fb923c', emoji: '🪔', label: 'Festival', cidocMapping: 'heritageGraph:Festival', hgCategory: 'event' },
   TimeSpan: { color: '#6366f1', glowColor: '#818cf8', emoji: '📜', label: 'Time-Span', cidocMapping: 'crm:E52_Time-Span', hgCategory: 'temporal' },
-  ReligiousTradition: { color: '#14b8a6', glowColor: '#2dd4bf', emoji: '📿', label: 'Religious Tradition', cidocMapping: 'crm:E55_Type', hgCategory: 'conceptual' },
+  ReligiousTradition: { color: '#14b8a6', glowColor: '#2dd4bf', emoji: '📿', label: 'Religious Tradition', cidocMapping: 'heritageGraph:ReligiousTradition', hgCategory: 'conceptual' },
   SacredSite: { color: '#84cc16', glowColor: '#a3e635', emoji: '🛐', label: 'Sacred Site', cidocMapping: 'hg:SacredSite → heritageGraph:ArchitecturalStructure', hgCategory: 'tangible' },
   Person: { color: '#22c55e', glowColor: '#86efac', emoji: '👤', label: 'Person', cidocMapping: 'crm:E21_Person', hgCategory: 'actor' },
   Guthi: { color: '#0ea5e9', glowColor: '#7dd3fc', emoji: '👥', label: 'Guthi', cidocMapping: 'heritageGraph:Guthi', hgCategory: 'actor' },
   IconographicObject: { color: '#d946ef', glowColor: '#f0abfc', emoji: '🖼', label: 'Iconographic Object', cidocMapping: 'heritageGraph:IconographicObject', hgCategory: 'tangible' },
   HistoricalPeriod: { color: '#a3a3a3', glowColor: '#d4d4d4', emoji: '⏳', label: 'Historical Period', cidocMapping: 'heritageGraph:HistoricalPeriod', hgCategory: 'temporal' },
   Source: { color: '#78716c', glowColor: '#a8a29e', emoji: '📚', label: 'Source', cidocMapping: 'hg:Source → heritageGraph:InformationObject', hgCategory: 'provenance' },
-  HistoricalEvent: { color: '#facc15', glowColor: '#fde68a', emoji: '📅', label: 'Historical Event', cidocMapping: 'crm:E5_Event', hgCategory: 'event' },
+  HistoricalEvent: { color: '#facc15', glowColor: '#fde68a', emoji: '📅', label: 'Historical Event', cidocMapping: 'heritageGraph:HistoricalEvent', hgCategory: 'event' },
   RitualEvent: { color: '#fb923c', glowColor: '#fdba74', emoji: '🕉', label: 'Ritual', cidocMapping: 'heritageGraph:RitualEvent', hgCategory: 'event' },
   CasteGroup: { color: '#16a34a', glowColor: '#4ade80', emoji: '👪', label: 'Caste Group', cidocMapping: 'heritageGraph:CasteGroup', hgCategory: 'actor' },
   LivingGoddessTenure: { color: '#e11d48', glowColor: '#fb7185', emoji: '👑', label: 'Living Goddess Tenure', cidocMapping: 'crm:E4_Period', hgCategory: 'temporal' },
-  SyncreticRelationship: { color: '#9333ea', glowColor: '#c084fc', emoji: '🔗', label: 'Syncretic Link', cidocMapping: 'crm:E13_Attribute_Assignment', hgCategory: 'conceptual' },
+  SyncreticRelationship: { color: '#9333ea', glowColor: '#c084fc', emoji: '🔗', label: 'Syncretic Link', cidocMapping: 'heritageGraph:SyncreticRelationship', hgCategory: 'conceptual' },
   HumanMadeObject: { color: '#0d9488', glowColor: '#2dd4bf', emoji: '🏺', label: 'Human-Made Object', cidocMapping: 'crm:E22_Human-Made_Object', hgCategory: 'tangible' },
   Group: { color: '#15803d', glowColor: '#4ade80', emoji: '👥', label: 'Group', cidocMapping: 'crm:E74_Group', hgCategory: 'actor' },
   Set: { color: '#a16207', glowColor: '#facc15', emoji: '🗂', label: 'Set / Collection', cidocMapping: 'la:Set', hgCategory: 'provenance' },
@@ -85,26 +85,26 @@ export const NODE_TYPE_CONFIG: Record<
 
 /** Ontology class IRI (rdf:type in the Oxigraph public graph) → canonical NodeType. */
 export const RDF_CLASS_URI_TO_NODE_TYPE: Record<string, NodeType> = {
-  "http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment": "SyncreticRelationship",
   "http://www.cidoc-crm.org/cidoc-crm/E21_Person": "Person",
   "http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object": "HumanMadeObject",
-  "http://www.cidoc-crm.org/cidoc-crm/E28_Conceptual_Object": "Deity",
   "http://www.cidoc-crm.org/cidoc-crm/E4_Period": "LivingGoddessTenure",
   "http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span": "TimeSpan",
   "http://www.cidoc-crm.org/cidoc-crm/E53_Place": "Place",
-  "http://www.cidoc-crm.org/cidoc-crm/E55_Type": "ReligiousTradition",
-  "http://www.cidoc-crm.org/cidoc-crm/E5_Event": "HistoricalEvent",
   "http://www.cidoc-crm.org/cidoc-crm/E74_Group": "Group",
   "https://linked.art/ns/terms/Set": "Set",
   "https://w3id.org/heritagegraph/ArchitecturalStructure": "ArchitecturalStructure",
   "https://w3id.org/heritagegraph/BuddhistMonument": "BuddhistMonument",
   "https://w3id.org/heritagegraph/CasteGroup": "CasteGroup",
+  "https://w3id.org/heritagegraph/Deity": "Deity",
   "https://w3id.org/heritagegraph/Festival": "Festival",
   "https://w3id.org/heritagegraph/Guthi": "Guthi",
+  "https://w3id.org/heritagegraph/HistoricalEvent": "HistoricalEvent",
   "https://w3id.org/heritagegraph/HistoricalPeriod": "HistoricalPeriod",
   "https://w3id.org/heritagegraph/IconographicObject": "IconographicObject",
   "https://w3id.org/heritagegraph/InformationObject": "Source",
+  "https://w3id.org/heritagegraph/ReligiousTradition": "ReligiousTradition",
   "https://w3id.org/heritagegraph/RitualEvent": "RitualEvent",
+  "https://w3id.org/heritagegraph/SyncreticRelationship": "SyncreticRelationship",
   "https://w3id.org/heritagegraph/Temple": "Temple",
 };
 
@@ -116,7 +116,7 @@ export const RELATION_LABELS: Record<string, string> = {
   has_current_location: 'has current location',  // crm:P55_has_current_location
   is_component_of: 'is component of',  // crm:P46i_forms_part_of
   associated_with: 'associated with',  // heritageGraph:associated_with
-  invokes_deity: 'invokes deity',  // heritageGraph:invokes_deity
+  invokes_deity: 'invokes deity',  // heritageGraph:invokesDeity
   took_place_at: 'took place at',  // crm:P7_took_place_at
   was_produced_by_event: 'was produced by event',  // crm:P108i_was_produced_by
   was_derived_from_source: 'was derived from source',  // prov:wasDerivedFrom
@@ -131,9 +131,9 @@ export const RELATION_LABELS: Record<string, string> = {
   style: 'architectural style',  // heritageGraph:architectural_style
   type: 'type',  // crm:P2_has_type
   structure_type: 'structure type',  // heritageGraph:structure_type
-  ritual_type: 'ritual type',  // heritageGraph:ritual_type
+  ritual_type: 'ritual type',  // heritageGraph:ritualType
   festival_type: 'festival type',  // heritageGraph:festival_type
-  guthi_type: 'guthi type',  // heritageGraph:guthi_type
+  guthi_type: 'guthi type',  // heritageGraph:guthiType
   monument_type: 'monument type',  // heritageGraph:monument_type
   object_type: 'object type',  // heritageGraph:object_type
   event_type: 'event type',  // heritageGraph:event_type

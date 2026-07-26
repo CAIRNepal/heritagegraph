@@ -220,6 +220,40 @@ def _literal_for_registry_field(ft: str, value: Any) -> tuple[str, str] | None:
     return (s, "")
 
 
+def _wkt_from_point_column(instance: Any) -> str | None:
+    """WKT ``POINT(lon lat)`` from the model's ``point`` column, or None.
+
+    The serializers fold the form's latitude/longitude pair into ``point``:
+    a ``"<lat>, <lng>"`` CharField (see ``_latlng_to_point_charfield``) or a
+    GeoDjango Point (x=lon, y=lat). NOTE the order difference: the CharField is
+    lat-first while WKT is lon-first — do not feed the raw column through
+    ``_literal_for_registry_field``, whose legacy pair branch assumes lon-first.
+    """
+    point = getattr(instance, "point", None)
+    if point is None:
+        return None
+    if hasattr(point, "x") and hasattr(point, "y"):
+        try:
+            return f"POINT({float(point.x)} {float(point.y)})"
+        except (TypeError, ValueError):
+            return None
+    text = str(point).strip()
+    if not text:
+        return None
+    m = re.search(r"POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)", text, re.IGNORECASE)
+    if m:
+        return f"POINT({m.group(1)} {m.group(2)})"
+    parts = text.lstrip("(").rstrip(")").split(",")
+    if len(parts) == 2:
+        try:
+            lat, lon = float(parts[0].strip()), float(parts[1].strip())
+        except ValueError:
+            return None
+        if abs(lat) <= 90 and abs(lon) <= 180:
+            return f"POINT({lon} {lat})"
+    return None
+
+
 # LinkML class names used as relation ranges vs Django model class names.
 LINKML_RELATION_RANGE_TO_MODEL: dict[str, str] = {
     "Place": "Location",
@@ -323,6 +357,36 @@ def build_entity_projection(
 
         raw = django_field_raw_value(instance, fk)
         predicates.add(slot_uri_full)
+
+        if ft == "geo_point":
+            # The registry geo slot (e.g. `place_coordinates`) has no matching
+            # Django column — coordinates live in the `point` column that the
+            # serializers write. Without this, contributed geometry never
+            # reaches RDF and SPARQL/LOD consumers see no location at all.
+            wkt = None
+            if isinstance(raw, str) and re.match(
+                r"^(SRID=\d+;)?\s*(POINT|MULTIPOINT|LINESTRING|MULTILINESTRING|"
+                r"POLYGON|MULTIPOLYGON|GEOMETRYCOLLECTION)\b",
+                raw.strip(),
+                re.IGNORECASE,
+            ):
+                # Explicit (E)WKT only — bare "a, b" pairs are ambiguous
+                # (legacy strings are lat-first, WKT is lon-first).
+                lit = _literal_for_registry_field("text", raw)
+                if lit and lit[1] == RDF_PREFIXES["geo"] + "wktLiteral":
+                    wkt = lit[0]
+            if not wkt:
+                wkt = _wkt_from_point_column(instance)
+            if wkt:
+                triples.append(
+                    _Triple(
+                        subject_uri,
+                        slot_uri_full,
+                        None,
+                        (wkt, RDF_PREFIXES["geo"] + "wktLiteral"),
+                    )
+                )
+            continue
 
         if ft == "relation":
             rel_to = field.get("relationTo") or ""

@@ -1,100 +1,155 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEffect, useRef } from 'react';
-import type { CSSProperties } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
-
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { atlasSound } from '@/lib/atlas-sound';
 
 import { AtlasGlobeLoading } from './components/atlas-loading-fallbacks';
-import { EntityPanel } from './components/entity-panel';
-import { FocusedShellOverlay } from './components/globe-workspace';
-import { ShortcutHelpOverlay } from './components/shortcut-help';
-import { CommandBar } from './components/status-strip';
-import { TimelineBar } from './components/timeline-bar';
+import { EmptyState } from './components/EmptyState';
+import { MarkerTooltip } from './components/HeritageGlobe/MarkerTooltip';
+import { EntityDetailsContent, EntitySidebar } from './components/Sidebar/EntitySidebar';
+import { ExplorerSidebar } from './components/Sidebar/ExplorerSidebar';
+import { Filters } from './components/Search/Filters';
+import { Layers } from './components/Search/Layers';
+import { Legend } from './components/Search/Legend';
+import { MiniMap } from './components/Search/MiniMap';
+import { SpotlightSearch } from './components/Search/SpotlightSearch';
+import { StoryMode, buildJourneyStops } from './components/Timeline/StoryMode';
+import { Timeline } from './components/Timeline/Timeline';
 import { useAtlasDataSource } from './hooks/use-atlas-data-source';
-import { useAtlasShortcuts } from './hooks/use-atlas-shortcuts';
-import { useAtlasUrlState } from './hooks/use-atlas-url-state';
+import { useAtlasHotkeys } from './hooks/use-atlas-hotkeys';
 import { useAtlasStore } from './hooks/use-atlas-store';
+import { useAtlasUiStore } from './hooks/use-atlas-ui-store';
+import { useAtlasUrlState } from './hooks/use-atlas-url-state';
 import { useFullscreen } from './hooks/use-fullscreen';
-import { cssFilterForPreset } from './lib/atlas-fx-presets';
-import { ATLAS_SPOTLIGHT } from './lib/atlas-spotlight-config';
 
-/** Isolate Cesium/resium + worker boot from the main atlas chunk (avoids SSR/webpack runtime issues). */
+/** Isolate Cesium/resium + worker boot from the main atlas chunk. */
 const GlobeView = dynamic(
   () => import('./views/globe-view').then((m) => ({ default: m.GlobeView })),
-  {
-    ssr: false,
-    loading: () => <AtlasGlobeLoading />,
-  },
+  { ssr: false, loading: () => <AtlasGlobeLoading /> },
 );
 
 export default function AtlasClient() {
   const containerRef = useRef<HTMLDivElement>(null);
   const globeHandlesRef = useRef<AtlasGlobeHandles | null>(null);
+  const isMobile = useIsMobile();
 
   const playing = useAtlasStore((s) => s.playing);
   const stepTimeline = useAtlasStore((s) => s.stepTimeline);
-  const fxPreset = useAtlasStore((s) => s.fxPreset);
+  const selectedId = useAtlasStore((s) => s.selectedId);
+  const getEntityById = useAtlasStore((s) => s.getEntityById);
+  const selectEntity = useAtlasStore((s) => s.selectEntity);
+  const storyActive = useAtlasUiStore((s) => s.story.active);
 
   const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
 
   useAtlasDataSource();
   useAtlasUrlState();
-  useAtlasShortcuts({ containerRef, globeHandlesRef });
+
+  const playJourney = useCallback(() => {
+    const st = useAtlasStore.getState();
+    const stops = buildJourneyStops(st.getFilteredEntities());
+    useAtlasUiStore.getState().startStory(stops);
+  }, []);
+
+  useAtlasHotkeys({ globeHandlesRef, onPlayJourney: playJourney });
 
   useEffect(() => {
+    useAtlasUiStore.getState().hydrateFromBrowser();
     useAtlasStore.getState().hydrateMuteFromBrowser();
-    useAtlasStore.getState().hydrateAtlasFxFromStorage();
     atlasSound.init();
   }, []);
 
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    // Seed the static gutter CSS vars; SpotlightDisc ResizeObserver will override with real values
-    el.style.setProperty('--atlas-gutter-l', `${String(ATLAS_SPOTLIGHT.gutterLeftPx)}px`);
-    el.style.setProperty('--atlas-gutter-r', `${String(ATLAS_SPOTLIGHT.gutterRightPx)}px`);
-    el.style.setProperty('--atlas-gutter-b', `${String(ATLAS_SPOTLIGHT.gutterBottomPx)}px`);
-  }, []);
-
+  // Timeline playback.
   useEffect(() => {
     if (!playing) return;
     const id = window.setInterval(() => stepTimeline(), 420);
     return () => window.clearInterval(id);
   }, [playing, stepTimeline]);
 
+  // Selecting anything counts as onboarding + feeds "recently viewed".
+  useEffect(() => {
+    if (!selectedId) return;
+    const ui = useAtlasUiStore.getState();
+    ui.recordRecent(selectedId);
+    if (!ui.onboardingDismissed) ui.dismissOnboarding();
+  }, [selectedId]);
+
+  const selectedEntity = selectedId ? getEntityById(selectedId) : undefined;
+
   return (
-    <>
+    <div
+      ref={containerRef}
+      className={[
+        'relative flex h-full w-full flex-1 flex-col overflow-hidden bg-[#02040a]',
+        isFullscreen ? 'fixed inset-0 z-50' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {/* Center stage: the living globe. */}
+      <GlobeView globeHandlesRef={globeHandlesRef} />
+
+      {/* Focus vignette when a site is selected. */}
       <div
-        ref={containerRef}
-        style={
-          {
-            '--atlas-fx-filter': cssFilterForPreset(fxPreset),
-          } as CSSProperties
-        }
-        className={[
-          'atlas-shell-grid flex flex-col relative flex-1 w-full h-full overflow-hidden bg-background',
-          isFullscreen ? 'fixed inset-0 z-50' : '',
-        ].filter(Boolean).join(' ')}
-      >
-        <CommandBar isFullscreen={isFullscreen} onToggleFullscreen={toggleFullscreen} />
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-700"
+        style={{
+          opacity: selectedId && !storyActive ? 1 : 0,
+          background:
+            'radial-gradient(75% 75% at 50% 45%, transparent 55%, rgba(2,4,10,0.42) 100%)',
+        }}
+      />
 
-        <div className="relative min-h-0 flex-1 w-full h-full">
-          <GlobeView globeHandlesRef={globeHandlesRef} shellRef={containerRef} />
-          {/* Full-shell maximized panel — outside the disc mask, covers the full area below the CommandBar */}
-          <FocusedShellOverlay />
-          <EntityPanel />
-        </div>
+      <MarkerTooltip />
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20">
-          <TimelineBar />
-        </div>
-      </div>
+      {/* Left column — explorer. */}
+      <ExplorerSidebar onPlayJourney={playJourney} />
+      <Filters />
 
-      <ShortcutHelpOverlay />
-    </>
+      {/* Right column — entity dossier (desktop) + globe controls. */}
+      <EntitySidebar />
+      <Layers
+        onZoomIn={() => globeHandlesRef.current?.zoomIn()}
+        onZoomOut={() => globeHandlesRef.current?.zoomOut()}
+        onResetView={() => globeHandlesRef.current?.resetView()}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={() => void toggleFullscreen()}
+      />
+
+      {/* Overlays. */}
+      <Legend />
+      <MiniMap globeHandlesRef={globeHandlesRef} />
+      <Timeline />
+      <StoryMode />
+      <SpotlightSearch />
+      <EmptyState onPlayJourney={playJourney} />
+
+      {/* Mobile: entity dossier as a bottom sheet. */}
+      {isMobile ? (
+        <Drawer
+          open={selectedEntity != null && !storyActive}
+          onOpenChange={(open) => {
+            if (!open) selectEntity(null);
+          }}
+        >
+          <DrawerContent className="h-[78vh] rounded-t-2xl border-border/40 bg-background/90 backdrop-blur-xl">
+            <DrawerTitle className="sr-only">
+              {selectedEntity?.name ?? 'Heritage details'}
+            </DrawerTitle>
+            {selectedEntity ? (
+              <EntityDetailsContent
+                entity={selectedEntity}
+                onClose={() => selectEntity(null)}
+              />
+            ) : null}
+          </DrawerContent>
+        </Drawer>
+      ) : null}
+    </div>
   );
 }

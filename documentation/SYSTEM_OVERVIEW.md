@@ -106,10 +106,10 @@ UI conventions: TypeScript + Tailwind v4 + shadcn/ui ("new-york"), named exports
 A separate app with different needs (Three.js, heavy animation, independent deploy cadence).
 Kept apart so its build weight never slows the dashboard.
 
-### 3.4 Ontology assets (`ontology/`, `tools/`, `Heritage.ttl`)
+### 3.4 Ontology assets (`ontology/`, `tools/`, `HeritageGraph.ttl`)
 
 The semantic backbone: **`ontology/HeritageGraph.yaml`** (LinkML v1.0.0), the CIDOC-CRM TBox
-(`Heritage.ttl`), generated SHACL shapes, and codegen tooling (`make generate`). UI exposure
+(`HeritageGraph.ttl`), generated SHACL shapes, and codegen tooling (`make generate`). UI exposure
 is driven by **`tools/ui-classmap.yaml`** (26 navigable types). A generated registry ships to
 the frontend (`registry.generated.json/.ts`) so forms and validation stay in sync. LinkedArt/LUX
 interop classes in the YAML are RDF-only (not in the classmap). See [ontology/ONTOLOGY.md](ontology/ONTOLOGY.md).
@@ -223,7 +223,7 @@ It partitions the graph for clean governance:
 | Partition | Contents |
 |-----------|----------|
 | **PUBLIC** | Published CIDOC data + merged entities |
-| **SCHEMA** | TBox from `Heritage.ttl` |
+| **SCHEMA** | TBox from `HeritageGraph.ttl` |
 | **DOCUMENT** | Reserved per-document partition (`graph/document/{uuid}`) — supports document-level retraction |
 | **PROV** | Provenance bundles |
 

@@ -3,13 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 
-import { ATLAS_VIEW_IDS, type AtlasViewId } from '@/types/atlas';
-
 import { useAtlasStore } from './use-atlas-store';
 
 /**
  * Shareable Atlas state via query params (mirrors the Heritage Museum client):
- * `source=live|demo`, `selected=<entity id / IRI>`, `panel=<view>`, `year=<n>`.
+ * `source=live|demo`, `selected=<entity id / IRI>`, `year=<n>`.
  *
  * Reads params once on mount; afterwards reflects store changes back into the
  * URL with `history.replaceState` (debounced — avoids Next router re-renders).
@@ -22,10 +20,6 @@ export function useAtlasUrlState() {
 
   useEffect(() => {
     initialYearRef.current = useAtlasStore.getState().currentYear;
-    const panel = searchParams.get('panel');
-    if (panel && (ATLAS_VIEW_IDS as string[]).includes(panel)) {
-      useAtlasStore.setState({ focusedView: panel as AtlasViewId });
-    }
     const year = Number.parseInt(searchParams.get('year') ?? '', 10);
     if (Number.isFinite(year)) {
       useAtlasStore.getState().setCurrentYear(year);
@@ -62,7 +56,6 @@ export function useAtlasUrlState() {
       };
       setOrDelete('source', st.dataSource === 'live' ? 'live' : null);
       setOrDelete('selected', st.selectedId);
-      setOrDelete('panel', st.focusedView);
       const yearMoved =
         initialYearRef.current != null && st.currentYear !== initialYearRef.current;
       setOrDelete('year', yearMoved || params.has('year') ? String(st.currentYear) : null);
@@ -78,7 +71,6 @@ export function useAtlasUrlState() {
       if (
         s.dataSource !== prev.dataSource ||
         s.selectedId !== prev.selectedId ||
-        s.focusedView !== prev.focusedView ||
         s.currentYear !== prev.currentYear
       ) {
         if (timer != null) window.clearTimeout(timer);

@@ -1,24 +1,46 @@
 'use client';
 
 import type { RefObject } from 'react';
+import { useMemo } from 'react';
+
+import { useShallow } from 'zustand/react/shallow';
 
 import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
 
-import { EntityHoverCard } from '../components/entity-hover-card';
-import { GlobeWorkspace } from '../components/globe-workspace';
-import { MobileWorkspaceBar } from '../components/mobile-workspace-bar';
+import { CesiumAssetsGate } from '../components/cesium-assets-gate';
+import { EarthScene } from '../components/HeritageGlobe/EarthScene';
+import { useAtlasStore } from '../hooks/use-atlas-store';
 
 interface GlobeViewProps {
   globeHandlesRef: RefObject<AtlasGlobeHandles | null>;
-  shellRef: RefObject<HTMLElement | null>;
 }
 
-export function GlobeView({ globeHandlesRef, shellRef }: GlobeViewProps) {
+/**
+ * Binds the store to the Cesium scene: filtered globe entities plus the
+ * knowledge-graph neighbourhood of the current selection (for glow + arcs).
+ */
+export function GlobeView({ globeHandlesRef }: GlobeViewProps) {
+  const entities = useAtlasStore(useShallow((s) => s.getGlobeEntities()));
+  const selectedId = useAtlasStore((s) => s.selectedId);
+  const edges = useAtlasStore((s) => s.edges);
+
+  const relatedIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (!selectedId) return ids;
+    for (const edge of edges) {
+      if (edge.source === selectedId) ids.add(edge.target);
+      else if (edge.target === selectedId) ids.add(edge.source);
+    }
+    return ids;
+  }, [edges, selectedId]);
+
   return (
-    <>
-      <GlobeWorkspace globeHandlesRef={globeHandlesRef} shellRef={shellRef} />
-      <MobileWorkspaceBar globeHandlesRef={globeHandlesRef} />
-      <EntityHoverCard />
-    </>
+    <CesiumAssetsGate>
+      <EarthScene
+        globeHandlesRef={globeHandlesRef}
+        entities={entities}
+        relatedIds={relatedIds}
+      />
+    </CesiumAssetsGate>
   );
 }

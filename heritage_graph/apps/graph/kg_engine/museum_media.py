@@ -68,7 +68,10 @@ def comment_from_instance(instance: Any) -> str | None:
         text = str(raw).strip()
         if label and text.lower() == str(label).strip().lower():
             continue
-        if len(text) < 120:
+        # Guard against junk (single words, stray punctuation) but keep short
+        # real sentences: a 50-char contributor description must not be
+        # silently dropped from the graph narrative.
+        if len(text) < 20:
             continue
         return text[:4000]
     return None

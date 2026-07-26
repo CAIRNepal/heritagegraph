@@ -18,7 +18,12 @@ Run:
 import tempfile
 
 from apps.cidoc_data.canonical_status import can_transition, to_canonical_status
-from apps.cidoc_data.models import Monument, Person
+from apps.cidoc_data.models import (
+    ArchitecturalStructure,
+    Location,
+    Monument,
+    Person,
+)
 from apps.graph.kg_engine import get_kg_engine
 from apps.graph.kg_engine.uris import resource_uri_for_instance
 from apps.heritage_data.models import (
@@ -202,6 +207,42 @@ class PublishedEditLifecycleTest(APITestCase):
         self.assertEqual(person.name, "New Label")
         self.assertEqual(wrapper.name, "New Label")
         self.assertEqual(wrapper.description, "New desc.")
+
+    def test_accept_applies_nested_foreign_key_representation(self):
+        """A record whose FK serializes as a nested object must stay approvable.
+
+        Revisions store the serializer's read representation, and several
+        serializers render a foreign key as ``{"id", "name"}`` for the UI.
+        Applying that dict straight onto the ``_id`` column raised TypeError,
+        so every record with a populated FK 500'd on accept.
+        """
+        location = Location.objects.create(
+            name="Patan Durbar Square", type="temple", current_status="preserved"
+        )
+        resp = self.client.post(
+            "/api/v1/cidoc/structures/",
+            {
+                "name": "Krishna Mandir",
+                "structure_type": "Temple",
+                "has_current_location": location.pk,
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.content)
+        structure = ArchitecturalStructure.objects.get(pk=resp.json()["id"])
+        wrapper = self._wrapper_for(structure)
+
+        # The revision really does carry the nested form this guards against.
+        self.assertIsInstance(
+            wrapper.current_revision.data.get("has_current_location"), dict
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            wrapper.accept_contribution(self.reviewer, "ok")
+
+        structure.refresh_from_db()
+        self.assertEqual(structure.status, "accepted")
+        self.assertEqual(structure.has_current_location_id, location.pk)
 
     def test_curator_withdrawal_unpublishes(self):
         resp = self.client.post(

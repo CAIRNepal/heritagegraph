@@ -96,8 +96,10 @@ COPY ./ontology /app/ontology
 # Copy build-time schema/UI mapping inputs used by the registry builder
 COPY ./tools /app/tools
 
-# Create necessary directories
-RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media && \
+# Create necessary directories. These must exist (and be django-owned) in the image
+# because Docker seeds a named volume's ownership from the image path it covers — a
+# mount over a path the image lacks lands root-owned and is unwritable at UID 1000.
+RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media /app/schema-overlay && \
     chown -R django:django /app
 
 # Ensure entrypoint script is executable
@@ -161,8 +163,10 @@ COPY ./ontology /app/ontology
 # Copy build-time schema/UI mapping inputs used by the registry builder
 COPY ./tools /app/tools
 
-# Create necessary directories
-RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media && \
+# Create necessary directories. These must exist (and be django-owned) in the image
+# because Docker seeds a named volume's ownership from the image path it covers — a
+# mount over a path the image lacks lands root-owned and is unwritable at UID 1000.
+RUN mkdir -p /app/heritage_graph/staticfiles /app/heritage_graph/media /app/schema-overlay && \
     chown -R django:django /app
 
 # Ensure entrypoint script is executable

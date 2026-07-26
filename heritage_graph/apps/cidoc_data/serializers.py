@@ -240,9 +240,51 @@ class TraditionSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
 
 
 class SourceSerializer(CulturalEntityLinkMixin, serializers.ModelSerializer):
+    """`Source` is the registry's `InformationObject`, whose label slot is
+    `name`; the column has always been `title`.
+
+    The mismatch made every source contribution fail: the serializer dropped
+    the incoming `name`, and the JSON Schema gate — which reads
+    `validated_data` — then rejected the payload for omitting a required slot.
+    Accepting `name` as a write alias keeps it in `validated_data` while the
+    value still lands in `title`. `title` remains accepted for existing
+    clients.
+    """
+
+    name = serializers.CharField(max_length=300, required=False, write_only=True)
+
     class Meta:
         model = Source
         fields = "__all__"
+        extra_kwargs = {"title": {"required": False}}
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        title = (
+            attrs.get("title")
+            or attrs.get("name")
+            or getattr(self.instance, "title", "")
+        )
+        if not title:
+            raise serializers.ValidationError(
+                {"name": "This field is required."}
+            )
+        attrs["title"] = title
+        attrs["name"] = title
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop("name", None)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data.pop("name", None)
+        return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["name"] = instance.title
+        return data
 
 
 # =====================================================================

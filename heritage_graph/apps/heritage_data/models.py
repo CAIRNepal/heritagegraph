@@ -137,6 +137,19 @@ def _apply_revision_data_to_cidoc(instance, data: dict) -> list[str]:
         if field.is_relation:
             if not field.many_to_one:
                 continue  # m2m/o2m are managed via their own endpoints
+            # Revisions store the serializer's *read* representation, and some
+            # serializers render a foreign key as a nested {"id", "name"} object
+            # for the UI. The column takes a primary key, so unwrap it — writing
+            # the dict raises TypeError and makes the record unapprovable.
+            if isinstance(value, dict):
+                value = value.get("id", value.get("pk"))
+            if isinstance(value, (list, tuple, dict)):
+                logger.warning(
+                    "Revision value for %s.%s is not a usable key; skipping",
+                    instance.__class__.__name__,
+                    key,
+                )
+                continue
             if getattr(instance, field.attname) != value:
                 setattr(instance, field.attname, value)
                 changed.append(key)

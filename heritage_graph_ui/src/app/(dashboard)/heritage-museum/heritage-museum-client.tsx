@@ -549,12 +549,18 @@ export function HeritageMindMapClient() {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background text-foreground">
 
+      {/* Demo corpus: describe what the visitor is looking at and link the
+          provenance, rather than warning them off it. The amber alert styling
+          framed the only fully illustrated corpus as untrustworthy. */}
       {dataSource === 'demo' ? (
         <div
-          className="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b border-amber-500/30 bg-amber-500/10 text-xs text-foreground z-20"
+          className="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b border-border bg-muted/40 text-xs text-muted-foreground z-20"
           role="status"
         >
-          <span>{t('demoBanner')}</span>
+          <span>{t('demoBanner', { count: demoGraph?.nodes.length ?? 0 })}</span>
+          <Link href="/methods" className="text-primary underline underline-offset-2">
+            {t('methods.fullMethodsPage')}
+          </Link>
           <Button type="button" size="sm" variant="outline" className="ml-auto h-7 text-xs" onClick={switchToLive}>
             {t('demoBannerAction')}
           </Button>
@@ -793,14 +799,11 @@ export function HeritageMindMapClient() {
               />
             </div>
 
-            {/* Timeline: footer band when dated nodes exist (2D only) */}
-            {viewMode === '2d' && !loading && !error && (
-              <div
-                className={cn(
-                  'flex flex-shrink-0 flex-col overflow-hidden border-t border-border bg-background lg:col-span-2',
-                  showTimeline ? 'min-h-[11rem] max-h-[28vh]' : 'min-h-0',
-                )}
-              >
+            {/* Timeline: footer band when dated nodes exist (2D only).
+                Gated on showTimeline so an undated corpus gets no empty band —
+                a header and an apology occupy the same space as real content. */}
+            {viewMode === '2d' && !loading && !error && showTimeline && (
+              <div className="flex min-h-[11rem] max-h-[28vh] flex-shrink-0 flex-col overflow-hidden border-t border-border bg-background lg:col-span-2">
                 <TimelineStrip
                   nodes={filteredGraph?.nodes ?? []}
                   selectedId={selectedNode?.id ?? null}

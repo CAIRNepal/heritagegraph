@@ -4,3 +4,46 @@
 slots:
   has_current_location:
     ui_inline_authoring: "true"
+
+  # ── Reified timespans ─────────────────────────────────────────────────────
+  # `has_timespan` points at a TimeSpan instance, which no Django model
+  # implements — every event model stores `date_earliest` / `date_latest`
+  # columns directly instead. The slot is marked required on ten event classes,
+  # so the serializer dropped it and the JSON Schema gate then rejected the
+  # submission for omitting it: those ten forms returned HTTP 400 for every
+  # contribution. Hidden until a TimeSpan is either persisted or the literal
+  # date columns are exposed as slots.
+  has_timespan:
+    ui_hidden: "true"
+
+  # ── PROV-O mixin slots ────────────────────────────────────────────────────
+  # The Entity/Activity/Agent mixins give every heritage class the generic PROV
+  # provenance properties. They are meaningful in the OWL/RDF projection but have
+  # no backing Django column, so leaving them visible would put inputs on every
+  # contribute form that silently discard whatever a contributor types.
+  # Provenance is captured instead via HeritageAssertion and the `has_assertion`
+  # / `is_about` slots, which stay visible.
+  generated_at_time:
+    ui_hidden: "true"
+  was_attributed_to:
+    ui_hidden: "true"
+  was_derived_from:
+    ui_hidden: "true"
+  was_generated_by:
+    ui_hidden: "true"
+  was_influenced_by:
+    ui_hidden: "true"
+  was_informed_by:
+    ui_hidden: "true"
+  was_associated_with:
+    ui_hidden: "true"
+  acted_on_behalf_of:
+    ui_hidden: "true"
+  started_at_time:
+    ui_hidden: "true"
+  ended_at_time:
+    ui_hidden: "true"
+  used:
+    ui_hidden: "true"
+  generated:
+    ui_hidden: "true"

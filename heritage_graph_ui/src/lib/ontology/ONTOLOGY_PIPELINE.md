@@ -117,7 +117,7 @@ The new predicate is automatically included in `RELATION_LABELS` and in `RELATIO
 Edit `ontology/HeritageGraph.yaml` under the relevant enum:
 ```yaml
 enums:
-  ConditionTypeEnum:
+  ConditionType:
     permissible_values:
       Conserved:
         description: "Professionally conserved and stabilized"
