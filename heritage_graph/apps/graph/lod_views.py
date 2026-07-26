@@ -8,7 +8,7 @@ from pathlib import Path
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.views import View
 
 
@@ -46,12 +46,17 @@ LIMIT 500
             )
 
         accept = (request.META.get("HTTP_ACCEPT") or "").lower()
+
         if "text/turtle" in accept or "application/n-triples" in accept:
             body = _rows_to_turtle(uri, rows)
             return HttpResponse(body, content_type="text/turtle; charset=utf-8")
 
+        if "application/rdf+xml" in accept:
+            body = _rows_to_rdfxml(uri, rows)
+            return HttpResponse(body, content_type="application/rdf+xml; charset=utf-8")
+
         if "application/ld+json" in accept or "application/json" in accept:
-            graph = {
+            graph: dict = {
                 "@context": {
                     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
                     "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
@@ -63,9 +68,10 @@ LIMIT 500
                 obj = row.get("o", "")
                 key = pred.rsplit("/", 1)[-1].rsplit("#", 1)[-1]
                 if obj.startswith("http"):
-                    graph.setdefault(key, []).append({"@id": obj}) if isinstance(
-                        graph.get(key), list
-                    ) else graph.update({key: {"@id": obj}})
+                    if isinstance(graph.get(key), list):
+                        graph[key].append({"@id": obj})
+                    else:
+                        graph[key] = {"@id": obj}
                 else:
                     graph[key] = obj
             return HttpResponse(
@@ -73,13 +79,20 @@ LIMIT 500
                 content_type="application/ld+json; charset=utf-8",
             )
 
+        # HTML: 303 See Other → /knowledge/{type}/{id} in the UI
+        redirect_url = _html_redirect_url(uri)
+        if redirect_url:
+            response = HttpResponseRedirect(redirect_url)
+            response.status_code = 303
+            return response
+
         lines = [f"<{uri}>"]
         for row in rows[:80]:
-            lines.append(f"  <{row.get('p','')}> <{row.get('o','')}> .")
+            lines.append(f"  <{row.get('p', '')}> <{row.get('o', '')}> .")
         html = (
             "<!DOCTYPE html><html><head><title>HeritageGraph Resource</title></head>"
             f"<body><h1>{uri}</h1><pre>{chr(10).join(lines)}</pre>"
-            "<p>Request with Accept: text/turtle for RDF.</p></body></html>"
+            "<p>Request with <code>Accept: text/turtle</code> for RDF.</p></body></html>"
         )
         return HttpResponse(html, content_type="text/html; charset=utf-8")
 
@@ -96,42 +109,61 @@ def _rows_to_turtle(subject: str, rows: list[dict[str, str]]) -> str:
     return "\n".join(lines) + "\n"
 
 
-class VoidDatasetView(View):
-    """Serve VoID + DCAT dataset description (static TTL or generated)."""
+def _rows_to_rdfxml(subject: str, rows: list[dict[str, str]]) -> str:
+    """Serialize SPARQL rows as RDF/XML (conservative, no rdflib dependency)."""
+    from xml.sax.saxutils import escape as _esc
 
-    permission_classes = []
+    parts = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">',
+        f'  <rdf:Description rdf:about="{_esc(subject)}">',
+    ]
+    for row in rows:
+        p, o = row.get("p", ""), row.get("o", "")
+        if not p:
+            continue
+        if o.startswith("http"):
+            parts.append(f'    <rdf:type rdf:resource="{_esc(o)}" />' if p.endswith("type") else
+                         f'    <p rdf:resource="{_esc(o)}" xmlns:p="{_esc(p)}" />')
+        else:
+            parts.append(f"    <p xmlns:p=\"{_esc(p)}\">{_esc(o)}</p>")
+    parts += ["  </rdf:Description>", "</rdf:RDF>"]
+    return "\n".join(parts) + "\n"
+
+
+def _html_redirect_url(uri: str) -> str | None:
+    """
+    Derive the UI /knowledge/{type}/{id} URL from a resource IRI.
+
+    Resource IRIs follow: https://w3id.org/heritagegraph/{type}/{slug-or-uuid}
+    """
+    base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
+    if base and uri.startswith(base + "/"):
+        remainder = uri[len(base) + 1:]
+    elif uri.startswith("https://w3id.org/heritagegraph/"):
+        remainder = uri[len("https://w3id.org/heritagegraph/"):]
+    else:
+        return None
+
+    parts = remainder.split("/", 1)
+    if len(parts) != 2:
+        return None
+    rdf_type, rdf_id = parts
+    # Skip internal graph partitions — only redirect entity types
+    if rdf_type in {"graph", "project", "merge-activity", "agent", "dataset"}:
+        return None
+    return f"/knowledge/{rdf_type}/{rdf_id}"
+
+
+class VoidDatasetView(View):
+    """Serve VoID + DCAT dataset description — prefers the static file, falls back to live generation."""
 
     def get(self, request, *args, **kwargs):
         path = Path(settings.BASE_DIR).parent / "ontology" / "lod" / "void-dataset.ttl"
-        if not path.is_file():
-            body = _generated_void_ttl()
-            return HttpResponse(body, content_type="text/turtle; charset=utf-8")
-        return HttpResponse(
-            path.read_text(encoding="utf-8"),
-            content_type="text/turtle; charset=utf-8",
-        )
+        if path.is_file():
+            body = path.read_text(encoding="utf-8")
+        else:
+            from apps.graph.kg_engine.void_generator import generate_void_dcat
 
-
-def _generated_void_ttl() -> str:
-    base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
-    public = GraphPartition.PUBLIC.uri() or ""
-    sparql = getattr(settings, "RDF_PUBLIC_SPARQL_URL", "") or "/cidoc/sparql/"
-    return f"""@prefix void: <http://rdfs.org/ns/void#> .
-@prefix dcat: <http://www.w3.org/ns/dcat#> .
-@prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix foaf: <http://xmlns.com/foaf/0.1/> .
-
-<https://w3id.org/heritagegraph/dataset/public>
-  a void:Dataset, dcat:Dataset ;
-  dcterms:title "HeritageGraph public knowledge graph"@en ;
-  dcterms:creator <https://cairnepal.org/> ;
-  dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
-  void:uriSpace <{base}/> ;
-  void:sparqlEndpoint <{sparql}> ;
-  void:subset <{public}> ;
-  dcat:distribution [
-    a dcat:Distribution ;
-    dcterms:format "text/turtle" ;
-    dcat:accessURL <https://w3id.org/heritagegraph/dataset/public/dump> ;
-  ] .
-"""
+            body = generate_void_dcat()
+        return HttpResponse(body, content_type="text/turtle; charset=utf-8")

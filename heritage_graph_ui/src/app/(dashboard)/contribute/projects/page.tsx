@@ -7,7 +7,23 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { IconPlus, IconSearch, IconFolders, IconGitFork } from "@tabler/icons-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  IconPlus,
+  IconSearch,
+  IconFolders,
+  IconGitFork,
+  IconArrowRight,
+  IconFileCheck,
+  IconArchive,
+  IconQuote,
+} from "@tabler/icons-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { getApiErrorMessage } from "@/lib/api-client";
 import {
@@ -26,16 +42,95 @@ const STATE_COLORS: Record<string, string> = {
   withdrawn: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
 };
 
+function ProjectCardActions({ project }: { project: ProjectSummary }) {
+  const router = useRouter();
+
+  switch (project.state) {
+    case "draft":
+      return (
+        <>
+          <Button
+            size="sm"
+            variant="default"
+            className="gap-1 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/contribute/projects/${project.slug}`);
+            }}
+          >
+            Continue <IconArrowRight className="w-3.5 h-3.5" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/contribute/projects/${project.slug}`);
+            }}
+          >
+            <IconFileCheck className="w-3.5 h-3.5" /> Open Merge Request
+          </Button>
+        </>
+      );
+    case "in_review":
+    case "needs_revision":
+      return (
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1 text-xs"
+          onClick={(e) => {
+            e.stopPropagation();
+            router.push(`/contribute/projects/${project.slug}`);
+          }}
+        >
+          View <IconArrowRight className="w-3.5 h-3.5" />
+        </Button>
+      );
+    case "merged":
+      return (
+        <>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="gap-1 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/contribute/projects/${project.slug}`);
+            }}
+          >
+            <IconArchive className="w-3.5 h-3.5" /> View archive
+          </Button>
+          {project.tags?.includes("doi") && (
+            <Button size="sm" variant="outline" className="gap-1 text-xs" asChild>
+              <a href="#" target="_blank" rel="noopener noreferrer">
+                <IconQuote className="w-3.5 h-3.5" /> Cite dataset
+              </a>
+            </Button>
+          )}
+        </>
+      );
+    default:
+      return null;
+  }
+}
+
 function ProjectCard({ project }: { project: ProjectSummary }) {
   const router = useRouter();
   const stateColor = STATE_COLORS[project.state] ?? STATE_COLORS.draft;
+  const updatedDate = new Date(project.updated_at).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
   return (
     <motion.div variants={scaleIn} whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-      <motion.div
+      <div
         role="button"
         tabIndex={0}
-        className={`${glassCard} p-5 cursor-pointer hover:shadow-xl transition-all duration-200`}
+        className={`${glassCard} p-5 cursor-pointer hover:shadow-xl transition-all duration-200 flex flex-col gap-3`}
         onClick={() => router.push(`/contribute/projects/${project.slug}`)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -43,35 +138,62 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
           }
         }}
       >
-        <div className="flex items-start justify-between gap-3 mb-2">
-          <h3 className="font-semibold text-blue-900 dark:text-blue-100 line-clamp-1 flex-1">
-            {project.title}
-          </h3>
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <IconFolders className="w-4 h-4 text-blue-500 shrink-0" />
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 line-clamp-1">
+              {project.title}
+            </h3>
+          </div>
           <Badge className={`${stateColor} text-[11px] px-2 py-0.5 shrink-0`}>
             {PROJECT_STATE_LABELS[project.state] ?? project.state}
           </Badge>
         </div>
+
         {project.abstract && (
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{project.abstract}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2">{project.abstract}</p>
         )}
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span>{project.entity_count} entities</span>
           <span>{project.asset_count} assets</span>
           {project.collaborator_count > 0 && (
-            <span>{project.collaborator_count} collaborators</span>
+            <span>You + {project.collaborator_count} member{project.collaborator_count !== 1 ? "s" : ""}</span>
           )}
           {project.forked_from && (
             <span className="flex items-center gap-1">
               <IconGitFork className="w-3 h-3" /> fork
             </span>
           )}
+          <span className="ml-auto">Updated {updatedDate}</span>
         </div>
-      </motion.div>
+
+        <div
+          className="flex flex-wrap gap-2 pt-0.5"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          role="group"
+          aria-label="Project actions"
+        >
+          <ProjectCardActions project={project} />
+        </div>
+      </div>
     </motion.div>
   );
 }
 
 type ListScope = "mine" | "public";
+type StateFilter = "all" | "draft" | "in_review" | "needs_revision" | "approved" | "merged" | "withdrawn";
+
+const STATE_FILTER_LABELS: Record<StateFilter, string> = {
+  all: "All states",
+  draft: "Draft",
+  in_review: "In Review",
+  needs_revision: "Needs Revision",
+  approved: "Approved",
+  merged: "Merged",
+  withdrawn: "Withdrawn",
+};
 
 export default function ProjectsListPage() {
   const router = useRouter();
@@ -79,6 +201,7 @@ export default function ProjectsListPage() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [nextUrl, setNextUrl] = useState<string | null>(null);
   const [listScope, setListScope] = useState<ListScope>("mine");
+  const [stateFilter, setStateFilter] = useState<StateFilter>("all");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,10 +216,11 @@ export default function ProjectsListPage() {
     setLoading(true);
     setError(null);
     try {
-      const page =
-        listScope === "public"
-          ? await listProjectsPage(token, { visibility: "public" })
-          : await listProjectsPage(token);
+      const opts: Parameters<typeof listProjectsPage>[1] = {};
+      if (listScope === "public") opts.visibility = "public";
+      if (stateFilter !== "all") opts.state = stateFilter;
+
+      const page = await listProjectsPage(token, opts);
       setProjects(page.results);
       setNextUrl(page.next);
     } catch (e) {
@@ -106,7 +230,7 @@ export default function ProjectsListPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, authStatus, listScope]);
+  }, [token, authStatus, listScope, stateFilter]);
 
   useEffect(() => {
     if (authStatus === "loading") {
@@ -118,17 +242,18 @@ export default function ProjectsListPage() {
       return;
     }
     void fetchFirstPage();
-  }, [token, authStatus, listScope, fetchFirstPage]);
+  }, [token, authStatus, listScope, stateFilter, fetchFirstPage]);
 
   const loadMore = async () => {
     if (!token || !nextUrl || loadingMore) return;
     setLoadingMore(true);
     setError(null);
     try {
-      const page =
-        listScope === "public"
-          ? await listProjectsPage(token, { nextUrl, visibility: "public" })
-          : await listProjectsPage(token, { nextUrl });
+      const opts: Parameters<typeof listProjectsPage>[1] = { nextUrl };
+      if (listScope === "public") opts.visibility = "public";
+      if (stateFilter !== "all") opts.state = stateFilter;
+
+      const page = await listProjectsPage(token, opts);
       setProjects((prev) => {
         const seen = new Set(prev.map((p) => p.id));
         const appended = page.results.filter((p) => !seen.has(p.id));
@@ -214,14 +339,36 @@ export default function ProjectsListPage() {
         </div>
       </motion.div>
 
-      <motion.div initial="hidden" animate="show" variants={fadeInUp} className="relative">
-        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search projects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 h-11 rounded-xl"
-        />
+      <motion.div
+        initial="hidden"
+        animate="show"
+        variants={fadeInUp}
+        className="flex flex-col sm:flex-row gap-3"
+      >
+        <div className="relative flex-1">
+          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search projects..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 h-11 rounded-xl"
+          />
+        </div>
+        <Select
+          value={stateFilter}
+          onValueChange={(v) => setStateFilter(v as StateFilter)}
+        >
+          <SelectTrigger className="h-11 w-full sm:w-44 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(STATE_FILTER_LABELS) as StateFilter[]).map((key) => (
+              <SelectItem key={key} value={key}>
+                {STATE_FILTER_LABELS[key]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </motion.div>
 
       {error && (

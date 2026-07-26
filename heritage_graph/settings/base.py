@@ -55,6 +55,11 @@ CSRF_TRUSTED_ORIGINS = [
     'https://heritagegraph.xyz',
     'https://api.heritagegraph.xyz',
     'https://www.heritagegraph.xyz',
+
+    # dev domains
+    "https://dev.heritagegraph.xyz",
+    "https://devapi.heritagegraph.xyz",
+
 ]
 
 TEMPLATES = [

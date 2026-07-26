@@ -644,9 +644,77 @@ class PersonRevisionViewSet(viewsets.ModelViewSet):
 
 
 class DataSourceViewSet(viewsets.ModelViewSet):
-    queryset = DataSource.objects.all()
     serializer_class = DataSourceSerializer
     search_fields = ["name", "author", "citation"]
+    filterset_fields = ["source_type", "access_tier", "ingest_status"]
+    ordering_fields = ["created_at", "updated_at", "name"]
+    ordering = ["-created_at"]
+
+    def get_parsers(self):
+        from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+
+        return [MultiPartParser(), FormParser(), JSONParser()]
+
+    def get_queryset(self):
+        qs = DataSource.objects.select_related("contributed_by").order_by("-created_at")
+        source_type = self.request.query_params.get("source_type")
+        if source_type:
+            qs = qs.filter(source_type=source_type)
+        access_tier = self.request.query_params.get("access_tier")
+        if access_tier:
+            qs = qs.filter(access_tier=access_tier)
+        ingest_status = self.request.query_params.get("ingest_status")
+        if ingest_status:
+            qs = qs.filter(ingest_status=ingest_status)
+        # Hide sensitive sources from unauthenticated / non-privileged users
+        user = self.request.user
+        if not (user and user.is_authenticated and (
+            user.is_staff or user.is_superuser
+            or user.groups.filter(name__in=["Reviewers", "Moderators"]).exists()
+        )):
+            qs = qs.exclude(access_tier="sensitive_indigenous")
+        return qs
+
+    def get_permissions(self):
+        from .permissions import CAREAccessPermission, DataSourceUploadPermission
+
+        if self.action in ("update", "partial_update", "destroy"):
+            return [permissions.IsAuthenticated()]
+        if self.action == "create":
+            return [DataSourceUploadPermission()]
+        return [CAREAccessPermission()]
+
+    def perform_create(self, serializer):
+        from django.conf import settings
+
+        from apps.graph.kg_engine.uris import resource_base
+
+        instance = serializer.save(
+            contributed_by=self.request.user if self.request.user.is_authenticated else None,
+            ingest_status="pending",
+        )
+        # Mint PID
+        pid = f"{resource_base()}/source/{instance.pk}"
+        type(instance).objects.filter(pk=instance.pk).update(pid=pid)
+        instance.pid = pid
+
+        # Dispatch the appropriate Celery ingest task
+        from django.db import transaction
+
+        from .tasks import dispatch_ingest_task
+
+        transaction.on_commit(lambda: dispatch_ingest_task(instance))
+
+    @action(detail=True, methods=["get"])
+    def manifest(self, request, pk=None):
+        """Return the stored IIIF Presentation v3 manifest for an image/archival source."""
+        source = self.get_object()
+        if not source.iiif_manifest:
+            return Response(
+                {"detail": "No IIIF manifest available yet."},
+                status=drf_status.HTTP_404_NOT_FOUND,
+            )
+        return Response(source.iiif_manifest)
 
 
 class RelationshipPredicateViewSet(viewsets.ReadOnlyModelViewSet):

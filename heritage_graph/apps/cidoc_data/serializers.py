@@ -498,10 +498,83 @@ class PersonRevisionSerializer(serializers.ModelSerializer):
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
+    ingest_status_display = serializers.CharField(
+        source="get_ingest_status_display", read_only=True
+    )
+    access_tier_display = serializers.CharField(
+        source="get_access_tier_display", read_only=True
+    )
+    hg_class = serializers.CharField(read_only=True)
+
     class Meta:
         model = DataSource
-        fields = "__all__"
-        read_only_fields = ["id", "created_at"]
+        fields = [
+            "id",
+            "name",
+            "author",
+            "citation",
+            "url",
+            "note",
+            "source_type",
+            "uploaded_file",
+            "ingest_status",
+            "ingest_status_display",
+            # DataCite
+            "datacite_identifier",
+            "datacite_creator",
+            "datacite_publisher",
+            "datacite_publication_year",
+            "datacite_resource_type",
+            # CARE / TK labels
+            "access_tier",
+            "access_tier_display",
+            "care_labels",
+            # IIIF
+            "iiif_manifest",
+            "iiif_manifest_url",
+            # PID & provenance
+            "pid",
+            # Relations
+            "contributed_by",
+            # Timestamps
+            "created_at",
+            "updated_at",
+            # Computed
+            "hg_class",
+        ]
+        read_only_fields = [
+            "id",
+            "pid",
+            "ingest_status",
+            "iiif_manifest",
+            "hg_class",
+            "created_at",
+            "updated_at",
+        ]
+
+    def validate_care_labels(self, value):
+        from .care_validation import validate_care_labels
+
+        errors = validate_care_labels(value)
+        if errors:
+            raise serializers.ValidationError(errors)
+        return value
+
+    def validate(self, attrs):
+        access_tier = attrs.get("access_tier") or (
+            self.instance.access_tier if self.instance else "public"
+        )
+        care_labels = attrs.get("care_labels") or []
+        if access_tier == "sensitive_indigenous" and not care_labels:
+            raise serializers.ValidationError(
+                {
+                    "care_labels": (
+                        "At least one TK Label URI is required when access_tier "
+                        "is 'sensitive_indigenous'."
+                    )
+                }
+            )
+        return attrs
 
 
 class RelationshipPredicateSerializer(serializers.ModelSerializer):

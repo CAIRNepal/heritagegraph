@@ -184,6 +184,70 @@ def remove_cultural_entity_from_public_graph(sender, instance, **kwargs):
 # PROJECT SIGNALS
 # =====================================================================
 
+
+@receiver(post_save, sender="heritage_data.Project")
+def mint_project_pid(sender, instance, created, **kwargs):
+    """Mint a w3id.org PID for a newly created Project and write PROV-O triples
+    to the RDF outbox so Oxigraph records the creation provenance activity.
+    Skips if pid is already set (idempotent re-save guard).
+    """
+    if not created or instance.pid:
+        return
+
+    from django.conf import settings
+    from django.db import transaction
+
+    base = str(getattr(settings, "RDF_RESOURCE_BASE_URI", "")).rstrip("/")
+    if not base:
+        return
+
+    project_id = str(instance.pk)
+    pid = f"{base}/project/{project_id}"
+    prov_activity_uri = f"{base}/project/{project_id}/activity/creation"
+
+    # Write directly to avoid triggering post_save again
+    type(instance).objects.filter(pk=instance.pk).update(
+        pid=pid, prov_activity_uri=prov_activity_uri
+    )
+    # Keep in-memory instance in sync for any downstream code in this request
+    instance.pid = pid
+    instance.prov_activity_uri = prov_activity_uri
+
+    owner_id = instance.owner_id
+
+    def _write_prov_triples():
+        try:
+            from apps.graph.kg_engine.outbox import enqueue_insert_nt
+            from apps.graph.kg_engine.partitions import GraphPartition
+            from apps.graph.kg_engine.uris import resource_base
+
+            base_uri = resource_base()
+            prov = "http://www.w3.org/ns/prov#"
+            rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xsd = "http://www.w3.org/2001/XMLSchema#"
+            hg = f"{base_uri}/"
+            owner_uri = f"{base_uri}/user/{owner_id}"
+
+            from django.utils.timezone import now
+            started_at = now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+            ntriples = (
+                f"<{pid}> <{rdf}type> <{prov}Activity> .\n"
+                f"<{pid}> <{rdf}type> <{hg}ProjectCreationActivity> .\n"
+                f"<{pid}> <{prov}wasAssociatedWith> <{owner_uri}> .\n"
+                f"<{pid}> <{prov}startedAtTime> "
+                f'"{started_at}"^^<{xsd}dateTime> .\n'
+            )
+
+            graph_uri = GraphPartition.PROJECT.uri(suffix=project_id)
+            enqueue_insert_nt(graph_uri=graph_uri, ntriples=ntriples, error="")
+        except Exception:
+            logger.exception(
+                "PID minting RDF write failed for project %s", project_id
+            )
+
+    transaction.on_commit(_write_prov_triples)
+
 def _notify_project_members(project, actor, notification_type, message, link=""):
     """Create Notification rows for all active project members except the actor."""
     from .models import Notification

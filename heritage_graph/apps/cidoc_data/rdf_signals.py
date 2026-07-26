@@ -217,11 +217,86 @@ def schedule_identity_linked_rdf_refresh(
     transaction.on_commit(_run)
 
 
+def _maybe_materialise_event_node(instance: Any) -> None:
+    """Fire event node INSERT when the assertion property is event-triggering."""
+    from apps.graph.kg_engine.engine import EVENT_TRIGGER_MAP, get_kg_engine
+
+    prop = (instance.asserted_property or "").strip()
+    if prop not in EVENT_TRIGGER_MAP:
+        return
+
+    def _run() -> None:
+        get_kg_engine().materialise_event_node(instance)
+
+    transaction.on_commit(_run)
+
+
+def _maybe_dispatch_reconciliation(instance: Any) -> None:
+    """Enqueue Getty AAT / Wikidata reconciliation for literal slot assertions."""
+    from apps.cidoc_data.assertion_validation import is_relationship_property
+
+    prop = (instance.asserted_property or "").strip()
+    value = (instance.asserted_value or "").strip()
+    if not prop or not value or is_relationship_property(prop):
+        return
+
+    def _run() -> None:
+        try:
+            from apps.cidoc_data.tasks import reconcile_assertion_async
+
+            reconcile_assertion_async.delay(str(instance.pk))
+        except Exception as exc:
+            logger.warning("Could not enqueue reconciliation for %s: %s", instance.pk, exc)
+
+    transaction.on_commit(_run)
+
+
+def _maybe_mark_superseded_assertion(instance: Any) -> None:
+    """When a new assertion references supersedes=<old>, mark the old one superseded."""
+    supersedes_id = getattr(instance, "supersedes_id", None)
+    if not supersedes_id:
+        return
+
+    def _run() -> None:
+        try:
+            from apps.cidoc_data.models import HeritageAssertion
+
+            HeritageAssertion.objects.filter(
+                pk=supersedes_id,
+            ).exclude(
+                reconciliation_status="superseded",
+            ).update(reconciliation_status="superseded")
+
+            if rdf_sync_enabled():
+                try:
+                    old_assertion = HeritageAssertion.objects.get(pk=supersedes_id)
+                    from apps.graph.kg_engine.nanopub_export import nanopub_retraction_trig
+                    from pathlib import Path
+                    from django.conf import settings
+
+                    project_id = str(getattr(instance, "project_id", "") or "shared")
+                    np_dir = Path(settings.MEDIA_ROOT) / "nanopubs" / project_id
+                    np_dir.mkdir(parents=True, exist_ok=True)
+                    trig = nanopub_retraction_trig(old_assertion, instance)
+                    (np_dir / f"retraction-{old_assertion.pk}.trig").write_text(trig, encoding="utf-8")
+                except Exception as exc:
+                    logger.warning("Could not write retraction nanopub for %s: %s", supersedes_id, exc)
+        except Exception as exc:
+            logger.warning("Could not mark assertion %s as superseded: %s", supersedes_id, exc)
+
+    transaction.on_commit(_run)
+
+
 def _on_assertion_saved(sender, instance, **kwargs: object) -> None:
     queue_relationship_assertion_projection(instance)
+    _maybe_mark_superseded_assertion(instance)
 
     if not rdf_sync_enabled():
         return
+
+    _maybe_materialise_event_node(instance)
+    _maybe_dispatch_reconciliation(instance)
+
     if _is_identity_same_referent_assertion(instance):
         prior = HERITAGE_ASSERTION_PRIOR_ENTITY_CLUSTER_ID.pop(instance.pk, None)
         affected: set[uuid.UUID] = set()

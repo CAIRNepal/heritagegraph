@@ -19,6 +19,7 @@ from apps.heritage_data.auth_views import (
 from apps.heritage_data.dev_auth import DevLoginView
 from apps.heritage_data.views import CurrentUserView, LogoutView, RegisterView
 from apps.graph.lod_views import LodResourceView, VoidDatasetView
+from apps.graph.sparql_proxy import CARESparqlProxyView
 
 urlpatterns = [
     # Root: deployment index (admin + docs links); must stay before prometheus '' include
@@ -74,9 +75,12 @@ urlpatterns = [
     path("api/register/", RegisterView.as_view(), name="register"),
     path("api/user/info", CurrentUserView.as_view(), name="current-user"),
     path("user/", include("apps.users.urls")),
-    # Linked Open Data (Phase 1–2)
+    # Linked Open Data (Phase 1–2) — content negotiation + VoID/DCAT
     path("lod/resource/<path:path>", LodResourceView.as_view(), name="lod-resource"),
     path("lod/dataset/", VoidDatasetView.as_view(), name="lod-dataset"),
     path("api/v1/lod/resource/<path:path>", LodResourceView.as_view()),
     path("api/v1/lod/dataset/", VoidDatasetView.as_view()),
+    # CARE-aware SPARQL proxy (Phase 10–11)
+    path("sparql/", CARESparqlProxyView.as_view(), name="sparql-proxy"),
+    path("api/v1/sparql/", CARESparqlProxyView.as_view(), name="sparql-proxy-v1"),
 ]

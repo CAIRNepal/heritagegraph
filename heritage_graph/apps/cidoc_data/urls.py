@@ -45,7 +45,7 @@ router.register(r'caste_groups', CasteGroupViewSet)
 router.register(r'calendar_systems', CalendarSystemViewSet)
 
 # Provenance models
-router.register(r'data_sources', DataSourceViewSet)
+router.register(r'data_sources', DataSourceViewSet, basename='data-source')
 router.register(
     r'relationship-predicates',
     RelationshipPredicateViewSet,

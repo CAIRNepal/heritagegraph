@@ -4772,3 +4772,297 @@ class ProjectCommentViewSet(_ProjectScopedViewSet):
             target_kind="project",
             target_id=project.id,
         )
+
+
+# ── MergeRequest ViewSet ───────────────────────────────────────────────────────
+
+class MergeRequestViewSet(viewsets.ModelViewSet):
+    """
+    CRUD + lifecycle actions for MergeRequests.
+
+    Routes:
+      POST   /api/merge-requests/                   — open a MR (runs pre-flight)
+      GET    /api/merge-requests/{id}/              — retrieve
+      GET    /api/merge-requests/?project=<slug>    — list for project
+      POST   /api/merge-requests/{id}/approve/      — reviewer approves
+      POST   /api/merge-requests/{id}/reject/       — reviewer rejects
+      POST   /api/merge-requests/{id}/request-changes/
+      GET    /api/merge-requests/{id}/rdf-diff/     — live diff view
+    """
+
+    from .serializers import MergeRequestSerializer, MergeRequestCreateSerializer
+    from .models import MergeRequest as _MRModel
+    from .permissions import CannotApproveOwnMergeRequest
+
+    queryset = _MRModel.objects.select_related("project", "opened_by", "reviewed_by").all()
+
+    def get_serializer_class(self):
+        from .serializers import MergeRequestCreateSerializer, MergeRequestSerializer
+        if self.action == "create":
+            return MergeRequestCreateSerializer
+        return MergeRequestSerializer
+
+    def get_permissions(self):
+        from rest_framework.permissions import IsAuthenticated
+        return [IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        from apps.graph.conflict_diff import compute_diff
+        from apps.graph.shacl_validate import check_pid_uniqueness, validate_project_graph
+        from rest_framework.exceptions import ValidationError as DRFValidationError
+
+        project = serializer.validated_data["project"]
+
+        # Pre-flight: SHACL + PID uniqueness
+        project_id = str(project.pk)
+        shacl_report = validate_project_graph(project_id)
+        if not shacl_report.conforms:
+            raise DRFValidationError(
+                {
+                    "shacl_violations": shacl_report.as_dict()["violations"],
+                    "detail": "SHACL validation failed. Resolve violations before opening a merge request.",
+                },
+                code="shacl_violation",
+            )
+
+        pid_collisions = check_pid_uniqueness(project_id)
+        diff = compute_diff(project_id)
+
+        serializer.save(
+            opened_by=self.request.user,
+            shacl_report=shacl_report.as_dict(),
+            conflict_diff=diff.as_dict(),
+            pid_collisions=pid_collisions,
+        )
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request, pk=None):
+        from .models import MergeRequest as _MR
+        from .permissions import CannotApproveOwnMergeRequest
+        from apps.graph.merge import execute_merge
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        mr = self.get_object()
+        if request.user == mr.opened_by:
+            raise DRFPermDenied("You cannot approve your own merge request.")
+        if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
+            return Response({"detail": f"Cannot approve from status '{mr.status}'."}, status=400)
+
+        reviewer_note = request.data.get("reviewer_note", "")
+        mr.status = _MR.STATUS_APPROVED
+        mr.reviewed_by = request.user
+        mr.reviewer_note = reviewer_note
+        mr.save(update_fields=["status", "reviewed_by", "reviewer_note", "updated_at"])
+
+        result = execute_merge(str(mr.pk))
+        from .serializers import MergeRequestSerializer
+        mr.refresh_from_db()
+        return Response(MergeRequestSerializer(mr, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        from .models import MergeRequest as _MR
+
+        mr = self.get_object()
+        if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
+            return Response({"detail": f"Cannot reject from status '{mr.status}'."}, status=400)
+
+        mr.status = _MR.STATUS_REJECTED
+        mr.reviewed_by = request.user
+        mr.reviewer_note = request.data.get("reviewer_note", "")
+        mr.save(update_fields=["status", "reviewed_by", "reviewer_note", "updated_at"])
+        from .serializers import MergeRequestSerializer
+        return Response(MergeRequestSerializer(mr, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], url_path="request-changes")
+    def request_changes(self, request, pk=None):
+        from .models import MergeRequest as _MR
+
+        mr = self.get_object()
+        if mr.status != _MR.STATUS_PENDING:
+            return Response({"detail": "Can only request changes on a pending MR."}, status=400)
+
+        mr.status = _MR.STATUS_CHANGES_REQUESTED
+        mr.reviewed_by = request.user
+        mr.reviewer_note = request.data.get("reviewer_note", "")
+        mr.save(update_fields=["status", "reviewed_by", "reviewer_note", "updated_at"])
+        from .serializers import MergeRequestSerializer
+        return Response(MergeRequestSerializer(mr, context={"request": request}).data)
+
+    @action(detail=True, methods=["get"], url_path="rdf-diff")
+    def rdf_diff(self, request, pk=None):
+        """Return live RDF diff triples for the reviewer diff view."""
+        mr = self.get_object()
+        project_id = str(mr.project_id)
+        try:
+            from apps.graph.conflict_diff import compute_diff
+            diff = compute_diff(project_id)
+            return Response(diff.as_dict())
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=500)
+
+
+# ── Reconciled Links & Curator Alerts ─────────────────────────────────────────
+
+class ReconciledLinkViewSet(viewsets.ModelViewSet):
+    """CRUD for skos:exactMatch / closeMatch / broadMatch links to authority files."""
+
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["authority", "is_stale", "match_type"]
+    search_fields = ["entity_uri", "target_uri", "target_label"]
+    ordering_fields = ["created_at", "last_verified"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        from apps.heritage_data.models import ReconciledLink
+        return ReconciledLink.objects.all()
+
+    def get_serializer_class(self):
+        from apps.heritage_data.serializers import ReconciledLinkSerializer
+        return ReconciledLinkSerializer
+
+    @action(detail=True, methods=["post"], url_path="mark-stale")
+    def mark_stale(self, request, pk=None):
+        link = self.get_object()
+        link.is_stale = True
+        link.save(update_fields=["is_stale", "updated_at"])
+        from apps.heritage_data.serializers import ReconciledLinkSerializer
+        return Response(ReconciledLinkSerializer(link).data)
+
+    @action(detail=True, methods=["post"], url_path="update-target")
+    def update_target(self, request, pk=None):
+        link = self.get_object()
+        new_uri = request.data.get("target_uri", "").strip()
+        new_label = request.data.get("target_label", link.target_label)
+        if not new_uri:
+            return Response({"detail": "target_uri is required."}, status=400)
+        link.target_uri = new_uri
+        link.target_label = new_label
+        link.is_stale = False
+        link.save(update_fields=["target_uri", "target_label", "is_stale", "updated_at"])
+        from apps.heritage_data.serializers import ReconciledLinkSerializer
+        return Response(ReconciledLinkSerializer(link).data)
+
+
+class CuratorAlertViewSet(viewsets.ReadOnlyModelViewSet):
+    """Read + dismiss/resolve curator alerts created by the re-reconciliation beat task."""
+
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_fields = ["status", "issue_type"]
+    ordering_fields = ["detected_at"]
+    ordering = ["-detected_at"]
+
+    def get_queryset(self):
+        from apps.heritage_data.models import CuratorAlert
+        return CuratorAlert.objects.select_related("reconciled_link", "resolved_by").all()
+
+    def get_serializer_class(self):
+        from apps.heritage_data.serializers import CuratorAlertSerializer
+        return CuratorAlertSerializer
+
+    @action(detail=True, methods=["post"])
+    def resolve(self, request, pk=None):
+        from django.utils import timezone
+        from apps.heritage_data.models import CuratorAlert as _CA
+        alert = self.get_object()
+        alert.status = _CA.STATUS_RESOLVED
+        alert.resolved_by = request.user
+        alert.resolved_at = timezone.now()
+        alert.save(update_fields=["status", "resolved_by", "resolved_at"])
+        from apps.heritage_data.serializers import CuratorAlertSerializer
+        return Response(CuratorAlertSerializer(alert).data)
+
+    @action(detail=True, methods=["post"])
+    def ignore(self, request, pk=None):
+        from apps.heritage_data.models import CuratorAlert as _CA
+        alert = self.get_object()
+        alert.status = _CA.STATUS_IGNORED
+        alert.save(update_fields=["status"])
+        from apps.heritage_data.serializers import CuratorAlertSerializer
+        return Response(CuratorAlertSerializer(alert).data)
+
+
+# ── Project Assertion History ──────────────────────────────────────────────────
+
+class ProjectAssertionHistoryViewSet(viewsets.ViewSet):
+    """
+    Returns HeritageAssertions for a project slug ordered by created_at desc.
+    Used by the /contribute/projects/[slug]/history page.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        from apps.cidoc_data.models import HeritageAssertion
+        from apps.heritage_data.models import Project
+
+        slug = request.query_params.get("project_slug", "").strip()
+        if not slug:
+            return Response({"detail": "project_slug query param is required."}, status=400)
+
+        try:
+            project = Project.objects.get(slug=slug)
+        except Project.DoesNotExist:
+            raise NotFound("Project not found.")
+
+        if project.owner != request.user and not request.user.is_staff:
+            from apps.heritage_data.models import ProjectMembership
+            if not ProjectMembership.objects.filter(project=project, member=request.user).exists():
+                raise PermissionDenied("You are not a member of this project.")
+
+        qs = HeritageAssertion.objects.filter(
+            project_id=project.pk,
+        ).select_related(
+            "supersedes",
+        ).order_by("-created_at")
+
+        entity_type = request.query_params.get("entity_type", "").strip()
+        if entity_type:
+            from django.contrib.contenttypes.models import ContentType
+            try:
+                ct = ContentType.objects.get(model=entity_type)
+                qs = qs.filter(content_type=ct)
+            except ContentType.DoesNotExist:
+                pass
+
+        page_size = 20
+        try:
+            page = max(1, int(request.query_params.get("page", 1)))
+        except (ValueError, TypeError):
+            page = 1
+        offset = (page - 1) * page_size
+        total = qs.count()
+        rows = qs[offset: offset + page_size]
+
+        def _serialize(a):
+            supersedes_info = None
+            if a.supersedes_id:
+                s = a.supersedes
+                supersedes_info = {
+                    "id": str(s.pk),
+                    "asserted_property": s.asserted_property,
+                    "asserted_value": s.asserted_value,
+                    "reconciliation_status": s.reconciliation_status,
+                }
+            return {
+                "id": str(a.pk),
+                "asserted_property": a.asserted_property,
+                "asserted_value": a.asserted_value,
+                "confidence": a.confidence,
+                "reconciliation_status": a.reconciliation_status,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+                "updated_at": a.updated_at.isoformat() if a.updated_at else None,
+                "supersedes": supersedes_info,
+                "content_type": a.content_type.model if a.content_type_id else None,
+                "object_id": a.object_id,
+            }
+
+        return Response({
+            "count": total,
+            "page": page,
+            "page_size": page_size,
+            "results": [_serialize(a) for a in rows],
+        })
+

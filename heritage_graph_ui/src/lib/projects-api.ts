@@ -14,12 +14,14 @@ export interface ProjectSummary {
   abstract: string;
   state: string;
   visibility: string;
+  license: string;
   owner: ProjectUserBrief;
   forked_from: string | null;
   asset_count: number;
   entity_count: number;
   collaborator_count: number;
   tags: string[];
+  pid: string;
   created_at: string;
   updated_at: string;
 }
@@ -76,6 +78,9 @@ export interface ProjectDetail extends Omit<ProjectSummary, "asset_count" | "ent
   can_edit: boolean;
   submitted_at: string | null;
   merged_at: string | null;
+  pid: string;
+  prov_activity_uri: string;
+  named_graph_uri: string;
 }
 
 export interface ProjectActivityRow {
@@ -198,6 +203,7 @@ export interface CreateProjectPayload {
   abstract?: string;
   intended_subject?: string;
   languages?: string[];
+  license?: string;
   visibility?: string;
   tags?: string[];
 }

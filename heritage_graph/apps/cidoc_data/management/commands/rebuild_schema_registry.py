@@ -33,7 +33,7 @@ class Command(BaseCommand):
             and latest is not None
             and latest.schema_version == payload["schema_version"]
             and (latest.core_hash or "") == core_hash
-            and bool(latest_json.get("contribute_hub"))
+            and bool((latest_json.get("contribute_hub") or {}).get("intents"))
         )
         if already_current:
             self.stdout.write(

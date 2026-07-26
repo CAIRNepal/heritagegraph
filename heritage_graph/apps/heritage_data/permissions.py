@@ -1,5 +1,6 @@
 # heritage_data/permissions.py
 from rest_framework import permissions
+from rest_framework.exceptions import PermissionDenied
 
 
 class IsContributorOrReadOnly(permissions.BasePermission):
@@ -94,6 +95,21 @@ class IsStaffOrExpertCurator(permissions.BasePermission):
             return False
         rr = request.user.reviewer_role
         return rr.is_active and rr.role == 'expert_curator'
+
+
+class CannotApproveOwnMergeRequest(permissions.BasePermission):
+    """
+    Hard rule: the user who opened a MergeRequest cannot be its approver.
+
+    Applied as an object-level permission on the approve/ action.
+    """
+
+    message = "You cannot approve your own merge request."
+
+    def has_object_permission(self, request, view, obj):
+        if request.user == obj.opened_by:
+            raise PermissionDenied(self.message)
+        return True
 
 
 class IsSchemaExtensionModerator(permissions.BasePermission):

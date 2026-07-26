@@ -25,6 +25,7 @@ from .models import (
     EntityProposal,
     EntityProposalAuditEvent,
     Fork,
+    MergeRequest,
     Notification,
     Reaction,
     RelationshipProposal,
@@ -2320,11 +2321,13 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "abstract",
             "intended_subject",
             "languages",
+            "license",
             "owner",
             "visibility",
             "state",
             "forked_from",
             "tags",
+            "pid",
             "asset_count",
             "entity_count",
             "collaborator_count",
@@ -2343,6 +2346,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     entities = ProjectEntitySerializer(many=True, read_only=True)
     allowed_transitions = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    named_graph_uri = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -2353,6 +2357,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "abstract",
             "intended_subject",
             "languages",
+            "license",
             "owner",
             "visibility",
             "state",
@@ -2365,6 +2370,9 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "entities",
             "allowed_transitions",
             "can_edit",
+            "pid",
+            "prov_activity_uri",
+            "named_graph_uri",
             "submitted_at",
             "merged_at",
             "created_at",
@@ -2380,11 +2388,21 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "entities",
             "allowed_transitions",
             "can_edit",
+            "pid",
+            "prov_activity_uri",
+            "named_graph_uri",
             "submitted_at",
             "merged_at",
             "created_at",
             "updated_at",
         ]
+
+    def get_named_graph_uri(self, obj) -> str:
+        try:
+            from apps.graph.kg_engine.uris import project_graph_uri
+            return project_graph_uri(obj.pk)
+        except Exception:
+            return ""
 
     def get_allowed_transitions(self, obj):
         request = self.context.get("request")
@@ -2412,6 +2430,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             "abstract",
             "intended_subject",
             "languages",
+            "license",
             "visibility",
             "forked_from",
             "tags",
@@ -2433,6 +2452,7 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
             "abstract",
             "intended_subject",
             "languages",
+            "license",
             "visibility",
             "tags",
             "canvas_state",
@@ -2470,3 +2490,125 @@ class ProjectCommentSerializer(serializers.ModelSerializer):
     def get_replies(self, obj):
         qs = obj.replies.order_by("created_at")
         return ProjectCommentSerializer(qs, many=True, context=self.context).data
+
+
+
+# ── MergeRequest serializers ───────────────────────────────────────────────────
+
+class MergeRequestSerializer(serializers.ModelSerializer):
+    """Full detail serializer for a MergeRequest."""
+
+    opened_by_username = serializers.CharField(source="opened_by.username", read_only=True)
+    reviewed_by_username = serializers.SerializerMethodField()
+    project_title = serializers.CharField(source="project.title", read_only=True)
+    project_slug = serializers.CharField(source="project.slug", read_only=True)
+
+    class Meta:
+        model = MergeRequest
+        fields = [
+            "id",
+            "project",
+            "project_title",
+            "project_slug",
+            "status",
+            "scope",
+            "summary",
+            "justification",
+            "reviewer_note",
+            "shacl_report",
+            "conflict_diff",
+            "pid_collisions",
+            "merge_activity_uri",
+            "new_pids",
+            "opened_by",
+            "opened_by_username",
+            "reviewed_by",
+            "reviewed_by_username",
+            "opened_at",
+            "updated_at",
+            "merged_at",
+        ]
+        read_only_fields = [
+            "id",
+            "status",
+            "shacl_report",
+            "conflict_diff",
+            "pid_collisions",
+            "merge_activity_uri",
+            "new_pids",
+            "opened_by",
+            "opened_by_username",
+            "reviewed_by",
+            "reviewed_by_username",
+            "project_title",
+            "project_slug",
+            "opened_at",
+            "updated_at",
+            "merged_at",
+        ]
+
+    def get_reviewed_by_username(self, obj):
+        return obj.reviewed_by.username if obj.reviewed_by else None
+
+
+class MergeRequestCreateSerializer(serializers.ModelSerializer):
+    """Write serializer: only summary, justification, scope, and project are accepted."""
+
+    class Meta:
+        model = MergeRequest
+        fields = ["project", "summary", "justification", "scope"]
+
+
+from .models import ReconciledLink, CuratorAlert  # noqa: E402
+
+
+class ReconciledLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReconciledLink
+        fields = [
+            "id",
+            "entity_uri",
+            "match_type",
+            "target_uri",
+            "target_label",
+            "authority",
+            "is_stale",
+            "last_verified",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "last_verified"]
+
+
+class CuratorAlertSerializer(serializers.ModelSerializer):
+    reconciled_link_detail = ReconciledLinkSerializer(source="reconciled_link", read_only=True)
+    resolved_by_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CuratorAlert
+        fields = [
+            "id",
+            "reconciled_link",
+            "reconciled_link_detail",
+            "issue_type",
+            "status",
+            "detail",
+            "detected_at",
+            "resolved_at",
+            "resolved_by",
+            "resolved_by_username",
+            "suggested_replacement_uri",
+            "created_at",
+        ]
+        read_only_fields = [
+            "id",
+            "detected_at",
+            "resolved_at",
+            "resolved_by",
+            "resolved_by_username",
+            "reconciled_link_detail",
+            "created_at",
+        ]
+
+    def get_resolved_by_username(self, obj):
+        return obj.resolved_by.username if obj.resolved_by else None
