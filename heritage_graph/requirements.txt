@@ -37,7 +37,9 @@ pdfplumber==0.11.0
 pytesseract==0.3.13
 anthropic==0.31.0
 # KG ingestion pipeline (5-agent) — Agents 1-5 in apps/document_processing/services/agents
-pyshacl>=0.25.0
+# pyshacl 0.40+ requires owlrl>=7.6.2; keep both pinned so Docker wheel installs
+# do not resolve to an incompatible pair (pip install /wheels/* has no PyPI fallback).
+pyshacl==0.40.0
 ollama>=0.3.0
 langdetect==1.0.9
 chonkie>=1.0.0
@@ -97,4 +99,4 @@ whitenoise==6.9.0
 nepali-datetime==1.0.7
 pyoxigraph==0.5.8
 rdflib==7.6.0
-owlrl==7.1.4
+owlrl==7.6.2
