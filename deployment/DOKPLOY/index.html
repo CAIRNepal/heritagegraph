@@ -1366,6 +1366,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Quick checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#devenv-vs-production-same-compose-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Devenv vs production (same compose file)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2088,6 +2105,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Quick checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#devenv-vs-production-same-compose-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Devenv vs production (same compose file)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2245,6 +2279,50 @@
    Do <strong>not</strong> point <code>INTERNAL_BACKEND_URL</code> at the public API URL unless that hostname is in <code>ALLOWED_HOSTS</code>. Omitting <code>backend</code> causes <code>400</code> / DisallowedHost (<code>BACKEND_DISALLOWED_HOST</code> on login).</li>
 <li><strong>Domains in Dokploy:</strong> API → <strong>backend</strong> port <strong>8000</strong>; dashboard → <strong>frontend</strong> <strong>3000</strong>; landing → <strong>landing</strong> <strong>3000</strong>. Redis is internal only (no public route).</li>
 </ol>
+<h3 id="devenv-vs-production-same-compose-file">Devenv vs production (same compose file)</h3>
+<p>Compose defaults point at <strong>production</strong> hosts (<code>api.heritagegraph.xyz</code> / <code>heritagegraph.xyz</code>). A Dokploy app named like <code>…-devenv-…</code> that serves <code>dev.heritagegraph.xyz</code> <strong>must override</strong> these in the Dokploy environment (and <strong>rebuild</strong> frontend/landing — <code>NEXT_PUBLIC_*</code> is baked at build time):</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Devenv value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NEXT_PUBLIC_API_URL</code></td>
+<td><code>https://devapi.heritagegraph.xyz</code></td>
+</tr>
+<tr>
+<td><code>NEXTAUTH_URL</code></td>
+<td><code>https://dev.heritagegraph.xyz</code></td>
+</tr>
+<tr>
+<td><code>CORS_ALLOWED_ORIGINS</code></td>
+<td><code>https://dev.heritagegraph.xyz</code> (add others if needed)</td>
+</tr>
+<tr>
+<td><code>ALLOWED_HOSTS</code></td>
+<td><code>devapi.heritagegraph.xyz,localhost,backend</code></td>
+</tr>
+<tr>
+<td><code>INTERNAL_BACKEND_URL</code></td>
+<td><code>http://backend:8000</code> (do not use the public API URL)</td>
+</tr>
+<tr>
+<td><code>RDF_RESOURCE_BASE_URI</code></td>
+<td><code>https://devapi.heritagegraph.xyz</code> (optional, for FAIR IRIs)</td>
+</tr>
+</tbody>
+</table>
+<p>Verify after deploy:</p>
+<pre><code class="language-bash"># Must be 200 + JSON (not HTML 404). If this 404s, Museum live mode cannot load.
+curl -sS &quot;https://devapi.heritagegraph.xyz/api/v1/cidoc/kg/graph/?scope=reviewed&amp;node_limit=5&quot; | head -c 200
+
+# Empty `nodes: []` means Postgres has no published CIDOC rows yet (or run
+# `python manage.py rdf_rebuild` in the backend container after seeding data).
+</code></pre>
+<p>Google Cloud Console: authorized redirect URI must include <code>https://dev.heritagegraph.xyz/api/auth/callback/google</code> for the devenv app.</p>
 <h2 id="automatic-redeploy-on-v1">Automatic redeploy on <code>v1</code></h2>
 <p>Deploy hooks and branch selection are configured in <strong>Dokploy</strong> and your <strong>Git host</strong>, not in <code>docker-compose-dokploy.yml</code>.</p>
 <h3 id="1-dokploy-source">1. Dokploy source</h3>
