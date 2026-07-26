@@ -43,7 +43,8 @@ export function GeoPointField({
   const syncMarker = useCallback(
     (L: typeof import("leaflet"), latNum: number, lngNum: number) => {
       const map = mapInstanceRef.current;
-      if (!map) return;
+      // Guard: setView during/after teardown throws `_leaflet_pos` of undefined.
+      if (!map || !(map as unknown as { _loaded?: boolean })._loaded) return;
       if (!markerRef.current) {
         markerRef.current = L.marker([latNum, lngNum]).addTo(map);
       } else {
@@ -61,6 +62,17 @@ export function GeoPointField({
       try {
         const L = await import("leaflet");
         await import("leaflet/dist/leaflet.css");
+        // Webpack rewrites leaflet's relative image paths against the page URL
+        // (`/contribute/...`), so markers 404 unless we pin absolute asset URLs.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (L.Icon.Default.prototype as any)._getIconUrl;
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl:
+            "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+          shadowUrl:
+            "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        });
         if (cancelled || !mapHostRef.current) return;
         const el = mapHostRef.current;
         const initLat = parseFloat(String(value?.lat ?? "").replace(",", "."));
@@ -88,7 +100,15 @@ export function GeoPointField({
         if (Number.isFinite(initLat) && Number.isFinite(initLng)) {
           syncMarker(L, initLat, initLng);
         }
-        setTimeout(() => map.invalidateSize(), 50);
+        setTimeout(() => {
+          if (!cancelled && mapInstanceRef.current === map) {
+            try {
+              map.invalidateSize();
+            } catch {
+              /* map already removed */
+            }
+          }
+        }, 50);
         setMapReady(true);
       } catch {
         if (!cancelled) setMapError("Map unavailable; use coordinates below.");
@@ -96,9 +116,15 @@ export function GeoPointField({
     })();
     return () => {
       cancelled = true;
-      mapInstanceRef.current?.remove();
+      const map = mapInstanceRef.current;
       mapInstanceRef.current = null;
       markerRef.current = null;
+      try {
+        map?.stop();
+        map?.remove();
+      } catch {
+        /* zoom transition can throw `_leaflet_pos` after unmount */
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- map init once; marker syncs in a separate effect
   }, [disabled, onChange, preferInputsOnly, syncMarker]);

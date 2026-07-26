@@ -157,7 +157,12 @@ export function MapView({ nodes, selectedId, onNodeSelect }: MapViewProps) {
       const map = mapRef.current;
       mapRef.current = null;
       markersRef.current.clear();
-      map?.remove();
+      try {
+        map?.stop();
+        map?.remove();
+      } catch {
+        /* zoom transition can throw `_leaflet_pos` after unmount */
+      }
     };
     // We intentionally depend on the *signature*, not the geoNodes array, so
     // identical sets don't trigger a full map teardown.
