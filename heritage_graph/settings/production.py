@@ -45,9 +45,12 @@ ALLOWED_HOSTS = [h.strip() for h in _allowed_raw.split(",") if h.strip()]
 if not ALLOWED_HOSTS:
     raise ValueError("ALLOWED_HOSTS must be set for production.")
 
-# Allow internal docker network requests from Next.js frontend to 'backend:8000'
-if "backend" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("backend")
+# Allow internal docker network requests from Next.js frontend to 'backend:8000'.
+# Always force these in — Dokploy operators sometimes override ALLOWED_HOSTS with
+# only the public API hostname, which breaks the NextAuth handshake (Host: backend).
+for _host in ("backend", "localhost", "127.0.0.1"):
+    if _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
 
 # Behind Coolify / Traefik: correct scheme and host for redirects and OpenAPI URLs
 USE_X_FORWARDED_HOST = True

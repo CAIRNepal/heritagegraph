@@ -287,8 +287,15 @@ export function HeritageMindMapClient() {
       attachRelations(nodes, links);
       enrichMuseumGraph({ nodes, links });
       setLiveGraph({ nodes, links });
-    } catch {
-      setLiveError('live');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      // Prod API (api.heritagegraph.xyz) historically 404'd /kg/graph/ while
+      // devenv served it — usually NEXT_PUBLIC_API_URL points at the wrong host.
+      if (/\b404\b/.test(msg)) {
+        setLiveError('notfound');
+      } else {
+        setLiveError('live');
+      }
       // Stay in 'live' mode so a Retry click is intuitive — the user sees the
       // error banner and the toggle button switches back to demo if they want.
     } finally {
@@ -527,12 +534,14 @@ export function HeritageMindMapClient() {
 
   const errorMessage =
     error === 'unconfigured'
-      ? 'Live data source is not configured (set NEXT_PUBLIC_API_URL).'
-      : error === 'live'
-        ? t('errors.liveLoad')
-        : error === 'demo'
-          ? t('errors.demoLoad')
-          : null;
+      ? 'Live data source is not configured (set NEXT_PUBLIC_API_URL to your public API origin, e.g. https://devapi.heritagegraph.xyz).'
+      : error === 'notfound'
+        ? `Knowledge graph API not found at ${API_BASE}/api/v1/cidoc/kg/graph/. For the Dokploy devenv app set NEXT_PUBLIC_API_URL=https://devapi.heritagegraph.xyz and rebuild the frontend (it is baked at build time).`
+        : error === 'live'
+          ? t('errors.liveLoad')
+          : error === 'demo'
+            ? t('errors.demoLoad')
+            : null;
 
   const provenanceText =
     dataSource === 'demo' && demoProv?.retrieved

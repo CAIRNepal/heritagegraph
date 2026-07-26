@@ -13,6 +13,31 @@ Use the repository file **`docker-compose-dokploy.yml`** as the Compose definiti
    Do **not** point `INTERNAL_BACKEND_URL` at the public API URL unless that hostname is in `ALLOWED_HOSTS`. Omitting `backend` causes `400` / DisallowedHost (`BACKEND_DISALLOWED_HOST` on login).
 6. **Domains in Dokploy:** API → **backend** port **8000**; dashboard → **frontend** **3000**; landing → **landing** **3000**. Redis is internal only (no public route).
 
+### Devenv vs production (same compose file)
+
+Compose defaults point at **production** hosts (`api.heritagegraph.xyz` / `heritagegraph.xyz`). A Dokploy app named like `…-devenv-…` that serves `dev.heritagegraph.xyz` **must override** these in the Dokploy environment (and **rebuild** frontend/landing — `NEXT_PUBLIC_*` is baked at build time):
+
+| Variable | Devenv value |
+|----------|----------------|
+| `NEXT_PUBLIC_API_URL` | `https://devapi.heritagegraph.xyz` |
+| `NEXTAUTH_URL` | `https://dev.heritagegraph.xyz` |
+| `CORS_ALLOWED_ORIGINS` | `https://dev.heritagegraph.xyz` (add others if needed) |
+| `ALLOWED_HOSTS` | `devapi.heritagegraph.xyz,localhost,backend` |
+| `INTERNAL_BACKEND_URL` | `http://backend:8000` (do not use the public API URL) |
+| `RDF_RESOURCE_BASE_URI` | `https://devapi.heritagegraph.xyz` (optional, for FAIR IRIs) |
+
+Verify after deploy:
+
+```bash
+# Must be 200 + JSON (not HTML 404). If this 404s, Museum live mode cannot load.
+curl -sS "https://devapi.heritagegraph.xyz/api/v1/cidoc/kg/graph/?scope=reviewed&node_limit=5" | head -c 200
+
+# Empty `nodes: []` means Postgres has no published CIDOC rows yet (or run
+# `python manage.py rdf_rebuild` in the backend container after seeding data).
+```
+
+Google Cloud Console: authorized redirect URI must include `https://dev.heritagegraph.xyz/api/auth/callback/google` for the devenv app.
+
 ## Automatic redeploy on `v1`
 
 Deploy hooks and branch selection are configured in **Dokploy** and your **Git host**, not in `docker-compose-dokploy.yml`.

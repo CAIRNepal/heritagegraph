@@ -235,7 +235,9 @@ export const authOptions: NextAuthOptions = {
         return '/auth/login?error=Configuration';
       }
 
-      const testUrl = internalDataApiPath('testme');
+      // Trailing slash matches Django's registered route; without it APPEND_SLASH
+      // can 301 and strip Authorization on some proxies.
+      const testUrl = `${internalDataApiPath('testme')}/`;
 
       try {
         const response = await backendGetWithHandshakeRetry(testUrl, accessToken, idToken);
@@ -258,8 +260,10 @@ export const authOptions: NextAuthOptions = {
           ) {
             return '/auth/login?error=BACKEND_DISALLOWED_HOST';
           }
+          // Other 400s are not Host errors (mis-mapped previously); surface the
+          // generic sync message so operators check GOOGLE_CLIENT_ID / logs.
           if (response.status === 400) {
-            return '/auth/login?error=BACKEND_DISALLOWED_HOST';
+            return '/auth/login?error=BACKEND_SYNC';
           }
           return '/auth/login?error=BACKEND_SYNC';
         }
