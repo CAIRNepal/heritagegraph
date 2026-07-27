@@ -91,7 +91,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function ReviewWorkspacePage() {
   const { data: session } = useSession();
-  const { isReviewer } = useUserRoles();
+  const { isReviewer, isLoading: rolesLoading } = useUserRoles();
   const router = useRouter();
   const params = useParams();
   const entityId = params.id as string;
@@ -100,11 +100,6 @@ export default function ReviewWorkspacePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (!isReviewer) {
-    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
-  }
-
   const [verdict, setVerdict] = useState<Verdict | ''>('');
   const [conflictHandling, setConflictHandling] = useState<ConflictHandling>('not_applicable');
   const [confidenceOverride, setConfidenceOverride] = useState<Confidence>('');
@@ -135,7 +130,10 @@ export default function ReviewWorkspacePage() {
     finally { setIsLoading(false); }
   }, [entityId, getHeaders]);
 
-  useEffect(() => { if (session && entityId) fetchWorkspace(); }, [session, entityId, fetchWorkspace]);
+  useEffect(() => {
+    if (!session || !entityId || !isReviewer) return;
+    fetchWorkspace();
+  }, [session, entityId, isReviewer, fetchWorkspace]);
 
   const openSubmitDecisionConfirm = () => {
     if (!verdict) {
@@ -184,6 +182,21 @@ export default function ReviewWorkspacePage() {
       setIsSubmitting(false);
     }
   };
+
+  if (rolesLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-500" />
+          <p className="text-blue-700 dark:text-blue-300">Checking reviewer access…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isReviewer) {
+    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
+  }
 
   if (isLoading) {
     return (

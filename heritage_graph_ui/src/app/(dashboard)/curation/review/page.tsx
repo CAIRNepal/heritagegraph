@@ -70,7 +70,7 @@ export default function ReviewQueuePage() {
 
 function ReviewQueuePageInner() {
   const { data: session } = useSession();
-  const { isReviewer, isModerator } = useUserRoles();
+  const { isReviewer, isModerator, isLoading: rolesLoading } = useUserRoles();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -78,10 +78,6 @@ function ReviewQueuePageInner() {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  if (!isReviewer) {
-    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
-  }
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -110,6 +106,7 @@ function ReviewQueuePageInner() {
     [pathname, router, searchParams],
   );
 
+  // Hooks must run unconditionally — gate rendering after all hooks below.
   useEffect(() => {
     const qt = (searchParams.get('queue_type') || 'all') as QueueTab;
     if (['all', 'new_claims', 'conflicts', 'flagged', 'expiring'].includes(qt)) setActiveTab(qt);
@@ -189,10 +186,10 @@ function ReviewQueuePageInner() {
   }, [API_BASE, contradictionsOnly, getHeaders, minWorstSourceRank, myDomainOnly, ordering, staleDays]);
 
   useEffect(() => {
-    if (!session) return;
+    if (!session || !isReviewer) return;
     fetchContributions(currentPage, activeTab, selectedCategory, appliedSearch);
     fetchQueueCounts();
-  }, [session, currentPage, activeTab, selectedCategory, appliedSearch, ordering, staleDays, contradictionsOnly, minWorstSourceRank, myDomainOnly, fetchContributions, fetchQueueCounts]);
+  }, [session, isReviewer, currentPage, activeTab, selectedCategory, appliedSearch, ordering, staleDays, contradictionsOnly, minWorstSourceRank, myDomainOnly, fetchContributions, fetchQueueCounts]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab as QueueTab); setCurrentPage(1);
@@ -256,6 +253,15 @@ function ReviewQueuePageInner() {
   const formatUserName = (u: UserInfo) => `${u.first_name} ${u.last_name}`.trim() || u.username;
   const getRevisionInfo = (c: Contribution) => c.latest_revision ? `Rev. ${c.latest_revision.revision_number}` : '—';
 
+  if (rolesLoading) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">Checking reviewer access…</div>
+    );
+  }
+  if (!isReviewer) {
+    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
+  }
+
   return (
     <TooltipProvider>
 
@@ -273,7 +279,18 @@ function ReviewQueuePageInner() {
               <h1 className="text-3xl font-black text-white">
                 Review <span className="text-white/90">Queue</span>
               </h1>
-              <p className="text-blue-100 max-w-lg">Evaluate claims, resolve conflicts, maintain provenance</p>
+              <p className="text-blue-100 max-w-lg">
+                Evaluate claims, resolve conflicts, maintain provenance. Prefer this queue for
+                source-tier triage — use{" "}
+                <button
+                  type="button"
+                  className="underline underline-offset-2 hover:text-white"
+                  onClick={() => router.push("/curation/contributions")}
+                >
+                  Curation Queues
+                </button>{" "}
+                only for quick bulk accept/reject.
+              </p>
             </div>
             <div className="flex gap-2 flex-wrap">
               <Button onClick={() => router.push('/curation/dashboard')} variant="outline" className="border-white/30 text-white hover:bg-white/20">Dashboard</Button>

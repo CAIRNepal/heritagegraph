@@ -227,20 +227,42 @@ export default function ContributionQueuePage() {
         }
         description={
           moderateConfirm ? (
-            <>
-              <span className="font-medium text-foreground">{moderateConfirm.contribution.name}</span>
-              {moderateConfirm.action === 'reject' ? (
-                <span>
-                  {' '}
-                  will be marked rejected and removed from the pending queue.
+            <span className="space-y-2 block">
+              <span className="block">
+                <span className="font-medium text-foreground">{moderateConfirm.contribution.name}</span>
+                {moderateConfirm.action === 'reject' ? (
+                  <span>
+                    {' '}
+                    will be marked rejected and removed from the pending queue.
+                  </span>
+                ) : (
+                  <span>
+                    {' '}
+                    will be published immediately without the full triage workspace.
+                  </span>
+                )}
+              </span>
+              {moderateConfirm.action === 'accept' && (
+                <span className="block text-sm text-muted-foreground">
+                  Prefer{' '}
+                  <button
+                    type="button"
+                    className="underline text-foreground"
+                    onClick={() => {
+                      const id = moderateConfirm.contribution.entity_id;
+                      setModerateConfirm(null);
+                      router.push(`/curation/review/${id}`);
+                    }}
+                  >
+                    Open full review
+                  </button>{' '}
+                  when sources, conflicts, or confidence need a recorded decision.
                 </span>
-              ) : (
-                <span> will be marked accepted.</span>
               )}
-            </>
+            </span>
           ) : undefined
         }
-        confirmLabel={moderateConfirm?.action === 'accept' ? 'Accept' : 'Reject'}
+        confirmLabel={moderateConfirm?.action === 'accept' ? 'Quick accept' : 'Reject'}
         confirmVariant={moderateConfirm?.action === 'reject' ? 'destructive' : 'default'}
         onConfirm={async () => {
           if (!moderateConfirm) return;
@@ -264,7 +286,16 @@ export default function ContributionQueuePage() {
               Curation <span className="text-white/90">Queues</span>
             </h1>
             <p className="text-blue-100 max-w-2xl">
-              New submitted entities and contributions must be accepted by an editor. These queues list items in need of moderation.
+              Fast accept/reject for straightforward submissions. For source-tier triage,
+              conflicts, and provenance notes, open the{" "}
+              <button
+                type="button"
+                className="underline underline-offset-2 font-medium text-white hover:text-blue-50"
+                onClick={() => router.push('/curation/review')}
+              >
+                Epistemic Review Queue
+              </button>{" "}
+              (or the eye icon on a row) before publishing.
             </p>
             {showPendingCta && (
               <p className="text-sm text-amber-200 border border-amber-400/40 bg-amber-500/20 rounded-lg px-4 py-2 max-w-2xl">
@@ -471,11 +502,11 @@ export default function ContributionQueuePage() {
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-1" onClick={e => e.stopPropagation()}>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/30"
-                                  onClick={() => router.push(`/curation/review/${c.entity_id}`)} title="Review"><Eye className="h-4 w-4" /></Button>
+                                  onClick={() => router.push(`/curation/review/${c.entity_id}`)} title="Full epistemic review"><Eye className="h-4 w-4" /></Button>
                                 {c.status === 'pending_review' && (
                                   <>
                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                      onClick={() => setModerateConfirm({ contribution: c, action: 'accept' })} title="Accept"><CheckCircle className="h-4 w-4" /></Button>
+                                      onClick={() => setModerateConfirm({ contribution: c, action: 'accept' })} title="Quick accept (no triage workspace)"><CheckCircle className="h-4 w-4" /></Button>
                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
                                       onClick={() => setModerateConfirm({ contribution: c, action: 'reject' })} title="Reject"><XCircle className="h-4 w-4" /></Button>
                                   </>
