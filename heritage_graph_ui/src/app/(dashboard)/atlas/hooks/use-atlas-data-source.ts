@@ -16,7 +16,7 @@ import { useAtlasStore } from './use-atlas-store';
 
 const API_BASE = getPublicApiUrl();
 
-const KG_CACHE_PREFIX = 'atlas:kg-corpus:v1:';
+const KG_CACHE_PREFIX = 'atlas:kg-corpus:v2:';
 const KG_CACHE_TTL_MS = 5 * 60 * 1000;
 
 interface CachedKgResponse {
@@ -61,9 +61,9 @@ function friendlyCorpusError(err: unknown): { message: string; auth: boolean } {
 }
 
 /**
- * Boots corpus hydration: curated demo by default; opt into live via toggle or
- * `?source=live`. Live mode loads the authoritative KG projection
- * (`/api/v1/cidoc/kg/graph/`) — the same endpoint as the Heritage Museum.
+ * Boots corpus hydration: live reviewed KG when the API is configured
+ * (same honesty as Museum); demo via toggle or `?source=demo`.
+ * Live mode loads `GET /api/v1/cidoc/kg/graph/`.
  */
 export function useAtlasDataSource() {
   const { data: session } = useSession();
@@ -150,7 +150,14 @@ export function useAtlasDataSource() {
   useEffect(() => {
     if (bootstrappedRef.current) return;
     bootstrappedRef.current = true;
-    if (searchParams.get('source') === 'live') {
+    const sourceParam = searchParams.get('source');
+    if (sourceParam === 'demo') {
+      useAtlasStore.getState().setDataSource('demo');
+      return;
+    }
+    // Live by default when API is configured (Nature-rigor: don't hide the SoR
+    // behind a demo corpus). Explicit `?source=live` also forces a reload.
+    if (API_BASE && (sourceParam === 'live' || sourceParam == null)) {
       useAtlasStore.getState().loadLiveCorpus();
     }
   }, [searchParams]);

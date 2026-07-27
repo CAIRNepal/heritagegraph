@@ -49,6 +49,7 @@ import {
   IconBriefcase,
   IconClipboardList,
   IconDatabase,
+  IconSearch,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -255,27 +256,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ...(showAuthedNav
               ? [
                   {
-                    title: 'My contributions',
+                    title: 'My submissions',
                     url: '/contribute/my-contributions',
                     icon: IconClipboardList,
                   },
                   {
-                    title: 'My Projects',
+                    title: 'Update existing',
+                    url: '/contribute/improve',
+                    icon: IconSearch,
+                  },
+                  {
+                    title: 'My projects',
                     url: '/contribute/projects',
                     icon: IconFolders,
                   },
                   {
-                    title: 'Data Sources',
+                    title: 'Evidence sources',
                     url: '/contribute/data-source',
                     icon: IconDatabase,
                   },
                   {
-                    title: 'Entity proposal',
+                    title: 'Same thing twice?',
                     url: '/contribute/entity-proposal',
                     icon: IconFingerprint,
                   },
                   {
-                    title: 'Relationship proposal',
+                    title: 'Connect two records',
                     url: '/contribute/relationship-proposal',
                     icon: IconLink,
                   },

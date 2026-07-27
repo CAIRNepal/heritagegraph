@@ -438,13 +438,12 @@ export default function EntityProposalContributePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Entity proposal</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Link duplicate records</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Propose a canonical identity cluster anchored on existing CIDOC rows. Moderators approve
-          materialization into{' '}
-          <code className="rounded bg-muted px-1 text-xs">EntityCluster</code> + membership
-          assertions. Open an existing draft with{' '}
-          <code className="rounded bg-muted px-1 text-xs">?id=&lt;uuid&gt;</code> in the URL.
+          Propose that two or more existing records refer to the same real place, person, or thing.
+          Reviewers check your evidence before the records are linked. To edit a saved draft, open it
+          from My contributions or add <code className="rounded bg-muted px-1 text-xs">?id=</code>{" "}
+          with the draft id in the URL.
         </p>
         {draftHydrating ? (
           <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
@@ -471,20 +470,14 @@ export default function EntityProposalContributePage() {
       </div>
 
       <Alert>
-        <AlertTitle>Unifying records (same real-world identity)</AlertTitle>
+        <AlertTitle>Same real-world identity</AlertTitle>
         <AlertDescription className="text-sm leading-relaxed">
-          Anchors attach to one identity cluster (<code className="rounded bg-muted px-1 text-xs">identity.same_referent</code>)
-          once a moderator approves your submission in{' '}
-          <Link className="text-primary underline-offset-4 hover:underline" href="/curation/kg-proposals">
-            KG proposals
-          </Link>
-          . Evidence requires at least one{' '}
+          Pick the records that should be treated as the same thing, and attach at least one{" "}
           <Link className="text-primary underline-offset-4 hover:underline" href="/contribute/data-source">
-            Data Source
-          </Link>{' '}
-          before submit. External identifiers JSON should map keys to{' '}
-          <span className="font-medium">full http(s) IRIs</span> (for example Wikidata entity URLs) — these power{' '}
-          <code className="rounded bg-muted px-1 text-xs">owl:sameAs</code> in RDF export when RDF sync is enabled.
+            evidence source
+          </Link>{" "}
+          before you submit. After approval, reviewers link them under one identity. Optional
+          external links (for example Wikidata URLs) help connect this identity to the wider web.
         </AlertDescription>
       </Alert>
 
@@ -523,7 +516,7 @@ export default function EntityProposalContributePage() {
             className="min-w-0 space-y-4 border-0 p-0 disabled:pointer-events-none disabled:opacity-60"
           >
           <div className="space-y-2">
-            <Label htmlFor="canonical_label">Canonical label</Label>
+            <Label htmlFor="canonical_label">Preferred name</Label>
             <Input
               id="canonical_label"
               value={canonicalLabel}
@@ -533,7 +526,7 @@ export default function EntityProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Type scope</Label>
+            <Label>What kind of thing?</Label>
             <Select value={typeScope} onValueChange={setTypeScope}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose entity class" />
@@ -549,7 +542,7 @@ export default function EntityProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="aliases">Aliases (comma or newline separated)</Label>
+            <Label htmlFor="aliases">Other names (optional)</Label>
             <Textarea
               id="aliases"
               value={aliasesText}
@@ -559,7 +552,7 @@ export default function EntityProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Anchors (CIDOC rows)</Label>
+            <Label>Records to link</Label>
             {cidocSegment ? (
               <div className="flex flex-wrap items-center gap-2">
                 <CidocEntityPicker
@@ -570,7 +563,7 @@ export default function EntityProposalContributePage() {
                 />
               </div>
             ) : (
-              <p className="text-sm text-destructive">Unknown type scope for CIDOC API.</p>
+              <p className="text-sm text-destructive">Unknown type — pick another kind.</p>
             )}
             {anchors.length ? (
               <ul className="flex flex-col gap-2 text-sm">
@@ -602,7 +595,7 @@ export default function EntityProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Supporting DataSources</Label>
+            <Label>Supporting evidence</Label>
             <div className="flex flex-wrap items-center gap-2">
               <DataSourceAddPicker
                 token={token}
@@ -638,7 +631,7 @@ export default function EntityProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="note">Contributor note</Label>
+            <Label htmlFor="note">Note for reviewers</Label>
             <Textarea
               id="note"
               value={contributorNote}

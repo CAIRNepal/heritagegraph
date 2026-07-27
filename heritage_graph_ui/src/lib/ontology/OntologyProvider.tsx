@@ -31,14 +31,28 @@ function normalizeRegistry(
     semantic_patterns?: OntologyRegistry["semantic_patterns"];
     registry_jsonschema?: OntologyRegistry["registry_jsonschema"];
     schema_version?: string;
-  }
+  },
+  fallbackHub?: ContributeHubPayload | null,
+  fallbackPatterns?: OntologyRegistry["semantic_patterns"]
 ): OntologyRegistry {
+  const apiHub = payload.contribute_hub;
+  const hubHasIntents = Boolean(apiHub?.intents?.length);
+  const contribute_hub = hubHasIntents
+    ? apiHub!
+    : (fallbackHub ?? apiHub ?? emptyContributeHub);
+
+  const apiPatterns = payload.semantic_patterns;
+  const semantic_patterns =
+    apiPatterns && apiPatterns.length > 0
+      ? apiPatterns
+      : (fallbackPatterns ?? apiPatterns ?? []);
+
   return {
     schema_version: payload.schema_version,
     classes: payload.classes,
     enums: payload.enums,
-    contribute_hub: payload.contribute_hub ?? emptyContributeHub,
-    semantic_patterns: payload.semantic_patterns ?? [],
+    contribute_hub,
+    semantic_patterns,
     registry_jsonschema: payload.registry_jsonschema,
   };
 }
@@ -82,6 +96,12 @@ const baseline: OntologyRegistry = normalizeRegistry({
   schema_version: (gen as { schema_version?: string }).schema_version,
 });
 
+const bundledHubFallback: ContributeHubPayload =
+  gen.contribute_hub && gen.contribute_hub.intents?.length
+    ? gen.contribute_hub
+    : emptyContributeHub;
+const bundledPatternsFallback = gen.semantic_patterns ?? [];
+
 export function OntologyProvider({
   children,
   formRole = "curator",
@@ -124,10 +144,14 @@ export function OntologyProvider({
         (session as { accessToken?: string | null } | null)?.accessToken;
       const api = await loadOntologyRegistry(token);
       setRegistry(
-        normalizeRegistry({
-          ...api,
-          registry_jsonschema: api.registry_jsonschema,
-        })
+        normalizeRegistry(
+          {
+            ...api,
+            registry_jsonschema: api.registry_jsonschema,
+          },
+          bundledHubFallback,
+          bundledPatternsFallback
+        )
       );
       setSchemaVersion(api.schema_version);
       setDegraded(Boolean(api.degraded));

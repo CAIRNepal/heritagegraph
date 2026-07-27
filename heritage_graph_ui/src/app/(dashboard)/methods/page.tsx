@@ -2,16 +2,18 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import {
+  DANAM_NQ_SHA256,
   HERITAGEGRAPH_CITATION,
   HERITAGEGRAPH_DOI,
   HERITAGEGRAPH_PUBLIC_GRAPH,
   HERITAGEGRAPH_RELEASE,
+  LICENSE_MATRIX,
 } from '@/lib/provenance';
 
 export const metadata = {
   title: 'Methods · HeritageGraph',
   description:
-    'Methods, provenance, and reproducibility for the HeritageGraph cultural heritage knowledge graph.',
+    'Methods, provenance, FAIR/CARE compliance, and reproducibility for the HeritageGraph cultural heritage knowledge graph.',
 };
 
 export default function MethodsPage() {
@@ -24,7 +26,8 @@ export default function MethodsPage() {
         <h1 className="font-serif text-3xl font-semibold text-foreground">Methods &amp; data</h1>
         <p className="text-sm text-muted-foreground leading-relaxed">
           This page documents how HeritageGraph builds, reviews, and publishes a CIDOC-CRM-aligned
-          knowledge graph for interactive exploration in the Heritage Museum and via SPARQL.
+          knowledge graph for interactive exploration in the Heritage Museum and via SPARQL — at
+          the evidentiary standard expected for a Nature-family methods / data descriptor section.
         </p>
       </header>
 
@@ -38,11 +41,67 @@ export default function MethodsPage() {
           <dt className="text-muted-foreground">Code license</dt>
           <dd>MIT</dd>
           <dt className="text-muted-foreground">Data license</dt>
-          <dd>CC BY 4.0 (curated assertions; third-party media retain their licenses)</dd>
+          <dd>CC BY 4.0 curated overlay; third-party layers retain upstream licenses (see matrix)</dd>
         </dl>
         <pre className="rounded-lg border border-border bg-muted/40 p-3 text-xs overflow-x-auto whitespace-pre-wrap">
           {HERITAGEGRAPH_CITATION}
         </pre>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-serif text-xl font-semibold text-foreground">FAIR + CARE</h2>
+        <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1.5">
+          <li>
+            <span className="text-foreground font-medium">Findable</span> — w3id resource IRIs;
+            VoID/DCAT dataset description; corpus fingerprint (
+            <code className="text-xs">manage.py corpus_fingerprint</code>).
+          </li>
+          <li>
+            <span className="text-foreground font-medium">Accessible</span> — HTTPS dereference +
+            CARE-aware read-only SPARQL (<code className="text-xs">/sparql/</code>).
+          </li>
+          <li>
+            <span className="text-foreground font-medium">Interoperable</span> — CIDOC-CRM, CRMinf,
+            LinkML registry, CRM bridge, SHACL shapes, SKOS vocabularies.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">Reusable</span> — license matrix below;
+            frozen L0 dump with SHA-256; idempotent L1 ETL; ontology pin in import reports.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">CARE</span> —{' '}
+            <code className="text-xs">access_tier</code> / TK labels on sources; sensitive tiers
+            filtered by the SPARQL proxy; new human claims remain review-gated.
+          </li>
+        </ul>
+        <p className="text-xs text-muted-foreground">
+          Full machine-readable checklist:{' '}
+          <code className="text-xs">documentation/research/NATURE_KG_RIGOR.md</code>
+        </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-serif text-xl font-semibold text-foreground">License matrix</h2>
+        <div className="overflow-x-auto rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/40 text-left">
+                <th className="p-2 font-medium">Layer</th>
+                <th className="p-2 font-medium">License</th>
+                <th className="p-2 font-medium">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {LICENSE_MATRIX.map((row) => (
+                <tr key={row.layer} className="border-b border-border last:border-0">
+                  <td className="p-2 align-top text-foreground">{row.layer}</td>
+                  <td className="p-2 align-top font-mono text-xs">{row.license}</td>
+                  <td className="p-2 align-top text-muted-foreground">{row.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="space-y-3">
@@ -67,7 +126,35 @@ export default function MethodsPage() {
             only entities linked via <code className="text-xs">skos:exactMatch</code> appear in the
             museum (linkset model — not merged into the public partition).
           </li>
+          <li>
+            Large research dumps (DANAM-aligned N-Quads) use a two-layer policy: frozen L0 named
+            graphs for citation/SPARQL, plus curated Postgres L1 materialization into{' '}
+            <code className="text-xs">graph/public</code>. See{' '}
+            <code className="text-xs">documentation/research/DANAM_CORPUS_INTEGRATION_REPORT.md</code>.
+          </li>
         </ul>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-serif text-xl font-semibold text-foreground">DANAM corpus pin</h2>
+        <dl className="grid grid-cols-[minmax(8rem,auto)_1fr] gap-2 text-sm">
+          <dt className="text-muted-foreground">Dump</dt>
+          <dd className="font-mono text-xs break-all">data/reconciled/danam-heritagegraph.nq</dd>
+          <dt className="text-muted-foreground">SHA-256</dt>
+          <dd className="font-mono text-xs break-all">{DANAM_NQ_SHA256}</dd>
+          <dt className="text-muted-foreground">L0 load</dt>
+          <dd>
+            <code className="text-xs">manage.py rdf_load_imported_nq</code> (never writes PUBLIC)
+          </dd>
+          <dt className="text-muted-foreground">L1 ETL</dt>
+          <dd>
+            <code className="text-xs">manage.py import_danam_nq</code> (idempotent by external IRI)
+          </dd>
+          <dt className="text-muted-foreground">Competency SPARQL</dt>
+          <dd>
+            <code className="text-xs">documentation/research/competency_queries.sparql</code>
+          </dd>
+        </dl>
       </section>
 
       <section className="space-y-3">
@@ -80,8 +167,9 @@ export default function MethodsPage() {
             projects triples to Oxigraph; provenance partition records agent + source.
           </li>
           <li>
-            Integrity gate: <code className="text-xs">kg_rigor_audit --strict</code> (namespace,
-            connectivity, pollution, provenance coverage).
+            Integrity gate: <code className="text-xs">kg_rigor_audit</code> (namespace, connectivity,
+            pollution, L0 isolation, provenance coverage). Use{' '}
+            <code className="text-xs">--strict</code> for release.
           </li>
           <li>
             Evaluation (optional): <code className="text-xs">kg_evaluate</code> against a gold-standard
@@ -95,8 +183,16 @@ export default function MethodsPage() {
         <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1.5">
           <li>Corpus size is community-curated and growing — not a complete national inventory.</li>
           <li>Temporal coverage (EDTF) is incomplete on many event nodes.</li>
-          <li>External identifier reconciliation (Wikidata / Getty) is in progress.</li>
+          <li>External identifier reconciliation (Wikidata / Getty) is in progress beyond DANAM sameAs.</li>
           <li>Demo corpus in the museum is illustrative only; cite the live reviewed graph for research.</li>
+          <li>
+            Zenodo DOI is a placeholder until the first tagged deposit; pin the SHA-256 above for
+            interim citation of the DANAM dump.
+          </li>
+          <li>
+            SHACL-on-write is opt-in (<code className="text-xs">RDF_SHACL_VALIDATE_ON_WRITE</code>);
+            shapes are generated and available for offline conformance reports.
+          </li>
         </ul>
       </section>
 

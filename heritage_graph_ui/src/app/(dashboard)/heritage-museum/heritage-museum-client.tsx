@@ -602,6 +602,37 @@ export function HeritageMindMapClient() {
         </div>
       ) : null}
 
+      {dataSource === 'live' &&
+      viewMode === 'xr' &&
+      !liveLoading &&
+      liveGraph &&
+      liveGraph.nodes.length > 0 ? (
+        <div
+          className="flex-shrink-0 flex flex-wrap items-center gap-2 px-4 py-2 border-b border-border bg-muted/30 text-xs text-muted-foreground z-20"
+          role="status"
+        >
+          <span>{t('storiesLiveHint', { count: liveGraph.nodes.length })}</span>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={() => setViewMode('map')}
+          >
+            {t('storiesLiveHintMap')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs"
+            onClick={() => setViewMode('2d')}
+          >
+            {t('storiesLiveHintGraph')}
+          </Button>
+        </div>
+      ) : null}
+
       <MuseumToolbar
         viewMode={viewMode}
         onViewModeChange={(mode) => (mode === 'xr' ? switchToXR() : setViewMode(mode))}

@@ -82,6 +82,7 @@ import {
   type IngestionHandoffPayload,
 } from "@/lib/ingestion-api";
 import type { OcrFieldSuggestion } from "@/hooks/use-heritage-ocr-suggestions";
+import { withContributePlainCopy, plainContributeClassLabel } from "@/lib/ontology/contribute-plain-copy";
 
 /** Map `?step=` (section key or numeric index) to a valid section index and canonical URL key. */
 function resolveOntologyFormStep(
@@ -138,7 +139,7 @@ function FieldRenderer({
   onAssistClick,
   assistPending,
   assistConfidence,
-  showOntologyHint = true,
+  showOntologyHint = false,
   getRelatedOntologyClass,
   getFullFormRelationHref,
   apiBaseUrl,
@@ -838,8 +839,10 @@ export default function OntologyForm({
   const [draftHydrated, setDraftHydrated] = useState(isEditMode);
 
   const showFormGraphPreview =
-    typeof process.env.NEXT_PUBLIC_SHOW_FORM_GRAPH === "string" &&
-    process.env.NEXT_PUBLIC_SHOW_FORM_GRAPH === "true";
+    (typeof process.env.NEXT_PUBLIC_SHOW_FORM_GRAPH === "string" &&
+      process.env.NEXT_PUBLIC_SHOW_FORM_GRAPH === "true") ||
+    searchParams.get("expert") === "1";
+  const showExpertFields = searchParams.get("expert") === "1";
   const [formGraphDraftId] = useState(() =>
     typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
       ? crypto.randomUUID()
@@ -970,10 +973,11 @@ export default function OntologyForm({
 
   const sortedFields = useMemo(
     () =>
-      [...ontologyClass.fields].sort(
-        (a, b) => (a.order ?? 99) - (b.order ?? 99)
-      ),
-    [ontologyClass.fields]
+      [...ontologyClass.fields]
+        .map((f) => withContributePlainCopy(f, { showExpertFields }) ?? null)
+        .filter((f): f is NonNullable<typeof f> => f != null)
+        .sort((a, b) => (a.order ?? 99) - (b.order ?? 99)),
+    [ontologyClass.fields, showExpertFields]
   );
 
   const visibleSortedFields = sortedFields;
@@ -1728,10 +1732,10 @@ export default function OntologyForm({
 
       setSubmitConfirmOpen(false);
       toast.success(
-        `"${(formData.name as string) || (formData.title as string) || "Entry"}" submitted successfully!`,
+        `"${(formData.name as string) || (formData.title as string) || "Entry"}" submitted`,
         {
           description:
-            "What happens next: it's now in the review queue. A reviewer will accept it, request changes, or decline — and once accepted it's published. Track status and reviewer notes any time under My contributions.",
+            "Reviewers will check it before publication. Track status and notes under My contributions.",
           duration: 7000,
           action: {
             label: "Track it",
@@ -1898,20 +1902,17 @@ export default function OntologyForm({
     );
   }
 
+  const plainClassLabel = plainContributeClassLabel(
+    ontologyClass.key,
+    ontologyClass.label
+  );
   const mainTitle = isEditMode
-    ? `Edit ${ontologyClass.label}`
-    : title || `Contribute ${ontologyClass.label}`;
+    ? `Update ${plainClassLabel}`
+    : title || `Add ${plainClassLabel}`;
   const mainDescription = isEditMode
-    ? `You are editing record ${
-        recordMeta?.id ?? recordId
-      }${recordMeta?.status ? `. Status: ${String(recordMeta.status).replace(/_/g, " ")}` : ""}${
-        recordMeta?.contributor
-          ? `. Contributor: @${recordMeta.contributor}`
-          : ""
-      }.`
+    ? "Change only what you need. If this record is already published, your update goes to reviewers first — the live version stays until they approve."
     : description ||
-      ontologyClass.description ||
-      `Add a new ${ontologyClass.label.toLowerCase()} to the knowledge base.`;
+      `Fill in what you know. Empty fields are fine — reviewers will check before publishing.`;
 
   const duplicateLabel = inferRootLabel(ontologyClass, formData);
   const accessToken = (session as { accessToken?: string } | null)?.accessToken;
@@ -1936,13 +1937,16 @@ export default function OntologyForm({
         description={
           isEditMode ? (
             <>
-              Updates to <span className="font-medium text-foreground">{entryDisplayName}</span> will
-              be sent to the server and may enter the review workflow.
+              Saving <span className="font-medium text-foreground">{entryDisplayName}</span> may send
+              your changes for review. The published version stays live until a reviewer accepts the
+              update. You can track progress under My contributions.
             </>
           ) : (
             <>
-              You are about to submit <span className="font-medium text-foreground">{entryDisplayName}</span> as a new{" "}
-              {ontologyClass.label.toLowerCase()}. It will enter the review queue.
+              You are about to submit{" "}
+              <span className="font-medium text-foreground">{entryDisplayName}</span> as a new{" "}
+              {plainClassLabel.toLowerCase()}. Reviewers will check it before it is published —
+              you can follow status any time under My contributions.
             </>
           )
         }
@@ -2024,14 +2028,14 @@ export default function OntologyForm({
             className="max-w-2xl"
           />
         ) : null}
-        {ocrCulturalEntityId && lastOcrDocumentId ? (
+        {ocrCulturalEntityId && lastOcrDocumentId && showExpertFields ? (
           <details className="max-w-2xl rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
             <summary className="cursor-pointer font-medium text-foreground">
-              OCR job & provenance trace
+              Document used for suggestions (expert)
             </summary>
             <p className="mt-2 break-all font-mono">{lastOcrDocumentId}</p>
             <p className="mt-1">
-              Suggestions applied above are linked to this document id for reviewer traceability.
+              Suggestions above are linked to this document for reviewer traceability.
             </p>
           </details>
         ) : null}
@@ -2040,14 +2044,14 @@ export default function OntologyForm({
           <CardHeader>
             <CardTitle>
               {isEditMode
-                ? `${ontologyClass.label} (editing)`
-                : `${ontologyClass.label} information`}
+                ? `Editing ${plainClassLabel}`
+                : `About this ${plainClassLabel.toLowerCase()}`}
             </CardTitle>
             <CardDescription>
               {isSignedIn
                 ? isEditMode
                   ? "Change the fields you need, then save."
-                  : `Provide details about this ${ontologyClass.label.toLowerCase()}.`
+                  : "Write in everyday language. Skip anything you don't know."
                 : "Please sign in to submit contributions."}
             </CardDescription>
           </CardHeader>
@@ -2066,6 +2070,7 @@ export default function OntologyForm({
                 }
                 assistPending={suggestKey === field.key}
                 assistConfidence={ocrFieldConfidence[field.key]}
+                showOntologyHint={showExpertFields}
                 getRelatedOntologyClass={resolveRelatedOntologyClass}
                 getFullFormRelationHref={getFullFormRelationHref}
                 apiBaseUrl={baseUrl}
@@ -2073,7 +2078,7 @@ export default function OntologyForm({
             ))}
             {visibleSortedFields.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No fields are configured for this form in the loaded schema.
+                No fields are available for this form right now. Try refreshing the page.
               </p>
             ) : null}
           </CardContent>
@@ -2178,14 +2183,14 @@ export default function OntologyForm({
           className="max-w-2xl"
         />
       ) : null}
-      {ocrCulturalEntityId && lastOcrDocumentId ? (
+      {ocrCulturalEntityId && lastOcrDocumentId && showExpertFields ? (
         <details className="max-w-2xl rounded-md border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           <summary className="cursor-pointer font-medium text-foreground">
-            OCR job & provenance trace
+            Document used for suggestions (expert)
           </summary>
           <p className="mt-2 break-all font-mono">{lastOcrDocumentId}</p>
           <p className="mt-1">
-            Suggestions applied above are linked to this document id for reviewer traceability.
+            Suggestions above are linked to this document for reviewer traceability.
           </p>
         </details>
       ) : null}
@@ -2263,6 +2268,7 @@ export default function OntologyForm({
                     }
                     assistPending={suggestKey === field.key}
                     assistConfidence={ocrFieldConfidence[field.key]}
+                    showOntologyHint={showExpertFields}
                     getRelatedOntologyClass={resolveRelatedOntologyClass}
                     getFullFormRelationHref={getFullFormRelationHref}
                     apiBaseUrl={baseUrl}

@@ -69,6 +69,7 @@ const NAVIGATE: Entry[] = [
 
 const CONTRIBUTE: Entry[] = [
   { label: 'Contribute (hub)', href: '/contribute', icon: IconPlus, keywords: 'add new entity' },
+  { label: 'Improve existing record', href: '/contribute/improve', icon: IconSearch, keywords: 'edit update existing structure temple duplicate' },
   { label: 'New Cultural Entity', href: '/contribute/cultural-entity', icon: IconPlus, keywords: 'monument deity festival' },
   { label: 'New Project', href: '/contribute/projects/new', icon: IconPlus, keywords: 'project' },
   { label: 'Propose a Relationship', href: '/contribute/relationship-proposal', icon: IconPlus, keywords: 'edge link predicate' },

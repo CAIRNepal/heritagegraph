@@ -18,11 +18,14 @@ import {
   IconSchema,
   IconRefresh,
   IconLoader2,
+  IconLayout,
 } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { fadeInUp, staggerContainer, glassCard, heroGradient } from '@/lib/design';
+import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';
+import { cn } from '@/lib/utils';
 import {
   getOntologyGraphData,
   CATEGORY_COLORS,
@@ -49,7 +52,7 @@ let cytoscape: any = null;
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-/* ── Layout presets ── */
+/* ── Layout presets (internal ids; UI uses visitor labels) ── */
 const LAYOUTS: Record<string, any> = {
   'cose-bilkent': {
     name: 'cose-bilkent',
@@ -94,6 +97,13 @@ const LAYOUTS: Record<string, any> = {
   },
 };
 
+const LAYOUT_OPTIONS: { id: string; label: string; hint: string }[] = [
+  { id: 'cose-bilkent', label: 'Natural', hint: 'Force-directed clusters' },
+  { id: 'cola', label: 'Spacious', hint: 'More breathing room' },
+  { id: 'concentric', label: 'Radial', hint: 'Hubs at the centre' },
+  { id: 'breadthfirst', label: 'Tree', hint: 'Hierarchy top-down' },
+];
+
 /* ── View mode ── */
 type ViewMode = 'ontology' | 'instance';
 
@@ -106,10 +116,11 @@ export default function GraphViewPage() {
   const cyRef = useRef<any>(null);
 
   const [ready, setReady] = useState(false);
+  // Schema first — ontology is the default research entry; Heritage is one click away.
   const [viewMode, setViewMode] = useState<ViewMode>('ontology');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLayout, setActiveLayout] = useState('cose-bilkent');
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Ontology mode state
   const [selectedNode, setSelectedNode] = useState<OntologyNode | null>(null);
@@ -281,7 +292,7 @@ export default function GraphViewPage() {
     }
   }, [session, showForkEdges]);
 
-  /* ── Initial load: ontology graph ── */
+  /* ── Initial load: ontology schema ── */
   useEffect(() => {
     let mounted = true;
 
@@ -451,477 +462,409 @@ export default function GraphViewPage() {
     );
   }, [selectedInstance, instanceData]);
 
+  const layoutLabel =
+    LAYOUT_OPTIONS.find((o) => o.id === activeLayout)?.label ?? 'Natural';
+
+  const clearSelection = () => {
+    setSelectedNode(null);
+    setSelectedInstance(null);
+    if (cyRef.current) resetHighlight(cyRef.current);
+  };
+
   return (
-    <div className="space-y-3">
-      {/* ── Header ── */}
+    <div className="flex min-h-0 flex-col gap-3">
+      {/* ── Slim header ── */}
       <motion.div
         initial="hidden"
         animate="show"
         variants={staggerContainer}
-        className={`relative overflow-hidden ${glassCard} p-4 md:p-5`}
+        className={cn(glassCard, 'relative overflow-hidden p-4')}
       >
-        <div className={`absolute inset-0 ${heroGradient}`} />
-        <motion.div variants={fadeInUp} className="relative z-10 space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div className="space-y-1">
-              <h1 className="text-xl md:text-2xl font-black text-white">
-                Heritage{' '}
-                <span className="text-white/90">
-                  Knowledge Graph
-                </span>
-              </h1>
-              <p className="text-blue-100 max-w-2xl text-xs md:text-sm leading-relaxed">
-                {viewMode === 'ontology' ? (
-                  <>
-                    Ontology schema — {ontologyStats.classes} classes, {ontologyStats.relationships}{' '}
-                    object properties, and {ontologyStats.hierarchyEdges} class-hierarchy
-                    relationships aligned with CIDOC-CRM, PROV-O, and domain extensions.
-                  </>
-                ) : (
-                  <>
-                    Live heritage data —{' '}
-                    {instanceStats
-                      ? `${instanceStats.totalEntities} entities and ${instanceStats.totalRelationships} relationships across ${instanceStats.categories} categories`
-                      : 'loading...'}
-                    {' '}from the HeritageGraph database.
+        <motion.div variants={fadeInUp} className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
+              Knowledge Graph
+            </h1>
+            <p className="max-w-2xl text-sm text-muted-foreground leading-relaxed">
+              {viewMode === 'instance' ? (
+                <>
+                  Explore how heritage records connect.
+                  {instanceStats
+                    ? ` ${instanceStats.totalEntities} entities · ${instanceStats.totalRelationships} links.`
+                    : instanceLoading
+                      ? ' Loading…'
+                      : ''}
+                  {' '}Click a node to inspect it.
+                </>
+              ) : (
+                <>
+                  Schema of the HeritageGraph ontology — {ontologyStats.classes} classes and{' '}
+                  {ontologyStats.relationships} properties. For researchers mapping the model.
+                </>
+              )}
+            </p>
+          </div>
 
-                  </>
-                )}
-              </p>
-            </div>
-
-            {/* View mode switcher */}
-            <div className="flex gap-2 shrink-0">
-              <Button
-                size="sm"
-                variant={viewMode === 'ontology' ? 'default' : 'outline'}
-                className={`gap-1.5 text-xs ${
-                  viewMode === 'ontology'
-                    ? 'bg-white/20 border-white/40 text-white hover:bg-white/30'
-                    : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/20 hover:text-white'
-                }`}
-                onClick={() => switchView('ontology')}
-              >
-                <IconSchema className="w-3.5 h-3.5" />
-                Ontology Schema
-              </Button>
-              <Button
-                size="sm"
-                variant={viewMode === 'instance' ? 'default' : 'outline'}
-                className={`gap-1.5 text-xs ${
-                  viewMode === 'instance'
-                    ? 'bg-white/20 border-white/40 text-white hover:bg-white/30'
-                    : 'bg-white/10 border-white/20 text-white/70 hover:bg-white/20 hover:text-white'
-                }`}
-                onClick={() => switchView('instance')}
-              >
-                <IconDatabase className="w-3.5 h-3.5" />
-                Live Data
-                {instanceStats && (
-                  <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-[10px]">
+          <Tabs
+            value={viewMode}
+            onValueChange={(v) => void switchView(v as ViewMode)}
+            className="shrink-0"
+          >
+            <TabsList className="h-9">
+              <TabsTrigger value="ontology" className="gap-1.5 text-xs px-3">
+                <IconSchema className="w-3.5 h-3.5" aria-hidden />
+                Schema
+              </TabsTrigger>
+              <TabsTrigger value="instance" className="gap-1.5 text-xs px-3">
+                <IconDatabase className="w-3.5 h-3.5" aria-hidden />
+                Heritage
+                {instanceStats ? (
+                  <span className="ml-0.5 rounded-full bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums">
                     {instanceStats.totalEntities}
                   </span>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {viewMode === 'ontology'
-              ? (['CIDOC-CRM', 'PROV-O', 'Getty AAT', 'GeoSPARQL', 'LinkML'] as const).map((t) => (
-                  <span
-                    key={t}
-                    className="px-2 py-0.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-[11px] font-medium text-white"
-                  >
-                    {t}
-                  </span>
-                ))
-              : instanceStats &&
-                Object.entries(instanceStats.byCategory).map(([cat, count]) => (
-                  <span
-                    key={cat}
-                    className="px-2 py-0.5 backdrop-blur-sm border border-white/30 rounded-full text-[11px] font-medium text-white inline-flex items-center gap-1"
-                    style={{
-                      backgroundColor: `${INSTANCE_CATEGORY_COLORS[cat as InstanceCategory]?.bg}40`,
-                    }}
-                  >
-                    <span>{INSTANCE_CATEGORY_COLORS[cat as InstanceCategory]?.icon}</span>
-                    {INSTANCE_CATEGORY_COLORS[cat as InstanceCategory]?.label}: {count}
-                  </span>
-                ))}
-          </div>
+                ) : null}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </motion.div>
       </motion.div>
 
       {/* ── Toolbar ── */}
-      <div className={`${glassCard} p-3 flex flex-wrap items-center gap-2`}>
-        <div className="relative flex-1 min-w-[200px] max-w-xs">
-          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-400" />
+      <div className={cn(glassCard, 'flex flex-wrap items-center gap-2 p-3')}>
+        <div className="relative min-w-[200px] max-w-xs flex-1">
+          <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <input
-            type="text"
+            type="search"
             placeholder={viewMode === 'ontology' ? 'Search classes…' : 'Search entities…'}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-1.5 text-sm bg-blue-50 dark:bg-gray-800 border border-blue-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+            aria-label={viewMode === 'ontology' ? 'Search ontology classes' : 'Search heritage entities'}
+            className="w-full rounded-lg border border-border bg-background py-1.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
           />
         </div>
 
-        <Tabs value={activeLayout} onValueChange={runLayout} className="shrink-0">
-          <TabsList className="h-8">
-            <TabsTrigger value="cose-bilkent" className="text-xs px-2">Force</TabsTrigger>
-            <TabsTrigger value="cola" className="text-xs px-2">Cola</TabsTrigger>
-            <TabsTrigger value="concentric" className="text-xs px-2">Concentric</TabsTrigger>
-            <TabsTrigger value="breadthfirst" className="text-xs px-2">Hierarchy</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+              <IconLayout className="h-3.5 w-3.5" aria-hidden />
+              Layout: {layoutLabel}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-56 p-2">
+            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Arrangement
+            </p>
+            <div className="space-y-0.5">
+              {LAYOUT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => runLayout(opt.id)}
+                  className={cn(
+                    'flex w-full flex-col rounded-lg px-2.5 py-1.5 text-left transition-colors',
+                    activeLayout === opt.id
+                      ? 'bg-primary/12 text-primary'
+                      : 'hover:bg-muted/60 text-foreground',
+                  )}
+                >
+                  <span className="text-xs font-medium">{opt.label}</span>
+                  <span className="text-[10px] text-muted-foreground">{opt.hint}</span>
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
 
-        <Button variant="outline" size="sm" onClick={() => setShowFilters((p) => !p)} className="text-xs gap-1">
-          <IconFilter className="w-3.5 h-3.5" />
-          Filter
+        <Button
+          variant={showFilters ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setShowFilters((p) => !p)}
+          className="gap-1 text-xs"
+          aria-pressed={showFilters}
+        >
+          <IconFilter className="h-3.5 w-3.5" aria-hidden />
+          Categories
         </Button>
 
-        {viewMode === 'instance' && (
+        {viewMode === 'instance' ? (
           <>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={refreshInstanceData}
-            disabled={instanceLoading}
-            className="text-xs gap-1"
-          >
-            {instanceLoading ? (
-              <IconLoader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <IconRefresh className="w-3.5 h-3.5" />
-            )}
-            Refresh
-          </Button>
-          <Button
-            variant={showForkEdges ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => { setShowForkEdges(prev => !prev); }}
-            className="text-xs gap-1"
-          >
-            <IconSchema className="w-3.5 h-3.5" />
-            {showForkEdges ? 'Forks On' : 'Forks Off'}
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refreshInstanceData}
+              disabled={instanceLoading}
+              className="gap-1 text-xs"
+            >
+              {instanceLoading ? (
+                <IconLoader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+              ) : (
+                <IconRefresh className="h-3.5 w-3.5" aria-hidden />
+              )}
+              Refresh
+            </Button>
+            <Button
+              variant={showForkEdges ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => setShowForkEdges((prev) => !prev)}
+              className="gap-1 text-xs"
+              aria-pressed={showForkEdges}
+            >
+              {showForkEdges ? 'Forks shown' : 'Show forks'}
+            </Button>
           </>
-        )}
+        ) : null}
 
-        <div className="flex items-center gap-1 ml-auto">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomIn} title="Zoom in">
-            <IconZoomIn className="w-4 h-4" />
+        <div className="ml-auto flex items-center gap-1">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomIn} aria-label="Zoom in">
+            <IconZoomIn className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomOut} title="Zoom out">
-            <IconZoomOut className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomOut} aria-label="Zoom out">
+            <IconZoomOut className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={fitAll} title="Fit all">
-            <IconFocus2 className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={fitAll} aria-label="Fit all">
+            <IconFocus2 className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportPng} title="Export PNG">
-            <IconDownload className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportPng} aria-label="Export PNG">
+            <IconDownload className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* ── Category Filters ── */}
-      {showFilters && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          className={`${glassCard} p-3`}
-        >
-          <div className="flex flex-wrap gap-2">
+      {/* ── Category chips (legend + filter) ── */}
+      {showFilters ? (
+        <div className={cn(glassCard, 'p-3')} role="group" aria-label="Category filters">
+          <div className="flex flex-wrap gap-1.5">
             {viewMode === 'ontology'
               ? (Object.entries(CATEGORY_COLORS) as [OntologyCategory, (typeof CATEGORY_COLORS)[OntologyCategory]][]).map(
-                  ([key, val]) => (
-                    <button
-                      key={key}
-                      onClick={() => toggleOntologyCategory(key)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all border ${
-                        activeCategories.has(key)
-                          ? 'text-white border-transparent shadow-sm'
-                          : 'text-gray-400 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 opacity-60'
-                      }`}
-                      style={activeCategories.has(key) ? { backgroundColor: val.bg, borderColor: val.border } : undefined}
-                    >
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: val.bg }} />
-                      {val.label}
-                    </button>
-                  ),
+                  ([key, val]) => {
+                    const on = activeCategories.has(key);
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => toggleOntologyCategory(key)}
+                        aria-pressed={on}
+                        className={cn(
+                          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all',
+                          on
+                            ? 'border-transparent text-white shadow-sm'
+                            : 'border-border bg-muted/40 text-muted-foreground opacity-70',
+                        )}
+                        style={on ? { backgroundColor: val.bg, borderColor: val.border } : undefined}
+                      >
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: val.bg }} aria-hidden />
+                        {val.label}
+                      </button>
+                    );
+                  },
                 )
               : (Object.entries(INSTANCE_CATEGORY_COLORS) as [InstanceCategory, (typeof INSTANCE_CATEGORY_COLORS)[InstanceCategory]][]).map(
-                  ([key, val]) => (
-                    <button
-                      key={key}
-                      onClick={() => toggleInstanceCategory(key)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all border ${
-                        activeInstanceCategories.has(key)
-                          ? 'text-white border-transparent shadow-sm'
-                          : 'text-gray-400 bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 opacity-60'
-                      }`}
-                      style={
-                        activeInstanceCategories.has(key)
-                          ? { backgroundColor: val.bg, borderColor: val.border }
-                          : undefined
-                      }
-                    >
-                      <span className="mr-0.5">{val.icon}</span>
-                      {val.label}
-                      {instanceStats?.byCategory[key] != null && (
-                        <span className="ml-1 text-[10px] opacity-80">({instanceStats.byCategory[key]})</span>
-                      )}
-                    </button>
-                  ),
+                  ([key, val]) => {
+                    const on = activeInstanceCategories.has(key);
+                    const count = instanceStats?.byCategory[key];
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => toggleInstanceCategory(key)}
+                        aria-pressed={on}
+                        className={cn(
+                          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-all',
+                          on
+                            ? 'border-transparent text-white shadow-sm'
+                            : 'border-border bg-muted/40 text-muted-foreground opacity-70',
+                        )}
+                        style={on ? { backgroundColor: val.bg, borderColor: val.border } : undefined}
+                      >
+                        <span aria-hidden>{val.icon}</span>
+                        {val.label}
+                        {count != null ? (
+                          <span className="font-mono text-[10px] opacity-80">{count}</span>
+                        ) : null}
+                      </button>
+                    );
+                  },
                 )}
           </div>
-        </motion.div>
-      )}
+          <p className="mt-2 text-[10px] text-muted-foreground">
+            {viewMode === 'ontology'
+              ? 'Solid edges = class hierarchy · Dashed = object properties'
+              : 'Solid = relationship · Dashed green = co-located · Dashed purple = fork'}
+          </p>
+        </div>
+      ) : null}
 
       {/* ── Main Grid: Graph + Detail Panel ── */}
-      <div className="flex gap-3 h-[calc(100vh-320px)] min-h-[400px]">
+      <div className="flex min-h-[400px] gap-3 h-[calc(100vh-280px)]">
         {/* Graph canvas */}
-        <div className={`flex-1 relative ${glassCard} overflow-hidden`}>
+        <div className={cn('relative min-w-0 flex-1 overflow-hidden', glassCard)}>
           {(!ready || instanceLoading) && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-gray-900/80 z-10">
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
               <div className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-3 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-sm text-blue-600 font-medium">
-                  {instanceLoading ? 'Fetching heritage data…' : 'Initialising graph…'}
+                <IconLoader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
+                <p className="text-sm font-medium text-foreground">
+                  {instanceLoading ? 'Fetching heritage data…' : 'Preparing graph…'}
                 </p>
               </div>
             </div>
           )}
 
           {viewMode === 'instance' && ready && !instanceLoading && instanceData?.nodes.length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center z-10">
-              <div className="text-center space-y-3 max-w-sm">
-                <div className="w-16 h-16 mx-auto bg-blue-50 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                  <IconDatabase className="w-8 h-8 text-blue-400" />
+            <div className="absolute inset-0 z-10 flex items-center justify-center p-6">
+              <div className="max-w-sm space-y-3 text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+                  <IconDatabase className="h-7 w-7 text-muted-foreground" aria-hidden />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">No Data Yet</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  The database is empty. Start by contributing heritage records through the{' '}
-                  <a href="/contribute" className="text-blue-600 hover:underline font-medium">
-                    Contribute
-                  </a>{' '}
-                  page, then return here to see your knowledge graph come alive.
+                <h3 className="text-lg font-semibold text-foreground">No heritage records yet</h3>
+                <p className="text-sm text-muted-foreground">
+                  Contribute a record, then refresh — the graph fills as the corpus grows.
                 </p>
-                <Button variant="outline" size="sm" onClick={refreshInstanceData} className="gap-1.5">
-                  <IconRefresh className="w-3.5 h-3.5" />
-                  Retry
-                </Button>
+                <div className="flex justify-center gap-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="/contribute">Contribute</a>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={refreshInstanceData} className="gap-1.5">
+                    <IconRefresh className="h-3.5 w-3.5" aria-hidden />
+                    Retry
+                  </Button>
+                </div>
               </div>
             </div>
           )}
 
-          {viewMode === 'instance' && instanceError && (
-            <div className="absolute top-3 left-3 right-3 z-20 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
-              <span>⚠️</span>
-              <span>{instanceError}</span>
-              <Button variant="ghost" size="sm" onClick={refreshInstanceData} className="ml-auto text-xs">
+          {viewMode === 'instance' && instanceError ? (
+            <div className="absolute left-3 right-3 top-3 z-20 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              <span className="flex-1">{instanceError}</span>
+              <Button variant="ghost" size="sm" onClick={refreshInstanceData} className="text-xs">
                 Retry
               </Button>
             </div>
-          )}
+          ) : null}
 
-          <div ref={containerRef} className="w-full h-full" />
-
-          {/* Legend */}
-          <div className="absolute bottom-3 left-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-xl p-3 text-xs space-y-1.5 max-w-[180px]">
-            <p className="font-semibold text-blue-900 dark:text-blue-200 mb-1">Legend</p>
-            {viewMode === 'ontology'
-              ? (Object.entries(CATEGORY_COLORS) as [OntologyCategory, (typeof CATEGORY_COLORS)[OntologyCategory]][]).map(
-                  ([key, val]) => (
-                    <div key={key} className="flex items-center gap-1.5">
-                      <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: val.bg }} />
-                      <span className="text-gray-700 dark:text-gray-300">{val.label}</span>
-                    </div>
-                  ),
-                )
-              : (Object.entries(INSTANCE_CATEGORY_COLORS) as [InstanceCategory, (typeof INSTANCE_CATEGORY_COLORS)[InstanceCategory]][])
-                  .filter(([key]) => instanceStats?.byCategory[key])
-                  .map(([key, val]) => (
-                    <div key={key} className="flex items-center gap-1.5">
-                      <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: val.bg }} />
-                      <span className="text-gray-700 dark:text-gray-300">
-                        {val.icon} {val.label}
-                      </span>
-                      <span className="text-gray-400 ml-auto">{instanceStats?.byCategory[key]}</span>
-                    </div>
-                  ))}
-            <div className="border-t border-blue-200 dark:border-gray-700 pt-1.5 mt-1.5 space-y-1">
-              {viewMode === 'ontology' ? (
-                <>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-5 h-0.5 bg-gray-400" />
-                    <span className="text-gray-500">is_a (hierarchy)</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-5 border-b-2 border-dashed border-blue-500" />
-                    <span className="text-gray-500">object property</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-5 h-0.5 bg-blue-500" />
-                    <span className="text-gray-500">relationship</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-5 border-b-2 border-dashed border-emerald-500" />
-                    <span className="text-gray-500">co-located</span>
-                  </div>
-                  {showForkEdges && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-5 border-b-2 border-dashed border-purple-500" />
-                      <span className="text-gray-500">fork</span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Stats overlay */}
-          <div className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-xl p-3 text-xs space-y-1">
-            <p className="font-semibold text-blue-900 dark:text-blue-200">
-              {viewMode === 'ontology' ? 'Ontology Statistics' : 'Data Statistics'}
-            </p>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-gray-600 dark:text-gray-400">
-              {viewMode === 'ontology' ? (
-                <>
-                  <span>Classes</span>
-                  <span className="font-mono font-bold text-blue-600">{ontologyStats.classes}</span>
-                  <span>Properties</span>
-                  <span className="font-mono font-bold text-blue-600">{ontologyStats.relationships}</span>
-                  <span>Hierarchy</span>
-                  <span className="font-mono font-bold text-blue-600">{ontologyStats.hierarchyEdges}</span>
-                  <span>Domains</span>
-                  <span className="font-mono font-bold text-blue-600">{ontologyStats.categories}</span>
-                </>
-              ) : instanceStats ? (
-                <>
-                  <span>Entities</span>
-                  <span className="font-mono font-bold text-blue-600">{instanceStats.totalEntities}</span>
-                  <span>Relations</span>
-                  <span className="font-mono font-bold text-blue-600">{instanceStats.relationEdges}</span>
-                  <span>Spatial</span>
-                  <span className="font-mono font-bold text-blue-600">{instanceStats.locationEdges}</span>
-                  <span>Types</span>
-                  <span className="font-mono font-bold text-blue-600">{instanceStats.categories}</span>
-                </>
-              ) : (
-                <span className="col-span-2 text-gray-400">Loading…</span>
-              )}
-            </div>
-          </div>
+          <div ref={containerRef} className="h-full w-full" />
         </div>
 
-        {/* ── Detail Panel: Ontology ── */}
-        <AnimatePresence>
-          {selectedNode && viewMode === 'ontology' && (
+        {/* Detail / empty guidance */}
+        <AnimatePresence mode="wait">
+          {selectedNode && viewMode === 'ontology' ? (
             <motion.div
-              initial={{ x: 40, opacity: 0 }}
+              key={`onto-${selectedNode.id}`}
+              initial={{ x: 24, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 40, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className={`w-80 shrink-0 ${glassCard} p-4 overflow-y-auto`}
+              exit={{ x: 24, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className={cn('w-80 shrink-0 overflow-y-auto p-4', glassCard)}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="mb-3 flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: CATEGORY_COLORS[selectedNode.category].bg }} />
-                  <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">{selectedNode.label}</h3>
+                  <span
+                    className="h-4 w-4 shrink-0 rounded-full"
+                    style={{ backgroundColor: CATEGORY_COLORS[selectedNode.category].bg }}
+                    aria-hidden
+                  />
+                  <h3 className="text-lg font-semibold text-foreground">{selectedNode.label}</h3>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setSelectedNode(null); if (cyRef.current) resetHighlight(cyRef.current); }}>
-                  <IconX className="w-4 h-4" />
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={clearSelection} aria-label="Close">
+                  <IconX className="h-4 w-4" />
                 </Button>
               </div>
 
-              <Badge variant="secondary" className="mb-3 text-xs">{CATEGORY_COLORS[selectedNode.category].label}</Badge>
+              <Badge variant="secondary" className="mb-3 text-xs">
+                {CATEGORY_COLORS[selectedNode.category].label}
+              </Badge>
 
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">{selectedNode.description}</p>
+              <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{selectedNode.description}</p>
 
-              <div className="space-y-2 mb-4">
-                <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-200 uppercase tracking-wider flex items-center gap-1">
-                  <IconInfoCircle className="w-3.5 h-3.5" />
-                  Ontology Mapping
-                </h4>
-                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5 text-xs font-mono text-blue-700 dark:text-blue-300 break-all">
-                  {selectedNode.cidocMapping}
-                </div>
-                {selectedNode.parent && (
-                  <div className="text-xs text-gray-500">
-                    <span className="font-medium">Parent class:</span>{' '}
-                    <button className="text-blue-600 hover:underline" onClick={() => {
-                      const parent = graphData.nodes.find((n) => n.id === selectedNode.parent);
-                      if (parent) { setSelectedNode(parent); if (cyRef.current) highlightNeighbors(cyRef.current, parent.id); }
-                    }}>
-                      {selectedNode.parent}
-                    </button>
+              <details className="mb-4 rounded-lg border border-border bg-muted/30">
+                <summary className="cursor-pointer list-none px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Schema mapping
+                </summary>
+                <div className="space-y-2 border-t border-border px-3 pb-3 pt-2">
+                  <div className="break-all rounded-md bg-muted px-2.5 py-2 font-mono text-xs text-foreground">
+                    {selectedNode.cidocMapping}
                   </div>
-                )}
-              </div>
+                  {selectedNode.parent ? (
+                    <div className="text-xs text-muted-foreground">
+                      <span className="font-medium">Parent:</span>{' '}
+                      <button
+                        type="button"
+                        className="text-primary hover:underline"
+                        onClick={() => {
+                          const parent = graphData.nodes.find((n) => n.id === selectedNode.parent);
+                          if (parent) {
+                            setSelectedNode(parent);
+                            if (cyRef.current) highlightNeighbors(cyRef.current, parent.id);
+                          }
+                        }}
+                      >
+                        {selectedNode.parent}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              </details>
 
               <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-200 uppercase tracking-wider flex items-center gap-1">
-                  <IconLayoutGrid className="w-3.5 h-3.5" />
+                <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <IconLayoutGrid className="h-3.5 w-3.5" aria-hidden />
                   Relationships ({selectedEdges.length})
                 </h4>
-                <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
+                <div className="max-h-60 space-y-1 overflow-y-auto pr-1">
                   {selectedEdges.map((e) => {
                     const isOutgoing = e.source === selectedNode.id;
                     const otherNodeId = isOutgoing ? e.target : e.source;
                     const otherNode = graphData.nodes.find((n) => n.id === otherNodeId);
                     return (
-                      <button key={e.id} className="w-full flex items-center gap-1.5 text-xs text-left px-2 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors group"
-                        onClick={() => { if (otherNode) { setSelectedNode(otherNode); if (cyRef.current) highlightNeighbors(cyRef.current, otherNode.id); } }}>
-                        <IconChevronRight className={`w-3 h-3 shrink-0 text-blue-400 transition-transform ${isOutgoing ? '' : 'rotate-180'}`} />
-                        <span className="text-blue-600 dark:text-blue-400 font-mono truncate flex-1">{e.label}</span>
-                        <span className="text-gray-500 truncate max-w-[100px]">{otherNode?.label ?? otherNodeId}</span>
+                      <button
+                        key={e.id}
+                        type="button"
+                        className="group flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted/60"
+                        onClick={() => {
+                          if (otherNode) {
+                            setSelectedNode(otherNode);
+                            if (cyRef.current) highlightNeighbors(cyRef.current, otherNode.id);
+                          }
+                        }}
+                      >
+                        <IconChevronRight
+                          className={cn(
+                            'h-3 w-3 shrink-0 text-muted-foreground transition-transform',
+                            !isOutgoing && 'rotate-180',
+                          )}
+                          aria-hidden
+                        />
+                        <span className="flex-1 truncate font-mono text-primary">{e.label}</span>
+                        <span className="max-w-[100px] truncate text-muted-foreground">
+                          {otherNode?.label ?? otherNodeId}
+                        </span>
                       </button>
                     );
                   })}
                 </div>
               </div>
-
-              {selectedEdges.filter((e) => e.edgeType === 'object_property').length > 0 && (
-                <div className="mt-4 space-y-1.5">
-                  <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-200 uppercase tracking-wider">Object Properties</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {[...new Set(selectedEdges.filter((e) => e.edgeType === 'object_property').map((e) => e.label))].map((p) => (
-                      <span key={p} className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded text-[10px] font-mono text-blue-600 dark:text-blue-400">{p}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Detail Panel: Instance ── */}
-        <AnimatePresence>
-          {selectedInstance && viewMode === 'instance' && (
+          ) : selectedInstance && viewMode === 'instance' ? (
             <motion.div
-              initial={{ x: 40, opacity: 0 }}
+              key={`inst-${selectedInstance.id}`}
+              initial={{ x: 24, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 40, opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className={`w-80 shrink-0 ${glassCard} p-4 overflow-y-auto`}
+              exit={{ x: 24, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className={cn('w-80 shrink-0 overflow-y-auto p-4', glassCard)}
             >
-              <div className="flex items-start justify-between mb-3">
+              <div className="mb-3 flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <span
-                    className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-sm"
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm"
                     style={{ backgroundColor: INSTANCE_CATEGORY_COLORS[selectedInstance.category].bg }}
+                    aria-hidden
                   >
                     {INSTANCE_CATEGORY_COLORS[selectedInstance.category].icon}
                   </span>
-                  <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100">{selectedInstance.label}</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{selectedInstance.label}</h3>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setSelectedInstance(null); if (cyRef.current) resetHighlight(cyRef.current); }}>
-                  <IconX className="w-4 h-4" />
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={clearSelection} aria-label="Close">
+                  <IconX className="h-4 w-4" />
                 </Button>
               </div>
 
@@ -937,93 +880,108 @@ export default function GraphViewPage() {
                 {selectedInstance.entityType}
               </Badge>
 
-              {selectedInstance.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">{selectedInstance.description}</p>
-              )}
+              {selectedInstance.description ? (
+                <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{selectedInstance.description}</p>
+              ) : null}
 
-              {/* Entity fields */}
-              <div className="space-y-2 mb-4">
-                <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-200 uppercase tracking-wider flex items-center gap-1">
-                  <IconInfoCircle className="w-3.5 h-3.5" />
-                  Details
-                </h4>
-                <div className="space-y-1.5">
+              <details className="mb-4 rounded-lg border border-border bg-muted/30">
+                <summary className="cursor-pointer list-none px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Record fields
+                </summary>
+                <div className="space-y-1.5 border-t border-border px-3 pb-3 pt-2">
                   {Object.entries(selectedInstance.rawData)
-                    .filter(([k, v]) => v && typeof v !== 'object' && !['id', 'created_at', 'title', 'description', 'contributor', 'status'].includes(k))
+                    .filter(
+                      ([k, v]) =>
+                        v &&
+                        typeof v !== 'object' &&
+                        !['id', 'created_at', 'title', 'description', 'contributor', 'status'].includes(k),
+                    )
                     .slice(0, 12)
                     .map(([key, value]) => (
                       <div key={key} className="flex items-start gap-2 text-xs">
-                        <span className="text-gray-400 font-medium shrink-0 min-w-[80px]">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-gray-700 dark:text-gray-300 break-words">{String(value).slice(0, 100)}</span>
+                        <span className="min-w-[80px] shrink-0 font-medium text-muted-foreground">
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <span className="break-words text-foreground">{String(value).slice(0, 100)}</span>
                       </div>
                     ))}
                 </div>
-              </div>
+              </details>
 
-              {/* Connected entities */}
-              {selectedInstanceEdges.length > 0 && (
+              {selectedInstanceEdges.length > 0 ? (
                 <div className="space-y-2">
-                  <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-200 uppercase tracking-wider flex items-center gap-1">
-                    <IconLayoutGrid className="w-3.5 h-3.5" />
+                  <h4 className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    <IconLayoutGrid className="h-3.5 w-3.5" aria-hidden />
                     Connections ({selectedInstanceEdges.length})
                   </h4>
-                  <div className="space-y-1 max-h-60 overflow-y-auto pr-1">
+                  <div className="max-h-60 space-y-1 overflow-y-auto pr-1">
                     {selectedInstanceEdges.map((e) => {
                       const isOutgoing = e.source === selectedInstance.id;
                       const otherNodeId = isOutgoing ? e.target : e.source;
                       const otherNode = instanceData?.nodes.find((n) => n.id === otherNodeId);
                       return (
-                        <button key={e.id} className="w-full flex items-center gap-1.5 text-xs text-left px-2 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
-                          onClick={() => { if (otherNode) { setSelectedInstance(otherNode); if (cyRef.current) highlightNeighbors(cyRef.current, otherNode.id); } }}>
-                          <IconChevronRight className={`w-3 h-3 shrink-0 text-blue-400 ${isOutgoing ? '' : 'rotate-180'}`} />
-                          <span className="text-blue-600 dark:text-blue-400 font-mono truncate flex-1">{e.label}</span>
-                          <span className="text-gray-500 truncate max-w-[100px]">{otherNode?.label ?? otherNodeId}</span>
+                        <button
+                          key={e.id}
+                          type="button"
+                          className="flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted/60"
+                          onClick={() => {
+                            if (otherNode) {
+                              setSelectedInstance(otherNode);
+                              if (cyRef.current) highlightNeighbors(cyRef.current, otherNode.id);
+                            }
+                          }}
+                        >
+                          <IconChevronRight
+                            className={cn('h-3 w-3 shrink-0 text-muted-foreground', !isOutgoing && 'rotate-180')}
+                            aria-hidden
+                          />
+                          <span className="flex-1 truncate font-mono text-primary">{e.label}</span>
+                          <span className="max-w-[100px] truncate text-muted-foreground">
+                            {otherNode?.label ?? otherNodeId}
+                          </span>
                         </button>
                       );
                     })}
                   </div>
                 </div>
-              )}
+              ) : null}
 
-              {/* Link to full record */}
-              <div className="mt-4 pt-3 border-t border-blue-200 dark:border-gray-700">
+              <div className="mt-4 border-t border-border pt-3">
                 <a
                   href={`/knowledge/${selectedInstance.category}/view/${selectedInstance.rawData.id}`}
-                  className="text-xs text-blue-600 hover:underline font-medium flex items-center gap-1"
+                  className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                 >
-                  <IconChevronRight className="w-3 h-3" />
-                  View full record
+                  <IconChevronRight className="h-3 w-3" aria-hidden />
+                  Open full record
                 </a>
               </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty-panel"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className={cn(
+                'hidden w-72 shrink-0 flex-col items-center justify-center gap-3 p-6 text-center lg:flex',
+                glassCard,
+              )}
+            >
+              <IconInfoCircle className="h-8 w-8 text-muted-foreground/50" aria-hidden />
+              <p className="text-sm font-medium text-foreground">Select a node</p>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {viewMode === 'instance'
+                  ? 'Click any entity to read its story and follow connections.'
+                  : 'Click a class to see hierarchy, mappings, and properties.'}
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      {/* ── Footer ── */}
-      <div className={`${glassCard} p-3 text-center text-xs text-gray-500 dark:text-gray-400`}>
-        <p>
-          {viewMode === 'ontology' ? (
-            <>
-              Ontology namespace:{' '}
-              <code className="px-1 py-0.5 bg-blue-50 dark:bg-blue-900/30 rounded text-blue-600 dark:text-blue-400">
-                https://w3id.org/heritagegraph/
-              </code>
-              {' · '}Visualisation built with Cytoscape.js{' · '}Schema defined in{' '}
-              <a href="https://linkml.io/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">LinkML</a>
-            </>
-          ) : (
-            <>
-              Live data from HeritageGraph API{' · '}
-              {instanceStats ? `${instanceStats.totalEntities} entities across ${instanceStats.categories} categories` : 'No data loaded'}
-              {' · '}Visualisation built with Cytoscape.js
-            </>
-          )}
-        </p>
-      </div>
     </div>
   );
 }
+
 
 /* ═══════════════════════════════════════════════════════
  *  Ontology graph helpers

@@ -1,23 +1,39 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+/**
+ * Contribute hub — human-first entry.
+ * Goal: someone with no ontology knowledge can answer
+ * “Is this new, or already here?” then pick a plain type and start.
+ */
+
+import React, { useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
-  IconSparkles,
   IconArrowRight,
+  IconChevronLeft,
+  IconChevronRight,
   IconSearch,
   IconX,
 } from "@tabler/icons-react";
-import { AlertCircle, /* FileText, */ FolderKanban, Plus, GitMerge, Link2 } from "lucide-react";
+import {
+  AlertCircle,
+  FolderKanban,
+  GitMerge,
+  Link2,
+  Plus,
+  Search,
+  ListChecks,
+} from "lucide-react";
 import { fadeInUp, staggerContainer, scaleIn, glassCard } from "@/lib/design";
 import { useOntology } from "@/lib/ontology/OntologyProvider";
 import type { ContributeHubIntentRow } from "@/lib/ontology/types";
+import { plainContributeClassLabel } from "@/lib/ontology/contribute-plain-copy";
+import { cn } from "@/lib/utils";
 
 interface ContributionIntent {
   key: string;
@@ -25,120 +41,80 @@ interface ContributionIntent {
   description: string;
   shortDescription: string;
   icon: string;
-  category: string;
-  categoryKey: string;
   route: string;
   difficulty: "beginner" | "intermediate" | "advanced";
-  journey: "describe" | "record" | "claim" | "verify";
+  journey: "places" | "people" | "events" | "sources";
 }
 
-const journeyMeta: Record<
-  "describe" | "record" | "claim" | "verify",
-  { label: string; icon: string; description: string }
-> = {
-  describe: {
-    label: "Describe",
-    icon: "🧭",
-    description: "Capture what this heritage item is and where it exists.",
-  },
-  record: {
-    label: "Record",
-    icon: "📝",
-    description: "Document events, ritual cycles, tenures, and timelines.",
-  },
-  claim: {
-    label: "Claim",
-    icon: "⚖️",
-    description: "State relationships or assertions that need verification.",
-  },
-  verify: {
-    label: "Verify",
-    icon: "🔎",
-    description: "Attach evidence and sources to support what we publish.",
-  },
-};
+const JOURNEYS: Array<{
+  key: ContributionIntent["journey"];
+  label: string;
+  hint: string;
+}> = [
+  { key: "places", label: "Places & things", hint: "Temples, art, deities, places" },
+  { key: "people", label: "People & groups", hint: "Persons, Guthi, communities" },
+  { key: "events", label: "Events & rituals", hint: "Festivals, rituals, history" },
+  { key: "sources", label: "Sources", hint: "Books, inscriptions, claims" },
+];
 
-const journeyByRegistryKey: Record<
-  string,
-  "describe" | "record" | "claim" | "verify"
-> = {
-  entity_proposal: "claim",
-  structure: "describe",
-  iconography: "describe",
-  monument: "describe",
-  deity: "describe",
-  tradition: "describe",
-  person: "describe",
-  caste_group: "describe",
-  guthi: "describe",
-  location: "describe",
-  ritual: "record",
-  festival: "record",
-  event: "record",
-  period: "record",
-  calendar: "record",
-  kumari_tenure: "record",
-  kumari_selection: "record",
-  kumari_retirement: "record",
-  assertion: "claim",
-  syncretism: "claim",
-  source: "verify",
-  data_source: "verify",
+const journeyByRegistryKey: Record<string, ContributionIntent["journey"]> = {
+  entity: "places",
+  structure: "places",
+  iconography: "places",
+  monument: "places",
+  deity: "places",
+  tradition: "places",
+  location: "places",
+  period: "places",
+  calendar: "places",
+  syncretism: "places",
+  person: "people",
+  guthi: "people",
+  caste_group: "people",
+  entity_proposal: "people",
+  ritual: "events",
+  festival: "events",
+  event: "events",
+  production: "events",
+  consecration: "events",
+  enshrinement: "events",
+  transfer_of_custody: "events",
+  kumari_tenure: "events",
+  kumari_selection: "events",
+  kumari_retirement: "events",
+  source: "sources",
+  data_source: "sources",
+  assertion: "sources",
 };
 
 function journeyFromIntent(
   key: string,
   categoryKey: string
-): "describe" | "record" | "claim" | "verify" {
+): ContributionIntent["journey"] {
   const mapped = journeyByRegistryKey[key];
   if (mapped) return mapped;
-  if (categoryKey === "events" || categoryKey === "kumari" || categoryKey === "spatiotemporal") {
-    return "record";
-  }
-  if (categoryKey === "provenance") {
-    return "verify";
-  }
-  return "describe";
+  if (categoryKey === "events" || categoryKey === "kumari") return "events";
+  if (categoryKey === "social") return "people";
+  if (categoryKey === "provenance") return "sources";
+  return "places";
 }
-
-const difficultyConfig: Record<
-  string,
-  { color: string; label: string }
-> = {
-  beginner: {
-    color:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    label: "Beginner",
-  },
-  intermediate: {
-    color:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    label: "Intermediate",
-  },
-  advanced: {
-    color:
-      "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-    label: "Advanced",
-  },
-};
 
 function buildIntents(
   hubIntents: readonly ContributeHubIntentRow[],
-  categoryLabelByKey: Map<string, string>,
   classLabelByKey: Map<string, string>
 ): ContributionIntent[] {
   const out: ContributionIntent[] = [];
   for (const row of hubIntents) {
-    const label = classLabelByKey.get(row.registryKey);
-    if (!label) continue;
+    const label = plainContributeClassLabel(
+      row.registryKey,
+      classLabelByKey.get(row.registryKey) || titleCaseKey(row.registryKey)
+    );
     out.push({
       key: row.registryKey,
       label,
       description: row.description,
       shortDescription: row.shortDescription,
       icon: row.emoji,
-      category: categoryLabelByKey.get(row.hubCategory) ?? row.hubCategory,
-      categoryKey: row.hubCategory,
       route: row.route,
       difficulty: row.difficulty,
       journey: journeyFromIntent(row.registryKey, row.hubCategory),
@@ -147,61 +123,94 @@ function buildIntents(
   return out;
 }
 
-function ContributionCard({
+function titleCaseKey(key: string): string {
+  return key
+    .split("_")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+function TypePill({
   intent,
-  compact = false,
+  onClick,
 }: {
   intent: ContributionIntent;
-  compact?: boolean;
+  onClick: () => void;
 }) {
-  const router = useRouter();
-  const diff = difficultyConfig[intent.difficulty];
-
   return (
-    <motion.div
-      variants={scaleIn}
-      className="group relative"
-      whileHover={{ y: -2 }}
-      transition={{ duration: 0.2 }}
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "group flex w-[11.5rem] shrink-0 flex-col gap-1 rounded-2xl border border-border/80 bg-card p-3.5 text-left",
+        "transition-all hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      )}
     >
-      <div
-        className={`relative ${glassCard} transition-all duration-200 hover:border-primary/30 hover:shadow-sm cursor-pointer ${
-          compact ? "p-4" : "p-5"
-        }`}
-        onClick={() => router.push(intent.route)}
-      >
-        <div className="flex items-start gap-3">
-          <span className={compact ? "text-xl" : "text-2xl"} role="img">
-            {intent.icon}
-          </span>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3
-                className={`font-semibold text-foreground truncate ${
-                  compact ? "text-sm" : "text-base"
-                }`}
-              >
-                {intent.label}
-              </h3>
-              <Badge
-                variant="secondary"
-                className={`${diff.color} text-[10px] px-1.5 py-0 shrink-0`}
-              >
-                {diff.label}
-              </Badge>
-            </div>
-            <p
-              className={`text-muted-foreground leading-relaxed ${
-                compact ? "text-xs" : "text-sm"
-              }`}
-            >
-              {compact ? intent.shortDescription : intent.description}
-            </p>
-          </div>
-          <IconArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-1" />
+      <span className="text-xl" role="img" aria-hidden>
+        {intent.icon}
+      </span>
+      <span className="text-sm font-semibold leading-snug text-foreground line-clamp-2">
+        {intent.label}
+      </span>
+      <span className="text-[11px] leading-snug text-muted-foreground line-clamp-2">
+        {intent.shortDescription}
+      </span>
+      <span className="mt-auto inline-flex items-center gap-0.5 pt-1 text-[11px] font-medium text-primary opacity-80 group-hover:opacity-100">
+        Start
+        <IconArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </button>
+  );
+}
+
+function HorizontalScroller({
+  children,
+  label,
+}: {
+  children: React.ReactNode;
+  label: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const scrollBy = (dir: -1 | 1) => {
+    const el = ref.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * Math.min(320, el.clientWidth * 0.75), behavior: "smooth" });
+  };
+  return (
+    <div className="relative">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <div className="hidden gap-1 sm:flex">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-8"
+            aria-label="Scroll left"
+            onClick={() => scrollBy(-1)}
+          >
+            <IconChevronLeft className="size-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="size-8"
+            aria-label="Scroll right"
+            onClick={() => scrollBy(1)}
+          >
+            <IconChevronRight className="size-4" />
+          </Button>
         </div>
       </div>
-    </motion.div>
+      <div
+        ref={ref}
+        className="flex gap-3 overflow-x-auto pb-2 scroll-smooth snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -214,14 +223,6 @@ export default function ContributeDashboard() {
     quickStart: [],
   };
 
-  const categoryLabelByKey = useMemo(() => {
-    const m = new Map<string, string>();
-    for (const c of hub.hubCategories) {
-      m.set(c.key, c.label);
-    }
-    return m;
-  }, [hub.hubCategories]);
-
   const classLabelByKey = useMemo(() => {
     const m = new Map<string, string>();
     for (const [k, cls] of Object.entries(registry.classes)) {
@@ -230,33 +231,16 @@ export default function ContributeDashboard() {
     return m;
   }, [registry.classes]);
 
-  const categoryOrder = useMemo(
-    () =>
-      [...hub.hubCategories]
-        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-        .map((c) => c.key),
-    [hub.hubCategories]
-  );
-
-  const categoryMeta = useMemo(() => {
-    const r: Record<string, { label: string; icon: string }> = {};
-    for (const c of hub.hubCategories) {
-      r[c.key] = { label: c.label, icon: c.icon };
-    }
-    return r;
-  }, [hub.hubCategories]);
-
   const contributionIntents = useMemo(
-    () => buildIntents(hub.intents, categoryLabelByKey, classLabelByKey),
-    [hub.intents, categoryLabelByKey, classLabelByKey]
+    () => buildIntents(hub.intents, classLabelByKey),
+    [hub.intents, classLabelByKey]
   );
 
   const quickStartKeys = hub.quickStart;
-
   const [search, setSearch] = useState("");
-  const [activeJourney, setActiveJourney] = useState<
-    "describe" | "record" | "claim" | "verify"
-  >("describe");
+  const [activeJourney, setActiveJourney] =
+    useState<ContributionIntent["journey"]>("places");
+  const [showSpecialist, setShowSpecialist] = useState(false);
 
   const filteredIntents = useMemo(() => {
     if (!search.trim()) return contributionIntents;
@@ -266,77 +250,48 @@ export default function ContributeDashboard() {
         i.label.toLowerCase().includes(q) ||
         i.shortDescription.toLowerCase().includes(q) ||
         i.description.toLowerCase().includes(q) ||
-        i.category.toLowerCase().includes(q)
+        i.key.toLowerCase().includes(q)
     );
   }, [search, contributionIntents]);
 
-  const journeyIntents = useMemo(
-    () => filteredIntents.filter((i) => i.journey === activeJourney),
-    [activeJourney, filteredIntents]
-  );
-
-  const journeyCategoryGroups = useMemo(() => {
-    const grouped: Record<string, ContributionIntent[]> = {};
-    for (const intent of journeyIntents) {
-      if (!grouped[intent.categoryKey]) grouped[intent.categoryKey] = [];
-      grouped[intent.categoryKey].push(intent);
-    }
-    return categoryOrder
-      .filter((k) => grouped[k]?.length)
-      .map((k) => ({
-        categoryKey: k,
-        categoryLabel: categoryMeta[k]?.label ?? k,
-        categoryIcon: categoryMeta[k]?.icon ?? "📂",
-        intents: grouped[k],
-      }));
-  }, [categoryMeta, categoryOrder, journeyIntents]);
-
   const isSearching = search.trim().length > 0;
 
+  const quickStart = useMemo(() => {
+    const preferred = contributionIntents.filter((i) =>
+      quickStartKeys.includes(i.key)
+    );
+    if (preferred.length) return preferred;
+    return contributionIntents.filter((i) => i.difficulty === "beginner").slice(0, 6);
+  }, [contributionIntents, quickStartKeys]);
+
+  const journeyTypes = useMemo(() => {
+    const list = contributionIntents.filter((i) => i.journey === activeJourney);
+    if (showSpecialist) return list;
+    return list.filter((i) => i.difficulty !== "advanced");
+  }, [contributionIntents, activeJourney, showSpecialist]);
+
+  const specialistCount = useMemo(
+    () =>
+      contributionIntents.filter(
+        (i) => i.journey === activeJourney && i.difficulty === "advanced"
+      ).length,
+    [contributionIntents, activeJourney]
+  );
+
   if (contributionIntents.length === 0) {
-    const hubEmpty =
-      !hub.intents?.length &&
-      !hub.hubCategories?.length &&
-      !hub.quickStart?.length;
     return (
       <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
         <Alert className="border-amber-200 bg-amber-50/80 dark:border-amber-900/50 dark:bg-amber-950/30">
           <AlertCircle className="text-amber-700 dark:text-amber-400" />
-          <AlertTitle className="text-amber-950 dark:text-amber-100">
-            Contribution types could not be loaded
-          </AlertTitle>
-          <AlertDescription className="space-y-3 text-amber-950/90 dark:text-amber-100/90">
+          <AlertTitle>We couldn&apos;t load contribution options</AlertTitle>
+          <AlertDescription className="space-y-3">
             <p>
-              The contribute hub needs both <strong className="text-foreground">registry classes</strong>{" "}
-              and metadata from <code className="rounded bg-muted px-1 font-mono text-xs">contribute-hub</code>.
-              Right now nothing matched, so there are no cards to show.
+              This is usually temporary. Try again in a moment
+              {degradedReason === "unauthenticated" ? ", or sign in first" : ""}.
             </p>
-            <ul className="list-disc space-y-1 pl-5 text-sm">
-              {hubEmpty ? (
-                <li>
-                  The loaded registry has <strong>no contribute hub data</strong> (often an
-                  old server snapshot). Sign in and retry, or ask an admin to run{" "}
-                  <code className="font-mono">python manage.py rebuild_schema_registry</code>.
-                </li>
-              ) : (
-                <li>
-                  Hub intents reference registry keys that are missing from{" "}
-                  <code className="font-mono">registry.classes</code>—check that{" "}
-                  <code className="font-mono">tools/contribute-hub.yaml</code>{" "}
-                  <code className="font-mono">registryKey</code> values match{" "}
-                  <code className="font-mono">tools/ui-classmap.yaml</code> <code className="font-mono">key</code>{" "}
-                  entries, then run <code className="font-mono">make ontology</code>.
-                </li>
-              )}
-              {degradedReason === "unauthenticated" ? (
-                <li>You are not signed in; only the bundled snapshot is used—sign in for the live registry.</li>
-              ) : null}
-            </ul>
-            <div className="flex flex-wrap gap-2 pt-1">
-              <Button type="button" size="sm" onClick={() => void reload()}>
-                Retry loading schema
-              </Button>
-            </div>
+            <Button type="button" size="sm" onClick={() => void reload()}>
+              Try again
+            </Button>
           </AlertDescription>
         </Alert>
       </div>
@@ -344,345 +299,300 @@ export default function ContributeDashboard() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <motion.div
+    <div className="mx-auto max-w-3xl space-y-8 px-1 sm:px-0">
+      {/* One clear job */}
+      <motion.header
         initial="hidden"
         animate="show"
         variants={fadeInUp}
-        className={`relative overflow-hidden ${glassCard} p-6 md:p-8`}
+        className="space-y-2 pt-1"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl" />
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
-        <div className="relative z-10 text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-xs font-medium text-white">
-            <IconSparkles className="w-3.5 h-3.5" /> Contribute Knowledge
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
-            Preserve and share cultural heritage
-          </h1>
-          <p className="text-white/90 max-w-lg mx-auto text-sm">
-            Pick what you want to do below. Every entry is reviewed by experts before it&apos;s published.
-          </p>
-        </div>
-      </motion.div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+          Share what you know
+        </h1>
+        <p className="max-w-xl text-sm text-muted-foreground leading-relaxed">
+          You don&apos;t need technical knowledge. Choose whether you&apos;re adding something
+          new or improving a record that already exists. A reviewer checks every submission
+          before it is published.
+        </p>
+      </motion.header>
 
-      {/* Primary chooser — the 4 things a contributor can do. The first is the
-          80% path (add a single entity); the others cover identity, relationships,
-          and multi-entity projects. */}
+      {/* Two paths only */}
       <motion.div
         initial="hidden"
         animate="show"
         variants={staggerContainer}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2"
       >
-        {[
-          {
-            icon: <Plus className="size-5" aria-hidden />,
-            title: "Add a heritage entity",
-            desc: "Document a temple, deity, ritual, person, place, festival, and more. Start here.",
-            onClick: () =>
-              document
-                .getElementById("browse-types")
-                ?.scrollIntoView({ behavior: "smooth", block: "start" }),
-            primary: true,
-          },
-          {
-            icon: <GitMerge className="size-5" aria-hidden />,
-            title: "Link or fix an identity",
-            desc: "Two records that mean the same thing? Merge them under one canonical identity.",
-            onClick: () => router.push("/contribute/entity-proposal"),
-          },
-          {
-            icon: <Link2 className="size-5" aria-hidden />,
-            title: "Propose a relationship",
-            desc: "Connect two entities — e.g. “this temple honours this deity.”",
-            onClick: () => router.push("/contribute/relationship-proposal"),
-          },
-          {
-            icon: <FolderKanban className="size-5" aria-hidden />,
-            title: "Run a project",
-            desc: "Work on many entities together with evidence, then submit the set for review.",
-            onClick: () => router.push("/contribute/projects"),
-          },
-        ].map((card) => (
-          <motion.button
-            key={card.title}
-            type="button"
-            variants={scaleIn}
-            onClick={card.onClick}
-            className={`group text-left ${glassCard} p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-sm ${
-              card.primary ? "ring-1 ring-primary/30" : ""
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                {card.icon}
-              </span>
-              <div className="min-w-0 space-y-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-foreground">{card.title}</h2>
-                  {card.primary ? (
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                      Most common
-                    </Badge>
-                  ) : null}
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
-              </div>
-              <IconArrowRight className="ml-auto mt-1 size-4 shrink-0 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:text-primary" />
-            </div>
-          </motion.button>
-        ))}
+        <motion.button
+          type="button"
+          variants={scaleIn}
+          onClick={() =>
+            document
+              .getElementById("add-new")
+              ?.scrollIntoView({ behavior: "smooth", block: "start" })
+          }
+          className={cn(
+            "group text-left p-5",
+            glassCard,
+            "ring-1 ring-primary/25 hover:border-primary/40 hover:shadow-sm transition-all"
+          )}
+        >
+          <span className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Plus className="size-5" aria-hidden />
+          </span>
+          <h2 className="text-base font-semibold">Add something new</h2>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+            A temple, person, festival, or document that isn&apos;t in the system yet.
+          </p>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
+            Choose a type below
+            <IconArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </motion.button>
+
+        <motion.button
+          type="button"
+          variants={scaleIn}
+          onClick={() => router.push("/contribute/improve")}
+          className={cn(
+            "group text-left p-5",
+            glassCard,
+            "hover:border-primary/40 hover:shadow-sm transition-all"
+          )}
+        >
+          <span className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Search className="size-5" aria-hidden />
+          </span>
+          <h2 className="text-base font-semibold">Update something already here</h2>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+            Search first — then fix details or connect it to another record. Avoids duplicates.
+          </p>
+          <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">
+            Search records
+            <IconArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+          </span>
+        </motion.button>
       </motion.div>
 
-      {/* ─────────────────────────────────────────────────────────────────────
-          Supervised document ingestion (OCR) — part of the agentic pipeline.
-          Hidden from contributors for now; re-enable when the pipeline UX is
-          ready by uncommenting this block and the dashboard quick-action in
-          src/config/dashboard-links.ts.
-          ──────────────────────────────────────────────────────────────────── */}
-      {/*
-      <motion.div
-        initial="hidden"
-        animate="show"
-        variants={fadeInUp}
-        className={`${glassCard} p-5 md:p-6`}
-      >
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <FileText className="size-5" aria-hidden />
-            </span>
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">Supervised document ingestion</h2>
-              <p className="text-sm text-muted-foreground max-w-xl">
-                Upload PDFs or scans, review OCR regions and extracted mentions, reconcile against the
-                knowledge graph, then merge hints into a contribute form—nothing is published
-                automatically.
-              </p>
-            </div>
-          </div>
-          <Button
-            type="button"
-            className="shrink-0"
-            onClick={() => router.push("/contribute/ingestion")}
-          >
-            Start ingestion
-          </Button>
+      {/* Secondary actions — horizontal chips, not a card wall */}
+      <motion.div initial="hidden" animate="show" variants={fadeInUp} className="space-y-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Also useful
+        </p>
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {[
+            {
+              href: "/contribute/relationship-proposal",
+              icon: Link2,
+              label: "Connect two records",
+            },
+            {
+              href: "/contribute/entity-proposal",
+              icon: GitMerge,
+              label: "Same thing twice?",
+            },
+            {
+              href: "/contribute/projects",
+              icon: FolderKanban,
+              label: "Work as a project",
+            },
+            {
+              href: "/contribute/my-contributions",
+              icon: ListChecks,
+              label: "My submissions",
+            },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-3.5 py-2 text-sm text-foreground transition-colors hover:border-primary/40 hover:bg-muted/40"
+            >
+              <item.icon className="size-3.5 text-muted-foreground" aria-hidden />
+              {item.label}
+            </Link>
+          ))}
         </div>
       </motion.div>
-      */}
 
-      <motion.div
+      {/* Add new — search + scrollers */}
+      <motion.section
+        id="add-new"
         initial="hidden"
         animate="show"
         variants={fadeInUp}
-        className="relative"
+        className="scroll-mt-24 space-y-5"
       >
-        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search contribution types... (e.g. temple, festival, person)"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9 pr-9 h-11 rounded-xl bg-card border-border"
-        />
-        {search && (
-          <button
-            type="button"
-            onClick={() => setSearch("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          >
-            <IconX className="w-4 h-4" />
-          </button>
-        )}
-      </motion.div>
-
-      {!isSearching &&
-        (registry.semantic_patterns?.length ?? 0) > 0 ? (
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={staggerContainer}
-            className={`${glassCard} p-5 md:p-6 space-y-4`}
-          >
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">
-                Semantic workflows
-              </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Guided multi-step paths that combine ontology forms and moderated relationship
-                proposals so domain experts can assemble graph-shaped stories without writing RDF.
-              </p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {(registry.semantic_patterns ?? []).map((p) => (
-                <button
-                  key={p.key}
-                  type="button"
-                  onClick={() => router.push(`/contribute/pattern/${encodeURIComponent(p.key)}`)}
-                  className={`text-left ${glassCard} p-4 transition-colors cursor-pointer hover:border-primary/30`}
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="text-xl shrink-0" role="img">
-                      {p.emoji ?? "🧭"}
-                    </span>
-                    <div className="space-y-1 min-w-0">
-                      <div className="font-medium text-sm truncate">{p.userLabel}</div>
-                      {p.userDescription ? (
-                        <p className="text-xs text-muted-foreground line-clamp-3">
-                          {p.userDescription}
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        ) : null}
-
-      {isSearching ? (
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={staggerContainer}
-          className="space-y-3"
-        >
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold text-foreground">What are you adding?</h2>
           <p className="text-sm text-muted-foreground">
-            {filteredIntents.length} result{filteredIntents.length !== 1 ? "s" : ""} for
-            &ldquo;{search}&rdquo;
+            Pick the closest match. If you&apos;re unsure, choose &ldquo;Something else&rdquo; or
+            search by everyday words like temple, festival, or priest.
           </p>
-          <AnimatePresence mode="popLayout">
-            {filteredIntents.map((intent) => (
-              <ContributionCard key={intent.key} intent={intent} />
-            ))}
-          </AnimatePresence>
-          {filteredIntents.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-lg">No matching contribution types</p>
-              <p className="text-sm mt-1">
-                Try different keywords or browse the categories below
-              </p>
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="mt-3 text-sm text-primary hover:underline"
-              >
-                Clear search
-              </button>
-            </div>
-          )}
-        </motion.div>
-      ) : (
-        <>
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={staggerContainer}
-          >
-            <motion.div
-              variants={fadeInUp}
-              className="flex items-center gap-2 mb-3"
-            >
-              <span className="text-lg">💡</span>
-              <h2 className="text-base font-semibold text-foreground">
-                Start Here
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                — beginner-friendly contributions
-              </span>
-            </motion.div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {contributionIntents
-                .filter((i) => quickStartKeys.includes(i.key))
-                .map((intent) => (
-                  <ContributionCard key={intent.key} intent={intent} />
-                ))}
-            </div>
-          </motion.div>
+        </div>
 
-          <motion.div
-            id="browse-types"
-            initial="hidden"
-            animate="show"
-            variants={fadeInUp}
-            className="scroll-mt-24"
-          >
-            <h2 className="text-base font-semibold text-foreground mb-1">
-              Add a heritage entity — browse all types
-            </h2>
-            <p className="text-xs text-muted-foreground mb-3">
-              Grouped by what you&apos;re doing: describing an item, recording an event, making a claim, or adding a source.
-            </p>
-            <Tabs
-              value={activeJourney}
-              onValueChange={(value) =>
-                setActiveJourney(value as "describe" | "record" | "claim" | "verify")
-              }
-              className="space-y-4"
+        <div className="relative">
+          <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search types… e.g. temple, festival, person"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="h-11 rounded-xl border-border bg-card pl-9 pr-9"
+          />
+          {search ? (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              aria-label="Clear search"
             >
-              <TabsList className="flex-wrap h-auto gap-1 p-1 bg-muted">
-                {(Object.keys(journeyMeta) as Array<
-                  "describe" | "record" | "claim" | "verify"
-                >).map((journeyKey) => {
-                  const meta = journeyMeta[journeyKey];
-                  const count = contributionIntents.filter(
-                    (i) => i.journey === journeyKey
-                  ).length;
+              <IconX className="size-4" />
+            </button>
+          ) : null}
+        </div>
+
+        {isSearching ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              {filteredIntents.length} match
+              {filteredIntents.length === 1 ? "" : "es"} for &ldquo;{search.trim()}&rdquo;
+            </p>
+            <AnimatePresence mode="popLayout">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {filteredIntents.map((intent) => (
+                  <button
+                    key={intent.key}
+                    type="button"
+                    onClick={() => router.push(intent.route)}
+                    className={cn(
+                      "flex items-start gap-3 rounded-xl border border-border bg-card p-3.5 text-left",
+                      "hover:border-primary/40 transition-colors"
+                    )}
+                  >
+                    <span className="text-xl" role="img" aria-hidden>
+                      {intent.icon}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold">{intent.label}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground line-clamp-2">
+                        {intent.shortDescription}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </AnimatePresence>
+            {filteredIntents.length === 0 ? (
+              <div className={`${glassCard} space-y-3 p-5`}>
+                <p className="text-sm text-muted-foreground">
+                  No type matched that search. Try another word, or check whether the record
+                  already exists.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" size="sm" variant="outline" onClick={() => setSearch("")}>
+                    Clear search
+                  </Button>
+                  <Button asChild size="sm">
+                    <Link href="/contribute/improve">Search existing records</Link>
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Popular starting points</h3>
+              <HorizontalScroller label="Swipe or use arrows">
+                {quickStart.map((intent) => (
+                  <div key={intent.key} className="snap-start">
+                    <TypePill intent={intent} onClick={() => router.push(intent.route)} />
+                  </div>
+                ))}
+              </HorizontalScroller>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Browse by kind</h3>
+              <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {JOURNEYS.map((j) => {
+                  const count = contributionIntents.filter((i) => {
+                    if (i.journey !== j.key) return false;
+                    if (!showSpecialist && i.difficulty === "advanced") return false;
+                    return true;
+                  }).length;
+                  const active = activeJourney === j.key;
                   return (
-                    <TabsTrigger
-                      key={journeyKey}
-                      value={journeyKey}
-                      className="text-xs px-3 gap-1"
+                    <button
+                      key={j.key}
+                      type="button"
+                      onClick={() => setActiveJourney(j.key)}
+                      className={cn(
+                        "shrink-0 rounded-full border px-3.5 py-1.5 text-sm transition-colors",
+                        active
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card text-foreground hover:border-primary/40"
+                      )}
                     >
-                      <span>{meta.icon}</span>
-                      <span>{meta.label}</span>
-                      <span className="text-[10px] text-muted-foreground">
+                      {j.label}
+                      <span
+                        className={cn(
+                          "ml-1.5 text-[10px]",
+                          active ? "text-primary-foreground/80" : "text-muted-foreground"
+                        )}
+                      >
                         {count}
                       </span>
-                    </TabsTrigger>
+                    </button>
                   );
                 })}
-              </TabsList>
-
-              <TabsContent value={activeJourney} className="mt-0 space-y-4">
-                <p className="text-xs text-muted-foreground">
-                  {journeyMeta[activeJourney].description}
-                </p>
-                <motion.div
-                  key={activeJourney}
-                  initial="hidden"
-                  animate="show"
-                  variants={staggerContainer}
-                  className="space-y-4"
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {JOURNEYS.find((j) => j.key === activeJourney)?.hint}
+              </p>
+              <HorizontalScroller label="Scroll to see more types">
+                {journeyTypes.map((intent) => (
+                  <div key={intent.key} className="snap-start">
+                    <TypePill intent={intent} onClick={() => router.push(intent.route)} />
+                  </div>
+                ))}
+              </HorizontalScroller>
+              {journeyTypes.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">Nothing in this group yet.</p>
+              ) : null}
+              {!showSpecialist && specialistCount > 0 ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => setShowSpecialist(true)}
                 >
-                  {journeyCategoryGroups.map((group) => (
-                    <div key={group.categoryKey} className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                        {group.categoryIcon} {group.categoryLabel}
-                      </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {group.intents.map((intent) => (
-                          <ContributionCard
-                            key={intent.key}
-                            intent={intent}
-                            compact
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </motion.div>
-                {journeyIntents.length === 0 && (
-                  <p className="text-center py-8 text-muted-foreground text-sm">
-                    No contributions in this workflow yet
-                  </p>
-                )}
-              </TabsContent>
-            </Tabs>
-          </motion.div>
-        </>
-      )}
+                  Show {specialistCount} less common type{specialistCount === 1 ? "" : "s"}
+                </Button>
+              ) : showSpecialist ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => setShowSpecialist(false)}
+                >
+                  Hide less common types
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        )}
+      </motion.section>
+
+      <p className="pb-6 text-center text-xs text-muted-foreground">
+        After you submit, track status under{" "}
+        <Link href="/contribute/my-contributions" className="underline underline-offset-2">
+          My submissions
+        </Link>
+        .
+      </p>
     </div>
   );
 }

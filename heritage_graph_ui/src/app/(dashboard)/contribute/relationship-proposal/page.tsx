@@ -344,7 +344,7 @@ export default function RelationshipProposalContributePage() {
       return;
     }
     if (subjectId === null || objectId === null) {
-      toast.error('Choose subject and object entities from the lists.');
+      toast.error('Choose the From and To records from the lists.');
       return;
     }
     setBusy(true);
@@ -392,11 +392,11 @@ export default function RelationshipProposalContributePage() {
       return;
     }
     if (subjectId === null || objectId === null) {
-      toast.error('Choose subject and object entities from the lists.');
+      toast.error('Choose the From and To records from the lists.');
       return;
     }
     if (!primarySourceId.trim()) {
-      toast.error('Primary DataSource is required.');
+      toast.error('Main evidence is required.');
       return;
     }
     setBusy(true);
@@ -437,7 +437,7 @@ export default function RelationshipProposalContributePage() {
           Accept: 'application/json',
         },
       });
-      toast.success('Submitted for moderator review.');
+      toast.success('Submitted for review. Track it under My contributions.');
       const wfCtx = parseSemanticWorkflowParams(searchParams);
       if (wfCtx) {
         router.replace(buildPatternCompletionUrl(wfCtx.patternKey, wfCtx.stepOrder));
@@ -461,7 +461,7 @@ export default function RelationshipProposalContributePage() {
     return (
       <div className="mx-auto max-w-lg space-y-4 p-6">
         <p className="text-muted-foreground">
-          Sign in with Google to propose asserted relationships.
+          Sign in with Google to propose a connection between two records.
         </p>
         <Button asChild>
           <Link href="/auth/login">Sign in</Link>
@@ -473,13 +473,12 @@ export default function RelationshipProposalContributePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Relationship proposal</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Propose a relationship</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Binary claims between CIDOC rows with mandatory primary DataSource. Approved rows become{' '}
-          <code className="rounded bg-muted px-1 text-xs">HeritageAssertion</code> with{' '}
-          <code className="rounded bg-muted px-1 text-xs">relationship.*</code> predicates. Open an
-          existing draft with{' '}
-          <code className="rounded bg-muted px-1 text-xs">?id=&lt;uuid&gt;</code> in the URL.
+          Connect two existing records (for example a temple and a deity) and attach the evidence
+          that supports the link. A reviewer will check your proposal before it is published.
+          To edit a saved draft, open it from My contributions or add{" "}
+          <code className="rounded bg-muted px-1 text-xs">?id=</code> with the draft id in the URL.
         </p>
         {draftHydrating ? (
           <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
@@ -507,7 +506,7 @@ export default function RelationshipProposalContributePage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Claim</CardTitle>
+          <CardTitle>What connects to what?</CardTitle>
         </CardHeader>
         <CardContent>
           <fieldset
@@ -515,15 +514,15 @@ export default function RelationshipProposalContributePage() {
             className="min-w-0 space-y-4 border-0 p-0 disabled:pointer-events-none disabled:opacity-60"
           >
           <div className="space-y-2">
-            <Label>Predicate</Label>
+            <Label>How they connect</Label>
             <Select value={predicateId} onValueChange={setPredicateId}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose predicate" />
+                <SelectValue placeholder="Choose how they relate" />
               </SelectTrigger>
               <SelectContent>
                 {predicates.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.label} ({p.code})
+                    {p.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -532,7 +531,7 @@ export default function RelationshipProposalContributePage() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label>Subject type</Label>
+              <Label>From (type)</Label>
               <Select value={subjectType} onValueChange={(v) => {
                 setSubjectType(v);
                 setSubjectId(null);
@@ -553,7 +552,7 @@ export default function RelationshipProposalContributePage() {
                 <CidocEntityPicker
                   token={token}
                   apiSegment={subjectSegment}
-                  placeholder={`Choose subject (${subjectType})…`}
+                  placeholder={`Choose from (${subjectType})…`}
                   selectionSummary={
                     subjectId !== null && subjectLabel
                       ? `${subjectLabel} (#${subjectId})`
@@ -567,11 +566,11 @@ export default function RelationshipProposalContributePage() {
                   }}
                 />
               ) : (
-                <p className="text-sm text-destructive">Unknown subject type for CIDOC API.</p>
+                <p className="text-sm text-destructive">Unknown type — pick another From type.</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label>Object type</Label>
+              <Label>To (type)</Label>
               <Select value={objectType} onValueChange={(v) => {
                 setObjectType(v);
                 setObjectId(null);
@@ -592,7 +591,7 @@ export default function RelationshipProposalContributePage() {
                 <CidocEntityPicker
                   token={token}
                   apiSegment={objectSegment}
-                  placeholder={`Choose object (${objectType})…`}
+                  placeholder={`Choose to (${objectType})…`}
                   selectionSummary={
                     objectId !== null && objectLabel
                       ? `${objectLabel} (#${objectId})`
@@ -606,16 +605,16 @@ export default function RelationshipProposalContributePage() {
                   }}
                 />
               ) : (
-                <p className="text-sm text-destructive">Unknown object type for CIDOC API.</p>
+                <p className="text-sm text-destructive">Unknown type — pick another To type.</p>
               )}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ps">Primary DataSource</Label>
+            <Label htmlFor="ps">Main evidence</Label>
             <DataSourcePicker
               token={token}
-              placeholder="Required — evidences the claim"
+              placeholder="Required — the source that supports this link"
               selectionSummary={primarySourceLabel}
               allowClear
               onSelect={(uuid, label) => {
@@ -631,7 +630,7 @@ export default function RelationshipProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label>Supporting DataSources (optional)</Label>
+            <Label>Extra evidence (optional)</Label>
             <DataSourceAddPicker
               token={token}
               excludeIds={supportingExcludeIds}
@@ -663,19 +662,24 @@ export default function RelationshipProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="ts">Temporal scope (EDTF or text)</Label>
-            <Input id="ts" value={temporal} onChange={(e) => setTemporal(e.target.value)} />
+            <Label htmlFor="ts">When (optional)</Label>
+            <Input
+              id="ts"
+              value={temporal}
+              onChange={(e) => setTemporal(e.target.value)}
+              placeholder="e.g. 1647, 17th century, or a date range"
+            />
           </div>
 
           <div className="space-y-2">
-            <Label>Confidence</Label>
+            <Label>How sure are you?</Label>
             <Select value={confidence} onValueChange={setConfidence}>
               <SelectTrigger className="max-w-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="certain">Certain (Established)</SelectItem>
-                <SelectItem value="likely">Likely (Probable)</SelectItem>
+                <SelectItem value="certain">Certain</SelectItem>
+                <SelectItem value="likely">Likely</SelectItem>
                 <SelectItem value="uncertain">Uncertain</SelectItem>
                 <SelectItem value="speculative">Speculative</SelectItem>
               </SelectContent>
@@ -683,7 +687,7 @@ export default function RelationshipProposalContributePage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="note">Interpretation note</Label>
+            <Label htmlFor="note">Note for reviewers (optional)</Label>
             <Textarea id="note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
           </div>
 

@@ -15,7 +15,49 @@ export const HERITAGEGRAPH_DOI = '10.5281/zenodo.XXXXXXX';
 
 export const HERITAGEGRAPH_PUBLIC_GRAPH = 'https://w3id.org/heritagegraph/graph/public';
 
+/** Pinned SHA-256 of data/reconciled/danam-heritagegraph.nq (L0 research dump). */
+export const DANAM_NQ_SHA256 =
+  '14decfcdf95aee0799b65b572e4ef0ec6cabc8581201661b35ee5a6d059c050c';
+
 export const HERITAGEGRAPH_CITATION = `Oli, N. & Karki, N. HeritageGraph: A Cultural Heritage Linked Open Data Platform (v${HERITAGEGRAPH_RELEASE}). CAIR-Nepal. https://github.com/CAIRNepal/CHLOD`;
+
+/** License stratification for Methods / Nature FAIR table (code + data layers). */
+export const LICENSE_MATRIX: ReadonlyArray<{
+  layer: string;
+  license: string;
+  note: string;
+}> = [
+  {
+    layer: 'Software',
+    license: 'MIT',
+    note: 'Platform source code (CITATION.cff / LICENSE).',
+  },
+  {
+    layer: 'Curated overlay (graph/public)',
+    license: 'CC BY 4.0',
+    note: 'Review-gated assertions; CARE tiers may withhold rows from public SPARQL.',
+  },
+  {
+    layer: 'OpenStreetMap subset (L0/L1)',
+    license: 'ODbL 1.0',
+    note: '© OSM contributors — attribution + share-alike on the database subset.',
+  },
+  {
+    layer: 'Wikidata subset (L0/L1)',
+    license: 'CC0 1.0',
+    note: 'Factual statements; media/sitelinks may differ.',
+  },
+  {
+    layer: 'UNESCO WHC subset',
+    license: 'UNESCO terms',
+    note: 'Not assumed CC BY; verify per source page.',
+  },
+  {
+    layer: 'CAIR curated intangible',
+    license: 'CC BY 4.0 + CARE',
+    note: 'Living traditions — community authority to control (TK Labels where applied).',
+  },
+];
 
 /** Resource URI segment → knowledge route domain (when they differ). */
 const RESOURCE_SEGMENT_TO_DOMAIN: Readonly<Record<string, string>> = {
