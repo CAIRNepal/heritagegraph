@@ -12,6 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,7 @@ export function NavKnowledgebase({
   items: KnowledgeNavItem[];
 }) {
   const pathname = usePathname();
+  const { state, setOpen: setSidebarOpen, isMobile, setOpenMobile } = useSidebar();
   const [open, setOpen] = React.useState(false);
   const itemsRef = React.useRef(items);
   itemsRef.current = items;
@@ -51,6 +53,17 @@ export function NavKnowledgebase({
       setOpen(true);
     }
   }, [pathname]);
+
+  const toggleBrowse = () => {
+    // Icon-collapsed sidebars clip overflow — expand the rail first so the menu can open.
+    if (state === 'collapsed') {
+      if (isMobile) setOpenMobile(true);
+      else setSidebarOpen(true);
+      setOpen(true);
+      return;
+    }
+    setOpen((o) => !o);
+  };
 
   return (
     <SidebarGroup>
@@ -86,7 +99,8 @@ export function NavKnowledgebase({
           <SidebarMenuItem>
             <SidebarMenuButton
               type="button"
-              onClick={() => setOpen((o) => !o)}
+              onClick={toggleBrowse}
+              aria-expanded={open}
               className="flex w-full cursor-pointer items-center gap-2.5 text-sm"
             >
               <IconChevronDown

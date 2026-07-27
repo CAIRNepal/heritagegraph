@@ -271,7 +271,7 @@
     "current": "EN"
   },
   "heritageMuseum": {
-    "subtitle": "Immersive story museum · CIDOC-CRM & HeritageGraph ontology",
+    "subtitle": "Explore Nepalese heritage through stories",
     "stats": "{nodes} nodes · {links} relations",
     "dataSource": {
       "demo": "Demo corpus",
@@ -279,14 +279,16 @@
       "loading": "Loading…"
     },
     "views": {
-      "graph": "Graph",
+      "graph": "Connections",
       "map": "Map",
       "xr": "Stories"
     },
     "viewInXr": "View as story",
-    "backToGraph": "Back to graph",
+    "backToGraph": "Back to connections",
+    "backToGallery": "All stories",
     "switchToXr": "Switch to stories",
     "liveBadge": "Live · community-reviewed KG",
+    "graphCapped": "Showing the {shown} most connected of {total} entities — search or filter to focus on the rest.",
     "demoBanner": "{count, plural, =0 {Illustrated demo corpus — curated heritage sites with sourced Wikimedia imagery.} other {Illustrated demo corpus — # curated sites with sourced Wikimedia imagery.}}",
     "demoBannerAction": "Switch to live reviewed graph",
     "sparseLive": "The live reviewed graph has {count} entities — the corpus is still growing.",
@@ -296,7 +298,10 @@
       "jsonAria": "Download visible subgraph as JSON"
     },
     "methods": {
-      "title": "Methods & provenance",
+      "buttonLabel": "Sources",
+      "title": "Sources, methods & provenance",
+      "standards": "Standards this graph follows",
+      "demoImages": "Images: {source}",
       "intro": "HeritageGraph publishes a CIDOC-CRM-aligned knowledge graph. Live mode shows only community-reviewed entities (scope=reviewed) projected from the public Oxigraph partition.",
       "datasetIdentity": "Dataset identity",
       "release": "Release",
@@ -328,19 +333,16 @@
       "fullMethodsPage": "Full methods documentation"
     },
     "filters": {
-      "regionLabel": "Heritage graph filters",
+      "regionLabel": "Heritage filters",
       "searchPlaceholder": "Search by name, description, or tag…",
-      "searchAria": "Search heritage nodes",
-      "domain": "Domain",
-      "class": "Class",
+      "searchAria": "Search heritage",
+      "domain": "Show",
       "showAll": "Show all"
     },
     "legend": {
-      "show": "Show legend",
-      "hide": "Hide legend",
-      "title": "Legend",
-      "domains": "Domains",
-      "classes": "Classes"
+      "show": "Show entity types",
+      "hide": "Hide entity types",
+      "title": "Entity types"
     },
     "map": {
       "emptyTitle": "No geo-referenced nodes in the current view",
@@ -359,7 +361,7 @@
       "coverage": "{dated} of {total} nodes with a dated anchor on the axis",
       "undatedExcluded": "{count} undated — not shown (no inception year in record)",
       "uncertainCount": "{count} with circa / uncertain dating",
-      "methodsButton": "Methods",
+      "methodsButton": "How dates work",
       "methodsTitle": "How this timeline is built",
       "methodsAxis": "Position uses the first 1–4 digit year parsed from each node’s inceptionYear field (CE unless marked otherwise).",
       "methodsPeriods": "Colored bands are reference intervals (Licchavi, Malla, Shah), not exact political boundaries for every entity.",
@@ -395,10 +397,11 @@
       "searchPlaceholder": "Filter entities…",
       "searchAria": "Filter heritage entities in the story navigator",
       "searchNoMatch": "No entities match this filter.",
-      "galleryTitle": "Heritage story explorer",
-      "gallerySubtitle": "Select any entity to open its narrative scene. Live reviewed records include text, connections, and key facts even without linked imagery.",
-      "galleryAll": "All entities ({count})",
-      "galleryEmpty": "No entities in the current view. Switch to live data or reset filters in the graph view.",
+      "galleryTitle": "Heritage stories",
+      "gallerySubtitle": "Open a card to read its story. Live reviewed records include narrative, connections, and key facts even without linked imagery.",
+      "galleryAll": "All stories ({count})",
+      "galleryEmpty": "Nothing matches your search. Clear filters to see the full gallery.",
+      "galleryClearFilters": "Clear filters",
       "galleryWithMedia": "{count} with imagery",
       "galleryTextOnly": "Text records ({count})",
       "mobilePickerAria": "Choose heritage entity",
@@ -439,8 +442,13 @@
       "badgeUnesco": "UNESCO"
     },
     "panel": {
-      "emptyTitle": "Explore the knowledge graph",
+      "emptyTitle": "Pick a place or story",
       "emptyBody": "Select any node to read its story — temples, deities, festivals, and epochs of Nepal's living heritage.",
+      "emptyBodyConnections": "Click a connection in the graph to read its story.",
+      "emptyBodyMap": "Select a place on the map to read its story.",
+      "browseStories": "Browse stories",
+      "recordDetails": "Record details",
+      "recordDetailsShow": "Show",
       "ontologyMapping": "Ontology mapping",
       "hgClass": "HG class",
       "category": "Category",

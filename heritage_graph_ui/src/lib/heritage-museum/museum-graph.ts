@@ -113,6 +113,60 @@ export function enrichMuseumGraph(graph: GraphData): GraphData {
   return graph;
 }
 
+/**
+ * Largest node count a force layout stays legible at in the museum canvas.
+ * Past this the graph is a hairball: labels collide and targets overlap.
+ */
+export const GRAPH_RENDER_BUDGET = 60;
+
+export interface CappedGraph {
+  graph: GraphData;
+  omitted: number;
+  total: number;
+}
+
+/**
+ * Trim a filtered graph to what can be read, keeping the most connected nodes.
+ * `pinnedIds` (selection + neighbours) always survive.
+ */
+export function capGraphForRender(
+  graph: GraphData,
+  budget: number = GRAPH_RENDER_BUDGET,
+  pinnedIds: ReadonlySet<string> = new Set(),
+): CappedGraph {
+  const total = graph.nodes.length;
+  if (total <= budget) return { graph, omitted: 0, total };
+
+  const degree = new Map<string, number>();
+  for (const l of graph.links) {
+    const src = linkEndpointId(l.source);
+    const tgt = linkEndpointId(l.target);
+    degree.set(src, (degree.get(src) ?? 0) + 1);
+    degree.set(tgt, (degree.get(tgt) ?? 0) + 1);
+  }
+
+  const ranked = [...graph.nodes].sort((a, b) => {
+    const aPin = pinnedIds.has(a.id) ? 1 : 0;
+    const bPin = pinnedIds.has(b.id) ? 1 : 0;
+    if (bPin !== aPin) return bPin - aPin;
+    const aDeg = degree.get(a.id) ?? 0;
+    const bDeg = degree.get(b.id) ?? 0;
+    if (bDeg !== aDeg) return bDeg - aDeg;
+    const aMedia = a.imageUrl || a.images?.length ? 1 : 0;
+    const bMedia = b.imageUrl || b.images?.length ? 1 : 0;
+    if (bMedia !== aMedia) return bMedia - aMedia;
+    return a.label.localeCompare(b.label);
+  });
+
+  const nodes = ranked.slice(0, budget);
+  const keptIds = new Set(nodes.map((n) => n.id));
+  const links = graph.links.filter(
+    (l) => keptIds.has(linkEndpointId(l.source)) && keptIds.has(linkEndpointId(l.target)),
+  );
+
+  return { graph: { nodes, links }, omitted: total - nodes.length, total };
+}
+
 function pickRepresentative(group: GraphNode[]): GraphNode {
   const canonicalId = group.find((n) => n.canonicalMemberId)?.canonicalMemberId;
   return [...group].sort((a, b) => {

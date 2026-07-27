@@ -37,16 +37,17 @@ import { MuseumToolbar, type MuseumDataSource, type MuseumViewMode } from './com
 import {
   datasetMetaFromKgResponse,
   downloadJson,
-  exportVisibleGraphPayload,
-  type MuseumDatasetMeta,
-} from '@/lib/heritage-museum/museum-rigor';
+  type DatasetMeta,
+} from '@/lib/provenance';
 import {
+  capGraphForRender,
   collapseClusterDuplicates,
   enrichKgNodeForMuseum,
   enrichMuseumGraph,
 } from '@/lib/heritage-museum/museum-graph';
 import { buildTimelineLayout } from '@/lib/heritage-museum/timeline-layout';
 import { cn } from '@/lib/utils';
+import { exportVisibleGraphPayload } from './utils/exportGraph';
 
 const API_BASE = getPublicApiUrl();
 
@@ -239,11 +240,12 @@ export function HeritageMindMapClient() {
   const [liveGraph,   setLiveGraph]   = useState<GraphData | null>(null);
   const [liveLoading, setLiveLoading] = useState(false);
   const [liveError,   setLiveError]   = useState<string | null>(null);
-  const [datasetMeta, setDatasetMeta] = useState<MuseumDatasetMeta | null>(null);
+  const [datasetMeta, setDatasetMeta] = useState<DatasetMeta | null>(null);
 
   // ── UI state ───────────────────────────────────────────────────────────────
   const [dataSource,   setDataSource]   = useState<DataSource>('demo');
-  const [viewMode,     setViewMode]     = useState<ViewMode>('2d');
+  // Stories-first: a museum opens on stories, not a force graph.
+  const [viewMode,     setViewMode]     = useState<ViewMode>('xr');
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [activeTypes,  setActiveTypes]  = useState<Set<NodeType>>(ALL_TYPES);
   const [activeCats,   setActiveCats]   = useState<Set<HgCategory>>(ALL_CATS);
@@ -385,7 +387,6 @@ export function HeritageMindMapClient() {
   );
 
   const showAllCategories = useCallback(() => setActiveCats(new Set(ALL_CATS)), []);
-  const showAllTypes      = useCallback(() => setActiveTypes(new Set(ALL_TYPES)), []);
   const resetFilters      = useCallback(() => {
     setActiveCats(new Set(ALL_CATS));
     setActiveTypes(new Set(ALL_TYPES));
@@ -438,7 +439,8 @@ export function HeritageMindMapClient() {
     if (!bootstrappedRef.current) return;
     const p = new URLSearchParams();
     p.set('source', dataSource);
-    if (viewMode !== '2d') p.set('view', viewMode);
+    // Default view is Stories (xr); only persist non-default views in the URL.
+    if (viewMode !== 'xr') p.set('view', viewMode);
     if (selectedNode) p.set('node', selectedNode.id);
     const next = `/heritage-museum?${p.toString()}`;
     const current = `/heritage-museum?${searchParams.toString()}`;
@@ -471,6 +473,11 @@ export function HeritageMindMapClient() {
     }
     return ids;
   }, [selectedNode, fullGraph]);
+
+  const renderedGraph = useMemo(
+    () => capGraphForRender(filteredGraph ?? EMPTY, undefined, highlightedIds),
+    [filteredGraph, highlightedIds],
+  );
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleNodeSelect = useCallback((node: GraphNode) => {
@@ -520,17 +527,29 @@ export function HeritageMindMapClient() {
     () => (filteredGraph ? buildTimelineLayout(filteredGraph.nodes) : null),
     [filteredGraph],
   );
-  const showTimeline = Boolean(timelineLayout);
+  // Only show the timeline when enough of the filtered set has dates — otherwise
+  // the band mostly apologises for undated records and steals vertical space.
+  const datedShare =
+    filteredGraph && filteredGraph.nodes.length > 0 && timelineLayout
+      ? timelineLayout.datedCount / filteredGraph.nodes.length
+      : 0;
+  const showTimeline = Boolean(timelineLayout) && datedShare >= 0.25;
 
-  // Per-type counts for the legend
   const typeCounts = useMemo<Record<string, number>>(() => {
     const counts: Record<string, number> = {};
-    if (!filteredGraph) return counts;
-    for (const n of filteredGraph.nodes) {
+    for (const n of fullGraph?.nodes ?? []) {
       counts[n.nodeType] = (counts[n.nodeType] || 0) + 1;
     }
     return counts;
-  }, [filteredGraph]);
+  }, [fullGraph]);
+
+  const categoryCounts = useMemo<Record<string, number>>(() => {
+    const counts: Record<string, number> = {};
+    for (const n of fullGraph?.nodes ?? []) {
+      if (n.hgCategory) counts[n.hgCategory] = (counts[n.hgCategory] || 0) + 1;
+    }
+    return counts;
+  }, [fullGraph]);
 
   const errorMessage =
     error === 'unconfigured'
@@ -542,15 +561,6 @@ export function HeritageMindMapClient() {
           : error === 'demo'
             ? t('errors.demoLoad')
             : null;
-
-  const provenanceText =
-    dataSource === 'demo' && demoProv?.retrieved
-      ? `Demo corpus frozen ${demoProv.retrieved}${demoProv.imageSource ? ` · Images: ${demoProv.imageSource}` : ''}`
-      : dataSource === 'live' && datasetMeta
-        ? `${t('methods.scopeReviewed')} · ${datasetMeta.nodeCount} nodes · graph ${datasetMeta.graphUri}`
-        : dataSource === 'live' && API_BASE
-          ? `Live API: ${API_BASE}`
-          : null;
 
   const sparseLive =
     dataSource === 'live' && !liveLoading && !liveError && liveGraph && liveGraph.nodes.length < 20;
@@ -601,7 +611,6 @@ export function HeritageMindMapClient() {
         nodeCount={nodeCount}
         linkCount={linkCount}
         showStats={!loading}
-        provenanceText={provenanceText}
         provenance={dataSource === 'demo' ? demoProv : null}
         liveApiBase={dataSource === 'live' ? API_BASE : null}
         datasetMeta={dataSource === 'live' ? datasetMeta : null}
@@ -645,14 +654,12 @@ export function HeritageMindMapClient() {
           {/* Filter bar — visible in both 2D and Map modes */}
           <div className="z-10 flex-shrink-0">
             <FilterBar
-              activeTypes={activeTypes}
-              onToggle={toggleType}
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               activeCategoryFilter={activeCats}
               onCategoryToggle={toggleCategory}
               onShowAllCategories={showAllCategories}
-              onShowAllTypes={showAllTypes}
+              categoryCounts={categoryCounts}
               totalNodes={fullGraph?.nodes.length}
               visibleNodes={filteredGraph?.nodes.length}
             />
@@ -722,11 +729,23 @@ export function HeritageMindMapClient() {
               {viewMode === '2d' && !loading && !error && nodeCount > 0 && (
                 <div className="absolute inset-0">
                   <ForceGraph
-                    data={filteredGraph ?? EMPTY}
+                    data={renderedGraph.graph}
                     selectedId={selectedNode?.id ?? null}
                     onNodeSelect={handleNodeSelect}
                     highlightedIds={highlightedIds}
                   />
+                </div>
+              )}
+
+              {viewMode === '2d' && !loading && !error && renderedGraph.omitted > 0 && (
+                <div
+                  className="absolute top-3 left-1/2 -translate-x-1/2 max-w-[min(30rem,90%)] rounded-full border border-border bg-card/90 px-3 py-1.5 text-center text-xs text-muted-foreground shadow-sm backdrop-blur-sm"
+                  role="status"
+                >
+                  {t('graphCapped', {
+                    shown: renderedGraph.graph.nodes.length,
+                    total: renderedGraph.total,
+                  })}
                 </div>
               )}
 
@@ -788,8 +807,8 @@ export function HeritageMindMapClient() {
                 </Badge>
               )}
 
-              {/* Legend (2D + Map) */}
-              {!loading && !error && nodeCount > 0 && (
+              {/* Legend (Connections only) */}
+              {viewMode === '2d' && !loading && !error && nodeCount > 0 && (
                 <GraphLegend
                   typeCounts={typeCounts}
                   activeTypes={activeTypes}
@@ -805,6 +824,8 @@ export function HeritageMindMapClient() {
                 graphData={fullGraph ?? EMPTY}
                 onRelatedNodeClick={handleRelatedNodeClick}
                 dataSource={dataSource}
+                viewMode={viewMode}
+                onBrowseStories={() => switchToXR()}
               />
             </div>
 
@@ -826,48 +847,72 @@ export function HeritageMindMapClient() {
 
       {/* ── XR Mode ── */}
       {viewMode === 'xr' && (
-        <div className="relative flex min-h-0 flex-1">
-          <div className="hidden w-52 flex-shrink-0 md:block lg:w-56">
-            <PlaceNav
-              nodes={filteredGraph?.nodes ?? []}
-              selectedId={selectedNode?.id ?? null}
-              onSelect={handleNodeSelect}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="z-10 flex-shrink-0">
+            <FilterBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeCategoryFilter={activeCats}
+              onCategoryToggle={toggleCategory}
+              onShowAllCategories={showAllCategories}
+              categoryCounts={categoryCounts}
+              totalNodes={fullGraph?.nodes.length}
+              visibleNodes={filteredGraph?.nodes.length}
             />
           </div>
-          <div className="relative min-w-0 flex-1">
-            {loading ? (
-              <MandalaLoader />
-            ) : (
-              <ImmersiveScene
-                node={selectedNode}
-                allNodes={filteredGraph?.nodes ?? []}
+          <div className="relative flex min-h-0 flex-1">
+            <div className="hidden w-52 flex-shrink-0 md:block lg:w-56">
+              <PlaceNav
+                nodes={filteredGraph?.nodes ?? []}
+                selectedId={selectedNode?.id ?? null}
                 onSelect={handleNodeSelect}
-                dataSource={dataSource}
               />
-            )}
-            <div className="absolute left-3 top-3 z-30 flex flex-wrap items-center gap-2">
-              <Button
-                onClick={() => setViewMode('2d')}
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="text-xs shadow-sm"
-              >
-                {t('backToGraph')}
-              </Button>
-              {dataSource === 'live' && !loading ? (
-                <Badge className="gap-1.5 text-[10px] font-semibold shadow-sm">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" aria-hidden />
-                  {t('liveBadge')}
-                </Badge>
+            </div>
+            <div className="relative min-w-0 flex-1">
+              {loading ? (
+                <MandalaLoader />
+              ) : (
+                <ImmersiveScene
+                  node={selectedNode}
+                  allNodes={filteredGraph?.nodes ?? []}
+                  onSelect={handleNodeSelect}
+                  dataSource={dataSource}
+                  onClearFilters={
+                    nodeCount === 0 && (fullGraph?.nodes.length ?? 0) > 0
+                      ? resetFilters
+                      : undefined
+                  }
+                />
+              )}
+              {selectedNode ? (
+                <div className="absolute left-3 top-3 z-30 flex flex-wrap items-center gap-2">
+                  <Button
+                    onClick={() => {
+                      setSelectedNode(null);
+                      setPanelOpen(false);
+                    }}
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs shadow-sm"
+                  >
+                    {t('backToGallery')}
+                  </Button>
+                  {dataSource === 'live' && !loading ? (
+                    <Badge className="gap-1.5 text-[10px] font-semibold shadow-sm">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" aria-hidden />
+                      {t('liveBadge')}
+                    </Badge>
+                  ) : null}
+                </div>
               ) : null}
             </div>
           </div>
         </div>
       )}
 
-      {/* Mobile story drawer (2D only) */}
-      {viewMode === '2d' && panelOpen && selectedNode && (
+      {/* Mobile story drawer (Connections / Map) */}
+      {(viewMode === '2d' || viewMode === 'map') && panelOpen && selectedNode && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
           <div className="flex-1 bg-background/60 backdrop-blur-sm" onClick={() => setPanelOpen(false)} />
           <div className="bg-card border-t border-border h-3/4 rounded-t-2xl overflow-hidden flex flex-col relative">
@@ -884,6 +929,8 @@ export function HeritageMindMapClient() {
                   setPanelOpen(true);
                 }}
                 dataSource={dataSource}
+                viewMode={viewMode}
+                onBrowseStories={() => switchToXR()}
               />
             </div>
           </div>

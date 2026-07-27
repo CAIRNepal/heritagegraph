@@ -8,7 +8,7 @@ import { hydrateAtlasFromKgGraph } from '@/lib/atlas-kg-hydrate';
 import { getApiErrorMessage } from '@/lib/api-client';
 import { getPublicApiUrl } from '@/lib/api-base';
 import { atlasTrack } from '@/lib/atlas-telemetry';
-import { datasetMetaFromKgResponse } from '@/lib/heritage-museum/museum-rigor';
+import { datasetMetaFromKgResponse } from '@/lib/provenance';
 import { fetchKgGraph, type KgGraphResponse } from '@/lib/kg-graph';
 
 import { computeAtlasTimelineExtents } from '../atlas-time-extents';

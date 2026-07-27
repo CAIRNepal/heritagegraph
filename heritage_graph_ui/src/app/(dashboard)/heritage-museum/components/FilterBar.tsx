@@ -8,37 +8,39 @@ import { Input } from '@/components/ui/input';
 import { glassCard } from '@/lib/design';
 import { cn } from '@/lib/utils';
 
-import { NODE_TYPE_CONFIG, HG_CATEGORY_CONFIG, type NodeType, type HgCategory } from '../heritage-data';
-import { NodeGlyph } from '../node-icons';
+import { HG_CATEGORY_CONFIG, type HgCategory } from '../heritage-data';
 
 interface FilterBarProps {
-  activeTypes: Set<NodeType>;
-  onToggle: (type: NodeType) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   activeCategoryFilter: Set<HgCategory>;
   onCategoryToggle: (cat: HgCategory) => void;
   onShowAllCategories?: () => void;
-  onShowAllTypes?: () => void;
+  /** Corpus-wide node count per category. Categories absent here are not offered. */
+  categoryCounts?: Record<string, number>;
   totalNodes?: number;
   visibleNodes?: number;
 }
 
+/**
+ * Search plus the seven top-level heritage domains.
+ * Ontology classes belong in the legend (Connections view only).
+ */
 export function FilterBar({
-  activeTypes,
-  onToggle,
   searchQuery,
   onSearchChange,
   activeCategoryFilter,
   onCategoryToggle,
   onShowAllCategories,
-  onShowAllTypes,
+  categoryCounts,
   totalNodes,
   visibleNodes,
 }: FilterBarProps) {
   const t = useTranslations('heritageMuseum.filters');
-  const allCatsActive = activeCategoryFilter.size === Object.keys(HG_CATEGORY_CONFIG).length;
-  const allTypesActive = activeTypes.size === Object.keys(NODE_TYPE_CONFIG).length;
+  const categories = (
+    Object.entries(HG_CATEGORY_CONFIG) as [HgCategory, (typeof HG_CATEGORY_CONFIG)[HgCategory]][]
+  ).filter(([cat]) => !categoryCounts || (categoryCounts[cat] ?? 0) > 0);
+  const allCatsActive = activeCategoryFilter.size >= categories.length;
 
   return (
     <div
@@ -82,69 +84,32 @@ export function FilterBar({
         <span className="text-[10px] text-muted-foreground uppercase tracking-widest mr-1 shrink-0">
           {t('domain')}
         </span>
-        {(Object.entries(HG_CATEGORY_CONFIG) as [HgCategory, (typeof HG_CATEGORY_CONFIG)[HgCategory]][]).map(
-          ([cat, cfg]) => {
-            const isActive = activeCategoryFilter.has(cat);
-            return (
-              <button
-                key={cat}
-                onClick={() => onCategoryToggle(cat)}
-                aria-pressed={isActive}
-                type="button"
-                className="inline-flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded-full border font-medium transition-all hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring/40"
-                style={{
-                  borderColor: isActive ? cfg.border : `${cfg.color}33`,
-                  background: isActive ? `${cfg.color}28` : 'transparent',
-                  color: isActive ? cfg.color : `${cfg.color}99`,
-                }}
-              >
-                {cfg.label}
-              </button>
-            );
-          },
-        )}
+        {categories.map(([cat, cfg]) => {
+          const isActive = activeCategoryFilter.has(cat);
+          const count = categoryCounts?.[cat];
+          return (
+            <button
+              key={cat}
+              onClick={() => onCategoryToggle(cat)}
+              aria-pressed={isActive}
+              type="button"
+              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded-full border font-medium transition-all hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring/40"
+              style={{
+                borderColor: isActive ? cfg.border : `${cfg.color}33`,
+                background: isActive ? `${cfg.color}28` : 'transparent',
+                color: isActive ? cfg.color : `${cfg.color}99`,
+              }}
+            >
+              {cfg.label}
+              {typeof count === 'number' && (
+                <span className="font-mono text-[10px] opacity-70">{count}</span>
+              )}
+            </button>
+          );
+        })}
         {!allCatsActive && (
           <Button
             onClick={onShowAllCategories}
-            type="button"
-            variant="link"
-            className="h-auto p-0 text-[10px] text-muted-foreground"
-          >
-            {t('showAll')}
-          </Button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-[10px] text-muted-foreground uppercase tracking-widest mr-1 shrink-0">
-          {t('class')}
-        </span>
-        {(Object.entries(NODE_TYPE_CONFIG) as [NodeType, (typeof NODE_TYPE_CONFIG)[NodeType]][]).map(
-          ([type, cfg]) => {
-            const isActive = activeTypes.has(type);
-            return (
-              <button
-                key={type}
-                onClick={() => onToggle(type)}
-                aria-pressed={isActive}
-                type="button"
-                title={cfg.cidocMapping}
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-all hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring/40"
-                style={{
-                  borderColor: isActive ? cfg.color : `${cfg.color}44`,
-                  background: isActive ? `${cfg.color}33` : `${cfg.color}0a`,
-                  color: isActive ? cfg.glowColor : `${cfg.glowColor}99`,
-                }}
-              >
-                <NodeGlyph nodeType={type} size={13} color={isActive ? cfg.glowColor : `${cfg.glowColor}99`} />
-                <span>{cfg.label}</span>
-              </button>
-            );
-          },
-        )}
-        {!allTypesActive && (
-          <Button
-            onClick={onShowAllTypes}
             type="button"
             variant="link"
             className="h-auto p-0 text-[10px] text-muted-foreground"

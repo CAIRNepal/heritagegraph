@@ -34,14 +34,14 @@ import { useReducedMotion } from '@/hooks/use-reduced-motion';
 import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
-} from '@/lib/heritage-museum/museum-rigor';
+} from '@/lib/provenance';
 import { isEquirectangular } from '@/lib/heritage-museum/panorama-support';
 import { parseTemporalAnchor } from '@/lib/heritage-museum/temporal-parse';
 import { cn } from '@/lib/utils';
 
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
 import { NodeGlyph } from '../../node-icons';
-import { buildBeats, clampBeatIndex } from '../../utils/storyBeats';
+import { useBeatPlayer, useNarration } from '../../utils/useStoryPlayback';
 import { ImageAttribution } from '../ImageAttribution';
 import type { MuseumDataSource } from '../museum-toolbar';
 
@@ -61,8 +61,6 @@ const XR_STYLES = `
   }
 `;
 
-const BEAT_MS = 10_000;
-
 function hasVisual(node: GraphNode): boolean {
   return Boolean(node.imageUrl || node.images?.length);
 }
@@ -77,57 +75,19 @@ function StorytellingOverlay({
   reducedMotion: boolean;
 }) {
   const t = useXrTranslations();
-  const beats = useMemo(() => buildBeats(node), [node]);
-  const [idx, setIdx] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const { beats, index: safeIdx, beat, progress, paused, setPaused, go } = useBeatPlayer(
+    node,
+    reducedMotion,
+  );
   const [visible, setVisible] = useState(false);
-  const rafRef = useRef<number>(0);
-  const startRef = useRef<number>(0);
-  const pausedProgressRef = useRef(0);
 
   useEffect(() => {
-    setIdx(0);
-    setProgress(0);
-    pausedProgressRef.current = 0;
     setVisible(reducedMotion);
     if (reducedMotion) return;
     const timer = setTimeout(() => setVisible(true), 600);
     return () => clearTimeout(timer);
-  }, [node.id, beats.length, reducedMotion]);
+  }, [node.id, reducedMotion]);
 
-  useEffect(() => {
-    if (reducedMotion || paused) {
-      pausedProgressRef.current = progress;
-      return;
-    }
-    const startProg = pausedProgressRef.current || progress;
-    startRef.current = performance.now() - (startProg / 100) * BEAT_MS;
-    const tick = (now: number) => {
-      const p = Math.min(100, ((now - startRef.current) / BEAT_MS) * 100);
-      setProgress(p);
-      if (p >= 100 && beats.length > 0) {
-        setIdx((i) => clampBeatIndex(i + 1, beats.length));
-        setProgress(0);
-        pausedProgressRef.current = 0;
-        startRef.current = performance.now();
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paused, idx, beats.length, reducedMotion]);
-
-  const go = useCallback((next: number) => {
-    setIdx(next);
-    setProgress(0);
-    pausedProgressRef.current = 0;
-    startRef.current = performance.now();
-  }, []);
-
-  const safeIdx = clampBeatIndex(idx, beats.length);
-  const beat = beats[safeIdx];
   if (!beat) return null;
 
   const isBullet = beat.lines.length > 1;
@@ -301,31 +261,6 @@ function KeyFactBadges({
   );
 }
 
-function useNarration(text: string) {
-  const [playing, setPlaying] = useState(false);
-  const play = useCallback(() => {
-    if (!window.speechSynthesis || !text.trim()) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9;
-    u.pitch = 1;
-    u.lang = 'en-GB';
-    const voices = window.speechSynthesis.getVoices();
-    const v = voices.find((voice) => voice.lang.startsWith('en-GB')) ?? null;
-    if (v) u.voice = v;
-    u.onend = () => setPlaying(false);
-    u.onerror = () => setPlaying(false);
-    window.speechSynthesis.speak(u);
-    setPlaying(true);
-  }, [text]);
-  const stop = useCallback(() => {
-    window.speechSynthesis?.cancel();
-    setPlaying(false);
-  }, []);
-  useEffect(() => () => window.speechSynthesis?.cancel(), [text]);
-  return { playing, play, stop };
-}
-
 function GalleryCard({
   node,
   onSelect,
@@ -410,6 +345,7 @@ interface ImmersiveSceneProps {
   allNodes: GraphNode[];
   onSelect: (node: GraphNode) => void;
   dataSource?: MuseumDataSource;
+  onClearFilters?: () => void;
 }
 
 export function ImmersiveScene({
@@ -417,6 +353,7 @@ export function ImmersiveScene({
   allNodes,
   onSelect,
   dataSource = 'demo',
+  onClearFilters,
 }: ImmersiveSceneProps) {
   const t = useXrTranslations();
   const tPanel = useTranslations('heritageMuseum.panel');
@@ -529,7 +466,14 @@ export function ImmersiveScene({
                 ) : null}
               </>
             ) : (
-              <p className="text-center text-sm text-muted-foreground">{t('galleryEmpty')}</p>
+              <div className="text-center space-y-3">
+                <p className="text-sm text-muted-foreground">{t('galleryEmpty')}</p>
+                {onClearFilters ? (
+                  <Button type="button" variant="outline" size="sm" className="text-xs" onClick={onClearFilters}>
+                    {t('galleryClearFilters')}
+                  </Button>
+                ) : null}
+              </div>
             )}
           </div>
         </div>

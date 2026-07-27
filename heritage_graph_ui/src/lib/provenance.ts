@@ -1,13 +1,19 @@
-import type { GraphData } from '@/app/(dashboard)/heritage-museum/heritage-data';
 import type { KgGraphResponse } from '@/lib/kg-graph';
+
+/**
+ * Dataset identity, citation, and reproducibility for the whole platform.
+ *
+ * How HeritageGraph is cited must not depend on which surface the reader came
+ * from, so the release, DOI, citation string, and SPARQL endpoint live here
+ * rather than inside any one page. Keep this module free of page view models.
+ */
 
 /** Release aligned with CITATION.cff / CHANGELOG.md */
 export const HERITAGEGRAPH_RELEASE = '0.1.0';
 
 export const HERITAGEGRAPH_DOI = '10.5281/zenodo.XXXXXXX';
 
-export const HERITAGEGRAPH_PUBLIC_GRAPH =
-  'https://w3id.org/heritagegraph/graph/public';
+export const HERITAGEGRAPH_PUBLIC_GRAPH = 'https://w3id.org/heritagegraph/graph/public';
 
 export const HERITAGEGRAPH_CITATION = `Oli, N. & Karki, N. HeritageGraph: A Cultural Heritage Linked Open Data Platform (v${HERITAGEGRAPH_RELEASE}). CAIR-Nepal. https://github.com/CAIRNepal/CHLOD`;
 
@@ -28,7 +34,8 @@ export function isCuratedResourceIri(iri: string): boolean {
   return iri.includes('/resource/');
 }
 
-export interface MuseumDatasetMeta {
+/** Provenance of one fetched knowledge-graph snapshot, as cited to the reader. */
+export interface DatasetMeta {
   release: string;
   scope: 'reviewed' | 'all';
   graphUri: string;
@@ -42,10 +49,13 @@ export interface MuseumDatasetMeta {
   apiBase?: string;
 }
 
+/** @deprecated Use DatasetMeta — kept for gradual call-site migration. */
+export type MuseumDatasetMeta = DatasetMeta;
+
 export function datasetMetaFromKgResponse(
   resp: KgGraphResponse,
   apiBase?: string,
-): MuseumDatasetMeta {
+): DatasetMeta {
   return {
     release: HERITAGEGRAPH_RELEASE,
     scope: 'reviewed',
@@ -93,42 +103,6 @@ export function downloadJson(filename: string, payload: unknown): void {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-export function exportVisibleGraphPayload(
-  graph: GraphData,
-  meta: MuseumDatasetMeta | null,
-  dataSource: 'demo' | 'live',
-): Record<string, unknown> {
-  return {
-    '@context': {
-      hg: 'https://w3id.org/heritagegraph/',
-      prov: 'http://www.w3.org/ns/prov#',
-    },
-    type: 'heritagegraph:MuseumSubgraphExport',
-    release: HERITAGEGRAPH_RELEASE,
-    exportedAt: new Date().toISOString(),
-    dataSource,
-    dataset: meta,
-    nodes: graph.nodes.map((n) => ({
-      id: n.id,
-      label: n.label,
-      nodeType: n.nodeType,
-      cidocMapping: n.cidocMapping,
-      lat: n.lat,
-      long: n.long,
-    })),
-    edges: graph.links.map((l) => {
-      const source = typeof l.source === 'string' ? l.source : l.source.id;
-      const target = typeof l.target === 'string' ? l.target : l.target.id;
-      return {
-        source,
-        target,
-        predicate: l.predicate,
-        provenance: l.provenance ?? null,
-      };
-    }),
-  };
 }
 
 export async function copyToClipboard(text: string): Promise<boolean> {

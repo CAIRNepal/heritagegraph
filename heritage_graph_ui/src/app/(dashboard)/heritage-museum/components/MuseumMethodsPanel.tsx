@@ -3,23 +3,24 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   HERITAGEGRAPH_CITATION,
   HERITAGEGRAPH_DOI,
   HERITAGEGRAPH_RELEASE,
-  type MuseumDatasetMeta,
+  type DatasetMeta,
   publicSparqlEndpoint,
   sparqlForPublicSubgraph,
   copyToClipboard,
-} from '@/lib/heritage-museum/museum-rigor';
+} from '@/lib/provenance';
 import type { MuseumCorpusProvenance, MuseumDataSource } from './museum-toolbar';
 
 interface MuseumMethodsPanelProps {
   dataSource: MuseumDataSource;
   liveApiBase?: string | null;
   provenance?: MuseumCorpusProvenance | null;
-  datasetMeta?: MuseumDatasetMeta | null;
+  datasetMeta?: DatasetMeta | null;
   onCopyCitation?: () => void;
 }
 
@@ -31,6 +32,7 @@ export function MuseumMethodsPanel({
   onCopyCitation,
 }: MuseumMethodsPanelProps) {
   const t = useTranslations('heritageMuseum.methods');
+  const tMuseum = useTranslations('heritageMuseum');
 
   const handleCopyCitation = async () => {
     const ok = await copyToClipboard(HERITAGEGRAPH_CITATION);
@@ -52,7 +54,6 @@ export function MuseumMethodsPanel({
         <p className="text-xs text-muted-foreground leading-relaxed">{t('intro')}</p>
       </div>
 
-      {/* Dataset identity */}
       <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
         <p className="text-xs font-semibold text-foreground">{t('datasetIdentity')}</p>
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
@@ -97,7 +98,6 @@ export function MuseumMethodsPanel({
         </Button>
       </div>
 
-      {/* Live pipeline */}
       <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1.5">
         <p className="text-xs font-semibold text-foreground">{t('livePipeline')}</p>
         <p className="text-xs text-muted-foreground leading-relaxed">{t('livePipelineBody')}</p>
@@ -109,9 +109,8 @@ export function MuseumMethodsPanel({
         </ul>
       </div>
 
-      {/* Demo */}
       {dataSource === 'demo' ? (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 space-y-1.5">
+        <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-1.5">
           <p className="text-xs font-semibold text-foreground">{t('demoWarningTitle')}</p>
           <p className="text-xs text-muted-foreground">{t('demoWarningBody')}</p>
           {provenance?.retrieved ? (
@@ -119,10 +118,25 @@ export function MuseumMethodsPanel({
               {t('demoFrozen', { date: provenance.retrieved })}
             </p>
           ) : null}
+          {provenance?.imageSource ? (
+            <p className="text-[11px] text-muted-foreground">
+              {t('demoImages', { source: provenance.imageSource })}
+            </p>
+          ) : null}
         </div>
       ) : null}
 
-      {/* Reproducibility */}
+      <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+        <p className="text-xs font-semibold text-foreground">{t('standards')}</p>
+        <div className="flex flex-wrap gap-1">
+          {(['cidoc', 'hg', 'prov', 'jsonld'] as const).map((key) => (
+            <Badge key={key} variant="secondary" className="text-[10px] font-mono px-2 py-0">
+              {tMuseum(`ontologyBadges.${key}`)}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
       {dataSource === 'live' && sparqlUrl ? (
         <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
           <p className="text-xs font-semibold text-foreground">{t('reproducibility')}</p>

@@ -11,7 +11,7 @@ import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
-} from '@/lib/heritage-museum/museum-rigor';
+} from '@/lib/provenance';
 
 import {
   NODE_TYPE_CONFIG,
@@ -22,13 +22,15 @@ import {
 } from '../heritage-data';
 import { MediaViewer } from './MediaViewer';
 import { NodeGlyph } from '../node-icons';
-import type { MuseumDataSource } from './museum-toolbar';
+import type { MuseumDataSource, MuseumViewMode } from './museum-toolbar';
 
 interface StoryPanelProps {
   node: GraphNode | null;
   graphData: GraphData;
   onRelatedNodeClick: (nodeId: string) => void;
   dataSource?: MuseumDataSource;
+  viewMode?: MuseumViewMode;
+  onBrowseStories?: () => void;
 }
 
 export function StoryPanel({
@@ -36,6 +38,8 @@ export function StoryPanel({
   graphData,
   onRelatedNodeClick,
   dataSource = 'demo',
+  viewMode = '2d',
+  onBrowseStories,
 }: StoryPanelProps) {
   const t = useTranslations('heritageMuseum.panel');
   const scrollRootRef = useRef<HTMLDivElement>(null);
@@ -48,25 +52,19 @@ export function StoryPanel({
   }, [node?.id]);
 
   if (!node) {
+    const emptyBody =
+      viewMode === 'map' ? t('emptyBodyMap') : t('emptyBodyConnections');
     return (
       <ScrollArea className="h-full min-h-0" ref={scrollRootRef}>
-      <div className="flex min-h-[min(100%,20rem)] flex-col items-center justify-center gap-6 px-8 py-8 text-center">
-        <div className="w-20 h-20 rounded-full border-2 border-primary/30 flex items-center justify-center text-4xl animate-pulse">
-          ☸
+        <div className="flex min-h-[min(100%,20rem)] flex-col items-center justify-center gap-4 px-8 py-8 text-center">
+          <p className="text-primary font-semibold text-lg">{t('emptyTitle')}</p>
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">{emptyBody}</p>
+          {onBrowseStories ? (
+            <Button type="button" variant="outline" size="sm" className="text-xs" onClick={onBrowseStories}>
+              {t('browseStories')}
+            </Button>
+          ) : null}
         </div>
-        <div>
-          <p className="text-primary font-semibold text-lg mb-2">{t('emptyTitle')}</p>
-          <p className="text-muted-foreground text-sm leading-relaxed">{t('emptyBody')}</p>
-        </div>
-        <div className="grid grid-cols-2 gap-2 w-full max-w-xs">
-          {Object.entries(NODE_TYPE_CONFIG).map(([type, cfg]) => (
-            <div key={type} className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-              <NodeGlyph nodeType={type} size={16} color={cfg.color} />
-              <span style={{ color: cfg.color }}>{cfg.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
       </ScrollArea>
     );
   }
@@ -179,17 +177,38 @@ export function StoryPanel({
         </div>
       </div>
 
-      {/* Content */}
+      {/* Content — narrative first; technical mapping deferred */}
       <div className="px-6 py-5 space-y-6">
-        <p className="text-foreground/90 text-sm leading-relaxed">{node.description}</p>
+        <Section title={t('story')} icon="📖" color={cfg.color}>
+          <p className="text-foreground text-sm leading-7 whitespace-pre-line">{node.storyText}</p>
+        </Section>
 
-        {/* ── {t('ontologyMapping')} (HeritageGraph / CIDOC-CRM) ── */}
-        <div className="rounded-xl border border-border bg-muted/30 p-4 space-y-2.5">
-          <h3 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+        {node.description && node.description !== node.storyText ? (
+          <p className="text-foreground/90 text-sm leading-relaxed">{node.description}</p>
+        ) : null}
+
+        {node.keyFacts && node.keyFacts.length > 0 && (
+          <Section title={t('keyFacts')} icon="📋" color={cfg.color}>
+            <div className="grid grid-cols-1 gap-1.5">
+              {node.keyFacts.map((f, i) => (
+                <div key={i} className="flex items-baseline gap-2 text-xs rounded-lg px-3 py-2 bg-muted/40 border border-border">
+                  <span className="text-muted-foreground shrink-0 w-28 truncate">{f.label}</span>
+                  <span className="text-foreground font-medium">{f.value}</span>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        <details className="rounded-xl border border-border bg-muted/30 group">
+          <summary className="cursor-pointer list-none px-4 py-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full" style={{ background: cfg.color }} />
-            {t('ontologyMapping')}
-          </h3>
-          <div className="space-y-1.5">
+            {t('recordDetails')}
+            <span className="ml-auto text-muted-foreground/70 normal-case tracking-normal font-normal group-open:hidden">
+              {t('recordDetailsShow')}
+            </span>
+          </summary>
+          <div className="px-4 pb-4 space-y-1.5 border-t border-border pt-3">
             <div className="flex items-start gap-2 text-xs">
               <span className="text-muted-foreground shrink-0 w-24">{t('hgClass')}</span>
               <code className="text-[11px] px-1.5 py-0.5 rounded bg-muted border border-border font-mono break-all" style={{ color: cfg.glowColor }}>
@@ -216,26 +235,9 @@ export function StoryPanel({
               </code>
             </div>
           </div>
-        </div>
+        </details>
 
         <Divider color={cfg.color} />
-
-        {node.keyFacts && node.keyFacts.length > 0 && (
-          <Section title={t('keyFacts')} icon="📋" color={cfg.color}>
-            <div className="grid grid-cols-1 gap-1.5">
-              {node.keyFacts.map((f, i) => (
-                <div key={i} className="flex items-baseline gap-2 text-xs rounded-lg px-3 py-2 bg-muted/40 border border-border">
-                  <span className="text-muted-foreground shrink-0 w-28 truncate">{f.label}</span>
-                  <span className="text-foreground font-medium">{f.value}</span>
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        <Section title={t('story')} icon="📖" color={cfg.color}>
-          <p className="text-foreground text-sm leading-7 whitespace-pre-line">{node.storyText}</p>
-        </Section>
 
         {node.history && (
           <Section title={t('history')} icon="⏳" color={cfg.color}>

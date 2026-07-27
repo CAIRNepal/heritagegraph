@@ -3,19 +3,23 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bookmark,
+  ChevronRight,
   ChevronsLeft,
   Compass,
+  Eye,
+  EyeOff,
   History,
   Play,
   Search,
   SlidersHorizontal,
   Sparkles,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import type { AtlasEntity } from '@/types/atlas';
 import { ONTOLOGY_CLASSES } from '@/types/atlas';
 
 import { useAtlasStore, useFilteredAtlasEntities } from '../../hooks/use-atlas-store';
@@ -27,37 +31,118 @@ interface ExplorerSidebarProps {
   onPlayJourney: () => void;
 }
 
+const CATEGORY_PREVIEW_LIMIT = 14;
+
 function CategoryRow({
   style,
   count,
   enabled,
-  onToggle,
+  expanded,
+  members,
+  onToggleVisibility,
+  onToggleExpanded,
+  onSelectEntity,
 }: {
   style: AtlasMarkerStyle;
   count: number;
   enabled: boolean;
-  onToggle: () => void;
+  expanded: boolean;
+  members: AtlasEntity[];
+  onToggleVisibility: () => void;
+  onToggleExpanded: () => void;
+  onSelectEntity: (id: string) => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      aria-pressed={enabled}
-      className={cn(
-        'group flex w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left text-[13px] transition-colors',
-        enabled ? 'text-foreground hover:bg-muted/50' : 'text-muted-foreground/50 hover:bg-muted/30',
-      )}
-    >
-      <span
+    <div className="rounded-xl">
+      <div
         className={cn(
-          'h-2.5 w-2.5 shrink-0 rounded-full transition-all',
-          enabled ? 'scale-100' : 'scale-75 opacity-30',
+          'group flex w-full items-center gap-1 rounded-xl text-[13px] transition-colors',
+          enabled ? 'text-foreground' : 'text-muted-foreground/50',
         )}
-        style={{ backgroundColor: style.color, boxShadow: enabled ? `0 0 8px ${style.color}88` : 'none' }}
-      />
-      <span className="min-w-0 flex-1 truncate font-medium">{style.label}</span>
-      <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">{count}</span>
-    </button>
+      >
+        <button
+          type="button"
+          onClick={onToggleExpanded}
+          aria-expanded={expanded}
+          aria-controls={`atlas-category-${style.id}`}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-2 py-1.5 text-left hover:bg-muted/50"
+        >
+          <ChevronRight
+            className={cn(
+              'h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200',
+              expanded && 'rotate-90',
+            )}
+            strokeWidth={1.75}
+            aria-hidden
+          />
+          <span
+            className={cn(
+              'h-2.5 w-2.5 shrink-0 rounded-full transition-all',
+              enabled ? 'scale-100' : 'scale-75 opacity-30',
+            )}
+            style={{
+              backgroundColor: style.color,
+              boxShadow: enabled ? `0 0 8px ${style.color}88` : 'none',
+            }}
+            aria-hidden
+          />
+          <span className="min-w-0 flex-1 truncate font-medium">{style.label}</span>
+          <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">{count}</span>
+        </button>
+        <button
+          type="button"
+          onClick={onToggleVisibility}
+          aria-pressed={enabled}
+          aria-label={enabled ? `Hide ${style.label} on the globe` : `Show ${style.label} on the globe`}
+          title={enabled ? 'Hide on globe' : 'Show on globe'}
+          className="mr-1 rounded-lg p-1.5 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+        >
+          {enabled ? (
+            <Eye className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
+          ) : (
+            <EyeOff className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden />
+          )}
+        </button>
+      </div>
+
+      <AnimatePresence initial={false}>
+        {expanded ? (
+          <motion.div
+            id={`atlas-category-${style.id}`}
+            key={`${style.id}-members`}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <ul className="mb-1 ml-3 space-y-0.5 border-l border-border/50 pl-2.5">
+              {members.length === 0 ? (
+                <li className="px-2 py-1 text-[11px] text-muted-foreground/70">No sites in this category</li>
+              ) : (
+                members.map((entity) => (
+                  <li key={entity.id}>
+                    <button
+                      type="button"
+                      onClick={() => onSelectEntity(entity.id)}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[12px] text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    >
+                      <span className="min-w-0 flex-1 truncate">{entity.name}</span>
+                      <span className="shrink-0 text-[10px] text-muted-foreground/55">{entity.class}</span>
+                    </button>
+                  </li>
+                ))
+              )}
+              {count > members.length ? (
+                <li className="px-2 py-0.5 text-[10px] text-muted-foreground/60">
+                  +{count - members.length} more — use search
+                </li>
+              ) : null}
+            </ul>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -84,6 +169,8 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
   const bookmarkIds = useAtlasUiStore((s) => s.bookmarkIds);
   const recentIds = useAtlasUiStore((s) => s.recentIds);
 
+  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
+
   const countsByArchetype = useMemo(() => {
     const counts = new Map<string, number>();
     for (const style of MARKER_ARCHETYPES) counts.set(style.id, 0);
@@ -96,6 +183,19 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
       }
     }
     return counts;
+  }, [allEntities]);
+
+  const membersByArchetype = useMemo(() => {
+    const map = new Map<string, AtlasEntity[]>();
+    for (const style of MARKER_ARCHETYPES) {
+      const members = allEntities
+        .filter((e) => style.classes.includes(e.class))
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .slice(0, CATEGORY_PREVIEW_LIMIT);
+      map.set(style.id, members);
+    }
+    return map;
   }, [allEntities]);
 
   const archetypeEnabled = (style: AtlasMarkerStyle) =>
@@ -160,7 +260,7 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
               'pointer-events-auto absolute bottom-28 left-4 top-4 z-30 hidden w-[288px] flex-col overflow-hidden md:flex',
             )}
           >
-            <div className="flex items-center justify-between px-4 pb-2 pt-4">
+            <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-4">
               <div>
                 <h2 className="text-sm font-semibold tracking-tight">Heritage Atlas</h2>
                 <p className="text-[11px] text-muted-foreground">
@@ -186,7 +286,7 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
               </Button>
             </div>
 
-            <div className="space-y-2 px-3">
+            <div className="shrink-0 space-y-2 px-3">
               <button
                 type="button"
                 onClick={() => setSpotlightOpen(true)}
@@ -227,77 +327,86 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
             </div>
 
             {corpusStatus === 'loading' ? (
-              <p className="mx-4 mt-2 animate-pulse text-[11px] text-muted-foreground">
+              <p className="mx-4 mt-2 shrink-0 animate-pulse text-[11px] text-muted-foreground">
                 Loading the knowledge graph…
               </p>
             ) : null}
             {corpusStatus === 'error' && corpusError ? (
-              <p className="mx-4 mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1.5 text-[11px] leading-snug text-amber-700 dark:text-amber-300">
+              <p className="mx-4 mt-2 shrink-0 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1.5 text-[11px] leading-snug text-amber-700 dark:text-amber-300">
                 {corpusError}
               </p>
             ) : null}
 
-            <ScrollArea className="mt-3 min-h-0 flex-1 px-3">
-              <div className="space-y-4 pb-4">
-                <section aria-label="Categories">
-                  <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                    <Sparkles className="h-3 w-3" strokeWidth={1.5} /> Categories
-                  </h3>
-                  <div className="space-y-0.5">
-                    {MARKER_ARCHETYPES.map((style) => (
-                      <CategoryRow
-                        key={style.id}
-                        style={style}
-                        count={countsByArchetype.get(style.id) ?? 0}
-                        enabled={archetypeEnabled(style)}
-                        onToggle={() => toggleArchetype(style)}
-                      />
-                    ))}
-                  </div>
-                </section>
-
-                {bookmarks.length > 0 ? (
-                  <section aria-label="Bookmarks">
+            {/* Explicit height chain so Radix ScrollArea can expand inside the flex column. */}
+            <div className="mt-3 min-h-0 flex-1 overflow-hidden px-3">
+              <ScrollArea className="h-full">
+                <div className="space-y-4 pb-4 pr-2">
+                  <section aria-label="Categories">
                     <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                      <Bookmark className="h-3 w-3" strokeWidth={1.5} /> Bookmarks
+                      <Sparkles className="h-3 w-3" strokeWidth={1.5} /> Categories
                     </h3>
                     <div className="space-y-0.5">
-                      {bookmarks.map((e) => (
-                        <button
-                          key={e.id}
-                          type="button"
-                          onClick={() => selectEntity(e.id)}
-                          className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[13px] hover:bg-muted/50"
-                        >
-                          <span className="min-w-0 flex-1 truncate">{e.name}</span>
-                          <span className="text-[10px] text-muted-foreground/60">{e.class}</span>
-                        </button>
+                      {MARKER_ARCHETYPES.map((style) => (
+                        <CategoryRow
+                          key={style.id}
+                          style={style}
+                          count={countsByArchetype.get(style.id) ?? 0}
+                          enabled={archetypeEnabled(style)}
+                          expanded={expandedCategoryId === style.id}
+                          members={membersByArchetype.get(style.id) ?? []}
+                          onToggleVisibility={() => toggleArchetype(style)}
+                          onToggleExpanded={() =>
+                            setExpandedCategoryId((prev) => (prev === style.id ? null : style.id))
+                          }
+                          onSelectEntity={(id) => selectEntity(id)}
+                        />
                       ))}
                     </div>
                   </section>
-                ) : null}
 
-                {recents.length > 0 ? (
-                  <section aria-label="Recently viewed">
-                    <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                      <History className="h-3 w-3" strokeWidth={1.5} /> Recently viewed
-                    </h3>
-                    <div className="space-y-0.5">
-                      {recents.map((e) => (
-                        <button
-                          key={e.id}
-                          type="button"
-                          onClick={() => selectEntity(e.id)}
-                          className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[13px] text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                        >
-                          <span className="min-w-0 flex-1 truncate">{e.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                ) : null}
-              </div>
-            </ScrollArea>
+                  {bookmarks.length > 0 ? (
+                    <section aria-label="Bookmarks">
+                      <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+                        <Bookmark className="h-3 w-3" strokeWidth={1.5} /> Bookmarks
+                      </h3>
+                      <div className="space-y-0.5">
+                        {bookmarks.map((e) => (
+                          <button
+                            key={e.id}
+                            type="button"
+                            onClick={() => selectEntity(e.id)}
+                            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[13px] hover:bg-muted/50"
+                          >
+                            <span className="min-w-0 flex-1 truncate">{e.name}</span>
+                            <span className="text-[10px] text-muted-foreground/60">{e.class}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  ) : null}
+
+                  {recents.length > 0 ? (
+                    <section aria-label="Recently viewed">
+                      <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
+                        <History className="h-3 w-3" strokeWidth={1.5} /> Recently viewed
+                      </h3>
+                      <div className="space-y-0.5">
+                        {recents.map((e) => (
+                          <button
+                            key={e.id}
+                            type="button"
+                            onClick={() => selectEntity(e.id)}
+                            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left text-[13px] text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                          >
+                            <span className="min-w-0 flex-1 truncate">{e.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  ) : null}
+                </div>
+              </ScrollArea>
+            </div>
           </motion.aside>
         ) : null}
       </AnimatePresence>

@@ -6,7 +6,7 @@ import {
   HERITAGEGRAPH_DOI,
   HERITAGEGRAPH_PUBLIC_GRAPH,
   HERITAGEGRAPH_RELEASE,
-} from '@/lib/heritage-museum/museum-rigor';
+} from '@/lib/provenance';
 
 export const metadata = {
   title: 'Methods · HeritageGraph',

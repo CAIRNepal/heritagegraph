@@ -24,7 +24,7 @@ import { ONTOLOGY_CLASSES, tierRank } from '@/types/atlas';
 import { entityExistedAtYear } from '@/lib/atlas-temporal';
 
 import type { AtlasLocationCatalogStats } from '@/lib/atlas-api-hydrate';
-import type { MuseumDatasetMeta } from '@/lib/heritage-museum/museum-rigor';
+import type { DatasetMeta } from '@/lib/provenance';
 
 import { computeAtlasTimelineExtents } from '../atlas-time-extents';
 
@@ -122,7 +122,7 @@ interface AtlasState {
   /** Live corpus place-mapping coverage (undefined in demo mode). */
   locationStats: AtlasLocationCatalogStats | null;
   /** Dataset provenance for the live KG projection (null in demo mode). */
-  datasetMeta: MuseumDatasetMeta | null;
+  datasetMeta: DatasetMeta | null;
   /** Live projection scope: reviewed public graph vs curator preview (auth-gated). */
   liveScope: 'reviewed' | 'all';
   /** Increment to invalidate in-flight live corpus loads. */

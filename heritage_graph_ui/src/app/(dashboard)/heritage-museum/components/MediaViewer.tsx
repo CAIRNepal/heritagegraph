@@ -1,49 +1,10 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../heritage-data';
 import { ImageAttribution } from './ImageAttribution';
 import { NodeGlyph } from '../node-icons';
-
-type SpeechState = 'idle' | 'playing' | 'paused';
-
-function useNarration(text: string) {
-  const [state, setState] = useState<SpeechState>('idle');
-  const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
-
-  const play = useCallback(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 0.92;
-    utter.pitch = 1.0;
-    utter.lang = 'en-GB';
-    const voices = window.speechSynthesis.getVoices();
-    const preferred =
-      voices.find((v) => v.lang.startsWith('en') && v.name.toLowerCase().includes('daniel')) ??
-      voices.find((v) => v.lang.startsWith('en-GB')) ??
-      null;
-    if (preferred) utter.voice = preferred;
-    utter.onstart  = () => setState('playing');
-    utter.onpause  = () => setState('paused');
-    utter.onresume = () => setState('playing');
-    utter.onend    = () => setState('idle');
-    utter.onerror  = () => setState('idle');
-    utterRef.current = utter;
-    window.speechSynthesis.speak(utter);
-  }, [text]);
-
-  const pause  = useCallback(() => { window.speechSynthesis?.pause();  setState('paused');  }, []);
-  const resume = useCallback(() => { window.speechSynthesis?.resume(); setState('playing'); }, []);
-  const stop   = useCallback(() => { window.speechSynthesis?.cancel(); setState('idle');    }, []);
-
-  useEffect(() => {
-    window.speechSynthesis?.cancel();
-    setState('idle');
-  }, [text]);
-
-  return { state, play, pause, resume, stop };
-}
+import { useNarration, type NarrationState } from '../utils/useStoryPlayback';
 
 interface MediaViewerProps {
   node: GraphNode;
@@ -53,7 +14,14 @@ export function MediaViewer({ node }: MediaViewerProps) {
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const { state: narration, play, pause, resume, stop } = useNarration(node.storyText);
+  const {
+    state: narration,
+    supported: narrationSupported,
+    play,
+    pause,
+    resume,
+    stop,
+  } = useNarration(node.storyText);
 
   useEffect(() => {
     setImgError(false);
@@ -105,6 +73,7 @@ export function MediaViewer({ node }: MediaViewerProps) {
           <div className="absolute bottom-3 left-3">
             <AudioButton
               state={narration}
+              supported={narrationSupported}
               color={cfg.color}
               glowColor={cfg.glowColor}
               onPlay={play}
@@ -143,7 +112,8 @@ export function MediaViewer({ node }: MediaViewerProps) {
 }
 
 interface AudioButtonProps {
-  state: SpeechState;
+  state: NarrationState;
+  supported: boolean;
   color: string;
   glowColor: string;
   onPlay: () => void;
@@ -152,9 +122,17 @@ interface AudioButtonProps {
   onStop: () => void;
 }
 
-function AudioButton({ state, color, glowColor, onPlay, onPause, onResume, onStop }: AudioButtonProps) {
-  const hasSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
-  if (!hasSpeech) return null;
+function AudioButton({
+  state,
+  supported,
+  color,
+  glowColor,
+  onPlay,
+  onPause,
+  onResume,
+  onStop,
+}: AudioButtonProps) {
+  if (!supported) return null;
 
   if (state === 'idle') {
     return (

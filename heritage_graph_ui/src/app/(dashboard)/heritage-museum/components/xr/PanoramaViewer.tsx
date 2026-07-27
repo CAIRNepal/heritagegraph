@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useXrTranslations } from '@/lib/heritage-museum/xr-theme';
 import * as THREE from 'three';
 import {
@@ -20,7 +20,7 @@ import {
 import { cn } from '@/lib/utils';
 
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
-import { buildBeats, clampBeatIndex } from '../../utils/storyBeats';
+import { useBeatPlayer, useNarration } from '../../utils/useStoryPlayback';
 import { ImageAttribution } from '../ImageAttribution';
 import { NodeGlyph } from '../../node-icons';
 
@@ -66,33 +66,6 @@ async function resolveWikimediaDirectUrl(originalUrl: string): Promise<string | 
   return null;
 }
 
-function useNarration(text: string) {
-  const [playing, setPlaying] = useState(false);
-  const play = useCallback(() => {
-    if (!window.speechSynthesis || !text.trim()) return;
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.88;
-    u.pitch = 1;
-    u.lang = 'en-GB';
-    const voices = window.speechSynthesis.getVoices();
-    const v = voices.find((voice) => voice.lang.startsWith('en-GB')) ?? null;
-    if (v) u.voice = v;
-    u.onend = () => setPlaying(false);
-    u.onerror = () => setPlaying(false);
-    window.speechSynthesis.speak(u);
-    setPlaying(true);
-  }, [text]);
-  const stop = useCallback(() => {
-    window.speechSynthesis?.cancel();
-    setPlaying(false);
-  }, []);
-  useEffect(() => () => window.speechSynthesis?.cancel(), [text]);
-  return { playing, play, stop };
-}
-
-const BEAT_MS = 9_000;
-
 function PanoramaStory({
   node,
   reducedMotion,
@@ -102,53 +75,12 @@ function PanoramaStory({
 }) {
   const t = useXrTranslations();
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
-  const beats = useMemo(() => buildBeats(node), [node]);
-  const [idx, setIdx] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [paused, setPaused] = useState(false);
+  const { beats, index: safeIdx, beat, progress, paused, setPaused, go } = useBeatPlayer(
+    node,
+    reducedMotion,
+  );
   const [collapsed, setCollapsed] = useState(false);
-  const rafRef = useRef<number>(0);
-  const startRef = useRef<number>(0);
-  const pausedProgRef = useRef(0);
 
-  useEffect(() => {
-    setIdx(0);
-    setProgress(0);
-    pausedProgRef.current = 0;
-  }, [node.id, beats.length]);
-
-  useEffect(() => {
-    if (reducedMotion || paused) {
-      pausedProgRef.current = progress;
-      return;
-    }
-    const startProg = pausedProgRef.current || progress;
-    startRef.current = performance.now() - (startProg / 100) * BEAT_MS;
-    const tick = (now: number) => {
-      const p = Math.min(100, ((now - startRef.current) / BEAT_MS) * 100);
-      setProgress(p);
-      if (p >= 100 && beats.length > 0) {
-        setIdx((i) => clampBeatIndex(i + 1, beats.length));
-        setProgress(0);
-        pausedProgRef.current = 0;
-        startRef.current = performance.now();
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paused, idx, beats.length, reducedMotion]);
-
-  const go = useCallback((i: number) => {
-    setIdx(i);
-    setProgress(0);
-    pausedProgRef.current = 0;
-    startRef.current = performance.now();
-  }, []);
-
-  const safeIdx = clampBeatIndex(idx, beats.length);
-  const beat = beats[safeIdx];
   if (!beat) return null;
 
   const isBullet = beat.lines.length > 1;
