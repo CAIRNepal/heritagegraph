@@ -1,0 +1,107 @@
+# Competency questions for Nature methods (L0 research graphs + L1 public).
+# Run against CARE SPARQL proxy: GET/POST /sparql/ or /api/v1/sparql/
+#
+# Graphs:
+#   L1 public:  https://w3id.org/heritagegraph/graph/public
+#   L0 OSM:     https://data.cair-nepal.org/heritagegraph/graph/openstreetmap
+#   L0 WD:      https://data.cair-nepal.org/heritagegraph/graph/wikidata
+#   L0 Xwalk:   https://data.cair-nepal.org/heritagegraph/graph/crosswalk
+
+PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:  <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX crm:   <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX hg:    <https://w3id.org/heritagegraph/>
+PREFIX geo:   <http://www.opengis.net/ont/geosparql#>
+PREFIX owl:   <http://www.w3.org/2002/07/owl#>
+PREFIX skos:  <http://www.w3.org/2004/02/skos/core#>
+PREFIX prov:  <http://www.w3.org/ns/prov#>
+
+# CQ1 — How many ArchitecturalStructure instances are in L0 OSM graph?
+# SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {
+#   GRAPH <https://data.cair-nepal.org/heritagegraph/graph/openstreetmap> {
+#     ?s rdf:type hg:ArchitecturalStructure .
+#   }
+# }
+
+# CQ2 — Extant structures with coordinates (L0 place WKT via P55)
+# SELECT ?s ?label ?wkt WHERE {
+#   GRAPH <https://data.cair-nepal.org/heritagegraph/graph/openstreetmap> {
+#     ?s rdf:type hg:ArchitecturalStructure ;
+#        hg:existenceStatus "Extant" ;
+#        rdfs:label ?label ;
+#        crm:P55_has_current_location ?place .
+#   }
+#   GRAPH ?g { ?place geo:asWKT ?wkt . }
+# }
+# LIMIT 25
+
+# CQ3 — L0 beliefs derived from OSM with confidence
+# SELECT ?belief ?about ?score WHERE {
+#   GRAPH <https://data.cair-nepal.org/heritagegraph/graph/openstreetmap> {
+#     ?belief rdf:type <http://www.cidoc-crm.org/extensions/crminf/I2_Belief> ;
+#             hg:confidenceScore ?score .
+#   }
+#   GRAPH <https://data.cair-nepal.org/heritagegraph/graph/crosswalk> {
+#     ?belief hg:assertsAbout ?about .
+#   }
+# }
+# LIMIT 25
+
+# CQ4 — Wikidata sameAs crosswalk density
+# SELECT (COUNT(*) AS ?n) WHERE {
+#   GRAPH <https://data.cair-nepal.org/heritagegraph/graph/crosswalk> {
+#     ?s owl:sameAs ?wd .
+#     FILTER(CONTAINS(STR(?wd), "wikidata.org"))
+#   }
+# }
+
+# CQ5 — L1 public curated structures (platform IRIs only)
+# SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {
+#   GRAPH <https://w3id.org/heritagegraph/graph/public> {
+#     ?s rdf:type ?t .
+#     FILTER(STRSTARTS(STR(?s), "https://w3id.org/heritagegraph/resource/"))
+#     FILTER(CONTAINS(STR(?t), "ArchitecturalStructure") || CONTAINS(STR(?t), "E22") || CONTAINS(STR(?t), "E24"))
+#   }
+# }
+
+# CQ6 — Provenance: L1 subjects must not use data.cair-nepal.org as subject in PUBLIC
+# SELECT (COUNT(DISTINCT ?s) AS ?leaked) WHERE {
+#   GRAPH <https://w3id.org/heritagegraph/graph/public> {
+#     ?s ?p ?o .
+#     FILTER(STRSTARTS(STR(?s), "https://data.cair-nepal.org/"))
+#   }
+# }
+
+# CQ7 — Label language coverage (Nepali vs English) in L0
+# SELECT ?lang (COUNT(*) AS ?n) WHERE {
+#   GRAPH <https://data.cair-nepal.org/heritagegraph/graph/openstreetmap> {
+#     ?s rdfs:label ?label .
+#     BIND(LANG(?label) AS ?lang)
+#   }
+# }
+# GROUP BY ?lang ORDER BY DESC(?n)
+
+# CQ8 — UNESCO graph footprint
+# SELECT (COUNT(*) AS ?triples) WHERE {
+#   GRAPH <https://data.cair-nepal.org/heritagegraph/graph/unesco> { ?s ?p ?o }
+# }
+
+# CQ9 — Federated-style: L1 resource linked to external OSM via seeAlso/exactMatch
+# (Requires L1 materialization + identity cluster projection.)
+# SELECT ?s ?ext WHERE {
+#   GRAPH <https://w3id.org/heritagegraph/graph/public> {
+#     ?s ?match ?ext .
+#     FILTER(?match IN (owl:sameAs, skos:exactMatch, rdfs:seeAlso))
+#     FILTER(CONTAINS(STR(?ext), "openstreetmap.org") || CONTAINS(STR(?ext), "wikidata.org"))
+#   }
+# }
+# LIMIT 50
+
+# CQ10 — CARE smoke: sensitive_indigenous subjects should be zero in anonymous SPARQL
+# (Proxy injects filters; this query documents the expectation.)
+# SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {
+#   GRAPH <https://w3id.org/heritagegraph/graph/public> {
+#     ?s ?p ?o .
+#     FILTER(CONTAINS(LCASE(STR(?o)), "sensitive_indigenous"))
+#   }
+# }

@@ -1,0 +1,2677 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for contributors, developers, API users, partners, and AI integrations">
+      
+      
+        <meta name="author" content="CAIR-Nepal">
+      
+      
+        <link rel="canonical" href="https://cairnepal.github.io/heritagegraph/research/DANAM_CORPUS_INTEGRATION_REPORT/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Integrating the DANAM-aligned corpus into HeritageGraph - HeritageGraph Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#integrating-the-danam-aligned-corpus-into-heritagegraph" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="HeritageGraph Documentation" class="md-header__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            HeritageGraph Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Integrating the DANAM-aligned corpus into HeritageGraph
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../SYSTEM_OVERVIEW/" class="md-tabs__link">
+          
+  
+  
+  Start here
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contribution/FORMS/" class="md-tabs__link">
+          
+  
+  
+  Contribution
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../knowledge-graph/RDF_ENGINE/" class="md-tabs__link">
+          
+  
+  
+  Knowledge graph
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../ontology/ONTOLOGY/" class="md-tabs__link">
+          
+  
+  
+  Ontology
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../auth/AUTH/" class="md-tabs__link">
+          
+  
+  
+  Authentication
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/VERSIONING/" class="md-tabs__link">
+          
+  
+  
+  API
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../deployment/DEPLOYMENT/" class="md-tabs__link">
+          
+  
+  
+  Deployment
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/CONVENTIONS/" class="md-tabs__link">
+          
+  
+  
+  Developer
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../performance/CACHING/" class="md-tabs__link">
+          
+  
+  
+  Performance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../i18n/TRANSLATION/" class="md-tabs__link">
+          
+  
+  
+  i18n
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../pipelines/OCR/" class="md-tabs__link">
+          
+  
+  
+  Pipelines
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../TECHNICAL_DEBT/" class="md-tabs__link">
+          
+  
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="HeritageGraph Documentation" class="md-nav__button md-logo" aria-label="HeritageGraph Documentation" data-md-component="logo">
+      
+  <img src="../../images/logo.svg" alt="logo">
+
+    </a>
+    HeritageGraph Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/CAIRNepal/heritagegraph" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    heritagegraph
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start here
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Start here
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../SYSTEM_OVERVIEW/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../FEATURE_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature walkthrough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TROUBLESHOOTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribution
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribution
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contribution/FORMS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Forms system
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/TESTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Knowledge graph
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Knowledge graph
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/RDF_ENGINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RDF engine
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../knowledge-graph/PIPELINE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ingestion pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ontology
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ontology
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ontology/ONTOLOGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Registry & CIDOC mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Authentication
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OAuth & sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_ROLES_DEVELOPER_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roles & permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../auth/AUTH_GUIDE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adding providers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/VERSIONING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Versioning
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DEPLOYMENT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/DOKPLOY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dokploy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deployment/deploy_on_coolify/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Coolify
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/CONVENTIONS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/SKILLS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Skills matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Performance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/CACHING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../performance/SEARCH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    i18n
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    i18n
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../i18n/TRANSLATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Translation workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" >
+        
+          
+          <label class="md-nav__link" for="__nav_12" id="__nav_12_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pipelines
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Pipelines
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pipelines/OCR/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OCR (suspended)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" >
+        
+          
+          <label class="md-nav__link" for="__nav_13" id="__nav_13_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../TECHNICAL_DEBT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Technical debt
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ARCHIVED/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Archived Sphinx site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-executive-recommendation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Executive recommendation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-corpus-characterization-what-you-are-finalizing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Corpus characterization (what you are finalizing)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-dual-mandate-why-one-dump-is-not-enough" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Dual mandate (why one dump is not enough)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-options-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Options considered
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Options considered">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-dump-nq-into-graphpublic-reject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A — Dump NQ into graph/public (reject)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-archive-only-sparql-doi-dump-insufficient-alone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B — Archive-only (SPARQL + DOI dump) (insufficient alone)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-c-postgres-only-materialization-discard-named-graphs-reject" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option C — Postgres-only materialization, discard named graphs (reject)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-d-two-layer-finalization-recommend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option D — Two-layer finalization (recommend)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-recommended-architecture-finalize-this" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Recommended architecture (finalize this)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Recommended architecture (finalize this)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-identity-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Identity policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-what-materializes-to-l1-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 What materializes to L1 (product)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-what-stays-l0-only-research-essence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 What stays L0-only (research essence)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-provenance-ethics-nature-grade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Provenance &amp; ethics (Nature-grade)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-presentation-on-heritagegraph-surfaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Presentation on HeritageGraph surfaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-implementation-plan-to-finalize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Implementation plan (to “finalize”)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Implementation plan (to “finalize”)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-0-freeze-cite-1-day" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 0 — Freeze &amp; cite (1 day)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-l0-load-12-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — L0 load (1–2 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-l1-etl-pass-1-structures-24-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — L1 ETL Pass 1 structures (2–4 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-assertions-enrichment-35-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — Assertions + enrichment (3–5 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-hci-identity-23-days" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 — HCI &amp; identity (2–3 days)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-paper-package" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 — Paper package
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-nature-fair-care-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Nature / FAIR / CARE checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Decision
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-immediate-next-engineering-step-done-importer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Immediate next engineering step — done (importer)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="integrating-the-danam-aligned-corpus-into-heritagegraph">Integrating the DANAM-aligned corpus into HeritageGraph</h1>
+<p><strong>Document type:</strong> Architecture &amp; methods decision record (data finalization)<br />
+<strong>Audience:</strong> Platform maintainers, co-authors, Nature-style methods reviewers<br />
+<strong>Corpus:</strong> <code>data/reconciled/danam-heritagegraph.nq</code><br />
+<strong>Status:</strong> Design adopted; L1 importer landed (<code>manage.py import_danam_nq</code>) — not yet bulk-applied to production<br />
+<strong>Related:</strong> <a href="../../knowledge-graph/RDF_ENGINE/"><code>documentation/knowledge-graph/RDF_ENGINE.md</code></a>, <a href="../../ARCHITECTURE.md"><code>ARCHITECTURE.md</code></a>, <code>/methods</code></p>
+<hr />
+<h2 id="1-executive-recommendation">1. Executive recommendation</h2>
+<p><strong>Finalize the corpus as a two-layer knowledge graph</strong>, matching how mature LOD platforms separate <em>archival RDF</em> from <em>curated, editable product data</em>:</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>What it is</th>
+<th>Where it lives</th>
+<th>What users see</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L0 — Research archive (frozen)</strong></td>
+<td>Full reconciled N-Quads, source graphs preserved (OSM, Wikidata, UNESCO, crosswalk, intangible)</td>
+<td>Oxigraph <strong>imported</strong> named graphs (never <code>graph/public</code>) + Zenodo/Figshare dump of the <code>.nq</code></td>
+<td>Methods page, SPARQL “research graphs”, citation DOI, reproducibility package</td>
+</tr>
+<tr>
+<td><strong>L1 — Platform knowledge (live)</strong></td>
+<td>Idempotent materialization of entities + assertions into Postgres CIDOC / <code>HeritageAssertion</code> / <code>DataSource</code>, then projected to <code>graph/public</code></td>
+<td>PostgreSQL (system of record) → Oxigraph <code>graph/public</code></td>
+<td>Knowledge browse, Contribute/Improve, Museum &amp; Atlas <strong>live</strong>, review queues</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Do not</strong> load <code>danam-heritagegraph.nq</code> directly into <code>graph/public</code>. That would:</p>
+<ul>
+<li>orphan IRIs from Postgres (fails <code>kg_verify</code> / pollution checks),</li>
+<li>break contribute/edit/review (no rows to PATCH),</li>
+<li>erase the research distinction between source graphs,</li>
+<li>make Museum/Atlas unable to attribute OSM vs DANAM vs Wikidata.</li>
+</ul>
+<p>This dual-layer design is the same pattern used, in different vocabularies, by Wikidata (item + sitelinks + references), Europeana (EDM aggregation + provider graphs), Linked Art / Getty (CIDOC-CRM A-Box + controlled vocabularies), and ResearchSpace / British Museum (CRM + named-graph provenance).</p>
+<hr />
+<h2 id="2-corpus-characterization-what-you-are-finalizing">2. Corpus characterization (what you are finalizing)</h2>
+<p>Measured on <code>data/reconciled/danam-heritagegraph.nq</code> (post–vocabulary crosswalk to <code>https://w3id.org/heritagegraph/</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th style="text-align: right;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quads</td>
+<td style="text-align: right;">130 286</td>
+</tr>
+<tr>
+<td>Distinct subjects (approx.)</td>
+<td style="text-align: right;">~23 627</td>
+</tr>
+<tr>
+<td>Dominant types</td>
+<td style="text-align: right;">E53_Place ≈ 7 861; crminf:I2_Belief ≈ 7 860; ArchitecturalStructure ≈ 6 771; ReligiousStructure ≈ 798; WaterStructure ≈ 141; DhungeDhara ≈ 115</td>
+</tr>
+<tr>
+<td>Named graphs</td>
+<td style="text-align: right;"><code>…/graph/openstreetmap</code> (~106k), <code>…/graph/crosswalk</code> (~20k), <code>…/graph/wikidata</code> (~3.8k), <code>…/graph/intangible</code>, <code>…/graph/unesco</code></td>
+</tr>
+<tr>
+<td>Instance IRIs</td>
+<td style="text-align: right;"><code>https://data.cair-nepal.org/heritagegraph/…</code> (stable external identifiers)</td>
+</tr>
+<tr>
+<td>Ontology IRIs</td>
+<td style="text-align: right;">Current released TBox (<code>w3id.org/heritagegraph/</code> + CIDOC-CRM / CRMinf)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Already done (keep):</strong> <code>data/reconcile_store.py</code> + <code>reconcile_crosswalk.json</code> rewrote the legacy <code>cair-nepal.org/heritagegraph/</code> snake_case vocabulary into the released camelCase ontology and dropped retired predicates / old T-Box graph.</p>
+<p><strong>Out of scope for the product KG:</strong> <code>data/fuseki/</code> (runtime TDB), <code>data/oops/WordNet</code> (lexical resource, not heritage A-Box).</p>
+<hr />
+<h2 id="3-dual-mandate-why-one-dump-is-not-enough">3. Dual mandate (why one dump is not enough)</h2>
+<p>HeritageGraph is simultaneously:</p>
+<ol>
+<li><strong>A research knowledge graph</strong> — citable, SPARQL-queryable, provenance-preserving, aligned to CIDOC-CRM / CRMinf, suitable for a Nature (or Nature-family) computational / cultural-heritage methods article.</li>
+<li><strong>A human contribution platform</strong> — forms, improve-existing, review gates, Museum narrative UI, Atlas globe — where lay contributors and curators interact with <strong>rows</strong>, not quads.</li>
+</ol>
+<p>World-class systems never collapse these into a single mutable triple store:</p>
+<table>
+<thead>
+<tr>
+<th>Platform</th>
+<th>Archive / LOD</th>
+<th>Interaction layer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Wikidata</strong></td>
+<td>RDF dumps + Query Service</td>
+<td>Items, statements, references, ranks</td>
+</tr>
+<tr>
+<td><strong>Europeana</strong></td>
+<td>EDM RDF / IIIF</td>
+<td>Portal search, provider aggregation</td>
+</tr>
+<tr>
+<td><strong>Nomisma / Pelagios</strong></td>
+<td>Concept RDF</td>
+<td>Annotation / gazetteer UIs</td>
+</tr>
+<tr>
+<td><strong>Linked Art</strong></td>
+<td>JSON-LD / CRM</td>
+<td>Museum collection APIs</td>
+</tr>
+<tr>
+<td><strong>ResearchSpace</strong></td>
+<td>CRM named graphs</td>
+<td>Faceted research UI</td>
+</tr>
+</tbody>
+</table>
+<p><strong>HeritageGraph already encodes this split:</strong> Postgres forms + review → publish gate → Oxigraph projection (<a href="../../knowledge-graph/RDF_ENGINE/"><code>RDF_ENGINE.md</code></a>). The DANAM corpus must enter through that gate for L1, while L0 preserves the full research dump.</p>
+<hr />
+<h2 id="4-options-considered">4. Options considered</h2>
+<h3 id="option-a-dump-nq-into-graphpublic-reject">Option A — Dump NQ into <code>graph/public</code> (reject)</h3>
+<ul>
+<li><strong>Pros:</strong> Fast; Museum live might light up overnight.  </li>
+<li><strong>Cons:</strong> No SoR; no edit/review; named-graph provenance collapsed; pollution / orphan IRIs; unreproducible “who approved this?”.  </li>
+<li><strong>Nature risk:</strong> Methods cannot claim a moderated publication pipeline.</li>
+</ul>
+<h3 id="option-b-archive-only-sparql-doi-dump-insufficient-alone">Option B — Archive-only (SPARQL + DOI dump) (insufficient alone)</h3>
+<ul>
+<li><strong>Pros:</strong> Maximum research fidelity; trivial to cite.  </li>
+<li><strong>Cons:</strong> Contribute/Improve/Museum HCI stay disconnected from the corpus.  </li>
+<li><strong>Nature risk:</strong> Platform contribution claims would not cover the corpus.</li>
+</ul>
+<h3 id="option-c-postgres-only-materialization-discard-named-graphs-reject">Option C — Postgres-only materialization, discard named graphs (reject)</h3>
+<ul>
+<li><strong>Pros:</strong> Clean product UX.  </li>
+<li><strong>Cons:</strong> Loses OSM vs Wikidata vs UNESCO provenance graphs; hard to reproduce enrichment; weak FAIR “rich metadata”.  </li>
+<li><strong>Nature risk:</strong> Source stratification disappears.</li>
+</ul>
+<h3 id="option-d-two-layer-finalization-recommend">Option D — <strong>Two-layer finalization (recommend)</strong></h3>
+<ul>
+<li>L0: load <code>.nq</code> into <strong>imported</strong> named graphs (mirror original graph IRIs under a documented prefix, or load as-is into Oxigraph as non-public partitions).  </li>
+<li>L1: deterministic ETL → Postgres → <code>accepted</code> (bulk curated) with <code>DataSource</code> + <code>owl:sameAs</code> / <code>dcterms:identifier</code> back to <code>data.cair-nepal.org</code> IRIs → <code>rdf_rebuild</code>.  </li>
+<li>UI: Museum/Atlas default <strong>live</strong> for L1; Methods documents L0 SPARQL endpoints and dump DOI; optional “Research graphs” toggle for L0 overlay (linkset style, same as LUX).</li>
+</ul>
+<hr />
+<h2 id="5-recommended-architecture-finalize-this">5. Recommended architecture (finalize this)</h2>
+<pre><code class="language-text">danam-heritagegraph.nq
+        │
+        ├──────────────────────────────┐
+        ▼                              ▼
+┌───────────────────┐        ┌──────────────────────────┐
+│ L0 Research store │        │ L1 Platform ETL          │
+│ Oxigraph imported │        │ NQ → CIDOC + Assertion   │
+│ graphs (frozen)   │        │ + DataSource + sameAs    │
+│ Zenodo .nq + VoID │        │ status=accepted (bulk)   │
+└─────────┬─────────┘        └────────────┬─────────────┘
+          │                               │
+          │ SPARQL / Methods              ▼
+          │                      PostgreSQL SoR
+          │                               │
+          │                               ▼ rdf_rebuild
+          │                      graph/public (curated)
+          │                               │
+          └──────────┬────────────────────┘
+                     ▼
+        Museum · Atlas · Knowledge · Contribute
+        (live = L1; research SPARQL = L0+L1)
+</code></pre>
+<h3 id="51-identity-policy">5.1 Identity policy</h3>
+<ul>
+<li><strong>Stable external IRI:</strong> keep <code>https://data.cair-nepal.org/heritagegraph/id/...</code> as <code>dcterms:identifier</code> / <code>owl:sameAs</code>.  </li>
+<li><strong>Platform IRI:</strong> mint <code>https://w3id.org/heritagegraph/resource/{type}/{pk}</code> via normal projection.  </li>
+<li><strong>Dedup:</strong> idempotent ETL key = external IRI (or DANAM <code>rid</code> when present). Re-runs update, never duplicate.  </li>
+<li><strong>Identity layer (spec 005):</strong> after load, run cluster hints for label collisions (e.g. temples already contributed manually vs DANAM).</li>
+</ul>
+<h3 id="52-what-materializes-to-l1-product">5.2 What materializes to L1 (product)</h3>
+<p>Priority order (pass-based ETL):</p>
+<ol>
+<li><strong>Structures</strong> (Architectural / Religious / Water / DhungeDhara / Stupa / Chaitya) + labels + existenceStatus + P55 location + WKT when present.  </li>
+<li><strong>Places</strong> only when they have human labels or are referenced by P55 (avoid 8k anonymous OSM nodes as first-class Knowledge cards).  </li>
+<li><strong>Intangible / small classes:</strong> Deity, Guthi, Festival, Ritual, CasteGroup, Murti, Kumari events.  </li>
+<li><strong>Assertions (I2_Belief):</strong> → <code>HeritageAssertion</code> with confidence, proposition slots, <code>assertsAbout</code>, <code>wasDerivedFrom</code> → <code>DataSource</code> (DANAM / Wikidata / OSM / UNESCO).  </li>
+<li><strong>Crosswalk / Wikidata sameAs:</strong> store as identifiers, not duplicate entities.</li>
+</ol>
+<h3 id="53-what-stays-l0-only-research-essence">5.3 What stays L0-only (research essence)</h3>
+<ul>
+<li>Full OSM quad volume and graph boundaries.  </li>
+<li>Belief quads that fail SHACL / missing about-target after mapping.  </li>
+<li>Any triple whose predicate is not in the LinkML registry (log to an ETL reject report — do not silently drop without an audit file).</li>
+</ul>
+<h3 id="54-provenance-ethics-nature-grade">5.4 Provenance &amp; ethics (Nature-grade)</h3>
+<p>For each L1 row, require at minimum:</p>
+<ul>
+<li><code>DataSource</code> records: DANAM, OpenStreetMap, Wikidata, UNESCO (with license notes already present in corpus notes).  </li>
+<li>Bulk accept comment: e.g. <code>bulk import danam-heritagegraph.nq @ &lt;git or Zenodo version&gt;</code>.  </li>
+<li>VoID / DCAT description of L0 dump (triple count, graph IRIs, ontology version hash from <code>schema_version</code>).  </li>
+<li>CARE / Indigenous data notes where applicable (community stewardship of living traditions — already foreshadowed in DataCite/CARE fields on DataSource).  </li>
+<li>Clear license stratification: OSM ODbL, Wikidata CC0, DANAM/provider terms, HG curated overlay CC BY 4.0.</li>
+</ul>
+<hr />
+<h2 id="6-presentation-on-heritagegraph-surfaces">6. Presentation on HeritageGraph surfaces</h2>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Source</th>
+<th>Behavior after finalization</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Knowledge</strong> <code>/knowledge/*</code></td>
+<td>L1 Postgres</td>
+<td>Faceted browse of materialized types</td>
+</tr>
+<tr>
+<td><strong>Contribute / Improve</strong></td>
+<td>L1</td>
+<td>Humans update existing DANAM-derived rows; duplicate alert steers to edit</td>
+</tr>
+<tr>
+<td><strong>Review queues</strong></td>
+<td>L1</td>
+<td>New human edits still gated; bulk import marked curated</td>
+</tr>
+<tr>
+<td><strong>Heritage Museum</strong> <code>?source=live</code></td>
+<td>L1 → <code>kg/graph</code></td>
+<td>Stories / graph / map over curated public graph</td>
+</tr>
+<tr>
+<td><strong>Heritage Atlas</strong> <code>?source=live</code></td>
+<td>L1 → <code>kg/graph</code></td>
+<td>Globe with tiered geo (verified / inherited / gazetteer)</td>
+</tr>
+<tr>
+<td><strong>Graph visualization</strong></td>
+<td>L1 (+ optional L0 overlay)</td>
+<td>Schema vs heritage tabs; research toggle for imported graphs</td>
+</tr>
+<tr>
+<td><strong>Methods</strong> <code>/methods</code></td>
+<td>Docs + DOIs</td>
+<td>Cite dump, ontology version, rebuild commands, SPARQL examples</td>
+</tr>
+<tr>
+<td><strong>SPARQL</strong></td>
+<td>L0 + L1</td>
+<td>Competency queries against public + <code>GRAPH &lt;…/imported/…&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Demo corpora remain <strong>illustrative only</strong> and must stay labeled as such (already on Methods).</p>
+<hr />
+<h2 id="7-implementation-plan-to-finalize">7. Implementation plan (to “finalize”)</h2>
+<h3 id="phase-0-freeze-cite-1-day">Phase 0 — Freeze &amp; cite (1 day)</h3>
+<ol>
+<li>Checksum <code>danam-heritagegraph.nq</code> (SHA-256).  </li>
+<li>Deposit on Zenodo with version tag; record DOI in <code>/methods</code> + <code>CITATION.cff</code> / <code>.zenodo.json</code>.  </li>
+<li>Document ontology release (<code>HeritageGraph.yaml</code> / TTL hash) used for the crosswalk.</li>
+</ol>
+<h3 id="phase-1-l0-load-12-days">Phase 1 — L0 load (1–2 days)</h3>
+<ol>
+<li><code>manage.py rdf_load_imported_nq</code> (new): stream NQ into Oxigraph <strong>imported</strong> graphs (preserve named-graph IRIs).  </li>
+<li>Exclude from <code>kg_purge</code> public pollution checks; extend <code>kg_verify</code> to assert “no imported subjects in PUBLIC”.  </li>
+<li>Methods page: SPARQL examples per source graph.</li>
+</ol>
+<h3 id="phase-2-l1-etl-pass-1-structures-24-days">Phase 2 — L1 ETL Pass 1 structures (2–4 days)</h3>
+<ol>
+<li><code>manage.py import_danam_nq --pass=structures --dry-run</code> then <code>--apply</code>.  </li>
+<li>Create/update <code>DataSource</code> rows; set <code>status=accepted</code>; store external IRI.  </li>
+<li><code>rdf_rebuild &amp;&amp; kg_purge_orphans --apply &amp;&amp; kg_verify</code>.  </li>
+<li>Smoke: Museum/Atlas live count jump; spot-check Budhanilkantha / Pashupatinath-class labels.</li>
+</ol>
+<h3 id="phase-3-assertions-enrichment-35-days">Phase 3 — Assertions + enrichment (3–5 days)</h3>
+<ol>
+<li>Materialize I2_Belief → <code>HeritageAssertion</code> where <code>assertsAbout</code> resolves.  </li>
+<li>Attach Wikidata sameAs; keep unresolved in L0.  </li>
+<li>SHACL validate sample (≥100) + full fail-open report.</li>
+</ol>
+<h3 id="phase-4-hci-identity-23-days">Phase 4 — HCI &amp; identity (2–3 days)</h3>
+<ol>
+<li>Run identity candidate refresh for label collisions with contributor data.  </li>
+<li>Ensure Improve search finds DANAM labels.  </li>
+<li>Curator dashboard: “bulk import batch” filter.</li>
+</ol>
+<h3 id="phase-5-paper-package">Phase 5 — Paper package</h3>
+<ol>
+<li>Competency-question SPARQL notebook (L0 vs L1).  </li>
+<li>Figure: architecture diagram (this document §5).  </li>
+<li>Supplementary Table: type counts, graph counts, license matrix.  </li>
+<li>Reproducibility: Docker tag + <code>rdf_load_tbox</code> + import commands + checksums.</li>
+</ol>
+<hr />
+<h2 id="8-nature-fair-care-checklist">8. Nature / FAIR / CARE checklist</h2>
+<p>Living status table: <a href="../NATURE_KG_RIGOR/"><code>NATURE_KG_RIGOR.md</code></a>. Summary:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>How this design satisfies it</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Findable</strong></td>
+<td>Zenodo DOI (pending mint) + w3id IRIs + VoID + <code>corpus_fingerprint</code></td>
+<td>🟡 DOI · ✅ else</td>
+</tr>
+<tr>
+<td><strong>Accessible</strong></td>
+<td>Public SPARQL (CARE proxy); HTTPS resource IRIs; open Methods</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Interoperable</strong></td>
+<td>CIDOC-CRM + CRMinf + HG LinkML; crosswalk documented</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Reusable</strong></td>
+<td>License matrix; frozen dump SHA-256; ETL idempotence; ontology pin</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>CARE</strong></td>
+<td>Stewardship via review; CARE proxy; DataSource TK fields</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Provenance</strong></td>
+<td>Named graphs (L0) + DataSource + PROV (L1)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Human interaction</strong></td>
+<td>L1 editable under staged revision; L0 immutable</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Display fidelity</strong></td>
+<td>Live Museum/Atlas = curated PUBLIC only</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Reject audit</strong></td>
+<td>Unmapped predicates logged, not silently dropped from L0</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Competency queries</strong></td>
+<td><code>documentation/research/competency_queries.sparql</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Integrity gate</strong></td>
+<td><code>kg_rigor_audit</code> includes L0 isolation HARD check</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-decision">9. Decision</h2>
+<p><strong>Adopt Option D (two-layer finalization).</strong><br />
+Treat <code>danam-heritagegraph.nq</code> as the <strong>canonical research A-Box dump</strong> (L0) and as the <strong>input to a Postgres materializer</strong> (L1) that feeds HeritageGraph’s existing publish → Oxigraph → Museum/Atlas path.</p>
+<p>That is how a world-class knowledge-graph platform would store this corpus <strong>and</strong> how a Nature-grade methods section would defend it: frozen, citable RDF with intact source graphs; curated, interactive product graph with review semantics and UI surfaces.</p>
+<hr />
+<h2 id="10-immediate-next-engineering-step-done-importer">10. Immediate next engineering step — done (importer)</h2>
+<p><code>manage.py import_danam_nq</code> is available:</p>
+<pre><code class="language-bash"># Dry-run first 20 structures
+python manage.py import_danam_nq --dry-run --limit 20 --report-json /tmp/danam-dry.json
+
+# Apply structures (idempotent), then assertions for resolved about-targets
+python manage.py import_danam_nq --pass structures --limit 100
+python manage.py import_danam_nq --pass assertions --limit 100
+
+# Full apply + public graph rebuild (stop embedded runserver first if using local pyoxigraph)
+python manage.py import_danam_nq --pass all --rebuild \
+  --expected-sha256 14decfcdf95aee0799b65b572e4ef0ec6cabc8581201661b35ee5a6d059c050c
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--dry-run</code></td>
+<td>Parse + count; no Postgres writes</td>
+</tr>
+<tr>
+<td><code>--limit N</code></td>
+<td>Cap subjects per pass</td>
+</tr>
+<tr>
+<td><code>--pass structures\|assertions\|all</code></td>
+<td>ETL stage</td>
+</tr>
+<tr>
+<td><code>--expected-sha256</code></td>
+<td>Pin input file (abort on mismatch)</td>
+</tr>
+<tr>
+<td><code>--rebuild</code></td>
+<td>Call <code>rdf_rebuild</code> after apply</td>
+</tr>
+<tr>
+<td><code>--report-json</code></td>
+<td>Write created/updated/skipped/failures</td>
+</tr>
+</tbody>
+</table>
+<p>Idempotency: <code>LodExternalIdentity</code> maps each <code>https://data.cair-nepal.org/heritagegraph/…</code> IRI → local row. Re-runs update. Identity clusters get <code>external_identifiers.danam</code> (+ OSM / Wikidata when present) for <code>owl:sameAs</code> / linkset projection.</p>
+<p><strong>Still do not</strong> load the NQ directly into <code>graph/public</code>.</p>
+<p><strong>Next:</strong> uncapped structures apply + Museum/Atlas live smoke; mint Zenodo DOI; optional SHACL-on-write staging report.</p>
+<p>Also see: <a href="../NATURE_KG_RIGOR/"><code>NATURE_KG_RIGOR.md</code></a>, <a href="../competency_queries.sparql"><code>competency_queries.sparql</code></a>, <code>manage.py corpus_fingerprint</code>, <code>manage.py rdf_load_imported_nq</code>.</p>
+<hr />
+<p><em>End of decision record.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
