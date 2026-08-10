@@ -96,9 +96,15 @@ export interface DatasetMeta {
 /** @deprecated Use DatasetMeta — kept for gradual call-site migration. */
 export type MuseumDatasetMeta = DatasetMeta;
 
+/**
+ * @param fetchedAt When the response actually left the server. Pass the cache
+ *   entry's timestamp on a cache hit — defaulting to "now" would report a
+ *   freshness the data does not have, on a page whose purpose is provenance.
+ */
 export function datasetMetaFromKgResponse(
   resp: KgGraphResponse,
   apiBase?: string,
+  fetchedAt: string = new Date().toISOString(),
 ): DatasetMeta {
   return {
     release: HERITAGEGRAPH_RELEASE,
@@ -110,7 +116,7 @@ export function datasetMetaFromKgResponse(
     edgesWithProvenance: resp.counts?.edgesWithProvenance,
     luxLinkCount: resp.luxLinkCount,
     includeLux: resp.includeLux,
-    fetchedAt: new Date().toISOString(),
+    fetchedAt,
     apiBase,
   };
 }

@@ -31,6 +31,27 @@ import { computeAtlasTimelineExtents } from '../atlas-time-extents';
 const entitiesSeed = ATLAS_DUMMY_ENTITIES;
 const extents = computeAtlasTimelineExtents(entitiesSeed);
 
+/**
+ * Applied on every transition into live mode.
+ *
+ * The sample corpus must never be on screen while `dataSource` reads `'live'` —
+ * not during the fetch, not after a failure. Each live path either replaces
+ * these with real data or leaves the globe empty.
+ */
+const LIVE_TRANSITION_STATE = {
+  dataSource: 'live' as const,
+  corpusStatus: 'idle' as const,
+  corpusError: null,
+  corpusErrorAuth: false,
+  entities: [],
+  edges: [],
+  sources: [],
+  agents: [],
+  locationStats: null,
+  datasetMeta: null,
+  selectedId: null,
+};
+
 export type EraEnabledRecord = Record<AtlasEra, boolean>;
 
 export type ClassEnabledRecord = Record<OntologyClass, boolean>;
@@ -363,7 +384,13 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
       atlasSound.play('click');
       return;
     }
-    set((s) => ({ dataSource: 'live', corpusStatus: 'idle', liveLoadToken: s.liveLoadToken + 1 }));
+    // Drop the sample corpus the moment we commit to live. Keeping it mounted
+    // during the fetch shows fictional heritage on a globe that already reports
+    // itself as live.
+    set((s) => ({
+      ...LIVE_TRANSITION_STATE,
+      liveLoadToken: s.liveLoadToken + 1,
+    }));
     atlasTrack('corpus_mode', { mode: 'live' });
     atlasSound.play('click');
   },
@@ -390,7 +417,7 @@ export const useAtlasStore = create<AtlasState>((set, get) => ({
   },
 
   loadLiveCorpus() {
-    set({ dataSource: 'live', corpusStatus: 'idle' });
+    set({ ...LIVE_TRANSITION_STATE });
   },
 }));
 

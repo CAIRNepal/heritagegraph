@@ -11,6 +11,7 @@ import { atlasSound } from '@/lib/atlas-sound';
 import { AtlasGlobeLoading } from './components/atlas-loading-fallbacks';
 import { EmptyState } from './components/EmptyState';
 import { MarkerTooltip } from './components/HeritageGlobe/MarkerTooltip';
+import { SampleDataBanner } from './components/SampleDataBanner';
 import { EntityDetailsContent, EntitySidebar } from './components/Sidebar/EntitySidebar';
 import { ExplorerSidebar } from './components/Sidebar/ExplorerSidebar';
 import { Filters } from './components/Search/Filters';
@@ -106,6 +107,10 @@ export default function AtlasClient() {
       />
 
       <MarkerTooltip />
+
+      {/* Not inside a collapsible panel: the sample-corpus warning must be
+          visible on every viewport and in every panel state. */}
+      <SampleDataBanner />
 
       {/* Left column — explorer. */}
       <ExplorerSidebar onPlayJourney={playJourney} />

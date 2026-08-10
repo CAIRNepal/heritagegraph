@@ -378,7 +378,19 @@ class LeaderboardView(APIView):
     """
     Public leaderboard with server-side pagination, search, and filtering.
 
-    Scoring:
+    Metric: **lifetime contribution volume**. Every contribution counts at full
+    weight regardless of age.
+
+    This is deliberately NOT the same number as `ProgressionView`, which reports
+    a *current* score with exponential decay applied after a 180-day grace
+    period (`_compute_score_with_decay`) and additionally counts fork
+    contributions. The two answer different questions -- "how much has this
+    person contributed in total" versus "how active are they now" -- and both
+    surfaces must say which one they are showing. They were previously both
+    labelled "score" with no distinction, so the same contributor could hold two
+    different ranks on two pages with no explanation.
+
+    Scoring (no decay):
       - Each accepted CulturalEntity    = 10 pts
       - Each submitted CulturalEntity    =  3 pts
       - Each review decision             =  5 pts

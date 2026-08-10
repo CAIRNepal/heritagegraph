@@ -131,6 +131,14 @@ export function MuseumMethodsPanel({
               {t('demoImages', { source: provenance.imageSource })}
             </p>
           ) : null}
+          {/* Images carry a license and a retrieval date; the narrative text
+              carries neither. Say so, rather than letting the rigour of the
+              image credits imply the prose is sourced too. */}
+          {provenance?.textAuthorship === 'unrecorded' ? (
+            <p className="rounded border border-amber-500/40 bg-amber-500/10 p-2 text-[11px] leading-snug text-amber-900 dark:text-amber-200">
+              {t('demoTextUnsourced')}
+            </p>
+          ) : null}
         </div>
       ) : null}
 

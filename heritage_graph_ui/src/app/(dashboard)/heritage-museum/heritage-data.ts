@@ -116,6 +116,16 @@ export interface CorpusProvenance {
   retrieved?: string;
   imageSource?: string;
   note?: string;
+  /**
+   * How the descriptive prose was produced.
+   *
+   * Images in this corpus carry a license, an author and a retrieval date;
+   * the narrative fields carried nothing at all, which made the text look as
+   * sourced as the photographs. `"unrecorded"` states the gap explicitly so
+   * the UI can warn rather than imply provenance that does not exist.
+   */
+  textAuthorship?: 'unrecorded' | 'sourced';
+  textAuthorshipNote?: string;
 }
 
 // ── JSON-LD parser ─────────────────────────────────────────────────────────────

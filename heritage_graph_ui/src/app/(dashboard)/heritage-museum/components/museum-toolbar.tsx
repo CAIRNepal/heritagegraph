@@ -25,6 +25,8 @@ export type MuseumViewMode = '2d' | 'xr' | 'map';
 export type MuseumDataSource = 'demo' | 'live';
 
 export interface MuseumCorpusProvenance {
+  textAuthorship?: 'unrecorded' | 'sourced';
+  textAuthorshipNote?: string;
   generatedBy?: string;
   retrieved?: string;
   imageSource?: string;

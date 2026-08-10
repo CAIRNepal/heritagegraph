@@ -22,7 +22,7 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 | F4 | Corpus fingerprint (SHA-256 + ontology pin) | ✅ | `manage.py corpus_fingerprint` |
 | A1 | Public read-only SPARQL | ✅ | CARE proxy `/sparql/` |
 | A2 | Methods page reproducibility | ✅ | `/methods` |
-| A3 | Demo vs live corpus labeled | ✅ | Museum/Atlas `?source=` + Methods limitations |
+| A3 | Demo vs live corpus labeled | ✅ | Atlas `SampleDataBanner` (always visible) + `?source=` + Methods limitations. See [Sample corpus policy](#sample-corpus-policy). |
 | I1 | CIDOC-CRM + CRMinf + LinkML | ✅ | `ontology/HeritageGraph.yaml` + CRM bridge |
 | I2 | SHACL shapes generated | 🟡 | shapes exist; `RDF_SHACL_VALIDATE_ON_WRITE` default off |
 | I3 | Crosswalk documented | ✅ | `data/reconcile_crosswalk.json` + DANAM report |
@@ -38,11 +38,61 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 | C5 | Contributor privacy notice + leaderboard opt-out | 🔴 | not implemented — see ethics doc §3 |
 | C6 | Institutional ethics review | 🔴 | not obtained |
 | P1 | Named-graph provenance (L0) | ✅ | OSM / WD / UNESCO / crosswalk graphs |
-| P2 | DataSource + PROV on L1 assertions | ✅ | `HeritageAssertion.source` / confidence |
+| P2 | DataSource + PROV on L1 assertions | 🟡 | Supported and measured, **not required**: `HeritageAssertion.source` is nullable, `confidence` defaults to `likely`, and the `AssertionRequiresSource` SHACL shape runs only on project merge with `RDF_SHACL_VALIDATE_ON_WRITE` off by default. `kg_quality_report` reports `with_source`. See [Source coverage](#source-coverage). |
 | P3 | Integrity gate | ✅ | `kg_rigor_audit` (incl. L0 isolation) |
 | P4 | No L0 IRIs in PUBLIC | ✅ | rigor HARD + `kg_verify` / purge |
 | H1 | L1 editable under revision semantics | ✅ | contribute / improve |
 | H2 | Museum/Atlas live = curated only | ✅ | `publication_policy` |
+
+## Source coverage
+
+An assertion can currently be created, accepted and published with **no source
+at all**:
+
+- `HeritageAssertion.source` is `null=True, blank=True`.
+- `confidence` defaults to `"likely"` — so an unsourced claim enters the graph
+  already carrying a confidence value that no contributor stated.
+- Entity records (`cidoc_data.MetaData` and its subclasses) have no source field
+  at all; evidence attaches to assertions, not to the descriptive record.
+- The `AssertionRequiresSource` SHACL shape detects the gap, but only for
+  project-scoped merges, and SHACL-on-write is opt-in.
+
+What this means for the paper: do not claim that published assertions are
+source-backed. The accurate claim is that the model *supports* per-assertion
+provenance, that coverage is *measured* (`kg_quality_report` → `with_source`),
+and that enforcement is not yet switched on. Report the measured coverage
+figure rather than asserting the property.
+
+Before claiming enforcement, three things need to change: make `source` or
+`source_citation` required for the `accepted` transition, remove the silent
+`confidence` default so contributors state it explicitly, and enable
+SHACL-on-write.
+
+## Sample corpus policy
+
+The Atlas ships a fictional sample corpus so the interface is explorable before
+a deployment has data. It is a demonstration fixture and is governed by three
+rules, each enforced in code:
+
+1. **No real attribution.** `data/atlas-agents.ts` and `data/atlas-sources.ts`
+   contain only fictional agents ("Sample Researcher A") and citations marked
+   `SAMPLE DATA`. They previously named apparently-real Nepali scholars and real
+   institutions — Tribhuvan University, the National Museum of Nepal, the Patan
+   Museum, the Nepal National Archives — and attributed invented,
+   confidence-scored heritage claims to them. Never reintroduce a real person,
+   institution, or citation here.
+2. **Never shown as live.** Every transition into live mode clears the sample
+   corpus (`LIVE_TRANSITION_STATE`), and every live failure path — network
+   error, auth error, empty result — clears it too (`EMPTY_LIVE_CORPUS`).
+   Previously a failed load left the fictional globe on screen while
+   `dataSource` still read `live`.
+3. **Always labelled.** `SampleDataBanner` renders at the top of the atlas
+   surface whenever the sample corpus is active. It is outside every collapsible
+   panel and is not hidden on mobile; the previous indicator was an 11px button
+   inside a `hidden md:flex` sidebar.
+
+An empty live graph must look empty. That is the honest signal that the corpus
+has not been loaded yet, and it is what a reviewer should see.
 
 ## Reproduce a methods-grade local check
 

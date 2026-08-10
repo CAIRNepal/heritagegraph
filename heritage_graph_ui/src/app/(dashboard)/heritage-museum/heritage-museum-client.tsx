@@ -20,6 +20,7 @@ import {
   type GraphNode,
   type GraphData,
   type GraphLink,
+  type CorpusProvenance,
 } from './heritage-data';
 import {
   fetchKgGraph,
@@ -227,12 +228,7 @@ export function HeritageMindMapClient() {
 
   // ── Demo data ──────────────────────────────────────────────────────────────
   const [demoGraph,   setDemoGraph]   = useState<GraphData | null>(null);
-  const [demoProv,    setDemoProv]    = useState<{
-    retrieved?: string;
-    generatedBy?: string;
-    imageSource?: string;
-    note?: string;
-  } | null>(null);
+  const [demoProv,    setDemoProv]    = useState<CorpusProvenance | null>(null);
   const [demoLoading, setDemoLoading] = useState(true);
   const [demoError,   setDemoError]   = useState<string | null>(null);
 

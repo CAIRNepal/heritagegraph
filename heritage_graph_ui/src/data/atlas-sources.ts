@@ -1,95 +1,111 @@
 import type { DataSource } from '@/types/atlas';
 
+/**
+ * Synthetic sources for the Atlas sample corpus.
+ *
+ * One entry per reliability tier and source type, so the demo can show how a
+ * provenance chain grades its evidence. Every citation here is fictional and
+ * says so.
+ *
+ * This file previously carried fabricated bibliographic citations attributed to
+ * real bodies — UNESCO nomination dossiers, the Nepal National Archives
+ * ("Register Series T-140"), the Nepal Gazette, the Patan Museum accession
+ * registers, and an invented monograph with a named author and publisher.
+ * Fabricated citations that resolve to real institutions are the kind of thing
+ * that gets papers retracted, and they are indistinguishable from real ones in
+ * a screenshot. Real citations belong in the live graph, attached to real
+ * `DataSource` rows; this file must stay fictional.
+ *
+ * IDs are neutral too: `agent-gopal-vajracharya` shipped the surname into
+ * every JS bundle and every graph export, even after the display name was
+ * fixed. Keep identifiers role-based.
+ */
 export const ATLAS_SOURCES: DataSource[] = [
   {
-    id: 'src-wh-unesco',
-    name: 'UNESCO World Heritage nomination dossiers — Kathmandu Valley',
+    id: 'src-listing-dossier',
+    name: 'Sample international listing dossier (fictional)',
     sourceType: 'PublishedBook',
     reliabilityTier: 'A',
-    citation: 'UNESCO (1979). Kathmandu Valley World Heritage listing documentation.',
-    archivalLocation: 'https://whc.unesco.org/',
+    citation: 'SAMPLE DATA — fictional listing documentation, not a real dossier.',
+    archivalLocation: 'https://example.org/sample-listing',
   },
   {
-    id: 'src-peeters-1998',
-    name: 'Nepalese Caitya Architecture',
+    id: 'src-monograph',
+    name: 'Sample peer-reviewed monograph (fictional)',
     sourceType: 'PublishedBook',
     reliabilityTier: 'A',
-    citation: 'Peeters, L. (1998). Nepalese Caitya Architecture. Academic Press.',
-    archivalLocation: 'TU Central Library',
+    citation: 'SAMPLE DATA — fictional monograph, not a real publication.',
   },
   {
-    id: 'src-journal-asian-studies',
-    name: 'Journal of Asian Studies — Licchavi epigraphy',
+    id: 'src-journal-article',
+    name: 'Sample journal article (fictional)',
     sourceType: 'PublishedBook',
     reliabilityTier: 'A',
-    citation: 'Asian Studies Quarterly (2012). Licchavi-period temple foundations.',
+    citation: 'SAMPLE DATA — fictional journal article, not a real publication.',
   },
   {
-    id: 'src-national-archive-nepal',
-    name: 'Nepal National Archives — temple registers',
+    id: 'src-archive-register',
+    name: 'Sample national archive register (fictional)',
     sourceType: 'Archive',
     reliabilityTier: 'B',
-    citation: 'Nepal National Archives, Ministry of Culture, Register Series T-140.',
-    archivalLocation: 'Kathmandu — National Archives',
+    citation: 'SAMPLE DATA — fictional archival register, not a real holding.',
+    archivalLocation: 'https://example.org/sample-archive',
   },
   {
     id: 'src-field-survey-2023',
-    name: 'HeritageGraph structured field survey (dummy)',
+    name: 'Sample structured field survey (fictional)',
     sourceType: 'FieldSurvey',
     reliabilityTier: 'B',
-    citation: 'HeritageGraph Field Survey Dataset v0.1 (2023). Internal.',
-    archivalLocation: 'CAIR-Nepal dataset vault',
+    citation: 'SAMPLE DATA — fictional field survey dataset.',
   },
   {
-    id: 'src-patan-museum-catalog',
-    name: 'Patan Museum bronze & paubha catalog',
+    id: 'src-museum-catalogue',
+    name: 'Sample museum catalogue (fictional)',
     sourceType: 'MuseumCollection',
     reliabilityTier: 'B',
-    citation: 'Patan Museum accession registers (digitized 2019).',
-    archivalLocation: 'Patan Durbar Square Museum',
+    citation: 'SAMPLE DATA — fictional accession catalogue, not a real register.',
   },
   {
-    id: 'src-government-gazette',
-    name: 'Nepal Gazette — Ancient Monument listings',
+    id: 'src-gazette-listing',
+    name: 'Sample government gazette listing (fictional)',
     sourceType: 'Archive',
     reliabilityTier: 'B',
-    citation: 'Nepal Gazette Supplement, Ancient Monuments Preservation Act schedules.',
+    citation: 'SAMPLE DATA — fictional gazette schedule, not a real instrument.',
   },
   {
-    id: 'src-local-parish-register',
-    name: 'Local ward heritage parish notes',
+    id: 'src-community-notebook',
+    name: 'Sample local heritage notebook (fictional)',
     sourceType: 'OralHistoryInterview',
     reliabilityTier: 'C',
-    citation: 'Bhaktapur Ward 11 parish heritage notebook (community copies).',
-    archivalLocation: 'Bhaktapur municipality heritage desk',
+    citation: 'SAMPLE DATA — fictional community notebook.',
   },
   {
     id: 'src-community-jatra-notes',
-    name: 'Community festival oral chronicle',
+    name: 'Sample oral chronicle (fictional)',
     sourceType: 'OralHistoryInterview',
     reliabilityTier: 'C',
-    citation: 'Recorded interviews with Jatra organizers (aggregated notes, dummy corpus).',
+    citation: 'SAMPLE DATA — fictional aggregated interview notes.',
   },
   {
     id: 'src-inscription-transcription',
-    name: 'Stone inscription field transcription',
+    name: 'Sample inscription transcription (fictional)',
     sourceType: 'Manuscript',
     reliabilityTier: 'B',
-    citation: 'Photogrammetry + manual transcription — Changu Narayan pillar line.',
+    citation: 'SAMPLE DATA — fictional transcription, not a real epigraphic record.',
   },
   {
-    id: 'src-wikipedia-en',
-    name: 'English Wikipedia snapshot (unverified)',
+    id: 'src-open-encyclopedia',
+    name: 'Sample open-encyclopedia snapshot (fictional)',
     sourceType: 'PublishedBook',
     reliabilityTier: 'D',
-    citation: 'Wikipedia contributors. Various heritage stubs.',
-    archivalLocation: 'https://en.wikipedia.org/',
+    citation: 'SAMPLE DATA — fictional low-reliability web source.',
+    archivalLocation: 'https://example.org/sample-encyclopedia',
   },
   {
     id: 'src-social-thread',
-    name: 'Heritage forum thread export',
+    name: 'Sample forum thread export (fictional)',
     sourceType: 'PublishedBook',
     reliabilityTier: 'D',
-    citation: 'Exported discussion thread — CAIR heritage pilot forum (dummy).',
+    citation: 'SAMPLE DATA — fictional discussion thread.',
   },
 ];

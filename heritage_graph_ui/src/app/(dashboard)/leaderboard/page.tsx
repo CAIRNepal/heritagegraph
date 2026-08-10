@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
 import {
   Table, TableHead, TableHeader, TableBody, TableRow, TableCell,
 } from '@/components/ui/table';
@@ -24,8 +26,9 @@ import {
 } from '@tabler/icons-react';
 
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = getPublicApiUrl();
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -85,6 +88,7 @@ function getTierFromScore(score: number): TierType {
 }
 
 export default function LeaderboardPage() {
+  const t = useTranslations('leaderboard');
   const [data, setData] = useState<LeaderboardEntry[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -263,7 +267,7 @@ export default function LeaderboardPage() {
                 <SelectValue placeholder="Filter by Institution" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Institutions</SelectItem>
+                <SelectItem value="all">{t('allInstitutions')}</SelectItem>
                 {institutions.map((inst) => (
                   <SelectItem key={inst} value={inst}>
                     {inst}
@@ -307,10 +311,10 @@ export default function LeaderboardPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[70px]">Rank</TableHead>
-                      <TableHead>Contributor</TableHead>
-                      <TableHead className="hidden lg:table-cell">Institution</TableHead>
-                      <TableHead className="hidden md:table-cell text-center">Breakdown</TableHead>
-                      <TableHead className="text-right">Score</TableHead>
+                      <TableHead>{t('columns.contributor')}</TableHead>
+                      <TableHead className="hidden lg:table-cell">{t('columns.institution')}</TableHead>
+                      <TableHead className="hidden md:table-cell text-center">{t('columns.breakdown')}</TableHead>
+                      <TableHead className="text-right">{t('columns.score')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -475,7 +479,14 @@ export default function LeaderboardPage() {
           variants={fadeInUp}
           className="rounded-xl border bg-card p-5 shadow-sm"
         >
-          <h3 className="text-sm font-semibold mb-3">How Scoring Works</h3>
+          <h3 className="text-sm font-semibold mb-1">{t('scoring.title')}</h3>
+          <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+            {t('scoring.lead')}{' '}
+            <Link href="/progression" className="font-medium text-primary underline underline-offset-2">
+              {t('scoring.progressionLink')}
+            </Link>
+            {t('scoring.leadSuffix')}
+          </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-[10px]">+10</Badge>

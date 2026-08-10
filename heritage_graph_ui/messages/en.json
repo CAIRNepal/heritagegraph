@@ -231,7 +231,14 @@
     "selectType": "Select contribution type",
     "formInstructions": "Fill in the details below to contribute heritage data.",
     "submitSuccess": "Contribution submitted successfully!",
-    "submitError": "Failed to submit contribution."
+    "submitError": "Failed to submit contribution.",
+    "sourcePrompt": {
+      "label": "What's your source for this?",
+      "help": "How do you know this? A book, inscription, museum label, interview, a site visit, or your own community knowledge all count. This travels with the record so others can check it.",
+      "placeholder": "e.g. Inscription on the north wall, read during a visit in March 2026 — or: told to me by the temple guthi",
+      "optional": "Optional, but records with a source are far more useful to researchers and are easier for reviewers to accept.",
+      "answered": "Thank you — this will be published alongside the record."
+    }
   },
   "knowledge": {
     "title": "Knowledge Base",
@@ -403,7 +410,8 @@
       "copySparql": "Copy sample SPARQL",
       "openSparql": "Open SPARQL endpoint",
       "fullMethodsPage": "Full methods documentation",
-      "doiPending": "Not yet deposited"
+      "doiPending": "Not yet deposited",
+      "demoTextUnsourced": "Descriptive text in this sample corpus has no recorded source and must not be cited. Image credits above are verified; the narrative is not."
     },
     "filters": {
       "regionLabel": "Heritage filters",
@@ -553,7 +561,16 @@
       "hg": "hg:",
       "prov": "PROV-O",
       "jsonld": "JSON-LD"
-    }
+    },
+    "loadingGraph": "Loading heritage graph",
+    "graphAriaLabel": "Interactive heritage knowledge graph",
+    "media": {
+      "narrate": "Listen to story narration",
+      "narrateShort": "Narrate",
+      "stop": "Stop"
+    },
+    "sampleNarrative": "Sample narrative — written for this demonstration corpus, not sourced or verified. Do not cite.",
+    "sampleNarrativeReference": "Reference article"
   },
   "landing": {
     "hero": {
@@ -808,7 +825,71 @@
     "skCityCycle": "Previous / next city preset (J / L, Globe)",
     "skPalette": "Open jump palette (⌘K / Ctrl+K)",
     "skFlirPolarity": "Toggle FLIR WHOT/BHOT (B)",
-    "skShiftReset": "Clear city chip & reset camera (Shift+0)"
+    "skShiftReset": "Clear city chip & reset camera (Shift+0)",
+    "sampleBanner": {
+      "label": "Sample data.",
+      "body": "These sites, sources and attributions are fictional demonstration content, not real heritage records."
+    },
+    "filters": {
+      "title": "Filters",
+      "reset": "Reset filters",
+      "close": "Close filters",
+      "timeTravel": "Time travel filter",
+      "toggleTimeTravel": "Toggle time travel filter",
+      "minConfidence": "Minimum assertion confidence",
+      "curatorPreview": "Curator preview",
+      "toggleCuratorPreview": "Toggle curator preview scope"
+    },
+    "legend": {
+      "title": "Marker legend"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "year": "Timeline year"
+    },
+    "story": {
+      "title": "Heritage journey",
+      "prev": "Previous stop",
+      "next": "Next stop",
+      "end": "End journey",
+      "pause": "Pause journey",
+      "resume": "Resume journey"
+    },
+    "search": {
+      "placeholder": "Search temples, festivals, people, dynasties…",
+      "label": "Search heritage entities",
+      "results": "Results",
+      "explore": "Explore"
+    },
+    "explorer": {
+      "title": "Explorer",
+      "heading": "Heritage Atlas",
+      "open": "Open explorer",
+      "collapse": "Collapse explorer",
+      "categories": "Categories",
+      "bookmarks": "Bookmarks",
+      "recent": "Recently viewed",
+      "emptyCategory": "No sites in this category",
+      "hideOnGlobe": "Hide on globe",
+      "showOnGlobe": "Show on globe",
+      "sourceLive": "live graph",
+      "sourceSample": "sample corpus",
+      "loading": "Loading the knowledge graph…",
+      "hideCategory": "Hide {category} on the globe",
+      "showCategory": "Show {category} on the globe"
+    },
+    "layers": {
+      "globeControls": "Globe controls",
+      "mapLayers": "Map layers",
+      "miniMap": "Mini map",
+      "miniMapHint": "Overview map — select to fly",
+      "sounds": "Interface sounds",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "resetView": "Reset view",
+      "fullscreen": "Fullscreen",
+      "exitFullscreen": "Exit fullscreen"
+    }
   },
   "about": {
     "hero": {
@@ -1056,6 +1137,353 @@
     "cta": {
       "museum": "Open Heritage Museum (live)",
       "about": "About HeritageGraph"
+    }
+  },
+  "graphview": {
+    "title": "Knowledge graph",
+    "tabs": {
+      "schema": "Schema",
+      "heritage": "Heritage"
+    },
+    "subtitle": {
+      "instance": "Explore how heritage records connect.",
+      "instanceCounts": "{entities} entities · {links} links.",
+      "loading": "Loading…",
+      "clickHint": "Select a node to inspect it.",
+      "ontology": "Schema of the HeritageGraph ontology — {classes} classes and {properties} properties, generated from the LinkML source."
+    },
+    "toolbar": {
+      "searchClasses": "Search classes…",
+      "searchEntities": "Search entities…",
+      "searchClassesLabel": "Search ontology classes",
+      "searchEntitiesLabel": "Search heritage entities",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "fitAll": "Fit all",
+      "exportPng": "Export image with provenance footer",
+      "exportJson": "Export graph data as JSON",
+      "showForks": "Show forks",
+      "forksShown": "Forks shown"
+    },
+    "layouts": {
+      "natural": {
+        "label": "Natural",
+        "hint": "Force-directed clusters"
+      },
+      "spacious": {
+        "label": "Spacious",
+        "hint": "More breathing room"
+      },
+      "radial": {
+        "label": "Radial",
+        "hint": "Hubs at the centre"
+      },
+      "tree": {
+        "label": "Tree",
+        "hint": "Hierarchy top-down"
+      }
+    },
+    "filters": {
+      "groupLabel": "Category filters"
+    },
+    "loading": {
+      "instance": "Fetching heritage data…",
+      "ontology": "Preparing graph…"
+    },
+    "empty": {
+      "title": "No heritage records yet",
+      "body": "Contribute a record, then refresh — the graph fills as the corpus grows.",
+      "contribute": "Contribute"
+    },
+    "detail": {
+      "selectNode": "Select a node",
+      "hintInstance": "Select any entity to read its story and follow connections.",
+      "hintOntology": "Select a class to see hierarchy, mappings, and properties.",
+      "openRecord": "Open full record"
+    },
+    "a11y": {
+      "listSummary": "Browse all {count} nodes as a list (keyboard accessible)"
+    },
+    "common": {
+      "retry": "Retry",
+      "close": "Close"
+    }
+  },
+  "progression": {
+    "title": "Contribution record",
+    "intro": "What you have contributed to the archive, and exactly how contributions are scored. Scoring is a recognition mechanism for sustained participation — it is not a measure of scholarly quality.",
+    "loadFailed": "Could not load contribution data",
+    "retry": "Retry",
+    "points": "pts",
+    "record": {
+      "heading": "Your record",
+      "signInTitle": "Sign in to see your record",
+      "signInBody": "Your contribution counts and score are private to your account.",
+      "signIn": "Sign in",
+      "empty": "No contribution data yet. Submit a record and it will appear here.",
+      "submitted": "Submitted",
+      "submittedHint": "Cultural entities you have created, excluding drafts.",
+      "accepted": "Accepted",
+      "acceptedHint": "Submissions accepted or merged after review.",
+      "revisions": "Revisions",
+      "revisionsHint": "Edits you made to existing records.",
+      "reviews": "Reviews",
+      "reviewsHint": "Contributions from others that you reviewed.",
+      "byCategory": "By contribution category",
+      "byCategoryHint": "Points in each category, against the next threshold for that category."
+    },
+    "tracks": {
+      "curation": {
+        "name": "Curation",
+        "desc": "Submitting and classifying heritage records."
+      },
+      "annotation": {
+        "name": "Annotation",
+        "desc": "Adding provenance, context, and scholarly notes to existing records."
+      },
+      "verification": {
+        "name": "Verification",
+        "desc": "Reviewing submissions and checking them against sources."
+      },
+      "exhibition": {
+        "name": "Exhibition",
+        "desc": "Curating records into public-facing collections."
+      }
+    },
+    "tiers": {
+      "apprentice": "Apprentice",
+      "scholar": "Scholar",
+      "curator": "Curator",
+      "archivist": "Archivist",
+      "grandkeeper": "Grand Keeper"
+    },
+    "medals": {
+      "gold": "Gold",
+      "silver": "Silver",
+      "bronze": "Bronze"
+    },
+    "scoring": {
+      "heading": "How scoring works",
+      "formulaTitle": "Point formula",
+      "formulaLead": "Each contribution earns a base score for its type. Contributions older than the grace period decay exponentially, so a score reflects sustained participation rather than a one-off burst.",
+      "terms": {
+        "t": {
+          "symbol": "t",
+          "meaning": "Days since the contribution was created."
+        },
+        "lambda": {
+          "symbol": "λ = 0.004",
+          "meaning": "Decay constant. Decay applies only beyond the grace period."
+        },
+        "grace": {
+          "symbol": "180 days",
+          "meaning": "Grace period. Contributions newer than this keep their full base score."
+        }
+      },
+      "tiersTitle": "Tier thresholds",
+      "tierCol": "Tier",
+      "thresholdCol": "Total points",
+      "medalsTitle": "Medals",
+      "medalBand": "{medal} — awarded to contributors in the top {percentile}% of the register by current score.",
+      "caveat": "Medals and tiers are derived from position and point totals only. They record participation, not the accuracy or scholarly value of any contribution — that is what the review process is for. Do not cite a tier or medal as a quality signal.",
+      "methodsCta": "Methods & data"
+    },
+    "register": {
+      "heading": "Community register",
+      "title": "Top 50 contributors",
+      "description": "Ordered by current score with decay applied.",
+      "empty": "No contributors yet.",
+      "rankCol": "#",
+      "contributorCol": "Contributor",
+      "institutionCol": "Institution",
+      "pointsCol": "Points",
+      "footnote": "The register lists the top 50 contributors and is recomputed at most every 5 minutes. Ranking reflects volume and recency of participation, not contribution quality."
+    }
+  },
+  "leaderboard": {
+    "scoring": {
+      "title": "How this ranking is scored",
+      "lead": "Lifetime contribution volume — every contribution counts at full weight, regardless of age. This is a different measure from the current score on",
+      "progressionLink": "your contribution record",
+      "leadSuffix": ", which applies time decay. The two ranks will differ."
+    },
+    "columns": {
+      "contributor": "Contributor",
+      "institution": "Institution",
+      "breakdown": "Breakdown",
+      "score": "Score"
+    },
+    "allInstitutions": "All institutions"
+  },
+  "knowledgeList": {
+    "statusNote": "Every row shows its review status. Only accepted and merged records are published to the public graph; pending and rejected rows are visible here for transparency but are not part of the citable dataset.",
+    "methodsCta": "Methods & data",
+    "domains": {
+      "entity": {
+        "title": "Cultural entities",
+        "definition": "Any documented item of cultural heritage — an object, place, practice or record — modelled as a CIDOC-CRM entity. This is the broadest class in the registry; the more specific classes below are subsets of it."
+      },
+      "person": {
+        "title": "Historical persons",
+        "definition": "Individuals recorded in the heritage record: rulers, artisans, donors, priests and chroniclers. Modelled on CIDOC-CRM E21 Person."
+      },
+      "location": {
+        "title": "Heritage locations",
+        "definition": "Places with a recorded heritage significance, carrying coordinates where these are known. Coordinate provenance is stated per record."
+      },
+      "event": {
+        "title": "Cultural events",
+        "definition": "Datable occurrences — construction, consecration, destruction, restoration — that connect entities to periods and places."
+      },
+      "period": {
+        "title": "Historical periods",
+        "definition": "Named spans of time used to date entities and events, such as dynastic or architectural periods."
+      },
+      "tradition": {
+        "title": "Traditions and practices",
+        "definition": "Living or recorded intangible heritage: rituals, crafts, performance and oral practice."
+      },
+      "source": {
+        "title": "Documentary sources",
+        "definition": "Publications, archives, manuscripts, surveys and interviews cited as evidence for assertions in the graph."
+      },
+      "deity": {
+        "title": "Deities",
+        "definition": "Divine figures venerated at documented sites, linked to the entities and events that invoke them."
+      },
+      "guthi": {
+        "title": "Guthi",
+        "definition": "Newar community trusts that hold responsibility for the upkeep and ritual life of heritage sites."
+      },
+      "structure": {
+        "title": "Architectural structures",
+        "definition": "Built heritage — temples, courtyards, water systems and monuments — with their construction and condition history."
+      },
+      "monument": {
+        "title": "Monuments",
+        "definition": "Structures designated or recorded as monuments, including their protection status where known."
+      },
+      "ritual": {
+        "title": "Ritual events",
+        "definition": "Recurring religious observances tied to particular places, deities and communities."
+      },
+      "festival": {
+        "title": "Festivals",
+        "definition": "Calendar festivals documented with their locations, participants and associated practices."
+      },
+      "iconography": {
+        "title": "Iconographic objects",
+        "definition": "Images and sculptural programmes described by their iconographic content and attributions."
+      }
+    }
+  },
+  "dataTable": {
+    "search": "Search…",
+    "searchLabel": "Search records",
+    "filter": "Filter…",
+    "columns": "Columns",
+    "selectAll": "Select all rows",
+    "selectRow": "Select row",
+    "dragToReorder": "Drag to reorder",
+    "noResults": "No records match these filters.",
+    "rowsSelected": "{selected} of {total} row(s) selected.",
+    "export": {
+      "label": "Export",
+      "csv": "Download CSV",
+      "json": "Download JSON"
+    },
+    "pagination": {
+      "rowsPerPage": "Rows per page",
+      "first": "Go to first page",
+      "previous": "Go to previous page",
+      "next": "Go to next page",
+      "last": "Go to last page"
+    }
+  },
+  "contributeHub": {
+    "addNew": "Add something new",
+    "browseByKind": "Browse by kind",
+    "popularStarts": "Popular starting points",
+    "searchExisting": "Search existing records",
+    "updateExisting": "Update something already here",
+    "whatAreYouAdding": "What are you adding?",
+    "clearSearch": "Clear search",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right",
+    "scrollHint": "Scroll to see more types",
+    "swipeHint": "Swipe or use arrows",
+    "searchTypesPlaceholder": "Search types… e.g. temple, festival, person",
+    "journeys": {
+      "places": {
+        "label": "Places & things",
+        "hint": "Temples, art, deities, places"
+      },
+      "people": {
+        "label": "People & groups",
+        "hint": "Persons, Guthi, communities"
+      },
+      "events": {
+        "label": "Events & rituals",
+        "hint": "Festivals, rituals, history"
+      },
+      "sources": {
+        "label": "Sources",
+        "hint": "Books, inscriptions, claims"
+      }
+    },
+    "quick": {
+      "connect": "Connect two records",
+      "duplicate": "Same thing twice?",
+      "mySubmissions": "My submissions",
+      "project": "Work as a project"
+    }
+  },
+  "myContributions": {
+    "title": "My contributions",
+    "startContributing": "Start contributing",
+    "loadFailed": "Could not load your contributions.",
+    "hideHistory": "Hide history",
+    "untitled": "Untitled",
+    "status": {
+      "draft": {
+        "label": "Draft",
+        "hint": "Saved but not yet submitted for review."
+      },
+      "pendingReview": {
+        "label": "Pending review",
+        "hint": "In the queue — a reviewer will look at this soon."
+      },
+      "pendingRevision": {
+        "label": "Changes requested",
+        "hint": "A reviewer asked for changes. Read their note, then revise and resubmit."
+      },
+      "accepted": {
+        "label": "Published",
+        "hint": "Accepted and live in the public knowledge graph."
+      },
+      "merged": {
+        "label": "Published",
+        "hint": "Merged and live in the public knowledge graph."
+      },
+      "rejected": {
+        "label": "Not accepted",
+        "hint": "A reviewer declined this. See their note for why."
+      },
+      "superseded": {
+        "label": "Superseded",
+        "hint": "Replaced by a newer version."
+      }
+    },
+    "activity": {
+      "submitted": "Submitted for review",
+      "accepted": "Accepted",
+      "rejected": "Declined",
+      "changesRequested": "Changes requested",
+      "revised": "Revised",
+      "commented": "Comment",
+      "escalated": "Escalated to an expert",
+      "flagged": "Flagged for review",
+      "conflictResolved": "Conflict resolved"
     }
   }
 }

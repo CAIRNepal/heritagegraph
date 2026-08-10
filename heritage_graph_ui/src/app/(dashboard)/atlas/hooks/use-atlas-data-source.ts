@@ -24,14 +24,14 @@ interface CachedKgResponse {
   resp: KgGraphResponse;
 }
 
-function readKgCache(scope: string): KgGraphResponse | null {
+function readKgCache(scope: string): CachedKgResponse | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.sessionStorage.getItem(KG_CACHE_PREFIX + scope);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CachedKgResponse;
     if (!parsed.resp || Date.now() - parsed.fetchedAt > KG_CACHE_TTL_MS) return null;
-    return parsed.resp;
+    return parsed;
   } catch {
     return null;
   }
@@ -48,6 +48,25 @@ function writeKgCache(scope: string, resp: KgGraphResponse): void {
     /* storage quota — cache is best-effort */
   }
 }
+
+/**
+ * State applied whenever a live load ends without data.
+ *
+ * The store boots with the sample corpus mounted, so every live failure path
+ * must explicitly clear it. Otherwise the globe keeps rendering fictional
+ * heritage — with confidence scores and agent attributions — while
+ * `dataSource` still reads `'live'`.
+ */
+const EMPTY_LIVE_CORPUS = {
+  entities: [],
+  edges: [],
+  sources: [],
+  agents: [],
+  dataSource: 'live' as const,
+  locationStats: null,
+  datasetMeta: null,
+  selectedId: null,
+};
 
 function friendlyCorpusError(err: unknown): { message: string; auth: boolean } {
   const raw = getApiErrorMessage(err, 'Could not reach the HeritageGraph API.');
@@ -86,21 +105,30 @@ export function useAtlasDataSource() {
     atlasTrack('corpus_load_start', { mode: 'live', scope });
 
     try {
-      let resp = readKgCache(scope);
-      const cacheHit = resp != null;
+      const cached = readKgCache(scope);
+      const cacheHit = cached != null;
+      // Provenance records when the data left the server, not when this render
+      // happened to read it out of sessionStorage.
+      let fetchedAt = cached ? new Date(cached.fetchedAt).toISOString() : '';
+      let resp = cached?.resp ?? null;
       if (!resp) {
         resp = await fetchKgGraph(API_BASE, token, {
           signal: ac.signal,
           scope,
           includeLux: 'linked',
         });
+        fetchedAt = new Date().toISOString();
       }
       if (ac.signal.aborted || loadToken !== useAtlasStore.getState().liveLoadToken) return;
       if (!cacheHit) writeKgCache(scope, resp);
 
       const hydrated = hydrateAtlasFromKgGraph(resp);
       if (hydrated.entities.length === 0) {
+        // Empty is a valid answer, and it must look empty. Leaving the sample
+        // corpus mounted here would show a populated globe of fictional
+        // heritage while the store reports the source as `live`.
         useAtlasStore.setState({
+          ...EMPTY_LIVE_CORPUS,
           corpusStatus: 'error',
           corpusError: 'The reviewed knowledge graph has no published entities yet.',
         });
@@ -118,7 +146,7 @@ export function useAtlasDataSource() {
         corpusStatus: 'ready',
         corpusError: null,
         locationStats: hydrated.locationStats,
-        datasetMeta: datasetMetaFromKgResponse(resp, API_BASE),
+        datasetMeta: datasetMetaFromKgResponse(resp, API_BASE, fetchedAt),
         minYear: extents.minYear,
         maxYear: extents.maxYear,
         currentYear: Math.min(
@@ -138,7 +166,11 @@ export function useAtlasDataSource() {
     } catch (err) {
       if (ac.signal.aborted) return;
       const { message, auth } = friendlyCorpusError(err);
+      // Same rule as the empty case: a failed live load must not silently fall
+      // back to the sample corpus while still reporting `dataSource: 'live'`.
+      // The user has to switch to demo deliberately.
       useAtlasStore.setState({
+        ...EMPTY_LIVE_CORPUS,
         corpusStatus: 'error',
         corpusError: message,
         corpusErrorAuth: auth,

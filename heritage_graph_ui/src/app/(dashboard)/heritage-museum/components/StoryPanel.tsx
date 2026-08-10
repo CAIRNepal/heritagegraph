@@ -41,6 +41,7 @@ export function StoryPanel({
   viewMode = '2d',
   onBrowseStories,
 }: StoryPanelProps) {
+  const isSampleNarrative = dataSource === 'demo';
   const t = useTranslations('heritageMuseum.panel');
   const scrollRootRef = useRef<HTMLDivElement>(null);
 
@@ -181,6 +182,24 @@ export function StoryPanel({
       <div className="px-6 py-5 space-y-6">
         <Section title={t('story')} icon="📖" color={cfg.color}>
           <p className="text-foreground text-sm leading-7 whitespace-pre-line">{node.storyText}</p>
+          {isSampleNarrative ? (
+            <p className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] leading-snug text-amber-900 dark:text-amber-200">
+              {t('sampleNarrative')}
+              {node.wikipediaTitle ? (
+                <>
+                  {' '}
+                  <a
+                    href={`https://en.wikipedia.org/wiki/${encodeURIComponent(node.wikipediaTitle)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium underline underline-offset-2"
+                  >
+                    {t('sampleNarrativeReference')}
+                  </a>
+                </>
+              ) : null}
+            </p>
+          ) : null}
         </Section>
 
         {node.description && node.description !== node.storyText ? (
@@ -282,20 +301,6 @@ export function StoryPanel({
           </Section>
         )}
 
-        {node.visitNote && (
-          <div
-            className="rounded-xl p-4 border"
-            style={{ borderColor: `${cfg.color}44`, background: `${cfg.color}0d` }}
-          >
-            <h3
-              className="text-xs font-semibold uppercase tracking-widest mb-2 flex items-center gap-1.5"
-              style={{ color: cfg.glowColor }}
-            >
-              <span>ℹ</span> {t('visitorGuide')}
-            </h3>
-            <p className="text-foreground/90 text-sm leading-6">{node.visitNote}</p>
-          </div>
-        )}
 
         {node.tags && node.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">

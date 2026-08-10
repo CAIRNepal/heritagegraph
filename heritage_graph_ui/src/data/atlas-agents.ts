@@ -1,63 +1,83 @@
 import type { Agent } from '@/types/atlas';
 
+/**
+ * Synthetic agents for the Atlas sample corpus.
+ *
+ * These are placeholders that exist only to demonstrate the shape of a
+ * provenance chain — one agent per role the model supports. They are
+ * deliberately impossible to mistake for real attributions.
+ *
+ * This file previously named apparently-real Nepali scholars and real
+ * institutions (Tribhuvan University, the National Museum of Nepal, the Patan
+ * Museum, the Pashupatinath priest council) and attributed invented,
+ * confidence-scored heritage claims to them. Nobody consented to that, the
+ * claims were not theirs, and a screenshot of it would be indistinguishable
+ * from a real attribution. Never reintroduce a real person or institution here:
+ * demo attribution belongs to fictional agents, and real attribution belongs to
+ * the live graph.
+ *
+ * IDs are neutral too: `agent-gopal-vajracharya` shipped the surname into
+ * every JS bundle and every graph export, even after the display name was
+ * fixed. Keep identifiers role-based.
+ */
 export const ATLAS_AGENTS: Agent[] = [
   {
-    id: 'agent-amrita-sharma',
-    name: 'Dr. Amrita Sharma',
+    id: 'agent-researcher-a',
+    name: 'Sample Researcher A',
     role: 'researcher',
-    institutionalAffiliation: 'Tribhuvan University — Department of Buddhist Studies',
+    institutionalAffiliation: 'Example Institute of Heritage Studies (sample data)',
   },
   {
-    id: 'agent-bikram-shrestha',
-    name: 'Bikram Shrestha',
+    id: 'agent-curator-b',
+    name: 'Sample Curator B',
     role: 'curator',
-    institutionalAffiliation: 'National Museum of Nepal',
+    institutionalAffiliation: 'Example Museum (sample data)',
   },
   {
-    id: 'agent-gopal-vajracharya',
-    name: 'Gopal Vajracharya',
+    id: 'agent-custodian-c',
+    name: 'Sample Ritual Custodian C',
     role: 'priest',
-    institutionalAffiliation: 'Pashupatinath Temple priest council',
+    institutionalAffiliation: 'Example temple custodian council (sample data)',
   },
   {
-    id: 'agent-community-thapa',
-    name: 'Ram Thapa',
+    id: 'agent-community-d',
+    name: 'Sample Community Contributor D',
     role: 'community',
-    institutionalAffiliation: 'Bhaktapur Heritage Volunteers',
+    institutionalAffiliation: 'Example heritage volunteer group (sample data)',
   },
   {
-    id: 'agent-field-team-tu',
-    name: 'TU Field Documentation Unit',
+    id: 'agent-field-team-e',
+    name: 'Sample Field Documentation Team E',
     role: 'researcher',
-    institutionalAffiliation: 'Tribhuvan University — Archaeology',
+    institutionalAffiliation: 'Example university archaeology unit (sample data)',
   },
   {
-    id: 'agent-mira-shakya',
-    name: 'Mira Shakya',
+    id: 'agent-researcher-f',
+    name: 'Sample Researcher F',
     role: 'researcher',
-    institutionalAffiliation: 'Department of Culture — Kathmandu Valley Inventory',
+    institutionalAffiliation: 'Example cultural inventory office (sample data)',
   },
   {
-    id: 'agent-indra-joshi',
-    name: 'Indra Joshi',
+    id: 'agent-curator-g',
+    name: 'Sample Curator G',
     role: 'curator',
-    institutionalAffiliation: 'Patan Museum',
+    institutionalAffiliation: 'Example regional museum (sample data)',
   },
   {
     id: 'agent-anonymous-contributor',
-    name: 'Anonymous platform contributor',
+    name: 'Sample anonymous contributor',
     role: 'community',
   },
   {
     id: 'agent-ocr-pipeline',
-    name: 'HeritageGraph OCR ingest pipeline',
+    name: 'Sample document-ingest pipeline',
     role: 'system',
-    institutionalAffiliation: 'CAIR-Nepal / document_processing',
+    institutionalAffiliation: 'Example automated agent (sample data)',
   },
   {
-    id: 'agent-rato-jatra-committee',
-    name: 'Rato Machhindranath Jatra coordinating committee',
+    id: 'agent-festival-committee',
+    name: 'Sample festival organising committee',
     role: 'community',
-    institutionalAffiliation: 'Lalitpur',
+    institutionalAffiliation: 'Example municipality (sample data)',
   },
 ];
