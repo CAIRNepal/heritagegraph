@@ -6,8 +6,8 @@ patterns:
     userLabel: Document a restoration and link it to a site
     userDescription:
       Record what happened during a restoration project as a dated event,
-      then propose a moderator-reviewed relationship tying that event to an
-      architectural site or monument. Uses normal CIDOC-aligned forms—no RDF editing.
+      then propose a reviewed relationship tying that event to a temple,
+      monument, or other site.
     hubCategory: events
     emoji: "🔧"
     difficulty: intermediate
@@ -441,10 +441,10 @@ patterns:
         linkQuery: subjectType=person&objectType=source
 
   - key: propose_identity_cluster
-    userLabel: Propose a canonical identity cluster
+    userLabel: Link duplicate records
     userDescription:
-      Submit moderator-gated entity-cluster drafts when the same real-world referent might be
-      split across records.
+      When the same place, person, or thing appears as more than one record, propose linking them
+      so reviewers can treat them as one identity.
     hubCategory: general
     emoji: "🔎"
     difficulty: advanced
@@ -458,10 +458,10 @@ patterns:
         ctaLabel: Open entity proposal
 
   - key: cultural_entity_then_link
-    userLabel: General heritage record, then graph links
+    userLabel: General heritage record, then connections
     userDescription:
-      Use the flexible cultural-entity form, then propose relationships once canonical CIDOC rows
-      exist. Pick entity types manually on the proposal form—hints are not yet scoped to cultural entities.
+      Start with the flexible heritage form, then propose how it connects to other records.
+      On the relationship form, pick the From and To types yourself.
     hubCategory: general
     emoji: "🏮"
     difficulty: intermediate

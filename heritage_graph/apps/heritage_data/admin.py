@@ -32,6 +32,7 @@ from .models import (
     TriagePolicy,
     UserProfile,
     UserStats,
+    UserStatsSnapshot,
 )
 
 # =====================================================================
@@ -693,13 +694,29 @@ class UserStatsAdmin(admin.ModelAdmin):
     list_display = (
         "user",
         "total_submissions",
+        "total_reviewed",
+        "accepted_count",
         "approval_rate",
         "contributor_rank",
-        "community_impact_score",
         "updated_at",
     )
     search_fields = ("user__username",)
     readonly_fields = ("updated_at",)
+
+
+@admin.register(UserStatsSnapshot)
+class UserStatsSnapshotAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "period",
+        "total_submissions",
+        "contributor_rank",
+        "approval_rate",
+        "created_at",
+    )
+    list_filter = ("period",)
+    search_fields = ("user__username",)
+    readonly_fields = ("created_at",)
 
 
 @admin.register(UserProfile)

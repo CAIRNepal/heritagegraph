@@ -1034,9 +1034,19 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class UserStatsAPIView(APIView):
+    """Contributor dashboard counters for the signed-in user.
+
+    Recomputed on read: `refresh_user_stats` is signal-driven, so a user who has
+    never saved a contribution (or whose rank moved because *other* people
+    contributed) would otherwise be served a stale or all-zero row.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        from .signals import refresh_user_stats
+
+        refresh_user_stats(request.user)
         stats, _ = UserStats.objects.get_or_create(user=request.user)
         serializer = UserStatsSerializer(stats)
         return Response(serializer.data)

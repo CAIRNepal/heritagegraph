@@ -14,6 +14,9 @@ export const RESUME_PICK_KEYS = [
 export function encodeResumeTarget(pathWithQuery: string): string | null {
   const trimmed = pathWithQuery.trim();
   if (!trimmed.startsWith("/") || trimmed.startsWith("//")) return null;
+  // Rejecting CR/LF/NUL is the purpose of this guard: they enable header
+  // injection and path smuggling.
+  // eslint-disable-next-line no-control-regex
   if (/[\r\n\u0000]/.test(trimmed)) return null;
   try {
     return encodeURIComponent(trimmed);
@@ -27,6 +30,7 @@ export function decodeResumeTarget(encoded: string): string | null {
   try {
     const decoded = decodeURIComponent(encoded.trim());
     if (!decoded.startsWith("/") || decoded.startsWith("//")) return null;
+    // eslint-disable-next-line no-control-regex -- see encodeResumeTarget.
     if (/[\r\n\u0000]/.test(decoded)) return null;
     return decoded;
   } catch {

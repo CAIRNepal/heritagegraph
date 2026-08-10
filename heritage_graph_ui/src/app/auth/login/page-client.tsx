@@ -1,5 +1,6 @@
 'use client';
 
+import Link from "next/link";
 import { signIn, useSession } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -174,7 +175,7 @@ export default function LoginRedirectPageClient({
 
           {!canSignIn ? (
             <Button className="w-full" type="button" variant="outline" asChild>
-              <a href="/">Back to home</a>
+              <Link href="/">Back to home</Link>
             </Button>
           ) : null}
         </div>

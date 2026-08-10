@@ -43,10 +43,6 @@ export default function ReviewerDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isModerator) {
-    return <AccessDenied requiredRole="moderator" userEmail={session?.user?.email} />;
-  }
-
   const getHeaders = useCallback(() => {
     const token = (session as unknown as Record<string, unknown>)?.accessToken as string | undefined;
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
@@ -70,6 +66,12 @@ export default function ReviewerDashboardPage() {
   }, [getHeaders]);
 
   useEffect(() => { if (session) fetchDashboard(); }, [session, fetchDashboard]);
+
+  // Access gate runs after every hook so hook order stays stable.
+  if (!isModerator) {
+    return <AccessDenied requiredRole="moderator" userEmail={session?.user?.email} />;
+  }
+
 
   if (isLoading) {
     return (

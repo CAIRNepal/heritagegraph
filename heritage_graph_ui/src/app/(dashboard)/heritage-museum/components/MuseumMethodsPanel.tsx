@@ -66,7 +66,15 @@ export function MuseumMethodsPanel({
           <dt className="text-muted-foreground">{t('license')}</dt>
           <dd className="text-foreground">{t('licenseValue')}</dd>
           <dt className="text-muted-foreground">DOI</dt>
-          <dd className="font-mono text-foreground break-all">{HERITAGEGRAPH_DOI}</dd>
+          <dd
+            className={
+              HERITAGEGRAPH_DOI ?
+                'font-mono text-foreground break-all'
+              : 'text-muted-foreground'
+            }
+          >
+            {HERITAGEGRAPH_DOI ?? t('doiPending')}
+          </dd>
           {dataSource === 'live' && datasetMeta ? (
             <>
               <dt className="text-muted-foreground">{t('graphPartition')}</dt>

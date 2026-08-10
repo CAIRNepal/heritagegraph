@@ -43,7 +43,7 @@ export default function MergeRequestsPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
-      <motion.div {...fadeInUp}>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <h1 className="text-2xl font-bold">Merge Requests</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Review and approve project contributions into the main graph.
@@ -65,7 +65,9 @@ export default function MergeRequestsPage() {
       {!loading && items.map((mr, i) => (
         <motion.div
           key={mr.id}
-          {...fadeInUp}
+          variants={fadeInUp}
+          initial="hidden"
+          animate="show"
           transition={{ delay: i * 0.04 }}
           className="rounded-lg border bg-card p-4 hover:border-primary/50 transition-colors"
         >

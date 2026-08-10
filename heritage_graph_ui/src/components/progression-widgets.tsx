@@ -6,38 +6,22 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RankAvatar, getTierFromName, tierConfig, type TierType } from '@/components/rank-avatar';
 import { cn } from '@/lib/utils';
 import {
   IconTrophy,
-  IconMedal,
   IconFlame,
   IconArrowRight,
   IconSparkles,
-  IconStar,
-  IconArchive,
-  IconPencil,
-  IconSearch,
-  IconPhoto,
   IconChevronRight,
-  IconTarget,
 } from '@tabler/icons-react';
 
-import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { apiFetchJson } from '@/lib/api-client';
 import { getPublicApiUrl } from '@/lib/api-base';
 
 const API_BASE_URL = getPublicApiUrl();
-
-/* ── Track data (matches progression page) ── */
-const trackInfo = {
-  curation: { name: 'Curation', icon: IconArchive, gradient: 'from-amber-500 to-orange-600', color: 'text-amber-600' },
-  annotation: { name: 'Annotation', icon: IconPencil, gradient: 'from-emerald-500 to-teal-600', color: 'text-emerald-600' },
-  verification: { name: 'Verification', icon: IconSearch, gradient: 'from-orange-600 to-red-600', color: 'text-orange-600' },
-  exhibition: { name: 'Exhibition', icon: IconPhoto, gradient: 'from-violet-500 to-purple-600', color: 'text-violet-600' },
-};
 
 /* ── Tier display info ── */
 const tierDisplay: Record<string, { name: string; icon: string; next: string | null; gradient: string }> = {
@@ -112,7 +96,9 @@ function useUserProgress(): { progress: UserProgressData | null; leaderboard: Le
           });
         }
       } catch (err) {
-        // Silent fail: widgets can render without progression data.
+        // Widgets degrade to their empty state, but a failure here means the
+        // contributor's progress is missing -- it must not vanish silently.
+        console.error('Failed to load progression data', err);
       } finally {
         setLoading(false);
       }
@@ -480,31 +466,3 @@ export function AchievementToast({
   );
 }
 
-/* ── Motivation Quote Card ── */
-export function MotivationCard({ className }: { className?: string }) {
-  const quotes = [
-    { text: "Every artifact tells a story. Every story you preserve connects the past to the future.", icon: "📜" },
-    { text: "Heritage is not owned—it is borrowed from future generations. Thank you for being a steward.", icon: "🌱" },
-    { text: "One entry may seem small, but together we're building an infinite library of human memory.", icon: "📚" },
-    { text: "The best time to preserve heritage was 100 years ago. The second best time is now.", icon: "⏳" },
-  ];
-
-  // Use first quote for SSR, then randomize on client mount to prevent hydration mismatch
-  const [quote, setQuote] = useState(quotes[0]);
-
-  useEffect(() => {
-    setQuote(quotes[Math.floor(Math.random() * quotes.length)]);
-  }, []);
-
-  return (
-    <Card className={cn('bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-950/30 dark:to-sky-950/30 border-blue-200 dark:border-blue-800', className)}>
-      <CardContent className="p-5 flex items-start gap-4">
-        <span className="text-3xl">{quote.icon}</span>
-        <div>
-          <p className="text-blue-800 dark:text-blue-200 italic leading-relaxed">&ldquo;{quote.text}&rdquo;</p>
-          <p className="text-xs text-blue-600 dark:text-blue-400 mt-2 font-medium">— HeritageGraph Community</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}

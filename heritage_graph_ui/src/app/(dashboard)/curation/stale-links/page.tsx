@@ -130,7 +130,7 @@ function AlertCard({ alert, onResolve, onIgnore, onUpdateTarget }: AlertCardProp
                 </a>
                 {link.target_label && (
                   <span className="ml-1 text-muted-foreground">
-                    "{link.target_label}"
+                    &ldquo;{link.target_label}&rdquo;
                   </span>
                 )}
               </p>
@@ -292,7 +292,7 @@ export default function StaleLinksPage() {
   }
 
   if (!isReviewer && !isModerator) {
-    return <AccessDenied />;
+    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
   }
 
   return (

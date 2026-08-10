@@ -29,7 +29,8 @@
     "viewAll": "View All",
     "noResults": "No results found",
     "copyright": "© {year} HeritageGraph. All rights reserved.",
-    "poweredBy": "A research initiative by CAIR-Nepal"
+    "poweredBy": "A research initiative by CAIR-Nepal",
+    "scrollToTop": "Scroll to top"
   },
   "metadata": {
     "title": "HeritageGraph: Preserving Cultural Heritage and Identity Through Knowledge Graphs",
@@ -95,7 +96,17 @@
     "identityQueue": "Identity queue",
     "truthClaims": "Truth Claims",
     "reviewWorkspace": "Review workspace",
-    "aiPipeline": "AI Pipeline"
+    "methods": "Methods & data",
+    "mySubmissions": "My submissions",
+    "updateExisting": "Update existing",
+    "myProjects": "My projects",
+    "evidenceSources": "Evidence sources",
+    "entityProposal": "Same thing twice?",
+    "relationshipProposal": "Connect two records",
+    "projectDossiers": "Project dossiers",
+    "mergeRequests": "Merge requests",
+    "kgProposals": "KG proposals",
+    "staleLinks": "Stale links"
   },
   "user": {
     "home": "Home",
@@ -137,7 +148,6 @@
     "welcome": "Welcome back, {name}!",
     "overview": "Overview",
     "recentActivity": "Recent Activity",
-    "quickActions": "Quick Actions",
     "totalContributions": "Total Contributions",
     "pendingReviews": "Pending Reviews",
     "approvedEntities": "Approved Entities",
@@ -145,16 +155,75 @@
     "greetingAfternoon": "Good afternoon",
     "greetingEvening": "Good evening",
     "greetingFallback": "Welcome",
-    "userFallback": "there",
-    "heroBadge": "HeritageGraph Dashboard",
+    "heroTitleAnonymous": "A knowledge graph of cultural heritage",
     "heroSubtitle": "Your workspace for contributing, reviewing, and exploring cultural heritage data.",
-    "exploreGraph": "Explore Knowledge Graph",
-    "documentIngestion": "Document ingestion (OCR)",
-    "yourOverview": "Your Overview",
-    "yourProgress": "Your Progress",
-    "browseByCategory": "Browse by Category",
+    "heroSubtitleAnonymous": "Community-curated heritage records, modelled in CIDOC-CRM and published as Linked Open Data. Browse without an account; sign in to contribute.",
+    "exploreGraph": "Explore knowledge graph",
+    "methodsAndData": "Methods & data",
+    "corpusOverview": "What is in the graph",
+    "yourOverview": "Your contributions",
+    "yourProgress": "Your progress",
+    "browseByCategory": "Browse by category",
     "viewAllCategories": "View all categories in the sidebar",
-    "curationReview": "Curation & Review"
+    "shortcuts": {
+      "culturalEntity": "Cultural entity",
+      "person": "Person",
+      "location": "Location",
+      "event": "Event",
+      "contributors": "Contributors"
+    },
+    "corpus": {
+      "loading": "Loading knowledge graph statistics…",
+      "unavailable": "Knowledge graph statistics are unavailable",
+      "storeUnhealthy": "The triplestore is not responding. Figures below may be incomplete.",
+      "notAvailable": "Not available",
+      "publicTriples": {
+        "label": "Published triples",
+        "hint": "Statements in the public graph — the curated records served by the museum, atlas and SPARQL endpoint."
+      },
+      "totalTriples": {
+        "label": "Total triples",
+        "hint": "All named graphs, including the frozen source archive that is never served as curated data."
+      },
+      "schemaTriples": {
+        "label": "Ontology triples",
+        "hint": "The CIDOC-CRM and HeritageGraph class and property definitions the data is validated against."
+      },
+      "distinctTypes": {
+        "label": "Distinct classes in use",
+        "hint": "Number of ontology classes with at least one instance in the public graph.",
+        "hintCapped": "Ontology classes with at least one instance in the public graph. The query returns at most 200 rows, so the true figure may be higher."
+      },
+      "verify": "These figures are read live from the triplestore. See the <methodsLink>methods and provenance page</methodsLink>, or run the query yourself against the <sparqlLink>public SPARQL endpoint</sparqlLink>."
+    },
+    "stats": {
+      "noToken": "Your session has no API token. Sign out and sign in again.",
+      "loadFailed": "Could not load your contribution statistics",
+      "loading": "Loading your contribution statistics…",
+      "notYet": "—",
+      "noChange": "No change",
+      "submissions": {
+        "title": "Your submissions",
+        "basis": "{thisMonth} this month, {lastMonth} last month. Drafts are not counted.",
+        "unmeasured": "No submissions last month, so a percentage change is undefined."
+      },
+      "approval": {
+        "title": "Acceptance rate",
+        "basis": "{accepted} of {reviewed} reviewed contributions were accepted or merged.",
+        "unmeasuredNoReviews": "None of your contributions have been reviewed yet.",
+        "unmeasuredNoCohort": "Needs reviewed contributions in both this month and last month to compare."
+      },
+      "rank": {
+        "title": "Contributor rank",
+        "basis": "Position by contribution score across all contributors.",
+        "unmeasured": "Rank movement is measured from the previous month-end snapshot; none exists yet."
+      },
+      "reviewed": {
+        "title": "Reviewed",
+        "basis": "Contributions with a final review decision.",
+        "pending": "{pending} still awaiting review."
+      }
+    }
   },
   "contribute": {
     "title": "Contribute",
@@ -333,7 +402,8 @@
       "sparqlNote": "Query the public partition directly (read-only SPARQL):",
       "copySparql": "Copy sample SPARQL",
       "openSparql": "Open SPARQL endpoint",
-      "fullMethodsPage": "Full methods documentation"
+      "fullMethodsPage": "Full methods documentation",
+      "doiPending": "Not yet deposited"
     },
     "filters": {
       "regionLabel": "Heritage filters",
@@ -742,51 +812,250 @@
   },
   "about": {
     "hero": {
-      "badge": "About HeritageGraph",
-      "titlePrefix": "Preserving Cultural Heritage Through",
-      "titleHighlight": "Knowledge Graphs",
-      "description": "HeritageGraph is a platform by CAIR-Nepal for digitally preserving and publishing cultural heritage data as Linked Open Data, connecting communities, scholars, and institutions worldwide.",
-      "startContributing": "Start Contributing",
-      "exploreGraph": "Explore the Graph"
+      "titlePrefix": "Preserving cultural heritage through",
+      "titleHighlight": "knowledge graphs",
+      "description": "HeritageGraph is a platform by CAIR-Nepal for documenting cultural heritage — with a focus on Nepalese and Himalayan heritage — and publishing it as Linked Open Data modelled in CIDOC-CRM.",
+      "startContributing": "Start contributing",
+      "methods": "Methods & provenance"
     },
     "mission": {
-      "title": "Our Mission",
-      "paragraph1": "Cultural heritage is the living memory of humanity—traditions, artifacts, stories, and practices that connect us to our past and guide our future. Yet much of this heritage remains undocumented, fragmented across institutions, or at risk of being lost.",
+      "title": "Our mission",
+      "paragraph1": "Cultural heritage is the living memory of communities — traditions, artifacts, stories, and practices that connect the present to the past. Much of it remains undocumented, fragmented across institutions, or at risk of being lost.",
       "appName": "HeritageGraph",
-      "paragraph2": "aims to create a comprehensive, interconnected digital archive of cultural heritage using modern knowledge graph technologies. By publishing heritage data as Linked Open Data following CIDOC-CRM standards, we enable researchers, communities, and institutions to discover connections, share knowledge, and preserve cultural memory for future generations."
+      "paragraph2": "builds an interconnected digital record of that heritage using knowledge graph technologies. Publishing heritage data as Linked Open Data following CIDOC-CRM lets researchers, communities, and institutions trace connections, cite sources, and reuse the material under clear terms."
     },
     "sections": {
       "coreFeatures": {
         "prefix": "Core",
-        "highlight": "Features"
+        "highlight": "features"
       },
-      "knowledgeDomains": {
-        "prefix": "Knowledge",
-        "highlight": "Domains"
+      "data": {
+        "prefix": "Data,",
+        "highlight": "provenance and reuse"
       },
-      "progression": {
-        "prefix": "Progression",
-        "highlight": "System"
+      "standards": {
+        "prefix": "Standards",
+        "highlight": "and vocabularies"
+      }
+    },
+    "features": {
+      "knowledgeGraph": {
+        "title": "Knowledge graph",
+        "desc": "Interactive graph view over the CIDOC-CRM model, showing how records connect."
       },
-      "techStack": {
-        "prefix": "Technology",
-        "highlight": "Stack"
+      "linkedOpenData": {
+        "title": "Linked Open Data",
+        "desc": "Persistent w3id.org identifiers, RDF content negotiation, and a public SPARQL endpoint."
+      },
+      "communityCuration": {
+        "title": "Community curation",
+        "desc": "Contributions from community members, scholars, and institutions, each attributed and versioned."
+      },
+      "epistemicReview": {
+        "title": "Epistemic review",
+        "desc": "Claims carry sources and confidence, and are reviewed before publication. How that works is documented on the methods page."
+      }
+    },
+    "data": {
+      "title": "How the data is governed",
+      "description": "What a reader, reviewer, or reuser needs to know before relying on these records.",
+      "provenance": {
+        "term": "Provenance",
+        "definition": "Imported sources are kept in frozen, separately named graphs. Curated claims carry a data source and a confidence value, so every published statement can be traced to where it came from."
+      },
+      "access": {
+        "term": "Access tiers (CARE)",
+        "definition": "Records can be marked public, restricted, community-only, or culturally sensitive. The SPARQL proxy filters restricted material rather than relying on the interface to hide it."
+      },
+      "licensing": {
+        "term": "Licensing",
+        "definition": "Software is MIT-licensed. Data carries per-source terms — OpenStreetMap, Wikidata, UNESCO and community contributions differ, and the applicable licence travels with each source."
+      },
+      "identifiers": {
+        "term": "Identifiers",
+        "definition": "Entities receive persistent w3id.org IRIs. External alignments are recorded as explicit links rather than silent merges."
+      },
+      "methodsCta": "Methods & provenance",
+      "licenseCta": "Data licence terms"
+    },
+    "standards": {
+      "title": "Built on published standards",
+      "description": "The model is not bespoke: it reuses established heritage and semantic web vocabularies so the data is interoperable with other archives.",
+      "cidoc": {
+        "name": "CIDOC-CRM",
+        "role": "Core ontology for cultural heritage documentation"
+      },
+      "crminf": {
+        "name": "CRMinf",
+        "role": "Argumentation model for beliefs, inference and evidence"
+      },
+      "linkml": {
+        "name": "LinkML",
+        "role": "Schema source that generates the ontology and forms"
+      },
+      "shacl": {
+        "name": "SHACL",
+        "role": "Shape constraints validating records before publication"
+      },
+      "skos": {
+        "name": "SKOS",
+        "role": "Controlled vocabularies and concept schemes"
+      },
+      "voidDcat": {
+        "name": "VoID / DCAT",
+        "role": "Machine-readable dataset descriptions for discovery"
       }
     },
     "cair": {
       "title": "About CAIR-Nepal",
       "subtitle": "Center for Artificial Intelligence Research Nepal",
-      "description": "CAIR-Nepal is a non-profit research organization dedicated to advancing artificial intelligence research and its applications for social good in Nepal and the broader region. HeritageGraph is one of our flagship projects, combining AI, knowledge graphs, and community engagement to preserve cultural heritage."
+      "description": "CAIR-Nepal is a non-profit research organization advancing artificial intelligence research and its applications for social good in Nepal and the wider region. HeritageGraph is one of its projects.",
+      "website": "Visit website",
+      "contact": "Contact"
     },
     "cta": {
-      "title": "Ready to Preserve Heritage?",
-      "description": "Join thousands of contributors worldwide in documenting, curating, and preserving cultural heritage for future generations. Every contribution matters.",
-      "contribute": "Make Your First Contribution",
-      "browse": "Browse the Archive"
+      "title": "Contribute to the record",
+      "description": "Documenting heritage is slow, collaborative work. Add a record, cite a source, or review someone else's contribution.",
+      "contribute": "Make a contribution",
+      "browse": "Browse the archive"
     },
     "openSource": {
-      "title": "Open Source",
-      "description": "HeritageGraph is open source. Contributions are welcome!"
+      "title": "Open source",
+      "description": "HeritageGraph is developed in the open. Issues and contributions are welcome.",
+      "viewSource": "View source",
+      "howToCite": "How to cite"
+    }
+  },
+  "methods": {
+    "metaTitle": "Methods · HeritageGraph",
+    "metaDescription": "Methods, provenance, review model, FAIR/CARE compliance, and reproducibility for the HeritageGraph cultural heritage knowledge graph.",
+    "eyebrow": "HeritageGraph · methods documentation",
+    "title": "Methods & data",
+    "intro": "How HeritageGraph builds, reviews, and publishes a CIDOC-CRM-aligned knowledge graph, and what a reader needs in order to check any of it independently.",
+    "release": {
+      "heading": "Software release",
+      "version": "Version",
+      "doi": "DOI",
+      "doiPending": "Not yet deposited — cite the repository and the corpus SHA-256 below.",
+      "codeLicense": "Code license",
+      "dataLicense": "Data license",
+      "dataLicenseValue": "CC BY 4.0 curated overlay; third-party layers retain upstream licenses (see matrix)"
+    },
+    "review": {
+      "heading": "Review model",
+      "intro": "Contributions are reviewed by people holding one of three reviewer personas, recorded on <code>ReviewerRole</code> with an expertise area and an active flag. Capability is cumulative: each persona can do everything the one above it can.",
+      "tablePersona": "Persona",
+      "tableCan": "Can",
+      "tableCannot": "Cannot",
+      "personas": {
+        "communityReviewer": {
+          "name": "Community reviewer",
+          "can": "Approve clear-cut contributions, request changes, escalate to an expert.",
+          "cannot": "Adjust confidence scores, or resolve conflicting claims."
+        },
+        "domainExpert": {
+          "name": "Domain expert",
+          "can": "Verify claims, adjust confidence, reconcile conflicting evidence.",
+          "cannot": "Supersede records, merge locked identities, or assign reviewer roles."
+        },
+        "expertCurator": {
+          "name": "Expert curator",
+          "can": "Reconcile identity, supersede records, export data, manage verifications, assign reviewer roles.",
+          "cannot": "Approve a merge request they opened themselves."
+        }
+      },
+      "assignment": "<term>Assignment</term> — roles are granted by another user and recorded with the granting account, so reviewer authority is itself auditable.",
+      "separationOfDuties": "<term>Separation of duties</term> — <code>CannotApproveOwnMergeRequest</code> blocks the account that opened a merge request from approving it, at the object-permission level rather than in the interface.",
+      "publicationGate": "<term>Publication gate</term> — only <code>accepted</code>, <code>merged</code> and <code>published</code> rows reach the public graph. Unknown status values are withheld by default rather than allowed.",
+      "labelGate": "<term>Label gate</term> — a row without a real name is withheld even if approved, so a stray keystroke cannot become a node in the graph or a pin on the atlas.",
+      "identityLock": "<term>Identity locks</term> — merging into a locked cluster, or over a recorded conflict, requires an expert curator.",
+      "selectivityCaveat": "Reviewer selectivity has not yet been characterised: the acceptance rate over the current corpus is not a meaningful measure at this sample size, and no inter-reviewer agreement has been computed. Do not cite an acceptance rate from this deployment as evidence of review rigour."
+    },
+    "fair": {
+      "heading": "FAIR + CARE",
+      "findable": "<term>Findable</term> — w3id resource IRIs; VoID/DCAT dataset description; corpus fingerprint (<code>manage.py corpus_fingerprint</code>).",
+      "accessible": "<term>Accessible</term> — HTTPS dereference plus a CARE-aware read-only SPARQL endpoint (<code>/sparql/</code>).",
+      "interoperable": "<term>Interoperable</term> — CIDOC-CRM, CRMinf, LinkML registry, CRM bridge, SHACL shapes, SKOS vocabularies.",
+      "reusable": "<term>Reusable</term> — license matrix below; frozen L0 dump with SHA-256; idempotent L1 ETL; ontology pin in import reports.",
+      "care": "<term>CARE</term> — <code>access_tier</code> and TK labels on sources; sensitive tiers are filtered by the SPARQL proxy, not merely hidden in the interface. Community consent governance is not yet in place — see limitations.",
+      "checklist": "Full machine-readable checklist: <code>documentation/research/NATURE_KG_RIGOR.md</code>; ethics and consent status: <code>documentation/research/ETHICS_AND_CONSENT.md</code>."
+    },
+    "licenses": {
+      "heading": "License matrix",
+      "layer": "Layer",
+      "license": "License",
+      "note": "Note",
+      "layers": {
+        "software": {
+          "name": "Software",
+          "note": "Platform source code (CITATION.cff / LICENSE)."
+        },
+        "curatedOverlay": {
+          "name": "Curated overlay (graph/public)",
+          "note": "Review-gated assertions; CARE tiers may withhold rows from public SPARQL."
+        },
+        "openstreetmap": {
+          "name": "OpenStreetMap subset (L0/L1)",
+          "note": "© OSM contributors — attribution and share-alike on the database subset."
+        },
+        "wikidata": {
+          "name": "Wikidata subset (L0/L1)",
+          "note": "Factual statements; media and sitelinks may differ."
+        },
+        "unesco": {
+          "name": "UNESCO WHC subset",
+          "note": "Not assumed CC BY; verify per source page."
+        },
+        "intangible": {
+          "name": "CAIR curated intangible",
+          "note": "Living traditions — community authority to control (TK Labels where applied)."
+        }
+      }
+    },
+    "model": {
+      "heading": "Ontology & graph model",
+      "schema": "Schema: LinkML registry generated from <code>ontology/HeritageGraph.yaml</code> (CIDOC-CRM bridge, SHACL shapes, SKOS vocabularies).",
+      "namedGraph": "Published instances live in the named graph <code>{graph}</code>.",
+      "museumView": "Museum live view: SPARQL projection via <code>GET /api/v1/cidoc/kg/graph/?scope=reviewed</code> — nodes typed by <code>rdf:type</code>, edges are asserted triples rather than client-side heuristics.",
+      "lux": "External Yale LUX bulk import stays in <code>imported/lux</code>; only entities linked with <code>skos:exactMatch</code> appear in the museum. It is a linkset, not a merge into the public partition.",
+      "twoLayer": "Large research dumps (DANAM-aligned N-Quads) use a two-layer policy: frozen L0 named graphs for citation and SPARQL, plus curated L1 materialisation into <code>graph/public</code>. See <code>documentation/research/DANAM_CORPUS_INTEGRATION_REPORT.md</code>."
+    },
+    "corpusPin": {
+      "heading": "DANAM corpus pin",
+      "dump": "Dump",
+      "sha": "SHA-256",
+      "l0": "L0 load",
+      "l0Value": "<code>manage.py rdf_load_imported_nq</code> (never writes to the public graph)",
+      "l1": "L1 ETL",
+      "l1Value": "<code>manage.py import_danam_nq</code> (idempotent by external IRI)",
+      "competency": "Competency SPARQL"
+    },
+    "pipeline": {
+      "heading": "Publication pipeline",
+      "save": "Contributions are saved in Django — cultural entities, CIDOC metadata, and relationship assertions.",
+      "review": "Review by a qualified persona, as described above; only terminal approval states pass the publication gate.",
+      "project": "<code>kg_publish</code> / <code>rdf_rebuild</code> project triples into Oxigraph; the provenance partition records agent and source.",
+      "integrity": "Integrity gate: <code>kg_rigor_audit</code> checks namespace, connectivity, pollution, L0 isolation, and provenance coverage. Use <code>--strict</code> for a release.",
+      "evaluate": "Evaluation: <code>kg_evaluate</code> against an expert gold standard. Runs mark themselves <code>reportable: false</code> when the gold set is too small or absent, and those figures must not be cited."
+    },
+    "limitations": {
+      "heading": "Limitations",
+      "corpusSize": "The corpus is community-curated and growing — it is not a complete national inventory.",
+      "temporal": "Temporal coverage (EDTF) is incomplete on many event nodes.",
+      "reconciliation": "External identifier reconciliation (Wikidata, Getty) is in progress beyond DANAM <code>sameAs</code>.",
+      "demoCorpus": "The museum demo corpus is illustrative only; cite the live reviewed graph for research.",
+      "doi": "No Zenodo DOI has been minted yet. Cite the repository and the corpus SHA-256 above in the interim.",
+      "shacl": "SHACL-on-write is opt-in (<code>RDF_SHACL_VALIDATE_ON_WRITE</code>); shapes are generated and available for offline conformance reports.",
+      "evaluation": "No reportable precision/recall evaluation exists yet: the gold standard has not been annotated. Any evaluation figures currently produced are marked not reportable.",
+      "consent": "A formal community consent process and institutional ethics review have not been completed. Culturally sensitive classes are withheld from public query results pending that work."
+    },
+    "lux": {
+      "heading": "LUX attribution",
+      "body": "Yale University Art Gallery LUX data is used under its terms as a linked external authority. HeritageGraph stores stubs in <code>imported/lux</code> and links curated entities with <code>skos:exactMatch</code>; Yale IRIs are not served as an isolated dump in the museum view."
+    },
+    "cta": {
+      "museum": "Open Heritage Museum (live)",
+      "about": "About HeritageGraph"
     }
   }
 }

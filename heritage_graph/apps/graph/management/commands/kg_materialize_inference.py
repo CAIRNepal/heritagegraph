@@ -9,7 +9,10 @@ from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
-    help = "Run owlrl expansion on public+schema graphs; store novel triples in graph/inferred."
+    help = (
+        "Run owlrl expansion on public+schema graphs; store the "
+        "non-tautological triples in graph/inferred."
+    )
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -24,7 +27,14 @@ class Command(BaseCommand):
             "input_triples": report.input_triples,
             "inferred_triples": report.inferred_triples,
             "novel_triples": report.novel_triples,
+            "tautological_triples": report.tautological_triples,
             "novelty_rate": report.novelty_rate,
+            "novelty_rate_definition": (
+                "novel_triples / inferred_triples, where novel excludes "
+                "universal-class membership, reflexive identity/subsumption, "
+                "and closure over the RDF/RDFS/OWL/XSD vocabularies"
+            ),
+            "consistency_violations": report.consistency_violations,
             "stored": report.stored,
         }
         text = json.dumps(payload, indent=2)
@@ -35,4 +45,8 @@ class Command(BaseCommand):
         if report.stored:
             self.stdout.write(self.style.SUCCESS("Inferred graph updated."))
         else:
-            self.stdout.write(self.style.WARNING("Inferred graph not stored (RDF_SYNC off or empty)."))
+            self.stdout.write(
+                self.style.WARNING(
+                    "Inferred graph not stored (RDF_SYNC off or empty)."
+                )
+            )

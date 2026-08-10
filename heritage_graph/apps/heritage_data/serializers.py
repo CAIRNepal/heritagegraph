@@ -374,14 +374,28 @@ class SubmissionIdSerializer(serializers.ModelSerializer):
 
 
 class UserStatsSerializer(serializers.Serializer):
+    """Contributor dashboard counters.
+
+    Nullable fields are null when the quantity has not been measured -- no
+    reviewed contributions yet, no previous month to compare against, no
+    earlier snapshot. Clients must render that as "not enough data" and never
+    substitute a default.
+    """
+
     total_submissions = serializers.IntegerField()
-    submissions_growth = serializers.FloatField()
-    approval_rate = serializers.FloatField()
-    approval_rate_change = serializers.FloatField()
-    contributor_rank = serializers.IntegerField()
-    rank_change = serializers.IntegerField()
-    community_impact_score = serializers.FloatField()
-    impact_score_change = serializers.FloatField()
+    submissions_this_month = serializers.IntegerField()
+    submissions_last_month = serializers.IntegerField()
+    submissions_growth = serializers.FloatField(allow_null=True)
+
+    total_reviewed = serializers.IntegerField()
+    accepted_count = serializers.IntegerField()
+    approval_rate = serializers.FloatField(allow_null=True)
+    approval_rate_change = serializers.FloatField(allow_null=True)
+
+    contributor_rank = serializers.IntegerField(allow_null=True)
+    rank_change = serializers.IntegerField(allow_null=True)
+
+    updated_at = serializers.DateTimeField(read_only=True)
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

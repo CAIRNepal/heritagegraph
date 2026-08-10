@@ -8,18 +8,38 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from apps.graph.kg_engine.partitions import GraphPartition
+
+if TYPE_CHECKING:
+    # rdflib is imported lazily inside the functions below; this makes the
+    # string annotations resolvable to type checkers and linters.
+    from rdflib import Graph
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class InferenceReport:
+    """Outcome of one OWL-RL materialisation pass.
+
+    `inferred_triples` counts everything the reasoner derived that was not
+    already asserted. Most of that is bookkeeping -- `x rdf:type owl:Thing`,
+    reflexive `owl:sameAs`, closure over the RDF/RDFS/OWL vocabularies -- which
+    is entailed but carries no heritage knowledge.
+
+    `novel_triples` counts only the derived statements that survive the
+    tautology filter, and `novelty_rate` is that share. This is the figure the
+    evaluation harness asks for ("% non-tautological inferences"); reporting
+    derived-over-derived instead would always be 1.0 by construction and would
+    measure nothing.
+    """
+
     input_triples: int
     inferred_triples: int
     novel_triples: int
+    tautological_triples: int
     novelty_rate: float
     stored: bool
     consistency_violations: int = 0
@@ -100,14 +120,80 @@ def _expand_inferences(data_graph: "Graph") -> "Graph":
     return expanded
 
 
-def _novel_triples(base: set[tuple], expanded: set[tuple]) -> set[tuple]:
-    return {t for t in expanded if t not in base}
+# Namespaces whose subjects describe the vocabulary rather than the heritage
+# domain. OWL-RL closes over its own axioms, and those entailments say nothing
+# about Nepalese heritage.
+_VOCABULARY_NAMESPACES = (
+    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "http://www.w3.org/2000/01/rdf-schema#",
+    "http://www.w3.org/2002/07/owl#",
+    "http://www.w3.org/2001/XMLSchema#",
+)
+
+# Types every resource trivially belongs to.
+_TRIVIAL_TYPES = (
+    "http://www.w3.org/2002/07/owl#Thing",
+    "http://www.w3.org/2000/01/rdf-schema#Resource",
+    "http://www.w3.org/2002/07/owl#NamedIndividual",
+)
+
+# Predicates that OWL-RL always derives reflexively (x R x).
+_REFLEXIVE_PREDICATES = (
+    "http://www.w3.org/2002/07/owl#sameAs",
+    "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+    "http://www.w3.org/2000/01/rdf-schema#subPropertyOf",
+    "http://www.w3.org/2002/07/owl#equivalentClass",
+    "http://www.w3.org/2002/07/owl#equivalentProperty",
+)
+
+_RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+
+def _derived_triples(base: set[tuple], expanded: set[tuple]) -> set[tuple]:
+    """Triples the reasoner produced that were not already asserted."""
+    return expanded - base
+
+
+def _is_tautological(triple: tuple[str, str, str]) -> bool:
+    """True when a derived triple is entailed but carries no domain knowledge.
+
+    Filtered out:
+      - membership of a universal class (owl:Thing, rdfs:Resource, …)
+      - reflexive identity/subsumption (x owl:sameAs x, c rdfs:subClassOf c, …)
+      - closure over the RDF/RDFS/OWL/XSD vocabularies themselves
+    """
+    subject, predicate, obj = triple
+
+    if predicate == _RDF_TYPE and obj in _TRIVIAL_TYPES:
+        return True
+
+    if predicate in _REFLEXIVE_PREDICATES and subject == obj:
+        return True
+
+    if subject.startswith(_VOCABULARY_NAMESPACES):
+        return True
+
+    return False
+
+
+def _partition_derived(
+    derived: set[tuple],
+) -> tuple[set[tuple], set[tuple]]:
+    """Split derived triples into (informative, tautological)."""
+    informative: set[tuple] = set()
+    tautological: set[tuple] = set()
+    for triple in derived:
+        if _is_tautological(triple):
+            tautological.add(triple)
+        else:
+            informative.add(triple)
+    return informative, tautological
 
 
 def _valid_http_iri(iri: str) -> bool:
     if not iri.startswith("http"):
         return False
-    return not any(ch in iri for ch in " \t\n<>\"{}|\\^`")
+    return not any(ch in iri for ch in ' \t\n<>"{}|\\^`')
 
 
 def materialize_inferred_graph(*, store: Any | None = None) -> InferenceReport:
@@ -121,7 +207,8 @@ def materialize_inferred_graph(*, store: Any | None = None) -> InferenceReport:
 
     expanded_g = _expand_inferences(base_g)
     expanded_set = {(str(s), str(p), str(o)) for s, p, o in expanded_g}
-    novel = _novel_triples(base_set, expanded_set)
+    derived = _derived_triples(base_set, expanded_set)
+    novel, tautological = _partition_derived(derived)
     violations = _consistency_violations(expanded_g)
     if violations:
         logger.warning(
@@ -170,13 +257,15 @@ def materialize_inferred_graph(*, store: Any | None = None) -> InferenceReport:
                     break
 
     input_n = len(base_set)
-    inf_n = max(0, len(expanded_set) - input_n)
+    derived_n = len(derived)
     nov_n = len(novel)
-    rate = round(nov_n / inf_n, 4) if inf_n else 0.0
+    taut_n = len(tautological)
+    rate = round(nov_n / derived_n, 4) if derived_n else 0.0
     return InferenceReport(
         input_triples=input_n,
-        inferred_triples=inf_n,
+        inferred_triples=derived_n,
         novel_triples=nov_n,
+        tautological_triples=taut_n,
         novelty_rate=rate,
         stored=stored,
         consistency_violations=len(violations),

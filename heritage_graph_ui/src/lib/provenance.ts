@@ -11,7 +11,18 @@ import type { KgGraphResponse } from '@/lib/kg-graph';
 /** Release aligned with CITATION.cff / CHANGELOG.md */
 export const HERITAGEGRAPH_RELEASE = '0.1.0';
 
-export const HERITAGEGRAPH_DOI = '10.5281/zenodo.XXXXXXX';
+export const HERITAGEGRAPH_REPOSITORY = 'https://github.com/CAIRNepal/heritagegraph';
+
+/**
+ * Zenodo DOI, or null until the first deposit exists.
+ *
+ * Deliberately nullable rather than a placeholder string. A stand-in like
+ * `10.5281/zenodo.XXXXXXX` renders as a real identifier in the Methods table and
+ * gets copied into bibliographies via the citation button; null forces every
+ * call site to say "not yet deposited" instead. Set this, `CITATION.cff` and
+ * `.zenodo.json` together when the release is deposited.
+ */
+export const HERITAGEGRAPH_DOI: string | null = null;
 
 export const HERITAGEGRAPH_PUBLIC_GRAPH = 'https://w3id.org/heritagegraph/graph/public';
 
@@ -19,44 +30,35 @@ export const HERITAGEGRAPH_PUBLIC_GRAPH = 'https://w3id.org/heritagegraph/graph/
 export const DANAM_NQ_SHA256 =
   '14decfcdf95aee0799b65b572e4ef0ec6cabc8581201661b35ee5a6d059c050c';
 
-export const HERITAGEGRAPH_CITATION = `Oli, N. & Karki, N. HeritageGraph: A Cultural Heritage Linked Open Data Platform (v${HERITAGEGRAPH_RELEASE}). CAIR-Nepal. https://github.com/CAIRNepal/CHLOD`;
+/**
+ * Citation string offered by the "copy citation" buttons.
+ *
+ * Includes the DOI only when one exists, so the copied text is never a citation
+ * a reader cannot resolve.
+ */
+export const HERITAGEGRAPH_CITATION = [
+  `Oli, N. & Karki, N. HeritageGraph: A Cultural Heritage Linked Open Data Platform`,
+  `(v${HERITAGEGRAPH_RELEASE}). CAIR-Nepal.`,
+  HERITAGEGRAPH_DOI ? `https://doi.org/${HERITAGEGRAPH_DOI}` : HERITAGEGRAPH_REPOSITORY,
+].join(' ');
 
-/** License stratification for Methods / Nature FAIR table (code + data layers). */
+/**
+ * License stratification for the Methods table (code + data layers).
+ *
+ * `key` indexes the `methods.licenses.layers.*` messages; the layer name and
+ * note are prose and belong in the message catalogue, not here. `license` is a
+ * licence identifier and is intentionally not translated.
+ */
 export const LICENSE_MATRIX: ReadonlyArray<{
-  layer: string;
+  key: string;
   license: string;
-  note: string;
 }> = [
-  {
-    layer: 'Software',
-    license: 'MIT',
-    note: 'Platform source code (CITATION.cff / LICENSE).',
-  },
-  {
-    layer: 'Curated overlay (graph/public)',
-    license: 'CC BY 4.0',
-    note: 'Review-gated assertions; CARE tiers may withhold rows from public SPARQL.',
-  },
-  {
-    layer: 'OpenStreetMap subset (L0/L1)',
-    license: 'ODbL 1.0',
-    note: '© OSM contributors — attribution + share-alike on the database subset.',
-  },
-  {
-    layer: 'Wikidata subset (L0/L1)',
-    license: 'CC0 1.0',
-    note: 'Factual statements; media/sitelinks may differ.',
-  },
-  {
-    layer: 'UNESCO WHC subset',
-    license: 'UNESCO terms',
-    note: 'Not assumed CC BY; verify per source page.',
-  },
-  {
-    layer: 'CAIR curated intangible',
-    license: 'CC BY 4.0 + CARE',
-    note: 'Living traditions — community authority to control (TK Labels where applied).',
-  },
+  { key: 'software', license: 'MIT' },
+  { key: 'curatedOverlay', license: 'CC BY 4.0' },
+  { key: 'openstreetmap', license: 'ODbL 1.0' },
+  { key: 'wikidata', license: 'CC0 1.0' },
+  { key: 'unesco', license: 'UNESCO terms' },
+  { key: 'intangible', license: 'CC BY 4.0 + CARE' },
 ];
 
 /** Resource URI segment → knowledge route domain (when they differ). */

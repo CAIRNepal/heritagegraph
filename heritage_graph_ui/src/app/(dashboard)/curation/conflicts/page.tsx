@@ -32,10 +32,6 @@ export default function ConflictsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isReviewer) {
-    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
-  }
-
   const getHeaders = useCallback(() => {
     const token = (session as unknown as Record<string, unknown>)?.accessToken as string | undefined;
     const headers: HeadersInit = { 'Content-Type': 'application/json' };
@@ -58,6 +54,13 @@ export default function ConflictsPage() {
   }, [getHeaders]);
 
   useEffect(() => { if (session) fetchConflicts(); }, [session, fetchConflicts]);
+
+  // Every hook above runs unconditionally; the access gate returns only
+  // after them so hook order is stable across renders.
+  if (!isReviewer) {
+    return <AccessDenied requiredRole="reviewer" userEmail={session?.user?.email} />;
+  }
+
 
   return (
     <>

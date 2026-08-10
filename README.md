@@ -32,7 +32,7 @@ Sounds interesting and want to try it out?
 Clone the repository:
 
 ```bash
-git clone https://github.com/CAIRNepal/CHLOD
+git clone https://github.com/CAIRNepal/heritagegraph
 ```
 
 Switch to the working branch (`v1`):

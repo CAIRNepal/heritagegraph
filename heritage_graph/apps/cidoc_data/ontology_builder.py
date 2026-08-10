@@ -125,6 +125,21 @@ def build_registry_jsonschema_blob(classes: dict[str, Any]) -> dict[str, Any]:
             merged = dict(ps)
             merged.update(extras)
             ps = merged
+
+        # Optional fields may be omitted or explicitly null (common on PATCH / empty forms).
+        if not field.get("required"):
+            if "anyOf" in ps:
+                branches = list(ps["anyOf"])
+                if not any(b.get("type") == "null" for b in branches if isinstance(b, dict)):
+                    branches.append({"type": "null"})
+                ps = {**ps, "anyOf": branches}
+            else:
+                t = ps.get("type")
+                if isinstance(t, list):
+                    if "null" not in t:
+                        ps = {**ps, "type": [*t, "null"]}
+                elif isinstance(t, str):
+                    ps = {**ps, "type": [t, "null"]}
         return ps
 
     by_key: dict[str, Any] = {}

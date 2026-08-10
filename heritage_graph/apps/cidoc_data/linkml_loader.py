@@ -57,7 +57,17 @@ def build_fresh_payload() -> dict[str, Any]:
     classes = doc["classes"]
     enums = doc["enums"]
     version = compute_schema_version(schema_path, ext, classes, enums)
-    _tools_dir = Path(settings.BASE_DIR) / "tools"
+    # tools/ sits next to ontology/ at the repo root. In development.py BASE_DIR is
+    # heritage_graph/, so BASE_DIR/tools is wrong — resolve from the schema path.
+    _tools_dir = schema_path.parent.parent / "tools"
+    if not _tools_dir.is_dir():
+        candidate = Path(settings.BASE_DIR) / "tools"
+        if candidate.is_dir():
+            _tools_dir = candidate
+        else:
+            parent_tools = Path(settings.BASE_DIR).parent / "tools"
+            if parent_tools.is_dir():
+                _tools_dir = parent_tools
     ui_classmap_path = _tools_dir / "ui-classmap.yaml"
     contribute_hub_path = _tools_dir / "contribute-hub.yaml"
     core_parts = [schema_path.read_bytes(), b"\n"]

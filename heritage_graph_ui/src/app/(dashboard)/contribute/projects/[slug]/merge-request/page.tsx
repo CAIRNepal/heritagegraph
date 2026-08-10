@@ -25,7 +25,8 @@ export default function OpenMergeRequestPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
   const { data: session } = useSession();
-  const { project, loading: projectLoading } = useProjectDetail(params.slug);
+  const { project, loadStatus } = useProjectDetail(params.slug);
+  const projectLoading = loadStatus === "idle" || loadStatus === "loading";
 
   const [validationPassed, setValidationPassed] = useState(false);
   const [summary, setSummary] = useState("");
@@ -109,13 +110,13 @@ export default function OpenMergeRequestPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6 p-6">
       {/* Header */}
-      <motion.div {...fadeInUp}>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show">
         <p className="text-xs text-muted-foreground">Project: {project.title}</p>
         <h1 className="text-2xl font-bold">Open Merge Request</h1>
       </motion.div>
 
       {/* Pre-flight validation */}
-      <motion.div {...fadeInUp} transition={{ delay: 0.05 }}>
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" transition={{ delay: 0.05 }}>
         <ValidationStatusPanel
           projectSlug={params.slug}
           projectId={String(project.id)}
@@ -126,7 +127,9 @@ export default function OpenMergeRequestPage() {
       {/* Conflict diff preview (shown after validation passes) */}
       {diff && (
         <motion.div
-          {...fadeInUp}
+          variants={fadeInUp}
+          initial="hidden"
+          animate="show"
           transition={{ delay: 0.08 }}
           className="rounded-lg border bg-card p-4 space-y-2"
         >
@@ -155,7 +158,9 @@ export default function OpenMergeRequestPage() {
 
       {/* Form */}
       <motion.form
-        {...fadeInUp}
+        variants={fadeInUp}
+        initial="hidden"
+        animate="show"
         transition={{ delay: 0.1 }}
         onSubmit={handleSubmit}
         className="rounded-lg border bg-card p-4 space-y-5"

@@ -1,87 +1,136 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
-from .models import CulturalEntity, Submission, UserProfile, UserStats
+from .models import (
+    CulturalEntity,
+    Submission,
+    UserProfile,
+    UserStats,
+    UserStatsSnapshot,
+)
 
 logger = logging.getLogger(__name__)
 
+# Terminal review outcomes. `merged` is how a contribution that went through the
+# project-merge flow succeeds, so it counts as accepted; leaving it out
+# understated every contributor who works through projects. `superseded` and
+# `pending_revision` are not decisions and are deliberately excluded from both
+# the numerator and the denominator.
+ACCEPTED_STATUSES = ("accepted", "merged")
+REJECTED_STATUSES = ("rejected",)
+DECIDED_STATUSES = ACCEPTED_STATUSES + REJECTED_STATUSES
+
+# A draft has not been submitted, so it is not a submission.
+UNSUBMITTED_STATUSES = ("draft",)
+
+
+def _month_bounds(reference=None):
+    """Return (this_month_start, last_month_start) as timezone-aware datetimes."""
+    now = reference or timezone.now()
+    this_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    last_month_start = (this_month_start - timedelta(days=1)).replace(day=1)
+    return this_month_start, last_month_start
+
 
 def refresh_user_stats(user):
-    """Recompute dashboard UserStats from legacy submissions and CulturalEntity rows."""
-    today = datetime.today()
-    first_day_this_month = today.replace(day=1)
-    last_month_end = first_day_this_month - timedelta(days=1)
-    last_month_start = last_month_end.replace(day=1)
+    """Recompute dashboard UserStats for `user` from rows that actually exist.
+
+    Contributions reach this function from two tables: the legacy `Submission`
+    model and `CulturalEntity`. Every ontology (CIDOC) contribution also writes
+    a `CulturalEntity` mirror row in `cidoc_data.views.perform_create`, so the
+    registry-driven forms are counted here too.
+
+    Anything that cannot be measured is left as None rather than guessed.
+    """
+    if user is None:
+        return
+
+    this_month_start, last_month_start = _month_bounds()
 
     submissions = Submission.objects.filter(contributor=user)
-    entities = CulturalEntity.objects.filter(contributor=user)
+    entities = CulturalEntity.objects.filter(contributor=user).exclude(
+        status__in=UNSUBMITTED_STATUSES
+    )
 
     total_submissions = submissions.count() + entities.count()
 
-    submissions_this_month = (
-        submissions.filter(created_at__gte=first_day_this_month).count()
-        + entities.filter(created_at__gte=first_day_this_month).count()
+    this_month = (
+        submissions.filter(created_at__gte=this_month_start),
+        entities.filter(created_at__gte=this_month_start),
     )
-    submissions_last_month = (
+    last_month = (
         submissions.filter(
-            created_at__gte=last_month_start,
-            created_at__lte=last_month_end,
-        ).count()
-        + entities.filter(
-            created_at__gte=last_month_start,
-            created_at__lte=last_month_end,
-        ).count()
+            created_at__gte=last_month_start, created_at__lt=this_month_start
+        ),
+        entities.filter(
+            created_at__gte=last_month_start, created_at__lt=this_month_start
+        ),
     )
 
-    if submissions_last_month == 0:
-        submissions_growth = 100.0 if submissions_this_month > 0 else 0.0
-    else:
+    submissions_this_month = sum(qs.count() for qs in this_month)
+    submissions_last_month = sum(qs.count() for qs in last_month)
+
+    # A percent change needs a non-zero denominator. Going from 0 to n is not a
+    # "100% increase" -- it is undefined, and the dashboard says so.
+    if submissions_last_month:
         submissions_growth = (
             (submissions_this_month - submissions_last_month) / submissions_last_month
         ) * 100
+    else:
+        submissions_growth = None
 
-    reviewed_submissions = submissions.filter(status__in=["accepted", "rejected"])
-    reviewed_entities = entities.filter(status__in=["accepted", "rejected"])
-    total_reviewed = reviewed_submissions.count() + reviewed_entities.count()
-    accepted_count = (
-        submissions.filter(status="accepted").count()
-        + entities.filter(status="accepted").count()
+    total_reviewed = sum(
+        qs.filter(status__in=DECIDED_STATUSES).count() for qs in (submissions, entities)
     )
-    approval_rate = (accepted_count / total_reviewed * 100) if total_reviewed else 0.0
+    accepted_count = sum(
+        qs.filter(status__in=ACCEPTED_STATUSES).count()
+        for qs in (submissions, entities)
+    )
+    approval_rate = (accepted_count / total_reviewed) * 100 if total_reviewed else None
 
-    last_month_submissions = submissions.filter(
-        status__in=["accepted", "rejected"],
-        created_at__gte=last_month_start,
-        created_at__lte=last_month_end,
-    )
-    last_month_entities = entities.filter(
-        status__in=["accepted", "rejected"],
-        created_at__gte=last_month_start,
-        created_at__lte=last_month_end,
-    )
-    last_month_reviewed = last_month_submissions.count() + last_month_entities.count()
-    last_month_accepted = (
-        last_month_submissions.filter(status="accepted").count()
-        + last_month_entities.filter(status="accepted").count()
-    )
-    last_month_approval_rate = (
-        (last_month_accepted / last_month_reviewed * 100) if last_month_reviewed else 0.0
-    )
-    approval_rate_change = approval_rate - last_month_approval_rate
+    # Cohort-vs-cohort: the approval rate of contributions *created* this month
+    # against those created last month. Comparing a cumulative rate to a monthly
+    # one, as this previously did, is not a like-for-like difference.
+    def _cohort_rate(cohort):
+        reviewed = sum(qs.filter(status__in=DECIDED_STATUSES).count() for qs in cohort)
+        if not reviewed:
+            return None
+        accepted = sum(qs.filter(status__in=ACCEPTED_STATUSES).count() for qs in cohort)
+        return (accepted / reviewed) * 100
 
-    profiles = UserProfile.objects.order_by("-score").values_list("user_id", flat=True)
+    this_month_rate = _cohort_rate(this_month)
+    last_month_rate = _cohort_rate(last_month)
+    approval_rate_change = (
+        this_month_rate - last_month_rate
+        if this_month_rate is not None and last_month_rate is not None
+        else None
+    )
+
+    ranked_user_ids = list(
+        UserProfile.objects.order_by("-score", "user_id").values_list(
+            "user_id", flat=True
+        )
+    )
     try:
-        contributor_rank = list(profiles).index(user.id) + 1
+        contributor_rank = ranked_user_ids.index(user.id) + 1
     except ValueError:
-        contributor_rank = 0
+        contributor_rank = None
 
-    rank_change = 2  # placeholder
-    user_profile = UserProfile.objects.filter(user=user).first()
-    community_impact_score = round(user_profile.score / 20, 2) if user_profile else 0.0
-    impact_score_change = 0.3  # placeholder
+    # Rank movement is measured against the most recent closed-month snapshot.
+    # With no snapshot there is no measurement, so the field stays null.
+    previous = (
+        UserStatsSnapshot.objects.filter(user=user, contributor_rank__isnull=False)
+        .order_by("-period")
+        .first()
+    )
+    if previous is not None and contributor_rank is not None:
+        rank_change = previous.contributor_rank - contributor_rank
+    else:
+        rank_change = None
 
     UserStats.objects.update_or_create(
         user=user,
@@ -96,8 +145,6 @@ def refresh_user_stats(user):
             "approval_rate_change": approval_rate_change,
             "contributor_rank": contributor_rank,
             "rank_change": rank_change,
-            "community_impact_score": community_impact_score,
-            "impact_score_change": impact_score_change,
         },
     )
 
@@ -229,6 +276,7 @@ def mint_project_pid(sender, instance, created, **kwargs):
             owner_uri = f"{base_uri}/user/{owner_id}"
 
             from django.utils.timezone import now
+
             started_at = now().strftime("%Y-%m-%dT%H:%M:%SZ")
 
             ntriples = (
@@ -242,11 +290,10 @@ def mint_project_pid(sender, instance, created, **kwargs):
             graph_uri = GraphPartition.PROJECT.uri(suffix=project_id)
             enqueue_insert_nt(graph_uri=graph_uri, ntriples=ntriples, error="")
         except Exception:
-            logger.exception(
-                "PID minting RDF write failed for project %s", project_id
-            )
+            logger.exception("PID minting RDF write failed for project %s", project_id)
 
     transaction.on_commit(_write_prov_triples)
+
 
 def _notify_project_members(project, actor, notification_type, message, link=""):
     """Create Notification rows for all active project members except the actor."""
@@ -369,9 +416,7 @@ def _project_rdf_merge(project):
     if not getattr(settings, "RDF_SYNC_ENABLED", False):
         return
 
-    entity_ids = list(
-        project.entities.values_list("entity_id", flat=True)
-    )
+    entity_ids = list(project.entities.values_list("entity_id", flat=True))
     if not entity_ids:
         return
 

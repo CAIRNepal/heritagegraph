@@ -1,8 +1,9 @@
 /**
  * Shared design constants for HeritageGraph dashboard pages.
- * Matches the landing page's glassmorphic + gradient design system.
  *
  * Import from '@/lib/design' instead of re-declaring in every page file.
+ * Colours come from the tokens in globals.css — never write a literal palette
+ * class (`text-blue-700`, `bg-blue-50`) in a component.
  */
 
 /* ── framer-motion animation variants ── */
@@ -30,12 +31,27 @@ export function motionInitialWhenEnabled(reduceMotion: boolean | null): false | 
   return 'hidden';
 }
 
-/* ── card base ── one card language, token-based (no glassmorphism, no
-   hardcoded colors). Subtle elevation; raise on hover at the call site. ── */
-export const glassCard =
+/* ── card base ── one card language, token-based. Subtle elevation; raise on
+   hover at the call site. ── */
+export const surfaceCard =
   'bg-card text-card-foreground border border-border rounded-xl shadow-xs';
 
-/* ── hero header treatment ── a single restrained brand gradient (one hue
-   family) instead of a multi-stop rainbow; white foreground stays legible. ── */
+/**
+ * @deprecated Kept only so older imports keep compiling. The cards are not
+ * glassmorphic — use `surfaceCard`.
+ */
+export const glassCard = surfaceCard;
+
+/* ── hero header treatment ──
+   Uses the dedicated --hero-* tokens rather than --primary/--accent. In dark
+   mode --primary is a light blue (#5a9bff) and white text on it measures
+   2.8:1, below the WCAG AA 3:1 large-text floor. The hero tokens are dark in
+   both themes, so `heroForeground` stays legible either way. ── */
 export const heroGradient =
-  'bg-gradient-to-br from-primary to-accent rounded-xl';
+  'bg-gradient-to-br from-hero-from to-hero-to rounded-xl';
+
+/** Primary text on a hero surface. */
+export const heroForeground = 'text-hero-foreground';
+
+/** Secondary text on a hero surface — still ≥ 4.5:1 against both hero stops. */
+export const heroForegroundMuted = 'text-hero-foreground/90';

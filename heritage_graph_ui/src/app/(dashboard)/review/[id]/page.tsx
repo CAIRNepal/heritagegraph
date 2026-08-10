@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -169,7 +170,7 @@ export default function ReviewMergeRequestPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       {/* Header */}
-      <motion.div {...fadeInUp} className="flex items-start justify-between">
+      <motion.div variants={fadeInUp} initial="hidden" animate="show" className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-xl font-bold">Merge Request</h1>
@@ -286,7 +287,9 @@ export default function ReviewMergeRequestPage() {
       {/* Reviewer checklist */}
       {(mr.status === "pending" || mr.status === "changes_requested") && (
         <motion.div
-          {...fadeInUp}
+          variants={fadeInUp}
+          initial="hidden"
+          animate="show"
           transition={{ delay: 0.08 }}
           className="rounded-lg border bg-card p-4 space-y-4"
         >
@@ -397,10 +400,10 @@ function PostMergeView({ mr }: { mr: MergeRequest }) {
 
       <div className="flex gap-3">
         <Button variant="outline" size="sm" asChild>
-          <a href="/knowledge/entity">View entities in Atlas →</a>
+          <Link href="/knowledge/entity">View entities in Atlas →</Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
-          <a href="/knowledge/sparql">Query SPARQL endpoint →</a>
+          <Link href="/knowledge/sparql">Query SPARQL endpoint →</Link>
         </Button>
       </div>
     </div>

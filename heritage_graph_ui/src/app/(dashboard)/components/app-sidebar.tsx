@@ -44,12 +44,12 @@ import {
   IconFingerprint,
   IconLink,
   IconAlertTriangle,
-  // IconBrain, // re-import when the sidebar AI Pipeline entry is restored below
   IconFolders,
   IconBriefcase,
   IconClipboardList,
   IconDatabase,
   IconSearch,
+  IconFlask,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -117,7 +117,9 @@ function useSidebarRoles(): SidebarRoles {
           isPlatformAdmin: isStaff || (hasActiveReviewerRole && canManageRoles),
         });
       } catch (err) {
-        // Avoid console noise in production; roles will remain false.
+        // Roles stay false, which silently downgrades a reviewer to no
+        // permissions -- log it so the cause is diagnosable.
+        console.error('Failed to load sidebar roles', err);
       }
     })();
   }, [session, status]);
@@ -129,6 +131,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
   const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const { status } = useSession();
   const showAuthedNav = status === 'authenticated';
   const [showScrollTop, setShowScrollTop] = React.useState(false);
@@ -220,7 +223,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="sticky top-1 z-20 mx-auto flex items-center gap-1 rounded-full bg-primary/90 px-3 py-1 text-[11px] font-medium text-primary-foreground shadow-sm transition-all hover:bg-primary hover:shadow-md"
             >
               <IconChevronUp className="size-3.5" />
-              {!isCollapsed && <span>Scroll to top</span>}
+              {!isCollapsed && <span>{tCommon('scrollToTop')}</span>}
             </button>
           </>
         )}
@@ -230,6 +233,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           items={[
             { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
             { title: t('about'), url: '/about', icon: IconInfoCircle },
+            // Methods & provenance is the page a reviewer or reusing researcher
+            // needs first. It used to be reachable only from the museum page and
+            // the command palette.
+            { title: t('methods'), url: '/methods', icon: IconFlask },
             { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
             { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
             { title: t('heritageMuseum'), url: '/heritage-museum', icon: IconBuildingMonument },
@@ -256,45 +263,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ...(showAuthedNav
               ? [
                   {
-                    title: 'My submissions',
+                    title: t('mySubmissions'),
                     url: '/contribute/my-contributions',
                     icon: IconClipboardList,
                   },
                   {
-                    title: 'Update existing',
+                    title: t('updateExisting'),
                     url: '/contribute/improve',
                     icon: IconSearch,
                   },
                   {
-                    title: 'My projects',
+                    title: t('myProjects'),
                     url: '/contribute/projects',
                     icon: IconFolders,
                   },
                   {
-                    title: 'Evidence sources',
+                    title: t('evidenceSources'),
                     url: '/contribute/data-source',
                     icon: IconDatabase,
                   },
                   {
-                    title: 'Same thing twice?',
+                    title: t('entityProposal'),
                     url: '/contribute/entity-proposal',
                     icon: IconFingerprint,
                   },
                   {
-                    title: 'Connect two records',
+                    title: t('relationshipProposal'),
                     url: '/contribute/relationship-proposal',
                     icon: IconLink,
                   },
-                  // ────────────────────────────────────────────────────────
-                  // AI Pipeline — part of the agentic pipeline.
-                  // Hidden from the sidebar for now; the /contribute/pipeline
-                  // route still exists. Re-enable when the pipeline UX is ready.
-                  // ────────────────────────────────────────────────────────
-                  // {
-                  //   title: t('aiPipeline'),
-                  //   url: '/contribute/pipeline',
-                  //   icon: IconBrain,
-                  // },
                 ]
               : []),
             { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },
@@ -314,18 +311,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ...(isReviewer ? [
             { title: t('reviewQueue'), url: '/curation/review', icon: IconShield },
             {
-              title: 'Project dossiers',
+              title: t('projectDossiers'),
               url: '/curation/projects-review',
               icon: IconBriefcase,
             },
             { title: t('reviewWorkspace'), url: '/review', icon: IconListCheck },
-            { title: 'Merge Requests', url: '/review/merge-requests', icon: IconGitFork },
+            { title: t('mergeRequests'), url: '/review/merge-requests', icon: IconGitFork },
           ] : []),
           ...(isModerator
-            ? [{ title: 'KG proposals', url: '/curation/kg-proposals', icon: IconLink }]
+            ? [{ title: t('kgProposals'), url: '/curation/kg-proposals', icon: IconLink }]
             : []),
           ...(isReviewer
-            ? [{ title: 'Stale Links', url: '/curation/stale-links', icon: IconAlertTriangle }]
+            ? [{ title: t('staleLinks'), url: '/curation/stale-links', icon: IconAlertTriangle }]
             : []),
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },

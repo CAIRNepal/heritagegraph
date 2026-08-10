@@ -1,20 +1,39 @@
 # last_edit.md — session change log
 
 Running log of edits made by the AI assistant in this working session.
-**Updated:** 2026-06-10 (§24 duplicate contribution policy). Newest entries at the top of each section.
+**Updated:** 2026-07-27 (DANAM L1 importer). Newest entries at the top of each section.
 Legend: ✅ verified (tests/audit/curl pass) · 🆕 new file · ✏️ modified · 🗂️ data/runtime (not a file edit)
 
 ---
 
 ## 0. Status snapshot (current)
+- **DANAM L1 importer:** `manage.py import_danam_nq` ✅ dry-run 25 structures; apply 5 structures + 5 assertions idempotent; parser tests 6/6
 - **Entity resolution:** contribution-time linking + `refresh_identity_candidates --auto-merge` on deploy (§22–23) ✅
-- Backend test suite: **63/63 green** ✅
+- Backend test suite: **63/63 green** ✅ (plus new `test_danam_import`)
 - Nature-rigor audit (`kg_rigor_audit`): **8/8 invariants PASS** ✅
 - Frontend: **0 TypeScript errors** (was 24) · **0 ESLint errors** ✅
 - Backend lint: 146 ruff auto-fixed (import ordering); ~1071 remain (mostly E501 style, F405 settings star-import) — non-gating
 - Frontend routes swept: 82, **0 broken** · Backend API endpoints swept: 308, **0 broken** ✅
 - Services (dev): frontend `:3000`, backend `:8000`, Oxigraph container `:7879` up
 - ⚠ Parallel edits by user/linter also touched: `apps/graph/views.py`, `apps/cidoc_data/publication_policy.py`, `src/lib/kg-graph.ts`, migration `cidoc_data/0016_backfill_metadata_status` — noted where relevant.
+
+---
+
+## DANAM corpus L1 materializer (2026-07-27)
+- 🆕 `apps/cidoc_data/danam_import/` — NQ parser + structures/assertions materializer
+- 🆕 `manage.py import_danam_nq` — `--dry-run` / `--limit` / `--pass` / `--rebuild` / `--expected-sha256` / `--report-json`
+- 🆕 `LodExternalIdentity` + migration `0021` — idempotent external IRI → row map
+- ✏️ `documentation/research/DANAM_CORPUS_INTEGRATION_REPORT.md` — §10 usage
+- 🗂️ Smoke: 5 structures + 5 beliefs applied locally; re-run → unchanged skips
+
+## Nature-grade KG rigor pass (2026-07-27)
+- 🆕 `manage.py corpus_fingerprint` + reject-predicate audit (34 preds / 268 quads L0-only)
+- 🆕 `manage.py rdf_load_imported_nq` (L0; refuses PUBLIC)
+- 🆕 `documentation/research/NATURE_KG_RIGOR.md` + `competency_queries.sparql`
+- 🆕 `danam_import/licenses.py` license matrix; Methods FAIR/CARE + matrix UI
+- ✏️ `kg_rigor_audit` — L0 isolation HARD + DANAM soft probes
+- ✏️ `quality.dangling_edges` — exclude `skos:exactMatch` linkset targets (Nature-correct)
+- ✅ `kg_rigor_audit` **5/5 HARD + 6/6 soft PASS** after fix
 
 ---
 

@@ -37,6 +37,8 @@ _LABEL_ALIASES: dict[str, str] = {
     "pashupatinath temple": "pashupatinath",
     "hanuman dhoka palace": "hanuman dhoka",
     "kathmandu durbar square": "kathmandu durbar square",
+    "annapurna devi": "annapurna",
+    "annapurna goddess": "annapurna",
 }
 
 
@@ -163,6 +165,12 @@ def _demo_corpus_index() -> dict[str, _DemoCorpusEntry]:
 
 
 def _demo_entry_for_label(label: str | None) -> _DemoCorpusEntry | None:
+    """Resolve a live label to a demo corpus entry.
+
+    Exact (and alias) match first. Fuzzy match only when a *demo* label is a
+    substring of the query — never the reverse — so a short name like
+    ``Annapurna`` cannot steal imagery from ``Pokhara & Annapurna Foothills``.
+    """
     norm = _normalize_label(label)
     if not norm:
         return None
@@ -170,10 +178,16 @@ def _demo_entry_for_label(label: str | None) -> _DemoCorpusEntry | None:
     hit = index.get(norm)
     if hit:
         return hit
-    for demo_label, entry in index.items():
-        if demo_label in norm or norm in demo_label:
-            return entry
-    return None
+    # Longest contained demo label wins (more specific).
+    candidates = [
+        (demo_label, entry)
+        for demo_label, entry in index.items()
+        if demo_label and demo_label in norm
+    ]
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: len(item[0]), reverse=True)
+    return candidates[0][1]
 
 
 @lru_cache(maxsize=1)

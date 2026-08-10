@@ -42,6 +42,11 @@ def coerce_for_jsonschema(value: Any) -> Any:
     return value
 
 
+def drop_null_properties(payload: dict[str, Any]) -> dict[str, Any]:
+    """Omit null-valued keys so optional unset fields pass Draft 2020-12 schemas."""
+    return {k: v for k, v in payload.items() if v is not None}
+
+
 def _merge_drf_errors(errors: dict[str, Any], path: tuple, message: str) -> None:
     if not path:
         errors.setdefault("non_field_errors", []).append(message)
@@ -76,7 +81,7 @@ def validate_payload_for_class(
     schema = bundle.get(class_key)
     if not schema:
         return
-    jsonschema.validate(instance=payload, schema=schema)
+    jsonschema.validate(instance=drop_null_properties(coerce_for_jsonschema(payload)), schema=schema)
 
 
 def validate_payload_for_class_drf(
@@ -98,7 +103,7 @@ def validate_payload_for_class_drf(
 
     validator = Draft202012Validator(schema)
     collected: dict[str, Any] = {}
-    for err in validator.iter_errors(coerce_for_jsonschema(payload)):
+    for err in validator.iter_errors(drop_null_properties(coerce_for_jsonschema(payload))):
         path = tuple(err.absolute_path)
         _merge_drf_errors(collected, path, err.message)
 

@@ -9,10 +9,12 @@ HARD invariants:
   * logical consistency   — no owl:disjointWith violations
   * namespace integrity   — every subject is a well-formed namespaced IRI
   * provenance separation — no imported/external stubs leak into the curated graph
+  * L0 isolation          — no data.cair-nepal.org subjects in graph/public
 
 SOFT invariants (thresholds):
   * type coverage ≥ 0.95 · CRM-bridge coverage ≥ 0.90 ·
-    provenance coverage ≥ 0.80 · datatype hygiene > 0
+    provenance coverage ≥ 0.80 · datatype hygiene > 0 ·
+    DANAM DataSource rows present · LodExternalIdentity map non-empty when imports exist
 """
 
 from __future__ import annotations
@@ -27,6 +29,8 @@ from django.core.management.base import BaseCommand
 OK = "✓"
 BAD = "✗"
 WARN = "⚠"
+
+DANAM_SUBJECT_PREFIX = "https://data.cair-nepal.org/"
 
 
 class Command(BaseCommand):
@@ -60,11 +64,22 @@ class Command(BaseCommand):
         except Exception as exc:  # noqa: BLE001
             self.stdout.write(self.style.WARNING(f"  (separation probe failed: {exc})"))
 
+        danam_leak = 0
+        try:
+            rows = engine.query(
+                f"SELECT (COUNT(DISTINCT ?s) AS ?c) WHERE {{ GRAPH <{public}> {{ "
+                f"?s ?p ?o FILTER(STRSTARTS(STR(?s), \"{DANAM_SUBJECT_PREFIX}\")) }} }}"
+            )
+            danam_leak = int(rows[0]["c"]) if rows and rows[0].get("c") else 0
+        except Exception as exc:  # noqa: BLE001
+            self.stdout.write(self.style.WARNING(f"  (L0 isolation probe failed: {exc})"))
+
         hard = [
             ("referential integrity — 0 dangling edges", dangling == 0, f"{dangling} dangling"),
             ("logical consistency — 0 disjointness violations", violations == 0, f"{violations} violations"),
             ("namespace integrity — well-formed IRIs", ns_viol == 0, f"{ns_viol} malformed"),
             ("provenance separation — no imported stubs in curated graph", leaked == 0, f"{leaked} leaked subjects"),
+            ("L0 isolation — no data.cair-nepal.org subjects in PUBLIC", danam_leak == 0, f"{danam_leak} leaked"),
         ]
 
         # ── SOFT invariants (data-maturity thresholds) ───────────────────────
@@ -74,11 +89,37 @@ class Command(BaseCommand):
         dh = quality.datatype_hygiene(engine) or {}
         dh_typed = dh.get("datatyped_or_langtagged") or 0
 
+        ds_count = lod_count = danam_rows = 0
+        try:
+            from apps.cidoc_data.models import (
+                ArchitecturalStructure,
+                DataSource,
+                LodExternalIdentity,
+            )
+
+            ds_count = DataSource.objects.filter(name__icontains="DANAM corpus").count()
+            lod_count = LodExternalIdentity.objects.count()
+            danam_rows = ArchitecturalStructure.objects.filter(
+                contributor="danam_import"
+            ).count()
+        except Exception as exc:  # noqa: BLE001
+            self.stdout.write(self.style.WARNING(f"  (Postgres soft probes failed: {exc})"))
+
         soft = [
             ("type coverage ≥ 0.95", (tc or 0) >= 0.95, str(tc)),
             ("CRM-bridge coverage ≥ 0.90", (crm or 0) >= 0.90, str(crm)),
             ("provenance coverage ≥ 0.80", (prov or 0) >= 0.80, str(prov)),
             ("datatype hygiene > 0", dh_typed > 0, f"{dh_typed}/{dh.get('literals')} typed"),
+            (
+                "DANAM DataSource rows ≥ 1 (when corpus integrated)",
+                ds_count >= 1 or danam_rows == 0,
+                f"datasources={ds_count} danam_structures={danam_rows}",
+            ),
+            (
+                "LodExternalIdentity map consistent with DANAM rows",
+                lod_count >= danam_rows,
+                f"map={lod_count} structures={danam_rows}",
+            ),
         ]
 
         self.stdout.write(self.style.MIGRATE_HEADING("Nature-rigor audit — HARD invariants"))

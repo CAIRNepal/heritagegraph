@@ -386,6 +386,10 @@ class ContributionFlowMixin:
                 ),
                 cidoc_object_id=instance.pk,
             )
+            # Prefer context over revision/FK lookups so the create response
+            # includes cultural_entity_id even when SerializerMethodField runs
+            # from a cached serializer.data build.
+            serializer.context["cultural_entity_id"] = str(entity.entity_id)
 
             # Build revision data from the serialized instance. `serializer.data`
             # is render-ready rather than JSON-safe — DRF's renderer handles

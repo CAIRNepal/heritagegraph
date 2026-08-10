@@ -72,14 +72,31 @@ def _coerce_latlng_for_point(lat, lng):
 
 def _get_cultural_entity_id(instance):
     """
-    Look up the CulturalEntity UUID for a CIDOC record by searching
-    revisions that have _cidoc_model and _cidoc_id in their data.
+    Look up the CulturalEntity UUID for a CIDOC record.
 
-    For PostgreSQL: uses efficient JSON contains lookup
-    For SQLite: falls back to Python-based filtering
+    Prefer the real FK (cidoc_content_type / cidoc_object_id) written by
+    ContributionFlowMixin.perform_create. Fall back to revision JSON back-links
+    for older rows that predate the FK.
     """
-    from apps.heritage_data.models import Revision
+    from django.contrib.contenttypes.models import ContentType
     from django.db import connection
+
+    from apps.heritage_data.models import CulturalEntity, Revision
+
+    try:
+        ct = ContentType.objects.get_for_model(instance.__class__)
+        linked = (
+            CulturalEntity.objects.filter(
+                cidoc_content_type=ct,
+                cidoc_object_id=instance.pk,
+            )
+            .only("entity_id")
+            .first()
+        )
+        if linked is not None:
+            return str(linked.entity_id)
+    except Exception:
+        pass
 
     model_name = instance.__class__.__name__
     cidoc_id = instance.pk
@@ -120,6 +137,9 @@ class CulturalEntityLinkMixin(serializers.Serializer):
     cultural_entity_id = serializers.SerializerMethodField()
 
     def get_cultural_entity_id(self, obj):
+        cached = self.context.get("cultural_entity_id")
+        if cached:
+            return cached
         return _get_cultural_entity_id(obj)
 
 

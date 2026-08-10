@@ -1060,6 +1060,50 @@ class RelationshipPredicate(models.Model):
         return self.label
 
 
+class LodExternalIdentity(models.Model):
+    """Maps a stable external LOD IRI to a local Postgres row (idempotent ETL key).
+
+    Used by bulk importers (e.g. DANAM N-Quads) so re-runs update rather than
+    duplicate. The curated platform IRI is minted separately via
+    ``resource_uri_for_instance``.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    external_iri = models.URLField(max_length=500, unique=True, db_index=True)
+    content_type = models.ForeignKey(
+        ContentType,
+        on_delete=models.CASCADE,
+        related_name="lod_external_identities",
+    )
+    object_id = models.CharField(
+        max_length=64,
+        help_text="Stringified PK (supports AutoField and UUID primary keys)",
+    )
+    target = GenericForeignKey("content_type", "object_id")
+    source_batch_sha256 = models.CharField(
+        max_length=64,
+        blank=True,
+        help_text="SHA-256 of the import file that last wrote this mapping",
+    )
+    import_pass = models.CharField(
+        max_length=40,
+        blank=True,
+        help_text="Importer pass name (structures, assertions, datasources, …)",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "lod_external_identity"
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+            models.Index(fields=["import_pass"]),
+        ]
+
+    def __str__(self) -> str:
+        return self.external_iri
+
+
 class EntityCluster(models.Model):
     """
     Stable identity anchor: one cluster per real-world referent within a type_scope

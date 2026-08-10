@@ -1,134 +1,44 @@
 import type { ComponentType } from "react";
 import type { IconProps } from "@tabler/icons-react";
 import {
-  IconPlus,
-  IconGraph,
-  IconWorld,
-  IconMedal,
-  IconBooks,
   IconBuildingCommunity,
   IconUser,
   IconMapPin,
   IconCalendarEvent,
   IconUsers,
-  IconFileDescription,
-  IconChartBar,
-  IconShield,
-  // IconPhotoScan, // re-import when the OCR/agentic pipeline quick-action is restored below
 } from "@tabler/icons-react";
 
+/**
+ * A tile in a ShortcutGrid.
+ *
+ * `titleKey` is a next-intl message key, not a display string: these tiles used
+ * to hardcode English, which left the Nepali UI half-translated.
+ */
 export interface DashboardLinkItem {
-  title: string;
+  /** Message key under the namespace the consuming grid is given. */
+  titleKey: string;
+  /** Optional message key for the supporting line. */
+  descKey?: string;
   href: string;
-  gradient: string;
   icon: ComponentType<IconProps>;
-  desc?: string;
 }
 
-export const dashboardQuickActions: DashboardLinkItem[] = [
-  {
-    title: "Knowledge Graph",
-    desc: "Explore the ontology graph visualization.",
-    icon: IconGraph,
-    href: "/graphview",
-    gradient: "from-violet-500 to-blue-500",
-  },
-  {
-    title: "Heritage Atlas",
-    desc: "3D globe of heritage sites with timeline (preview).",
-    icon: IconWorld,
-    href: "/atlas",
-    gradient: "from-cyan-500 to-blue-600",
-  },
-  {
-    title: "New Contribution",
-    desc: "Submit a cultural heritage entry.",
-    icon: IconPlus,
-    href: "/contribute",
-    gradient: "from-blue-500 to-sky-500",
-  },
-  // ─────────────────────────────────────────────────────────────────────
-  // Document ingestion (OCR) — part of the agentic pipeline.
-  // Hidden from dashboard quick-actions for now; the route still exists at
-  // /contribute/ingestion. Re-enable when the pipeline UX is ready.
-  // ─────────────────────────────────────────────────────────────────────
-  // {
-  //   title: "Document ingestion (OCR)",
-  //   desc: "Bulk-upload PDFs or scans, review OCR, then merge into contribute forms.",
-  //   icon: IconPhotoScan,
-  //   href: "/contribute/ingestion",
-  //   gradient: "from-emerald-500 to-teal-600",
-  // },
-  {
-    title: "Knowledge Base",
-    desc: "Browse cultural entities & records.",
-    icon: IconBooks,
-    href: "/knowledge/entity",
-    gradient: "from-blue-600 to-cyan-500",
-  },
-  {
-    title: "Progression",
-    desc: "Track your ranks, seals & achievements.",
-    icon: IconMedal,
-    href: "/progression",
-    gradient: "from-amber-500 to-yellow-500",
-  },
-];
-
+/**
+ * Compact browse row on the dashboard.
+ *
+ * The sidebar already enumerates every registry domain, so this is a short
+ * shortcut row rather than a second navigation surface. Quick-action and
+ * curation grids used to live here too and were removed: they duplicated the
+ * sidebar three times over on one screen.
+ */
 export const dashboardBrowseCategories: DashboardLinkItem[] = [
   {
-    title: "Cultural Entity",
+    titleKey: "culturalEntity",
     icon: IconBuildingCommunity,
     href: "/knowledge/entity",
-    gradient: "from-blue-500 to-sky-500",
   },
-  {
-    title: "Person",
-    icon: IconUser,
-    href: "/knowledge/person",
-    gradient: "from-sky-500 to-cyan-500",
-  },
-  {
-    title: "Location",
-    icon: IconMapPin,
-    href: "/knowledge/location",
-    gradient: "from-blue-600 to-sky-600",
-  },
-  {
-    title: "Event",
-    icon: IconCalendarEvent,
-    href: "/knowledge/event",
-    gradient: "from-blue-600 to-cyan-500",
-  },
-  {
-    title: "Contributors",
-    icon: IconUsers,
-    href: "/community/contributors",
-    gradient: "from-sky-500 to-blue-600",
-  },
+  { titleKey: "person", icon: IconUser, href: "/knowledge/person" },
+  { titleKey: "location", icon: IconMapPin, href: "/knowledge/location" },
+  { titleKey: "event", icon: IconCalendarEvent, href: "/knowledge/event" },
+  { titleKey: "contributors", icon: IconUsers, href: "/community/contributors" },
 ];
-
-export const dashboardCurationShortcuts: DashboardLinkItem[] = [
-  {
-    title: "Contributions Queue",
-    desc: "Pending community submissions awaiting review.",
-    icon: IconFileDescription,
-    href: "/curation/contributions",
-    gradient: "from-blue-400 to-sky-500",
-  },
-  {
-    title: "Activity Log",
-    desc: "Track recent changes and platform activity.",
-    icon: IconChartBar,
-    href: "/curation/activity",
-    gradient: "from-blue-500 to-cyan-500",
-  },
-  {
-    title: "Reviewer Dashboard",
-    desc: "Your review stats, decisions, and metrics.",
-    icon: IconShield,
-    href: "/curation/dashboard",
-    gradient: "from-sky-500 to-blue-600",
-  },
-];
-

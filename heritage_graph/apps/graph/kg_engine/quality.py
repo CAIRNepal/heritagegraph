@@ -234,12 +234,26 @@ def graph_connectivity(engine: Any) -> dict[str, Any]:
 
 
 def dangling_edges(engine: Any) -> int | None:
+    """Count curated→curated edges whose object lacks rdf:type in PUBLIC.
+
+    External identity links (``skos:exactMatch`` to Wikidata/OSM/DANAM IRIs) are
+    intentionally untyped in the curated graph (linkset model) and must not be
+    counted as dangling — that would fail Nature-rigor audits after a correct
+    L1 materialization with ``external_identifiers``.
+    """
+    from apps.graph.kg_engine.uris import curated_resource_uri_prefix
+
     public = GraphPartition.PUBLIC.uri()
+    prefix = curated_resource_uri_prefix()
+    skos_exact = RDF_PREFIXES["skos"] + "exactMatch"
     return _count(
         engine,
         f"""SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{public}> {{
   ?s a ?st . ?s ?p ?o .
-  FILTER(isIRI(?o)) FILTER(?p != <{RDF_TYPE}>)
+  FILTER(isIRI(?o))
+  FILTER(?p != <{RDF_TYPE}>)
+  FILTER(?p != <{skos_exact}>)
+  FILTER(STRSTARTS(STR(?o), "{prefix}"))
   FILTER NOT EXISTS {{ GRAPH <{public}> {{ ?o a ?ot }} }}
 }} }}""",
     )
@@ -329,6 +343,8 @@ def consistency(engine: Any) -> dict[str, Any]:
         "violations": report.consistency_violations,
         "sample": report.violations or [],
         "inferred_triples": report.inferred_triples,
+        "novel_triples": report.novel_triples,
+        "tautological_triples": report.tautological_triples,
         "novelty_rate": report.novelty_rate,
     }
 

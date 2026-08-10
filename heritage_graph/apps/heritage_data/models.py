@@ -1076,28 +1076,114 @@ class Submission(models.Model):
 
 
 class UserStats(models.Model):
+    """Contributor dashboard counters, recomputed from the contribution tables.
+
+    Every field here is derived from rows that exist. Fields that express a
+    change over time are nullable: a change can only be reported once there is
+    an earlier `UserStatsSnapshot` to compare against, and until then the API
+    returns null so the UI can say "no prior period" instead of showing a
+    number nobody measured.
+    """
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="stats")
 
     total_submissions = models.PositiveIntegerField(default=0)
     submissions_last_month = models.PositiveIntegerField(default=0)
     submissions_this_month = models.PositiveIntegerField(default=0)
-    submissions_growth = models.FloatField(default=0.0)
+    submissions_growth = models.FloatField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Percent change in submissions created this month vs last month. "
+            "Null when last month has no submissions to divide by."
+        ),
+    )
 
-    total_reviewed = models.PositiveIntegerField(default=0)
-    accepted_count = models.PositiveIntegerField(default=0)
-    approval_rate = models.FloatField(default=0.0)
-    approval_rate_change = models.FloatField(default=0.0)
+    total_reviewed = models.PositiveIntegerField(
+        default=0, help_text="Contributions with a terminal review decision."
+    )
+    accepted_count = models.PositiveIntegerField(
+        default=0, help_text="Contributions accepted or merged after review."
+    )
+    approval_rate = models.FloatField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "accepted_count / total_reviewed as a percentage. "
+            "Null until at least one contribution has been reviewed."
+        ),
+    )
+    approval_rate_change = models.FloatField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Percentage-point difference between the approval rate of this "
+            "month's submission cohort and last month's. Null unless both "
+            "cohorts contain reviewed contributions."
+        ),
+    )
 
-    contributor_rank = models.PositiveIntegerField(default=0)
-    rank_change = models.IntegerField(default=0)
-
-    community_impact_score = models.FloatField(default=0.0)
-    impact_score_change = models.FloatField(default=0.0)
+    contributor_rank = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="1-based rank by profile score. Null when the user has no profile.",
+    )
+    rank_change = models.IntegerField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text=(
+            "Places gained since the most recent earlier UserStatsSnapshot "
+            "(positive = improved). Null when no earlier snapshot exists."
+        ),
+    )
 
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        verbose_name_plural = "user stats"
+
     def __str__(self):
         return f"{self.user.username} stats"
+
+
+class UserStatsSnapshot(models.Model):
+    """Month-end record of a contributor's standing.
+
+    Period-over-period deltas on the dashboard are measured against these rows
+    rather than estimated. Written by `manage.py snapshot_user_stats`, which is
+    meant to run once per month after the period closes.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="stats_snapshots"
+    )
+    period = models.DateField(
+        help_text="First day of the calendar month this snapshot summarises."
+    )
+
+    total_submissions = models.PositiveIntegerField(default=0)
+    contributor_rank = models.PositiveIntegerField(null=True, blank=True, default=None)
+    approval_rate = models.FloatField(null=True, blank=True, default=None)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "user_stats_snapshot"
+        ordering = ["-period"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "period"], name="unique_user_stats_snapshot_period"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} stats @ {self.period:%Y-%m}"
 
 
 class Moderation(models.Model):
