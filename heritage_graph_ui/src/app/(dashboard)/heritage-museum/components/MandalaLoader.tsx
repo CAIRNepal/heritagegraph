@@ -1,6 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 export function MandalaLoader() {
+  const t = useTranslations('heritageMuseum');
   return (
     <div className="flex flex-col items-center justify-center w-full h-full gap-6">
       <div className="relative w-24 h-24">
@@ -12,7 +15,7 @@ export function MandalaLoader() {
         </div>
       </div>
       <div className="text-center">
-        <p className="text-amber-400 font-semibold">Loading Heritage Graph</p>
+        <p className="text-amber-400 font-semibold">{t('loadingGraph')}</p>
         <p className="text-gray-500 text-sm mt-1">Weaving the knowledge of Nepal…</p>
       </div>
     </div>

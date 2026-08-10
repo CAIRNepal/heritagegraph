@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
@@ -10,6 +11,7 @@ import { MARKER_ARCHETYPES } from '../HeritageGlobe/marker-config';
 
 /** Marker colour legend, toggled from the layers drawer. */
 export function Legend() {
+  const t = useTranslations('Atlas');
   const show = useAtlasUiStore((s) => s.showLegend);
 
   return (
@@ -21,7 +23,7 @@ export function Legend() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 14 }}
           transition={{ type: 'spring', stiffness: 360, damping: 30 }}
-          aria-label="Marker legend"
+          aria-label={t('legend.title')}
           className={cn(
             ATLAS_GLASS,
             'pointer-events-auto absolute bottom-28 left-1/2 z-20 hidden -translate-x-1/2 px-4 py-2.5 lg:block',

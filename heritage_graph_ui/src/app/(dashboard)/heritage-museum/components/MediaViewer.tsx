@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../heritage-data';
 import { ImageAttribution } from './ImageAttribution';
@@ -11,6 +12,7 @@ interface MediaViewerProps {
 }
 
 export function MediaViewer({ node }: MediaViewerProps) {
+  const t = useTranslations('heritageMuseum');
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   const [imgError, setImgError] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -132,6 +134,8 @@ function AudioButton({
   onResume,
   onStop,
 }: AudioButtonProps) {
+  const t = useTranslations('heritageMuseum');
+
   if (!supported) return null;
 
   if (state === 'idle') {
@@ -140,10 +144,10 @@ function AudioButton({
         onClick={onPlay}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-sm transition-all hover:scale-105 active:scale-95"
         style={{ background: `${color}cc`, color: '#fff', boxShadow: `0 0 12px ${color}88` }}
-        title="Listen to story narration"
+        title={t('media.narrate')}
       >
         <span>▶</span>
-        <span>Narrate</span>
+        <span>{t('media.narrateShort')}</span>
       </button>
     );
   }
@@ -162,7 +166,7 @@ function AudioButton({
         onClick={onStop}
         className="flex items-center gap-1 px-2 py-1.5 rounded-full text-xs backdrop-blur-sm transition-all hover:scale-105"
         style={{ background: 'rgba(0,0,0,0.6)', color: glowColor, border: `1px solid ${color}66` }}
-        title="Stop"
+        title={t('media.stop')}
       >
         ■
       </button>

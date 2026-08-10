@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
+import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   IconSearch,
@@ -19,6 +22,7 @@ import {
   IconRefresh,
   IconLoader2,
   IconLayout,
+  IconFileCode,
 } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,13 +48,22 @@ import {
   type InstanceGraphData,
 } from '@/lib/instance-graph';
 import { getApiErrorMessage } from '@/lib/api-client';
+import { getPublicApiUrl } from '@/lib/api-base';
+import {
+  HERITAGEGRAPH_CITATION,
+  HERITAGEGRAPH_DOI,
+  HERITAGEGRAPH_PUBLIC_GRAPH,
+  HERITAGEGRAPH_RELEASE,
+  HERITAGEGRAPH_REPOSITORY,
+  downloadJson,
+} from '@/lib/provenance';
 
 /* ── Cytoscape is client-only ── */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let cytoscapeReady = false;
 let cytoscape: any = null;
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = getPublicApiUrl();
 
 /* ── Layout presets (internal ids; UI uses visitor labels) ── */
 const LAYOUTS: Record<string, any> = {
@@ -97,12 +110,43 @@ const LAYOUTS: Record<string, any> = {
   },
 };
 
-const LAYOUT_OPTIONS: { id: string; label: string; hint: string }[] = [
-  { id: 'cose-bilkent', label: 'Natural', hint: 'Force-directed clusters' },
-  { id: 'cola', label: 'Spacious', hint: 'More breathing room' },
-  { id: 'concentric', label: 'Radial', hint: 'Hubs at the centre' },
-  { id: 'breadthfirst', label: 'Tree', hint: 'Hierarchy top-down' },
+const LAYOUT_OPTIONS: { id: string; key: string }[] = [
+  { id: 'cose-bilkent', key: 'natural' },
+  { id: 'cola', key: 'spacious' },
+  { id: 'concentric', key: 'radial' },
+  { id: 'breadthfirst', key: 'tree' },
 ];
+
+/* ── Graph palette ──
+ * Cytoscape renders to canvas and cannot resolve CSS custom properties, so the
+ * token values are read from the document once per mount. Hardcoding a single
+ * label colour (previously `#1e3a5f`) measured 1.55:1 against the dark card
+ * background — every node label was effectively invisible in dark mode.
+ */
+export interface GraphPalette {
+  label: string;
+  mutedLabel: string;
+  /** Opaque canvas colour, used for PNG export so labels stay legible. */
+  canvas: string;
+}
+
+const FALLBACK_PALETTE: GraphPalette = {
+  label: '#0b1220',
+  mutedLabel: '#526379',
+  canvas: '#ffffff',
+};
+
+function readGraphPalette(): GraphPalette {
+  if (typeof window === 'undefined') return FALLBACK_PALETTE;
+  const styles = getComputedStyle(document.documentElement);
+  const read = (name: string, fallback: string) =>
+    styles.getPropertyValue(name).trim() || fallback;
+  return {
+    label: read('--foreground', FALLBACK_PALETTE.label),
+    mutedLabel: read('--muted-foreground', FALLBACK_PALETTE.mutedLabel),
+    canvas: read('--card', FALLBACK_PALETTE.canvas),
+  };
+}
 
 /* ── View mode ── */
 type ViewMode = 'ontology' | 'instance';
@@ -112,8 +156,11 @@ type ViewMode = 'ontology' | 'instance';
  * ══════════════════════════════════════════════════════ */
 export default function GraphViewPage() {
   const { data: session } = useSession();
+  const t = useTranslations('graphview');
+  const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<any>(null);
+  const paletteRef = useRef<GraphPalette>(FALLBACK_PALETTE);
 
   const [ready, setReady] = useState(false);
   // Schema first — ontology is the default research entry; Heritage is one click away.
@@ -156,6 +203,45 @@ export default function GraphViewPage() {
     [instanceData],
   );
 
+  /* ── Accessible representation of the canvas ── */
+  const visibleNodes = useMemo(() => {
+    if (viewMode === 'ontology') {
+      return graphData.nodes
+        .filter((n) => activeCategories.has(n.category))
+        .map((n) => ({ id: n.id, label: n.label, group: String(n.category) }));
+    }
+    return (instanceData?.nodes ?? [])
+      .filter((n) => activeInstanceCategories.has(n.category))
+      .map((n) => ({ id: n.id, label: n.label, group: String(n.category) }));
+  }, [viewMode, graphData, activeCategories, instanceData, activeInstanceCategories]);
+
+  const graphSummary = useMemo(() => {
+    if (viewMode === 'ontology') {
+      return `Ontology schema graph: ${ontologyStats.classes} classes, ${ontologyStats.relationships} properties, ${ontologyStats.hierarchyEdges} hierarchy links.`;
+    }
+    if (!instanceStats) return 'Heritage graph: no data loaded.';
+    return `Heritage graph: ${instanceStats.totalEntities} entities and ${instanceStats.totalRelationships} relationships.`;
+  }, [viewMode, ontologyStats, instanceStats]);
+
+  const selectNodeById = useCallback(
+    (id: string) => {
+      if (viewMode === 'ontology') {
+        const node = graphData.nodes.find((n) => n.id === id);
+        if (node) setSelectedNode(node);
+      } else {
+        const node = instanceData?.nodes.find((n) => n.id === id);
+        if (node) setSelectedInstance(node);
+      }
+      const cy = cyRef.current;
+      if (cy) {
+        highlightNeighbors(cy, id);
+        const target = cy.getElementById(id);
+        if (target?.length) cy.animate({ center: { eles: target } }, { duration: 250 });
+      }
+    },
+    [viewMode, graphData, instanceData],
+  );
+
   /* ── Load Cytoscape extensions once ── */
   const ensureCytoscape = useCallback(async () => {
     if (cytoscapeReady) return;
@@ -180,7 +266,7 @@ export default function GraphViewPage() {
     const cy = cytoscape({
       container: containerRef.current,
       elements: buildOntologyElements(graphData),
-      style: buildOntologyStyles(),
+      style: buildOntologyStyles(paletteRef.current),
       layout: LAYOUTS['cose-bilkent'],
       minZoom: 0.2,
       maxZoom: 4,
@@ -227,7 +313,7 @@ export default function GraphViewPage() {
       const cy = cytoscape({
         container: containerRef.current,
         elements: buildInstanceElements(data),
-        style: buildInstanceStyles(),
+        style: buildInstanceStyles(paletteRef.current),
         layout: instanceLayout,
         minZoom: 0.1,
         maxZoom: 5,
@@ -297,6 +383,7 @@ export default function GraphViewPage() {
     let mounted = true;
 
     async function init() {
+      paletteRef.current = readGraphPalette();
       await ensureCytoscape();
       if (!mounted) return;
       mountOntologyGraph();
@@ -309,6 +396,21 @@ export default function GraphViewPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* ── Re-read the palette when the theme changes ──
+   * Labels are painted into a canvas, so a theme flip cannot restyle them via
+   * CSS. Re-apply the stylesheet in place rather than remounting, which would
+   * discard the current layout and selection. */
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    paletteRef.current = readGraphPalette();
+    cy.style(
+      viewMode === 'ontology'
+        ? buildOntologyStyles(paletteRef.current)
+        : buildInstanceStyles(paletteRef.current),
+    );
+  }, [resolvedTheme, viewMode]);
 
   /* ── Switch between views ── */
   const switchView = useCallback(
@@ -422,14 +524,106 @@ export default function GraphViewPage() {
     });
   const fitAll = () => cyRef.current?.animate({ fit: { padding: 40 }, duration: 500 });
 
-  const exportPng = () => {
-    if (!cyRef.current) return;
-    const png = cyRef.current.png({ full: true, scale: 2, bg: '#ffffff' });
-    const a = document.createElement('a');
-    a.href = png;
-    a.download = viewMode === 'ontology' ? 'HeritageGraph_Ontology.png' : 'HeritageGraph_Data.png';
-    a.click();
-  };
+  /** Stable slug + provenance stamp shared by both exports. */
+  const exportStamp = useCallback(() => {
+    const now = new Date();
+    return {
+      iso: now.toISOString(),
+      slug: now.toISOString().slice(0, 10),
+      provenance: {
+        source: 'HeritageGraph',
+        view: viewMode === 'ontology' ? 'ontology-schema' : 'heritage-instances',
+        release: HERITAGEGRAPH_RELEASE,
+        doi: HERITAGEGRAPH_DOI,
+        repository: HERITAGEGRAPH_REPOSITORY,
+        publicGraph: HERITAGEGRAPH_PUBLIC_GRAPH,
+        exportedAt: now.toISOString(),
+        citation: HERITAGEGRAPH_CITATION,
+        codeLicense: 'MIT',
+        dataLicense: 'CC BY 4.0 curated overlay; third-party layers retain upstream licenses',
+        note:
+          viewMode === 'ontology'
+            ? 'Schema generated from ontology/HeritageGraph.yaml.'
+            : 'Instance projection of the reviewed public graph at time of export.',
+      },
+    };
+  }, [viewMode]);
+
+  /**
+   * PNG with a provenance footer burned into the image.
+   *
+   * A bare canvas dump is not a citable figure: once it leaves the browser
+   * there is nothing tying it to a release, a graph partition, or a date.
+   * The footer travels with the screenshot.
+   */
+  const exportPng = useCallback(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    const { iso, slug, provenance } = exportStamp();
+    const bg = paletteRef.current.canvas || '#ffffff';
+    const dataUrl = cy.png({ full: true, scale: 2, bg });
+
+    const img = new Image();
+    img.onload = () => {
+      const footerH = 64;
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height + footerH;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+
+      ctx.fillStyle = paletteRef.current.mutedLabel || '#526379';
+      ctx.font = '16px sans-serif';
+      ctx.textBaseline = 'top';
+      ctx.fillText(
+        `HeritageGraph ${provenance.view} · v${provenance.release} · exported ${iso}`,
+        16,
+        img.height + 14,
+      );
+      ctx.fillText(
+        `${provenance.doi ? `DOI ${provenance.doi}` : provenance.repository} · ${provenance.publicGraph}`,
+        16,
+        img.height + 36,
+      );
+
+      const a = document.createElement('a');
+      a.href = canvas.toDataURL('image/png');
+      a.download = `HeritageGraph_${provenance.view}_${slug}.png`;
+      a.click();
+    };
+    img.src = dataUrl;
+  }, [exportStamp]);
+
+  /**
+   * Machine-readable export of exactly what is on screen.
+   *
+   * PNG was previously the only way data left this page, which makes the graph
+   * tool a dead end for anyone who wants to reuse the graph.
+   */
+  const exportJson = useCallback(() => {
+    const cy = cyRef.current;
+    if (!cy) return;
+    const { slug, provenance } = exportStamp();
+    const nodes = cy
+      .nodes()
+      .filter((n: any) => n.style('display') !== 'none')
+      .map((n: any) => n.data());
+    const edges = cy
+      .edges()
+      .filter((e: any) => e.style('display') !== 'none')
+      .map((e: any) => e.data());
+
+    downloadJson(`HeritageGraph_${provenance.view}_${slug}.json`, {
+      provenance,
+      counts: { nodes: nodes.length, edges: edges.length },
+      nodes,
+      edges,
+    });
+  }, [exportStamp]);
 
   const toggleOntologyCategory = (cat: OntologyCategory) => {
     setActiveCategories((prev) => {
@@ -462,8 +656,9 @@ export default function GraphViewPage() {
     );
   }, [selectedInstance, instanceData]);
 
-  const layoutLabel =
-    LAYOUT_OPTIONS.find((o) => o.id === activeLayout)?.label ?? 'Natural';
+  const layoutLabel = t(
+    `layouts.${LAYOUT_OPTIONS.find((o) => o.id === activeLayout)?.key ?? 'natural'}.label`,
+  );
 
   const clearSelection = () => {
     setSelectedNode(null);
@@ -483,23 +678,29 @@ export default function GraphViewPage() {
         <motion.div variants={fadeInUp} className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 space-y-1">
             <h1 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
-              Knowledge Graph
+              {t('title')}
             </h1>
             <p className="max-w-2xl text-sm text-muted-foreground leading-relaxed">
               {viewMode === 'instance' ? (
                 <>
-                  Explore how heritage records connect.
+                  {t('subtitle.instance')}
                   {instanceStats
-                    ? ` ${instanceStats.totalEntities} entities · ${instanceStats.totalRelationships} links.`
+                    ? ` ${t('subtitle.instanceCounts', {
+                        entities: instanceStats.totalEntities,
+                        links: instanceStats.totalRelationships,
+                      })}`
                     : instanceLoading
-                      ? ' Loading…'
+                      ? ` ${t('subtitle.loading')}`
                       : ''}
-                  {' '}Click a node to inspect it.
+                  {' '}
+                  {t('subtitle.clickHint')}
                 </>
               ) : (
                 <>
-                  Schema of the HeritageGraph ontology — {ontologyStats.classes} classes and{' '}
-                  {ontologyStats.relationships} properties. For researchers mapping the model.
+                  {t('subtitle.ontology', {
+                    classes: ontologyStats.classes,
+                    properties: ontologyStats.relationships,
+                  })}
                 </>
               )}
             </p>
@@ -513,11 +714,11 @@ export default function GraphViewPage() {
             <TabsList className="h-9">
               <TabsTrigger value="ontology" className="gap-1.5 text-xs px-3">
                 <IconSchema className="w-3.5 h-3.5" aria-hidden />
-                Schema
+                {t('tabs.schema')}
               </TabsTrigger>
               <TabsTrigger value="instance" className="gap-1.5 text-xs px-3">
                 <IconDatabase className="w-3.5 h-3.5" aria-hidden />
-                Heritage
+                {t('tabs.heritage')}
                 {instanceStats ? (
                   <span className="ml-0.5 rounded-full bg-muted px-1.5 py-0.5 font-mono text-[10px] tabular-nums">
                     {instanceStats.totalEntities}
@@ -535,10 +736,10 @@ export default function GraphViewPage() {
           <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <input
             type="search"
-            placeholder={viewMode === 'ontology' ? 'Search classes…' : 'Search entities…'}
+            placeholder={viewMode === 'ontology' ? t('toolbar.searchClasses') : t('toolbar.searchEntities')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            aria-label={viewMode === 'ontology' ? 'Search ontology classes' : 'Search heritage entities'}
+            aria-label={viewMode === 'ontology' ? t('toolbar.searchClassesLabel') : t('toolbar.searchEntitiesLabel')}
             className="w-full rounded-lg border border-border bg-background py-1.5 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/40"
           />
         </div>
@@ -567,8 +768,8 @@ export default function GraphViewPage() {
                       : 'hover:bg-muted/60 text-foreground',
                   )}
                 >
-                  <span className="text-xs font-medium">{opt.label}</span>
-                  <span className="text-[10px] text-muted-foreground">{opt.hint}</span>
+                  <span className="text-xs font-medium">{t(`layouts.${opt.key}.label`)}</span>
+                  <span className="text-[10px] text-muted-foreground">{t(`layouts.${opt.key}.hint`)}</span>
                 </button>
               ))}
             </div>
@@ -609,22 +810,31 @@ export default function GraphViewPage() {
               className="gap-1 text-xs"
               aria-pressed={showForkEdges}
             >
-              {showForkEdges ? 'Forks shown' : 'Show forks'}
+              {showForkEdges ? t('toolbar.forksShown') : t('toolbar.showForks')}
             </Button>
           </>
         ) : null}
 
         <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomIn} aria-label="Zoom in">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomIn} aria-label={t('toolbar.zoomIn')}>
             <IconZoomIn className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomOut} aria-label="Zoom out">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={zoomOut} aria-label={t('toolbar.zoomOut')}>
             <IconZoomOut className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={fitAll} aria-label="Fit all">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={fitAll} aria-label={t('toolbar.fitAll')}>
             <IconFocus2 className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportPng} aria-label="Export PNG">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={exportJson}
+            aria-label={t('toolbar.exportJson')}
+          >
+            <IconFileCode className="h-4 w-4" aria-hidden />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={exportPng} aria-label={t('toolbar.exportPng')}>
             <IconDownload className="h-4 w-4" />
           </Button>
         </div>
@@ -632,7 +842,7 @@ export default function GraphViewPage() {
 
       {/* ── Category chips (legend + filter) ── */}
       {showFilters ? (
-        <div className={cn(glassCard, 'p-3')} role="group" aria-label="Category filters">
+        <div className={cn(glassCard, 'p-3')} role="group" aria-label={t('filters.groupLabel')}>
           <div className="flex flex-wrap gap-1.5">
             {viewMode === 'ontology'
               ? (Object.entries(CATEGORY_COLORS) as [OntologyCategory, (typeof CATEGORY_COLORS)[OntologyCategory]][]).map(
@@ -695,7 +905,7 @@ export default function GraphViewPage() {
       ) : null}
 
       {/* ── Main Grid: Graph + Detail Panel ── */}
-      <div className="flex min-h-[400px] gap-3 h-[calc(100vh-280px)]">
+      <div className="flex min-h-[400px] flex-1 gap-3">
         {/* Graph canvas */}
         <div className={cn('relative min-w-0 flex-1 overflow-hidden', glassCard)}>
           {(!ready || instanceLoading) && (
@@ -703,7 +913,7 @@ export default function GraphViewPage() {
               <div className="flex flex-col items-center gap-3">
                 <IconLoader2 className="h-8 w-8 animate-spin text-primary" aria-hidden />
                 <p className="text-sm font-medium text-foreground">
-                  {instanceLoading ? 'Fetching heritage data…' : 'Preparing graph…'}
+                  {instanceLoading ? t('loading.instance') : t('loading.ontology')}
                 </p>
               </div>
             </div>
@@ -715,17 +925,17 @@ export default function GraphViewPage() {
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
                   <IconDatabase className="h-7 w-7 text-muted-foreground" aria-hidden />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground">No heritage records yet</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t('empty.title')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Contribute a record, then refresh — the graph fills as the corpus grows.
+                  {t('empty.body')}
                 </p>
                 <div className="flex justify-center gap-2">
                   <Button variant="outline" size="sm" asChild>
-                    <a href="/contribute">Contribute</a>
+                    <Link href="/contribute">{t('empty.contribute')}</Link>
                   </Button>
                   <Button variant="outline" size="sm" onClick={refreshInstanceData} className="gap-1.5">
                     <IconRefresh className="h-3.5 w-3.5" aria-hidden />
-                    Retry
+                    {t('common.retry')}
                   </Button>
                 </div>
               </div>
@@ -736,12 +946,21 @@ export default function GraphViewPage() {
             <div className="absolute left-3 right-3 top-3 z-20 flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
               <span className="flex-1">{instanceError}</span>
               <Button variant="ghost" size="sm" onClick={refreshInstanceData} className="text-xs">
-                Retry
+                {t('common.retry')}
               </Button>
             </div>
           ) : null}
 
-          <div ref={containerRef} className="h-full w-full" />
+          {/* Cytoscape paints to a canvas, which exposes nothing to assistive
+              tech. The canvas is marked as an image with a summary, and the
+              same graph is offered as a real list below so screen-reader and
+              keyboard users can reach every node and open its detail. */}
+          <div
+            ref={containerRef}
+            className="h-full w-full"
+            role="img"
+            aria-label={graphSummary}
+          />
         </div>
 
         {/* Detail / empty guidance */}
@@ -764,7 +983,7 @@ export default function GraphViewPage() {
                   />
                   <h3 className="text-lg font-semibold text-foreground">{selectedNode.label}</h3>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={clearSelection} aria-label="Close">
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={clearSelection} aria-label={t('common.close')}>
                   <IconX className="h-4 w-4" />
                 </Button>
               </div>
@@ -863,7 +1082,7 @@ export default function GraphViewPage() {
                   </span>
                   <h3 className="text-lg font-semibold text-foreground">{selectedInstance.label}</h3>
                 </div>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={clearSelection} aria-label="Close">
+                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={clearSelection} aria-label={t('common.close')}>
                   <IconX className="h-4 w-4" />
                 </Button>
               </div>
@@ -952,7 +1171,7 @@ export default function GraphViewPage() {
                   className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
                 >
                   <IconChevronRight className="h-3 w-3" aria-hidden />
-                  Open full record
+                  {t('detail.openRecord')}
                 </a>
               </div>
             </motion.div>
@@ -968,16 +1187,40 @@ export default function GraphViewPage() {
               )}
             >
               <IconInfoCircle className="h-8 w-8 text-muted-foreground/50" aria-hidden />
-              <p className="text-sm font-medium text-foreground">Select a node</p>
+              <p className="text-sm font-medium text-foreground">{t('detail.selectNode')}</p>
               <p className="text-xs leading-relaxed text-muted-foreground">
                 {viewMode === 'instance'
-                  ? 'Click any entity to read its story and follow connections.'
-                  : 'Click a class to see hierarchy, mappings, and properties.'}
+                  ? t('detail.hintInstance')
+                  : t('detail.hintOntology')}
               </p>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Keyboard- and screen-reader-accessible equivalent of the canvas.
+          Collapsed by default so it does not compete with the visual graph,
+          but it is real focusable content, not an aria-only shadow copy. */}
+      <details className={cn(glassCard, 'p-3')}>
+        <summary className="cursor-pointer text-sm font-medium text-foreground">
+          {t('a11y.listSummary', { count: visibleNodes.length })}
+        </summary>
+        <p className="mt-2 text-xs text-muted-foreground">{graphSummary}</p>
+        <ul className="mt-3 grid max-h-64 grid-cols-1 gap-1 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
+          {visibleNodes.map((n) => (
+            <li key={n.id}>
+              <button
+                type="button"
+                onClick={() => selectNodeById(n.id)}
+                className="w-full rounded px-2 py-1 text-left text-xs text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <span className="font-medium text-foreground">{n.label}</span>
+                <span className="ml-1.5 text-[10px] uppercase tracking-wide">{n.group}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }
@@ -1005,13 +1248,13 @@ function buildOntologyElements(data: ReturnType<typeof getOntologyGraphData>) {
   return [...nodes, ...edges];
 }
 
-function buildOntologyStyles(): any[] {
+function buildOntologyStyles(palette: GraphPalette): any[] {
   return [
     {
       selector: 'node',
       style: {
         'background-color': 'data(color)', 'border-color': 'data(borderColor)', 'border-width': 2,
-        label: 'data(label)', color: '#1e3a5f', 'font-size': '10px', 'font-weight': 600,
+        label: 'data(label)', color: palette.label, 'font-size': '10px', 'font-weight': 600,
         'text-valign': 'bottom', 'text-halign': 'center', 'text-margin-y': 6,
         'text-wrap': 'ellipsis', 'text-max-width': '100px', width: 32, height: 32, shape: 'ellipse',
         'overlay-padding': 4, 'transition-property': 'background-color, border-color, width, height, opacity',
@@ -1032,7 +1275,7 @@ function buildOntologyStyles(): any[] {
         'curve-style': 'bezier', 'target-arrow-shape': 'vee', 'arrow-scale': 0.7,
         'line-color': '#3b82f6', 'target-arrow-color': '#3b82f6', width: 1, 'line-style': 'dashed',
         'line-dash-pattern': [6, 3], opacity: 0.4, label: 'data(label)', 'font-size': '7px',
-        color: '#64748b', 'text-rotation': 'autorotate', 'text-margin-y': -8,
+        color: palette.mutedLabel, 'text-rotation': 'autorotate', 'text-margin-y': -8,
         'transition-property': 'opacity, line-color', 'transition-duration': '0.25s',
       },
     },
@@ -1058,13 +1301,13 @@ function buildInstanceElements(data: InstanceGraphData) {
   return [...nodes, ...edges];
 }
 
-function buildInstanceStyles(): any[] {
+function buildInstanceStyles(palette: GraphPalette): any[] {
   return [
     {
       selector: 'node',
       style: {
         'background-color': 'data(color)', 'border-color': 'data(borderColor)', 'border-width': 2,
-        label: 'data(label)', color: '#1e3a5f', 'font-size': '10px', 'font-weight': 600,
+        label: 'data(label)', color: palette.label, 'font-size': '10px', 'font-weight': 600,
         'text-valign': 'bottom', 'text-halign': 'center', 'text-margin-y': 6,
         'text-wrap': 'ellipsis', 'text-max-width': '110px',
         // Degree-based sizing: more connections = larger node
@@ -1081,7 +1324,7 @@ function buildInstanceStyles(): any[] {
       style: {
         'curve-style': 'bezier', 'target-arrow-shape': 'vee', 'arrow-scale': 0.8,
         'line-color': '#3b82f6', 'target-arrow-color': '#3b82f6', width: 1.5, 'line-style': 'solid',
-        opacity: 0.5, label: 'data(label)', 'font-size': '7px', color: '#64748b',
+        opacity: 0.5, label: 'data(label)', 'font-size': '7px', color: palette.mutedLabel,
         'text-rotation': 'autorotate', 'text-margin-y': -8,
         'min-zoomed-font-size': 10,
         'transition-property': 'opacity, line-color', 'transition-duration': '0.25s',

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Pause, Play, X } from 'lucide-react';
 import { useEffect } from 'react';
@@ -39,6 +40,7 @@ export function buildJourneyStops(entities: AtlasEntity[]): string[] {
 
 /** Google Earth Voyager-style guided journey with narration and progress. */
 export function StoryMode() {
+  const t = useTranslations('Atlas');
   const story = useAtlasUiStore((s) => s.story);
   const stopStory = useAtlasUiStore((s) => s.stopStory);
   const setStoryIndex = useAtlasUiStore((s) => s.setStoryIndex);
@@ -86,7 +88,7 @@ export function StoryMode() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 42 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        aria-label="Heritage journey"
+        aria-label={t('story.title')}
         className={cn(
           ATLAS_GLASS,
           'pointer-events-auto absolute bottom-28 left-1/2 z-40 w-[min(560px,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden',
@@ -156,7 +158,7 @@ export function StoryMode() {
           </div>
           <div className="flex items-center gap-0.5">
             <Button
-              type="button" variant="ghost" size="icon" aria-label="Previous stop"
+              type="button" variant="ghost" size="icon" aria-label={t('story.prev')}
               className="h-8 w-8 rounded-xl" disabled={story.index === 0}
               onClick={() => setStoryIndex(story.index - 1)}
             >
@@ -164,7 +166,7 @@ export function StoryMode() {
             </Button>
             <Button
               type="button" variant="ghost" size="icon"
-              aria-label={story.playing ? 'Pause journey' : 'Resume journey'}
+              aria-label={story.playing ? t('story.pause') : t('story.resume')}
               className="h-8 w-8 rounded-xl bg-primary/15 text-primary"
               onClick={() => setStoryPlaying(!story.playing)}
             >
@@ -175,14 +177,14 @@ export function StoryMode() {
               )}
             </Button>
             <Button
-              type="button" variant="ghost" size="icon" aria-label="Next stop"
+              type="button" variant="ghost" size="icon" aria-label={t('story.next')}
               className="h-8 w-8 rounded-xl" disabled={isLast}
               onClick={() => setStoryIndex(story.index + 1)}
             >
               <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
             </Button>
             <Button
-              type="button" variant="ghost" size="icon" aria-label="End journey"
+              type="button" variant="ghost" size="icon" aria-label={t('story.end')}
               className="h-8 w-8 rounded-xl text-muted-foreground"
               onClick={stopStory}
             >

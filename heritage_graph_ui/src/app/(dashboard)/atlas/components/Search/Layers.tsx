@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Home,
@@ -68,6 +69,7 @@ export function Layers({
   isFullscreen,
   onToggleFullscreen,
 }: LayersProps) {
+  const t = useTranslations('Atlas');
   const layersOpen = useAtlasUiStore((s) => s.layersOpen);
   const setLayersOpen = useAtlasUiStore((s) => s.setLayersOpen);
   const imageryLayer = useAtlasUiStore((s) => s.imageryLayer);
@@ -91,15 +93,15 @@ export function Layers({
           'pointer-events-auto absolute right-4 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-0.5 p-1',
         )}
         role="toolbar"
-        aria-label="Globe controls"
+        aria-label={t('layers.globeControls')}
       >
-        <ControlButton label="Zoom in" onClick={onZoomIn}>
+        <ControlButton label={t('layers.zoomIn')} onClick={onZoomIn}>
           <Plus className="h-4 w-4" strokeWidth={1.5} />
         </ControlButton>
-        <ControlButton label="Zoom out" onClick={onZoomOut}>
+        <ControlButton label={t('layers.zoomOut')} onClick={onZoomOut}>
           <Minus className="h-4 w-4" strokeWidth={1.5} />
         </ControlButton>
-        <ControlButton label="Reset view" onClick={onResetView}>
+        <ControlButton label={t('layers.resetView')} onClick={onResetView}>
           <Home className="h-4 w-4" strokeWidth={1.5} />
         </ControlButton>
         <div className="mx-1.5 my-0.5 h-px bg-border/50" />
@@ -107,7 +109,7 @@ export function Layers({
           <LayersIcon className="h-4 w-4" strokeWidth={1.5} />
         </ControlButton>
         <ControlButton
-          label={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+          label={isFullscreen ? t('layers.exitFullscreen') : t('layers.fullscreen')}
           onClick={onToggleFullscreen}
         >
           {isFullscreen ? (
@@ -126,7 +128,7 @@ export function Layers({
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 18, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-            aria-label="Map layers"
+            aria-label={t('layers.mapLayers')}
             className={cn(
               ATLAS_GLASS,
               'pointer-events-auto absolute right-[4.5rem] top-1/2 z-40 w-64 -translate-y-1/2 p-4',
@@ -169,15 +171,15 @@ export function Layers({
                 <Switch checked={boundaries} onCheckedChange={toggleBoundaries} />
               </label>
               <label className="flex items-center justify-between gap-3 text-[12px] font-medium">
-                <span>Marker legend</span>
+                <span>{t('legend.title')}</span>
                 <Switch checked={showLegend} onCheckedChange={toggleLegend} />
               </label>
               <label className="flex items-center justify-between gap-3 text-[12px] font-medium">
-                <span>Mini map</span>
+                <span>{t('layers.miniMap')}</span>
                 <Switch checked={showMiniMap} onCheckedChange={toggleMiniMap} />
               </label>
               <label className="flex items-center justify-between gap-3 text-[12px] font-medium">
-                <span>Interface sounds</span>
+                <span>{t('layers.sounds')}</span>
                 <Switch checked={!muted} onCheckedChange={(v) => setMuted(!v)} />
               </label>
             </div>

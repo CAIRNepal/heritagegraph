@@ -3,7 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function PersonKnowledgePage() {
   return (
-    <KnowledgeListPage>
+    <KnowledgeListPage domain="person">
       <GenericDataTable config={personTableConfig} />
     </KnowledgeListPage>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -49,58 +50,51 @@ interface MyContribution {
 /** Status → plain-language label, tint, and a one-line meaning for laymen. */
 const STATUS_META: Record<
   string,
-  { label: string; color: string; hint: string }
+  { key: string; color: string }
 > = {
   draft: {
-    label: "Draft",
+    key: "draft",
     color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
-    hint: "Saved but not yet submitted for review.",
   },
   pending_review: {
-    label: "Pending review",
+    key: "pendingReview",
     color: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-    hint: "In the queue — a reviewer will look at this soon.",
   },
   pending_revision: {
-    label: "Changes requested",
+    key: "pendingRevision",
     color: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
-    hint: "A reviewer asked for changes. Read their note, then revise and resubmit.",
   },
   accepted: {
-    label: "Published",
+    key: "accepted",
     color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-    hint: "Accepted and live in the public knowledge graph.",
   },
   merged: {
-    label: "Published",
+    key: "merged",
     color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-    hint: "Merged and live in the public knowledge graph.",
   },
   rejected: {
-    label: "Not accepted",
+    key: "rejected",
     color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
-    hint: "A reviewer declined this. See their note for why.",
   },
   superseded: {
-    label: "Superseded",
+    key: "superseded",
     color: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
-    hint: "Replaced by a newer version.",
   },
 };
 
 const ACTIVITY_META: Record<
   string,
-  { label: string; icon: React.ComponentType<{ className?: string }> }
+  { key: string; icon: React.ComponentType<{ className?: string }> }
 > = {
-  submitted: { label: "Submitted for review", icon: IconClock },
-  accepted: { label: "Accepted", icon: IconCircleCheck },
-  rejected: { label: "Declined", icon: IconCircleX },
-  changes_requested: { label: "Changes requested", icon: IconEdit },
-  revised: { label: "Revised", icon: IconEdit },
-  commented: { label: "Comment", icon: IconMessage },
-  escalated: { label: "Escalated to an expert", icon: IconInfoCircle },
-  flagged: { label: "Flagged for review", icon: IconInfoCircle },
-  conflict_resolved: { label: "Conflict resolved", icon: IconCircleCheck },
+  submitted: { key: "submitted", icon: IconClock },
+  accepted: { key: "accepted", icon: IconCircleCheck },
+  rejected: { key: "rejected", icon: IconCircleX },
+  changes_requested: { key: "changesRequested", icon: IconEdit },
+  revised: { key: "revised", icon: IconEdit },
+  commented: { key: "commented", icon: IconMessage },
+  escalated: { key: "escalated", icon: IconInfoCircle },
+  flagged: { key: "flagged", icon: IconInfoCircle },
+  conflict_resolved: { key: "conflictResolved", icon: IconCircleCheck },
 };
 
 function statusMeta(status: string) {
@@ -120,6 +114,7 @@ function fmtDate(iso: string): string {
 }
 
 function ContributionCard({ item }: { item: MyContribution }) {
+  const t = useTranslations("myContributions");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const meta = statusMeta(item.status);
@@ -135,10 +130,10 @@ function ContributionCard({ item }: { item: MyContribution }) {
               href={`/knowledge/entity/view/${item.entity_id}`}
               className="font-semibold text-foreground hover:text-primary transition-colors truncate"
             >
-              {item.name || "Untitled"}
+              {item.name || t('untitled')}
             </Link>
             <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", meta.color)}>
-              {meta.label}
+              {t(`status.${meta.key}.label`)}
             </Badge>
             {item.category ? (
               <span className="text-xs text-muted-foreground capitalize">
@@ -146,7 +141,7 @@ function ContributionCard({ item }: { item: MyContribution }) {
               </span>
             ) : null}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">{meta.hint}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t(`status.${meta.key}.hint`)}</p>
           <p className="mt-0.5 text-xs text-muted-foreground/80">
             Submitted {fmtDate(item.created_at)}
           </p>
@@ -192,7 +187,7 @@ function ContributionCard({ item }: { item: MyContribution }) {
             ) : (
               <IconChevronRight className="h-3.5 w-3.5" />
             )}
-            {open ? "Hide history" : `View history (${activities.length})`}
+            {open ? t('hideHistory') : `View history (${activities.length})`}
           </button>
           {open ? (
             <ol className="mt-2 space-y-2 border-l border-border pl-4">
@@ -208,7 +203,7 @@ function ContributionCard({ item }: { item: MyContribution }) {
                       <Icon className="h-3.5 w-3.5" />
                     </span>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium text-foreground">{am.label}</span>
+                      <span className="font-medium text-foreground">{t(`activity.${am.key}`)}</span>
                       <span className="text-xs text-muted-foreground">
                         {fmtDate(a.created_at)}
                         {a.user?.username ? ` · ${a.user.username}` : ""}
@@ -229,6 +224,7 @@ function ContributionCard({ item }: { item: MyContribution }) {
 }
 
 export default function MyContributionsClient() {
+  const t = useTranslations("myContributions");
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const [items, setItems] = useState<MyContribution[] | null>(null);
@@ -251,7 +247,7 @@ export default function MyContributionsClient() {
       const list = Array.isArray(data) ? data : (data.results ?? []);
       setItems(list);
     } catch (err) {
-      setError(getApiErrorMessage(err, "Could not load your contributions."));
+      setError(getApiErrorMessage(err, t('loadFailed')));
       setItems([]);
     }
   }, [token]);
@@ -279,7 +275,7 @@ export default function MyContributionsClient() {
         variants={fadeInUp}
         className={cn(glassCard, "p-5")}
       >
-        <h1 className="text-xl font-semibold text-foreground">My contributions</h1>
+        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Here&apos;s what happens after you submit:{" "}
           <span className="text-foreground">you submit</span> →{" "}
@@ -325,7 +321,7 @@ export default function MyContributionsClient() {
           <p className="text-muted-foreground">
             You haven&apos;t contributed anything yet.
           </p>
-          <Button onClick={() => router.push("/contribute")}>Start contributing</Button>
+          <Button onClick={() => router.push("/contribute")}>{t('startContributing')}</Button>
         </div>
       ) : (
         <motion.div

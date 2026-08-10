@@ -8,6 +8,7 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -46,15 +47,11 @@ interface ContributionIntent {
   journey: "places" | "people" | "events" | "sources";
 }
 
-const JOURNEYS: Array<{
-  key: ContributionIntent["journey"];
-  label: string;
-  hint: string;
-}> = [
-  { key: "places", label: "Places & things", hint: "Temples, art, deities, places" },
-  { key: "people", label: "People & groups", hint: "Persons, Guthi, communities" },
-  { key: "events", label: "Events & rituals", hint: "Festivals, rituals, history" },
-  { key: "sources", label: "Sources", hint: "Books, inscriptions, claims" },
+const JOURNEYS: Array<{ key: ContributionIntent["journey"] }> = [
+  { key: "places" },
+  { key: "people" },
+  { key: "events" },
+  { key: "sources" },
 ];
 
 const journeyByRegistryKey: Record<string, ContributionIntent["journey"]> = {
@@ -171,6 +168,7 @@ function HorizontalScroller({
   children: React.ReactNode;
   label: string;
 }) {
+  const t = useTranslations("contributeHub");
   const ref = useRef<HTMLDivElement>(null);
   const scrollBy = (dir: -1 | 1) => {
     const el = ref.current;
@@ -187,7 +185,7 @@ function HorizontalScroller({
             variant="outline"
             size="icon"
             className="size-8"
-            aria-label="Scroll left"
+            aria-label={t('scrollLeft')}
             onClick={() => scrollBy(-1)}
           >
             <IconChevronLeft className="size-4" />
@@ -197,7 +195,7 @@ function HorizontalScroller({
             variant="outline"
             size="icon"
             className="size-8"
-            aria-label="Scroll right"
+            aria-label={t('scrollRight')}
             onClick={() => scrollBy(1)}
           >
             <IconChevronRight className="size-4" />
@@ -215,6 +213,7 @@ function HorizontalScroller({
 }
 
 export default function ContributeDashboard() {
+  const t = useTranslations("contributeHub");
   const router = useRouter();
   const { registry, reload, degradedReason } = useOntology();
   const hub = registry.contribute_hub ?? {
@@ -341,7 +340,7 @@ export default function ContributeDashboard() {
           <span className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Plus className="size-5" aria-hidden />
           </span>
-          <h2 className="text-base font-semibold">Add something new</h2>
+          <h2 className="text-base font-semibold">{t('addNew')}</h2>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
             A temple, person, festival, or document that isn&apos;t in the system yet.
           </p>
@@ -364,7 +363,7 @@ export default function ContributeDashboard() {
           <span className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Search className="size-5" aria-hidden />
           </span>
-          <h2 className="text-base font-semibold">Update something already here</h2>
+          <h2 className="text-base font-semibold">{t('updateExisting')}</h2>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
             Search first — then fix details or connect it to another record. Avoids duplicates.
           </p>
@@ -385,22 +384,22 @@ export default function ContributeDashboard() {
             {
               href: "/contribute/relationship-proposal",
               icon: Link2,
-              label: "Connect two records",
+              label: t('quick.connect'),
             },
             {
               href: "/contribute/entity-proposal",
               icon: GitMerge,
-              label: "Same thing twice?",
+              label: t('quick.duplicate'),
             },
             {
               href: "/contribute/projects",
               icon: FolderKanban,
-              label: "Work as a project",
+              label: t('quick.project'),
             },
             {
               href: "/contribute/my-contributions",
               icon: ListChecks,
-              label: "My submissions",
+              label: t('quick.mySubmissions'),
             },
           ].map((item) => (
             <Link
@@ -424,7 +423,7 @@ export default function ContributeDashboard() {
         className="scroll-mt-24 space-y-5"
       >
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-foreground">What are you adding?</h2>
+          <h2 className="text-lg font-semibold text-foreground">{t('whatAreYouAdding')}</h2>
           <p className="text-sm text-muted-foreground">
             Pick the closest match. If you&apos;re unsure, choose &ldquo;Something else&rdquo; or
             search by everyday words like temple, festival, or priest.
@@ -434,7 +433,7 @@ export default function ContributeDashboard() {
         <div className="relative">
           <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search types… e.g. temple, festival, person"
+            placeholder={t('searchTypesPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="h-11 rounded-xl border-border bg-card pl-9 pr-9"
@@ -444,7 +443,7 @@ export default function ContributeDashboard() {
               type="button"
               onClick={() => setSearch("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label="Clear search"
+              aria-label={t('clearSearch')}
             >
               <IconX className="size-4" />
             </button>
@@ -493,7 +492,7 @@ export default function ContributeDashboard() {
                     Clear search
                   </Button>
                   <Button asChild size="sm">
-                    <Link href="/contribute/improve">Search existing records</Link>
+                    <Link href="/contribute/improve">{t('searchExisting')}</Link>
                   </Button>
                 </div>
               </div>
@@ -502,8 +501,8 @@ export default function ContributeDashboard() {
         ) : (
           <div className="space-y-6">
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-foreground">Popular starting points</h3>
-              <HorizontalScroller label="Swipe or use arrows">
+              <h3 className="text-sm font-semibold text-foreground">{t('popularStarts')}</h3>
+              <HorizontalScroller label={t('swipeHint')}>
                 {quickStart.map((intent) => (
                   <div key={intent.key} className="snap-start">
                     <TypePill intent={intent} onClick={() => router.push(intent.route)} />
@@ -513,7 +512,7 @@ export default function ContributeDashboard() {
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground">Browse by kind</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t('browseByKind')}</h3>
               <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {JOURNEYS.map((j) => {
                   const count = contributionIntents.filter((i) => {
@@ -534,7 +533,7 @@ export default function ContributeDashboard() {
                           : "border-border bg-card text-foreground hover:border-primary/40"
                       )}
                     >
-                      {j.label}
+                      {t(`journeys.${j.key}.label`)}
                       <span
                         className={cn(
                           "ml-1.5 text-[10px]",
@@ -548,9 +547,9 @@ export default function ContributeDashboard() {
                 })}
               </div>
               <p className="text-xs text-muted-foreground">
-                {JOURNEYS.find((j) => j.key === activeJourney)?.hint}
+                {activeJourney ? t(`journeys.${activeJourney}.hint`) : null}
               </p>
-              <HorizontalScroller label="Scroll to see more types">
+              <HorizontalScroller label={t('scrollHint')}>
                 {journeyTypes.map((intent) => (
                   <div key={intent.key} className="snap-start">
                     <TypePill intent={intent} onClick={() => router.push(intent.route)} />

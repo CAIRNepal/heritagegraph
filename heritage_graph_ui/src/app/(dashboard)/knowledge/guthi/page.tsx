@@ -3,7 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function GuthiKnowledgePage() {
   return (
-    <KnowledgeListPage>
+    <KnowledgeListPage domain="guthi">
       <GenericDataTable config={guthiTableConfig} />
     </KnowledgeListPage>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bookmark,
@@ -52,6 +53,7 @@ function CategoryRow({
   onToggleExpanded: () => void;
   onSelectEntity: (id: string) => void;
 }) {
+  const t = useTranslations('Atlas');
   return (
     <div className="rounded-xl">
       <div
@@ -93,8 +95,12 @@ function CategoryRow({
           type="button"
           onClick={onToggleVisibility}
           aria-pressed={enabled}
-          aria-label={enabled ? `Hide ${style.label} on the globe` : `Show ${style.label} on the globe`}
-          title={enabled ? 'Hide on globe' : 'Show on globe'}
+          aria-label={
+            enabled
+              ? t('explorer.hideCategory', { category: style.label })
+              : t('explorer.showCategory', { category: style.label })
+          }
+          title={enabled ? t('explorer.hideOnGlobe') : t('explorer.showOnGlobe')}
           className="mr-1 rounded-lg p-1.5 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
         >
           {enabled ? (
@@ -118,7 +124,7 @@ function CategoryRow({
           >
             <ul className="mb-1 ml-3 space-y-0.5 border-l border-border/50 pl-2.5">
               {members.length === 0 ? (
-                <li className="px-2 py-1 text-[11px] text-muted-foreground/70">No sites in this category</li>
+                <li className="px-2 py-1 text-[11px] text-muted-foreground/70">{t('explorer.emptyCategory')}</li>
               ) : (
                 members.map((entity) => (
                   <li key={entity.id}>
@@ -151,6 +157,7 @@ function CategoryRow({
  * recently viewed. Collapses into a floating compass button.
  */
 export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
+  const t = useTranslations('Atlas');
   const entities = useFilteredAtlasEntities();
   const allEntities = useAtlasStore((s) => s.entities);
   const classEnabled = useAtlasStore((s) => s.classEnabled);
@@ -235,7 +242,7 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
             <Button
               type="button"
               size="icon"
-              aria-label="Open explorer"
+              aria-label={t('explorer.open')}
               className={cn(ATLAS_GLASS, 'h-11 w-11 rounded-2xl bg-background/70 text-foreground hover:bg-background/90')}
               variant="ghost"
               onClick={() => setExplorerOpen(true)}
@@ -254,7 +261,7 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -28 }}
             transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-            aria-label="Explorer"
+            aria-label={t('explorer.title')}
             className={cn(
               ATLAS_GLASS,
               'pointer-events-auto absolute bottom-28 left-4 top-4 z-30 hidden w-[288px] flex-col overflow-hidden md:flex',
@@ -262,7 +269,7 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
           >
             <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-4">
               <div>
-                <h2 className="text-sm font-semibold tracking-tight">Heritage Atlas</h2>
+                <h2 className="text-sm font-semibold tracking-tight">{t('explorer.heading')}</h2>
                 <p className="text-[11px] text-muted-foreground">
                   {entities.length.toLocaleString()} sites ·{' '}
                   <button
@@ -270,7 +277,7 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
                     className="underline decoration-dotted underline-offset-2 hover:text-foreground"
                     onClick={() => setDataSource(dataSource === 'live' ? 'demo' : 'live')}
                   >
-                    {dataSource === 'live' ? 'live graph' : 'demo corpus'}
+                    {dataSource === 'live' ? t('explorer.sourceLive') : t('explorer.sourceSample')}
                   </button>
                 </p>
               </div>
@@ -278,7 +285,7 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Collapse explorer"
+                aria-label={t('explorer.collapse')}
                 className="h-8 w-8 rounded-xl text-muted-foreground"
                 onClick={() => setExplorerOpen(false)}
               >
@@ -321,14 +328,14 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
                   onClick={() => setFiltersOpen(!filtersOpen)}
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={1.5} />
-                  <span className="sr-only">Filters</span>
+                  <span className="sr-only">{t('filters.title')}</span>
                 </Button>
               </div>
             </div>
 
             {corpusStatus === 'loading' ? (
               <p className="mx-4 mt-2 shrink-0 animate-pulse text-[11px] text-muted-foreground">
-                Loading the knowledge graph…
+                {t('explorer.loading')}
               </p>
             ) : null}
             {corpusStatus === 'error' && corpusError ? (
@@ -341,9 +348,9 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
             <div className="mt-3 min-h-0 flex-1 overflow-hidden px-3">
               <ScrollArea className="h-full">
                 <div className="space-y-4 pb-4 pr-2">
-                  <section aria-label="Categories">
+                  <section aria-label={t('explorer.categories')}>
                     <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                      <Sparkles className="h-3 w-3" strokeWidth={1.5} /> Categories
+                      <Sparkles className="h-3 w-3" strokeWidth={1.5} /> {t('explorer.categories')}
                     </h3>
                     <div className="space-y-0.5">
                       {MARKER_ARCHETYPES.map((style) => (
@@ -365,9 +372,9 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
                   </section>
 
                   {bookmarks.length > 0 ? (
-                    <section aria-label="Bookmarks">
+                    <section aria-label={t('explorer.bookmarks')}>
                       <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                        <Bookmark className="h-3 w-3" strokeWidth={1.5} /> Bookmarks
+                        <Bookmark className="h-3 w-3" strokeWidth={1.5} /> {t('explorer.bookmarks')}
                       </h3>
                       <div className="space-y-0.5">
                         {bookmarks.map((e) => (
@@ -386,9 +393,9 @@ export function ExplorerSidebar({ onPlayJourney }: ExplorerSidebarProps) {
                   ) : null}
 
                   {recents.length > 0 ? (
-                    <section aria-label="Recently viewed">
+                    <section aria-label={t('explorer.recent')}>
                       <h3 className="mb-1 flex items-center gap-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/70">
-                        <History className="h-3 w-3" strokeWidth={1.5} /> Recently viewed
+                        <History className="h-3 w-3" strokeWidth={1.5} /> {t('explorer.recent')}
                       </h3>
                       <div className="space-y-0.5">
                         {recents.map((e) => (

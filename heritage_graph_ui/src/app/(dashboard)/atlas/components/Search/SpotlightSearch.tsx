@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -24,6 +25,7 @@ const MAX_RESULTS = 24;
  * with thumbnails and instant fly-to on selection.
  */
 export function SpotlightSearch() {
+  const t = useTranslations('Atlas');
   const open = useAtlasUiStore((s) => s.spotlightOpen);
   const setOpen = useAtlasUiStore((s) => s.setSpotlightOpen);
   const entities = useAtlasStore((s) => s.entities);
@@ -94,9 +96,9 @@ export function SpotlightSearch() {
                   ref={inputRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search temples, festivals, people, dynasties…"
+                  placeholder={t('search.placeholder')}
                   className="h-12 w-full bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/60"
-                  aria-label="Search heritage entities"
+                  aria-label={t('search.label')}
                 />
                 <kbd className="rounded-md border border-border/60 bg-muted/50 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
                   esc
@@ -106,7 +108,7 @@ export function SpotlightSearch() {
                 <CommandEmpty className="py-8 text-center text-sm text-muted-foreground">
                   No heritage found for “{query}”.
                 </CommandEmpty>
-                <CommandGroup heading={query ? 'Results' : 'Explore'}>
+                <CommandGroup heading={query ? t('search.results') : t('search.explore')}>
                   {results.map((e) => {
                     const style = markerStyleForEntity(e);
                     const century = centuryLabel(e.foundedYear);

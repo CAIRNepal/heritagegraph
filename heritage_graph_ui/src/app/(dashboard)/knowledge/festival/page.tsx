@@ -3,7 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function FestivalKnowledgePage() {
   return (
-    <KnowledgeListPage>
+    <KnowledgeListPage domain="festival">
       <GenericDataTable config={festivalTableConfig} />
     </KnowledgeListPage>
   );

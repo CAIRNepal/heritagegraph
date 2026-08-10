@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { HERITAGEGRAPH_RELEASE, downloadJson } from '@/lib/provenance';
 import { useSession } from 'next-auth/react';
 import {
   closestCenter,
@@ -32,6 +34,7 @@ import {
   IconLayoutColumns,
   IconLoader,
   IconPlus,
+  IconDownload,
 } from '@tabler/icons-react';
 import {
   ColumnDef,
@@ -56,18 +59,14 @@ import { rankItem } from '@tanstack/match-sorter-utils';
 import { apiFetch, apiUrl, getApiErrorMessage } from '@/lib/api-client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
+  DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -104,7 +103,7 @@ function mergeTabCountOverrides(
     underReview?: number;
     accepted?: number;
     reviewed?: number;
-  }
+  },
 ): Partial<Record<string, number>> | undefined {
   if (!raw) return undefined;
   const { underReview, accepted, reviewed, ...rest } = raw;
@@ -122,13 +121,8 @@ const fuzzyFilter: FilterFn<unknown> = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-function DragHandle({
-  id,
-  disabled,
-}: {
-  id: UniqueIdentifier;
-  disabled?: boolean;
-}) {
+function DragHandle({ id, disabled }: { id: UniqueIdentifier; disabled?: boolean }) {
+  const t = useTranslations('dataTable');
   const { attributes, listeners } = useSortable({ id, disabled });
 
   return (
@@ -141,7 +135,7 @@ function DragHandle({
       className="text-muted-foreground size-7 hover:bg-transparent disabled:opacity-40"
     >
       <IconGripVertical className="text-muted-foreground size-3" />
-      <span className="sr-only">Drag to reorder</span>
+      <span className="sr-only">{t('dragToReorder')}</span>
     </Button>
   );
 }
@@ -193,12 +187,13 @@ function StaticTableRow<TData>({ row }: { row: Row<TData> }) {
 }
 
 function ColumnVisibilityMenu<TData>({ table }: { table: Table<TData> }) {
+  const t = useTranslations('dataTable');
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
           <IconLayoutColumns />
-          <span className="hidden lg:inline">Columns</span>
+          <span className="hidden lg:inline">{t('columns')}</span>
           <IconChevronDown />
         </Button>
       </DropdownMenuTrigger>
@@ -206,8 +201,7 @@ function ColumnVisibilityMenu<TData>({ table }: { table: Table<TData> }) {
         {table
           .getAllColumns()
           .filter(
-            (column) =>
-              typeof column.accessorFn !== 'undefined' && column.getCanHide()
+            (column) => typeof column.accessorFn !== 'undefined' && column.getCanHide(),
           )
           .map((column) => (
             <DropdownMenuCheckboxItem
@@ -246,20 +240,18 @@ export function GenericDataTable<TData>({
   fetchFn,
   tabCounts,
 }: GenericDataTableProps<TData>) {
+  const t = useTranslations('dataTable');
   const { data: session } = useSession();
   const tabCountOverrides = React.useMemo(
     () => mergeTabCountOverrides(tabCounts),
-    [tabCounts]
+    [tabCounts],
   );
   const [data, setData] = React.useState<TData[]>(initialData ?? []);
   const [loading, setLoading] = React.useState(!initialData);
   const [fetchError, setFetchError] = React.useState<string | null>(null);
   const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
@@ -280,7 +272,7 @@ export function GenericDataTable<TData>({
   const sensors = useSensors(
     useSensor(MouseSensor, {}),
     useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
+    useSensor(KeyboardSensor, {}),
   );
 
   const resolvedTabs = React.useMemo((): DataTableTab<TData>[] | null => {
@@ -309,12 +301,12 @@ export function GenericDataTable<TData>({
 
   const rowIdKey = React.useMemo(
     () => (config.rowIdField ?? config.idField ?? 'id') as keyof TData,
-    [config.rowIdField, config.idField]
+    [config.rowIdField, config.idField],
   );
 
   const resolveRowId = React.useCallback(
     (row: TData) => String(row[rowIdKey]),
-    [rowIdKey]
+    [rowIdKey],
   );
 
   const tableData = React.useMemo(() => {
@@ -325,8 +317,7 @@ export function GenericDataTable<TData>({
   }, [data, resolvedTabs, activeTab, serverListMode]);
 
   const dragDropActive =
-    config.enableDragDrop === true &&
-    (!resolvedTabs?.length || activeTab === 'all');
+    config.enableDragDrop === true && (!resolvedTabs?.length || activeTab === 'all');
 
   const columns = React.useMemo(() => {
     const cols: ColumnDef<TData>[] = [];
@@ -336,10 +327,7 @@ export function GenericDataTable<TData>({
         id: 'drag',
         header: () => null,
         cell: ({ row }) => (
-          <DragHandle
-            id={resolveRowId(row.original)}
-            disabled={!dragDropActive}
-          />
+          <DragHandle id={resolveRowId(row.original)} disabled={!dragDropActive} />
         ),
         enableHiding: false,
       });
@@ -348,15 +336,17 @@ export function GenericDataTable<TData>({
     if (config.enableSelection !== false) {
       cols.push({
         id: 'select',
-        header: ({ table: t }) => (
+        header: ({ table: tableInstance }) => (
           <div className="flex items-center justify-center">
             <Checkbox
               checked={
-                t.getIsAllPageRowsSelected() ||
-                (t.getIsSomePageRowsSelected() && 'indeterminate')
+                tableInstance.getIsAllPageRowsSelected() ||
+                (tableInstance.getIsSomePageRowsSelected() && 'indeterminate')
               }
-              onCheckedChange={(value) => t.toggleAllPageRowsSelected(!!value)}
-              aria-label="Select all"
+              onCheckedChange={(value) =>
+                tableInstance.toggleAllPageRowsSelected(!!value)
+              }
+              aria-label={t('selectAll')}
             />
           </div>
         ),
@@ -365,7 +355,7 @@ export function GenericDataTable<TData>({
             <Checkbox
               checked={row.getIsSelected()}
               onCheckedChange={(value) => row.toggleSelected(!!value)}
-              aria-label="Select row"
+              aria-label={t('selectRow')}
             />
           </div>
         ),
@@ -381,11 +371,12 @@ export function GenericDataTable<TData>({
     config.enableSelection,
     resolveRowId,
     dragDropActive,
+    t,
   ]);
 
   const dataIds = React.useMemo<UniqueIdentifier[]>(
     () => tableData.map((d) => resolveRowId(d)),
-    [tableData, resolveRowId]
+    [tableData, resolveRowId],
   );
 
   const table = useReactTable({
@@ -433,9 +424,7 @@ export function GenericDataTable<TData>({
         params.set('search', debouncedSearch);
       }
       if (resolvedTabs?.length) {
-        for (const [key, value] of Object.entries(
-          statusQueryParamsForTab(activeTab)
-        )) {
+        for (const [key, value] of Object.entries(statusQueryParamsForTab(activeTab))) {
           params.set(key, value);
         }
       }
@@ -508,20 +497,14 @@ export function GenericDataTable<TData>({
     } catch (error) {
       const message = getApiErrorMessage(
         error,
-        'Could not load this table. Please try again.'
+        'Could not load this table. Please try again.',
       );
       setFetchError(message);
       toast.error(message);
     } finally {
       setLoading(false);
     }
-  }, [
-    initialData,
-    fetchFn,
-    session?.accessToken,
-    buildListUrl,
-    config.dataKey,
-  ]);
+  }, [initialData, fetchFn, session?.accessToken, buildListUrl, config.dataKey]);
 
   React.useEffect(() => {
     if (initialData) return;
@@ -535,10 +518,10 @@ export function GenericDataTable<TData>({
       setData((old) => {
         const safeData = Array.isArray(old) ? old : [];
         const oldIndex = safeData.findIndex(
-          (item) => resolveRowId(item) === String(active.id)
+          (item) => resolveRowId(item) === String(active.id),
         );
         const newIndex = safeData.findIndex(
-          (item) => resolveRowId(item) === String(over.id)
+          (item) => resolveRowId(item) === String(over.id),
         );
         if (oldIndex < 0 || newIndex < 0) return old;
         return arrayMove(safeData, oldIndex, newIndex);
@@ -557,7 +540,7 @@ export function GenericDataTable<TData>({
       if (!tab.filter) return data.length;
       return data.filter(tab.filter).length;
     },
-    [data, tabCountOverrides, serverListMode, activeTab, totalCount]
+    [data, tabCountOverrides, serverListMode, activeTab, totalCount],
   );
 
   if (loading) {
@@ -603,10 +586,7 @@ export function GenericDataTable<TData>({
                   <TableHead key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -614,10 +594,7 @@ export function GenericDataTable<TData>({
 
             {config.enableFilters !== false &&
               table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  key={`${headerGroup.id}-filter`}
-                  className="bg-background"
-                >
+                <TableRow key={`${headerGroup.id}-filter`} className="bg-background">
                   {headerGroup.headers.map((header) => {
                     const column = header.column;
                     return (
@@ -625,11 +602,9 @@ export function GenericDataTable<TData>({
                         {column.getCanFilter() ? (
                           <div className="w-full pt-2">
                             <Input
-                              placeholder="Filter…"
+                              placeholder={t('filter')}
                               value={(column.getFilterValue() as string) ?? ''}
-                              onChange={(e) =>
-                                column.setFilterValue(e.target.value)
-                              }
+                              onChange={(e) => column.setFilterValue(e.target.value)}
                               className="h-9 text-sm"
                               onClick={(e) => e.stopPropagation()}
                             />
@@ -646,10 +621,7 @@ export function GenericDataTable<TData>({
           <TableBody className="**:data-[slot=table-cell]:first:w-10">
             {table.getRowModel().rows?.length ? (
               dragDropActive ? (
-                <SortableContext
-                  items={dataIds}
-                  strategy={verticalListSortingStrategy}
-                >
+                <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
                   {table.getRowModel().rows.map((row) => (
                     <DraggableRow
                       key={row.id}
@@ -660,9 +632,9 @@ export function GenericDataTable<TData>({
                   ))}
                 </SortableContext>
               ) : (
-                table.getRowModel().rows.map((row) => (
-                  <StaticTableRow key={row.id} row={row} />
-                ))
+                table
+                  .getRowModel()
+                  .rows.map((row) => <StaticTableRow key={row.id} row={row} />)
               )
             ) : (
               <TableRow>
@@ -670,7 +642,7 @@ export function GenericDataTable<TData>({
                   colSpan={columns.length}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  {config.emptyMessage || 'No results.'}
+                  {config.emptyMessage || t('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -685,12 +657,15 @@ export function GenericDataTable<TData>({
       <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
         {serverListMode
           ? `${totalCount} record(s)`
-          : `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} row(s) selected.`}
+          : t('rowsSelected', {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
       </div>
       <div className="flex w-full items-center gap-8 lg:w-fit">
         <div className="hidden items-center gap-2 lg:flex">
           <Label htmlFor="rows-per-page" className="text-sm font-medium">
-            Rows per page
+            {t('pagination.rowsPerPage')}
           </Label>
           <Select
             value={`${table.getState().pagination.pageSize}`}
@@ -699,9 +674,7 @@ export function GenericDataTable<TData>({
             }}
           >
             <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-              <SelectValue
-                placeholder={table.getState().pagination.pageSize}
-              />
+              <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
               {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -723,7 +696,7 @@ export function GenericDataTable<TData>({
             onClick={() => table.setPageIndex(0)}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Go to first page</span>
+            <span className="sr-only">{t('pagination.first')}</span>
             <IconChevronsLeft />
           </Button>
           <Button
@@ -733,7 +706,7 @@ export function GenericDataTable<TData>({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            <span className="sr-only">Go to previous page</span>
+            <span className="sr-only">{t('pagination.previous')}</span>
             <IconChevronLeft />
           </Button>
           <Button
@@ -743,7 +716,7 @@ export function GenericDataTable<TData>({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Go to next page</span>
+            <span className="sr-only">{t('pagination.next')}</span>
             <IconChevronRight />
           </Button>
           <Button
@@ -753,7 +726,7 @@ export function GenericDataTable<TData>({
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             disabled={!table.getCanNextPage()}
           >
-            <span className="sr-only">Go to last page</span>
+            <span className="sr-only">{t('pagination.last')}</span>
             <IconChevronsRight />
           </Button>
         </div>
@@ -776,9 +749,7 @@ export function GenericDataTable<TData>({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 {config.title && (
-                  <CardTitle className="text-2xl font-bold">
-                    {config.title}
-                  </CardTitle>
+                  <CardTitle className="text-2xl font-bold">{config.title}</CardTitle>
                 )}
                 {config.description && (
                   <CardDescription>{config.description}</CardDescription>
@@ -799,11 +770,65 @@ export function GenericDataTable<TData>({
     );
   };
 
+  /**
+   * Export the rows currently in view.
+   *
+   * A browse interface for a citable dataset has to let a reader take the rows
+   * away; previously the only routes out were the SPARQL endpoint and a
+   * management command, neither reachable from this page. The payload carries
+   * the release and an export timestamp so a downloaded slice can be cited.
+   */
+  const exportRows = (format: 'csv' | 'json') => {
+    const rows = table.getFilteredRowModel().rows.map((r) => r.original);
+    if (rows.length === 0) return;
+
+    const visibleCols = table
+      .getVisibleFlatColumns()
+      .map((c) => c.id)
+      .filter((id) => id !== 'select' && id !== 'drag' && id !== 'actions');
+
+    const stamp = new Date().toISOString();
+    const slug = `${config.exportName ?? 'heritagegraph'}_${stamp.slice(0, 10)}`;
+
+    if (format === 'json') {
+      downloadJson(`${slug}.json`, {
+        release: HERITAGEGRAPH_RELEASE,
+        exportedAt: stamp,
+        note: 'Rows as filtered in the browse interface. Only accepted and merged records are part of the published graph.',
+        count: rows.length,
+        rows,
+      });
+      return;
+    }
+
+    const escape = (v: unknown) => {
+      const text = v == null ? '' : String(v);
+      return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    };
+    const body = [
+      visibleCols.join(','),
+      ...rows.map((row) =>
+        visibleCols.map((c) => escape((row as Record<string, unknown>)[c])).join(','),
+      ),
+    ].join('\n');
+    const preamble =
+      `# HeritageGraph export — release ${HERITAGEGRAPH_RELEASE} — ${stamp}\n` +
+      `# Rows as filtered in the browse interface; only accepted and merged records are published.\n`;
+    const blob = new Blob([preamble + body], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const renderToolbar = () => (
     <div className="flex items-center justify-between px-4 lg:px-6 gap-3">
       {serverListMode && config.enableServerSearch !== false ? (
         <Input
-          placeholder="Search…"
+          placeholder={t('search')}
+          aria-label={t('searchLabel')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm h-9"
@@ -812,6 +837,22 @@ export function GenericDataTable<TData>({
         <div className="flex-1" />
       )}
       <div className="flex items-center gap-2 ml-auto">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" aria-label={t('export.label')}>
+              <IconDownload />
+              <span className="hidden lg:inline">{t('export.label')}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => exportRows('csv')}>
+              {t('export.csv')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportRows('json')}>
+              {t('export.json')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <ColumnVisibilityMenu table={table} />
         {config.addAction && (
           <Link href={config.addAction.href}>
@@ -854,9 +895,7 @@ export function GenericDataTable<TData>({
                 <Link href={config.addAction.href}>
                   <Button variant="outline" size="sm">
                     <IconPlus />
-                    <span className="hidden lg:inline">
-                      {config.addAction.label}
-                    </span>
+                    <span className="hidden lg:inline">{config.addAction.label}</span>
                   </Button>
                 </Link>
               )}

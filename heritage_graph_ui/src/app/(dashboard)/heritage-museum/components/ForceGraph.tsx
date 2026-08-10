@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useCallback, useMemo } from 'react';
 import * as d3 from 'd3';
 import {
@@ -85,6 +86,8 @@ export function ForceGraph({
   pathPickMode,
   pathSource,
 }: ForceGraphProps) {
+  const t = useTranslations('heritageMuseum');
+  const graphAriaLabel = t('graphAriaLabel');
   const svgRef = useRef<SVGSVGElement>(null);
   const simulationRef = useRef<d3.Simulation<GraphNode, GraphLink> | null>(null);
 
@@ -167,7 +170,7 @@ export function ForceGraph({
     svg.call(zoom);
 
     // Accessibility metadata
-    svg.attr('role', 'img').attr('aria-label', 'Interactive heritage knowledge graph');
+    svg.attr('role', 'img').attr('aria-label', graphAriaLabel);
 
     return () => {
       simulationRef.current?.stop();

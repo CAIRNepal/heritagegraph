@@ -3,7 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function IconographyKnowledgePage() {
   return (
-    <KnowledgeListPage>
+    <KnowledgeListPage domain="iconography">
       <GenericDataTable config={iconographyTableConfig} />
     </KnowledgeListPage>
   );

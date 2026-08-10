@@ -3,7 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function PeriodKnowledgePage() {
   return (
-    <KnowledgeListPage>
+    <KnowledgeListPage domain="period">
       <GenericDataTable config={historicalPeriodTableConfig} />
     </KnowledgeListPage>
   );

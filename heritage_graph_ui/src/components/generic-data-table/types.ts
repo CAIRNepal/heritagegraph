@@ -48,6 +48,8 @@ export interface DataTableConfig<TData> {
   showTabs?: boolean;
   /** Custom empty state message */
   emptyMessage?: string;
+  /** Filename stem for CSV/JSON exports, e.g. "cultural_entities". */
+  exportName?: string;
   /** Whether to enable drag-and-drop reordering */
   enableDragDrop?: boolean;
   /** Whether to enable row selection */

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Pause, Play } from 'lucide-react';
 import { useCallback, useMemo, useRef } from 'react';
 
@@ -26,6 +27,7 @@ const ERA_TINTS: Record<string, string> = {
  * markers fade in and out as heritage appears through the centuries.
  */
 export function Timeline() {
+  const t = useTranslations('Atlas');
   const entities = useFilteredAtlasEntities();
   const allEntities = useAtlasStore((s) => s.entities);
   const currentYear = useAtlasStore((s) => s.currentYear);
@@ -82,7 +84,7 @@ export function Timeline() {
 
   return (
     <section
-      aria-label="Timeline"
+      aria-label={t('timeline.title')}
       className={cn(
         ATLAS_GLASS,
         'pointer-events-auto absolute inset-x-4 bottom-4 z-30 flex h-20 items-center gap-3 px-3 md:inset-x-6',
@@ -128,7 +130,7 @@ export function Timeline() {
           ref={trackRef}
           role="slider"
           tabIndex={0}
-          aria-label="Timeline year"
+          aria-label={t('timeline.year')}
           aria-valuemin={minYear}
           aria-valuemax={maxYear}
           aria-valuenow={currentYear}

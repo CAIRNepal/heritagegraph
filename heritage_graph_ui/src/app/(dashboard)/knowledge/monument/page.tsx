@@ -3,7 +3,7 @@ import { KnowledgeListPage } from '@/components/knowledge/knowledge-list-page';
 
 export default function MonumentKnowledgePage() {
   return (
-    <KnowledgeListPage>
+    <KnowledgeListPage domain="monument">
       <GenericDataTable config={monumentTableConfig} />
     </KnowledgeListPage>
   );

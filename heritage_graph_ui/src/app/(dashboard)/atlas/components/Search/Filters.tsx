@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 import { RotateCcw, X } from 'lucide-react';
 
@@ -20,6 +21,7 @@ function allOn<T extends string>(keys: readonly T[]): Record<T, boolean> {
 
 /** Floating filter drawer: era, evidence confidence, source reliability, time. */
 export function Filters() {
+  const t = useTranslations('Atlas');
   const open = useAtlasUiStore((s) => s.filtersOpen);
   const setOpen = useAtlasUiStore((s) => s.setFiltersOpen);
 
@@ -52,20 +54,20 @@ export function Filters() {
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: -18, scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-          aria-label="Filters"
+          aria-label={t('filters.title')}
           className={cn(
             ATLAS_GLASS,
             'pointer-events-auto absolute left-4 top-4 z-40 w-[288px] p-4 md:left-[304px]',
           )}
         >
           <div className="mb-3 flex items-center justify-between">
-            <h3 className="text-sm font-semibold tracking-tight">Filters</h3>
+            <h3 className="text-sm font-semibold tracking-tight">{t('filters.title')}</h3>
             <div className="flex gap-1">
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Reset filters"
+                aria-label={t('filters.reset')}
                 className="h-7 w-7 rounded-lg text-muted-foreground"
                 onClick={resetFilters}
               >
@@ -75,7 +77,7 @@ export function Filters() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Close filters"
+                aria-label={t('filters.close')}
                 className="h-7 w-7 rounded-lg text-muted-foreground"
                 onClick={() => setOpen(false)}
               >
@@ -111,7 +113,7 @@ export function Filters() {
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[12px] font-medium">Time travel filter</p>
+                <p className="text-[12px] font-medium">{t('filters.timeTravel')}</p>
                 <p className="text-[10px] leading-snug text-muted-foreground">
                   Hide sites that did not yet exist at the timeline year
                 </p>
@@ -119,7 +121,7 @@ export function Filters() {
               <Switch
                 checked={temporalFilterEnabled}
                 onCheckedChange={setTemporalFilterEnabled}
-                aria-label="Toggle time travel filter"
+                aria-label={t('filters.toggleTimeTravel')}
               />
             </div>
 
@@ -137,7 +139,7 @@ export function Filters() {
                 min={0}
                 max={90}
                 step={5}
-                aria-label="Minimum assertion confidence"
+                aria-label={t('filters.minConfidence')}
                 onValueChange={([v]) =>
                   useAtlasStore.setState({ confidenceFloor: (v ?? 0) / 100 })
                 }
@@ -176,7 +178,7 @@ export function Filters() {
             {dataSource === 'live' ? (
               <div className="flex items-center justify-between gap-3 border-t border-border/40 pt-3">
                 <div>
-                  <p className="text-[12px] font-medium">Curator preview</p>
+                  <p className="text-[12px] font-medium">{t('filters.curatorPreview')}</p>
                   <p className="text-[10px] text-muted-foreground">
                     Include unreviewed graph entities
                   </p>
@@ -184,7 +186,7 @@ export function Filters() {
                 <Switch
                   checked={liveScope === 'all'}
                   onCheckedChange={(v) => setLiveScope(v ? 'all' : 'reviewed')}
-                  aria-label="Toggle curator preview scope"
+                  aria-label={t('filters.toggleCuratorPreview')}
                 />
               </div>
             ) : null}

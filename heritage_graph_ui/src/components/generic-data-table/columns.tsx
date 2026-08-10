@@ -1601,6 +1601,7 @@ export const monumentColumns: ColumnDef<MonumentRecord>[] = [
 // ============================================
 
 export const personTableConfig: DataTableConfig<PersonRecord> = {
+  exportName: 'person',
   endpoint: '/cidoc/persons/',
   columns: personColumns,
   dataKey: 'results',
@@ -1617,6 +1618,7 @@ export const personTableConfig: DataTableConfig<PersonRecord> = {
 };
 
 export const locationTableConfig: DataTableConfig<LocationRecord> = {
+  exportName: 'location',
   endpoint: '/cidoc/locations/',
   columns: locationColumns,
   dataKey: 'results',
@@ -1633,6 +1635,7 @@ export const locationTableConfig: DataTableConfig<LocationRecord> = {
 };
 
 export const eventTableConfig: DataTableConfig<EventRecord> = {
+  exportName: 'event',
   endpoint: '/cidoc/events/',
   columns: eventColumns,
   dataKey: 'results',
@@ -1649,6 +1652,7 @@ export const eventTableConfig: DataTableConfig<EventRecord> = {
 };
 
 export const traditionTableConfig: DataTableConfig<TraditionRecord> = {
+  exportName: 'tradition',
   endpoint: '/cidoc/traditions/',
   columns: traditionColumns,
   dataKey: 'results',
@@ -1665,6 +1669,7 @@ export const traditionTableConfig: DataTableConfig<TraditionRecord> = {
 };
 
 export const culturalEntityTableConfig: DataTableConfig<CulturalEntityRecord> = {
+  exportName: 'cultural_entity',
   endpoint: '/data/api/cultural-entities/',
   columns: culturalEntityColumns,
   dataKey: 'results',
@@ -1682,6 +1687,7 @@ export const culturalEntityTableConfig: DataTableConfig<CulturalEntityRecord> = 
 };
 
 export const sourceTableConfig: DataTableConfig<SourceRecord> = {
+  exportName: 'source',
   endpoint: '/cidoc/sources/',
   columns: sourceColumns,
   dataKey: 'results',
@@ -1698,6 +1704,7 @@ export const sourceTableConfig: DataTableConfig<SourceRecord> = {
 };
 
 export const historicalPeriodTableConfig: DataTableConfig<HistoricalPeriodRecord> = {
+  exportName: 'historical_period',
   endpoint: '/cidoc/historical_periods/',
   columns: historicalPeriodColumns,
   dataKey: 'results',
@@ -1714,6 +1721,7 @@ export const historicalPeriodTableConfig: DataTableConfig<HistoricalPeriodRecord
 };
 
 export const deityTableConfig: DataTableConfig<DeityRecord> = {
+  exportName: 'deity',
   endpoint: '/cidoc/deities/',
   columns: deityColumns,
   dataKey: 'results',
@@ -1730,6 +1738,7 @@ export const deityTableConfig: DataTableConfig<DeityRecord> = {
 };
 
 export const guthiTableConfig: DataTableConfig<GuthiRecord> = {
+  exportName: 'guthi',
   endpoint: '/cidoc/guthis/',
   columns: guthiColumns,
   dataKey: 'results',
@@ -1746,6 +1755,7 @@ export const guthiTableConfig: DataTableConfig<GuthiRecord> = {
 };
 
 export const structureTableConfig: DataTableConfig<StructureRecord> = {
+  exportName: 'structure',
   endpoint: '/cidoc/structures/',
   columns: structureColumns,
   dataKey: 'results',
@@ -1762,6 +1772,7 @@ export const structureTableConfig: DataTableConfig<StructureRecord> = {
 };
 
 export const ritualTableConfig: DataTableConfig<RitualRecord> = {
+  exportName: 'ritual',
   endpoint: '/cidoc/rituals/',
   columns: ritualColumns,
   dataKey: 'results',
@@ -1778,6 +1789,7 @@ export const ritualTableConfig: DataTableConfig<RitualRecord> = {
 };
 
 export const festivalTableConfig: DataTableConfig<FestivalRecord> = {
+  exportName: 'festival',
   endpoint: '/cidoc/festivals/',
   columns: festivalColumns,
   dataKey: 'results',
@@ -1794,6 +1806,7 @@ export const festivalTableConfig: DataTableConfig<FestivalRecord> = {
 };
 
 export const iconographyTableConfig: DataTableConfig<IconographyRecord> = {
+  exportName: 'iconography',
   endpoint: '/cidoc/iconographic_objects/',
   columns: iconographyColumns,
   dataKey: 'results',
@@ -1810,6 +1823,7 @@ export const iconographyTableConfig: DataTableConfig<IconographyRecord> = {
 };
 
 export const monumentTableConfig: DataTableConfig<MonumentRecord> = {
+  exportName: 'monument',
   endpoint: '/cidoc/monuments/',
   columns: monumentColumns,
   dataKey: 'results',

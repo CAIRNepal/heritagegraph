@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { RefObject } from 'react';
 import { useEffect, useRef } from 'react';
@@ -41,6 +42,7 @@ interface MiniMapProps {
 
 /** Overview world map: heritage dots + live camera crosshair; click to fly. */
 export function MiniMap({ globeHandlesRef }: MiniMapProps) {
+  const t = useTranslations('Atlas');
   const entities = useAtlasStore(useShallow((s) => s.getGlobeEntities()));
   const show = useAtlasUiStore((s) => s.showMiniMap);
   const cameraCenter = useAtlasUiStore((s) => s.cameraCenter);
@@ -114,7 +116,7 @@ export function MiniMap({ globeHandlesRef }: MiniMapProps) {
         <motion.button
           key="minimap"
           type="button"
-          aria-label="Overview map — click to fly"
+          aria-label={t('layers.miniMapHint')}
           initial={{ opacity: 0, y: 16, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 16, scale: 0.96 }}
