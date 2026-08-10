@@ -108,10 +108,42 @@ class MetaData(models.Model):
         blank=True,
         help_text="TK/CARE label URIs or codes (e.g. community consent markers)",
     )
+
+    # ── Evidence ──────────────────────────────────────────────────────────
+    # Descriptive records previously had nowhere to record where their content
+    # came from: provenance existed only on HeritageAssertion, and only
+    # optionally. A record could therefore be created, accepted and published
+    # with no evidence trail at all.
+    #
+    # Both fields are optional so no existing row or flow breaks. The point is
+    # to make coverage *measurable* and to give the contribute forms somewhere
+    # to put the answer. Requiring them is a separate, deliberate decision --
+    # see documentation/research/NATURE_KG_RIGOR.md "Source coverage".
+    source_citation = models.TextField(
+        blank=True,
+        default="",
+        help_text=(
+            "Where this information came from, in the contributor's own words: "
+            "a book, inscription, interview, site visit, or personal knowledge."
+        ),
+    )
+    source = models.ForeignKey(
+        "cidoc_data.DataSource",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        help_text="Registered DataSource backing this record, when one exists.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         abstract = True
+
+    @property
+    def has_recorded_source(self) -> bool:
+        """True when the record carries any evidence trail at all."""
+        return bool(self.source_id or (self.source_citation or "").strip())
 
 
 class Person(MetaData):

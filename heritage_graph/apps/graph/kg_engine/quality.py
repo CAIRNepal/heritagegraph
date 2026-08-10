@@ -129,7 +129,11 @@ def external_alignment_density() -> dict[str, Any]:
         "schema_org": "schema.org",
         "dbpedia": "dbpedia.org",
     }
-    for prop, key in ((SKOS.exactMatch, "exactMatch"), (SKOS.closeMatch, "closeMatch"), (SKOS.broadMatch, "broadMatch")):
+    for prop, key in (
+        (SKOS.exactMatch, "exactMatch"),
+        (SKOS.closeMatch, "closeMatch"),
+        (SKOS.broadMatch, "broadMatch"),
+    ):
         for _, _, o in g.triples((None, prop, None)):
             out[key] += 1
             for name, frag in authorities.items():
@@ -143,7 +147,9 @@ def schema_axiom_counts() -> dict[str, Any]:
 
     g = _load_schema_graph()
     crm_subclass = sum(
-        1 for _, _, o in g.triples((None, RDFS.subClassOf, None)) if str(o).startswith(CRM)
+        1
+        for _, _, o in g.triples((None, RDFS.subClassOf, None))
+        if str(o).startswith(CRM)
     )
     return {
         "disjointness_axioms": len(set(g.triples((None, OWL.disjointWith, None)))),
@@ -178,9 +184,7 @@ def namespace_integrity(engine: Any) -> dict[str, Any]:
     if not public:
         return {"violations": None, "offending": []}
     declared = tuple(RDF_PREFIXES.values())
-    q = (
-        f"SELECT DISTINCT ?p WHERE {{ GRAPH <{public}> {{ ?s ?p ?o }} }}"
-    )
+    q = f"SELECT DISTINCT ?p WHERE {{ GRAPH <{public}> {{ ?s ?p ?o }} }}"
     try:
         rows = engine.query(q)
     except Exception:
@@ -193,8 +197,14 @@ def namespace_integrity(engine: Any) -> dict[str, Any]:
 
 def type_coverage(engine: Any) -> dict[str, Any]:
     public = GraphPartition.PUBLIC.uri()
-    subjects = _count(engine, f"SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH <{public}> {{ ?s ?p ?o }} }}")
-    typed = _count(engine, f"SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH <{public}> {{ ?s <{RDF_TYPE}> ?t }} }}")
+    subjects = _count(
+        engine,
+        f"SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH <{public}> {{ ?s ?p ?o }} }}",
+    )
+    typed = _count(
+        engine,
+        f"SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ GRAPH <{public}> {{ ?s <{RDF_TYPE}> ?t }} }}",
+    )
     value = round(typed / subjects, 4) if subjects else None
     return {"value": value, "typed_subjects": typed, "total_subjects": subjects}
 
@@ -229,7 +239,9 @@ def graph_connectivity(engine: Any) -> dict[str, Any]:
         "entity_entity_edges": edges,
         "subjects_with_outgoing_edge": connected,
         "typed_subjects": subjects,
-        "connectivity_rate": round(connected / subjects, 4) if subjects and connected is not None else None,
+        "connectivity_rate": round(connected / subjects, 4)
+        if subjects and connected is not None
+        else None,
     }
 
 
@@ -262,11 +274,14 @@ def dangling_edges(engine: Any) -> int | None:
 def datatype_hygiene(engine: Any) -> dict[str, Any]:
     """% of literals carrying a datatype or language tag (xsd:string counts)."""
     public = GraphPartition.PUBLIC.uri()
-    total = _count(engine, f"SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{public}> {{ ?s ?p ?o FILTER(isLiteral(?o)) }} }}")
+    total = _count(
+        engine,
+        f"SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{public}> {{ ?s ?p ?o FILTER(isLiteral(?o)) }} }}",
+    )
     tagged = _count(
         engine,
         f"""SELECT (COUNT(*) AS ?n) WHERE {{ GRAPH <{public}> {{ ?s ?p ?o
-  FILTER(isLiteral(?o)) FILTER(datatype(?o) != <{RDF_PREFIXES['xsd']}string> || lang(?o) != "") }} }}""",
+  FILTER(isLiteral(?o)) FILTER(datatype(?o) != <{RDF_PREFIXES["xsd"]}string> || lang(?o) != "") }} }}""",
     )
     # Plain literals are xsd:string in RDF 1.1, so "typed-or-tagged" is the
     # meaningful hygiene signal; report both.
@@ -278,7 +293,10 @@ def temporal_validity(engine: Any) -> dict[str, Any]:
     public = GraphPartition.PUBLIC.uri()
     p4 = CRM + "P4_has_time-span"
     e5 = CRM + "E5_Event"
-    events = _count(engine, f"SELECT (COUNT(DISTINCT ?e) AS ?n) WHERE {{ GRAPH <{public}> {{ ?e a <{e5}> }} }}")
+    events = _count(
+        engine,
+        f"SELECT (COUNT(DISTINCT ?e) AS ?n) WHERE {{ GRAPH <{public}> {{ ?e a <{e5}> }} }}",
+    )
     events_dated = _count(
         engine,
         f"SELECT (COUNT(DISTINCT ?e) AS ?n) WHERE {{ GRAPH <{public}> {{ ?e a <{e5}> ; <{p4}> ?ts }} }}",
@@ -286,7 +304,9 @@ def temporal_validity(engine: Any) -> dict[str, Any]:
     try:
         from apps.cidoc_data.models import HeritageAssertion
 
-        assertions = HeritageAssertion.objects.filter(reconciliation_status="accepted").count()
+        assertions = HeritageAssertion.objects.filter(
+            reconciliation_status="accepted"
+        ).count()
         with_edtf = (
             HeritageAssertion.objects.filter(reconciliation_status="accepted")
             .exclude(temporal_scope_edtf="")
@@ -351,8 +371,48 @@ def consistency(engine: Any) -> dict[str, Any]:
 
 def shacl_conformance() -> dict[str, Any]:
     return {
-        "validate_on_write": bool(getattr(settings, "RDF_SHACL_VALIDATE_ON_WRITE", False)),
+        "validate_on_write": bool(
+            getattr(settings, "RDF_SHACL_VALIDATE_ON_WRITE", False)
+        ),
         "strict_on_write": bool(getattr(settings, "RDF_SHACL_STRICT_ON_WRITE", False)),
+    }
+
+
+def entity_source_coverage() -> dict[str, Any]:
+    """Share of published entity records that carry any evidence trail.
+
+    Descriptive records are the bulk of the corpus and, unlike assertions, had
+    no source field at all until `MetaData.source_citation` / `MetaData.source`
+    were added. Both are optional, so this number is the honest measure of how
+    much of the published corpus is actually backed by something -- report it
+    rather than claiming records are sourced.
+    """
+    from apps.cidoc_data.publication_policy import PUBLISHED_STATUSES
+    from django.apps import apps as django_apps
+    from django.db.models import Q
+
+    total = 0
+    sourced = 0
+    per_class: dict[str, dict[str, int]] = {}
+
+    for model in django_apps.get_app_config("cidoc_data").get_models():
+        field_names = {f.name for f in model._meta.get_fields()}
+        if not {"source_citation", "status"} <= field_names:
+            continue
+        qs = model.objects.filter(status__in=PUBLISHED_STATUSES)
+        n = qs.count()
+        if not n:
+            continue
+        s_n = qs.filter(Q(source__isnull=False) | ~Q(source_citation="")).count()
+        total += n
+        sourced += s_n
+        per_class[model.__name__] = {"published": n, "with_source": s_n}
+
+    return {
+        "published_records": total,
+        "with_source": sourced,
+        "value": round(sourced / total, 4) if total else None,
+        "per_class": per_class,
     }
 
 
@@ -376,5 +436,6 @@ def build_quality_report(engine: Any) -> dict[str, Any]:
             "graph_connectivity": graph_connectivity(engine),
         },
         "provenance_coverage": provenance_coverage(engine),
+        "entity_source_coverage": entity_source_coverage(),
         "temporal_validity": temporal_validity(engine),
     }

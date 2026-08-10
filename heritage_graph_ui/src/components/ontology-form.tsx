@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { SourcePrompt } from "@/components/contribute/source-prompt";
 
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
@@ -2302,6 +2303,14 @@ export default function OntologyForm({
             </Button>
           )}
         </div>
+
+        <SourcePrompt
+          value={(formData.source_citation as string) ?? ""}
+          onChange={(next) =>
+            setFormData((prev) => ({ ...prev, source_citation: next }))
+          }
+          disabled={!isSignedIn}
+        />
 
         <div className="flex gap-2">
           <Button
