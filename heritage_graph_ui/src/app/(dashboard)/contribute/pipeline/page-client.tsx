@@ -250,9 +250,16 @@ export default function PipelinePage() {
     return h;
   }, [session]);
 
+  // `buildVersionedOcrBaseUrl` throws when NEXT_PUBLIC_API_URL is unset. Falling
+  // back to a developer's localhost silently pointed a deployed build at an
+  // origin that does not exist there; returning empty lets the request fail
+  // visibly and the existing API-base warning explain why.
   const ocrBase = useCallback(() => {
-    try { return buildVersionedOcrBaseUrl(); }
-    catch { return 'http://localhost:8000/api/v1/data'; }
+    try {
+      return buildVersionedOcrBaseUrl();
+    } catch {
+      return '';
+    }
   }, []);
 
   // Load OCR-completed documents

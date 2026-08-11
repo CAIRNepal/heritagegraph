@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
@@ -155,7 +156,7 @@ const VERDICT_LABEL: Record<string, string> = {
   escalate: 'Escalate to expert',
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = getPublicApiUrl();
 
 const SOCIAL_ICONS: Record<string, typeof Twitter> = {
   twitter: Twitter,

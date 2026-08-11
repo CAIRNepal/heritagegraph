@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Leaderboard } from '../../components/leaderboard-card';
@@ -32,7 +33,7 @@ import { toast } from 'sonner';
 
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 interface Contributor {
   user_id: number;

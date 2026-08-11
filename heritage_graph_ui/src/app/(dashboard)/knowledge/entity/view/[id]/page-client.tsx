@@ -1,5 +1,6 @@
 "use client";
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
@@ -22,7 +23,7 @@ import { EntityComments } from "@/components/entity-comments";
 import { Separator } from "@/components/ui/separator";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = getPublicApiUrl();
 const fadeInUp = { initial: { opacity: 1, y: 10 }, animate: { opacity: 1, y: 0, transition: { duration: 0.3 } } };
 const staggerContainer = { initial: { opacity: 1 }, animate: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 

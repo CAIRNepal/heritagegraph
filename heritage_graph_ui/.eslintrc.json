@@ -17,7 +17,14 @@
       "warn",
       { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }
     ],
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "Literal[value=/localhost:8000/]",
+        "message": "Do not hardcode the API origin. Use getPublicApiUrl() from '@/lib/api-base'. A localhost fallback points deployed builds at an origin that does not exist there, and it has been reintroduced in 15 files across this codebase."
+      }
+    ]
   },
   "overrides": [
     {
@@ -25,6 +32,13 @@
       "rules": {
         "no-undef": "off",
         "no-unused-vars": "off"
+      }
+    },
+    {
+      "comment": "api-base is the single module allowed to know the dev-time default; every other caller goes through getPublicApiUrl().",
+      "files": ["src/lib/api-base.ts"],
+      "rules": {
+        "no-restricted-syntax": "off"
       }
     }
   ]

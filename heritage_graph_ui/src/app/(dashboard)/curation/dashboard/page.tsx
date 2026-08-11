@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -32,7 +33,7 @@ interface DashboardData {
   reviewer_role: ReviewerRoleData | null; recent_domain_activity: DomainActivityItem[];
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 const ROLE_LABELS: Record<string, string> = { community_reviewer: 'Community Reviewer', domain_expert: 'Domain Expert', expert_curator: 'Expert Curator' };
 
 export default function ReviewerDashboardPage() {

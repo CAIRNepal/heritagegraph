@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -724,19 +725,14 @@ function NetworkTab({
           <Network className="h-12 w-12 mx-auto text-muted-foreground/40" />
           <h3 className="text-lg font-medium">Knowledge Graph</h3>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            An interactive network graph showing how this structure connects to
-            deities, guthis, persons, events, and other entities will appear
-            here.
+            This record&apos;s connections to deities, guthis, persons and events are
+            visible in the knowledge graph. Per-entity focus is not wired up yet,
+            so the graph opens on the full heritage view.
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              /* Future: navigate to graphview filtered for this entity */
-            }}
-            disabled
-          >
-            View in Graph Explorer (Coming Soon)
+          {/* A disabled control that does nothing reads as a broken feature.
+              Send the reader somewhere real and say plainly what it does. */}
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/graphview">Open the knowledge graph</Link>
           </Button>
         </CardContent>
       </Card>

@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -33,7 +34,7 @@ interface ActivityItem {
 }
 interface APIResponse { count: number; next: string | null; previous: string | null; results: ActivityItem[]; }
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = getPublicApiUrl();
 
 const ACTIVITY_TYPES = [
   { value: 'all', label: 'All Types' }, { value: 'submitted', label: 'Submitted' },

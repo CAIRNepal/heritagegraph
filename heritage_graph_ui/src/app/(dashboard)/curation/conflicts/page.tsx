@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -22,7 +23,7 @@ interface Contribution {
 }
 interface ContributionsResponse { count: number; results: Contribution[]; }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 export default function ConflictsPage() {
   const { data: session } = useSession();

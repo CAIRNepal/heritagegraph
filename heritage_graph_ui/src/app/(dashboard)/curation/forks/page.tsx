@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
@@ -26,7 +27,7 @@ import {
 } from '@/hooks/use-contributions';
 import { FORK_STATUS_COLORS, FORK_REASON_COLORS } from '@/components/fork-button';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 function LineageTreeNode({
   node,

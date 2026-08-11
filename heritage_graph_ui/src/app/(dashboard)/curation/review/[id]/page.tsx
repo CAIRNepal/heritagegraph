@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
@@ -87,7 +88,7 @@ const VERDICT_SUBMIT_LABEL: Record<Verdict, string> = {
   escalate: 'Escalate to expert — beyond my domain',
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = getPublicApiUrl();
 
 export default function ReviewWorkspacePage() {
   const { data: session } = useSession();
@@ -718,7 +719,7 @@ function ForkActionsCard({ workspace }: { workspace: ReviewWorkspaceData }) {
   const [rejectReason, setRejectReason] = useState('');
   const router = useRouter();
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const API_BASE = getPublicApiUrl();
 
   const getHeaders = useCallback(() => {
     const token = (session as any)?.accessToken;

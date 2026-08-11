@@ -1,5 +1,6 @@
 'use client';
 
+import { getPublicApiUrl } from '@/lib/api-base';
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,7 +27,7 @@ type Organization = {
   owner_username: string; member_count: number; created_at: string;
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API = getPublicApiUrl();
 
 export default function OrganizationsPage() {
   const { data: sessionData } = useSession();
