@@ -7,6 +7,7 @@ from pathlib import Path
 
 from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
+from apps.graph.kg_engine.uris import is_safe_iri
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.views import View
@@ -29,6 +30,14 @@ class LodResourceView(View):
 
     def get(self, request, path: str, *args, **kwargs):
         uri = _resource_path_from_request(path)
+        # `<path:path>` accepts `>`, `{`, `}` and whitespace once URL-decoded,
+        # and this view queries the store directly -- bypassing the CARE filters
+        # that CARESparqlProxyView injects. Without this check a crafted path
+        # breaks out of `<...>` and reads across named graphs.
+        if not is_safe_iri(uri):
+            return HttpResponseNotFound(
+                "Invalid resource path.", content_type="text/plain"
+            )
         public = GraphPartition.PUBLIC.uri()
         sparql = f"""
 SELECT ?p ?o WHERE {{

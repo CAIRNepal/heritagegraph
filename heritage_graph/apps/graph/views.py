@@ -14,6 +14,7 @@ from apps.graph.kg_engine.lux_museum import (
 from apps.graph.kg_engine.museum_graph_enrichment import enrich_museum_graph_nodes
 from apps.graph.kg_engine.partitions import GraphPartition
 from rest_framework import permissions, status
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -76,6 +77,7 @@ def _assertion_provenance_map() -> dict[tuple[str, str, str], dict]:
 
 
 from apps.cidoc_data.publication_policy import unpublished_resource_iris
+from apps.graph.kg_engine.uris import is_safe_iri
 
 
 class KnowledgeGraphStatsView(APIView):
@@ -111,6 +113,14 @@ class KnowledgeGraphNeighborhoodView(APIView):
                 {"error": "Missing query parameter `uri`."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        # Interpolated into `<{subject_uri}>` and executed directly against the
+        # store, so it has to be validated: this endpoint is AllowAny and does
+        # not go through the CARE-filtering proxy.
+        if not is_safe_iri(uri):
+            return Response(
+                {"error": "`uri` is not a valid resource IRI."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         limit = min(int(request.query_params.get("limit") or 50), 200)
         include_lux = _parse_include_lux(request.query_params.get("include_lux"))
         rows = get_kg_engine().neighborhood(uri, limit=limit, include_lux=include_lux)
@@ -121,6 +131,10 @@ class KnowledgeGraphQueryView(APIView):
     """POST /cidoc/kg/query/ — read-only SPARQL SELECT (same guard as SparqlProxyView)."""
 
     permission_classes = [permissions.AllowAny]
+    # Arbitrary SPARQL against the store: same cost profile as the proxy, so it
+    # takes the tighter scope rather than the default anon rate.
+    throttle_scope = "sparql"
+    throttle_classes = [ScopedRateThrottle]
 
     def post(self, request, *args, **kwargs):
         sparql = (request.data.get("query") or request.data.get("sparql") or "").strip()

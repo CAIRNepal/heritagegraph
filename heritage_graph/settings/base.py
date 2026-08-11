@@ -17,7 +17,6 @@ INSTALLED_APPS = [
     "apps.document_processing",
     "apps.assistant",
     "apps.graph",
-
     "django_prometheus",
     # "djoser",
     "rest_framework_simplejwt.token_blacklist",
@@ -43,7 +42,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-
     # prometheus
     "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django_prometheus.middleware.PrometheusAfterMiddleware",
@@ -52,14 +50,12 @@ MIDDLEWARE = [
 ROOT_URLCONF = "urls"
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://heritagegraph.xyz',
-    'https://api.heritagegraph.xyz',
-    'https://www.heritagegraph.xyz',
-
+    "https://heritagegraph.xyz",
+    "https://api.heritagegraph.xyz",
+    "https://www.heritagegraph.xyz",
     # dev domains
     "https://dev.heritagegraph.xyz",
     "https://devapi.heritagegraph.xyz",
-
 ]
 
 TEMPLATES = [
@@ -135,7 +131,23 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    # Baseline limits apply to every endpoint that does not opt into a named
+    # scope. Without these the public read surface -- the SPARQL proxy, the KG
+    # query endpoint, LOD dereference and graph projection, all AllowAny -- had
+    # no rate limit at all, leaving unbounded expensive queries against Oxigraph
+    # open to any caller.
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
     "DEFAULT_THROTTLE_RATES": {
+        # Generous enough for a reviewer clicking through the platform or a
+        # researcher running competency queries by hand; low enough that
+        # scripted abuse is throttled. Override per-environment if needed.
+        "anon": os.environ.get("THROTTLE_ANON", "120/min"),
+        "user": os.environ.get("THROTTLE_USER", "600/min"),
+        # SPARQL is the expensive surface: each request can scan the store.
+        "sparql": os.environ.get("THROTTLE_SPARQL", "20/min"),
         "project_create": "10/hour",
         "project_asset_upload": "50/day",
         "token_obtain": "10/min",
@@ -145,6 +157,10 @@ REST_FRAMEWORK = {
         "public_contribution": "20/hour",
     },
 }
+
+# The public SPARQL proxy is a plain Django view, outside DRF throttling, so it
+# reads its own limit. Every request there can scan the whole store.
+SPARQL_THROTTLE_RATE = os.environ.get("THROTTLE_SPARQL", "20/min")
 
 # Sessions: Redis-backed when REDIS_URL is set (see caching.py); DB fallback otherwise.
 _redis_url = os.environ.get("REDIS_URL", "").strip()
@@ -174,7 +190,7 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 DJOSER = {
     "PASSWORD_RESET_CONFIRM_URL": (
-        "auth/password/reset-password-confirmation/?" "uid={uid}&token={token}"
+        "auth/password/reset-password-confirmation/?uid={uid}&token={token}"
     ),
     "ACTIVATION_URL": "#/activate/{uid}/{token}",
     "SEND_ACTIVATION_EMAIL": False,
@@ -215,25 +231,35 @@ CORS_ALLOW_HEADERS = (
 
 # ── Celery Configuration ──────────────────────────────────────────────────────
 # Async task queue for OCR, NER extraction, and heavy processing
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/1')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get(
+    "CELERY_RESULT_BACKEND", "redis://localhost:6379/1"
+)
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = True
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes hard limit
 CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes soft limit
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1  # Process one task at a time
-CELERY_WORKER_MAX_TASKS_PER_CHILD = 1000  # Restart worker after 1000 tasks to prevent memory leaks
+CELERY_WORKER_MAX_TASKS_PER_CHILD = (
+    1000  # Restart worker after 1000 tasks to prevent memory leaks
+)
 
 # ── Document OCR / processing ────────────────────────────────────────────────
 # These are *defaults*; tune per environment via .env
 # OCR / document-to-graph ingestion is SUSPENDED (future functionality), so it is
 # disabled by default. The upload signal short-circuits gracefully when off
 # (uploads still succeed; no OCR task is enqueued). Set OCR_ENABLED=true to revive.
-OCR_ENABLED = (os.environ.get("OCR_ENABLED", "false").lower() in {"1", "true", "yes", "y", "on"})
+OCR_ENABLED = os.environ.get("OCR_ENABLED", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+    "y",
+    "on",
+}
 OCR_CONFIDENCE_THRESHOLD = float(os.environ.get("OCR_CONFIDENCE_THRESHOLD", "0.6"))
 OCR_MAX_PAGES_PER_DOCUMENT = int(os.environ.get("OCR_MAX_PAGES_PER_DOCUMENT", "100"))
 OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT = int(
@@ -269,7 +295,9 @@ HERITAGEGRAPH_SCHEMA_PATH = os.environ.get(
 HERITAGEGRAPH_SCHEMA_EXTENSION_PATH = os.environ.get(
     "HERITAGEGRAPH_SCHEMA_EXTENSION_PATH", ""
 )
-HERITAGEGRAPH_SCHEMA_CACHE_TTL = int(os.environ.get("HERITAGEGRAPH_SCHEMA_CACHE_TTL", "60"))
+HERITAGEGRAPH_SCHEMA_CACHE_TTL = int(
+    os.environ.get("HERITAGEGRAPH_SCHEMA_CACHE_TTL", "60")
+)
 HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH = os.environ.get(
     "HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH", "false"
 ).lower() in {"1", "true", "yes", "y", "on"}
@@ -277,7 +305,9 @@ HERITAGEGRAPH_SCHEMA_REGISTRY_PREFER_FRESH = os.environ.get(
 # ── Oxigraph / RDF graph store ────────────────────────────────────────────────
 # Canonical namespaces must match published ontology and resolvers.
 OXIGRAPH_URL = os.environ.get("OXIGRAPH_URL", "http://localhost:7878")
-HERITAGE_NAMESPACE = os.environ.get("HERITAGE_NAMESPACE", "https://w3id.org/heritagegraph/")
+HERITAGE_NAMESPACE = os.environ.get(
+    "HERITAGE_NAMESPACE", "https://w3id.org/heritagegraph/"
+)
 HERITAGE_RESOURCE_NS = os.environ.get(
     "HERITAGE_RESOURCE_NS",
     "https://w3id.org/heritagegraph/resource/",
@@ -327,7 +357,9 @@ RDF_PUBLIC_GRAPH_URI = os.environ.get(
 RDF_SHACL_VALIDATE_ON_WRITE = os.environ.get(
     "RDF_SHACL_VALIDATE_ON_WRITE", "true"
 ).lower() in {"1", "true", "yes", "y", "on"}
-RDF_SHACL_STRICT_ON_WRITE = os.environ.get("RDF_SHACL_STRICT_ON_WRITE", "false").lower() in {
+RDF_SHACL_STRICT_ON_WRITE = os.environ.get(
+    "RDF_SHACL_STRICT_ON_WRITE", "false"
+).lower() in {
     "1",
     "true",
     "yes",

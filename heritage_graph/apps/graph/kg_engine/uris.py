@@ -114,7 +114,7 @@ def metadata_model_and_pk_for_resource_uri(uri: str | None):
     base = curated_resource_uri_prefix()
     if not uri or not str(uri).startswith(base):
         return None
-    parts = str(uri)[len(base):].strip("/").split("/")
+    parts = str(uri)[len(base) :].strip("/").split("/")
     if len(parts) != 2 or not all(parts):
         return None
     segment, pk = parts
@@ -123,11 +123,7 @@ def metadata_model_and_pk_for_resource_uri(uri: str | None):
     from apps.cidoc_data.models import MetaData
 
     model = model_for_registry_key(segment)
-    if (
-        model is None
-        or not issubclass(model, MetaData)
-        or model._meta.abstract
-    ):
+    if model is None or not issubclass(model, MetaData) or model._meta.abstract:
         return None
     return model, pk
 
@@ -188,7 +184,7 @@ def relationship_predicate_uri(prop_suffix: str) -> str:
     """
     raw = (prop_suffix or "").strip()
     prefix = "relationship."
-    suffix = (raw[len(prefix):] if raw.startswith(prefix) else raw).strip()
+    suffix = (raw[len(prefix) :] if raw.startswith(prefix) else raw).strip()
     if not suffix:
         return f"{resource_base()}/property/"
 
@@ -210,3 +206,32 @@ def label_for_instance(instance: Any) -> str:
         if value:
             return str(value)[:500]
     return str(instance.pk)
+
+
+# Characters that terminate or restructure an IRI inside a SPARQL query. Any of
+# these reaching an f-string interpolation lets a caller break out of `<...>`
+# and rewrite the query around it.
+_IRI_FORBIDDEN = set('<>"{}|\\^`') | {chr(c) for c in range(0x21)} | {chr(0x7F)}
+
+# Generous ceiling: real resource IRIs are far shorter, and an unbounded value
+# is a cheap way to push expensive queries at the store.
+_IRI_MAX_LEN = 512
+
+
+def is_safe_iri(iri: str | None) -> bool:
+    """True when `iri` can be interpolated into `<...>` without altering a query.
+
+    SPARQL has no bound-parameter API here, so user-supplied IRIs reaching the
+    LOD dereference and neighbourhood endpoints are validated instead of
+    escaped. Both endpoints are AllowAny and call the store directly, bypassing
+    the CARE filters that `CARESparqlProxyView` injects -- so an injected UNION
+    there would read across named graphs, including access-tier-restricted rows.
+
+    Deliberately a strict allowlist on structure: http(s) scheme, bounded
+    length, and no character that can close an IRI or introduce a new clause.
+    """
+    if not iri or len(iri) > _IRI_MAX_LEN:
+        return False
+    if not (iri.startswith("http://") or iri.startswith("https://")):
+        return False
+    return not any(ch in _IRI_FORBIDDEN for ch in iri)

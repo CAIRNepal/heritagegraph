@@ -34,9 +34,7 @@ _TIER_FILTERS: dict[str, tuple[str, ...]] = {
     "curator": (),
 }
 
-_FILTER_LINE = (
-    '\n  FILTER NOT EXISTS {{ ?s <{hg}access_tier> "{tier}"^^<http://www.w3.org/2001/XMLSchema#string> }}'
-)
+_FILTER_LINE = '\n  FILTER NOT EXISTS {{ ?s <{hg}access_tier> "{tier}"^^<http://www.w3.org/2001/XMLSchema#string> }}'
 
 # Match the first WHERE { of a SELECT/CONSTRUCT/DESCRIBE/ASK query
 _WHERE_RE = re.compile(r"\bWHERE\s*\{", re.IGNORECASE)
@@ -78,6 +76,45 @@ def _oxigraph_query_endpoint() -> str:
     return f"{base}/query"
 
 
+# ── Rate limiting ─────────────────────────────────────────────────────────────
+# This is a plain Django View, so DRF's DEFAULT_THROTTLE_CLASSES do not apply to
+# it. SPARQL is the most expensive public surface -- every request can scan the
+# store -- and it is AllowAny, so it needs its own limiter.
+
+
+def _client_ip(request) -> str:
+    """Caller IP, honouring the proxy header Traefik sets."""
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "") or "unknown"
+
+
+def _sparql_rate_limited(request) -> bool:
+    """Fixed-window counter per IP. True when the caller is over the limit.
+
+    Fails open: if the cache backend is unavailable the endpoint keeps serving
+    rather than locking every reader out of a public research resource.
+    """
+    from django.core.cache import cache
+
+    rate = str(getattr(settings, "SPARQL_THROTTLE_RATE", "20/min"))
+    try:
+        count, _, period = rate.partition("/")
+        limit = int(count)
+    except (TypeError, ValueError):
+        return False
+    window = {"sec": 1, "min": 60, "hour": 3600, "day": 86400}.get(period, 60)
+
+    key = f"sparql-throttle:{window}:{_client_ip(request)}"
+    try:
+        current = cache.get_or_set(key, 0, window)
+        current = cache.incr(key)
+    except Exception:
+        return False
+    return current > limit
+
+
 class CARESparqlProxyView(View):
     """
     Proxy at /sparql (and /api/v1/sparql) that filters CARE-sensitive triples
@@ -94,12 +131,17 @@ class CARESparqlProxyView(View):
         return self._handle(request)
 
     def _handle(self, request):
+        if _sparql_rate_limited(request):
+            return JsonResponse(
+                {"error": "Rate limit exceeded for the public SPARQL endpoint."},
+                status=429,
+            )
+
         accept = request.META.get("HTTP_ACCEPT") or "application/sparql-results+json"
 
         if request.method == "POST":
-            query = (
-                request.POST.get("query")
-                or request.body.decode("utf-8", errors="replace")
+            query = request.POST.get("query") or request.body.decode(
+                "utf-8", errors="replace"
             )
         else:
             query = request.GET.get("query", "")
@@ -108,13 +150,17 @@ class CARESparqlProxyView(View):
             return JsonResponse({"error": "query parameter is required"}, status=400)
 
         tier = _resolve_user_tier(request)
-        hidden_tiers = _TIER_FILTERS.get(tier, ("sensitive_indigenous", "community_only"))
+        hidden_tiers = _TIER_FILTERS.get(
+            tier, ("sensitive_indigenous", "community_only")
+        )
         filtered_query = _inject_care_filters(query, hidden_tiers)
 
         endpoint = _oxigraph_query_endpoint()
         if not endpoint:
             return JsonResponse(
-                {"error": "SPARQL endpoint not configured (RDF_QUERY_URL / RDF_ENDPOINT_URL)"},
+                {
+                    "error": "SPARQL endpoint not configured (RDF_QUERY_URL / RDF_ENDPOINT_URL)"
+                },
                 status=503,
             )
 
@@ -140,4 +186,6 @@ class CARESparqlProxyView(View):
             return JsonResponse({"error": "SPARQL endpoint timeout"}, status=504)
         except Exception as exc:
             logger.exception("CARESparqlProxyView error: %s", exc)
-            return JsonResponse({"error": "Proxy error contacting SPARQL endpoint"}, status=502)
+            return JsonResponse(
+                {"error": "Proxy error contacting SPARQL endpoint"}, status=502
+            )
