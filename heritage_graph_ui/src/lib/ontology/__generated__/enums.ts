@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml (enums section)
 // Regen:   python3 tools/gen_heritage_viz_config.py
-// Hash:    64ad8fff9a58cdf8
+// Hash:    a9b45f29bd9d32de
 //
 // Controlled vocabularies for select fields in contribution forms.
 // Edit permissible_values in the schema, then re-run the generator.

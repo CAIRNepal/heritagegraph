@@ -1,5 +1,11 @@
 import type { Metadata } from 'next';
-import { Poppins, Fraunces, Geist_Mono } from 'next/font/google';
+import {
+  Poppins,
+  Fraunces,
+  Geist_Mono,
+  Noto_Sans_Devanagari,
+  Noto_Serif_Devanagari,
+} from 'next/font/google';
 import './globals.css';
 import NextAuthSessionProvider from './SessionProvider';
 import React from 'react';
@@ -20,6 +26,26 @@ const fraunces = Fraunces({
   variable: '--font-serif',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+// Devanagari. Neither Poppins nor Fraunces ships a Devanagari subset, so every
+// ne.json string previously rendered in whatever the OS happened to fall back
+// to — different on macOS, Windows and Android, and never the intended face.
+// These two are bound to --font-sans / --font-serif for `body:lang(ne)` in
+// globals.css, so existing font-sans / font-serif utilities pick them up with
+// no per-component changes. Weights are kept tight to protect the LCP budget.
+const notoSansDevanagari = Noto_Sans_Devanagari({
+  variable: '--font-devanagari',
+  subsets: ['devanagari'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const notoSerifDevanagari = Noto_Serif_Devanagari({
+  variable: '--font-devanagari-serif',
+  subsets: ['devanagari'],
+  weight: ['400', '600', '700'],
   display: 'swap',
 });
 
@@ -53,7 +79,7 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${poppins.variable} ${fraunces.variable} ${geistMono.variable} font-sans antialiased`}
+        className={`${poppins.variable} ${fraunces.variable} ${geistMono.variable} ${notoSansDevanagari.variable} ${notoSerifDevanagari.variable} font-sans antialiased`}
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={locale} messages={messages}>

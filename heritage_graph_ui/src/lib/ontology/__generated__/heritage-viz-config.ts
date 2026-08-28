@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml + tools/ui-vizmap.yaml
 // Regen:   python3 tools/gen_heritage_viz_config.py
-// Hash:    64ad8fff9a58cdf8
+// Hash:    a9b45f29bd9d32de
 //
 // This file is the single source of truth for graph-visualization ontology
 // config consumed by:
@@ -58,29 +58,29 @@ export const NODE_TYPE_CONFIG: Record<
   NodeType,
   { color: string; glowColor: string; emoji: string; label: string; cidocMapping: string; hgCategory: string }
 > = {
-  Place: { color: '#10b981', glowColor: '#34d399', emoji: '🏔', label: 'Place', cidocMapping: 'crm:E53_Place', hgCategory: 'spatial' },
-  Temple: { color: '#f59e0b', glowColor: '#fcd34d', emoji: '🛕', label: 'Temple', cidocMapping: 'heritageGraph:Temple', hgCategory: 'tangible' },
-  BuddhistMonument: { color: '#8b5cf6', glowColor: '#a78bfa', emoji: '☸', label: 'Buddhist Monument', cidocMapping: 'heritageGraph:BuddhistMonument', hgCategory: 'tangible' },
-  ArchitecturalStructure: { color: '#ec4899', glowColor: '#f472b6', emoji: '🏛', label: 'Architectural Structure', cidocMapping: 'heritageGraph:ArchitecturalStructure', hgCategory: 'tangible' },
-  Settlement: { color: '#06b6d4', glowColor: '#22d3ee', emoji: '🏙', label: 'Settlement', cidocMapping: 'hg:Settlement → crm:E53_Place', hgCategory: 'spatial' },
-  Deity: { color: '#ef4444', glowColor: '#f87171', emoji: '🪷', label: 'Deity', cidocMapping: 'heritageGraph:Deity', hgCategory: 'conceptual' },
-  Festival: { color: '#f97316', glowColor: '#fb923c', emoji: '🪔', label: 'Festival', cidocMapping: 'heritageGraph:Festival', hgCategory: 'event' },
-  TimeSpan: { color: '#6366f1', glowColor: '#818cf8', emoji: '📜', label: 'Time-Span', cidocMapping: 'crm:E52_Time-Span', hgCategory: 'temporal' },
-  ReligiousTradition: { color: '#14b8a6', glowColor: '#2dd4bf', emoji: '📿', label: 'Religious Tradition', cidocMapping: 'heritageGraph:ReligiousTradition', hgCategory: 'conceptual' },
-  SacredSite: { color: '#84cc16', glowColor: '#a3e635', emoji: '🛐', label: 'Sacred Site', cidocMapping: 'hg:SacredSite → heritageGraph:ArchitecturalStructure', hgCategory: 'tangible' },
-  Person: { color: '#22c55e', glowColor: '#86efac', emoji: '👤', label: 'Person', cidocMapping: 'crm:E21_Person', hgCategory: 'actor' },
-  Guthi: { color: '#0ea5e9', glowColor: '#7dd3fc', emoji: '👥', label: 'Guthi', cidocMapping: 'heritageGraph:Guthi', hgCategory: 'actor' },
-  IconographicObject: { color: '#d946ef', glowColor: '#f0abfc', emoji: '🖼', label: 'Iconographic Object', cidocMapping: 'heritageGraph:IconographicObject', hgCategory: 'tangible' },
-  HistoricalPeriod: { color: '#a3a3a3', glowColor: '#d4d4d4', emoji: '⏳', label: 'Historical Period', cidocMapping: 'heritageGraph:HistoricalPeriod', hgCategory: 'temporal' },
-  Source: { color: '#78716c', glowColor: '#a8a29e', emoji: '📚', label: 'Source', cidocMapping: 'hg:Source → heritageGraph:InformationObject', hgCategory: 'provenance' },
-  HistoricalEvent: { color: '#facc15', glowColor: '#fde68a', emoji: '📅', label: 'Historical Event', cidocMapping: 'heritageGraph:HistoricalEvent', hgCategory: 'event' },
-  RitualEvent: { color: '#fb923c', glowColor: '#fdba74', emoji: '🕉', label: 'Ritual', cidocMapping: 'heritageGraph:RitualEvent', hgCategory: 'event' },
-  CasteGroup: { color: '#16a34a', glowColor: '#4ade80', emoji: '👪', label: 'Caste Group', cidocMapping: 'heritageGraph:CasteGroup', hgCategory: 'actor' },
-  LivingGoddessTenure: { color: '#e11d48', glowColor: '#fb7185', emoji: '👑', label: 'Living Goddess Tenure', cidocMapping: 'crm:E4_Period', hgCategory: 'temporal' },
-  SyncreticRelationship: { color: '#9333ea', glowColor: '#c084fc', emoji: '🔗', label: 'Syncretic Link', cidocMapping: 'heritageGraph:SyncreticRelationship', hgCategory: 'conceptual' },
-  HumanMadeObject: { color: '#0d9488', glowColor: '#2dd4bf', emoji: '🏺', label: 'Human-Made Object', cidocMapping: 'crm:E22_Human-Made_Object', hgCategory: 'tangible' },
-  Group: { color: '#15803d', glowColor: '#4ade80', emoji: '👥', label: 'Group', cidocMapping: 'crm:E74_Group', hgCategory: 'actor' },
-  Set: { color: '#a16207', glowColor: '#facc15', emoji: '🗂', label: 'Set / Collection', cidocMapping: 'la:Set', hgCategory: 'provenance' },
+  Place: { color: '#48755f', glowColor: '#68bb92', emoji: '🏔', label: 'Place', cidocMapping: 'crm:E53_Place', hgCategory: 'spatial' },
+  Temple: { color: '#ac5236', glowColor: '#e08468', emoji: '🛕', label: 'Temple', cidocMapping: 'heritageGraph:Temple', hgCategory: 'tangible' },
+  BuddhistMonument: { color: '#b8583a', glowColor: '#e38f75', emoji: '☸', label: 'Buddhist Monument', cidocMapping: 'heritageGraph:BuddhistMonument', hgCategory: 'tangible' },
+  ArchitecturalStructure: { color: '#c35e40', glowColor: '#e69a83', emoji: '🏛', label: 'Architectural Structure', cidocMapping: 'heritageGraph:ArchitecturalStructure', hgCategory: 'tangible' },
+  Settlement: { color: '#4e7e66', glowColor: '#72c099', emoji: '🏙', label: 'Settlement', cidocMapping: 'hg:Settlement → crm:E53_Place', hgCategory: 'spatial' },
+  Deity: { color: '#9d5579', glowColor: '#d187ac', emoji: '🪷', label: 'Deity', cidocMapping: 'heritageGraph:Deity', hgCategory: 'conceptual' },
+  Festival: { color: '#a25926', glowColor: '#e68a48', emoji: '🪔', label: 'Festival', cidocMapping: 'heritageGraph:Festival', hgCategory: 'event' },
+  TimeSpan: { color: '#826749', glowColor: '#c49b6d', emoji: '📜', label: 'Time-Span', cidocMapping: 'crm:E52_Time-Span', hgCategory: 'temporal' },
+  ReligiousTradition: { color: '#a75c82', glowColor: '#d594b4', emoji: '📿', label: 'Religious Tradition', cidocMapping: 'heritageGraph:ReligiousTradition', hgCategory: 'conceptual' },
+  SacredSite: { color: '#c6684c', glowColor: '#e8a490', emoji: '🛐', label: 'Sacred Site', cidocMapping: 'hg:SacredSite → heritageGraph:ArchitecturalStructure', hgCategory: 'tangible' },
+  Person: { color: '#8b6525', glowColor: '#dfa137', emoji: '👤', label: 'Person', cidocMapping: 'crm:E21_Person', hgCategory: 'actor' },
+  Guthi: { color: '#956d28', glowColor: '#e0a743', emoji: '👥', label: 'Guthi', cidocMapping: 'heritageGraph:Guthi', hgCategory: 'actor' },
+  IconographicObject: { color: '#ca7156', glowColor: '#ebae9b', emoji: '🖼', label: 'Iconographic Object', cidocMapping: 'heritageGraph:IconographicObject', hgCategory: 'tangible' },
+  HistoricalPeriod: { color: '#8c6f4f', glowColor: '#c8a379', emoji: '⏳', label: 'Historical Period', cidocMapping: 'heritageGraph:HistoricalPeriod', hgCategory: 'temporal' },
+  Source: { color: '#726c5e', glowColor: '#b3a383', emoji: '📚', label: 'Source', cidocMapping: 'hg:Source → heritageGraph:InformationObject', hgCategory: 'provenance' },
+  HistoricalEvent: { color: '#ae6029', glowColor: '#e89255', emoji: '📅', label: 'Historical Event', cidocMapping: 'heritageGraph:HistoricalEvent', hgCategory: 'event' },
+  RitualEvent: { color: '#b9662b', glowColor: '#e99a61', emoji: '🕉', label: 'Ritual', cidocMapping: 'heritageGraph:RitualEvent', hgCategory: 'event' },
+  CasteGroup: { color: '#9f742a', glowColor: '#e2ab4d', emoji: '👪', label: 'Caste Group', cidocMapping: 'heritageGraph:CasteGroup', hgCategory: 'actor' },
+  LivingGoddessTenure: { color: '#957654', glowColor: '#ccaa83', emoji: '👑', label: 'Living Goddess Tenure', cidocMapping: 'crm:E4_Period', hgCategory: 'temporal' },
+  SyncreticRelationship: { color: '#ac6689', glowColor: '#d99fbc', emoji: '🔗', label: 'Syncretic Link', cidocMapping: 'heritageGraph:SyncreticRelationship', hgCategory: 'conceptual' },
+  HumanMadeObject: { color: '#a54f34', glowColor: '#df7e60', emoji: '🏺', label: 'Human-Made Object', cidocMapping: 'crm:E22_Human-Made_Object', hgCategory: 'tangible' },
+  Group: { color: '#a87a2d', glowColor: '#e4b057', emoji: '👥', label: 'Group', cidocMapping: 'crm:E74_Group', hgCategory: 'actor' },
+  Set: { color: '#7b7365', glowColor: '#b9aa8d', emoji: '🗂', label: 'Set / Collection', cidocMapping: 'la:Set', hgCategory: 'provenance' },
 };
 
 /** Ontology class IRI (rdf:type in the Oxigraph public graph) → canonical NodeType. */
@@ -146,11 +146,11 @@ export const RELATION_LABELS: Record<string, string> = {
 
 /** Color scheme for each domain category in the legend and cluster view. */
 export const HG_CATEGORY_CONFIG: Record<HgCategory, { color: string; border: string; label: string }> = {
-  tangible: { color: '#3b82f6', border: '#2563eb', label: 'Tangible Heritage' },
-  conceptual: { color: '#8b5cf6', border: '#7c3aed', label: 'Conceptual Entities' },
-  event: { color: '#f59e0b', border: '#d97706', label: 'Events' },
-  spatial: { color: '#06b6d4', border: '#0891b2', label: 'Spatiotemporal' },
-  temporal: { color: '#6366f1', border: '#4f46e5', label: 'Temporal' },
-  actor: { color: '#22c55e', border: '#15803d', label: 'Actors & Institutions' },
-  provenance: { color: '#78716c', border: '#57534e', label: 'Provenance' },
+  tangible: { color: '#ac5236', border: '#8a3f28', label: 'Tangible Heritage' },
+  conceptual: { color: '#9d5579', border: '#7c4260', label: 'Conceptual Entities' },
+  event: { color: '#a25926', border: '#82461e', label: 'Events' },
+  spatial: { color: '#48755f', border: '#385c4a', label: 'Spatiotemporal' },
+  temporal: { color: '#826749', border: '#67523a', label: 'Temporal' },
+  actor: { color: '#8b6525', border: '#6f501d', label: 'Actors & Institutions' },
+  provenance: { color: '#726c5e', border: '#5a554a', label: 'Provenance' },
 };

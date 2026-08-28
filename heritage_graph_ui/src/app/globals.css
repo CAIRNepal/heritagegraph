@@ -4,46 +4,46 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f7f9fb;
-  --foreground: #0b1220;
-  --card: #ffffff;
-  --card-foreground: #0b1220;
-  --popover: #ffffff;
-  --popover-foreground: #0b1220;
-  --primary: #1e4e8c;
-  --primary-foreground: #f7fbff;
+  --background: #f4efe7;
+  --foreground: #241c16;
+  --card: #fbf8f3;
+  --card-foreground: #241c16;
+  --popover: #fbf8f3;
+  --popover-foreground: #241c16;
+  --primary: #8a5a1c;
+  --primary-foreground: #fdfaf4;
   /* Hero surfaces carry white text, so they need their own scale rather than
-     reusing --primary. In dark mode --primary is a *light* blue (#5a9bff) —
-     white on it measures 2.8:1, below the 3:1 large-text floor. These stops are
-     dark in both themes so --hero-foreground stays legible.
-     Contrast vs #ffffff: from 8.3:1, to 5.5:1 (both pass WCAG AA). */
-  --hero-from: #1e4e8c;
-  --hero-to: #2f6bb0;
+     reusing --primary. --primary is gilt copper — in dark mode it is a *light*
+     gold (#dfae5c) and white on it measures 1.7:1. These stops are deep timber
+     and fired brick, dark in both themes, so --hero-foreground stays legible.
+     Contrast vs #ffffff: from 14.3:1, to 7.6:1 (both pass WCAG AA). */
+  --hero-from: #3d241b;
+  --hero-to: #8c3a2b;
   --hero-foreground: #ffffff;
-  --secondary: #e3ebf3;
-  --secondary-foreground: #0e2238;
-  --muted: #dee6ee;
-  --muted-foreground: #526379;
-  --accent: #4073b5;
-  --accent-foreground: #f8fbff;
-  --destructive: #d13b3b;
-  --destructive-foreground: #fffaf9;
-  --border: #d6e0ea;
-  --input: #d6e0ea;
-  --ring: #2b5ea3;
-  --chart-1: #1e4e8c;
-  --chart-2: #2b74b9;
-  --chart-3: #78a9e0;
-  --chart-4: #11466d;
-  --chart-5: #1d88a6;
-  --sidebar: #f0f4f8;
-  --sidebar-foreground: #0b1220;
-  --sidebar-primary: #1e4e8c;
-  --sidebar-primary-foreground: #f7fbff;
-  --sidebar-accent: #e1e9f0;
-  --sidebar-accent-foreground: #0e2238;
-  --sidebar-border: #d6e0ea;
-  --sidebar-ring: #2b5ea3;
+  --secondary: #e9e0d3;
+  --secondary-foreground: #382a1f;
+  --muted: #e6dccd;
+  --muted-foreground: #655547;
+  --accent: #8a5a1c;
+  --accent-foreground: #fdfaf4;
+  --destructive: #8a1810;
+  --destructive-foreground: #fff8f7;
+  --border: #ded2c0;
+  --input: #ded2c0;
+  --ring: #8a5a1c;
+  --chart-1: #8c3a2b;
+  --chart-2: #b8862f;
+  --chart-3: #4f6a5b;
+  --chart-4: #3f3227;
+  --chart-5: #b8814f;
+  --sidebar: #efe8dd;
+  --sidebar-foreground: #241c16;
+  --sidebar-primary: #8a5a1c;
+  --sidebar-primary-foreground: #fdfaf4;
+  --sidebar-accent: #e6dccd;
+  --sidebar-accent-foreground: #382a1f;
+  --sidebar-border: #ded2c0;
+  --sidebar-ring: #8a5a1c;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -67,42 +67,42 @@
 }
 
 .dark {
-  --background: #0b1016;
-  --foreground: #f3f6fa;
-  --card: #111821;
-  --card-foreground: #f3f6fa;
-  --popover: #17212e;
-  --popover-foreground: #f3f6fa;
-  --primary: #5a9bff;
-  --primary-foreground: #0b1016;
-  /* Contrast vs #ffffff: from 12.2:1, to 8.5:1 (both pass WCAG AA). */
-  --hero-from: #16365f;
-  --hero-to: #1f4d86;
+  --background: #17120e;
+  --foreground: #f2e9dd;
+  --card: #1f1913;
+  --card-foreground: #f2e9dd;
+  --popover: #241d16;
+  --popover-foreground: #f2e9dd;
+  --primary: #dfae5c;
+  --primary-foreground: #17120e;
+  /* Contrast vs #ffffff: from 17.0:1, to 11.6:1 (both pass WCAG AA). */
+  --hero-from: #2a1811;
+  --hero-to: #5c2a20;
   --hero-foreground: #ffffff;
-  --secondary: #1c2533;
-  --secondary-foreground: #f3f6fa;
-  --muted: #202b3b;
-  --muted-foreground: #a0b3c8;
-  --accent: #3374c2;
-  --accent-foreground: #f3f6fa;
-  --destructive: #e5544b;
-  --destructive-foreground: #fdf8f7;
-  --border: #1f2936;
-  --input: #263244;
-  --ring: #5a9bff;
-  --chart-1: #5a9bff;
-  --chart-2: #79b2ff;
-  --chart-3: #95c5ff;
-  --chart-4: #3a7bd5;
-  --chart-5: #1c9fc1;
-  --sidebar: #111821;
-  --sidebar-foreground: #f3f6fa;
-  --sidebar-primary: #5a9bff;
-  --sidebar-primary-foreground: #0b1016;
-  --sidebar-accent: #1c2533;
-  --sidebar-accent-foreground: #f3f6fa;
-  --sidebar-border: #1f2936;
-  --sidebar-ring: #5a9bff;
+  --secondary: #2a221a;
+  --secondary-foreground: #f2e9dd;
+  --muted: #2a221a;
+  --muted-foreground: #b3a290;
+  --accent: #dfae5c;
+  --accent-foreground: #17120e;
+  --destructive: #e5645a;
+  --destructive-foreground: #1a0f0d;
+  --border: #3d3227;
+  --input: #463a2c;
+  --ring: #dfae5c;
+  --chart-1: #c9705c;
+  --chart-2: #e0b366;
+  --chart-3: #7fa88d;
+  --chart-4: #efd9ad;
+  --chart-5: #b98f66;
+  --sidebar: #1f1913;
+  --sidebar-foreground: #f2e9dd;
+  --sidebar-primary: #dfae5c;
+  --sidebar-primary-foreground: #17120e;
+  --sidebar-accent: #2a221a;
+  --sidebar-accent-foreground: #f2e9dd;
+  --sidebar-border: #3d3227;
+  --sidebar-ring: #dfae5c;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -163,6 +163,8 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+  --font-devanagari: var(--font-devanagari);
+  --font-devanagari-serif: var(--font-devanagari-serif);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -185,6 +187,24 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /*
+   * Nepali typography. Poppins and Fraunces have no Devanagari coverage, so
+   * ne.json strings fell back to an arbitrary system face. Rebinding the two
+   * font tokens for Nepali means every existing `font-sans` / `font-serif`
+   * utility resolves to a real Devanagari face with no per-component change.
+   *
+   * `body:lang(ne)` (0,1,1) — not `:lang(ne)` (0,1,0) — because next/font puts
+   * the --font-sans / --font-serif definitions on a class on <body>, which
+   * would otherwise win the cascade against a selector on <html>.
+   */
+  body:lang(ne) {
+    --font-sans: var(--font-devanagari);
+    --font-serif: var(--font-devanagari-serif);
+    /* Devanagari sits on a taller em box; a little more leading keeps matras
+       and the shirorekha from clipping in tight UI rows. */
+    line-height: 1.7;
   }
 }
 
