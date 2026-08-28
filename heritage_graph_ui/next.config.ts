@@ -149,6 +149,19 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
+      // UNESCO entry photography. The manifest in src/data/unesco-imagery.json
+      // stores direct upload.wikimedia.org URLs; Special:FilePath on
+      // en.wikipedia.org redirects there, and the museum corpus still uses that
+      // form, so both hosts are allowed.
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'en.wikipedia.org',
+        pathname: '/wiki/Special:FilePath/**',
+      },
       ...(apiMediaPattern ? [apiMediaPattern] : []),
     ],
   },

@@ -67,7 +67,7 @@ export function NavKnowledgebase({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-blue-500/70 dark:text-blue-400/70">
+      <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
         {sectionTitle}
       </SidebarGroupLabel>
       <SidebarGroupContent className="flex flex-col gap-1">
@@ -82,13 +82,13 @@ export function NavKnowledgebase({
                   <HubIcon
                     className={cn(
                       'size-[18px] shrink-0 transition-colors duration-200',
-                      hubActive ? 'text-blue-600 dark:text-blue-400' : '',
+                      hubActive ? 'text-sidebar-primary' : '',
                     )}
                   />
                 ) : null}
                 <span
                   className={
-                    hubActive ? 'font-medium text-blue-900 dark:text-blue-100' : ''
+                    hubActive ? 'font-medium text-sidebar-foreground' : ''
                   }
                 >
                   {hubTitle}
@@ -128,13 +128,13 @@ export function NavKnowledgebase({
                           <ItemIcon
                             className={cn(
                               'size-[16px] shrink-0 transition-colors duration-200',
-                              isActive ? 'text-blue-600 dark:text-blue-400' : '',
+                              isActive ? 'text-sidebar-primary' : '',
                             )}
                           />
                         ) : null}
                         <span
                           className={
-                            isActive ? 'font-medium text-blue-900 dark:text-blue-100' : ''
+                            isActive ? 'font-medium text-sidebar-foreground' : ''
                           }
                         >
                           {item.title}

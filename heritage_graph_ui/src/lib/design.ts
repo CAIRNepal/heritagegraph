@@ -145,3 +145,34 @@ export const photoFrame =
  */
 export const photoScrim =
   'absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent';
+
+/**
+ * Props for a scroll-revealed element, correct under reduced motion.
+ *
+ * WHY THIS EXISTS — the naive spelling has a real bug:
+ *
+ *     initial={motionInitialWhenEnabled(reduceMotion)}
+ *     whileInView="show"
+ *
+ * `useReducedMotion()` returns null during SSR, so the server renders the
+ * `hidden` variant's styles inline (`opacity: 0`). On a client that prefers
+ * reduced motion, `initial` becomes `false`, so Framer does not animate — and
+ * with `whileInView` gated behind an IntersectionObserver that may never be
+ * satisfied for that element, nothing ever clears the inline `opacity: 0`.
+ * The section stays permanently invisible for exactly the users who asked for
+ * less motion.
+ *
+ * So when reduced motion is preferred we drop the scroll trigger entirely and
+ * assert the shown state with `animate`. Content visibility must never depend
+ * on an animation having run.
+ */
+export function revealProps(reduceMotion: boolean | null) {
+  if (reduceMotion) {
+    return { initial: false as const, animate: 'show' };
+  }
+  return {
+    initial: 'hidden',
+    whileInView: 'show',
+    viewport: revealViewport,
+  };
+}

@@ -6,6 +6,7 @@
  */
 
 import * as React from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   IconBuildingMonument,
@@ -51,8 +52,19 @@ const STEPS = [
 
 export function WelcomeDialog() {
   const [open, setOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // The entry experience at `/` is itself the orientation: it opens on the
+  // heritage and routes into the museum, atlas and knowledge base. Covering it
+  // with a modal that explains the same three destinations is redundant, and it
+  // hides the page during exactly the first seconds it has to earn attention.
+  // Onboarding still fires on any other route a first-time visitor lands on.
+  // NOTE: the /preview/* clause is temporary — those routes exist only for
+  // Phase 2 review and are removed once a direction is chosen.
+  const suppressed = pathname === '/' || pathname.startsWith('/preview/');
 
   React.useEffect(() => {
+    if (suppressed) return;
     try {
       if (!localStorage.getItem(STORAGE_KEY)) {
         const t = setTimeout(() => setOpen(true), 600);
@@ -61,7 +73,7 @@ export function WelcomeDialog() {
     } catch {
       /* localStorage unavailable — skip onboarding */
     }
-  }, []);
+  }, [suppressed]);
 
   const dismiss = React.useCallback((value: boolean) => {
     setOpen(value);
