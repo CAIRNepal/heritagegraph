@@ -9,6 +9,7 @@ import {
   orderedFacts,
   worldHeritageRef,
 } from '@/lib/unesco/facts';
+import { descriptionFor } from '@/lib/unesco/descriptions';
 import { imageryFor } from '@/lib/unesco/imagery';
 import { cn } from '@/lib/utils';
 
@@ -180,6 +181,61 @@ export function ImageCreditsList({
       </ul>
       <p className="text-[0.68rem] text-muted-foreground">
         {t('creditsRetrieved', { date: entries[0].imagery.image!.credit.retrieved ?? '' })}
+      </p>
+    </section>
+  );
+}
+
+
+/**
+ * A short description of a subject, quoted with its source.
+ *
+ * The removal notice is deliberate. These leads call the Durbar Squares World
+ * Heritage Sites in the plural; that sentence is dropped because the record
+ * states the real relationship with UNESCO's own component numbering. Editing
+ * a quotation is only honest if the reader can see it was edited.
+ */
+export function SubjectDescription({
+  subjectKey,
+  className,
+}: {
+  subjectKey: string;
+  className?: string;
+}) {
+  const t = useTranslations('unescoEntry.facts');
+  const d = descriptionFor(subjectKey);
+  if (!d) return null;
+  return (
+    <section className={cn('flex flex-col gap-2', className)} aria-label={t('descriptionHeading')}>
+      <h3 className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+        {t('descriptionHeading')}
+      </h3>
+      <p className="text-sm leading-relaxed text-foreground">{d.text}</p>
+      <p className="text-[0.68rem] leading-relaxed text-muted-foreground">
+        {t('descriptionSource', { date: d.retrieved })}{' '}
+        <a
+          href={d.sourceUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 hover:text-foreground focus-visible:text-foreground"
+        >
+          {d.sourceTitle}
+        </a>
+        {' · '}
+        <a
+          href={d.licenseUrl}
+          target="_blank"
+          rel="noopener noreferrer license"
+          className="underline underline-offset-2 hover:text-foreground focus-visible:text-foreground"
+        >
+          {d.license}
+        </a>
+        {d.sentencesRemoved > 0 ? (
+          <>
+            {' · '}
+            {t('descriptionTrimmed', { count: d.sentencesRemoved })}
+          </>
+        ) : null}
       </p>
     </section>
   );

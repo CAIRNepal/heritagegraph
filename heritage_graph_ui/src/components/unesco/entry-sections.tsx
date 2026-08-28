@@ -86,6 +86,7 @@ export function ZoneCard({
 
   return (
     <motion.article
+      data-web-node
       variants={revealOnScroll}
       className={cn(
         'group flex flex-col gap-3',

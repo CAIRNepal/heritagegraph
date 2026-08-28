@@ -36,12 +36,13 @@ import {
   GraphBoundaryNote,
   PropertyPhotograph,
   ProvenanceFooter,
-  SerialPropertyCaution,
   ZoneCollection,
 } from './entry-sections';
-import { ImageCreditsList, SourcedFacts } from './SourcedFacts';
+import { ImageCreditsList, SourcedFacts, SubjectDescription } from './SourcedFacts';
 import { Constellation } from './Constellation';
-import { AmbientWash } from './depth';
+import { CardWeb } from './CardWeb';
+import { NextSteps } from './NextSteps';
+import { AmbientWash, LiveBackdrop } from './depth';
 
 const CREDITED_SUBJECTS = [
   ...(KATHMANDU_VALLEY.monumentZones ?? []).map((z) => z.key),
@@ -53,7 +54,10 @@ export function UnescoEntry() {
   const reveal = useReveal();
 
   return (
-    <div className="flex flex-col gap-20 pb-24 md:gap-28">
+    <div className="relative flex flex-col gap-20 pb-24 md:gap-28">
+      {/* Slow motes behind the whole page — near the threshold of noticing, so
+          the page feels alive without competing with the photography. */}
+      <LiveBackdrop />
       {/* ── 1. The name ── */}
       <section aria-labelledby="entry-title" className="relative">
         <motion.div variants={imageReveal} initial="hidden" animate="show">
@@ -139,17 +143,24 @@ export function UnescoEntry() {
             id="zones-heading"
             className="mt-2 font-serif text-3xl leading-tight text-balance sm:text-4xl"
           >
-            {t('zonesHeading')}
+            {t('zonesHeadingPlain')}
           </h2>
-          <SerialPropertyCaution className="mt-6 max-w-[68ch]" />
+          <p className="mt-4 max-w-[64ch] leading-relaxed text-muted-foreground">
+            {t('zonesPlainNote')}
+          </p>
         </motion.div>
 
         <div className={wideColumn}>
-          <ZoneCollection layout="grid" headingLevel={3} />
+          <CardWeb>
+            <ZoneCollection layout="grid" headingLevel={3} />
+          </CardWeb>
         </div>
       </section>
 
-      {/* ── 4. Lumbini ── */}
+      {/* ── 4. Two doors out ── */}
+      <NextSteps />
+
+      {/* ── 5. Lumbini ── */}
       <section aria-labelledby="lumbini-heading">
         <motion.div {...reveal} variants={revealOnScroll}>
           <PropertyPhotograph
@@ -182,12 +193,15 @@ export function UnescoEntry() {
                 </Link>
               </Button>
             </div>
-            <SourcedFacts subjectKey="lumbini" />
+            <div className="flex flex-col gap-6">
+              <SubjectDescription subjectKey="lumbini" />
+              <SourcedFacts subjectKey="lumbini" />
+            </div>
           </div>
         </motion.div>
       </section>
 
-      {/* ── 5. Boundary, credits, provenance ── */}
+      {/* ── 6. Boundary, credits, provenance ── */}
       <GraphBoundaryNote />
 
       <div className={wideColumn}>

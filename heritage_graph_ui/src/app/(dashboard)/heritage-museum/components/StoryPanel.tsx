@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import { unescoStatementForLabel } from '@/lib/unesco/status';
 import { subjectKeyForNodeId } from '@/lib/unesco/facts';
-import { SourcedFacts } from '@/components/unesco/SourcedFacts';
+import { SourcedFacts, SubjectDescription } from '@/components/unesco/SourcedFacts';
 import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
@@ -203,7 +203,13 @@ export function StoryPanel({
           a record that looks empty and one that says something. */}
       <div className="px-6 py-5 space-y-6">
         {unescoSubjectKey ? (
-          <SourcedFacts subjectKey={unescoSubjectKey} className="rounded-lg border border-border bg-muted/30 p-4" />
+          <>
+            <SubjectDescription subjectKey={unescoSubjectKey} />
+            <SourcedFacts
+              subjectKey={unescoSubjectKey}
+              className="rounded-lg border border-border bg-muted/30 p-4"
+            />
+          </>
         ) : null}
 
         <Section title={t('story')} icon="📖" color={cfg.color}>
