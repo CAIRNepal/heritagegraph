@@ -173,14 +173,22 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * Legacy URLs: the app previously exposed some routes under `/dashboard`.
-   * Authenticated UI now lives at the site root (e.g. `/` not `/dashboard`).
+   * Legacy URLs.
+   *
+   * An earlier migration moved the authenticated UI off `/dashboard` onto the
+   * site root and left blanket `/dashboard*` redirects behind. The 2026-08
+   * entry redesign puts the public UNESCO page at `/` and moves the dashboard
+   * back to `/dashboard`, so a redirect on that exact path would make the
+   * dashboard unreachable — it 308'd straight back to `/`.
+   *
+   * `:path+` (one or more segments) keeps the legacy sub-path redirects working
+   * — `/dashboard/team` still resolves to `/team` — while leaving `/dashboard`
+   * itself to the real page. `:path*` matched zero segments too, which is what
+   * swallowed it.
    */
   async redirects() {
     return [
-      { source: '/dashboard', destination: '/', permanent: true },
-      { source: '/dashboard/', destination: '/', permanent: true },
-      { source: '/dashboard/:path*', destination: '/:path*', permanent: true },
+      { source: '/dashboard/:path+', destination: '/:path*', permanent: true },
       { source: '/discover', destination: '/about', permanent: true },
       { source: '/discover/', destination: '/about', permanent: true },
     ];

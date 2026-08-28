@@ -19,7 +19,7 @@ import {
   heroForeground,
   heroForegroundMuted,
   heroGradient,
-  motionInitialWhenEnabled,
+  revealProps,
   scaleIn,
   staggerContainer,
   surfaceCard,
@@ -58,8 +58,8 @@ export default function Page() {
     <div className="space-y-8">
       {/* ── Hero ── */}
       <motion.div
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        animate={reduceMotion ? false : 'show'}
+        initial={reduceMotion ? false : 'hidden'}
+        animate="show"
         variants={staggerContainer}
         className={cn('relative overflow-hidden', surfaceCard, 'p-8 md:p-10')}
       >
@@ -124,9 +124,7 @@ export default function Page() {
            so a signed-out reader (or a reviewer without an account) sees real
            figures rather than a wall of navigation tiles. ── */}
       <motion.section
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+        {...revealProps(reduceMotion)}
         variants={staggerContainer}
       >
         <motion.h2
@@ -144,9 +142,7 @@ export default function Page() {
       {isAuthenticated ?
         <>
           <motion.section
-            initial={motionInitialWhenEnabled(reduceMotion)}
-            whileInView={reduceMotion ? undefined : 'show'}
-            viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+            {...revealProps(reduceMotion)}
             variants={staggerContainer}
           >
             <motion.h2
@@ -159,9 +155,7 @@ export default function Page() {
           </motion.section>
 
           <motion.section
-            initial={motionInitialWhenEnabled(reduceMotion)}
-            whileInView={reduceMotion ? undefined : 'show'}
-            viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+            {...revealProps(reduceMotion)}
             variants={staggerContainer}
           >
             <motion.h2
@@ -185,9 +179,7 @@ export default function Page() {
       {/* ── Browse ── the sidebar already lists every domain, so this stays a
            single compact row rather than three redundant link grids. ── */}
       <motion.section
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.3 }}
+        {...revealProps(reduceMotion)}
         variants={staggerContainer}
       >
         <motion.h2
