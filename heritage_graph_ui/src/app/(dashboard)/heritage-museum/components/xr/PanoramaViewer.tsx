@@ -17,6 +17,7 @@ import {
   xrGlassPanel,
   xrSubtlePanel,
 } from '@/lib/heritage-museum/xr-theme';
+import { hasUnescoStatement } from '@/lib/unesco/status';
 import { cn } from '@/lib/utils';
 
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
@@ -536,7 +537,7 @@ export function PanoramaViewer({
                   {t('badge360')}
                 </Badge>
               ) : null}
-              {node.unescoStatus ? (
+              {hasUnescoStatement(node.label) ? (
                 <Badge variant="outline" className="text-[10px]">
                   {t('badgeUnesco')}
                 </Badge>

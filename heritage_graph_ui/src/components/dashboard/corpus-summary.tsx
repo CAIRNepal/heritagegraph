@@ -11,6 +11,7 @@ import { getPublicApiUrl } from '@/lib/api-base';
 import { surfaceCard } from '@/lib/design';
 import { publicSparqlEndpoint, sparqlForPublicSubgraph } from '@/lib/provenance';
 import { cn } from '@/lib/utils';
+import { TypeHistogramChart, type TypeCount } from './type-histogram-chart';
 
 /**
  * Live state of the knowledge graph, read from the public `kg/stats/` endpoint.
@@ -125,6 +126,15 @@ export function CorpusSummary() {
 
   const format = (n: number) => n.toLocaleString();
 
+  // Rows arrive as SPARQL bindings with string counts; drop anything without a
+  // usable type or a numeric count rather than charting a NaN.
+  const histogramRows: TypeCount[] | null =
+    stats.type_histogram === null ? null : (
+      stats.type_histogram
+        .map((r) => ({ type: r.type ?? '', count: Number(r.count ?? NaN) }))
+        .filter((r) => r.type !== '' && Number.isFinite(r.count) && r.count > 0)
+    );
+
   // Prefilled so the link resolves to results. The proxy rejects a bare GET
   // with 400 ("query parameter is required"), which would make the one link
   // inviting independent verification the first thing to break.
@@ -175,6 +185,11 @@ export function CorpusSummary() {
           hint={typesSaturated ? t('distinctTypes.hintCapped') : t('distinctTypes.hint')}
         />
       </div>
+
+      {/* The histogram was already being fetched; only its length was used.
+          Bar length is the encoding and nothing is carried by hue, so it reads
+          in greyscale and under any colour vision deficiency. */}
+      <TypeHistogramChart rows={histogramRows} />
 
       {/* One sentence, one message. Splitting it into fragments around the links
           produced missing word spaces in Nepali, where the particles fall on the

@@ -708,13 +708,6 @@ export function HeritageMindMapClient() {
           >
             {/* Graph / Map canvas */}
             <div className="relative min-h-0 min-w-0">
-              {viewMode === '2d' && (
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-amber-500/[0.04] blur-3xl" />
-                  <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-indigo-500/[0.04] blur-3xl" />
-                </div>
-              )}
-
               {loading && <div className="absolute inset-0"><MandalaLoader /></div>}
               {!loading && error && (
                 <div className="absolute inset-0 flex items-center justify-center" role="alert">

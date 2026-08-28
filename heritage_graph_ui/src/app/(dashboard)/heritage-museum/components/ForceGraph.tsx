@@ -10,6 +10,7 @@ import {
   type GraphLink,
   type GraphData,
 } from '../heritage-data';
+import { hasUnescoStatement } from '@/lib/unesco/status';
 import { nodeIconInner } from '../node-icons';
 
 interface ForceGraphProps {
@@ -149,7 +150,7 @@ export function ForceGraph({
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#4b5563');
+      .style('fill', 'var(--muted-foreground)');
 
     // Zoom container + zoom behavior
     const container = svg.append('g').attr('class', 'hm-zoom-container');
@@ -274,7 +275,7 @@ export function ForceGraph({
       .enter()
       .append('path')
       .attr('fill', 'none')
-      .attr('stroke', '#374151')
+      .style('stroke', 'var(--border)')
       .attr('stroke-width', 1.5)
       .attr('stroke-opacity', 0.6)
       .attr('marker-end', 'url(#hm-arrow)');
@@ -294,10 +295,10 @@ export function ForceGraph({
       .enter()
       .append('text')
       .attr('font-size', 9)
-      .attr('fill', '#6b7280')
+      .style('fill', 'var(--muted-foreground)')
       .attr('text-anchor', 'middle')
       .attr('paint-order', 'stroke')
-      .attr('stroke', '#0b0f1a')
+      .style('stroke', 'var(--background)')
       .attr('stroke-width', 2.5);
     const labelMerged = labelEnter.merge(labelSel);
     labelMerged.text((d) => RELATION_LABELS[d.predicate] || d.predicate.replace(/_/g, ' '));
@@ -353,7 +354,7 @@ export function ForceGraph({
       .attr('class', 'hm-selection-ring')
       .attr('r', NODE_RADIUS + 8)
       .attr('fill', 'none')
-      .attr('stroke', (d) => NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? '#fff')
+      .attr('stroke', (d) => NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? 'var(--node-glyph)')
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '4 3')
       .attr('opacity', 0);
@@ -365,7 +366,7 @@ export function ForceGraph({
       .attr('r', NODE_RADIUS)
       .attr('fill', (d) => `url(#hm-grad-${d.nodeType})`)
       .attr('filter', (d) => `url(#hm-glow-${d.nodeType})`)
-      .attr('stroke', (d) => NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? '#fff')
+      .attr('stroke', (d) => NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? 'var(--node-glyph)')
       .attr('stroke-width', 1.5);
 
     // Node glyph — deterministic Tabler SVG (24×24) scaled to ~20px, white for
@@ -378,7 +379,7 @@ export function ForceGraph({
       .attr('class', 'hm-glyph')
       .attr('transform', `translate(${-GLYPH_PX / 2}, ${-4 - GLYPH_PX / 2}) scale(${glyphScale})`)
       .attr('fill', 'none')
-      .attr('stroke', '#fff')
+      .style('stroke', 'var(--node-glyph)')
       .attr('stroke-width', 2)
       .attr('stroke-linecap', 'round')
       .attr('stroke-linejoin', 'round')
@@ -400,14 +401,14 @@ export function ForceGraph({
       .attr('y', NODE_RADIUS + 16)
       .attr('font-size', 11)
       .attr('font-weight', '500')
-      .attr('fill', '#e5e7eb')
+      .style('fill', 'var(--foreground)')
       .attr('paint-order', 'stroke')
-      .attr('stroke', '#111827')
+      .style('stroke', 'var(--background)')
       .attr('stroke-width', 3);
 
     // UNESCO badge (on enter only — text might still be updated below)
     nodeEnter
-      .filter((d) => !!d.unescoStatus)
+      .filter((d) => hasUnescoStatement(d.label))
       .append('g')
       .attr('class', 'hm-unesco')
       .each(function (d) {
@@ -416,8 +417,8 @@ export function ForceGraph({
           .attr('cx', NODE_RADIUS - 4)
           .attr('cy', -(NODE_RADIUS - 4))
           .attr('r', 6)
-          .attr('fill', '#1d4ed8')
-          .attr('stroke', '#93c5fd')
+          .style('fill', 'var(--primary)')
+          .style('stroke', 'var(--background)')
           .attr('stroke-width', 1);
         g.append('text')
           .attr('x', NODE_RADIUS - 4)
@@ -425,7 +426,7 @@ export function ForceGraph({
           .attr('text-anchor', 'middle')
           .attr('dominant-baseline', 'central')
           .attr('font-size', 7)
-          .attr('fill', '#fff')
+          .style('fill', 'var(--primary-foreground)')
           .text('U');
         // silence unused-var lint
         void d;
@@ -511,7 +512,7 @@ export function ForceGraph({
       svg.selectAll<SVGGElement, GraphNode>('.hm-node-group').attr('opacity', 1);
       svg
         .selectAll<SVGPathElement, GraphLink>('path.hm-path-edge')
-        .attr('stroke', '#374151')
+        .style('stroke', 'var(--border)')
         .attr('stroke-width', 1.5)
         .attr('stroke-opacity', 0.6)
         .classed('hm-path-edge', false);
@@ -533,7 +534,7 @@ export function ForceGraph({
       .attr('class', 'hm-path-ring')
       .attr('r', NODE_RADIUS + 11)
       .attr('fill', 'none')
-      .attr('stroke', '#f59e0b')
+      .style('stroke', 'var(--ring)')
       .attr('stroke-width', 2.5)
       .attr('stroke-dasharray', '5 3');
 
@@ -544,12 +545,12 @@ export function ForceGraph({
       const key2 = `${t}→${s}`;
       if (edgePairs.has(key1) || edgePairs.has(key2)) {
         d3.select(this)
-          .attr('stroke', '#f59e0b')
+          .style('stroke', 'var(--ring)')
           .attr('stroke-width', 3)
           .attr('stroke-opacity', 1)
           .classed('hm-path-edge', true);
       } else {
-        d3.select(this).attr('stroke', '#374151').attr('stroke-width', 1.5).attr('stroke-opacity', 0.15);
+        d3.select(this).style('stroke', 'var(--border)').attr('stroke-width', 1.5).attr('stroke-opacity', 0.15);
       }
     });
   }, [pathHighlight]);
@@ -563,8 +564,8 @@ export function ForceGraph({
       .select('.hm-selection-ring')
       .attr('stroke', (d) =>
         pathPickMode && pathSource && d.id === pathSource
-          ? '#f59e0b'
-          : NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? '#fff',
+          ? 'var(--ring)'
+          : NODE_TYPE_CONFIG[d.nodeType]?.glowColor ?? 'var(--node-glyph)',
       )
       .attr('stroke-width', (d) => (pathPickMode && pathSource && d.id === pathSource ? 3 : 2));
   }, [pathPickMode, pathSource]);

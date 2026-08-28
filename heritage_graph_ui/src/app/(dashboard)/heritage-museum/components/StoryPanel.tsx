@@ -8,6 +8,7 @@ import { IconExternalLink, IconShieldCheck, IconWorld } from '@tabler/icons-reac
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { atlasHrefForNode } from '@/lib/cross-surface-links';
+import { unescoStatementForLabel } from '@/lib/unesco/status';
 import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
@@ -43,6 +44,8 @@ export function StoryPanel({
 }: StoryPanelProps) {
   const isSampleNarrative = dataSource === 'demo';
   const t = useTranslations('heritageMuseum.panel');
+  const tUnesco = useTranslations('unescoEntry');
+  const unescoStatement = unescoStatementForLabel(node?.label);
   const scrollRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,7 +120,7 @@ export function StoryPanel({
               boxShadow: `0 0 20px ${cfg.color}66`,
             }}
           >
-            <NodeGlyph nodeType={node.nodeType} size={26} color="#fff" title={cfg.label} />
+            <NodeGlyph nodeType={node.nodeType} size={26} color="var(--node-glyph)" title={cfg.label} />
           </div>
           <div className="min-w-0">
             <span
@@ -159,22 +162,33 @@ export function StoryPanel({
                 </Link>
               </Button>
             ) : null}
-            {node.unescoStatus && (
-              <div className="flex items-center gap-1 mt-1">
-                <span className="w-3 h-3 bg-blue-600 rounded-full inline-block" />
-                <span className="text-primary text-xs">{node.unescoStatus}</span>
+            {/*
+              Derived from ground truth, never from `node.unescoStatus`. That
+              field labels Nyatapola Temple and the city of Bhaktapur as World
+              Heritage Sites — neither is a monument zone — and frames the real
+              zones as separate Sites rather than zones of one serial property.
+              A record with no defensible status renders nothing.
+            */}
+            {unescoStatement ? (
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="inline-block size-2 rounded-full bg-primary" aria-hidden="true" />
+                <span className="text-xs text-primary">
+                  {unescoStatement.kind === 'monumentZone'
+                    ? tUnesco('statusMonumentZone', { year: unescoStatement.year })
+                    : tUnesco('statusProperty', { year: unescoStatement.year })}
+                </span>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
         {/* Meta chips */}
         <div className="flex flex-wrap gap-2 mt-3">
-          {node.religion      && <Chip label={node.religion}                  icon="🕉"  color="#a78bfa" />}
-          {node.dynasty       && <Chip label={t('dynasty', { name: node.dynasty })}      icon="👑"  color="#fcd34d" />}
-          {node.inceptionYear && <Chip label={t('inception', { year: node.inceptionYear })}  icon="📅"  color="#6ee7b7" />}
-          {node.period        && <Chip label={node.period}                     icon="🗓"  color="#fb923c" />}
-          {node.ethnicity     && <Chip label={node.ethnicity}                  icon="🎨"  color="#22d3ee" />}
+          {node.religion      && <Chip label={node.religion}                  icon="🕉"  color="var(--chart-4)" />}
+          {node.dynasty       && <Chip label={t('dynasty', { name: node.dynasty })}      icon="👑"  color="var(--chart-2)" />}
+          {node.inceptionYear && <Chip label={t('inception', { year: node.inceptionYear })}  icon="📅"  color="var(--chart-3)" />}
+          {node.period        && <Chip label={node.period}                     icon="🗓"  color="var(--chart-1)" />}
+          {node.ethnicity     && <Chip label={node.ethnicity}                  icon="🎨"  color="var(--chart-5)" />}
         </div>
       </div>
 
@@ -183,7 +197,7 @@ export function StoryPanel({
         <Section title={t('story')} icon="📖" color={cfg.color}>
           <p className="text-foreground text-sm leading-7 whitespace-pre-line">{node.storyText}</p>
           {isSampleNarrative ? (
-            <p className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] leading-snug text-amber-900 dark:text-amber-200">
+            <p className="mt-3 rounded-lg border border-warning/50 bg-warning-soft p-2.5 text-[11px] leading-snug text-warning-on-soft">
               {t('sampleNarrative')}
               {node.wikipediaTitle ? (
                 <>

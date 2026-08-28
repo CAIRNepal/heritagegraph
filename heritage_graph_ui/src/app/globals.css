@@ -44,6 +44,36 @@
   --sidebar-accent-foreground: #382a1f;
   --sidebar-border: #ded2c0;
   --sidebar-ring: #8a5a1c;
+  /* ── Status + ordinal tokens ──
+     `--success` is a positive-outcome colour, deliberately separate from both
+     the gilt accent and `--destructive`. The medal scale is ordinal (gold >
+     silver > bronze) and always ships alongside a rank number, so the colour
+     is never the only channel. All pairs verified: foreground/background ≥ 4.5:1,
+     solid marks ≥ 3:1 against --card. */
+  /* Glyph drawn on top of a graph node's own fill. The node fill comes from the
+     ontology palette and is the same colour in both themes, so this does NOT
+     flip with the theme — it is a token so the value has one home, not because
+     it varies. Node fills sit at ~0.15–0.27 relative luminance, which keeps
+     this comfortably legible on every one of them. */
+  --node-glyph: #fdfaf4;
+  /* Warning: an advisory state, distinct from --destructive (an error) and
+     from --primary (the accent). Used for the museum's "this narrative is
+     unverified" caution, which must read as a caveat, not as a brand flourish. */
+  --warning: #a9762a;
+  --warning-soft: #f6e7c8;
+  --warning-on-soft: #6b4410;
+  --warning-strong: #7a4d12;
+  --success: #3d6b46;
+  --success-foreground: #f4f9f4;
+  --medal-gold: #a9812a;
+  --medal-gold-soft: #f3e4c2;
+  --medal-gold-on-soft: #5f4410;
+  --medal-silver: #87847e;
+  --medal-silver-soft: #e6e4df;
+  --medal-silver-on-soft: #4d4b46;
+  --medal-bronze: #9b6a3f;
+  --medal-bronze-soft: #f0ddcd;
+  --medal-bronze-on-soft: #63401f;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -103,6 +133,22 @@
   --sidebar-accent-foreground: #f2e9dd;
   --sidebar-border: #3d3227;
   --sidebar-ring: #dfae5c;
+  --node-glyph: #fdfaf4;
+  --warning: #c9a25a;
+  --warning-soft: #3a2c11;
+  --warning-on-soft: #f0d9a4;
+  --warning-strong: #e2bd72;
+  --success: #8fbb99;
+  --success-foreground: #16210f;
+  --medal-gold: #d4ac5c;
+  --medal-gold-soft: #3a2d12;
+  --medal-gold-on-soft: #f0dcae;
+  --medal-silver: #b3afa7;
+  --medal-silver-soft: #2e2c28;
+  --medal-silver-on-soft: #dcd9d2;
+  --medal-bronze: #c08a5c;
+  --medal-bronze-soft: #3a2716;
+  --medal-bronze-on-soft: #eccdb0;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -151,6 +197,22 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-node-glyph: var(--node-glyph);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-on-soft: var(--warning-on-soft);
+  --color-warning-strong: var(--warning-strong);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-medal-gold: var(--medal-gold);
+  --color-medal-gold-soft: var(--medal-gold-soft);
+  --color-medal-gold-on-soft: var(--medal-gold-on-soft);
+  --color-medal-silver: var(--medal-silver);
+  --color-medal-silver-soft: var(--medal-silver-soft);
+  --color-medal-silver-on-soft: var(--medal-silver-on-soft);
+  --color-medal-bronze: var(--medal-bronze);
+  --color-medal-bronze-soft: var(--medal-bronze-soft);
+  --color-medal-bronze-on-soft: var(--medal-bronze-on-soft);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);

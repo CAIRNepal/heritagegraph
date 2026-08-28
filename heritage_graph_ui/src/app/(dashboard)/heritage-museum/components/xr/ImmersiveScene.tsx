@@ -35,6 +35,7 @@ import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
 } from '@/lib/provenance';
+import { hasUnescoStatement } from '@/lib/unesco/status';
 import { isEquirectangular } from '@/lib/heritage-museum/panorama-support';
 import { parseTemporalAnchor } from '@/lib/heritage-museum/temporal-parse';
 import { cn } from '@/lib/utils';
@@ -654,7 +655,7 @@ export function ImmersiveScene({
                     {tPanel('reviewedBadge')}
                   </Badge>
                 ) : null}
-                {node.unescoStatus ? (
+                {hasUnescoStatement(node.label) ? (
                   <Badge variant="outline" className="text-[10px]">
                     {t('badgeUnesco')} ✦
                   </Badge>
