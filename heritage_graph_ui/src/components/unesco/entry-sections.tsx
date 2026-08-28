@@ -28,6 +28,7 @@ import { museumHref } from '@/lib/unesco/graph-bindings';
 import { cn } from '@/lib/utils';
 
 import { PhotographCredit, PropertyPhotograph } from './PropertyPhotograph';
+import { WorldHeritageRef } from './SourcedFacts';
 
 /* ── Small shared bits ─────────────────────────────────────────────────── */
 
@@ -111,6 +112,7 @@ export function ZoneCard({
       <PhotographCredit subjectKey={zone.key} variant="onSurface" className="-mt-1" />
 
       <div className="flex flex-col gap-1.5">
+        <WorldHeritageRef subjectKey={zone.key} className="w-fit" />
         <div className="flex items-baseline gap-2">
           {/* Numbering is real information here: these are the seven zones of
               one serial nomination, and the count is the point. */}

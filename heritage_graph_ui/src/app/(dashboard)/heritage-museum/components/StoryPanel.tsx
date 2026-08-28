@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import { unescoStatementForLabel } from '@/lib/unesco/status';
+import { subjectKeyForNodeId } from '@/lib/unesco/facts';
+import { SourcedFacts } from '@/components/unesco/SourcedFacts';
 import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
@@ -46,6 +48,7 @@ export function StoryPanel({
   const t = useTranslations('heritageMuseum.panel');
   const tUnesco = useTranslations('unescoEntry');
   const unescoStatement = unescoStatementForLabel(node?.label);
+  const unescoSubjectKey = subjectKeyForNodeId(node?.id);
   const scrollRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -192,8 +195,17 @@ export function StoryPanel({
         </div>
       </div>
 
-      {/* Content — narrative first; technical mapping deferred */}
+      {/* Content — sourced facts first, then narrative.
+          A record like Hanuman Dhoka Durbar Square has no citable prose at all;
+          what it does have is structured, referenced data. Leading with the
+          part a reader can verify, rather than with an apology for the part
+          they cannot, is the honest ordering — and it is the difference between
+          a record that looks empty and one that says something. */}
       <div className="px-6 py-5 space-y-6">
+        {unescoSubjectKey ? (
+          <SourcedFacts subjectKey={unescoSubjectKey} className="rounded-lg border border-border bg-muted/30 p-4" />
+        ) : null}
+
         <Section title={t('story')} icon="📖" color={cfg.color}>
           {node.storyText?.trim() ? (
             <p className="whitespace-pre-line text-sm leading-7 text-foreground">{node.storyText}</p>

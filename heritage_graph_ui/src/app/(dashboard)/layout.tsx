@@ -98,8 +98,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <Image
                 src="/cair-logo/fulllogo_nobuffer.png"
                 alt="CAIR-Nepal"
-                width={80}
-                height={28}
+                width={1280}
+                height={314}
                 className="opacity-70"
                 // next/image warns when CSS overrides one dimension but not the
                 // other; stating both keeps the intrinsic aspect ratio explicit.

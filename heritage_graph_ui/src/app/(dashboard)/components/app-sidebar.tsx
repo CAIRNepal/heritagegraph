@@ -200,8 +200,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <Image
             src={isCollapsed ? "/logo1.svg" : "/logo.svg"}
             alt="logo"
-            width={isCollapsed? 40: 150}
-            height={isCollapsed? 40: 150}
+            /* True intrinsic ratios: logo.svg is 8015×1842 (4.35:1),
+               logo1.svg is 3208×4685 (0.68:1). Declaring both square made
+               next/image warn and distorted the mark. */
+            width={isCollapsed ? 40 : 174}
+            height={isCollapsed ? 58 : 40}
             sizes={isCollapsed ? "40px" : "150px"}
           />
       {/* <span className="">HeritageGraph</span> */}

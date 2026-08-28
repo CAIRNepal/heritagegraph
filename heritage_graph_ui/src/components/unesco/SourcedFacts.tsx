@@ -1,0 +1,186 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { IconExternalLink } from '@tabler/icons-react';
+
+import {
+  FACTS_PROVENANCE,
+  factsFor,
+  orderedFacts,
+  worldHeritageRef,
+} from '@/lib/unesco/facts';
+import { imageryFor } from '@/lib/unesco/imagery';
+import { cn } from '@/lib/utils';
+
+/**
+ * Structured facts for a UNESCO subject, each traceable to a Wikidata property.
+ *
+ * This is the answer to a record that had almost nothing to show. The demo
+ * corpus's prose is unsourced by its own admission, so rather than write more
+ * of it, the record states what can actually be cited — and names where each
+ * value came from.
+ */
+export function SourcedFacts({
+  subjectKey,
+  className,
+  heading = true,
+}: {
+  subjectKey: string;
+  className?: string;
+  heading?: boolean;
+}) {
+  const t = useTranslations('unescoEntry.facts');
+  const subject = factsFor(subjectKey);
+  const rows = orderedFacts(subjectKey);
+  if (!subject || rows.length === 0) return null;
+
+  return (
+    <section className={cn('flex flex-col gap-3', className)} aria-label={t('heading')}>
+      {heading ? (
+        <h3 className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+          {t('heading')}
+        </h3>
+      ) : null}
+
+      <dl className="flex flex-col">
+        {rows.map(({ key, values, property }) => (
+          <div
+            key={key}
+            className="grid grid-cols-[minmax(6rem,9rem)_1fr] gap-x-4 border-t border-border py-2"
+          >
+            <dt className="text-xs text-muted-foreground">{t(`labels.${key}`)}</dt>
+            <dd
+              className={cn(
+                'text-sm text-foreground',
+                key === 'worldHeritageId' && 'font-mono tabular-nums',
+              )}
+              // The Wikidata property is the citation for this row; exposing it
+              // in the title keeps the row itself uncluttered.
+              title={`Wikidata ${property}`}
+            >
+              {values.join(' · ')}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="text-[0.68rem] leading-relaxed text-muted-foreground">
+        {t('source', { date: FACTS_PROVENANCE.retrieved })}{' '}
+        <a
+          href={subject.wikidataUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-0.5 underline underline-offset-2 hover:text-foreground focus-visible:text-foreground"
+        >
+          {subject.wikidataId}
+          <IconExternalLink className="size-3" aria-hidden="true" />
+        </a>
+      </p>
+    </section>
+  );
+}
+
+/**
+ * The UNESCO reference as a compact chip — `121bis-001` and the like.
+ *
+ * Worth its own component because it is the single fact that settles the
+ * framing: a component reference of the form `121bis-00N` says, from UNESCO's
+ * own numbering, that a zone is part of one property rather than a site of
+ * its own.
+ */
+export function WorldHeritageRef({
+  subjectKey,
+  className,
+}: {
+  subjectKey: string;
+  className?: string;
+}) {
+  const t = useTranslations('unescoEntry.facts');
+  const ref = worldHeritageRef(subjectKey);
+  if (!ref) return null;
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 rounded border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[0.65rem] tabular-nums text-muted-foreground',
+        className,
+      )}
+      title={t('refTitle')}
+    >
+      <span className="uppercase tracking-[0.1em]">{t('refLabel')}</span>
+      <span className="text-foreground">{ref}</span>
+    </span>
+  );
+}
+
+/**
+ * Full title–author–source–licence credits, listed once per page.
+ *
+ * CC BY-SA 3.0 requires the work's title, which is too much to repeat under
+ * every thumbnail. Creative Commons explicitly accepts collecting attribution
+ * in one place when that is reasonable for the medium, so the compact
+ * per-image line carries author and licence and this list carries the rest.
+ */
+export function ImageCreditsList({
+  subjectKeys,
+  className,
+}: {
+  subjectKeys: readonly string[];
+  className?: string;
+}) {
+  const t = useTranslations('unescoEntry.facts');
+  const entries = subjectKeys
+    .map((k) => ({ key: k, imagery: imageryFor(k) }))
+    .filter((e): e is { key: string; imagery: NonNullable<ReturnType<typeof imageryFor>> } =>
+      Boolean(e.imagery?.image),
+    );
+  if (entries.length === 0) return null;
+
+  return (
+    <section className={cn('flex flex-col gap-2', className)} aria-label={t('creditsHeading')}>
+      <h3 className="font-mono text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+        {t('creditsHeading')}
+      </h3>
+      <ul className="flex flex-col gap-1.5">
+        {entries.map(({ key, imagery }) => {
+          const img = imagery.image!;
+          // The file name is the work's title; strip the namespace prefix.
+          const title = imagery.file.replace(/^File:/, '');
+          return (
+            <li key={key} className="text-[0.7rem] leading-relaxed text-muted-foreground">
+              <a
+                href={img.credit.descriptionUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline underline-offset-2 hover:text-foreground focus-visible:text-foreground"
+              >
+                {title}
+              </a>
+              {img.credit.artist ? <> — {img.credit.artist}</> : null}
+              {img.credit.license ? (
+                <>
+                  {' · '}
+                  {img.credit.licenseUrl ? (
+                    <a
+                      href={img.credit.licenseUrl}
+                      target="_blank"
+                      rel="noopener noreferrer license"
+                      className="underline underline-offset-2 hover:text-foreground focus-visible:text-foreground"
+                    >
+                      {img.credit.license}
+                    </a>
+                  ) : (
+                    img.credit.license
+                  )}
+                </>
+              ) : null}
+              {img.credit.source ? <> · {img.credit.source}</> : null}
+            </li>
+          );
+        })}
+      </ul>
+      <p className="text-[0.68rem] text-muted-foreground">
+        {t('creditsRetrieved', { date: entries[0].imagery.image!.credit.retrieved ?? '' })}
+      </p>
+    </section>
+  );
+}

@@ -53,10 +53,33 @@ export function ImageAttribution({
 
   return (
     <p className={cn('text-[10px] leading-tight', v.text, className)}>
-      {artist && <span>© {artist}</span>}
-      {artist && license && <span> · </span>}
-      {license &&
-        (licenseUrl ? (
+      {/*
+        Compact by design. Creative Commons asks for attribution "in any
+        reasonable manner based on the medium" — so rather than spell out
+        author, licence AND a separate "Wikimedia Commons ↗" link on every
+        thumbnail, the author's name itself carries the link to the source
+        file page. That satisfies author + source + licence in one short line.
+        The full title-author-source-licence credit, which CC BY-SA 3.0
+        requires a title for, is listed once per page by <ImageCreditsList>.
+      */}
+      {artist ? (
+        descriptionUrl ? (
+          <a
+            href={descriptionUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={source ? `${artist} — ${source}` : artist}
+            className={cn('rounded-xs focus-visible:outline-2 focus-visible:outline-offset-2', v.link)}
+          >
+            {artist}
+          </a>
+        ) : (
+          <span>{artist}</span>
+        )
+      ) : null}
+      {artist && license ? <span aria-hidden="true"> · </span> : null}
+      {license ?
+        licenseUrl ?
           <a
             href={licenseUrl}
             target="_blank"
@@ -65,22 +88,8 @@ export function ImageAttribution({
           >
             {license}
           </a>
-        ) : (
-          <span>{license}</span>
-        ))}
-      {descriptionUrl && (
-        <>
-          {' · '}
-          <a
-            href={descriptionUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn('rounded-xs focus-visible:outline-2 focus-visible:outline-offset-2', v.link)}
-          >
-            {source || 'Source'} ↗
-          </a>
-        </>
-      )}
+        : <span>{license}</span>
+      : null}
     </p>
   );
 }
