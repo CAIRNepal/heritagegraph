@@ -12,10 +12,15 @@ export const fadeInUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+/**
+ * A stagger container's only job is to time its children. It must not fade
+ * itself: `opacity: 0` on the parent hides every child no matter how the
+ * children animate, so one un-fired IntersectionObserver blanks a whole
+ * section. An empty `hidden` still propagates the variant to children.
+ */
 export const staggerContainer = {
-  hidden: { opacity: 0 },
+  hidden: {},
   show: {
-    opacity: 1,
     transition: { staggerChildren: 0.08, delayChildren: 0.15 },
   },
 };
@@ -79,9 +84,18 @@ export const editorialEase = [0.16, 1, 0.3, 1] as const;
  * re-animates as the reader scrolls back.
  */
 export const revealOnScroll = {
-  hidden: { opacity: 0, y: 32 },
+  // Deliberately NO opacity. An earlier version faded from `opacity: 0`, which
+  // meant a section was invisible until its IntersectionObserver fired — so the
+  // page loaded with large blank bands and only filled in as you scrolled. Any
+  // hiccup (slow JS, a background tab, an observer that never fires, no JS at
+  // all) left the content unreadable, and the server-rendered markup carried
+  // the transparent state inline.
+  //
+  // Content visibility must never depend on an animation having run. Moving
+  // only the transform keeps the reveal — text settles upward into place — while
+  // the un-animated state is fully legible, just 24px low.
+  hidden: { y: 24 },
   show: {
-    opacity: 1,
     y: 0,
     transition: { duration: 0.7, ease: editorialEase },
   },
@@ -107,15 +121,19 @@ export const imageReveal = {
  * `staggerContainer` (0.08s) is too quick to read as deliberate at this scale.
  */
 export const editorialStagger = {
-  hidden: { opacity: 0 },
+  // No opacity on the container — see staggerContainer above.
+  hidden: {},
   show: {
-    opacity: 1,
     transition: { staggerChildren: 0.12, delayChildren: 0.1 },
   },
 };
 
-/** Viewport config for `whileInView`. Reveal once, at a quarter visible. */
-export const revealViewport = { once: true, amount: 0.25 } as const;
+/**
+ * Viewport config for `whileInView`. Reveal once, and trigger as soon as a
+ * tenth of the section is in view — a quarter meant tall sections sat
+ * un-revealed well after the reader had started reading them.
+ */
+export const revealViewport = { once: true, amount: 0.1 } as const;
 
 /* ── Editorial surfaces ─────────────────────────────────────────────────── */
 

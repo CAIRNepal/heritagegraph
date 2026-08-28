@@ -165,6 +165,15 @@ const nextConfig: NextConfig = {
       ...(apiMediaPattern ? [apiMediaPattern] : []),
     ],
   },
+  /**
+   * A running `next dev` writes into `.next` continuously. A production build
+   * sharing that directory gets its chunks overwritten mid-flight and fails
+   * with MODULE_NOT_FOUND, and a completed build then breaks the dev server in
+   * the same way. Setting NEXT_DIST_DIR lets a verification or CI build run
+   * alongside a live dev server instead of fighting it.
+   */
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
   eslint: {
     ignoreDuringBuilds: true, // disables ESLint errors breaking production build
   },
