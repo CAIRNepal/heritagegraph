@@ -248,7 +248,9 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 
 ### Frontend Routes — Main app (`heritage_graph_ui`, port 3000)
 
-- `/` — dashboard home (authenticated shell)
+- `/` — **public UNESCO entry experience** (long-scroll editorial; works signed out). Facts come from `src/lib/unesco/ground-truth.ts`, photography from `src/data/unesco-imagery.json` (regenerate with `node scripts/freeze-unesco-imagery.mjs`). **Never render `node.unescoStatus` or UNESCO claims found in graph `rdfs:comment` literals** — both assert "World Heritage Site" on individual monument zones, and on Nyatapola Temple and the city of Bhaktapur, which are not zones at all. Resolve status through `src/lib/unesco/status.ts` instead.
+- `/dashboard` — dashboard home (authenticated shell); moved off `/` in the 2026-08 entry redesign
+- `/preview/entry-a`, `/preview/entry-b` — the two compositional directions the entry was chosen from; `noindex`, retained for comparison and safe to delete
 - `/knowledge/<domain>` — knowledge base (entity, person, location, event, period, tradition, source)
 - `/contribute/<domain>` — contribution forms (add `?id=<recordId>` to edit an existing CIDOC record)
 - `/contribute/pattern/<slug>` — guided **semantic workflows** (`tools/semantic-patterns.yaml`; registry key as slug)
