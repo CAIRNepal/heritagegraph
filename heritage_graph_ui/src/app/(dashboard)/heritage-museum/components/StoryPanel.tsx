@@ -195,23 +195,25 @@ export function StoryPanel({
       {/* Content — narrative first; technical mapping deferred */}
       <div className="px-6 py-5 space-y-6">
         <Section title={t('story')} icon="📖" color={cfg.color}>
-          <p className="text-foreground text-sm leading-7 whitespace-pre-line">{node.storyText}</p>
+          {node.storyText?.trim() ? (
+            <p className="whitespace-pre-line text-sm leading-7 text-foreground">{node.storyText}</p>
+          ) : (
+            /* Some records carry no narrative — nothing could be sourced for
+               them. Say so, rather than rendering an empty panel that reads as
+               a loading failure. */
+            <p className="text-sm italic leading-7 text-muted-foreground">
+              {t('noNarrativeRecorded')}
+            </p>
+          )}
           {isSampleNarrative ? (
             <p className="mt-3 rounded-lg border border-warning/50 bg-warning-soft p-2.5 text-[11px] leading-snug text-warning-on-soft">
+              {/*
+                No outbound Wikipedia link. Sending a reader off-site to check a
+                claim we are already telling them not to trust is not a fix for
+                the claim — and the caution below stands on its own. Everything
+                a reader should follow from here leads further into the graph.
+              */}
               {t('sampleNarrative')}
-              {node.wikipediaTitle ? (
-                <>
-                  {' '}
-                  <a
-                    href={`https://en.wikipedia.org/wiki/${encodeURIComponent(node.wikipediaTitle)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium underline underline-offset-2"
-                  >
-                    {t('sampleNarrativeReference')}
-                  </a>
-                </>
-              ) : null}
             </p>
           ) : null}
         </Section>

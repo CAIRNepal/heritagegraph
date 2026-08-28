@@ -5,23 +5,24 @@
  * is about the same subject, open it there" — it asserts nothing new about the
  * monument and adds no facts.
  *
- * Deliberately incomplete. A subject is bound only where an existing record is
- * genuinely the same thing:
+ * A subject is bound only where a record is genuinely the same thing.
+ * `bhaktapur-durbar-square` is still NOT bound to the corpus's `BhaktapurCity`:
+ * that node is the settlement which *contains* the zone, and treating them as
+ * one is the same category error that made the corpus label Nyatapola Temple a
+ * World Heritage Site. It is bound instead to a node for the zone itself, added
+ * to the corpus alongside one for Hanuman Dhoka Durbar Square — both with
+ * credited photography and sourced coordinates, and with no narrative, because
+ * none could be sourced.
  *
- *  - `bhaktapur-durbar-square` is NOT bound to the corpus's `BhaktapurCity`.
- *    That node is the settlement which *contains* the monument zone; treating
- *    them as one is the same category error that makes the corpus label
- *    Nyatapola Temple a World Heritage Site.
- *  - `hanuman-dhoka` has no binding because the demo corpus has no node for it
- *    at all, and its two reviewed-graph records are bare label-and-type stubs.
- *
- * Unbound subjects still link onward — to the museum, atlas or knowledge base
- * without a preselected node — so no entry point dead-ends.
+ * Any subject left unbound still links onward to the museum without a
+ * preselected node, so no entry point dead-ends.
  */
 
 /** Node ids in the frozen demo corpus (`src/data/heritage-demo.json`). */
 const DEMO_CORPUS_NODE: Readonly<Record<string, string>> = {
+  'hanuman-dhoka': 'heritage:HanumanDhokaDurbarSquare',
   'patan-durbar-square': 'heritage:PatanDurbarSquare',
+  'bhaktapur-durbar-square': 'heritage:BhaktapurDurbarSquare',
   swayambhu: 'heritage:SwayambhunathStupa',
   bauddhanath: 'heritage:BoudhanathStupa',
   pashupati: 'heritage:PashupatinathTemple',

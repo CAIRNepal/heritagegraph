@@ -328,8 +328,16 @@ export function HeritageMindMapClient() {
     if (viewParam === '2d' || viewParam === 'map' || viewParam === 'xr') {
       setViewMode(viewParam);
     }
-    if (searchParams.get('source') === 'demo') return;
-    if (API_BASE && isPublicApiUrlConfigured()) {
+    // Default to the frozen corpus, and switch to the live knowledge graph only
+    // when the URL asks for it.
+    //
+    // This used to auto-switch to live whenever an API base was configured,
+    // which meant the museum's own front door depended on the backend being
+    // reachable: anyone arriving from the entry page hit "Could not reach the
+    // HeritageGraph API" and an empty canvas. The demo corpus is self-contained
+    // and always renders, so it is the honest default; the toolbar's Live KG
+    // control switches over deliberately.
+    if (searchParams.get('source') === 'live' && API_BASE && isPublicApiUrlConfigured()) {
       setDataSource('live');
       void loadLiveData();
     }
