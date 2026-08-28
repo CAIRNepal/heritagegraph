@@ -4,49 +4,51 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f4efe7;
-  --foreground: #241c16;
-  --card: #fbf8f3;
-  --card-foreground: #241c16;
-  --popover: #fbf8f3;
-  --popover-foreground: #241c16;
-  --primary: #8a5a1c;
-  --primary-foreground: #fdfaf4;
+  --background: #e5e9e5;
+  --foreground: #121815;
+  --card: #f1f4f0;
+  --card-foreground: #121815;
+  --popover: #f1f4f0;
+  --popover-foreground: #121815;
+  --primary: #26584a;
+  --primary-foreground: #f1f7f4;
   /* Hero surfaces carry white text, so they need their own scale rather than
-     reusing --primary. --primary is gilt copper — in dark mode it is a *light*
-     gold (#dfae5c) and white on it measures 1.7:1. These stops are deep timber
-     and fired brick, dark in both themes, so --hero-foreground stays legible.
-     Contrast vs #ffffff: from 14.3:1, to 7.6:1 (both pass WCAG AA). */
-  --hero-from: #3d241b;
-  --hero-to: #8c3a2b;
+     reusing --primary. In dark mode --primary is a light verdigris (#74b79c)
+     and white on it measures 2.1:1. These stops are deep schist green, dark in
+     both themes, so --hero-foreground stays legible.
+     Contrast vs #ffffff: from 15.4:1, to 8.5:1 (both pass WCAG AA). */
+  --hero-from: #0f1f1a;
+  --hero-to: #26584a;
   --hero-foreground: #ffffff;
-  --secondary: #e9e0d3;
-  --secondary-foreground: #382a1f;
-  --muted: #e6dccd;
-  --muted-foreground: #655547;
-  --accent: #8a5a1c;
-  --accent-foreground: #fdfaf4;
-  --destructive: #8a1810;
-  --destructive-foreground: #fff8f7;
-  --border: #ded2c0;
-  --input: #ded2c0;
-  --ring: #8a5a1c;
-  --chart-1: #8c3a2b;
-  --chart-2: #b8862f;
-  --chart-3: #4f6a5b;
-  --chart-4: #3f3227;
-  --chart-5: #b8814f;
-  --sidebar: #efe8dd;
-  --sidebar-foreground: #241c16;
-  --sidebar-primary: #8a5a1c;
-  --sidebar-primary-foreground: #fdfaf4;
-  --sidebar-accent: #e6dccd;
-  --sidebar-accent-foreground: #382a1f;
-  --sidebar-border: #ded2c0;
-  --sidebar-ring: #8a5a1c;
+  --secondary: #d8ded8;
+  --secondary-foreground: #1c2621;
+  --muted: #d4dbd4;
+  --muted-foreground: #4f5a54;
+  --accent: #26584a;
+  --accent-foreground: #f1f7f4;
+  --destructive: #5e1509;
+  --destructive-foreground: #fdf7f6;
+  --border: #c6cfc7;
+  --input: #c6cfc7;
+  --ring: #26584a;
+  --chart-1: #7a5b16;
+  --chart-2: #26584a;
+  --chart-3: #626e67;
+  --chart-4: #6d3a4e;
+  --chart-5: #3f5f7a;
+  --sidebar: #eaeeea;
+  --sidebar-foreground: #121815;
+  --sidebar-primary: #26584a;
+  --sidebar-primary-foreground: #f1f7f4;
+  --sidebar-accent: #d4dbd4;
+  --sidebar-accent-foreground: #1c2621;
+  --sidebar-border: #c6cfc7;
+  --sidebar-ring: #26584a;
   /* ── Status + ordinal tokens ──
-     `--success` is a positive-outcome colour, deliberately separate from both
-     the gilt accent and `--destructive`. The medal scale is ordinal (gold >
+     `--success` is a positive-outcome colour. It has to stay distinguishable
+     from `--primary`, which is itself a green in this palette — the two are
+     held at least 1.4:1 apart in luminance and sit on different hue angles
+     (olive vs verdigris), so a "+12 points" never reads as a link. The medal scale is ordinal (gold >
      silver > bronze) and always ships alongside a rank number, so the colour
      is never the only channel. All pairs verified: foreground/background ≥ 4.5:1,
      solid marks ≥ 3:1 against --card. */
@@ -55,25 +57,25 @@
      flip with the theme — it is a token so the value has one home, not because
      it varies. Node fills sit at ~0.15–0.27 relative luminance, which keeps
      this comfortably legible on every one of them. */
-  --node-glyph: #fdfaf4;
+  --node-glyph: #f4f7f2;
   /* Warning: an advisory state, distinct from --destructive (an error) and
      from --primary (the accent). Used for the museum's "this narrative is
      unverified" caution, which must read as a caveat, not as a brand flourish. */
-  --warning: #a9762a;
-  --warning-soft: #f6e7c8;
-  --warning-on-soft: #6b4410;
-  --warning-strong: #7a4d12;
-  --success: #3d6b46;
-  --success-foreground: #f4f9f4;
-  --medal-gold: #a9812a;
-  --medal-gold-soft: #f3e4c2;
-  --medal-gold-on-soft: #5f4410;
-  --medal-silver: #87847e;
-  --medal-silver-soft: #e6e4df;
-  --medal-silver-on-soft: #4d4b46;
-  --medal-bronze: #9b6a3f;
-  --medal-bronze-soft: #f0ddcd;
-  --medal-bronze-on-soft: #63401f;
+  --warning: #63480c;
+  --warning-soft: #f0e6cb;
+  --warning-on-soft: #5e4409;
+  --warning-strong: #63480c;
+  --success: #4a7a24;
+  --success-foreground: #f4f9f0;
+  --medal-gold: #8a6a1a;
+  --medal-gold-soft: #eee3c6;
+  --medal-gold-on-soft: #5c440f;
+  --medal-silver: #7c8280;
+  --medal-silver-soft: #e2e6e3;
+  --medal-silver-on-soft: #484d4b;
+  --medal-bronze: #8f6440;
+  --medal-bronze-soft: #eddfd2;
+  --medal-bronze-on-soft: #5f4020;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -97,57 +99,57 @@
 }
 
 .dark {
-  --background: #17120e;
-  --foreground: #f2e9dd;
-  --card: #1f1913;
-  --card-foreground: #f2e9dd;
-  --popover: #241d16;
-  --popover-foreground: #f2e9dd;
-  --primary: #dfae5c;
-  --primary-foreground: #17120e;
-  /* Contrast vs #ffffff: from 17.0:1, to 11.6:1 (both pass WCAG AA). */
-  --hero-from: #2a1811;
-  --hero-to: #5c2a20;
+  --background: #0e1512;
+  --foreground: #e4eae6;
+  --card: #161f1b;
+  --card-foreground: #e4eae6;
+  --popover: #1b2521;
+  --popover-foreground: #e4eae6;
+  --primary: #8ec8ae;
+  --primary-foreground: #0e1512;
+  /* Contrast vs #ffffff: from 18.0:1, to 10.2:1 (both pass WCAG AA). */
+  --hero-from: #0a100d;
+  --hero-to: #1e4034;
   --hero-foreground: #ffffff;
-  --secondary: #2a221a;
-  --secondary-foreground: #f2e9dd;
-  --muted: #2a221a;
-  --muted-foreground: #b3a290;
-  --accent: #dfae5c;
-  --accent-foreground: #17120e;
-  --destructive: #e5645a;
-  --destructive-foreground: #1a0f0d;
-  --border: #3d3227;
-  --input: #463a2c;
-  --ring: #dfae5c;
-  --chart-1: #c9705c;
-  --chart-2: #e0b366;
-  --chart-3: #7fa88d;
-  --chart-4: #efd9ad;
-  --chart-5: #b98f66;
-  --sidebar: #1f1913;
-  --sidebar-foreground: #f2e9dd;
-  --sidebar-primary: #dfae5c;
-  --sidebar-primary-foreground: #17120e;
-  --sidebar-accent: #2a221a;
-  --sidebar-accent-foreground: #f2e9dd;
-  --sidebar-border: #3d3227;
-  --sidebar-ring: #dfae5c;
-  --node-glyph: #fdfaf4;
-  --warning: #c9a25a;
-  --warning-soft: #3a2c11;
-  --warning-on-soft: #f0d9a4;
-  --warning-strong: #e2bd72;
-  --success: #8fbb99;
-  --success-foreground: #16210f;
+  --secondary: #1d2723;
+  --secondary-foreground: #e4eae6;
+  --muted: #1d2723;
+  --muted-foreground: #9aa8a1;
+  --accent: #8ec8ae;
+  --accent-foreground: #0e1512;
+  --destructive: #e2705f;
+  --destructive-foreground: #160c0a;
+  --border: #2a3831;
+  --input: #35443c;
+  --ring: #8ec8ae;
+  --chart-1: #74b79c;
+  --chart-2: #b7c0ba;
+  --chart-3: #6f98bd;
+  --chart-4: #d3b46a;
+  --chart-5: #c88fa4;
+  --sidebar: #111a16;
+  --sidebar-foreground: #e4eae6;
+  --sidebar-primary: #8ec8ae;
+  --sidebar-primary-foreground: #0e1512;
+  --sidebar-accent: #1d2723;
+  --sidebar-accent-foreground: #e4eae6;
+  --sidebar-border: #2a3831;
+  --sidebar-ring: #8ec8ae;
+  --node-glyph: #f4f7f2;
+  --warning: #d9b463;
+  --warning-soft: #332a12;
+  --warning-on-soft: #efdcaa;
+  --warning-strong: #d9b463;
+  --success: #c2dc96;
+  --success-foreground: #101a08;
   --medal-gold: #d4ac5c;
-  --medal-gold-soft: #3a2d12;
+  --medal-gold-soft: #332a12;
   --medal-gold-on-soft: #f0dcae;
-  --medal-silver: #b3afa7;
-  --medal-silver-soft: #2e2c28;
-  --medal-silver-on-soft: #dcd9d2;
+  --medal-silver: #adb5b1;
+  --medal-silver-soft: #282e2b;
+  --medal-silver-on-soft: #d9dedb;
   --medal-bronze: #c08a5c;
-  --medal-bronze-soft: #3a2716;
+  --medal-bronze-soft: #33251a;
   --medal-bronze-on-soft: #eccdb0;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
