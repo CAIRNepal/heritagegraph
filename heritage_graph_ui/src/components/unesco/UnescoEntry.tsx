@@ -31,9 +31,9 @@ import {
   editorialStagger,
   imageReveal,
   revealOnScroll,
-  revealProps,
   wideColumn,
 } from '@/lib/design';
+import { useReveal } from '@/lib/use-reveal';
 import {
   KATHMANDU_VALLEY,
   LUMBINI,
@@ -46,12 +46,12 @@ import {
   GraphBoundaryNote,
   PropertyPhotograph,
   ProvenanceFooter,
-  ScopeStatement,
   SerialPropertyCaution,
   ValleyFacts,
   ZoneCollection,
 } from './entry-sections';
 import { ImageCreditsList, SourcedFacts } from './SourcedFacts';
+import { PlatformIntro } from './PlatformIntro';
 
 const CREDITED_SUBJECTS = [
   ...(KATHMANDU_VALLEY.monumentZones ?? []).map((z) => z.key),
@@ -61,19 +61,26 @@ const CREDITED_SUBJECTS = [
 export function UnescoEntry() {
   const t = useTranslations('unescoEntry');
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
 
   return (
     <div className="flex flex-col gap-20 pb-24 md:gap-28">
       {/* ── 1. The photograph ── */}
       <section aria-labelledby="entry-title" className="relative">
-        <motion.div variants={imageReveal} initial={reduceMotion ? false : 'hidden'} animate="show">
+        <motion.div variants={imageReveal} initial="hidden" animate="show">
+          {/* The photograph drifts a little slower than the page while the
+              title stays put, so the two read as separate planes. Small on
+              purpose: a large offset reads as a glitch, not as depth. */}
           <PropertyPhotograph
             subjectKey="bhaktapur-durbar-square"
             alt={t('photographOf', { name: t('zones.bhaktapur-durbar-square') })}
             aspect="16 / 9"
             sizes="100vw"
             priority
+            creditPlacement="none"
             className="rounded-none"
+            imageClassName="scale-[1.06]"
+            parallax={70}
           >
             {/* Neutral black scrim: it darkens the photograph, which is the
                 same in both themes, so it must not come from a theme token. */}
@@ -99,10 +106,13 @@ export function UnescoEntry() {
         </motion.div>
       </section>
 
-      {/* ── 2. The seven zones, straight away ── */}
+      {/* ── 2. What HeritageGraph is ── */}
+      <PlatformIntro />
+
+      {/* ── 3. The seven zones ── */}
       <section aria-labelledby="zones-heading">
         <motion.div
-          {...revealProps(reduceMotion)}
+          {...reveal}
           variants={revealOnScroll}
           className={`${wideColumn} mb-8`}
         >
@@ -131,9 +141,9 @@ export function UnescoEntry() {
         </div>
       </section>
 
-      {/* ── 3. The property itself, with sourced facts ── */}
+      {/* ── 4. The property itself, with sourced facts ── */}
       <motion.section
-        {...revealProps(reduceMotion)}
+        {...reveal}
         variants={revealOnScroll}
         aria-labelledby="valley-heading"
         className={`${wideColumn} scroll-mt-20`}
@@ -156,19 +166,21 @@ export function UnescoEntry() {
         </div>
       </motion.section>
 
-      {/* ── 4. Lumbini ── */}
+      {/* ── 5. Lumbini ── */}
       <section aria-labelledby="lumbini-heading">
-        <motion.div {...revealProps(reduceMotion)} variants={revealOnScroll}>
+        <motion.div {...reveal} variants={revealOnScroll}>
           <PropertyPhotograph
             subjectKey="lumbini"
             alt={t('photographOf', { name: t('properties.lumbini') })}
             aspect="21 / 9"
             sizes="100vw"
+            creditPlacement="none"
             className="rounded-none"
+            parallax={50}
           />
         </motion.div>
         <motion.div
-          {...revealProps(reduceMotion)}
+          {...reveal}
           variants={revealOnScroll}
           className={`${wideColumn} mt-10`}
         >
@@ -196,11 +208,11 @@ export function UnescoEntry() {
         </motion.div>
       </section>
 
-      {/* ── 5. The full register, below the heritage rather than ahead of it ── */}
+      {/* ── 6. The full register, below the heritage rather than ahead of it ── */}
       <section aria-labelledby="register-heading" className={wideColumn}>
         <motion.div
           variants={editorialStagger}
-          {...revealProps(reduceMotion)}
+          {...reveal}
           className="mx-auto max-w-4xl"
         >
           <motion.div variants={revealOnScroll}>
@@ -243,8 +255,7 @@ export function UnescoEntry() {
         </motion.div>
       </section>
 
-      {/* ── 6. Scope, boundary, provenance ── */}
-      <ScopeStatement />
+      {/* ── 7. Boundary, credits, provenance ── */}
       <GraphBoundaryNote />
 
       <div className={wideColumn}>

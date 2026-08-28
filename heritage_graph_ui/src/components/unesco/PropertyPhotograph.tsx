@@ -6,6 +6,8 @@ import { IconPhotoOff } from '@tabler/icons-react';
 
 import { ImageAttribution } from '@/app/(dashboard)/heritage-museum/components/ImageAttribution';
 import { aspectRatioOf, imageryFor } from '@/lib/unesco/imagery';
+
+import { Parallax } from './depth';
 import { cn } from '@/lib/utils';
 
 interface PropertyPhotographProps {
@@ -33,6 +35,11 @@ interface PropertyPhotographProps {
   /** Set on the one photograph above the fold so it is not lazy-loaded. */
   priority?: boolean;
   sizes?: string;
+  /**
+   * Parallax travel in pixels for the image layer. Any children (a title, a
+   * scrim) stay put, so the two read as separate planes. Omit for no parallax.
+   */
+  parallax?: number;
   children?: React.ReactNode;
 }
 
@@ -55,6 +62,7 @@ export function PropertyPhotograph({
   imageClassName,
   priority = false,
   sizes = '100vw',
+  parallax,
   children,
 }: PropertyPhotographProps) {
   const t = useTranslations('unescoEntry');
@@ -84,14 +92,29 @@ export function PropertyPhotograph({
   return (
     <figure className={cn('relative overflow-hidden rounded-xl bg-muted', className)}>
       <div className="relative w-full" style={{ aspectRatio: ratio }}>
-        <Image
-          src={image.url}
-          alt={alt}
-          fill
-          sizes={sizes}
-          priority={priority}
-          className={cn('object-cover', imageClassName)}
-        />
+        {parallax ? (
+          <Parallax distance={parallax} className="absolute inset-0">
+            <div className="relative h-full w-full">
+              <Image
+                src={image.url}
+                alt={alt}
+                fill
+                sizes={sizes}
+                priority={priority}
+                className={cn('object-cover', imageClassName)}
+              />
+            </div>
+          </Parallax>
+        ) : (
+          <Image
+            src={image.url}
+            alt={alt}
+            fill
+            sizes={sizes}
+            priority={priority}
+            className={cn('object-cover', imageClassName)}
+          />
+        )}
         {creditPlacement === 'overlay' ? (
           /* Scrim exists so the credit stays legible over any photograph.
              Neutral black, not a token: it darkens the photo, which is the

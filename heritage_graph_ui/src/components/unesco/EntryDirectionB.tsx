@@ -22,9 +22,9 @@ import { Button } from '@/components/ui/button';
 import {
   editorialStagger,
   revealOnScroll,
-  revealProps,
   wideColumn,
 } from '@/lib/design';
+import { useReveal } from '@/lib/use-reveal';
 import { LUMBINI, NEPAL_WORLD_HERITAGE } from '@/lib/unesco/ground-truth';
 import { museumHref } from '@/lib/unesco/graph-bindings';
 
@@ -42,6 +42,7 @@ import {
 export function EntryDirectionB() {
   const t = useTranslations('unescoEntry');
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
 
   return (
     <div className="flex flex-col gap-20 pb-24 md:gap-28">
@@ -49,7 +50,7 @@ export function EntryDirectionB() {
       <section aria-labelledby="entry-b-title" className={`${wideColumn} pt-12 md:pt-20`}>
         <motion.div
           variants={editorialStagger}
-          initial={reduceMotion ? false : "hidden"}
+          initial="hidden"
           animate="show"
           className="mx-auto max-w-4xl"
         >
@@ -104,7 +105,7 @@ export function EntryDirectionB() {
       <section aria-labelledby="b-valley-heading">
         <motion.div
           variants={revealOnScroll}
-          {...revealProps(reduceMotion)}
+          {...reveal}
         >
           <PropertyPhotograph
             subjectKey="swayambhu"
@@ -117,7 +118,7 @@ export function EntryDirectionB() {
 
         <motion.div
           variants={revealOnScroll}
-          {...revealProps(reduceMotion)}
+          {...reveal}
           className={`${wideColumn} mt-10`}
         >
           <div className="grid gap-8 md:grid-cols-[1.4fr_1fr] md:gap-14">
@@ -153,7 +154,7 @@ export function EntryDirectionB() {
       <section aria-labelledby="b-lumbini-heading">
         <motion.div
           variants={revealOnScroll}
-          {...revealProps(reduceMotion)}
+          {...reveal}
         >
           <PropertyPhotograph
             subjectKey="lumbini"
@@ -165,7 +166,7 @@ export function EntryDirectionB() {
         </motion.div>
         <motion.div
           variants={revealOnScroll}
-          {...revealProps(reduceMotion)}
+          {...reveal}
           className={`${wideColumn} mt-10`}
         >
           <Eyebrow>{t('culturalHeading')}</Eyebrow>

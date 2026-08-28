@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button';
 import {
   editorialStagger,
   revealOnScroll,
-  revealProps,
   wideColumn,
 } from '@/lib/design';
 import {
@@ -25,10 +24,12 @@ import {
 } from '@/lib/unesco/ground-truth';
 import { IMAGERY_PROVENANCE } from '@/lib/unesco/imagery';
 import { museumHref } from '@/lib/unesco/graph-bindings';
+import { useReveal } from '@/lib/use-reveal';
 import { cn } from '@/lib/utils';
 
-import { PhotographCredit, PropertyPhotograph } from './PropertyPhotograph';
+import { PropertyPhotograph } from './PropertyPhotograph';
 import { WorldHeritageRef } from './SourcedFacts';
+import { TiltCard } from './depth';
 
 /* ── Small shared bits ─────────────────────────────────────────────────── */
 
@@ -95,21 +96,22 @@ export function ZoneCard({
           credit carries licence and file-description anchors, and nesting an
           <a> inside an <a> is invalid HTML — React fails hydration on it and
           regenerates the whole tree on the client. */}
-      <Link
-        href={museumHref(zone.key)}
-        aria-label={name}
-        className="rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-      >
-        <PropertyPhotograph
-          subjectKey={zone.key}
-          alt={t('photographOf', { name })}
-          aspect="4 / 3"
-          creditPlacement="none"
-          sizes="(max-width: 640px) 78vw, (max-width: 1024px) 52vw, 30rem"
-          imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-        />
-      </Link>
-      <PhotographCredit subjectKey={zone.key} variant="onSurface" className="-mt-1" />
+      <TiltCard className="rounded-xl shadow-sm transition-shadow duration-500 group-hover:shadow-xl">
+        <Link
+          href={museumHref(zone.key)}
+          aria-label={name}
+          className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+        >
+          <PropertyPhotograph
+            subjectKey={zone.key}
+            alt={t('photographOf', { name })}
+            aspect="4 / 3"
+            creditPlacement="none"
+            sizes="(max-width: 640px) 78vw, (max-width: 1024px) 52vw, 30rem"
+            imageClassName="transition-transform duration-700 ease-out group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          />
+        </Link>
+      </TiltCard>
 
       <div className="flex flex-col gap-1.5">
         <WorldHeritageRef subjectKey={zone.key} className="w-fit" />
@@ -163,11 +165,12 @@ export function SerialPropertyCaution({ className }: { className?: string }) {
 export function ScopeStatement() {
   const t = useTranslations('unescoEntry');
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
 
   return (
     <motion.section
       variants={revealOnScroll}
-      {...revealProps(reduceMotion)}
+      {...reveal}
       aria-labelledby="unesco-scope-heading"
       className={wideColumn}
     >
@@ -198,11 +201,12 @@ export function ScopeStatement() {
 export function GraphBoundaryNote() {
   const t = useTranslations('unescoEntry');
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
 
   return (
     <motion.section
       variants={revealOnScroll}
-      {...revealProps(reduceMotion)}
+      {...reveal}
       aria-labelledby="graph-boundary-heading"
       className={wideColumn}
     >
@@ -293,13 +297,14 @@ export function ZoneCollection({
   headingLevel?: 3 | 4;
 }) {
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
   const zones = KATHMANDU_VALLEY.monumentZones ?? [];
 
   if (layout === 'band') {
     return (
       <motion.div
         variants={editorialStagger}
-        {...revealProps(reduceMotion)}
+        {...reveal}
         className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-5 pb-4 sm:px-6 lg:px-8"
       >
         {zones.map((zone, i) => (
@@ -312,7 +317,7 @@ export function ZoneCollection({
   return (
     <motion.div
       variants={editorialStagger}
-      {...revealProps(reduceMotion)}
+      {...reveal}
       className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
     >
       {zones.map((zone, i) => (
@@ -322,4 +327,4 @@ export function ZoneCollection({
   );
 }
 
-export { PhotographCredit, PropertyPhotograph };
+export { PropertyPhotograph };

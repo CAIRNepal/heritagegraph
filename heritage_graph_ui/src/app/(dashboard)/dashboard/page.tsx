@@ -19,11 +19,11 @@ import {
   heroForeground,
   heroForegroundMuted,
   heroGradient,
-  revealProps,
   scaleIn,
   staggerContainer,
   surfaceCard,
 } from '@/lib/design';
+import { useReveal } from '@/lib/use-reveal';
 import { cn } from '@/lib/utils';
 import { dashboardBrowseCategories } from '@/config/dashboard-links';
 import { ShortcutGrid } from '@/components/dashboard/shortcut-grid';
@@ -34,6 +34,7 @@ export default function Page() {
   const tContribute = useTranslations('contribute');
   const [greeting, setGreeting] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
 
   const isAuthenticated = status === 'authenticated';
 
@@ -58,7 +59,7 @@ export default function Page() {
     <div className="space-y-8">
       {/* ── Hero ── */}
       <motion.div
-        initial={reduceMotion ? false : 'hidden'}
+        initial="hidden"
         animate="show"
         variants={staggerContainer}
         className={cn('relative overflow-hidden', surfaceCard, 'p-8 md:p-10')}
@@ -124,7 +125,7 @@ export default function Page() {
            so a signed-out reader (or a reviewer without an account) sees real
            figures rather than a wall of navigation tiles. ── */}
       <motion.section
-        {...revealProps(reduceMotion)}
+        {...reveal}
         variants={staggerContainer}
       >
         <motion.h2
@@ -142,7 +143,7 @@ export default function Page() {
       {isAuthenticated ?
         <>
           <motion.section
-            {...revealProps(reduceMotion)}
+            {...reveal}
             variants={staggerContainer}
           >
             <motion.h2
@@ -155,7 +156,7 @@ export default function Page() {
           </motion.section>
 
           <motion.section
-            {...revealProps(reduceMotion)}
+            {...reveal}
             variants={staggerContainer}
           >
             <motion.h2
@@ -179,7 +180,7 @@ export default function Page() {
       {/* ── Browse ── the sidebar already lists every domain, so this stays a
            single compact row rather than three redundant link grids. ── */}
       <motion.section
-        {...revealProps(reduceMotion)}
+        {...reveal}
         variants={staggerContainer}
       >
         <motion.h2

@@ -22,9 +22,9 @@ import { Button } from '@/components/ui/button';
 import {
   imageReveal,
   revealOnScroll,
-  revealProps,
   wideColumn,
 } from '@/lib/design';
+import { useReveal } from '@/lib/use-reveal';
 import { KATHMANDU_VALLEY, LUMBINI } from '@/lib/unesco/ground-truth';
 import { museumHref } from '@/lib/unesco/graph-bindings';
 
@@ -42,6 +42,7 @@ import {
 export function EntryDirectionA() {
   const t = useTranslations('unescoEntry');
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
 
   return (
     <div className="flex flex-col gap-20 pb-24 md:gap-28">
@@ -49,7 +50,7 @@ export function EntryDirectionA() {
       <section aria-labelledby="entry-a-title" className="relative">
         <motion.div
           variants={imageReveal}
-          initial={reduceMotion ? false : "hidden"}
+          initial="hidden"
           animate="show"
         >
           <PropertyPhotograph
@@ -87,7 +88,7 @@ export function EntryDirectionA() {
       {/* ── Identity + facts ── */}
       <motion.section
         variants={revealOnScroll}
-        {...revealProps(reduceMotion)}
+        {...reveal}
         aria-labelledby="valley-heading"
         className={wideColumn}
       >
@@ -137,7 +138,7 @@ export function EntryDirectionA() {
       {/* ── Lumbini, given its own ground ── */}
       <motion.section
         variants={revealOnScroll}
-        {...revealProps(reduceMotion)}
+        {...reveal}
         aria-labelledby="lumbini-heading"
         className="bg-secondary py-16 md:py-20"
       >
