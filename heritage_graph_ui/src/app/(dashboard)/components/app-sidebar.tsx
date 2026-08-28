@@ -228,22 +228,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </>
         )}
 
+        {/* ── 1. Explore ── the heritage itself, first ── */}
         <NavMain
-          navtitle={t('describe')}
+          navtitle={t('explore')}
           items={[
-            { title: t('dashboard'), url: '/', icon: IconLayoutDashboard },
-            { title: t('about'), url: '/about', icon: IconInfoCircle },
-            // Methods & provenance is the page a reviewer or reusing researcher
-            // needs first. It used to be reachable only from the museum page and
-            // the command palette.
-            { title: t('methods'), url: '/methods', icon: IconFlask },
-            { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
-            { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
             { title: t('heritageMuseum'), url: '/heritage-museum', icon: IconBuildingMonument },
-            ...(showAuthedNav
-              ? [{ title: t('progression'), url: '/progression', icon: IconMedal }]
-              : []),
-            { title: t('leaderboard'), url: '/leaderboard', icon: IconTrophy },
+            { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
+            { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
           ]}
         />
 
@@ -254,6 +245,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           hubIcon={IconBuildingCommunity}
           browseLabel={t('browseByType')}
           items={knowledgeBrowseItems}
+        />
+
+        {/* ── 2. Dashboard ── numbers, for the audience that wants them ── */}
+        <NavMain
+          navtitle={t('dashboardGroup')}
+          items={[
+            { title: t('dashboard'), url: '/dashboard', icon: IconLayoutDashboard },
+            ...(showAuthedNav
+              ? [{ title: t('progression'), url: '/progression', icon: IconMedal }]
+              : []),
+            { title: t('leaderboard'), url: '/leaderboard', icon: IconTrophy },
+          ]}
         />
 
         <NavMain
@@ -328,10 +331,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
         ]} />
 
-        <NavMain navtitle={t('community')} items={[
+        {/* ── 4. Reference ── low emphasis, at the bottom. About and Methods
+             stay complete and reachable — /methods matters to reviewers and to
+             anyone reusing the data — they just stop competing with the
+             heritage for attention. ── */}
+        <NavMain navtitle={t('reference')} items={[
+          { title: t('about'), url: '/about', icon: IconInfoCircle },
+          { title: t('methods'), url: '/methods', icon: IconFlask },
+          { title: t('team'), url: '/team', icon: IconUsersGroup },
           { title: t('contributors'), url: '/community/contributors', icon: IconUsers },
           { title: t('organizations'), url: '/community/organizations', icon: IconBuilding },
-          { title: t('team'), url: '/team', icon: IconUsersGroup },
         ]} />
         {isPlatformAdmin ? (
           <NavMain
