@@ -48,7 +48,20 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     >
       <AppSidebar variant="sidebar" />
 
-      <SidebarInset>
+      {/*
+        SidebarInset renders its own <main>, which nested inside the explicit
+        <main role="main"> below and gave the document two main landmarks.
+        role="presentation" strips the implicit landmark from the wrapper
+        without modifying the shadcn primitive, leaving one banner, one main
+        and one contentinfo — and none of them nested inside another.
+
+        min-w-0 fixes a separate, pre-existing bug: the inset carries w-full
+        while sitting in a flex row beside an 18rem sidebar, so from the md
+        breakpoint up to roughly 1024px the shell was ~175px wider than the
+        viewport and every page scrolled sideways. A flex item will not shrink
+        below its content without min-width: 0.
+      */}
+      <SidebarInset role="presentation" className="min-w-0">
         <ApiBaseWarning />
         <DegradedSchemaBanner />
         {/* ── Header ── */}
@@ -59,7 +72,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         >
           <SiteHeader />
 
-          <div className="ml-auto flex items-center gap-3 flex-shrink-0">
+          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
 
             <CommandMenuTrigger />
             {showAuthedHeader ? <UserProgressBadge /> : null}

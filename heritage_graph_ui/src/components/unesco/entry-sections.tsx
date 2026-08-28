@@ -69,11 +69,16 @@ export function ZoneCard({
   zone,
   index,
   layout = 'grid',
+  headingLevel = 3,
 }: {
   zone: MonumentZone;
   index: number;
   layout?: 'grid' | 'band';
+  /** Depth of the card's title, so the document outline stays ordered under
+   *  whatever heading the surrounding section used. */
+  headingLevel?: 3 | 4;
 }) {
+  const Heading = (headingLevel === 4 ? 'h4' : 'h3') as 'h3' | 'h4';
   const t = useTranslations('unescoEntry');
   const name = t(`zones.${zone.key}`);
 
@@ -112,7 +117,7 @@ export function ZoneCard({
           <span className="font-mono text-xs tabular-nums text-muted-foreground">
             {String(index + 1).padStart(2, '0')}
           </span>
-          <h3 className="font-serif text-xl leading-tight text-balance">{name}</h3>
+          <Heading className="font-serif text-xl leading-tight text-balance">{name}</Heading>
         </div>
         {zone.descriptor ? (
           <p className="max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
@@ -278,7 +283,13 @@ export function ValleyFacts({ className }: { className?: string }) {
 }
 
 /** Zone grid / band, shared. */
-export function ZoneCollection({ layout }: { layout: 'grid' | 'band' }) {
+export function ZoneCollection({
+  layout,
+  headingLevel = 3,
+}: {
+  layout: 'grid' | 'band';
+  headingLevel?: 3 | 4;
+}) {
   const reduceMotion = useReducedMotion();
   const zones = KATHMANDU_VALLEY.monumentZones ?? [];
 
@@ -290,7 +301,7 @@ export function ZoneCollection({ layout }: { layout: 'grid' | 'band' }) {
         className="flex snap-x snap-mandatory gap-6 overflow-x-auto px-5 pb-4 sm:px-6 lg:px-8"
       >
         {zones.map((zone, i) => (
-          <ZoneCard key={zone.key} zone={zone} index={i} layout="band" />
+          <ZoneCard key={zone.key} zone={zone} index={i} layout="band" headingLevel={headingLevel} />
         ))}
       </motion.div>
     );
@@ -303,7 +314,7 @@ export function ZoneCollection({ layout }: { layout: 'grid' | 'band' }) {
       className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
     >
       {zones.map((zone, i) => (
-        <ZoneCard key={zone.key} zone={zone} index={i} layout="grid" />
+        <ZoneCard key={zone.key} zone={zone} index={i} layout="grid" headingLevel={headingLevel} />
       ))}
     </motion.div>
   );

@@ -79,7 +79,7 @@ export function EntryDirectionB() {
                   <span className="font-mono text-sm tabular-nums text-muted-foreground">
                     {p.yearInscribed}
                   </span>
-                  <span className="font-serif text-lg leading-snug text-balance">
+                  <span className="min-w-0 font-serif text-lg leading-snug text-balance">
                     {t(`properties.${p.key}`)}
                     {p.serial ? (
                       <span className="ml-2 align-middle font-sans text-xs font-medium uppercase tracking-wider text-primary">
@@ -144,7 +144,7 @@ export function EntryDirectionB() {
             <h3 className="font-serif text-2xl leading-tight text-balance">{t('zonesHeading')}</h3>
           </div>
           <div className={wideColumn}>
-            <ZoneCollection layout="grid" />
+            <ZoneCollection layout="grid" headingLevel={4} />
           </div>
         </div>
       </section>

@@ -93,12 +93,14 @@ export default function AuthSection() {
   }, [status, session?.accessToken]);
 
   const tNav = useTranslations('nav');
+  const tAuth = useTranslations('auth');
   const tierInfo = tierConfig[userTier];
 
   if (!session) {
     return (
-      <Button size="sm" onClick={() => signIn('google')}>
-        Sign In with Google
+      <Button size="sm" className="shrink-0" onClick={() => signIn('google')}>
+        <span className="hidden sm:inline">{tAuth('signInWithGoogle')}</span>
+        <span className="sm:hidden">{tAuth('signIn')}</span>
       </Button>
     );
   }

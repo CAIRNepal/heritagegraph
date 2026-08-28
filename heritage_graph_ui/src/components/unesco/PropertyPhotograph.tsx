@@ -93,21 +93,25 @@ export function PropertyPhotograph({
           className={cn('object-cover', imageClassName)}
         />
         {creditPlacement === 'overlay' ? (
-          <>
-            {/* Scrim exists so the credit stays legible over any photograph.
-                Neutral black, not a token: it darkens the photo, which is the
-                same in both themes. */}
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 to-transparent"
-              aria-hidden="true"
-            />
-            <figcaption className="absolute inset-x-0 bottom-0 p-3">
-              <ImageAttribution credit={image.credit} variant="onImage" />
-            </figcaption>
-          </>
+          /* Scrim exists so the credit stays legible over any photograph.
+             Neutral black, not a token: it darkens the photo, which is the
+             same in both themes. */
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/75 to-transparent"
+            aria-hidden="true"
+          />
         ) : null}
         {children}
       </div>
+
+      {/* figcaption is a direct child of <figure> in both placements — the HTML
+          spec allows it only as figure's first or last child, and burying it in
+          the aspect-ratio wrapper made it invalid. */}
+      {creditPlacement === 'overlay' ? (
+        <figcaption className="absolute inset-x-0 bottom-0 p-3">
+          <ImageAttribution credit={image.credit} variant="onImage" />
+        </figcaption>
+      ) : null}
       {creditPlacement === 'below' ? (
         <figcaption className="pt-2">
           <ImageAttribution credit={image.credit} variant="onSurface" />

@@ -113,7 +113,7 @@ export function UnescoEntry() {
                   <span className="font-mono text-sm tabular-nums text-muted-foreground">
                     {p.yearInscribed}
                   </span>
-                  <span className="font-serif text-base leading-snug text-balance sm:text-lg">
+                  <span className="min-w-0 font-serif text-base leading-snug text-balance sm:text-lg">
                     {t(`properties.${p.key}`)}
                     {p.serial ? (
                       <span className="ml-2 align-middle font-sans text-[0.7rem] font-medium uppercase tracking-wider text-primary">
@@ -161,7 +161,7 @@ export function UnescoEntry() {
             <h3 className="font-serif text-2xl leading-tight text-balance">{t('zonesHeading')}</h3>
           </div>
           <div className={wideColumn}>
-            <ZoneCollection layout="grid" />
+            <ZoneCollection layout="grid" headingLevel={4} />
           </div>
         </div>
       </section>
