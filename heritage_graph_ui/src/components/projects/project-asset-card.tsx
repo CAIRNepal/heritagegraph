@@ -83,7 +83,7 @@ export function ProjectAssetCard({
     <>
       <div className={`${glassCard} p-3 space-y-2`}>
         <div className="flex items-start gap-2">
-          <div className="w-10 h-10 rounded bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center text-lg shrink-0">
+          <div className="w-10 h-10 rounded bg-primary/10 dark:bg-primary/10 flex items-center justify-center text-lg shrink-0">
             {icon}
           </div>
           <div className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ export function ProjectAssetCard({
           </a>
         )}
         {asset.entity_suggestions && asset.entity_suggestions.length > 0 && (
-          <details className="text-xs rounded-md border border-blue-100 dark:border-blue-900 bg-blue-50/40 dark:bg-blue-950/20 px-2 py-1.5">
+          <details className="text-xs rounded-md border border-primary/30 dark:border-primary/30 bg-primary/10 dark:bg-primary/10 px-2 py-1.5">
             <summary className="cursor-pointer font-medium select-none">
               Suggested entities ({asset.entity_suggestions.length})
             </summary>

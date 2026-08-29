@@ -17,9 +17,9 @@ export const tierConfig: Record<TierType, {
   apprentice: {
     name: 'Apprentice',
     icon: '🕯️',
-    ringClass: 'ring-blue-500 dark:ring-blue-400',
-    gradientFrom: 'from-blue-500',
-    gradientTo: 'to-blue-700',
+    ringClass: 'ring-primary/40 dark:ring-primary/40',
+    gradientFrom: 'from-hero-from',
+    gradientTo: 'to-hero-to',
     glowClass: '',
   },
   scholar: {
@@ -41,9 +41,9 @@ export const tierConfig: Record<TierType, {
   archivist: {
     name: 'Archivist',
     icon: '📦',
-    ringClass: 'ring-violet-500 dark:ring-violet-400',
-    gradientFrom: 'from-violet-500',
-    gradientTo: 'to-purple-600',
+    ringClass: 'ring-primary/40 dark:ring-primary/40',
+    gradientFrom: 'from-hero-from',
+    gradientTo: 'to-hero-to',
     glowClass: 'shadow-violet-500/30',
   },
   grandkeeper: {

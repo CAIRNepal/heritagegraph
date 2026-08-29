@@ -61,7 +61,7 @@ const STATE_COLORS: Record<string, string> = {
   in_review: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
   needs_revision: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
   approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  merged: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  merged: "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary",
   withdrawn: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
 };
 
@@ -76,7 +76,7 @@ const TRANSITION_VARIANT: Record<string, "default" | "outline" | "destructive"> 
 
 function CommentThread({ comment, depth = 0 }: { comment: ProjectCommentRow; depth?: number }) {
   return (
-    <div className={depth > 0 ? "ml-6 border-l border-blue-100 dark:border-blue-900 pl-4" : ""}>
+    <div className={depth > 0 ? "ml-6 border-l border-primary/30 dark:border-primary/30 pl-4" : ""}>
       <div className={`${glassCard} p-3 mb-2`}>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs font-medium">{comment.user.username}</span>
@@ -221,7 +221,7 @@ export default function ProjectDetailPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-1 flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold text-blue-900 dark:text-blue-100">{project.title}</h1>
+                <h1 className="text-xl font-bold text-primary dark:text-primary">{project.title}</h1>
                 <Badge className={`${stateColor} text-xs px-2`}>
                   {PROJECT_STATE_LABELS[project.state] ?? project.state}
                 </Badge>
@@ -352,7 +352,7 @@ export default function ProjectDetailPage() {
         <div className="min-w-0">
       <Tabs defaultValue="entities">
         <div className="flex items-center gap-2 flex-wrap">
-          <TabsList className="flex-wrap h-auto gap-1 p-1 bg-blue-50/80 dark:bg-gray-800/80">
+          <TabsList className="flex-wrap h-auto gap-1 p-1 bg-primary/10 dark:bg-gray-800/80">
             <TabsTrigger value="entities" className="text-xs gap-1.5">
               <IconGraph className="w-3.5 h-3.5" /> Entities ({project.entities.length})
             </TabsTrigger>
@@ -479,7 +479,7 @@ export default function ProjectDetailPage() {
           ) : (
             activity.map((a) => (
               <div key={a.id} className={`${glassCard} p-3 flex items-start gap-3 text-sm`}>
-                <span className="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0" />
+                <span className="w-2 h-2 rounded-full bg-primary/10 mt-1.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <span className="font-medium">{a.actor?.username ?? "system"}</span>
                   <span className="text-muted-foreground ml-1">{a.action.replace(/_/g, " ")}</span>
@@ -509,7 +509,7 @@ function ValidationStatusPanel({ project }: { project: ProjectDetail }) {
   return (
     <div className={`${glassCard} p-4 space-y-2`}>
       <div className="flex items-center gap-2 mb-1">
-        <IconShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <IconShieldCheck className="w-4 h-4 text-primary dark:text-primary" />
         <span className="text-sm font-medium">Validation Status</span>
       </div>
       <div className="space-y-1.5 text-sm">
@@ -555,7 +555,7 @@ function RdfMetadataFooter({ project }: { project: ProjectDetail }) {
         {project.pid && (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-muted-foreground w-24 shrink-0">PID</span>
-            <span className="font-mono text-blue-700 dark:text-blue-300 break-all">{project.pid}</span>
+            <span className="font-mono text-primary dark:text-primary break-all">{project.pid}</span>
             <button
               type="button"
               onClick={() => copyToClipboard(project.pid)}
@@ -578,7 +578,7 @@ function RdfMetadataFooter({ project }: { project: ProjectDetail }) {
         {project.named_graph_uri && (
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-muted-foreground w-24 shrink-0">Named graph</span>
-            <span className="font-mono text-blue-700 dark:text-blue-300 break-all">{project.named_graph_uri}</span>
+            <span className="font-mono text-primary dark:text-primary break-all">{project.named_graph_uri}</span>
             <button
               type="button"
               onClick={() => copyToClipboard(project.named_graph_uri)}

@@ -136,7 +136,7 @@ function confidenceColor(c: string): string {
     case "certain":
       return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
     case "likely":
-      return "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400";
+      return "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary";
     case "uncertain":
       return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
     case "speculative":
@@ -155,7 +155,7 @@ function statusIcon(s: string) {
     case "superseded":
       return <Clock className="h-4 w-4 text-muted-foreground" />;
     default:
-      return <HelpCircle className="h-4 w-4 text-blue-600" />;
+      return <HelpCircle className="h-4 w-4 text-primary" />;
   }
 }
 
@@ -179,7 +179,7 @@ function conditionBadge(condition: string) {
   if (!condition) return null;
   const colorMap: Record<string, string> = {
     excellent: "bg-green-100 text-green-800",
-    good: "bg-blue-100 text-blue-800",
+    good: "bg-primary/10 text-primary",
     fair: "bg-yellow-100 text-yellow-800",
     poor: "bg-orange-100 text-orange-800",
     ruin: "bg-red-100 text-red-800",
@@ -836,7 +836,7 @@ function ClaimsTab({
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <HelpCircle className="h-5 w-5 mx-auto text-blue-600 mb-1" />
+            <HelpCircle className="h-5 w-5 mx-auto text-primary mb-1" />
             <p className="text-xl font-bold">{pending.length}</p>
             <p className="text-xs text-muted-foreground">Pending</p>
           </CardContent>

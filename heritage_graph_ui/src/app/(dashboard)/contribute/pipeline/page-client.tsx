@@ -165,14 +165,14 @@ const AGENTS: {
     label: 'Doc Intelligence',
     description: 'Classifies heritage doc type, detects language, chunks text, selects ontology snippets',
     icon: IconFileText,
-    color: 'from-sky-500 to-blue-600',
+    color: 'from-hero-from to-hero-to',
   },
   {
     key: 'extraction',
     label: 'Extraction',
     description: 'Dual-temperature Ollama calls extract CIDOC-CRM triples with agreement scoring',
     icon: IconSearch,
-    color: 'from-violet-500 to-purple-600',
+    color: 'from-hero-from to-hero-to',
   },
   {
     key: 'shacl_validation',
@@ -221,8 +221,8 @@ function agentStatusBadge(status: AgentStatus | undefined) {
 
 const ROUTE_STYLE: Record<string, string> = {
   auto_accept:      'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
-  community_review: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
-  expert_review:    'bg-violet-100 text-violet-800 dark:bg-violet-900/40 dark:text-violet-300',
+  community_review: 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
+  expert_review:    'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
   expert_curator:   'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
   conflict:         'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
   reject:           'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
@@ -651,8 +651,8 @@ export default function PipelinePage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                 {[
                   { key: 'auto_accept',      label: 'Auto-accepted',   colorClass: 'text-emerald-600 dark:text-emerald-400' },
-                  { key: 'community_review', label: 'Community review', colorClass: 'text-sky-600 dark:text-sky-400' },
-                  { key: 'expert_review',    label: 'Expert review',   colorClass: 'text-violet-600 dark:text-violet-400' },
+                  { key: 'community_review', label: 'Community review', colorClass: 'text-primary dark:text-primary' },
+                  { key: 'expert_review',    label: 'Expert review',   colorClass: 'text-primary dark:text-primary' },
                   { key: 'expert_curator',   label: 'Expert curator',  colorClass: 'text-orange-600 dark:text-orange-400' },
                   { key: 'conflict',         label: 'Conflict',        colorClass: 'text-amber-600 dark:text-amber-400' },
                   { key: 'reject',           label: 'Rejected',        colorClass: 'text-red-600 dark:text-red-400' },

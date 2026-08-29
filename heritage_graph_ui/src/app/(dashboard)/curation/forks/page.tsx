@@ -242,7 +242,7 @@ export default function ForkViewerPage() {
     <div className="space-y-6">
       {/* Header */}
       <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-500 to-fuchsia-500 opacity-95 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-fuchsia-500 opacity-95 rounded-2xl" />
         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         <motion.div variants={fadeInUp} className="relative z-10 space-y-2">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
@@ -251,7 +251,7 @@ export default function ForkViewerPage() {
           <h1 className="text-3xl font-black text-white">
             Fork <span className="text-white/90">Lineage Tree</span>
           </h1>
-          <p className="text-purple-100 max-w-lg">
+          <p className="text-hero-foreground/90 max-w-lg">
             Explore how contributions evolve through forks, corrections, translations, and expansions.
             Select a fork node to see its diff against the root.
           </p>

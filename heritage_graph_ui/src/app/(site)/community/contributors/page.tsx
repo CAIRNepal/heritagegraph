@@ -105,7 +105,7 @@ export default function ContributorsPage() {
     <div className="space-y-6">
       {/* Hero Header */}
       <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-95 rounded-2xl" />
         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
         <motion.div variants={fadeInUp} className="relative z-10 space-y-2">
@@ -115,7 +115,7 @@ export default function ContributorsPage() {
           <h1 className="text-3xl font-black text-white">
             Our <span className="text-white/90">Contributors</span>
           </h1>
-          <p className="text-blue-100 max-w-lg">
+          <p className="text-hero-foreground/90 max-w-lg">
             HeritageGraph depends on its community to explore, preserve, and contribute to cultural knowledge.
             {totalCount > 0 && <span className="font-medium text-white"> {totalCount} contributors</span>}
             {' '}and counting.
@@ -134,7 +134,7 @@ export default function ContributorsPage() {
       {/* Contributors Table */}
       <motion.div initial="hidden" animate="show" variants={fadeInUp}>
         <div className={`${glassCard} overflow-hidden`}>
-          <div className="p-6 border-b border-blue-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="p-6 border-b border-primary/30 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 className="text-xl font-bold text-foreground">
               All Contributors
             </h2>

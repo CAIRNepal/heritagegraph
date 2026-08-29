@@ -95,16 +95,16 @@ const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
   approved: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
   rejected: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-  incorporated: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+  incorporated: 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
 };
 
 const TYPE_STYLES: Record<string, string> = {
-  history: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
-  story: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+  history: 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
+  story: 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
   tradition: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
   memory: 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
   photo: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
-  correction: 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300',
+  correction: 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
   other: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300',
 };
 
@@ -269,7 +269,7 @@ export default function QRContributionsPage() {
       <motion.div variants={fadeInUp} className={glassCard}>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-sky-500 shadow-lg">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-hero-from to-hero-to shadow-lg">
               <QrCode className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -289,7 +289,7 @@ export default function QRContributionsPage() {
           { label: 'Pending', value: stats.pending, color: 'from-amber-400 to-amber-500' },
           { label: 'Approved', value: stats.approved, color: 'from-green-400 to-green-500' },
           { label: 'Rejected', value: stats.rejected, color: 'from-red-400 to-red-500' },
-          { label: 'Incorporated', value: stats.incorporated, color: 'from-blue-400 to-blue-500' },
+          { label: 'Incorporated', value: stats.incorporated, color: 'from-hero-from to-hero-to' },
         ].map((stat) => (
           <Card key={stat.label} className={glassCard}>
             <CardContent className="p-4">
@@ -603,7 +603,7 @@ export default function QRContributionsPage() {
               className={
                 reviewAction === 'approved' ? 'bg-green-600 hover:bg-green-700' :
                 reviewAction === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
-                'bg-blue-600 hover:bg-blue-700'
+                'bg-primary hover:bg-primary/90'
               }
             >
               {submittingReview ? 'Submitting...' : `Submit: ${reviewAction.charAt(0).toUpperCase() + reviewAction.slice(1)}`}

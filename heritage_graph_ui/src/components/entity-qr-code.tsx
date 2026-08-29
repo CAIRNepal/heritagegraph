@@ -210,8 +210,8 @@ export function EntityQRCode({
   const qrContent = (
     <div className="flex flex-col items-center gap-6">
       {/* QR Code with gradient border */}
-      <div className="relative p-4 bg-white rounded-2xl shadow-lg border-2 border-blue-200">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-2xl opacity-10" />
+      <div className="relative p-4 bg-white rounded-2xl shadow-lg border-2 border-primary/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-hero-from to-hero-to rounded-2xl opacity-10" />
         <QRCodeCanvas
           id="qr-code-canvas"
           value={contributeUrl}
@@ -229,13 +229,13 @@ export function EntityQRCode({
       
       {/* Entity info */}
       <div className="text-center space-y-1">
-        <h3 className="font-bold text-lg text-blue-900 dark:text-blue-100">
+        <h3 className="font-bold text-lg text-primary dark:text-primary">
           {entityName}
         </h3>
         <p className="text-sm text-muted-foreground">
           {entityType}{locationName && ` • ${locationName}`}
         </p>
-        <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+        <p className="text-sm font-medium text-primary dark:text-primary">
           Scan to contribute what you know!
         </p>
       </div>
@@ -298,7 +298,7 @@ export function EntityQRCode({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <QrCode className="h-5 w-5 text-blue-600" />
+            <QrCode className="h-5 w-5 text-primary" />
             Crowdsource Contributions
           </DialogTitle>
           <DialogDescription>

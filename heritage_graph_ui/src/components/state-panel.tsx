@@ -34,18 +34,18 @@ export function StatePanel({
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="text-base font-semibold text-blue-950 dark:text-blue-50">
+          <h2 className="text-base font-semibold text-primary dark:text-primary">
             {title}
           </h2>
           {description ? (
-            <p className="mt-1 text-sm text-blue-800/80 dark:text-blue-200/75">
+            <p className="mt-1 text-sm text-primary dark:text-primary">
               {description}
             </p>
           ) : null}
         </div>
         {variant === 'loading' ? (
           <Loader2
-            className="size-6 shrink-0 animate-spin text-blue-600 dark:text-blue-400"
+            className="size-6 shrink-0 animate-spin text-primary dark:text-primary"
             aria-hidden
           />
         ) : null}

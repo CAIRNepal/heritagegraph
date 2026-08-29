@@ -133,16 +133,16 @@ export function OntologyFormPreviewCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="rounded-2xl border border-blue-200 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80"
+      className="rounded-2xl border border-primary/30 bg-white/80 shadow-sm backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80"
       aria-label="Live preview of your contribution"
     >
       {/* Top strip: class chip + PREVIEW tag */}
       <div className="flex items-center justify-between gap-2 border-b border-border/60 px-4 py-2.5">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-          <span className="h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden />
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />
           {ontologyClass.label}
         </span>
-        <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary dark:bg-primary/10 dark:text-primary">
           Preview
         </span>
       </div>
@@ -160,7 +160,7 @@ export function OntologyFormPreviewCard({
           >
             {rootLabel ?? "Your contribution"}
           </h3>
-          <div className="mt-1.5 h-0.5 w-12 rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-cyan-400" />
+          <div className="mt-1.5 h-0.5 w-12 rounded-full bg-gradient-to-r from-hero-from via-hero-to to-hero-to" />
         </div>
 
         {description ? (
@@ -192,7 +192,7 @@ export function OntologyFormPreviewCard({
         ) : null}
 
         {isEmpty ? (
-          <p className="rounded-md bg-blue-50/60 px-2.5 py-1.5 text-[11px] text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+          <p className="rounded-md bg-primary/10 px-2.5 py-1.5 text-[11px] text-primary dark:bg-primary/10 dark:text-primary">
             Tip · Begin with a name. The rest will follow.
           </p>
         ) : null}
@@ -213,7 +213,7 @@ export function OntologyFormPreviewCard({
             aria-valuemax={100}
           >
             <div
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 via-sky-400 to-cyan-400 transition-[width] duration-500 ease-out"
+              className="h-full rounded-full bg-gradient-to-r from-hero-from via-hero-to to-hero-to transition-[width] duration-500 ease-out"
               style={{ width: `${displayedPercent}%` }}
             />
           </div>

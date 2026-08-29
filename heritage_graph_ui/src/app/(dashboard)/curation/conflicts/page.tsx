@@ -69,7 +69,7 @@ export default function ConflictsPage() {
       <div className="space-y-6">
         {/* ── Hero Header ── */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-95 rounded-2xl" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <motion.div variants={fadeInUp} className="relative z-10">
@@ -85,7 +85,7 @@ export default function ConflictsPage() {
               <h1 className="text-3xl font-black text-white">
                 Conflict <span className="text-white/90">Resolution</span>
               </h1>
-              <p className="text-blue-100 max-w-2xl">
+              <p className="text-hero-foreground/90 max-w-2xl">
                 Assertions that contradict existing accepted claims — highest priority for review.
               </p>
             </div>
@@ -115,20 +115,20 @@ export default function ConflictsPage() {
         {/* Conflicts list */}
         {isLoading ? (
           <div className="text-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-500" />
-            <p className="text-blue-700 dark:text-blue-300">Loading conflicts...</p>
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+            <p className="text-primary dark:text-primary">Loading conflicts...</p>
           </div>
         ) : error ? (
           <div className="text-center py-12">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <p className="text-blue-700 dark:text-blue-300 mb-4">{error}</p>
-            <Button onClick={fetchConflicts} className="bg-gradient-to-r from-blue-600 to-sky-500 text-white">Try Again</Button>
+            <p className="text-primary dark:text-primary mb-4">{error}</p>
+            <Button onClick={fetchConflicts} className="bg-gradient-to-r from-hero-from to-hero-to text-white">Try Again</Button>
           </div>
         ) : conflicts.length === 0 ? (
           <motion.div initial="hidden" animate="show" variants={scaleIn} className={`${glassCard} py-12 px-6 text-center`}>
             <Scale className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="font-semibold text-lg mb-2 text-blue-900 dark:text-blue-100">No Unresolved Conflicts</h3>
-            <p className="text-blue-700 dark:text-blue-300">All assertion conflicts have been resolved. Great work!</p>
+            <h3 className="font-semibold text-lg mb-2 text-primary dark:text-primary">No Unresolved Conflicts</h3>
+            <p className="text-primary dark:text-primary">All assertion conflicts have been resolved. Great work!</p>
           </motion.div>
         ) : (
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer} className="space-y-4">
@@ -142,11 +142,11 @@ export default function ConflictsPage() {
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <AlertTriangle className="h-4 w-4 text-amber-600" />
-                          <Badge variant="secondary" className="capitalize bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">{conflict.category}</Badge>
-                          <span className="font-semibold text-lg text-blue-900 dark:text-blue-100">{conflict.name}</span>
+                          <Badge variant="secondary" className="capitalize bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">{conflict.category}</Badge>
+                          <span className="font-semibold text-lg text-primary dark:text-primary">{conflict.name}</span>
                         </div>
-                        {conflict.description && <p className="text-sm text-blue-700 dark:text-blue-300 line-clamp-2">{conflict.description}</p>}
-                        <div className="flex items-center gap-4 text-xs text-blue-600 dark:text-blue-400">
+                        {conflict.description && <p className="text-sm text-primary dark:text-primary line-clamp-2">{conflict.description}</p>}
+                        <div className="flex items-center gap-4 text-xs text-primary dark:text-primary">
                           <span>Submitted by @{conflict.contributor.username}</span>
                           <span>{new Date(conflict.created_at).toLocaleDateString()}</span>
                           <span>{conflict.days_in_review} days in review</span>
@@ -154,7 +154,7 @@ export default function ConflictsPage() {
                         </div>
                       </div>
                       <Button size="sm" onClick={(e) => { e.stopPropagation(); router.push(`/curation/review/${conflict.entity_id}`); }}
-                        className="bg-gradient-to-r from-blue-600 to-sky-500 text-white hover:from-blue-700 hover:to-sky-600 gap-1">
+                        className="bg-gradient-to-r from-hero-from to-hero-to text-white hover:from-hero-from hover:to-hero-to gap-1">
                         <Eye className="h-4 w-4" /> Resolve
                       </Button>
                     </div>

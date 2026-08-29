@@ -184,13 +184,13 @@ export function WhyWeBelievePanel({
         </p>
       </div>
       {summary && hasIdentityBlock ? (
-        <div className="relative overflow-hidden rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50/50 to-white p-4 shadow-sm dark:border-blue-900/30 dark:from-blue-950/20 dark:to-background">
-          <div className="absolute -right-4 -top-4 text-blue-500/10">
+        <div className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-hero-from to-white p-4 shadow-sm dark:border-primary/30 dark:from-hero-from dark:to-background">
+          <div className="absolute -right-4 -top-4 text-primary">
             <IconGitFork size={80} />
           </div>
           <div className="relative space-y-3">
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="bg-blue-100 text-[10px] uppercase tracking-wider text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+              <Badge variant="secondary" className="bg-primary/10 text-[10px] uppercase tracking-wider text-primary dark:bg-primary/10 dark:text-primary">
                 Identity Cluster
               </Badge>
               {summary.primary_cluster_id ? (
@@ -214,7 +214,7 @@ export function WhyWeBelievePanel({
             </div>
 
             {summary.competing ? (
-              <div className="mt-2 border-t border-blue-100/50 pt-3 dark:border-blue-900/20">
+              <div className="mt-2 border-t border-primary/30 pt-3 dark:border-primary/30">
                 <CompetingIdentitiesPanel summary={summary} />
               </div>
             ) : null}

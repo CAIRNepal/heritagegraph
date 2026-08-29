@@ -110,7 +110,7 @@ export default function ReviewerDashboardPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent rounded-xl" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-sky-300/20 rounded-full blur-2xl animate-pulse" />
+          <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-primary/10 rounded-full blur-2xl animate-pulse" />
           <motion.div variants={fadeInUp} className="relative z-10 space-y-3">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
               <IconSparkles className="w-4 h-4" /> Reviewer Dashboard
@@ -140,7 +140,7 @@ export default function ReviewerDashboardPage() {
           </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { title: 'In My Queue', value: dashboard.queue_count, icon: FileText, gradient: 'from-blue-500 to-sky-500',
+              { title: 'In My Queue', value: dashboard.queue_count, icon: FileText, gradient: 'from-hero-from to-hero-to',
                 details: [
                   dashboard.conflicts_count > 0 && { icon: Scale, text: `${dashboard.conflicts_count} conflicts`, color: 'text-amber-600' },
                   dashboard.flagged_count > 0 && { icon: Flag, text: `${dashboard.flagged_count} flagged`, color: 'text-orange-600' },
@@ -154,10 +154,10 @@ export default function ReviewerDashboardPage() {
                   { icon: XCircle, text: `${dashboard.rejected_this_week} rejected`, color: 'text-red-600' },
                 ],
               },
-              { title: 'My Impact', value: dashboard.total_reviewed, icon: TrendingUp, gradient: 'from-blue-600 to-indigo-500',
+              { title: 'My Impact', value: dashboard.total_reviewed, icon: TrendingUp, gradient: 'from-hero-from to-hero-to',
                 subtitle: 'claims reviewed',
                 details: [
-                  { icon: TrendingUp, text: `${dashboard.acceptance_rate}% acceptance rate`, color: 'text-blue-600' },
+                  { icon: TrendingUp, text: `${dashboard.acceptance_rate}% acceptance rate`, color: 'text-primary' },
                   { icon: Scale, text: `${dashboard.conflicts_resolved} conflicts resolved`, color: 'text-amber-600' },
                 ],
               },
@@ -235,10 +235,10 @@ export default function ReviewerDashboardPage() {
           </motion.h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { title: 'Review Queue', desc: 'Review pending submissions', icon: FileText, onClick: () => router.push('/curation/review'), gradient: 'from-blue-500 to-sky-500' },
+              { title: 'Review Queue', desc: 'Review pending submissions', icon: FileText, onClick: () => router.push('/curation/review'), gradient: 'from-hero-from to-hero-to' },
               { title: 'Conflicts', desc: 'Resolve contradicting assertions', icon: Scale, onClick: () => router.push('/curation/conflicts'), highlight: dashboard.conflicts_count > 0, gradient: 'from-amber-500 to-orange-500' },
-              { title: 'Contributions', desc: 'Full contributions queue', icon: CheckCircle, onClick: () => router.push('/curation/contributions'), gradient: 'from-blue-600 to-cyan-500' },
-              { title: 'Activity Log', desc: 'Track all platform activity', icon: Clock, onClick: () => router.push('/curation/activity'), gradient: 'from-sky-500 to-blue-600' },
+              { title: 'Contributions', desc: 'Full contributions queue', icon: CheckCircle, onClick: () => router.push('/curation/contributions'), gradient: 'from-hero-from to-hero-to' },
+              { title: 'Activity Log', desc: 'Track all platform activity', icon: Clock, onClick: () => router.push('/curation/activity'), gradient: 'from-hero-from to-hero-to' },
             ].map((item) => (
               <motion.div key={item.title} variants={scaleIn} className="group relative">
                 <div className={`relative p-5 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.02] overflow-hidden hover:shadow-xl cursor-pointer`}
@@ -264,8 +264,8 @@ export default function ReviewerDashboardPage() {
 
 function ActivityIcon({ type }: { type: string }) {
   const iconMap: Record<string, { icon: typeof FileText; color: string }> = {
-    submitted: { icon: FileText, color: 'text-blue-500' }, accepted: { icon: CheckCircle, color: 'text-green-500' },
-    rejected: { icon: XCircle, color: 'text-red-500' }, revised: { icon: RefreshCw, color: 'text-purple-500' },
+    submitted: { icon: FileText, color: 'text-primary' }, accepted: { icon: CheckCircle, color: 'text-green-500' },
+    rejected: { icon: XCircle, color: 'text-red-500' }, revised: { icon: RefreshCw, color: 'text-primary' },
     escalated: { icon: AlertTriangle, color: 'text-amber-500' }, changes_requested: { icon: ArrowRight, color: 'text-orange-500' },
     flagged: { icon: Flag, color: 'text-red-500' }, conflict_resolved: { icon: Scale, color: 'text-green-600' },
     commented: { icon: User, color: 'text-gray-500' },

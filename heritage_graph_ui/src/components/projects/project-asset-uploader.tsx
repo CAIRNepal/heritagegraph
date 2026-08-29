@@ -90,7 +90,7 @@ export function ProjectAssetUploader({
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-dashed border-blue-200 dark:border-blue-900 p-4 bg-blue-50/30 dark:bg-blue-950/20">
+    <div className="space-y-3 rounded-xl border border-dashed border-primary/30 dark:border-primary/30 p-4 bg-primary/10 dark:bg-primary/10">
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label>Role</Label>

@@ -154,7 +154,15 @@ type ViewMode = 'ontology' | 'instance';
 /* ══════════════════════════════════════════════════════
  *  Component
  * ══════════════════════════════════════════════════════ */
-export default function GraphViewPage() {
+/**
+ * `embedded` drops this page's own title block.
+ *
+ * The About page renders this component inside an editorial section that
+ * already has a heading — so the tool's `<h1>` and subtitle appeared directly
+ * under it, giving the page two competing titles and two `<h1>` elements. The
+ * view switcher stays either way; it is a control, not a title.
+ */
+export default function GraphViewPage({ embedded = false }: { embedded?: boolean }) {
   const { data: session } = useSession();
   const t = useTranslations('graphview');
   const { resolvedTheme } = useTheme();
@@ -673,10 +681,10 @@ export default function GraphViewPage() {
         initial="hidden"
         animate="show"
         variants={staggerContainer}
-        className={cn(glassCard, 'relative overflow-hidden p-4')}
+        className={cn(glassCard, 'relative overflow-hidden p-4', embedded && 'border-0 bg-transparent p-0 shadow-none')}
       >
         <motion.div variants={fadeInUp} className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 space-y-1">
+          <div className={cn('min-w-0 space-y-1', embedded && 'hidden')}>
             <h1 className="text-xl font-semibold tracking-tight text-foreground md:text-2xl">
               {t('title')}
             </h1>

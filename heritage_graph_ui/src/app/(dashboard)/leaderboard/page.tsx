@@ -179,7 +179,7 @@ export default function LeaderboardPage() {
           variants={staggerContainer}
           className="relative overflow-hidden rounded-2xl border bg-card shadow-sm"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95" />
+          <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-95" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <motion.div
@@ -196,7 +196,7 @@ export default function LeaderboardPage() {
                   board
                 </span>
               </h1>
-              <p className="text-blue-100 max-w-lg text-sm">
+              <p className="text-hero-foreground/90 max-w-lg text-sm">
                 Recognizing the community members who drive heritage preservation forward.
               </p>
             </div>
@@ -216,10 +216,10 @@ export default function LeaderboardPage() {
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           {[
-            { label: 'Contributors', value: stats.total_contributors, icon: IconUsers, color: 'text-blue-600' },
+            { label: 'Contributors', value: stats.total_contributors, icon: IconUsers, color: 'text-primary' },
             { label: 'Total Points', value: stats.total_score, icon: IconStar, color: 'text-yellow-500' },
             { label: 'Entities', value: stats.total_entities, icon: IconFileText, color: 'text-green-600' },
-            { label: 'Reviews', value: stats.total_reviews, icon: IconEye, color: 'text-purple-600' },
+            { label: 'Reviews', value: stats.total_reviews, icon: IconEye, color: 'text-primary' },
           ].map((stat) => (
             <motion.div
               key={stat.label}

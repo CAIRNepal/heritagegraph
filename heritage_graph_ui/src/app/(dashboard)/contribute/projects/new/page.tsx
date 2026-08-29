@@ -213,7 +213,7 @@ export default function NewProjectPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <motion.div initial="hidden" animate="show" variants={fadeInUp}>
-        <h1 className="text-2xl font-bold text-blue-900 dark:text-blue-100">New Project</h1>
+        <h1 className="text-2xl font-bold text-primary dark:text-primary">New Project</h1>
         <p className="text-sm text-muted-foreground mt-1">
           A project is your working dossier — collect evidence, author entities, then request review.
         </p>

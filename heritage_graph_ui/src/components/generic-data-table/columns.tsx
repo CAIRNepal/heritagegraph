@@ -83,7 +83,7 @@ export const personColumns: ColumnDef<PersonRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/person/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -213,7 +213,7 @@ export const locationColumns: ColumnDef<LocationRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/location/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -340,7 +340,7 @@ export const eventColumns: ColumnDef<EventRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/event/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -449,7 +449,7 @@ export const traditionColumns: ColumnDef<TraditionRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/tradition/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -555,7 +555,7 @@ export const culturalEntityColumns: ColumnDef<CulturalEntityRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={viewHref}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name}
             </Link>
@@ -755,7 +755,7 @@ export const historicalPeriodColumns: ColumnDef<HistoricalPeriodRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/period/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -851,7 +851,7 @@ export const deityColumns: ColumnDef<DeityRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/deity/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -957,7 +957,7 @@ export const guthiColumns: ColumnDef<GuthiRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/guthi/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -1065,7 +1065,7 @@ export const structureColumns: ColumnDef<StructureRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/structure/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -1178,7 +1178,7 @@ export const ritualColumns: ColumnDef<RitualRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/ritual/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -1286,7 +1286,7 @@ export const festivalColumns: ColumnDef<FestivalRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/festival/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -1393,7 +1393,7 @@ export const iconographyColumns: ColumnDef<IconographyRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/iconography/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>
@@ -1501,7 +1501,7 @@ export const monumentColumns: ColumnDef<MonumentRecord>[] = [
           <HoverCardTrigger asChild>
             <Link
               href={`/knowledge/monument/view/${item.id}`}
-              className="text-blue-600 hover:underline font-medium"
+              className="text-primary hover:underline font-medium"
             >
               {item.name || item.title || '-'}
             </Link>

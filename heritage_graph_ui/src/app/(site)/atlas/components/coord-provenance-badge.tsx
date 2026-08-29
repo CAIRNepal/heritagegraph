@@ -12,7 +12,7 @@ const STYLE: Record<AtlasCoordProvenance, string> = {
   gazetteer:
     'border-amber-600/50 text-amber-800 dark:text-amber-300 bg-amber-500/10',
   inherited:
-    'border-sky-600/50 text-sky-800 dark:text-sky-300 bg-sky-500/10',
+    'border-primary/30 text-primary dark:text-primary bg-primary/10',
   unmapped:
     'border-border text-muted-foreground bg-muted/40',
 };

@@ -40,14 +40,14 @@ const FORK_REASON_OPTIONS = [
 export const FORK_STATUS_COLORS: Record<string, string> = {
   active: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
   merged: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
-  promoted: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  promoted: "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary",
   rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
 };
 
 export const FORK_REASON_COLORS: Record<string, string> = {
   correction: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
-  translation: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-  expansion: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+  translation: "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary",
+  expansion: "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary",
   source_addition: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
   dispute: "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300",
   other: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300",

@@ -15,8 +15,8 @@ export function ProgressBar({ filled, total }: { filled: number; total: number }
             pct === 100
               ? "bg-emerald-500"
               : pct > 50
-                ? "bg-blue-500"
-                : "bg-blue-400"
+                ? "bg-primary"
+                : "bg-primary/10"
           )}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}

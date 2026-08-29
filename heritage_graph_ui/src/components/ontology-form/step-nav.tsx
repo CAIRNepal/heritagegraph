@@ -47,7 +47,7 @@ export function StepNav({
             className={cn(
               "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all",
               isCurrent
-                ? "bg-blue-600 text-white shadow-sm"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : isComplete
                   ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400"
                   : warnRequired

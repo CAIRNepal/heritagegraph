@@ -38,7 +38,7 @@ const STATE_COLORS: Record<string, string> = {
   in_review: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
   needs_revision: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
   approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  merged: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  merged: "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary",
   withdrawn: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400",
 };
 
@@ -140,8 +140,8 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-1.5 min-w-0">
-            <IconFolders className="w-4 h-4 text-blue-500 shrink-0" />
-            <h3 className="font-semibold text-blue-900 dark:text-blue-100 line-clamp-1">
+            <IconFolders className="w-4 h-4 text-primary shrink-0" />
+            <h3 className="font-semibold text-primary dark:text-primary line-clamp-1">
               {project.title}
             </h3>
           </div>
@@ -291,14 +291,14 @@ export default function ProjectsListPage() {
         variants={fadeInUp}
         className={`relative overflow-hidden ${glassCard} p-6`}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-500 to-indigo-500 opacity-90 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-90 rounded-2xl" />
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-white/80 text-xs font-medium flex-wrap">
               <IconFolders className="w-4 h-4" /> Contribution Projects
             </div>
             <h1 className="text-2xl font-bold text-white">Your dossiers</h1>
-            <p className="text-purple-100 text-sm">
+            <p className="text-hero-foreground/90 text-sm">
               Collect evidence, author entities, and request review.
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
@@ -308,7 +308,7 @@ export default function ProjectsListPage() {
                 variant={listScope === "mine" ? "default" : "secondary"}
                 className={
                   listScope === "mine"
-                    ? "bg-white text-purple-700 hover:bg-purple-50"
+                    ? "bg-white text-primary hover:bg-primary/10"
                     : "bg-white/15 text-white border-white/30 hover:bg-white/25"
                 }
                 onClick={() => setListScope("mine")}
@@ -321,7 +321,7 @@ export default function ProjectsListPage() {
                 variant={listScope === "public" ? "default" : "secondary"}
                 className={
                   listScope === "public"
-                    ? "bg-white text-purple-700 hover:bg-purple-50"
+                    ? "bg-white text-primary hover:bg-primary/10"
                     : "bg-white/15 text-white border-white/30 hover:bg-white/25"
                 }
                 onClick={() => setListScope("public")}
@@ -332,7 +332,7 @@ export default function ProjectsListPage() {
           </div>
           <Button
             onClick={() => router.push("/contribute/projects/new")}
-            className="shrink-0 bg-white text-purple-700 hover:bg-purple-50"
+            className="shrink-0 bg-white text-primary hover:bg-primary/10"
           >
             <IconPlus className="w-4 h-4 mr-1.5" /> New Project
           </Button>

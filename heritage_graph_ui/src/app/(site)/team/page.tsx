@@ -129,10 +129,10 @@ export default function OurTeam() {
         are purely cosmetic — they add depth without affecting layout.
       */}
       <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8 md:p-10`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-95 rounded-2xl" />
         <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-sky-300/20 rounded-full blur-2xl animate-pulse" />
+        <div className="absolute top-1/2 right-1/4 w-32 h-32 bg-primary/10 rounded-full blur-2xl animate-pulse" />
         <motion.div variants={fadeInUp} className="relative z-10 space-y-3 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white mx-auto">
             <IconSparkles className="w-4 h-4" /> Our Team
@@ -141,7 +141,7 @@ export default function OurTeam() {
             The Minds Behind{' '}
             <span className="text-white/90">HeritageGraph</span>
           </h1>
-          <p className="text-blue-100 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+          <p className="text-hero-foreground/90 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
             A multidisciplinary team working at the intersection of artificial intelligence,
             cultural heritage, and digital knowledge systems.
           </p>
@@ -154,7 +154,7 @@ export default function OurTeam() {
           animated gradient text effect on hover.
       */}
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}>
-        <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-6 text-blue-900 dark:text-blue-100">
+        <motion.h2 variants={fadeInUp} className="text-2xl font-bold mb-6 text-primary dark:text-primary">
           Meet the{' '}
           <span className="text-foreground">Team</span>
         </motion.h2>
@@ -170,10 +170,10 @@ export default function OurTeam() {
                 className="block"
               >
                 <div className={`relative p-6 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.02] overflow-hidden hover:shadow-xl`}>
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-hero-from to-hero-to opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl" />
                   <div className="flex gap-4 items-center">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-full blur-sm opacity-50" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-hero-from to-hero-to rounded-full blur-sm opacity-50" />
                       <Image
                         src={member.image}
                         alt={member.name}
@@ -184,13 +184,13 @@ export default function OurTeam() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">
+                      <h3 className="text-lg font-bold text-primary dark:text-primary group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-hero-from group-hover:to-hero-to group-hover:bg-clip-text transition-all duration-300">
                         {member.name}
                       </h3>
-                      <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">{member.role}</p>
+                      <p className="text-sm text-primary dark:text-primary leading-relaxed">{member.role}</p>
                     </div>
                     {/* External link indicator — visible on hover */}
-                    <ExternalLink className="w-4 h-4 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0" />
+                    <ExternalLink className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0" />
                   </div>
                 </div>
               </a>
@@ -204,8 +204,8 @@ export default function OurTeam() {
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={staggerContainer}>
         <motion.div variants={fadeInUp} className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <IconBrandGithub className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            <h2 className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+            <IconBrandGithub className="w-6 h-6 text-primary dark:text-primary" />
+            <h2 className="text-2xl font-bold text-primary dark:text-primary">
               GitHub{' '}
               <span className="text-foreground">Contributors</span>
             </h2>
@@ -227,8 +227,8 @@ export default function OurTeam() {
         {loadingContributors ? (
           /* Spinner — shown while the proxy fetch is in-flight */
           <motion.div variants={fadeInUp} className={`${glassCard} p-8 flex items-center justify-center`}>
-            <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
-              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="flex items-center gap-3 text-primary dark:text-primary">
+              <div className="w-5 h-5 border-2 border-primary/30 border-t-transparent rounded-full animate-spin" />
               <span className="text-sm font-medium">Loading contributors…</span>
             </div>
           </motion.div>
@@ -249,17 +249,17 @@ export default function OurTeam() {
                 className="group"
               >
                 <div className={`relative p-5 ${glassCard} hover:bg-white dark:hover:bg-gray-900 transition-all duration-500 transform hover:scale-[1.03] overflow-hidden hover:shadow-xl`}>
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-hero-from to-hero-to opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl" />
                   {'isCoreTeam' in contributor && contributor.isCoreTeam && (
                     <div className="absolute top-3 right-3">
-                      <span className="inline-flex items-center rounded-full border border-blue-200/60 bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-blue-700 backdrop-blur-sm dark:border-blue-500/30 dark:bg-gray-950/50 dark:text-blue-300">
+                      <span className="inline-flex items-center rounded-full border border-primary/30 bg-white/70 px-2 py-0.5 text-[10px] font-semibold text-primary backdrop-blur-sm dark:border-primary/30 dark:bg-gray-950/50 dark:text-primary">
                         Core team
                       </span>
                     </div>
                   )}
                   <div className="flex items-center gap-4">
                     <div className="relative flex-shrink-0">
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-sky-500 rounded-full blur-sm opacity-40" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-hero-from to-hero-to rounded-full blur-sm opacity-40" />
                       <Image
                         src={contributor.avatar_url}
                         alt={contributor.login}
@@ -270,10 +270,10 @@ export default function OurTeam() {
                       />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-base font-bold text-blue-900 dark:text-blue-100 truncate group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">
+                      <p className="text-base font-bold text-primary dark:text-primary truncate group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-hero-from group-hover:to-hero-to group-hover:bg-clip-text transition-all duration-300">
                         {contributor.login}
                       </p>
-                      <div className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 mt-0.5">
+                      <div className="flex items-center gap-1 text-sm text-primary dark:text-primary mt-0.5">
                         <GitCommit className="w-3.5 h-3.5 flex-shrink-0" />
                         <span>{contributor.contributions} commit{contributor.contributions !== 1 ? 's' : ''}</span>
                       </div>
@@ -293,12 +293,12 @@ export default function OurTeam() {
           the team content above.
       */}
       <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeInUp} className="flex gap-4 flex-col sm:flex-row">
-        <Button size="lg" className="bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 text-white rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 gap-2" asChild>
+        <Button size="lg" className="bg-gradient-to-r from-hero-from to-hero-to hover:from-hero-from hover:to-hero-to text-white rounded-full font-semibold shadow-lg transition-all duration-300 transform hover:scale-105 gap-2" asChild>
           <a href="https://github.com/CAIRNepal/heritagegraph" target="_blank" rel="noopener noreferrer">
             <IconBrandGithub className="w-5 h-5" /> View GitHub
           </a>
         </Button>
-        <Button variant="outline" size="lg" className="border-blue-300 dark:border-gray-600 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-gray-800 rounded-full font-semibold transition-all duration-300 gap-2" asChild>
+        <Button variant="outline" size="lg" className="border-primary/30 dark:border-gray-600 text-primary dark:text-primary hover:bg-primary/10 dark:hover:bg-gray-800 rounded-full font-semibold transition-all duration-300 gap-2" asChild>
           <a href="https://www.cair-nepal.org/" target="_blank" rel="noopener noreferrer">
             <ExternalLink className="w-4 h-4" /> Read Docs
           </a>

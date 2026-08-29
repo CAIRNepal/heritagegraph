@@ -301,16 +301,19 @@ export default function AboutPage() {
         <p className="mt-4 max-w-[64ch] leading-relaxed text-muted-foreground">
           {t('graph.description')}
         </p>
+        {/* The tool, given room and stripped of its own title.
+            At 34rem in a boxed panel, with its page header repeating the heading
+            directly above it, 151 classes read as a hairball inside a second
+            website. Taller, quieter framing, and `embedded` so there is one
+            title on this page instead of two. */}
         <div className="relative mt-8">
-          {/* Same bloom the entry page puts under a photograph, so the embed
-              sits in the page rather than on it. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -inset-y-6 inset-x-0 -z-10 rounded-[2rem] bg-primary/[0.07] blur-2xl @2xl/main:-inset-x-6"
+            className="pointer-events-none absolute -inset-y-6 inset-x-0 -z-10 rounded-[2rem] bg-primary/[0.06] blur-2xl @2xl/main:-inset-x-6"
           />
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_24px_60px_-28px_rgba(0,0,0,0.45)]">
-            <div className="h-[34rem] min-h-0">
-              <GraphViewEmbed />
+          <div className="overflow-hidden rounded-2xl border border-border bg-card/60">
+            <div className="h-[42rem] min-h-0">
+              <GraphViewEmbed embedded />
             </div>
           </div>
         </div>

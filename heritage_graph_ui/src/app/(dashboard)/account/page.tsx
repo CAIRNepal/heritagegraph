@@ -37,10 +37,10 @@ export default function MyAccount() {
     return (
       <div className="mx-auto max-w-lg space-y-4 p-4 md:p-6">
         <div className={`${glassCard} p-6`}>
-          <h1 className="text-xl font-semibold text-blue-950 dark:text-blue-50">
+          <h1 className="text-xl font-semibold text-primary dark:text-primary">
             Account
           </h1>
-          <p className="mt-2 text-sm text-blue-800/80 dark:text-blue-200/75">
+          <p className="mt-2 text-sm text-primary dark:text-primary">
             Sign in to see your profile and session details.
           </p>
           <Button asChild className="mt-4">
@@ -70,10 +70,10 @@ export default function MyAccount() {
         }}
       />
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-blue-900 dark:text-blue-100">
+        <h1 className="text-2xl font-bold tracking-tight text-primary dark:text-primary">
           Account
         </h1>
-        <p className="mt-1 text-sm text-blue-800/80 dark:text-blue-200/75">
+        <p className="mt-1 text-sm text-primary dark:text-primary">
           Profile information comes from your sign-in provider. HeritageGraph does not store a separate shadow password for Google accounts.
         </p>
       </div>
@@ -95,7 +95,7 @@ export default function MyAccount() {
                 width={64}
                 height={64}
                 unoptimized
-                className="size-16 rounded-full border border-blue-200 object-cover dark:border-gray-600"
+                className="size-16 rounded-full border border-primary/30 object-cover dark:border-gray-600"
               />
             ) : null}
             <dl className="space-y-1 text-sm">

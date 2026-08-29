@@ -45,13 +45,13 @@ const ACTIVITY_TYPES = [
 ];
 
 const ICON_MAP: Record<string, { icon: typeof CheckCircle; cls: string; bg: string }> = {
-  submitted:         { icon: Send,          cls: 'text-sky-600',    bg: 'bg-sky-100 dark:bg-sky-900/40' },
+  submitted:         { icon: Send,          cls: 'text-primary',    bg: 'bg-primary/10 dark:bg-primary/10' },
   accepted:          { icon: CheckCircle,   cls: 'text-green-600',  bg: 'bg-green-100 dark:bg-green-900/40' },
   rejected:          { icon: XCircle,       cls: 'text-red-600',    bg: 'bg-red-100 dark:bg-red-900/40' },
-  revised:           { icon: Edit,          cls: 'text-violet-600', bg: 'bg-violet-100 dark:bg-violet-900/40' },
+  revised:           { icon: Edit,          cls: 'text-primary', bg: 'bg-primary/10 dark:bg-primary/10' },
   commented:         { icon: MessageSquare, cls: 'text-amber-600',  bg: 'bg-amber-100 dark:bg-amber-900/40' },
   escalated:         { icon: ArrowUpRight,  cls: 'text-orange-600', bg: 'bg-orange-100 dark:bg-orange-900/40' },
-  changes_requested: { icon: RotateCcw,     cls: 'text-indigo-600', bg: 'bg-indigo-100 dark:bg-indigo-900/40' },
+  changes_requested: { icon: RotateCcw,     cls: 'text-primary', bg: 'bg-primary/10 dark:bg-primary/10' },
   flagged:           { icon: Flag,          cls: 'text-rose-600',   bg: 'bg-rose-100 dark:bg-rose-900/40' },
   conflict_resolved: { icon: Scale,         cls: 'text-teal-600',   bg: 'bg-teal-100 dark:bg-teal-900/40' },
 };
@@ -148,18 +148,18 @@ export default function ActivityLogPage() {
       <div className="space-y-6">
         {/* ── Hero Header ── */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-95 rounded-2xl" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <motion.div variants={fadeInUp} className="relative z-10 space-y-2">
-            <p className="text-sm text-blue-200">Curation / Activity</p>
+            <p className="text-sm text-hero-foreground/90">Curation / Activity</p>
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full text-sm font-medium text-white">
               <IconSparkles className="w-4 h-4" /> Event Timeline
             </div>
             <h1 className="text-3xl font-black text-white">
               Curation Event <span className="text-white/90">Timeline</span>
             </h1>
-            <p className="text-blue-100 max-w-2xl">
+            <p className="text-hero-foreground/90 max-w-2xl">
               All curation activity is logged and publicly available, establishing provenance of assertions and acknowledging the work of collaborators.
             </p>
           </motion.div>
@@ -170,18 +170,18 @@ export default function ActivityLogPage() {
           <div className="flex flex-col sm:flex-row gap-3 items-end">
             <div className="flex-1 flex gap-2">
               <Select value={actType} onValueChange={v => { setActType(v); setPage(1); }}>
-                <SelectTrigger className="w-52 border-blue-200 dark:border-gray-600"><SelectValue placeholder="Activity Type" /></SelectTrigger>
+                <SelectTrigger className="w-52 border-primary/30 dark:border-gray-600"><SelectValue placeholder="Activity Type" /></SelectTrigger>
                 <SelectContent>{ACTIVITY_TYPES.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
               </Select>
               <Select value={sortDir} onValueChange={v => { setSortDir(v as 'desc' | 'asc'); setPage(1); }}>
-                <SelectTrigger className="w-40 border-blue-200 dark:border-gray-600"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-40 border-primary/30 dark:border-gray-600"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="desc">Newest first</SelectItem>
                   <SelectItem value="asc">Oldest first</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="outline" size="icon" className="h-9 w-9 border-blue-200 dark:border-gray-600 text-blue-600 dark:text-blue-400" onClick={() => load(page)}>
+            <Button variant="outline" size="icon" className="h-9 w-9 border-primary/30 dark:border-gray-600 text-primary dark:text-primary" onClick={() => load(page)}>
               <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
@@ -189,11 +189,11 @@ export default function ActivityLogPage() {
 
         {/* Count */}
         <div className="flex items-center justify-between">
-          <p className="text-sm text-blue-700 dark:text-blue-300">
+          <p className="text-sm text-primary dark:text-primary">
             {total > 0 ? `Showing ${rangeFrom}–${rangeTo} of ${total.toLocaleString()}` : 'No results'}
             {totalPages > 0 ? ` · Page ${page} of ${totalPages}` : ''}
           </p>
-          <Badge variant="outline" className="gap-1 border-blue-200 dark:border-gray-600 text-blue-700 dark:text-blue-300">
+          <Badge variant="outline" className="gap-1 border-primary/30 dark:border-gray-600 text-primary dark:text-primary">
             <Clock className="h-3 w-3" /> Timeline
           </Badge>
         </div>
@@ -201,30 +201,30 @@ export default function ActivityLogPage() {
         {/* Timeline */}
         {loading && activities.length === 0 ? (
           <div className="text-center py-20">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-r-transparent" />
-            <p className="mt-3 text-blue-700 dark:text-blue-300">Loading activity…</p>
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-r-transparent" />
+            <p className="mt-3 text-primary dark:text-primary">Loading activity…</p>
           </div>
         ) : error ? (
           <div className="text-center py-20">
             <p className="text-red-600 mb-2">{error}</p>
-            <Button onClick={() => load(page)} className="bg-gradient-to-r from-blue-600 to-sky-500 text-white">Retry</Button>
+            <Button onClick={() => load(page)} className="bg-gradient-to-r from-hero-from to-hero-to text-white">Retry</Button>
           </div>
         ) : activities.length === 0 ? (
           <div className={`${glassCard} text-center py-20 px-6`}>
-            <Clock className="h-12 w-12 mx-auto mb-3 text-blue-400" />
-            <h3 className="font-semibold mb-1 text-blue-900 dark:text-blue-100">No activity yet</h3>
-            <p className="text-sm text-blue-700 dark:text-blue-300">Activity will appear here as contributions are submitted and reviewed.</p>
+            <Clock className="h-12 w-12 mx-auto mb-3 text-primary" />
+            <h3 className="font-semibold mb-1 text-primary dark:text-primary">No activity yet</h3>
+            <p className="text-sm text-primary dark:text-primary">Activity will appear here as contributions are submitted and reviewed.</p>
           </div>
         ) : (
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={staggerContainer} className="space-y-6">
             {Object.entries(grouped).map(([day, items]) => (
               <motion.div key={day} variants={fadeInUp}>
                 <div className="flex items-center gap-3 mb-3">
-                  <Calendar className="h-4 w-4 text-blue-500" />
-                  <h3 className="text-sm font-semibold text-blue-800 dark:text-blue-200">{day}</h3>
-                  <div className="flex-1 h-px bg-blue-200 dark:bg-gray-700" />
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold text-primary dark:text-primary">{day}</h3>
+                  <div className="flex-1 h-px bg-primary/10 dark:bg-gray-700" />
                 </div>
-                <div className="relative ml-4 border-l-2 border-blue-200 dark:border-gray-700 pl-6 space-y-1">
+                <div className="relative ml-4 border-l-2 border-primary/30 dark:border-gray-700 pl-6 space-y-1">
                   {items.map((a) => {
                     const meta = ICON_MAP[a.activity_type] || { icon: Clock, cls: 'text-gray-500', bg: 'bg-gray-100' };
                     const Icon = meta.icon;
@@ -233,26 +233,26 @@ export default function ActivityLogPage() {
                         <div className={`absolute -left-[33px] top-2 h-5 w-5 rounded-full ${meta.bg} flex items-center justify-center ring-2 ring-white dark:ring-gray-900`}>
                           <Icon className={`h-3 w-3 ${meta.cls}`} />
                         </div>
-                        <div className="py-2 px-3 rounded-xl hover:bg-blue-50/50 dark:hover:bg-gray-800/50 transition-all duration-300">
+                        <div className="py-2 px-3 rounded-xl hover:bg-primary/10 dark:hover:bg-gray-800/50 transition-all duration-300">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm">
                                 <button onClick={() => router.push(`/users/${a.user.username}`)}
-                                  className="font-semibold text-blue-900 dark:text-blue-100 hover:text-transparent hover:bg-gradient-to-r hover:from-blue-600 hover:to-sky-500 hover:bg-clip-text transition-all duration-300">
+                                  className="font-semibold text-primary dark:text-primary hover:text-transparent hover:bg-gradient-to-r hover:from-hero-from hover:to-hero-to hover:bg-clip-text transition-all duration-300">
                                   {fullName(a.user)}
                                 </button>
-                                <span className="text-blue-600 dark:text-blue-400"> {actionVerb(a.activity_type)} </span>
-                                {a.entity_name && <span className="font-medium text-blue-900 dark:text-blue-100">{a.entity_name}</span>}
+                                <span className="text-primary dark:text-primary"> {actionVerb(a.activity_type)} </span>
+                                {a.entity_name && <span className="font-medium text-primary dark:text-primary">{a.entity_name}</span>}
                               </p>
-                              {a.comment && <p className="text-sm text-blue-600 dark:text-blue-400 mt-0.5 line-clamp-2 italic">&ldquo;{a.comment}&rdquo;</p>}
+                              {a.comment && <p className="text-sm text-primary dark:text-primary mt-0.5 line-clamp-2 italic">&ldquo;{a.comment}&rdquo;</p>}
                               {a.entity_category && (
                                 <div className="flex items-center gap-2 mt-1">
-                                  <Badge variant="outline" className="text-[10px] border-blue-200 dark:border-gray-600">{a.entity_category}</Badge>
+                                  <Badge variant="outline" className="text-[10px] border-primary/30 dark:border-gray-600">{a.entity_category}</Badge>
                                   {a.entity_status && <Badge variant="secondary" className="text-[10px]">{a.entity_status}</Badge>}
                                 </div>
                               )}
                             </div>
-                            <span className="text-xs text-blue-500 dark:text-blue-400 whitespace-nowrap mt-0.5">{relativeTime(a.created_at)}</span>
+                            <span className="text-xs text-primary dark:text-primary whitespace-nowrap mt-0.5">{relativeTime(a.created_at)}</span>
                           </div>
                         </div>
                       </div>

@@ -140,7 +140,7 @@ export default function OrganizationsPage() {
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-r-transparent" />
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-r-transparent" />
       </div>
     );
   }
@@ -151,7 +151,7 @@ export default function OrganizationsPage() {
       <div className="space-y-6">
         {/* Hero Header */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-95 rounded-2xl" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <motion.div variants={fadeInUp} className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -162,7 +162,7 @@ export default function OrganizationsPage() {
               <h1 className="text-3xl font-black text-white">
                 <span className="text-white/90">Organizations</span>
               </h1>
-              <p className="text-blue-100 max-w-lg">Browse and join organizations contributing to cultural heritage preservation.</p>
+              <p className="text-hero-foreground/90 max-w-lg">Browse and join organizations contributing to cultural heritage preservation.</p>
             </div>
             {session?.accessToken && (
               <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -199,7 +199,7 @@ export default function OrganizationsPage() {
                     </div>
                     <div className="flex justify-end gap-3 mt-2">
                       <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)} disabled={creating}>Cancel</Button>
-                      <Button type="submit" disabled={creating} className="bg-gradient-to-r from-blue-600 to-sky-500 text-white">{creating ? 'Creating…' : 'Create'}</Button>
+                      <Button type="submit" disabled={creating} className="bg-gradient-to-r from-hero-from to-hero-to text-white">{creating ? 'Creating…' : 'Create'}</Button>
                     </div>
                   </form>
                 </DialogContent>
@@ -212,9 +212,9 @@ export default function OrganizationsPage() {
         <motion.div initial="hidden" animate="show" variants={fadeInUp}>
           <div className={`${glassCard} p-4`}>
             <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary" />
               <Input placeholder="Search organizations…" value={search} onChange={e => setSearch(e.target.value)}
-                className="pl-9 border-blue-200 dark:border-gray-600" />
+                className="pl-9 border-primary/30 dark:border-gray-600" />
             </div>
           </div>
         </motion.div>
@@ -222,9 +222,9 @@ export default function OrganizationsPage() {
         {/* Grid */}
         {filtered.length === 0 ? (
           <motion.div initial="hidden" animate="show" variants={fadeInUp} className={`${glassCard} text-center py-20`}>
-            <Building2 className="h-14 w-14 mx-auto mb-3 text-blue-400" />
-            <h3 className="text-lg font-medium mb-1 text-blue-900 dark:text-blue-100">No organizations found</h3>
-            <p className="text-sm text-blue-700 dark:text-blue-300">{search ? 'Try a different search term.' : 'Be the first to create one!'}</p>
+            <Building2 className="h-14 w-14 mx-auto mb-3 text-primary" />
+            <h3 className="text-lg font-medium mb-1 text-primary dark:text-primary">No organizations found</h3>
+            <p className="text-sm text-primary dark:text-primary">{search ? 'Try a different search term.' : 'Be the first to create one!'}</p>
           </motion.div>
         ) : (
           <motion.div initial="hidden" animate="show" variants={staggerContainer} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -236,7 +236,7 @@ export default function OrganizationsPage() {
                   <div className={`${glassCard} flex flex-col h-full hover:scale-[1.02] hover:shadow-xl transition-all duration-300 group`}>
                     <div className="p-5 pb-3">
                       <div className="flex items-start gap-3">
-                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-400 flex items-center justify-center shrink-0 shadow-lg">
+                        <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-hero-from to-hero-to flex items-center justify-center shrink-0 shadow-lg">
                           {org.logo ? (
                             <Image
                               src={resolveMediaSrc(org.logo) ?? org.logo}
@@ -252,10 +252,10 @@ export default function OrganizationsPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-base font-bold truncate text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">{org.name}</h3>
-                            {org.is_verified && <CheckCircle2 className="h-4 w-4 text-blue-500 shrink-0" />}
+                            <h3 className="text-base font-bold truncate text-primary dark:text-primary group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-hero-from group-hover:to-hero-to group-hover:bg-clip-text transition-all duration-300">{org.name}</h3>
+                            {org.is_verified && <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />}
                           </div>
-                          <p className="text-xs text-blue-600 dark:text-blue-400">
+                          <p className="text-xs text-primary dark:text-primary">
                             {org.short_name && <span className="font-mono">{org.short_name}</span>}
                             {org.short_name && org.country && <span> · </span>}
                             {org.country && <span className="inline-flex items-center gap-0.5"><MapPin className="h-3 w-3" />{org.country}</span>}
@@ -264,22 +264,22 @@ export default function OrganizationsPage() {
                       </div>
                     </div>
                     <div className="px-5 flex-1 flex flex-col gap-3">
-                      {org.description && <p className="text-sm text-blue-700 dark:text-blue-300 line-clamp-3">{org.description}</p>}
+                      {org.description && <p className="text-sm text-primary dark:text-primary line-clamp-3">{org.description}</p>}
                       {org.focus_areas && org.focus_areas.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                           {org.focus_areas.slice(0, 4).map((a, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">{a}</Badge>
+                            <Badge key={i} variant="secondary" className="text-xs bg-primary/10 dark:bg-primary/10 text-primary dark:text-primary">{a}</Badge>
                           ))}
-                          {org.focus_areas.length > 4 && <Badge variant="outline" className="text-xs border-blue-200 dark:border-gray-600">+{org.focus_areas.length - 4}</Badge>}
+                          {org.focus_areas.length > 4 && <Badge variant="outline" className="text-xs border-primary/30 dark:border-gray-600">+{org.focus_areas.length - 4}</Badge>}
                         </div>
                       )}
                       <div className="mt-auto pt-3">
-                        <Separator className="mb-3 bg-blue-200 dark:bg-gray-700" />
+                        <Separator className="mb-3 bg-primary/10 dark:bg-gray-700" />
                         <div className="flex items-center justify-between pb-5">
-                          <div className="flex items-center gap-4 text-xs text-blue-600 dark:text-blue-400">
+                          <div className="flex items-center gap-4 text-xs text-primary dark:text-primary">
                             <span className="inline-flex items-center gap-1"><Users className="h-3.5 w-3.5" /> {org.member_count} member{org.member_count !== 1 ? 's' : ''}</span>
                             {org.website && (
-                              <a href={org.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-blue-800 dark:hover:text-blue-200">
+                              <a href={org.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary dark:hover:text-primary">
                                 <Globe className="h-3.5 w-3.5" /> Website
                               </a>
                             )}
@@ -287,14 +287,14 @@ export default function OrganizationsPage() {
                           {session?.accessToken && (
                             <div>
                               {isOwner ? (
-                                <Badge variant="outline" className="gap-1 text-xs border-blue-300 text-blue-700"><Crown className="h-3 w-3" /> Owner</Badge>
+                                <Badge variant="outline" className="gap-1 text-xs border-primary/30 text-primary"><Crown className="h-3 w-3" /> Owner</Badge>
                               ) : isMember ? (
-                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-blue-200 text-blue-700"
+                                <Button variant="outline" size="sm" className="h-7 text-xs gap-1 border-primary/30 text-primary"
                                   disabled={joiningId === org.id} onClick={() => handleLeave(org.id)}>
                                   <LogOut className="h-3 w-3" /> Leave
                                 </Button>
                               ) : (
-                                <Button size="sm" className="h-7 text-xs gap-1 bg-gradient-to-r from-blue-600 to-sky-500 text-white hover:from-blue-700 hover:to-sky-600"
+                                <Button size="sm" className="h-7 text-xs gap-1 bg-gradient-to-r from-hero-from to-hero-to text-white hover:from-hero-from hover:to-hero-to"
                                   disabled={joiningId === org.id} onClick={() => handleJoin(org.id)}>
                                   <LogIn className="h-3 w-3" /> Join
                                 </Button>

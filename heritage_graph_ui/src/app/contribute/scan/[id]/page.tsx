@@ -190,9 +190,9 @@ export default function ScanContributePage() {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-hero-from via-hero-to to-hero-to dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="text-center space-y-4">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600 mx-auto" />
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -201,7 +201,7 @@ export default function ScanContributePage() {
   
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-hero-from via-hero-to to-hero-to dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -222,8 +222,8 @@ export default function ScanContributePage() {
                 </p>
               </div>
               
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <p className="text-sm text-blue-700 dark:text-blue-300">
+              <div className="p-4 bg-primary/10 dark:bg-primary/10 rounded-lg">
+                <p className="text-sm text-primary dark:text-primary">
                   <strong>What happens next?</strong><br />
                   Our community reviewers will verify your contribution and add it to the knowledge base.
                 </p>
@@ -242,7 +242,7 @@ export default function ScanContributePage() {
                       source: '',
                     });
                   }}
-                  className="w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600"
+                  className="w-full bg-gradient-to-r from-hero-from to-hero-to hover:from-hero-from hover:to-hero-to"
                 >
                   <Sparkles className="h-4 w-4 mr-2" />
                   Share More
@@ -261,9 +261,9 @@ export default function ScanContributePage() {
   }
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-hero-from via-hero-to to-hero-to dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-500 text-white">
+      <div className="bg-gradient-to-r from-hero-from via-hero-to to-hero-to text-white">
         <div className="max-w-lg mx-auto px-4 py-6 text-center">
           <motion.div
             initial="hidden"
@@ -282,7 +282,7 @@ export default function ScanContributePage() {
               Share What You Know
             </motion.h1>
             
-            <motion.p variants={fadeInUp} className="text-blue-100 text-sm">
+            <motion.p variants={fadeInUp} className="text-hero-foreground/90 text-sm">
               Help preserve our cultural heritage
             </motion.p>
           </motion.div>
@@ -299,7 +299,7 @@ export default function ScanContributePage() {
           <Card className="shadow-xl border-0 bg-white dark:bg-gray-900">
             <CardHeader className="pb-2">
               <div className="flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-sky-500 shrink-0">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-hero-from to-hero-to shrink-0">
                   <MapPin className="h-5 w-5 text-white" />
                 </div>
                 <div className="min-w-0">
@@ -429,7 +429,7 @@ export default function ScanContributePage() {
             <Button
               type="submit"
               disabled={submitting}
-              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 rounded-xl shadow-lg"
+              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-hero-from to-hero-to hover:from-hero-from hover:to-hero-to rounded-xl shadow-lg"
             >
               {submitting ? (
                 <>
@@ -459,7 +459,7 @@ export default function ScanContributePage() {
       <div className="max-w-lg mx-auto px-4 pb-8 text-center">
         <p className="text-xs text-muted-foreground">
           Powered by{' '}
-          <Link href="/" className="text-blue-600 font-medium hover:underline">
+          <Link href="/" className="text-primary font-medium hover:underline">
             HeritageGraph
           </Link>
           {' '}• Preserving Nepal&apos;s Cultural Heritage

@@ -3,7 +3,7 @@
  *
  * Import from '@/lib/design' instead of re-declaring in every page file.
  * Colours come from the tokens in globals.css — never write a literal palette
- * class (`text-blue-700`, `bg-blue-50`) in a component.
+ * class (`text-primary`, `bg-primary/10`) in a component.
  */
 
 /* ── framer-motion animation variants ── */

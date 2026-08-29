@@ -239,9 +239,9 @@ function ReviewQueuePageInner() {
 
   const getCategoryBadge = (category: string) => {
     const colors: Record<string, string> = {
-      monument: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      monument: 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
       artifact: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      ritual: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+      ritual: 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary',
       festival: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
       tradition: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
       document: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
@@ -268,7 +268,7 @@ function ReviewQueuePageInner() {
       <div className="space-y-6">
         {/* ── Hero Header ── */}
         <motion.div initial="hidden" animate="show" variants={staggerContainer} className={`relative overflow-hidden ${glassCard} p-8`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-sky-500 to-cyan-500 opacity-95 rounded-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-hero-from via-hero-to to-hero-to opacity-95 rounded-2xl" />
           <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
           <motion.div variants={fadeInUp} className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -279,7 +279,7 @@ function ReviewQueuePageInner() {
               <h1 className="text-3xl font-black text-white">
                 Review <span className="text-white/90">Queue</span>
               </h1>
-              <p className="text-blue-100 max-w-lg">
+              <p className="text-hero-foreground/90 max-w-lg">
                 Evaluate claims, resolve conflicts, maintain provenance. Prefer this queue for
                 source-tier triage — use{" "}
                 <button
@@ -307,11 +307,11 @@ function ReviewQueuePageInner() {
         {/* Queue Triage Tabs */}
         <motion.div initial="hidden" animate="show" variants={fadeInUp}>
           <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <TabsList className="grid w-full grid-cols-5 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-xl p-1">
-              <TabsTrigger value="all" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-sky-500 data-[state=active]:text-white rounded-lg">
+            <TabsList className="grid w-full grid-cols-5 bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-primary/30 dark:border-gray-700 rounded-xl p-1">
+              <TabsTrigger value="all" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-hero-from data-[state=active]:to-hero-to data-[state=active]:text-white rounded-lg">
                 <FileText className="h-4 w-4" /> All ({queueCounts.total})
               </TabsTrigger>
-              <TabsTrigger value="new_claims" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-blue-500 data-[state=active]:text-white rounded-lg">
+              <TabsTrigger value="new_claims" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-hero-from data-[state=active]:to-hero-to data-[state=active]:text-white rounded-lg">
                 <CheckCircle className="h-4 w-4" /> New ({queueCounts.new_claims})
               </TabsTrigger>
               <TabsTrigger value="conflicts" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white rounded-lg">
@@ -330,20 +330,20 @@ function ReviewQueuePageInner() {
               <div className="flex-1">
                 <form onSubmit={handleSearch} className="flex gap-2">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 h-4 w-4" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary h-4 w-4" />
                     <Input placeholder="Search entities, contributors..." value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-blue-200 dark:border-gray-600" />
+                      onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 border-primary/30 dark:border-gray-600" />
                   </div>
-                  <Button type="submit" className="bg-gradient-to-r from-blue-600 to-sky-500 text-white hover:from-blue-700 hover:to-sky-600">Search</Button>
+                  <Button type="submit" className="bg-gradient-to-r from-hero-from to-hero-to text-white hover:from-hero-from hover:to-hero-to">Search</Button>
                 </form>
               </div>
               <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-48 border-blue-200 dark:border-gray-600"><SelectValue placeholder="Category" /></SelectTrigger>
+                <SelectTrigger className="w-48 border-primary/30 dark:border-gray-600"><SelectValue placeholder="Category" /></SelectTrigger>
                 <SelectContent>{categoryOptions.map((opt) => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
 
-            <div className="flex flex-col gap-3 mt-4 p-4 rounded-xl border border-blue-200/60 dark:border-gray-700 bg-white/40 dark:bg-gray-900/40">
+            <div className="flex flex-col gap-3 mt-4 p-4 rounded-xl border border-primary/30 dark:border-gray-700 bg-white/40 dark:bg-gray-900/40">
               <div className="flex flex-wrap items-end gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Sort</Label>
@@ -355,7 +355,7 @@ function ReviewQueuePageInner() {
                       pushQuery({ ordering: v, page: '1' });
                     }}
                   >
-                    <SelectTrigger className="w-[200px] border-blue-200 dark:border-gray-600"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-[200px] border-primary/30 dark:border-gray-600"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="-triage_priority">Triage priority (high first)</SelectItem>
                       <SelectItem value="triage_priority">Triage priority (low first)</SelectItem>
@@ -369,7 +369,7 @@ function ReviewQueuePageInner() {
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Stale (days in review ≥)</Label>
                   <Input
-                    className="w-28 border-blue-200 dark:border-gray-600"
+                    className="w-28 border-primary/30 dark:border-gray-600"
                     inputMode="numeric"
                     placeholder="e.g. 7"
                     value={staleDays}
@@ -383,7 +383,7 @@ function ReviewQueuePageInner() {
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Min worst source rank</Label>
                   <Input
-                    className="w-28 border-blue-200 dark:border-gray-600"
+                    className="w-28 border-primary/30 dark:border-gray-600"
                     inputMode="numeric"
                     placeholder="0–6"
                     value={minWorstSourceRank}
@@ -418,7 +418,7 @@ function ReviewQueuePageInner() {
                   />
                   <Label htmlFor="my-domain" className="text-sm cursor-pointer">My domain only</Label>
                 </div>
-                <Button type="button" variant="outline" className="mt-5 border-blue-200" onClick={copyShareLink}>
+                <Button type="button" variant="outline" className="mt-5 border-primary/30" onClick={copyShareLink}>
                   Copy share link
                 </Button>
               </div>
@@ -433,14 +433,14 @@ function ReviewQueuePageInner() {
               <TabsContent key={tab} value={tab}>
                 <div className={`${glassCard} overflow-hidden`}>
                   <div className="p-6">
-                    <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-1">
+                    <h3 className="text-lg font-bold text-primary dark:text-primary mb-1">
                       {tab === 'all' && 'All Pending Items'}
                       {tab === 'new_claims' && 'New Claims — Awaiting First Review'}
                       {tab === 'conflicts' && 'Conflicts — Contradicting Existing Assertions'}
                       {tab === 'flagged' && 'Flagged — Community-Reported Issues'}
                       {tab === 'expiring' && 'Expiring — Stale Reviews (14+ Days)'}
                     </h3>
-                    <p className="text-sm text-blue-600 dark:text-blue-400 mb-4">
+                    <p className="text-sm text-primary dark:text-primary mb-4">
                       {tab === 'conflicts' && 'Highest priority — assertions where reconciliation_status is unresolved.'}
                       {tab === 'flagged' && 'Questionable source, suspected duplicate, sensitive content.'}
                       {tab === 'expiring' && 'Items approaching review timeout — act before they stall.'}
@@ -449,20 +449,20 @@ function ReviewQueuePageInner() {
                   <div className="px-6 pb-6">
                     {isLoading ? (
                       <div className="text-center py-12">
-                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-r-transparent" />
-                        <p className="mt-2 text-blue-700 dark:text-blue-300">Loading review queue...</p>
+                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-primary/30 border-r-transparent" />
+                        <p className="mt-2 text-primary dark:text-primary">Loading review queue...</p>
                       </div>
                     ) : error ? (
                       <div className="text-center py-12">
                         <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                        <p className="text-blue-700 dark:text-blue-300 mb-4">{error}</p>
-                        <Button onClick={handleRefresh} className="bg-gradient-to-r from-blue-600 to-sky-500 text-white">Try Again</Button>
+                        <p className="text-primary dark:text-primary mb-4">{error}</p>
+                        <Button onClick={handleRefresh} className="bg-gradient-to-r from-hero-from to-hero-to text-white">Try Again</Button>
                       </div>
                     ) : contributions.length === 0 ? (
                       <div className="text-center py-12">
                         <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                        <h3 className="font-semibold text-lg mb-2 text-blue-900 dark:text-blue-100">Queue is clear!</h3>
-                        <p className="text-blue-700 dark:text-blue-300">No items need review in this category.</p>
+                        <h3 className="font-semibold text-lg mb-2 text-primary dark:text-primary">Queue is clear!</h3>
+                        <p className="text-primary dark:text-primary">No items need review in this category.</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -473,14 +473,14 @@ function ReviewQueuePageInner() {
                         ))}
                         {totalPages > 1 && (
                           <div className="flex items-center justify-between mt-6">
-                            <p className="text-sm text-blue-700 dark:text-blue-300">
+                            <p className="text-sm text-primary dark:text-primary">
                               Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, totalCount)} of {totalCount}
                             </p>
                             <div className="flex gap-2">
                               <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}
-                                className="border-blue-200 dark:border-gray-600 text-blue-700 dark:text-blue-300">Previous</Button>
+                                className="border-primary/30 dark:border-gray-600 text-primary dark:text-primary">Previous</Button>
                               <Button variant="outline" size="sm" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}
-                                className="border-blue-200 dark:border-gray-600 text-blue-700 dark:text-blue-300">Next</Button>
+                                className="border-primary/30 dark:border-gray-600 text-primary dark:text-primary">Next</Button>
                             </div>
                           </div>
                         )}
@@ -503,7 +503,7 @@ function QueueRow({ contribution, onReview, getCategoryBadge, formatDate, format
   formatUserName: (u: UserInfo) => string; getRevisionInfo: (c: Contribution) => string;
 }) {
   return (
-    <div className={`border border-blue-200 dark:border-gray-700 rounded-xl p-4 hover:bg-blue-50/50 dark:hover:bg-gray-800/50 transition-all duration-300 cursor-pointer group hover:shadow-md hover:scale-[1.01] ${
+    <div className={`border border-primary/30 dark:border-gray-700 rounded-xl p-4 hover:bg-primary/10 dark:hover:bg-gray-800/50 transition-all duration-300 cursor-pointer group hover:shadow-md hover:scale-[1.01] ${
       contribution.has_conflicts ? 'border-l-4 border-l-amber-500' : ''
     } ${contribution.days_in_review > 14 ? 'border-l-4 border-l-red-500' : ''}`}
       onClick={() => onReview(contribution)}>
@@ -511,7 +511,7 @@ function QueueRow({ contribution, onReview, getCategoryBadge, formatDate, format
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             {getCategoryBadge(contribution.category)}
-            <span className="font-semibold text-base truncate text-blue-900 dark:text-blue-100 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-sky-500 group-hover:bg-clip-text transition-all duration-300">{contribution.name}</span>
+            <span className="font-semibold text-base truncate text-primary dark:text-primary group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-hero-from group-hover:to-hero-to group-hover:bg-clip-text transition-all duration-300">{contribution.name}</span>
             {contribution.has_conflicts && (
               <Tooltip><TooltipTrigger>
                 <Badge variant="destructive" className="flex items-center gap-1 text-xs"><AlertTriangle className="h-3 w-3" /> Conflict</Badge>
@@ -548,8 +548,8 @@ function QueueRow({ contribution, onReview, getCategoryBadge, formatDate, format
               <Badge variant="outline" className="text-xs capitalize">{contribution.worst_source_tier}</Badge>
             )}
           </div>
-          {contribution.description && <p className="text-sm text-blue-700 dark:text-blue-300 line-clamp-1">{contribution.description}</p>}
-          <div className="flex items-center gap-4 text-xs text-blue-600 dark:text-blue-400 flex-wrap">
+          {contribution.description && <p className="text-sm text-primary dark:text-primary line-clamp-1">{contribution.description}</p>}
+          <div className="flex items-center gap-4 text-xs text-primary dark:text-primary flex-wrap">
             <span className="flex items-center gap-1"><User className="h-3 w-3" />{formatUserName(contribution.contributor)} (@{contribution.contributor.username})</span>
             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{formatDate(contribution.created_at)}</span>
             <span>{getRevisionInfo(contribution)}</span>
@@ -558,7 +558,7 @@ function QueueRow({ contribution, onReview, getCategoryBadge, formatDate, format
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Button size="sm" onClick={(e) => { e.stopPropagation(); onReview(contribution); }}
-            className="bg-gradient-to-r from-blue-600 to-sky-500 text-white hover:from-blue-700 hover:to-sky-600 gap-1">
+            className="bg-gradient-to-r from-hero-from to-hero-to text-white hover:from-hero-from hover:to-hero-to gap-1">
             <Eye className="h-4 w-4" /> Review
           </Button>
         </div>

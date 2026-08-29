@@ -95,7 +95,7 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
   if (status === 'loading' || loading) {
     return (
       <Card className={cn('rounded-xl border-0 shadow-sm', className)}>
-        <CardContent className="flex items-center gap-2 py-8 text-blue-700 dark:text-blue-300">
+        <CardContent className="flex items-center gap-2 py-8 text-primary dark:text-primary">
           <Loader2 className="h-5 w-5 animate-spin" />
           Loading…
         </CardContent>
@@ -130,9 +130,9 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
       </CardHeader>
       <CardContent className="space-y-6">
         {application?.id ? (
-          <div className="rounded-lg border border-blue-100 dark:border-gray-700 bg-blue-50/50 dark:bg-gray-900/40 p-4 text-sm">
-            <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">Your application</p>
-            <div className="flex flex-wrap items-center gap-2 text-blue-800 dark:text-blue-200">
+          <div className="rounded-lg border border-primary/30 dark:border-gray-700 bg-primary/10 dark:bg-gray-900/40 p-4 text-sm">
+            <p className="font-medium text-primary dark:text-primary mb-1">Your application</p>
+            <div className="flex flex-wrap items-center gap-2 text-primary dark:text-primary">
               {application.status === 'pending' && (
                 <>
                   <Clock className="h-4 w-4 shrink-0" />
@@ -173,7 +173,7 @@ export function ReviewerAccessRequestPanel({ className }: ReviewerAccessRequestP
         ) : null}
 
         {hasPending ? (
-          <p className="text-sm text-blue-700 dark:text-blue-300">
+          <p className="text-sm text-primary dark:text-primary">
             You already have a pending application.
           </p>
         ) : application?.status === 'approved' ? null : (

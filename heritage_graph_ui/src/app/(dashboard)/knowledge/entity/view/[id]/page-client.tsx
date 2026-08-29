@@ -112,13 +112,13 @@ export default function EntityViewPage() {
   return (
     <motion.div initial="initial" animate="animate" variants={staggerContainer} className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <motion.div variants={fadeInUp} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-2xl shadow-lg p-6">
+      <motion.div variants={fadeInUp} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-primary/30 dark:border-gray-700 rounded-2xl shadow-lg p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <Button variant="ghost" size="sm" onClick={() => router.push(`/knowledge/${ontologyClass.key}`)}>
               <ArrowLeft className="h-4 w-4 mr-2" /> Back to {ontologyClass.labelPlural}
             </Button>
-            <h1 className="text-2xl md:text-3xl font-bold text-blue-900 dark:text-blue-100">{displayName}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-primary dark:text-primary">{displayName}</h1>
             <div className="flex items-center gap-2 flex-wrap">
               {status && <Badge variant="secondary" className="capitalize">{status.replace(/_/g, " ")}</Badge>}
               <Badge variant="outline" className="gap-1"><Tag className="h-3 w-3" /> {ontologyClass.label}</Badge>
@@ -143,8 +143,8 @@ export default function EntityViewPage() {
 
           <TabsContent value="details" className="space-y-4">
             {sections.map((section) => (
-              <div key={section.key} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-blue-200 dark:border-gray-700 rounded-xl p-4">
-                <h3 className="font-semibold text-lg mb-3 text-blue-900 dark:text-blue-100">{section.label}</h3>
+              <div key={section.key} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-primary/30 dark:border-gray-700 rounded-xl p-4">
+                <h3 className="font-semibold text-lg mb-3 text-primary dark:text-primary">{section.label}</h3>
                 <Table>
                   <TableBody>
                     {(fieldsBySection[section.key] || []).map((field) => (

@@ -52,7 +52,7 @@ export function LanguageSwitcher() {
           aria-label={t('switchTo')}
         >
           <Globe className="h-4 w-4" />
-          <span className="absolute -bottom-0.5 -right-0.5 text-[10px] font-bold leading-none bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded px-0.5">
+          <span className="absolute -bottom-0.5 -right-0.5 text-[10px] font-bold leading-none bg-primary/10 dark:bg-primary/10 text-primary dark:text-primary rounded px-0.5">
             {locale === 'en' ? 'EN' : 'ने'}
           </span>
         </Button>

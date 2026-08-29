@@ -2009,8 +2009,8 @@ export default function OntologyForm({
 
         {duplicateAlert}
 
-        <details className="rounded-2xl border border-blue-200/70 bg-blue-50/30 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">
-          <summary className="cursor-pointer text-xs font-semibold text-blue-700 dark:text-blue-300">
+        <details className="rounded-2xl border border-primary/30 bg-primary/10 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">
+          <summary className="cursor-pointer text-xs font-semibold text-primary dark:text-primary">
             See live preview
           </summary>
           <div className="pt-3">
@@ -2164,8 +2164,8 @@ export default function OntologyForm({
       {duplicateAlert}
 
       {/* Mobile preview — sits at the top of the form, collapsible. */}
-      <details className="rounded-2xl border border-blue-200/70 bg-blue-50/30 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">
-        <summary className="cursor-pointer text-xs font-semibold text-blue-700 dark:text-blue-300">
+      <details className="rounded-2xl border border-primary/30 bg-primary/10 px-3 py-2 lg:hidden dark:border-gray-700 dark:bg-gray-900/40">
+        <summary className="cursor-pointer text-xs font-semibold text-primary dark:text-primary">
           See live preview
         </summary>
         <div className="pt-3">

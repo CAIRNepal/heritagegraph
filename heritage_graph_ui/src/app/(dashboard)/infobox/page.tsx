@@ -56,7 +56,7 @@ export default function WikiPage() {
             <li
               className={`cursor-pointer py-2 transition-all ${
                 tab === 'article'
-                  ? 'font-semibold border-b-2 border-blue-600 dark:border-blue-400 text-gray-900 dark:text-gray-100'
+                  ? 'font-semibold border-b-2 border-primary/30 dark:border-primary/30 text-gray-900 dark:text-gray-100'
                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
               onClick={() => setTab('article')}
@@ -66,7 +66,7 @@ export default function WikiPage() {
             <li
               className={`cursor-pointer py-2 transition-all ${
                 tab === 'talk'
-                  ? 'font-semibold border-b-2 border-blue-600 dark:border-blue-400 text-gray-900 dark:text-gray-100'
+                  ? 'font-semibold border-b-2 border-primary/30 dark:border-primary/30 text-gray-900 dark:text-gray-100'
                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
               onClick={() => setTab('talk')}
@@ -84,7 +84,7 @@ export default function WikiPage() {
               onClick={() => setView(v as typeof view)}
               className={`px-3 py-1.5 rounded-md transition-all ${
                 view === v
-                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 font-medium shadow-sm'
+                  ? 'bg-primary/10 dark:bg-primary/10 text-primary dark:text-primary font-medium shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
               }`}
             >
@@ -160,7 +160,7 @@ export default function WikiPage() {
                   {seeAlso.map((item, i) => (
                     <li
                       key={i}
-                      className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                      className="hover:text-primary dark:hover:text-primary transition-colors cursor-pointer"
                     >
                       {item}
                     </li>
@@ -225,7 +225,7 @@ Banana plants are the world's largest herbaceous flowering plants...
                 <p className="font-medium">2 Sept 2025</p>
                   <p className="text-gray-600 dark:text-gray-400">
                     User{' '}
-                    <span className="text-blue-600 dark:text-blue-400">Editor42</span>{' '}
+                    <span className="text-primary dark:text-primary">Editor42</span>{' '}
                     added &quot;Diseases&quot; section.
                   </p>
               </div>
@@ -233,7 +233,7 @@ Banana plants are the world's largest herbaceous flowering plants...
                 <p className="font-medium">28 Aug 2025</p>
                 <p className="text-gray-600 dark:text-gray-400">
                   User{' '}
-                  <span className="text-blue-600 dark:text-blue-400">FruitLover</span>{' '}
+                  <span className="text-primary dark:text-primary">FruitLover</span>{' '}
                   updated production statistics.
                 </p>
               </div>
@@ -241,7 +241,7 @@ Banana plants are the world's largest herbaceous flowering plants...
                 <p className="font-medium">15 Aug 2025</p>
                 <p className="text-gray-600 dark:text-gray-400">
                   Page created by{' '}
-                  <span className="text-blue-600 dark:text-blue-400">Seedling99</span>.
+                  <span className="text-primary dark:text-primary">Seedling99</span>.
                 </p>
               </div>
             </div>

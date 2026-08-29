@@ -13,7 +13,7 @@ export default function Services() {
       name: 'Frontend Application',
       description: 'Main HeritageGraph application',
       url: 'http://localhost',
-      color: 'from-blue-600 to-sky-500',
+      color: 'from-hero-from to-hero-to',
       icon: '🏛️',
     },
     {
@@ -34,20 +34,20 @@ export default function Services() {
       name: 'Keycloak Realm',
       description: 'User realm console',
       url: 'http://keycloak.localhost',
-      color: 'from-purple-600 to-pink-500',
+      color: 'from-hero-from to-pink-500',
       icon: '🌐',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-hero-from via-hero-to to-hero-to">
       <div className="max-w-6xl mx-auto px-6 py-20">
         {/* Header */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-blue-900 mb-4">
+          <h1 className="text-5xl font-bold text-primary mb-4">
             HeritageGraph Services
           </h1>
-          <p className="text-xl text-blue-700">
+          <p className="text-xl text-primary">
             Access all development services from one place
           </p>
         </div>
@@ -70,10 +70,10 @@ export default function Services() {
               {/* Content */}
               <div className="relative p-8">
                 <div className="text-6xl mb-4">{service.icon}</div>
-                <h2 className="text-2xl font-bold text-blue-900 mb-2">
+                <h2 className="text-2xl font-bold text-primary mb-2">
                   {service.name}
                 </h2>
-                <p className="text-blue-600 mb-6">{service.description}</p>
+                <p className="text-primary mb-6">{service.description}</p>
                 <div className={`inline-flex items-center gap-2 text-sm font-semibold text-transparent bg-gradient-to-r ${service.color} bg-clip-text`}>
                   Open Service
                   <span className="text-lg">→</span>
@@ -84,34 +84,34 @@ export default function Services() {
         </div>
 
         {/* Quick Info */}
-        <div className="bg-white/80 backdrop-blur-sm border border-blue-200 rounded-2xl p-8">
-          <h3 className="text-xl font-bold text-blue-900 mb-4">📋 Service Details</h3>
+        <div className="bg-white/80 backdrop-blur-sm border border-primary/30 rounded-2xl p-8">
+          <h3 className="text-xl font-bold text-primary mb-4">📋 Service Details</h3>
           <div className="grid md:grid-cols-2 gap-6 text-sm">
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">Frontend</h4>
-              <p className="text-blue-700">Next.js application with Tailwind CSS</p>
-              <code className="text-xs bg-blue-100 px-2 py-1 rounded mt-2 inline-block">
+              <h4 className="font-semibold text-primary mb-2">Frontend</h4>
+              <p className="text-primary">Next.js application with Tailwind CSS</p>
+              <code className="text-xs bg-primary/10 px-2 py-1 rounded mt-2 inline-block">
                 localhost:3000
               </code>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">Backend API</h4>
-              <p className="text-blue-700">Django REST API</p>
-              <code className="text-xs bg-blue-100 px-2 py-1 rounded mt-2 inline-block">
+              <h4 className="font-semibold text-primary mb-2">Backend API</h4>
+              <p className="text-primary">Django REST API</p>
+              <code className="text-xs bg-primary/10 px-2 py-1 rounded mt-2 inline-block">
                 backend.localhost:8000
               </code>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">Keycloak</h4>
-              <p className="text-blue-700">OAuth2 / OIDC Identity Provider</p>
-              <code className="text-xs bg-blue-100 px-2 py-1 rounded mt-2 inline-block">
+              <h4 className="font-semibold text-primary mb-2">Keycloak</h4>
+              <p className="text-primary">OAuth2 / OIDC Identity Provider</p>
+              <code className="text-xs bg-primary/10 px-2 py-1 rounded mt-2 inline-block">
                 keycloak.localhost:8080
               </code>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-900 mb-2">Reverse Proxy</h4>
-              <p className="text-blue-700">Traefik with static routing</p>
-              <code className="text-xs bg-blue-100 px-2 py-1 rounded mt-2 inline-block">
+              <h4 className="font-semibold text-primary mb-2">Reverse Proxy</h4>
+              <p className="text-primary">Traefik with static routing</p>
+              <code className="text-xs bg-primary/10 px-2 py-1 rounded mt-2 inline-block">
                 Traefik v2.10
               </code>
             </div>
@@ -119,14 +119,14 @@ export default function Services() {
         </div>
 
         {/* Footer */}
-        <div className="mt-12 text-center text-blue-700">
+        <div className="mt-12 text-center text-primary">
           <p>
             Developed by{' '}
             <a
               href="https://www.cair-nepal.org/"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold hover:text-blue-900"
+              className="font-semibold hover:text-primary"
             >
               CAIR-Nepal
             </a>

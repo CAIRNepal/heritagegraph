@@ -88,8 +88,8 @@ function AssertionCard({ row }: { row: AssertionRow }) {
     <div className={`${glassCard} p-4 space-y-2`}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="space-y-1 flex-1 min-w-0">
-          <p className="text-sm font-medium text-blue-900 dark:text-blue-100 truncate">
-            <span className="font-mono text-xs text-blue-500 dark:text-blue-400 mr-1">
+          <p className="text-sm font-medium text-primary dark:text-primary truncate">
+            <span className="font-mono text-xs text-primary dark:text-primary mr-1">
               {row.asserted_property}
             </span>
             ={" "}

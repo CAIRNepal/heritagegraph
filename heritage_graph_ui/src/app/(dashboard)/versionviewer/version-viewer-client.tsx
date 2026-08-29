@@ -160,7 +160,7 @@ const groupForms = (data: FormVersion[]) => {
 const CustomNode = ({ data }: { data: any }) => {
   const statusColors = {
     draft: 'bg-gray-200 text-gray-800',
-    submitted: 'bg-blue-200 text-blue-800',
+    submitted: 'bg-primary/10 text-primary',
     under_review: 'bg-yellow-200 text-yellow-800',
     approved: 'bg-green-200 text-green-800',
     needs_revision: 'bg-orange-200 text-orange-800',
@@ -188,7 +188,7 @@ const CustomNode = ({ data }: { data: any }) => {
           </div>
         )}
         {data.changes && (
-          <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+          <div className="mt-2 p-2 bg-primary/10 rounded text-xs">
             <div className="flex items-center font-medium">
               <History className="w-3 h-3 mr-1" />
               Changes:
@@ -492,7 +492,7 @@ export default function FormVersionViewer() {
                       <div
                         className={`flex items-center justify-between p-3 cursor-pointer transition-colors ${
                           isSelected
-                            ? 'bg-blue-100 dark:bg-blue-900'
+                            ? 'bg-primary/10 dark:bg-primary/10'
                             : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                         }`}
                         onClick={() => {
@@ -529,7 +529,7 @@ export default function FormVersionViewer() {
                             key={item.id}
                             className={`flex items-center justify-between p-3 pl-10 cursor-pointer transition-colors ${
                               selectedNode?.id === item.id
-                                ? 'bg-blue-100 dark:bg-blue-900'
+                                ? 'bg-primary/10 dark:bg-primary/10'
                                 : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                             }`}
                             onClick={() => {
@@ -559,7 +559,7 @@ export default function FormVersionViewer() {
                                 item.status === 'approved'
                                   ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                                   : item.status === 'submitted'
-                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                                    ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary'
                                     : item.status === 'under_review'
                                       ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                                       : item.status === 'needs_revision'
@@ -646,7 +646,7 @@ export default function FormVersionViewer() {
                         <span>Approved</span>
                       </div>
                       <div className="flex items-center">
-                        <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                        <div className="w-3 h-3 rounded-full bg-primary mr-2"></div>
                         <span>Submitted</span>
                       </div>
                       <div className="flex items-center">
@@ -675,7 +675,7 @@ export default function FormVersionViewer() {
                           selectedNode.data.status === 'approved'
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                             : selectedNode.data.status === 'submitted'
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              ? 'bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary'
                               : selectedNode.data.status === 'under_review'
                                 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                                 : selectedNode.data.status === 'needs_revision'
@@ -730,7 +730,7 @@ export default function FormVersionViewer() {
                       <Label className="text-gray-700 dark:text-gray-300">
                         Changes
                       </Label>
-                      <div className="mt-1 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                      <div className="mt-1 p-3 bg-primary/10 dark:bg-primary/10 rounded-md">
                         <p className="text-gray-900 dark:text-gray-100">
                           {selectedNode.data.changes}
                         </p>
@@ -777,7 +777,7 @@ export default function FormVersionViewer() {
                       <div className="flex flex-wrap gap-2">
                         <Button
                           onClick={handleAddComment}
-                          className="bg-blue-600 hover:bg-blue-700"
+                          className="bg-primary hover:bg-primary/90"
                         >
                           <MessageSquare className="h-4 w-4 mr-2" /> Add Comment
                         </Button>

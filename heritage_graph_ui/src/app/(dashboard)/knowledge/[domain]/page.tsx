@@ -82,7 +82,7 @@ export default function GenericKnowledgePage() {
         return (
           <Link
             href={`/knowledge/${domain}/view/${row.original.id}`}
-            className="font-medium text-blue-600 hover:underline"
+            className="font-medium text-primary hover:underline"
           >
             {text || '(unnamed)'}
           </Link>

@@ -67,7 +67,7 @@ const ISSUE_LABELS: Record<string, string> = {
 const ISSUE_COLORS: Record<string, string> = {
   stale_link: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
   label_drift: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
-  supersession: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+  supersession: "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary",
 };
 
 function formatDate(iso: string | null): string {
@@ -105,13 +105,13 @@ function AlertCard({ alert, onResolve, onIgnore, onUpdateTarget }: AlertCardProp
         <div className="space-y-1 flex-1 min-w-0">
           {link && (
             <>
-              <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 truncate">
+              <p className="text-sm font-semibold text-primary dark:text-primary truncate">
                 Entity:{" "}
                 <a
                   href={link.entity_uri}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 dark:text-blue-400 hover:underline font-mono text-xs"
+                  className="text-primary dark:text-primary hover:underline font-mono text-xs"
                 >
                   {link.entity_uri}
                 </a>
@@ -123,7 +123,7 @@ function AlertCard({ alert, onResolve, onIgnore, onUpdateTarget }: AlertCardProp
                   href={link.target_uri}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-blue-500 hover:underline inline-flex items-center gap-0.5"
+                  className="font-mono text-primary hover:underline inline-flex items-center gap-0.5"
                 >
                   {link.target_uri}
                   <IconExternalLink className="w-3 h-3" />
@@ -148,13 +148,13 @@ function AlertCard({ alert, onResolve, onIgnore, onUpdateTarget }: AlertCardProp
       </div>
 
       {alert.suggested_replacement_uri && (
-        <div className="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/30 rounded-md px-3 py-1.5 border border-blue-200 dark:border-blue-800">
+        <div className="text-xs text-muted-foreground bg-primary/10 dark:bg-primary/10 rounded-md px-3 py-1.5 border border-primary/30 dark:border-primary/30">
           Suggested replacement:{" "}
           <a
             href={alert.suggested_replacement_uri}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-mono text-blue-600 dark:text-blue-400 hover:underline"
+            className="font-mono text-primary dark:text-primary hover:underline"
           >
             {alert.suggested_replacement_uri}
           </a>

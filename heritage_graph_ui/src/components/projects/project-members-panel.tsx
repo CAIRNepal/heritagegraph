@@ -74,7 +74,7 @@ export function ProjectMembersPanel({
           <span className="font-medium text-sm">{project.owner.username}</span>
           <span className="text-xs text-muted-foreground ml-2">{project.owner.email}</span>
         </div>
-        <Badge className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300">
+        <Badge className="text-xs bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary">
           owner
         </Badge>
       </div>
