@@ -44,6 +44,7 @@ import { Eyebrow, OpeningGround } from '@/components/editorial';
 import { GraphBoundaryNote, PropertyPhotograph, ZoneCollection } from './entry-sections';
 import { Constellation } from './Constellation';
 import { Wordmark } from './Wordmark';
+import { HeroPhotographs } from './HeroPhotographs';
 import { CardWeb } from './CardWeb';
 import { NextSteps } from './NextSteps';
 import { AmbientWash, LiveBackdrop } from './depth';
@@ -71,31 +72,12 @@ export function UnescoEntry() {
       {/* ── 1. The name ── */}
       <section aria-labelledby="entry-title" className="relative">
         <motion.div variants={imageReveal} initial="hidden" animate="show">
-          <PropertyPhotograph
-            subjectKey="bhaktapur-durbar-square"
-            alt={t('photographOf', { name: t('zones.bhaktapur-durbar-square') })}
-            aspect="16 / 9"
-            sizes="100vw"
-            priority
-            creditPlacement="none"
-            /* `bg-transparent` matters: the figure's default muted fill would
-               show through wherever the mask below makes the photograph
-               transparent, and a grey band is exactly the hard edge the mask
-               exists to remove. */
-            className="rounded-none bg-transparent"
-            /* The photograph does not end, it dissolves. Masking the image (not
-               the figure — the wordmark is a child and must stay opaque) lets
-               the page background come through the bottom third, so there is no
-               seam between the picture and the page. */
-            /* The fade ends at 86%, not 100%. The image also carries a parallax
-               translate, so its own box slides relative to the figure that clips
-               it — at 100% the figure's `overflow-hidden` cut the photograph
-               while the mask still had ~15% alpha left, which is a hard line
-               across the page. Ending the fade early leaves slack for the whole
-               parallax travel in both directions. */
-            imageClassName="scale-[1.06] [mask-image:linear-gradient(to_bottom,#000_0%,#000_46%,rgba(0,0,0,0.5)_68%,transparent_86%)]"
-            parallax={70}
-          >
+          {/* The hero rotates through the UNESCO-listed places rather than
+              holding one photograph. Frame, mask, parallax and scrims are
+              unchanged; only the source moves. The set comes from the
+              ground-truth module, so it cannot drift from the authority the rest
+              of the page derives its UNESCO facts from. */}
+          <HeroPhotographs>
             {/* Two scrims, both fading out before the bottom edge so neither
                 deposits a dark band where the photograph is disappearing.
                 Vertical carries the top of the frame and the header above it;
@@ -136,7 +118,7 @@ export function UnescoEntry() {
                 </p>
               </div>
             </div>
-          </PropertyPhotograph>
+          </HeroPhotographs>
         </motion.div>
       </section>
 
