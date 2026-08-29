@@ -57,13 +57,13 @@ interface Node3D {
  * a loading spinner. Values are unit-ish and scaled to the canvas at runtime.
  */
 const LAYOUT: Array<{ x: number; y: number; z: number }> = [
-  { x: -0.62, y: -0.30, z: 0.35 },
-  { x: 0.05, y: -0.52, z: -0.25 },
-  { x: 0.68, y: -0.22, z: 0.20 },
-  { x: -0.78, y: 0.28, z: -0.30 },
-  { x: -0.12, y: 0.16, z: 0.55 },
-  { x: 0.52, y: 0.34, z: -0.15 },
-  { x: 0.02, y: 0.58, z: 0.10 },
+  { x: -0.74, y: -0.34, z: 0.72 },
+  { x: 0.06, y: -0.58, z: -0.62 },
+  { x: 0.80, y: -0.26, z: 0.44 },
+  { x: -0.86, y: 0.30, z: -0.70 },
+  { x: -0.14, y: 0.14, z: 0.95 },
+  { x: 0.62, y: 0.38, z: -0.34 },
+  { x: 0.02, y: 0.62, z: 0.18 },
 ];
 
 /** Visual adjacency — a ring plus a few chords, so it reads as a web. */
@@ -79,7 +79,7 @@ interface Pulse {
   speed: number;
 }
 
-const FOV = 900;
+const FOV = 560;
 
 function cssVar(el: HTMLElement, name: string, fallback: string) {
   const v = getComputedStyle(el).getPropertyValue(name).trim();
@@ -100,11 +100,10 @@ export function Constellation({ className }: { className?: string }) {
   const rafRef = useRef<number>(0);
   const visibleRef = useRef(true);
 
-  const zones = KATHMANDU_VALLEY.monumentZones ?? [];
-
   /** Build nodes once, and start loading each monument's photograph. */
   const initNodes = useCallback(() => {
     if (nodesRef.current.length) return;
+    const zones = KATHMANDU_VALLEY.monumentZones ?? [];
     nodesRef.current = zones.slice(0, LAYOUT.length).map((zone, i) => {
       const node: Node3D = {
         key: zone.key,
@@ -127,9 +126,9 @@ export function Constellation({ className }: { className?: string }) {
     pulsesRef.current = EDGES.map((_, i) => ({
       edge: i,
       t: Math.random(),
-      speed: 0.12 + Math.random() * 0.16,
+      speed: 0.20 + Math.random() * 0.24,
     }));
-  }, [zones]);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -175,14 +174,14 @@ export function Constellation({ className }: { className?: string }) {
       const nodes = nodesRef.current;
       // Spread on each axis separately. A single min(w,h) radius left the web
       // huddled in the middle of a wide box, using about 40% of the width.
-      const rx = w * 0.44;
-      const ry = h * 0.43;
+      const rx = w * 0.40;
+      const ry = h * 0.40;
       const radius = Math.min(w, h) * 0.42; // depth scale reference only
       const cx = w / 2;
       const cy = h / 2;
 
       if (!reduce) {
-        spin += dt * 0.12;
+        spin += dt * 0.19;
         // Ease the camera toward the pointer so it feels weighted, not twitchy.
         const tx = pointerRef.current.active ? pointerRef.current.x * 0.28 : 0;
         const ty = pointerRef.current.active ? pointerRef.current.y * 0.18 : 0;
@@ -204,11 +203,11 @@ export function Constellation({ className }: { className?: string }) {
         const rz = n.x * sy + n.z * cyr;
         const py3 = n.y + camY * rz * 0.5;
         const depth = rz * radius;
-        const scale = FOV / (FOV + depth * 1.6);
+        const scale = FOV / (FOV + depth * 2.6);
         n.px = cx + px3 * rx * scale;
         n.py = cy + py3 * ry * scale;
         n.scale = scale;
-        n.pr = Math.max(12, 27 * scale);
+        n.pr = Math.max(14, 40 * scale);
       }
 
       // ── edges behind nodes ──
@@ -225,9 +224,9 @@ export function Constellation({ className }: { className?: string }) {
         ctx.moveTo(na.px, na.py);
         ctx.quadraticCurveTo(mx, my, nb.px, nb.py);
         const lit = hoverRef.current === a || hoverRef.current === b;
-        ctx.strokeStyle = lit ? primary : border;
-        ctx.globalAlpha = (lit ? 0.9 : 0.45) * depth;
-        ctx.lineWidth = (lit ? 1.8 : 1.1) * depth;
+        ctx.strokeStyle = primary;
+        ctx.globalAlpha = (lit ? 0.95 : 0.34) * depth;
+        ctx.lineWidth = (lit ? 2.2 : 1.4) * depth;
         ctx.stroke();
 
         // Travelling highlight — the "current" running through the web.
@@ -241,13 +240,13 @@ export function Constellation({ className }: { className?: string }) {
           const inv = 1 - u;
           const bx = inv * inv * na.px + 2 * inv * u * mx + u * u * nb.px;
           const by = inv * inv * na.py + 2 * inv * u * my + u * u * nb.py;
-          const glow = ctx.createRadialGradient(bx, by, 0, bx, by, 11 * depth);
+          const glow = ctx.createRadialGradient(bx, by, 0, bx, by, 13 * depth);
           glow.addColorStop(0, primary);
           glow.addColorStop(1, 'transparent');
-          ctx.globalAlpha = (lit ? 0.95 : 0.6) * depth;
+          ctx.globalAlpha = (lit ? 1 : 0.8) * depth;
           ctx.fillStyle = glow;
           ctx.beginPath();
-          ctx.arc(bx, by, 11 * depth, 0, Math.PI * 2);
+          ctx.arc(bx, by, 13 * depth, 0, Math.PI * 2);
           ctx.fill();
         }
       });
@@ -259,7 +258,7 @@ export function Constellation({ className }: { className?: string }) {
         const n = nodes[i];
         const hovered = hoverRef.current === i;
         const r = n.pr * (hovered ? 1.14 : 1);
-        ctx.globalAlpha = 0.45 + 0.55 * n.scale;
+        ctx.globalAlpha = Math.max(0.22, Math.min(1, n.scale * n.scale * 1.15));
 
         ctx.save();
         ctx.beginPath();
@@ -283,7 +282,20 @@ export function Constellation({ className }: { className?: string }) {
       }
       ctx.globalAlpha = 1;
 
-      // Label pass, on top of everything.
+      // Label pass, on top of everything. Nodes near the camera are always
+      // named — the graph should read as seven identifiable places, not as
+      // abstract dots that only resolve on hover.
+      ctx.font = '600 11px ui-sans-serif, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      for (const n of nodes) {
+        if (hoverRef.current >= 0 && nodes[hoverRef.current] === n) continue;
+        if (n.scale < 0.92) continue;
+        ctx.globalAlpha = Math.min(0.72, (n.scale - 0.92) * 7);
+        ctx.fillStyle = fg;
+        ctx.fillText(n.label, n.px, n.py + n.pr + 15);
+      }
+      ctx.globalAlpha = 1;
+
       const hv = hoverRef.current;
       if (hv >= 0 && nodes[hv]) {
         const n = nodes[hv];
@@ -373,7 +385,7 @@ export function Constellation({ className }: { className?: string }) {
   return (
     <div
       ref={wrapRef}
-      className={cn('relative aspect-[4/3] w-full select-none sm:aspect-[16/10]', className)}
+      className={cn('relative w-full select-none', className)}
     >
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full" />
       {/* The canvas is decoration. The zones themselves are listed as real

@@ -36,7 +36,7 @@ export function NextSteps() {
       <h2 id="next-heading" className="sr-only">
         {t('nextTitle')}
       </h2>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 @2xl/main:grid-cols-2">
         {doors.map(({ key, href, Icon }) => (
           <TiltCard key={key} max={1.4}>
             <Link

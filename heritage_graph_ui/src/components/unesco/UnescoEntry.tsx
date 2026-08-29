@@ -40,6 +40,7 @@ import {
 } from './entry-sections';
 import { ImageCreditsList, SourcedFacts, SubjectDescription } from './SourcedFacts';
 import { Constellation } from './Constellation';
+import { Wordmark } from './Wordmark';
 import { CardWeb } from './CardWeb';
 import { NextSteps } from './NextSteps';
 import { AmbientWash, LiveBackdrop } from './depth';
@@ -82,12 +83,12 @@ export function UnescoEntry() {
                 {/* The wordmark sits forward of the photograph, which drifts
                     behind it on scroll — the two read as separate planes
                     rather than as text on a picture. */}
-                <h1
+                <Wordmark
                   id="entry-title"
-                  className="mt-3 font-serif text-[2.6rem] leading-[0.95] tracking-[-0.03em] text-white drop-shadow-[0_2px_24px_rgba(0,0,0,0.45)] sm:text-7xl lg:text-8xl"
-                >
-                  {t('wordmark')}
-                </h1>
+                  first={t('wordmarkFirst')}
+                  second={t('wordmarkSecond')}
+                  className="mt-3"
+                />
                 <p className="mt-4 max-w-[46ch] text-sm leading-relaxed text-white/85 sm:text-lg">
                   {t('heroLede')}
                 </p>
@@ -101,18 +102,23 @@ export function UnescoEntry() {
       <section aria-labelledby="intro-heading" className="relative isolate">
         <AmbientWash />
         <div className={wideColumn}>
-          <div className="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+          {/* The prose sits above the graph rather than beside it. In a side
+              column the constellation was ~500px wide, which is not enough room
+              for perspective to read as depth. */}
+          <div className="mx-auto max-w-3xl text-center">
             <motion.div {...reveal} variants={revealOnScroll}>
               <h2
                 id="intro-heading"
-                className="max-w-[18ch] font-serif text-3xl leading-[1.1] text-balance sm:text-4xl"
+                className="mx-auto max-w-[22ch] font-serif text-3xl leading-[1.1] text-balance sm:text-4xl"
               >
                 {t('introTitle')}
               </h2>
-              <p className="mt-5 max-w-[54ch] leading-relaxed text-muted-foreground">
+              <p className="mx-auto mt-5 max-w-[58ch] leading-relaxed text-muted-foreground">
                 {t('introBody')}
               </p>
-              <p className="mt-4 max-w-[54ch] leading-relaxed text-foreground">{t('introBody2')}</p>
+              <p className="mx-auto mt-4 max-w-[58ch] leading-relaxed text-foreground">
+                {t('introBody2')}
+              </p>
               <Link
                 href="/about"
                 className="group mt-7 inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
@@ -124,14 +130,14 @@ export function UnescoEntry() {
                 />
               </Link>
             </motion.div>
-
-            <motion.div {...reveal} variants={revealOnScroll}>
-              <Constellation />
-              <p className="mt-2 text-center text-xs text-muted-foreground">
-                {t('constellationHint')}
-              </p>
-            </motion.div>
           </div>
+
+          <motion.div {...reveal} variants={revealOnScroll} className="mt-10">
+            <Constellation className="aspect-[4/3] sm:aspect-[2/1] lg:aspect-[5/2]" />
+            <p className="mt-1 text-center text-xs text-muted-foreground">
+              {t('constellationHint')}
+            </p>
+          </motion.div>
         </div>
       </section>
 
@@ -174,7 +180,7 @@ export function UnescoEntry() {
           />
         </motion.div>
         <motion.div {...reveal} variants={revealOnScroll} className={`${wideColumn} mt-10`}>
-          <div className="grid gap-8 md:grid-cols-[1.3fr_1fr] md:gap-14">
+          <div className="grid gap-8 @3xl/main:grid-cols-[1.3fr_1fr] @3xl/main:gap-14">
             <div>
               <Eyebrow>{t('culturalHeading')}</Eyebrow>
               <h2

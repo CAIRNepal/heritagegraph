@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   IconAlertHexagon,
   IconArrowRight,
@@ -165,7 +165,6 @@ export function SerialPropertyCaution({ className }: { className?: string }) {
 
 export function ScopeStatement() {
   const t = useTranslations('unescoEntry');
-  const reduceMotion = useReducedMotion();
   const reveal = useReveal();
 
   return (
@@ -201,7 +200,6 @@ export function ScopeStatement() {
 
 export function GraphBoundaryNote() {
   const t = useTranslations('unescoEntry');
-  const reduceMotion = useReducedMotion();
   const reveal = useReveal();
 
   return (
@@ -297,7 +295,6 @@ export function ZoneCollection({
   layout: 'grid' | 'band';
   headingLevel?: 3 | 4;
 }) {
-  const reduceMotion = useReducedMotion();
   const reveal = useReveal();
   const zones = KATHMANDU_VALLEY.monumentZones ?? [];
 
@@ -319,7 +316,7 @@ export function ZoneCollection({
     <motion.div
       variants={editorialStagger}
       {...reveal}
-      className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3"
+      className="grid grid-cols-1 gap-x-6 gap-y-10 @xl/main:grid-cols-2 @4xl/main:grid-cols-3"
     >
       {zones.map((zone, i) => (
         <ZoneCard key={zone.key} zone={zone} index={i} layout="grid" headingLevel={headingLevel} />

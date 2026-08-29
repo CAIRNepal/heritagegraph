@@ -15,7 +15,7 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { IconArrowRight } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,6 @@ import {
 
 export function EntryDirectionB() {
   const t = useTranslations('unescoEntry');
-  const reduceMotion = useReducedMotion();
   const reveal = useReveal();
 
   return (
