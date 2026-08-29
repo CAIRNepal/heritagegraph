@@ -11,9 +11,18 @@
  *  2. Why a graph. One concrete example — a temple, its guthi, its festival,
  *     its deity — beside a live web of the seven zones. The idea is meant to
  *     land visually before it is read.
- *  3. The seven zones, as an index with the official UNESCO reference on each.
- *  4. Lumbini.
- *  5. The boundary of what is UNESCO-inscribed, credits, provenance.
+ *  3. The seven places, as a connected index. Numbered, because the count is
+ *     the point; no catalogue codes, because a visitor cannot read them.
+ *  4. Lumbini, composed rather than posted.
+ *  5. What is on the World Heritage List and what else we keep, credits,
+ *     provenance.
+ *
+ * WRITTEN FOR SOMEONE WITH NO BACKGROUND IN ANY OF THIS
+ * The copy here says "place", not "entity"; "connection", not "edge"; "checked
+ * by someone", not "reviewed record"; and nothing on the page explains its own
+ * interface. Identifiers, property numbers and licence detail all still exist —
+ * they live on each place's own record and in the footer, where a researcher
+ * looks and a visitor never has to.
  *
  * Deliberately removed: a Kathmandu Valley facts panel and a register of all
  * four properties. Both restated things already visible elsewhere on the page
@@ -69,16 +78,43 @@ export function UnescoEntry() {
             sizes="100vw"
             priority
             creditPlacement="none"
-            className="rounded-none"
-            imageClassName="scale-[1.06]"
+            /* `bg-transparent` matters: the figure's default muted fill would
+               show through wherever the mask below makes the photograph
+               transparent, and a grey band is exactly the hard edge the mask
+               exists to remove. */
+            className="rounded-none bg-transparent"
+            /* The photograph does not end, it dissolves. Masking the image (not
+               the figure — the wordmark is a child and must stay opaque) lets
+               the page background come through the bottom third, so there is no
+               seam between the picture and the page. */
+            imageClassName="scale-[1.06] [mask-image:linear-gradient(to_bottom,#000_0%,#000_52%,rgba(0,0,0,0.55)_78%,transparent_100%)]"
             parallax={70}
           >
+            {/* Two scrims, both fading out before the bottom edge so neither
+                deposits a dark band where the photograph is disappearing.
+                Vertical carries the top of the frame and the header above it;
+                horizontal darkens the left, where the type sits, and leaves the
+                right side of the photograph at full brightness. A single
+                symmetrical scrim strong enough for the lede would have flattened
+                the whole picture. */}
             <div
-              className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-black/15"
+              className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.46)_46%,rgba(0,0,0,0.24)_74%,transparent_100%)]"
               aria-hidden="true"
             />
-            <div className="absolute inset-0 flex items-end">
-              <div className={`${wideColumn} pb-9 md:pb-16`}>
+            {/* The horizontal scrim carries the SAME vertical mask as the
+                photograph. It has no falloff of its own — a left-to-right
+                gradient is equally dark at the top and the bottom — so without
+                the mask it kept painting grey over the page background below
+                where the photograph had already dissolved, and put a hard edge
+                exactly where the figure ended. */}
+            <div
+              className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.5)_0%,rgba(0,0,0,0.28)_38%,transparent_68%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_52%,transparent_100%)]"
+              aria-hidden="true"
+            />
+            {/* Type sits in the upper, still-opaque part of the frame. It used
+                to sit at the bottom, which is now the part that fades away. */}
+            <div className="absolute inset-0 flex items-center">
+              <div className={`${wideColumn} -mt-6 sm:-mt-10`}>
                 <Eyebrow className="text-white/70">{t('eyebrow')}</Eyebrow>
                 {/* The wordmark sits forward of the photograph, which drifts
                     behind it on scroll — the two read as separate planes
@@ -166,30 +202,51 @@ export function UnescoEntry() {
       {/* ── 4. Two doors out ── */}
       <NextSteps />
 
-      {/* ── 5. Lumbini ── */}
-      <section aria-labelledby="lumbini-heading">
-        <motion.div {...reveal} variants={revealOnScroll}>
-          <PropertyPhotograph
-            subjectKey="lumbini"
-            alt={t('photographOf', { name: t('properties.lumbini') })}
-            aspect="21 / 9"
-            sizes="100vw"
-            creditPlacement="none"
-            className="rounded-none"
-            parallax={50}
-          />
-        </motion.div>
-        <motion.div {...reveal} variants={revealOnScroll} className={`${wideColumn} mt-10`}>
-          <div className="grid gap-8 @3xl/main:grid-cols-[1.3fr_1fr] @3xl/main:gap-14">
+      {/* ── 5. Lumbini ──
+          Was a full-bleed 21:9 band with the text underneath, which read as a
+          photograph dropped onto the page. It is a half-width picture set into
+          a composition now: glow behind it, edges feathered into the page, and
+          the heading beside it rather than below. */}
+      <section aria-labelledby="lumbini-heading" className="relative isolate">
+        <AmbientWash />
+        <motion.div {...reveal} variants={revealOnScroll} className={wideColumn}>
+          <div className="grid items-center gap-10 @3xl/main:grid-cols-[1fr_1fr] @3xl/main:gap-16">
+            <div className="relative">
+              {/* A soft bloom under the picture. Without it the feathered edges
+                  fade into flat paper and read as a mistake rather than a
+                  treatment. */}
+              {/* Bleeds outward vertically at every size, horizontally only
+                  once there is room for it. `-inset-6` on a phone puts the
+                  glow's box 24px past the column and scrolls the page sideways;
+                  the blur spreads horizontally on its own, and blur is ink, not
+                  layout, so it costs no overflow. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-y-6 inset-x-0 -z-10 rounded-[2rem] bg-primary/[0.07] blur-2xl @2xl/main:-inset-x-6"
+              />
+              <PropertyPhotograph
+                subjectKey="lumbini"
+                alt={t('photographOf', { name: t('properties.lumbini') })}
+                aspect="4 / 3"
+                sizes="(max-width: 900px) 92vw, 40rem"
+                creditPlacement="none"
+                className="rounded-2xl bg-transparent shadow-[0_24px_60px_-28px_rgba(0,0,0,0.45)]"
+                imageClassName="[mask-image:radial-gradient(120%_120%_at_50%_42%,#000_58%,rgba(0,0,0,0.72)_82%,transparent_100%)]"
+                parallax={34}
+              />
+            </div>
             <div>
               <Eyebrow>{t('culturalHeading')}</Eyebrow>
               <h2
                 id="lumbini-heading"
-                className="mt-2 max-w-[20ch] font-serif text-3xl leading-tight text-balance sm:text-4xl"
+                className="mt-2 max-w-[22ch] font-serif text-3xl leading-tight text-balance sm:text-4xl"
               >
                 {t('properties.lumbini')}
               </h2>
-              <p className="mt-3 font-mono text-sm text-muted-foreground">
+              <p className="mt-4 max-w-[46ch] leading-relaxed text-muted-foreground">
+                {t('lumbiniLede')}
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">
                 {t('inscribedYear', { year: LUMBINI.yearInscribed })}
               </p>
               <Button asChild className="mt-6">
@@ -199,7 +256,13 @@ export function UnescoEntry() {
                 </Link>
               </Button>
             </div>
-            <div className="flex flex-col gap-6">
+          </div>
+
+          {/* The sourced detail sits below the composition rather than crammed
+              into a column beside it, under a heading that says what it is. */}
+          <div className="mt-12 border-t border-border pt-8">
+            <Eyebrow className="mb-4">{t('recordedDetails')}</Eyebrow>
+            <div className="grid gap-8 @3xl/main:grid-cols-[1.15fr_1fr] @3xl/main:gap-14">
               <SubjectDescription subjectKey="lumbini" />
               <SourcedFacts subjectKey="lumbini" />
             </div>

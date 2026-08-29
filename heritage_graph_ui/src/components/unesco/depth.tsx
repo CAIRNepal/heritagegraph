@@ -136,15 +136,26 @@ export function TiltCard({
  * Token-driven and very low alpha — this is depth, not the neon "hero glow"
  * that makes a page look generated. It sits behind content and is hidden from
  * assistive technology.
+ *
+ * A radial gradient rather than a blurred element inside `overflow-hidden`.
+ * Clipping a blur leaves a dead-straight edge exactly where the blur is cut,
+ * which put a faint rectangular band across the section.
+ *
+ * The geometry matters as much as the technique: the ellipse is centred inside
+ * the element and sized in percentages so it reaches full transparency before
+ * any of the four edges. Anchored at the top edge instead (`at 50% 0%`) it is at
+ * full strength exactly where the section begins, which is the same visible
+ * seam by a different route.
  */
 export function AmbientWash({ className }: { className?: string }) {
   return (
     <div
       aria-hidden="true"
-      className={cn('pointer-events-none absolute inset-0 -z-10 overflow-hidden', className)}
-    >
-      <div className="absolute left-1/2 top-0 h-[38rem] w-full max-w-[70rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/[0.06] blur-3xl" />
-    </div>
+      className={cn(
+        'pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(58rem_30rem_at_50%_0%,color-mix(in_oklab,var(--primary)_8%,transparent)_0%,transparent_72%)]',
+        className,
+      )}
+    />
   );
 }
 
