@@ -13,16 +13,22 @@ import { TiltCard } from './depth';
 /**
  * Where a reader goes after the seven zones.
  *
- * Two doors, not a row of buttons: one into the record as it stands, one into
- * adding to it. They are given the same weight because for this project they
- * matter equally — a heritage graph nobody contributes to stops being current.
+ * Two doors, not a row of buttons: one into the collection as it stands, one
+ * into adding to it. They are given the same weight because for this project
+ * they matter equally — a heritage graph nobody contributes to stops being
+ * current.
+ *
+ * The first door goes to the Heritage Museum, not the dashboard. A visitor who
+ * has just read about seven places wants to see the places; the dashboard's
+ * counts and review queues are a contributor's view, and it is reachable from
+ * the top bar for anyone who wants it.
  */
 export function NextSteps() {
   const t = useTranslations('unescoEntry');
   const reveal = useReveal();
 
   const doors = [
-    { key: 'nextBrowse', href: '/dashboard', Icon: IconChartDots3 },
+    { key: 'exploreDoor', href: '/heritage-museum', Icon: IconChartDots3 },
     { key: 'nextContribute', href: '/contribute', Icon: IconPencilPlus },
   ] as const;
 

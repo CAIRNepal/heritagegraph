@@ -41,24 +41,13 @@ import { KATHMANDU_VALLEY, LUMBINI } from '@/lib/unesco/ground-truth';
 import { museumHref } from '@/lib/unesco/graph-bindings';
 
 import { Eyebrow, OpeningGround } from '@/components/editorial';
-import {
-  GraphBoundaryNote,
-  PropertyPhotograph,
-  ProvenanceFooter,
-  ZoneCollection,
-} from './entry-sections';
-import { ImageCreditsList, SourcedFacts, SubjectDescription } from './SourcedFacts';
+import { GraphBoundaryNote, PropertyPhotograph, ZoneCollection } from './entry-sections';
 import { Constellation } from './Constellation';
 import { Wordmark } from './Wordmark';
 import { CardWeb } from './CardWeb';
 import { NextSteps } from './NextSteps';
 import { AmbientWash, LiveBackdrop } from './depth';
 import { HowItWorks } from './HowItWorks';
-
-const CREDITED_SUBJECTS = [
-  ...(KATHMANDU_VALLEY.monumentZones ?? []).map((z) => z.key),
-  'lumbini',
-] as const;
 
 export function UnescoEntry() {
   const t = useTranslations('unescoEntry');
@@ -268,27 +257,36 @@ export function UnescoEntry() {
             </div>
           </div>
 
-          {/* The sourced detail sits below the composition rather than crammed
-              into a column beside it, under a heading that says what it is. */}
-          <div className="mt-12 border-t border-border pt-8">
-            <Eyebrow className="mb-4">{t('recordedDetails')}</Eyebrow>
-            <div className="grid gap-8 @3xl/main:grid-cols-[1.15fr_1fr] @3xl/main:gap-14">
-              <SubjectDescription subjectKey="lumbini" />
-              <SourcedFacts subjectKey="lumbini" />
-            </div>
-          </div>
+          {/* No description or fact table here. A quoted paragraph and a
+              Wikidata property list are what a record looks like, and the
+              record lives in the museum — the button above goes straight to it.
+              On the entry page they turned a composed spread into a data dump. */}
         </motion.div>
       </section>
 
-      {/* ── 7. Boundary, credits, provenance ── */}
+      {/* ── 7. Boundary, and a pointer to the credits ──
+          The full credit list and the provenance notes moved to /about. Eight
+          rows of author-and-licence and two paragraphs of sourcing notes were
+          the last thing a first-time visitor saw, and they belong with the
+          other reference material.
+
+          One line stays, and has to: the photographs are CC BY-SA, which
+          requires attribution wherever the work appears. CC explicitly allows
+          that attribution to be "in any reasonable manner based on the medium",
+          including a link to the credits — so this is a link, not a list. */}
       <GraphBoundaryNote />
 
       <div className={wideColumn}>
-        <div className="mx-auto max-w-3xl border-t border-border pt-8">
-          <ImageCreditsList subjectKeys={CREDITED_SUBJECTS} />
+        <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-2 gap-y-1 border-t border-border pt-8 text-xs leading-relaxed text-muted-foreground">
+          <span>{t('photoCreditLine')}</span>
+          <Link
+            href="/about#image-credits"
+            className="text-primary underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            {t('photoCreditLink')} →
+          </Link>
         </div>
       </div>
-      <ProvenanceFooter />
     </div>
   );
 }
