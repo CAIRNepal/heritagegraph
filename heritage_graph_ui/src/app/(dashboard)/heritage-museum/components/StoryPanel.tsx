@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import { unescoStatementForLabel } from '@/lib/unesco/status';
-import { subjectKeyForNodeId } from '@/lib/unesco/facts';
-import { SourcedFacts, SubjectDescription } from '@/components/unesco/SourcedFacts';
+import { EntityRecordPanel } from '@/components/records/EntityRecordPanel';
 import {
   isCuratedResourceIri,
   resourceIriToDetailHref,
@@ -48,7 +47,6 @@ export function StoryPanel({
   const t = useTranslations('heritageMuseum.panel');
   const tUnesco = useTranslations('unescoEntry');
   const unescoStatement = unescoStatementForLabel(node?.label);
-  const unescoSubjectKey = subjectKeyForNodeId(node?.id);
   const scrollRootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -202,15 +200,10 @@ export function StoryPanel({
           they cannot, is the honest ordering — and it is the difference between
           a record that looks empty and one that says something. */}
       <div className="px-6 py-5 space-y-6">
-        {unescoSubjectKey ? (
-          <>
-            <SubjectDescription subjectKey={unescoSubjectKey} />
-            <SourcedFacts
-              subjectKey={unescoSubjectKey}
-              className="rounded-lg border border-border bg-muted/30 p-4"
-            />
-          </>
-        ) : null}
+        {/* Sourced description and facts for any entity that has them — 38 of
+            the 46 corpus records do. The UNESCO eight additionally carry the
+            ground-truth reference shown in the header above. */}
+        <EntityRecordPanel nodeId={node.id} />
 
         <Section title={t('story')} icon="📖" color={cfg.color}>
           {node.storyText?.trim() ? (
