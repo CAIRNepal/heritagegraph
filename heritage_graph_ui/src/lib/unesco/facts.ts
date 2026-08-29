@@ -73,10 +73,6 @@ export function orderedFacts(
   });
 }
 
-/** The official UNESCO World Heritage reference, when one is recorded. */
-export function worldHeritageRef(subjectKey: string): string | null {
-  return factsFor(subjectKey)?.facts.worldHeritageId?.values[0] ?? null;
-}
 
 /**
  * Map a demo-corpus node id to a UNESCO subject key, so the museum can show

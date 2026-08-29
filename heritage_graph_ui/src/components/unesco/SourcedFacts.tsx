@@ -3,12 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { IconExternalLink } from '@tabler/icons-react';
 
-import {
-  FACTS_PROVENANCE,
-  factsFor,
-  orderedFacts,
-  worldHeritageRef,
-} from '@/lib/unesco/facts';
+import { FACTS_PROVENANCE, factsFor, orderedFacts } from '@/lib/unesco/facts';
 import { descriptionFor } from '@/lib/unesco/descriptions';
 import { imageryFor } from '@/lib/unesco/imagery';
 import { cn } from '@/lib/utils';
@@ -81,37 +76,6 @@ export function SourcedFacts({
   );
 }
 
-/**
- * The UNESCO reference as a compact chip — `121bis-001` and the like.
- *
- * Worth its own component because it is the single fact that settles the
- * framing: a component reference of the form `121bis-00N` says, from UNESCO's
- * own numbering, that a zone is part of one property rather than a site of
- * its own.
- */
-export function WorldHeritageRef({
-  subjectKey,
-  className,
-}: {
-  subjectKey: string;
-  className?: string;
-}) {
-  const t = useTranslations('unescoEntry.facts');
-  const ref = worldHeritageRef(subjectKey);
-  if (!ref) return null;
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded border border-border bg-muted/60 px-1.5 py-0.5 font-mono text-[0.65rem] tabular-nums text-muted-foreground',
-        className,
-      )}
-      title={t('refTitle')}
-    >
-      <span className="uppercase tracking-[0.1em]">{t('refLabel')}</span>
-      <span className="text-foreground">{ref}</span>
-    </span>
-  );
-}
 
 /**
  * Full title–author–source–licence credits, listed once per page.

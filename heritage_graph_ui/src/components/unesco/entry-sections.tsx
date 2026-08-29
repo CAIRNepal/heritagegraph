@@ -28,7 +28,6 @@ import { useReveal } from '@/lib/use-reveal';
 import { cn } from '@/lib/utils';
 
 import { PropertyPhotograph } from './PropertyPhotograph';
-import { WorldHeritageRef } from './SourcedFacts';
 import { TiltCard } from './depth';
 
 /* ── Small shared bits ─────────────────────────────────────────────────── */
@@ -115,10 +114,14 @@ export function ZoneCard({
       </TiltCard>
 
       <div className="flex flex-col gap-1.5">
-        <WorldHeritageRef subjectKey={zone.key} className="w-fit" />
+        {/* No UNESCO reference code here. `121bis-004` is a catalogue number:
+            it means nothing to a visitor, and the fact it encoded — that these
+            are components of one property — is now said in plain words above
+            the grid. The code itself is still on each place's own record, where
+            someone looking for it will look. */}
         <div className="flex items-baseline gap-2">
-          {/* Numbering is real information here: these are the seven zones of
-              one serial nomination, and the count is the point. */}
+          {/* Numbering is real information: these are the seven parts of one
+              listing, and the count is the point. */}
           <span className="font-mono text-xs tabular-nums text-muted-foreground">
             {String(index + 1).padStart(2, '0')}
           </span>
@@ -319,7 +322,7 @@ export function ZoneCollection({
       // Wider gutters than a plain grid would need: the filaments and their
       // terminals live in this space, and at gap-x-6 there was not enough room
       // between adjacent cards for a connection to read.
-      className="grid grid-cols-1 gap-x-10 gap-y-12 @xl/main:grid-cols-2 @4xl/main:grid-cols-3"
+      className="grid grid-cols-1 gap-x-12 gap-y-14 @xl/main:grid-cols-2 @4xl/main:grid-cols-3"
     >
       {zones.map((zone, i) => (
         <ZoneCard key={zone.key} zone={zone} index={i} layout="grid" headingLevel={headingLevel} />
