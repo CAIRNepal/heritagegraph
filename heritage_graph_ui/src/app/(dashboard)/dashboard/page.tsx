@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
@@ -13,27 +13,38 @@ import {
 } from '@/components/progression-widgets';
 import { SectionCards } from '@/app/(dashboard)/components/section-cards';
 import { CorpusSummary } from '@/components/dashboard/corpus-summary';
-import { IconPlus, IconArrowRight, IconGraph, IconFlask } from '@tabler/icons-react';
-import {
-  fadeInUp,
-  heroForeground,
-  heroForegroundMuted,
-  heroGradient,
-  scaleIn,
-  staggerContainer,
-  surfaceCard,
-} from '@/lib/design';
+import { IconArrowRight } from '@tabler/icons-react';
+import { Eyebrow, OpeningGround } from '@/components/editorial';
+import { LiveBackdrop, TiltCard } from '@/components/unesco/depth';
+import { editorialStagger, revealOnScroll, scaleIn } from '@/lib/design';
 import { useReveal } from '@/lib/use-reveal';
-import { cn } from '@/lib/utils';
 import { dashboardBrowseCategories } from '@/config/dashboard-links';
-import { ShortcutGrid } from '@/components/dashboard/shortcut-grid';
+
+/**
+ * The dashboard.
+ *
+ * Same visual language as the entry and About pages, deliberately: a reader who
+ * follows "Open the dashboard" from the home page should not feel they have
+ * changed site. The gradient hero panel and pill buttons that used to open this
+ * page were the loudest signal that they had.
+ *
+ * Every data widget below — CorpusSummary, SectionCards, the progression
+ * widgets — is untouched. This is a change of frame, not of function.
+ */
+function SectionHeading({ id, children }: { id?: string; children: React.ReactNode }) {
+  return (
+    <h2 id={id} className="mb-6 font-serif text-2xl leading-tight text-balance sm:text-3xl">
+      {children}
+    </h2>
+  );
+}
 
 export default function Page() {
   const { data: session, status } = useSession();
   const t = useTranslations('dashboard');
   const tContribute = useTranslations('contribute');
+  const tShortcuts = useTranslations('dashboard.shortcuts');
   const [greeting, setGreeting] = useState<string | null>(null);
-  const reduceMotion = useReducedMotion();
   const reveal = useReveal();
 
   const isAuthenticated = status === 'authenticated';
@@ -55,85 +66,65 @@ export default function Page() {
       `${greeting ?? t('greetingFallback')}, ${firstName}`
     : t('heroTitleAnonymous');
 
-  return (
-    <div className="space-y-8">
-      {/* ── Hero ── */}
-      <motion.div
-        initial="hidden"
-        animate="show"
-        variants={staggerContainer}
-        className={cn('relative overflow-hidden', surfaceCard, 'p-8 md:p-10')}
-      >
-        <div className={cn('absolute inset-0', heroGradient)} />
+  const linkCls =
+    'group inline-flex items-center gap-1.5 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring';
 
-        <motion.div variants={fadeInUp} className="relative z-10 space-y-3">
-          <h1
-            className={cn(
-              'font-serif text-3xl font-bold leading-tight md:text-4xl',
-              heroForeground,
-            )}
+  return (
+    <div className="relative space-y-16 pb-8 md:space-y-20">
+      <LiveBackdrop />
+
+      {/* ── The opening ── the same ground the entry and About pages open on ── */}
+      <section aria-labelledby="dashboard-title" className="relative isolate -mx-4 px-4 pt-4 md:-mx-6 md:px-6">
+        <OpeningGround />
+        <motion.div initial="hidden" animate="show" variants={editorialStagger}>
+          <motion.div variants={revealOnScroll}>
+            <Eyebrow>{t('eyebrow')}</Eyebrow>
+          </motion.div>
+          <motion.h1
+            variants={revealOnScroll}
+            id="dashboard-title"
+            className="mt-3 max-w-[26ch] font-serif text-4xl leading-[1.05] text-balance sm:text-5xl"
           >
             {heading}
-          </h1>
-          <p
-            className={cn(
-              'max-w-2xl text-base leading-relaxed md:text-lg',
-              heroForegroundMuted,
-            )}
+          </motion.h1>
+          <motion.p
+            variants={revealOnScroll}
+            className="mt-5 max-w-[58ch] text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
             {isAuthenticated ? t('heroSubtitle') : t('heroSubtitleAnonymous')}
-          </p>
-          <div className="flex flex-wrap gap-3 pt-2">
-            <Button
-              size="lg"
-              asChild
-              className="rounded-full bg-hero-foreground font-semibold text-hero-from shadow-sm hover:bg-hero-foreground/90"
-            >
+          </motion.p>
+          <motion.div
+            variants={revealOnScroll}
+            className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3"
+          >
+            <Button asChild>
               <Link href="/contribute">
-                <IconPlus className="mr-2 size-4" />
                 {tContribute('newContribution')}
+                <IconArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              asChild
-              className="rounded-full border-hero-foreground/40 bg-hero-foreground/10 font-semibold text-hero-foreground hover:bg-hero-foreground/20 hover:text-hero-foreground"
-            >
-              <Link href="/graphview">
-                <IconGraph className="mr-2 size-4" />
-                {t('exploreGraph')}
-                <IconArrowRight className="ml-2 size-4" />
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              asChild
-              className="rounded-full border-hero-foreground/40 bg-hero-foreground/10 font-semibold text-hero-foreground hover:bg-hero-foreground/20 hover:text-hero-foreground"
-            >
-              <Link href="/methods">
-                <IconFlask className="mr-2 size-4" />
-                {t('methodsAndData')}
-              </Link>
-            </Button>
-          </div>
+            <Link href="/graphview" className={linkCls}>
+              {t('exploreGraph')}
+              <IconArrowRight
+                className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+                aria-hidden="true"
+              />
+            </Link>
+            <Link href="/methods" className={linkCls}>
+              {t('methodsAndData')}
+            </Link>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </section>
 
       {/* ── Corpus state ── what is actually in the graph right now. Public,
            so a signed-out reader (or a reviewer without an account) sees real
            figures rather than a wall of navigation tiles. ── */}
       <motion.section
         {...reveal}
-        variants={staggerContainer}
+        variants={editorialStagger}
       >
-        <motion.h2
-          variants={fadeInUp}
-          className="mb-6 font-serif text-2xl font-semibold text-foreground"
-        >
-          {t('corpusOverview')}
-        </motion.h2>
+        <SectionHeading>{t('corpusOverview')}</SectionHeading>
         <CorpusSummary />
       </motion.section>
 
@@ -144,27 +135,17 @@ export default function Page() {
         <>
           <motion.section
             {...reveal}
-            variants={staggerContainer}
+            variants={editorialStagger}
           >
-            <motion.h2
-              variants={fadeInUp}
-              className="mb-6 font-serif text-2xl font-semibold text-foreground"
-            >
-              {t('yourOverview')}
-            </motion.h2>
+            <SectionHeading>{t('yourOverview')}</SectionHeading>
             <SectionCards />
           </motion.section>
 
           <motion.section
             {...reveal}
-            variants={staggerContainer}
+            variants={editorialStagger}
           >
-            <motion.h2
-              variants={fadeInUp}
-              className="mb-6 font-serif text-2xl font-semibold text-foreground"
-            >
-              {t('yourProgress')}
-            </motion.h2>
+            <SectionHeading>{t('yourProgress')}</SectionHeading>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <motion.div variants={scaleIn} className="lg:col-span-2">
                 <ProgressionWidgetFull />
@@ -181,29 +162,49 @@ export default function Page() {
            single compact row rather than three redundant link grids. ── */}
       <motion.section
         {...reveal}
-        variants={staggerContainer}
+        variants={editorialStagger}
       >
-        <motion.h2
-          variants={fadeInUp}
-          className="mb-6 font-serif text-2xl font-semibold text-foreground"
-        >
-          {t('browseByCategory')}
-        </motion.h2>
-        <ShortcutGrid
-          items={dashboardBrowseCategories}
-          variant="compact"
-          columns={{
-            base: 'grid-cols-2',
-            sm: 'sm:grid-cols-3',
-            lg: 'lg:grid-cols-5',
-          }}
-        />
-        <div className="mt-3">
-          <Link
-            href="/knowledge/entity"
-            className="text-sm font-medium text-primary underline underline-offset-4 hover:no-underline"
+        <SectionHeading>{t('browseByCategory')}</SectionHeading>
+        {/* Panels rather than a row of icon tiles, so the dashboard uses the
+            same shape for "here are some things" as the entry and About pages
+            do. Titles come from the same `dashboard.shortcuts` namespace the
+            grid widget read.
+
+            Not wrapped in `CardWeb` like the other panel groups: the filaments
+            and their terminals need a gutter taller than they are wide, and at
+            five columns of a single-line label they collapsed into blobs
+            between the cards. The pattern is worth reusing, the decoration is
+            not worth forcing. */}
+          <motion.ul
+            {...reveal}
+            variants={editorialStagger}
+            className="grid grid-cols-1 gap-x-10 gap-y-8 @xl/main:grid-cols-3 @4xl/main:grid-cols-5"
           >
+            {dashboardBrowseCategories.map(({ titleKey, href }) => (
+              <motion.li key={titleKey} data-web-node variants={revealOnScroll} className="group">
+                <TiltCard
+                  max={1.4}
+                  className="h-full rounded-xl border border-border bg-card/70 shadow-sm backdrop-blur-[2px] transition-shadow duration-500 group-hover:shadow-lg"
+                >
+                  <Link
+                    href={href}
+                    className="flex h-full items-center rounded-xl p-4 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+                  >
+                    <span className="font-serif text-base leading-tight text-balance">
+                      {tShortcuts(titleKey)}
+                    </span>
+                  </Link>
+                </TiltCard>
+              </motion.li>
+            ))}
+          </motion.ul>
+        <div className="mt-6">
+          <Link href="/knowledge/entity" className={linkCls}>
             {t('viewAllCategories')}
+            <IconArrowRight
+              className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+              aria-hidden="true"
+            />
           </Link>
         </div>
       </motion.section>
