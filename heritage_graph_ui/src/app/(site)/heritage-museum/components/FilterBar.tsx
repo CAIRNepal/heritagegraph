@@ -8,7 +8,25 @@ import { Input } from '@/components/ui/input';
 import { glassCard } from '@/lib/design';
 import { cn } from '@/lib/utils';
 
-import { HG_CATEGORY_CONFIG, type HgCategory } from '../heritage-data';
+import { HG_CATEGORY_CONFIG, type HgCategory, type NodeType } from '../heritage-data';
+import { NodeGlyph } from '../node-icons';
+
+/**
+ * One representative glyph per domain, so type is never carried by hue alone.
+ *
+ * Chosen deliberately rather than taking the first member of each category:
+ * these are the shapes a visitor is most likely to recognise as standing for
+ * the group. The glyph inherits `currentColor`, so it recolours with the chip.
+ */
+const CATEGORY_GLYPH: Record<HgCategory, NodeType> = {
+  tangible: 'Temple',
+  conceptual: 'Deity',
+  event: 'Festival',
+  spatial: 'Place',
+  temporal: 'TimeSpan',
+  actor: 'Person',
+  provenance: 'Source',
+};
 
 interface FilterBarProps {
   searchQuery: string;
@@ -88,21 +106,38 @@ export function FilterBar({
           const isActive = activeCategoryFilter.has(cat);
           const count = categoryCounts?.[cat];
           return (
+            /*
+             * Neutral chips, not tinted ones.
+             *
+             * These carried the node-identity hue as their text colour over a
+             * 16% wash of the same hue. Measured in-page at 1440px, every
+             * category came out at 3.82–3.87:1 while ACTIVE, and roughly
+             * 2.2–2.5:1 inactive, where the colour was additionally set at
+             * `${cfg.color}99`. One value was doing two jobs: identifying a
+             * node in the force graph, where saturation earns its keep, and
+             * labelling text on a light surface, where it cannot.
+             *
+             * The hue is gone from the text. Identity is carried by the glyph,
+             * which also removes the hue-only encoding, and the ink is a token
+             * pair that is legible in both themes by construction.
+             */
             <button
               key={cat}
               onClick={() => onCategoryToggle(cat)}
               aria-pressed={isActive}
               type="button"
-              className="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded-full border font-medium transition-all hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring/40"
-              style={{
-                borderColor: isActive ? cfg.border : `${cfg.color}33`,
-                background: isActive ? `${cfg.color}28` : 'transparent',
-                color: isActive ? cfg.color : `${cfg.color}99`,
-              }}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                isActive
+                  ? 'border-primary/40 bg-primary/10 text-foreground'
+                  : 'border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
+              )}
             >
+              <NodeGlyph nodeType={CATEGORY_GLYPH[cat]} size={13} aria-hidden />
               {cfg.label}
               {typeof count === 'number' && (
-                <span className="font-mono text-[10px] opacity-70">{count}</span>
+                <span className="font-mono text-[10px] tabular-nums opacity-70">{count}</span>
               )}
             </button>
           );

@@ -637,6 +637,23 @@ export function HeritageMindMapClient() {
         </div>
       ) : null}
 
+      {/* ── Title, then tools ──
+          The default view rendered ZERO h1-h6 elements: the page a visitor
+          landed on had no document outline, which fails WCAG 1.3.1 and 2.4.6
+          and is the first thing any audit tool reports. It also asked the
+          visitor to operate a search field and seven filters before telling
+          them what they were looking at, because the only title-like text sat
+          below the controls. This is the root of the heading hierarchy every
+          other heading on the page now hangs from. */}
+      <div className="flex-shrink-0 border-b border-border px-4 pb-3 pt-4 md:px-6">
+        <h1 className="font-serif text-2xl leading-tight text-foreground sm:text-3xl">
+          {t('title')}
+        </h1>
+        <p className="mt-1.5 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
+          {t('pageLede')}
+        </p>
+      </div>
+
       <MuseumToolbar
         viewMode={viewMode}
         onViewModeChange={(mode) => (mode === 'xr' ? switchToXR() : setViewMode(mode))}

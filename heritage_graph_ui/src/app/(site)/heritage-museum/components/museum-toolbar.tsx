@@ -78,10 +78,11 @@ export function MuseumToolbar({
       role="toolbar"
       aria-label={t('filters.regionLabel')}
     >
-      <p className="hidden sm:block text-sm font-medium text-foreground max-w-md leading-snug mr-1">
-        {t('subtitle')}
-      </p>
-
+      {/* `subtitle` ("Explore Nepalese heritage through stories") used to sit
+          here, one line above "Heritage stories" — two headings saying the same
+          thing, adjacent, and both BELOW the controls the visitor had to
+          operate first. The page now carries a real <h1> above this toolbar, so
+          this line is redundant by construction. */}
       <div className="flex-1 min-w-[1rem]" />
 
       {showStats && viewMode !== 'xr' ? (
