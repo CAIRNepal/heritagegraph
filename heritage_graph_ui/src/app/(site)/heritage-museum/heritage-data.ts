@@ -63,7 +63,6 @@ export interface HeritageNode {
   significance?: string;
   tags?: string[];
   religion?: string;
-  unescoStatus?: string;
   inceptionYear?: string;
   dynasty?: string;
   ethnicity?: string;
@@ -191,7 +190,6 @@ function parseJsonLd(raw: any): HeritageNode[] {
       significance:  item['significance'],
       tags:          item['tags'],
       religion:      item['religion'],
-      unescoStatus:  item['unescoStatus'],
       inceptionYear: item['inceptionYear'],
       dynasty:       item['dynasty'],
       ethnicity:     item['ethnicity'],
