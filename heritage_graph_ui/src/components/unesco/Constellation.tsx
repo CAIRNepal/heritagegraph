@@ -81,6 +81,11 @@ interface Pulse {
 
 const FOV = 560;
 
+/** Keep a projected coordinate within the canvas. */
+function clamp(v: number, lo: number, hi: number) {
+  return Math.min(hi, Math.max(lo, v));
+}
+
 function cssVar(el: HTMLElement, name: string, fallback: string) {
   const v = getComputedStyle(el).getPropertyValue(name).trim();
   return v || fallback;
@@ -116,10 +121,20 @@ export function Constellation({ className }: { className?: string }) {
       const src = imageryFor(zone.key)?.image?.url;
       if (src) {
         const im = new Image();
+        // Handler BEFORE src, then a synchronous `complete` check.
+        //
+        // Assigning src first loses the load event for any image the browser
+        // can satisfy from cache, because that completes before the next
+        // statement attaches the handler — so the node kept its placeholder
+        // for the life of the page. It showed up as a few grey discs among the
+        // photographs, and got worse on every repeat visit as more of the seven
+        // came from cache. The `complete` check covers the case where the event
+        // has already been dispatched by the time we get here.
+        im.onload = () => { node.img = im; };
         // Same-origin through the optimiser: no CORS dance, and a 256px
         // thumbnail instead of a 2000px original.
         im.src = `/_next/image?url=${encodeURIComponent(src)}&w=256&q=70`;
-        im.onload = () => { node.img = im; };
+        if (im.complete && im.naturalWidth > 0) node.img = im;
       }
       return node;
     });
@@ -174,8 +189,14 @@ export function Constellation({ className }: { className?: string }) {
       const nodes = nodesRef.current;
       // Spread on each axis separately. A single min(w,h) radius left the web
       // huddled in the middle of a wide box, using about 40% of the width.
-      const rx = w * 0.40;
-      const ry = h * 0.40;
+      // Slightly inside the box so the edge feather at the end of this frame
+      // dissolves the filaments running outward, not the faces themselves.
+      const rx = w * 0.37;
+      const ry = h * 0.38;
+      // Width of the soft band erased inward from each edge. Declared here
+      // because the projection clamp below has to stay clear of it.
+      const fx = Math.min(150, w * 0.12);
+      const fy = Math.min(70, h * 0.1);
       const radius = Math.min(w, h) * 0.42; // depth scale reference only
       const cx = w / 2;
       const cy = h / 2;
@@ -204,10 +225,19 @@ export function Constellation({ className }: { className?: string }) {
         const py3 = n.y + camY * rz * 0.5;
         const depth = rz * radius;
         const scale = FOV / (FOV + depth * 2.6);
-        n.px = cx + px3 * rx * scale;
-        n.py = cy + py3 * ry * scale;
         n.scale = scale;
         n.pr = Math.max(14, 40 * scale);
+        // Keep every face wholly inside the canvas, with room for the feather
+        // and for the label that hangs below it. A projected node can otherwise
+        // land within its own radius of the boundary and be sliced flat, which
+        // looks like a rendering fault however good the rest of the frame is —
+        // and a node erased entirely by the feather leaves its filaments
+        // running to nothing. Clamping the projection is aspect-ratio
+        // independent, so it holds at every width the band is asked to be.
+        const mx0 = n.pr + fx * 0.55;
+        const my0 = n.pr + fy * 0.55;
+        n.px = clamp(cx + px3 * rx * scale, mx0, w - mx0);
+        n.py = clamp(cy + py3 * ry * scale, my0, h - my0 - 18);
       }
 
       // ── edges behind nodes ──
@@ -317,6 +347,34 @@ export function Constellation({ className }: { className?: string }) {
         ctx.fillText(label, n.px, ly + 2);
       }
       ctx.globalAlpha = 1;
+
+      // ── Feather the boundary ──────────────────────────────────────────
+      // Everything above is drawn to the full rectangle, so a filament heading
+      // for the edge was sliced off along a dead straight line and the whole
+      // scene read as a panel pasted onto the page. Erasing a soft band inward
+      // from each edge with `destination-out` makes those filaments dissolve
+      // into the page instead of stopping at a border.
+      //
+      // Done on the canvas rather than as a CSS mask deliberately: a two-axis
+      // CSS mask needs `mask-composite`, and where that is unsupported only one
+      // of the two axes survives, which is a silent half-fix.
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'destination-out';
+      const band = (
+        x0: number, y0: number, x1: number, y1: number,
+        rectX: number, rectY: number, rectW: number, rectH: number,
+      ) => {
+        const g = ctx.createLinearGradient(x0, y0, x1, y1);
+        g.addColorStop(0, 'rgba(0,0,0,1)');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(rectX, rectY, rectW, rectH);
+      };
+      band(0, 0, fx, 0, 0, 0, fx, h);
+      band(w, 0, w - fx, 0, w - fx, 0, fx, h);
+      band(0, 0, 0, fy, 0, 0, w, fy);
+      band(0, h, 0, h - fy, 0, h - fy, w, fy);
+      ctx.globalCompositeOperation = 'source-over';
 
       if (!reduce && visibleRef.current) {
         rafRef.current = requestAnimationFrame(draw);
