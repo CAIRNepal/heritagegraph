@@ -46,6 +46,7 @@ export function StoryPanel({
   const isSampleNarrative = dataSource === 'demo';
   const t = useTranslations('heritageMuseum.panel');
   const tUnesco = useTranslations('unescoEntry');
+  const tGloss = useTranslations('entityRecord.typeGloss');
   const unescoStatement = unescoStatementForLabel(node?.label);
   const scrollRootRef = useRef<HTMLDivElement>(null);
 
@@ -131,6 +132,12 @@ export function StoryPanel({
               {cfg.label}
             </span>
             <h2 className="text-foreground font-bold text-lg leading-tight">{node.label}</h2>
+            {/* One plain line saying what this kind of thing is. The type badge
+                above reads "Iconographic Object" or "Time-Span", which is exact
+                and means nothing to a first-time visitor. */}
+            <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+              {tGloss(node.nodeType)}
+            </p>
             {showReviewed ? (
               <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium text-primary">
                 <IconShieldCheck className="w-3.5 h-3.5" aria-hidden />
