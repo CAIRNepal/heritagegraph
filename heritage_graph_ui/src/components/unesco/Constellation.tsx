@@ -81,6 +81,22 @@ interface Pulse {
 
 const FOV = 560;
 
+/**
+ * Depth strength, in the same units as FOV.
+ *
+ * The projection used to take its depth from `min(w, h) * 0.42`, which meant the
+ * divisor `FOV + depth * 2.6` came within ~24 of zero at the extremes of the
+ * rotation: a node passing nearest the camera reached a scale above 20 and grew
+ * to several hundred pixels across. Because depth is a unit-ish coordinate, the
+ * strength belongs here as a constant rather than being derived from the canvas
+ * — the on-screen spread is already scaled by rx/ry — and at 239 the scale stays
+ * inside roughly 0.7–1.9 at every viewport.
+ */
+const DEPTH = 239;
+
+/** Hard ceiling on a node's drawn radius, whatever the perspective says. */
+const NODE_MAX_R = 48;
+
 /** Keep a projected coordinate within the canvas. */
 function clamp(v: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, v));
@@ -104,6 +120,14 @@ export function Constellation({ className }: { className?: string }) {
   const hoverRef = useRef<number>(-1);
   const rafRef = useRef<number>(0);
   const visibleRef = useRef(true);
+  /**
+   * Paint one frame, restarting the loop if it had stopped.
+   *
+   * Held in a ref because the two things that need it — the intersection
+   * observer and each photograph's load handler — are both defined before the
+   * draw function exists.
+   */
+  const requestFrameRef = useRef<(() => void) | null>(null);
 
   /** Build nodes once, and start loading each monument's photograph. */
   const initNodes = useCallback(() => {
@@ -130,7 +154,14 @@ export function Constellation({ className }: { className?: string }) {
         // photographs, and got worse on every repeat visit as more of the seven
         // came from cache. The `complete` check covers the case where the event
         // has already been dispatched by the time we get here.
-        im.onload = () => { node.img = im; };
+        im.onload = () => {
+          node.img = im;
+          // Ask for a frame. The loop may legitimately be stopped right now —
+          // scrolled away, or a reader who prefers reduced motion and gets a
+          // single frame — and that frame was painted before this photograph
+          // existed. Without this the node keeps its placeholder disc for good.
+          requestFrameRef.current?.();
+        };
         // Same-origin through the optimiser: no CORS dance, and a 256px
         // thumbnail instead of a 2000px original.
         im.src = `/_next/image?url=${encodeURIComponent(src)}&w=256&q=70`;
@@ -172,7 +203,17 @@ export function Constellation({ className }: { className?: string }) {
     // Pause entirely when scrolled away — an animation nobody can see is pure
     // battery drain.
     const io = new IntersectionObserver(
-      ([e]) => { visibleRef.current = e.isIntersecting; },
+      ([e]) => {
+        const was = visibleRef.current;
+        visibleRef.current = e.isIntersecting;
+        // Restart here, not only on scroll. The loop stops itself when the
+        // section leaves the viewport, and `kick` below can only restart it
+        // once this flag is already true — so a reader who arrives with the
+        // section on screen and then stops scrolling (an anchor jump, a single
+        // flick, scrollIntoView) produced no further scroll event, and the
+        // animation stayed frozen on whatever frame it last painted.
+        if (e.isIntersecting && !was) requestFrameRef.current?.();
+      },
       { threshold: 0.05 },
     );
     io.observe(wrap);
@@ -192,12 +233,15 @@ export function Constellation({ className }: { className?: string }) {
       // Slightly inside the box so the edge feather at the end of this frame
       // dissolves the filaments running outward, not the faces themselves.
       const rx = w * 0.37;
-      const ry = h * 0.38;
+      // Tighter than the horizontal spread: `px3` and `rz` are a quarter-turn
+      // out of phase, so a node is at its widest when its scale is 1 and at its
+      // biggest when it is dead centre — horizontal never needs the headroom.
+      // Vertical does, because `y` does not rotate.
+      const ry = h * 0.30;
       // Width of the soft band erased inward from each edge. Declared here
       // because the projection clamp below has to stay clear of it.
       const fx = Math.min(150, w * 0.12);
       const fy = Math.min(70, h * 0.1);
-      const radius = Math.min(w, h) * 0.42; // depth scale reference only
       const cx = w / 2;
       const cy = h / 2;
 
@@ -223,10 +267,9 @@ export function Constellation({ className }: { className?: string }) {
         const px3 = n.x * cyr - n.z * sy;
         const rz = n.x * sy + n.z * cyr;
         const py3 = n.y + camY * rz * 0.5;
-        const depth = rz * radius;
-        const scale = FOV / (FOV + depth * 2.6);
+        const scale = FOV / (FOV + rz * DEPTH);
         n.scale = scale;
-        n.pr = Math.max(14, 40 * scale);
+        n.pr = clamp(26 * scale, 12, NODE_MAX_R);
         // Keep every face wholly inside the canvas, with room for the feather
         // and for the label that hangs below it. A projected node can otherwise
         // land within its own radius of the boundary and be sliced flat, which
@@ -281,6 +324,7 @@ export function Constellation({ className }: { className?: string }) {
         }
       });
       ctx.globalAlpha = 1;
+
 
       // ── nodes, far to near ──
       const order = nodes.map((_, i) => i).sort((a, b) => nodes[a].scale - nodes[b].scale);
@@ -383,13 +427,17 @@ export function Constellation({ className }: { className?: string }) {
 
     rafRef.current = requestAnimationFrame(draw);
 
-    // Restart the loop when the section scrolls back in.
+    // Cancel-then-schedule, so this is safe whether the loop is running or
+    // stopped. Under reduced motion `draw` does not re-schedule itself, so this
+    // paints exactly one more frame and settles again.
+    requestFrameRef.current = () => {
+      cancelAnimationFrame(rafRef.current);
+      last = performance.now();
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
     const kick = () => {
-      if (!reduce && visibleRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        last = performance.now();
-        rafRef.current = requestAnimationFrame(draw);
-      }
+      if (!reduce && visibleRef.current) requestFrameRef.current?.();
     };
     const onScroll = () => kick();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -433,6 +481,7 @@ export function Constellation({ className }: { className?: string }) {
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
       io.disconnect();
+      requestFrameRef.current = null;
       window.removeEventListener('scroll', onScroll);
       wrap.removeEventListener('pointermove', onMove);
       wrap.removeEventListener('pointerleave', onLeave);
