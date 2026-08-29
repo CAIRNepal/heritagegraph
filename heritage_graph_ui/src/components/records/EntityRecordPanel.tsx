@@ -76,7 +76,7 @@ export function EntityRecordPanel({
             {facts.map(({ key, values, property }) => (
               <div
                 key={key}
-                className="grid grid-cols-[minmax(5.5rem,8rem)_1fr] gap-x-3 border-t border-border py-1.5"
+                className="grid grid-cols-[minmax(5rem,8rem)_minmax(0,1fr)] gap-x-3 border-t border-border py-1.5"
               >
                 <dt className="text-xs text-muted-foreground">{t(`labels.${key}`)}</dt>
                 <dd

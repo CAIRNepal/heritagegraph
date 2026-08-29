@@ -47,7 +47,7 @@ export function SourcedFacts({
         {rows.map(({ key, values, property }) => (
           <div
             key={key}
-            className="grid grid-cols-[minmax(6rem,9rem)_1fr] gap-x-4 border-t border-border py-2"
+            className="grid grid-cols-[minmax(5rem,9rem)_minmax(0,1fr)] gap-x-4 border-t border-border py-2"
           >
             <dt className="text-xs text-muted-foreground">{t(`labels.${key}`)}</dt>
             <dd

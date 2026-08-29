@@ -66,13 +66,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <DegradedSchemaBanner />
         {/* ── Header ── */}
         <header
-          className="sticky top-0 z-40 flex items-center px-4 md:px-6 h-14 border-b border-border bg-background/85 backdrop-blur-xl transition-all duration-300"
+          className="@container/header sticky top-0 z-40 flex h-14 items-center border-b border-border bg-background/85 px-4 backdrop-blur-xl transition-all duration-300 md:px-6"
           role="banner"
           aria-label="Dashboard Header"
         >
           <SiteHeader />
 
-          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
+          {/* Thresholds here are keyed to `@container/header`, not the viewport:
+              the header lives inside the 288px sidebar shell, so at a 900px
+              viewport it is only 597px wide. Viewport-keyed breakpoints let the
+              full-width controls through at sizes the bar cannot actually fit,
+              and none of these controls can shrink. */}
+          <div className="ml-auto flex min-w-0 items-center gap-2 @[30rem]/header:gap-3">
 
             <CommandMenuTrigger />
             {showAuthedHeader ? <UserProgressBadge /> : null}

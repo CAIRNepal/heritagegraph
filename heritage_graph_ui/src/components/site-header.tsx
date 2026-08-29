@@ -28,7 +28,7 @@ export function SiteHeader() {
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shadow-sm">
           <BookOpen className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
-        <span className="font-serif font-semibold text-sm hidden sm:inline text-foreground">
+        <span className="hidden font-serif text-sm font-semibold text-foreground @[30rem]/header:inline">
           HeritageGraph
         </span>
       </Link>

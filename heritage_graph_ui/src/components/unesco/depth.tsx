@@ -143,7 +143,7 @@ export function AmbientWash({ className }: { className?: string }) {
       aria-hidden="true"
       className={cn('pointer-events-none absolute inset-0 -z-10 overflow-hidden', className)}
     >
-      <div className="absolute left-1/2 top-0 h-[38rem] w-[70rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/[0.06] blur-3xl" />
+      <div className="absolute left-1/2 top-0 h-[38rem] w-full max-w-[70rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-primary/[0.06] blur-3xl" />
     </div>
   );
 }
@@ -190,19 +190,26 @@ export function LiveBackdrop() {
       }
     };
 
+    // Size the backing store from the canvas's own rendered box, never from
+    // window.innerWidth. innerWidth includes the scrollbar, and the scrollbar
+    // only appears once content is tall enough — so a canvas sized at load is
+    // ~15px too wide the moment the page grows, and a fixed element that wide
+    // makes the whole document scroll sideways. Letting CSS (`inset-0`) do the
+    // sizing and observing the result is self-correcting.
     const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      if (!r.width || !r.height) return;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      w = window.innerWidth;
-      h = window.innerHeight;
+      w = r.width;
+      h = r.height;
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       seed();
     };
     resize();
-    window.addEventListener('resize', resize);
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
 
     const colour = () =>
       getComputedStyle(canvas).getPropertyValue('--primary').trim() || '#26584a';
@@ -239,7 +246,7 @@ export function LiveBackdrop() {
     return () => {
       running = false;
       cancelAnimationFrame(raf);
-      window.removeEventListener('resize', resize);
+      ro.disconnect();
       document.removeEventListener('visibilitychange', onVis);
     };
   }, [reduce]);

@@ -99,8 +99,8 @@ export default function AuthSection() {
   if (!session) {
     return (
       <Button size="sm" className="shrink-0" onClick={() => signIn('google')}>
-        <span className="hidden sm:inline">{tAuth('signInWithGoogle')}</span>
-        <span className="sm:hidden">{tAuth('signIn')}</span>
+        <span className="hidden @[52rem]/header:inline">{tAuth('signInWithGoogle')}</span>
+        <span className="@[52rem]/header:hidden">{tAuth('signIn')}</span>
       </Button>
     );
   }
