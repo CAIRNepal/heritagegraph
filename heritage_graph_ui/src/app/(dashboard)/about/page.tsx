@@ -1,6 +1,8 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import dynamicImport from 'next/dynamic';
+
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
@@ -37,6 +39,12 @@ import {
 } from '@/lib/design';
 import { useReveal } from '@/lib/use-reveal';
 import { cn } from '@/lib/utils';
+
+/** Cytoscape is heavy, so it loads only when this page is opened. */
+const GraphViewEmbed = dynamicImport(
+  () => import('@/app/(dashboard)/graphview/graphview-client').then((m) => m.default),
+  { ssr: false, loading: () => <div className="flex h-full items-center justify-center text-sm text-muted-foreground">…</div> },
+);
 
 const REPOSITORY_URL = 'https://github.com/CAIRNepal/heritagegraph';
 
@@ -89,7 +97,6 @@ function SectionHeading({ prefix, highlight }: { prefix: string; highlight: stri
 
 export default function AboutPage() {
   const t = useTranslations('about');
-  const reduceMotion = useReducedMotion();
   const reveal = useReveal();
 
   return (
@@ -203,6 +210,32 @@ export default function AboutPage() {
           namespace="about.features"
           columns={{ base: 'grid-cols-1', md: 'md:grid-cols-2' }}
         />
+      </motion.section>
+
+      {/* The knowledge graph itself.
+          It used to sit behind a sidebar link called "Graph Visualization",
+          which told a reader nothing about why they would click it. Shown here
+          instead, in the one place where someone is already asking what this
+          platform is. */}
+      <motion.section {...reveal} variants={fadeInUp}>
+        <SectionHeading
+          prefix={t('graph.prefix')}
+          highlight={t('graph.highlight')}
+        />
+        <p className="mb-5 max-w-[68ch] leading-relaxed text-muted-foreground">
+          {t('graph.description')}
+        </p>
+        <div className={cn(surfaceCard, 'overflow-hidden')}>
+          <div className="h-[34rem] min-h-0">
+            <GraphViewEmbed />
+          </div>
+        </div>
+        <Button asChild variant="link" className="mt-2 h-auto p-0">
+          <Link href="/graphview">
+            {t('graph.cta')}
+            <IconArrowRight className="ml-1 size-4" aria-hidden="true" />
+          </Link>
+        </Button>
       </motion.section>
 
       {/* Data, provenance and reuse — the section a reviewer reads first. */}

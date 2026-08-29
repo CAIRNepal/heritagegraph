@@ -31,7 +31,6 @@ import {
   IconShield,
   IconScale,
   IconDashboard,
-  IconGraph,
   IconWorld,
   IconBuildingMonument,
   IconQrcode,
@@ -237,7 +236,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           items={[
             { title: t('heritageMuseum'), url: '/heritage-museum', icon: IconBuildingMonument },
             { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
-            { title: t('graphVisualization'), url: '/graphview', icon: IconGraph },
           ]}
         />
 
