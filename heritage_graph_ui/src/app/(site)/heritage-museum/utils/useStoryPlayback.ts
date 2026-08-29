@@ -101,8 +101,15 @@ export function useBeatPlayer(
   node: GraphNode,
   reducedMotion: boolean,
   beatMs: number = BEAT_MS,
+  /**
+   * True when the node's prose fields carry no recorded source — the demo
+   * corpus. Threaded through rather than inferred inside `buildBeats`, because
+   * a live reviewed node's `description` is the API's `rdfs:comment` and is
+   * sourced: the same field name means different things per data source.
+   */
+  unsourcedProse = true,
 ): BeatPlayer {
-  const beats = useMemo(() => buildBeats(node), [node]);
+  const beats = useMemo(() => buildBeats(node, unsourcedProse), [node, unsourcedProse]);
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);

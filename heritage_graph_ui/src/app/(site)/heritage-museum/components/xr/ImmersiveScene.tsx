@@ -71,15 +71,19 @@ function StorytellingOverlay({
   node,
   cfg,
   reducedMotion,
+  unsourcedProse,
 }: {
   node: GraphNode;
   cfg: (typeof NODE_TYPE_CONFIG)[keyof typeof NODE_TYPE_CONFIG];
   reducedMotion: boolean;
+  unsourcedProse: boolean;
 }) {
   const t = useXrTranslations();
   const { beats, index: safeIdx, beat, progress, paused, setPaused, go } = useBeatPlayer(
     node,
     reducedMotion,
+    undefined,
+    unsourcedProse,
   );
   const [visible, setVisible] = useState(false);
 
@@ -90,6 +94,12 @@ function StorytellingOverlay({
     return () => clearTimeout(timer);
   }, [node.id, reducedMotion]);
 
+  /*
+   * `buildBeats` used to guarantee at least one card by generating a sentence
+   * about the data model. It returns an empty list now when nothing sourced or
+   * recorded exists, so this guard is what actually declines to run the story
+   * component — rather than a hero carousel containing one filler card.
+   */
   if (!beat) return null;
 
   const isBullet = beat.lines.length > 1;
@@ -133,6 +143,18 @@ function StorytellingOverlay({
                   `setPaused` was reachable only from onMouseEnter/onMouseLeave:
                   no keyboard path, and on touch no pause path at all, which
                   fails WCAG 2.2.2 for content that advances on its own. */}
+              {/* Shown on the beats that need it and no others.
+                  The demo corpus disclaims its own prose fields — "no recorded
+                  source… must not be cited" — and this carousel is a hero, so
+                  whatever it shows reads as fact. The StoryPanel below already
+                  carried this caution; the hero did not. Beats built from the
+                  fact table, from real graph edges, or from a frozen sourced
+                  record are not captioned, because they do not need it. */}
+              {!beat.sourced ? (
+                <span className="rounded-full border border-warning/50 bg-warning-soft px-2 py-0.5 text-[10px] font-medium text-warning-on-soft">
+                  {t('unsourcedBeat')}
+                </span>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setPaused(!paused)}
@@ -787,7 +809,12 @@ export function ImmersiveScene({
             </div>
           </div>
 
-          <StorytellingOverlay node={node} cfg={cfg} reducedMotion={reducedMotion} />
+          <StorytellingOverlay
+            node={node}
+            cfg={cfg}
+            reducedMotion={reducedMotion}
+            unsourcedProse={dataSource === 'demo'}
+          />
         </div>
 
         {images.length > 1 ? (

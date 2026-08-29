@@ -8,14 +8,6 @@ function linkEndpointId(endpoint: string | GraphNode): string {
   return typeof endpoint === 'string' ? endpoint : endpoint.id;
 }
 
-function syntheticNarrative(n: KgGraphNode, nodeType: NodeType, isLux: boolean): string {
-  const typeLabel = NODE_TYPE_CONFIG[nodeType].label;
-  if (isLux) {
-    return 'Linked Yale LUX collection record — open the external catalogue for images and catalogue metadata.';
-  }
-  return `${n.label} is a ${typeLabel} entity in the reviewed HeritageGraph public knowledge graph. Select related nodes in the graph or open the full record to explore connections and provenance.`;
-}
-
 /** Narrative + key facts for live KG nodes; prefers API comment/media over placeholders. */
 export function enrichKgNodeForMuseum(
   n: KgGraphNode,
@@ -28,8 +20,22 @@ export function enrichKgNodeForMuseum(
   const isLux = n.sourceLayer === 'lux';
   const typeLabel = cfg.label;
 
+  /*
+   * The API's `rdfs:comment`, or nothing.
+   *
+   * This used to fall back to a generated sentence — "X is a Temple entity in
+   * the reviewed HeritageGraph public knowledge graph. Select related nodes…" —
+   * which then became both `description` AND `storyText`, so a record with no
+   * narrative rendered a paragraph about the data model as its own content.
+   * There is no fallback now: the structured facts below are what an
+   * un-narrated node has to show, and they are worth more than prose about the
+   * schema.
+   */
   const apiComment = n.comment?.trim() ?? '';
-  const description = apiComment || syntheticNarrative(n, nodeType, isLux);
+  // Empty, not a placeholder. `GraphNode.description` / `.storyText` are
+  // non-optional strings and every consumer already guards on truthiness, so ''
+  // is the "nothing recorded" value the UI knows how to render honestly.
+  const description = apiComment;
 
   const keyFacts: Array<{ label: string; value: string }> = [];
   if (isLux && n.externalUri) {

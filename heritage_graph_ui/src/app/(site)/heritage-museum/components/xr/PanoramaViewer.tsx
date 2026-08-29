@@ -96,7 +96,6 @@ function PanoramaStory({
           className="gap-2 backdrop-blur-md"
           onClick={() => setCollapsed(false)}
         >
-          <span style={{ color: cfg.color }}>{beat.icon}</span>
           {beat.title}
           <span className="ml-auto text-muted-foreground">{t('panoramaExpand')}</span>
         </Button>
@@ -119,11 +118,10 @@ function PanoramaStory({
 
           <div className="p-5">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <span
-                className="rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-widest"
-                style={{ background: `${cfg.color}22`, color: cfg.color }}
-              >
-                {beat.icon} {beat.title}
+              {/* Same hue-as-text defect fixed in ImmersiveScene: the identity
+                  hue as text on a 13% wash of itself. Token pair instead. */}
+              <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.16em] text-foreground">
+                {beat.title}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-xs tabular-nums text-muted-foreground">
