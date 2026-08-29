@@ -25,6 +25,7 @@ import {
 import { IMAGERY_PROVENANCE } from '@/lib/unesco/imagery';
 import { museumHref } from '@/lib/unesco/graph-bindings';
 import { useReveal } from '@/lib/use-reveal';
+import { Eyebrow } from '@/components/editorial';
 import { cn } from '@/lib/utils';
 
 import { PropertyPhotograph } from './PropertyPhotograph';
@@ -33,18 +34,8 @@ import { TiltCard } from './depth';
 /* ── Small shared bits ─────────────────────────────────────────────────── */
 
 /** Uppercase micro-label. Structural, used for real category labels only. */
-export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <p
-      className={cn(
-        'font-mono text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground',
-        className,
-      )}
-    >
-      {children}
-    </p>
-  );
-}
+// Re-exported so the existing entry components keep their import path.
+export { Eyebrow };
 
 /**
  * A fact with its label. Renders an explicit "not recorded" state rather than

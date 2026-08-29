@@ -40,8 +40,8 @@ import { useReveal } from '@/lib/use-reveal';
 import { KATHMANDU_VALLEY, LUMBINI } from '@/lib/unesco/ground-truth';
 import { museumHref } from '@/lib/unesco/graph-bindings';
 
+import { Eyebrow, OpeningGround } from '@/components/editorial';
 import {
-  Eyebrow,
   GraphBoundaryNote,
   PropertyPhotograph,
   ProvenanceFooter,
@@ -53,6 +53,7 @@ import { Wordmark } from './Wordmark';
 import { CardWeb } from './CardWeb';
 import { NextSteps } from './NextSteps';
 import { AmbientWash, LiveBackdrop } from './depth';
+import { HowItWorks } from './HowItWorks';
 
 const CREDITED_SUBJECTS = [
   ...(KATHMANDU_VALLEY.monumentZones ?? []).map((z) => z.key),
@@ -68,6 +69,16 @@ export function UnescoEntry() {
       {/* Slow motes behind the whole page — near the threshold of noticing, so
           the page feels alive without competing with the photography. */}
       <LiveBackdrop />
+
+      {/* ── The opening: the name, then what this is ──
+          One group, not two sections with a gap between them. The hero
+          photograph dissolves into the page, and the section that followed
+          carried its own tinted wash — so a strip of untinted background sat
+          between the two and read as a pale band across the page. A single
+          vertical gradient over the whole group, soft at both ends, means there
+          is no edge anywhere to see. */}
+      <div className="relative isolate flex flex-col">
+        <OpeningGround />
       {/* ── 1. The name ── */}
       <section aria-labelledby="entry-title" className="relative">
         <motion.div variants={imageReveal} initial="hidden" animate="show">
@@ -87,7 +98,13 @@ export function UnescoEntry() {
                the figure — the wordmark is a child and must stay opaque) lets
                the page background come through the bottom third, so there is no
                seam between the picture and the page. */
-            imageClassName="scale-[1.06] [mask-image:linear-gradient(to_bottom,#000_0%,#000_52%,rgba(0,0,0,0.55)_78%,transparent_100%)]"
+            /* The fade ends at 86%, not 100%. The image also carries a parallax
+               translate, so its own box slides relative to the figure that clips
+               it — at 100% the figure's `overflow-hidden` cut the photograph
+               while the mask still had ~15% alpha left, which is a hard line
+               across the page. Ending the fade early leaves slack for the whole
+               parallax travel in both directions. */
+            imageClassName="scale-[1.06] [mask-image:linear-gradient(to_bottom,#000_0%,#000_46%,rgba(0,0,0,0.5)_68%,transparent_86%)]"
             parallax={70}
           >
             {/* Two scrims, both fading out before the bottom edge so neither
@@ -108,7 +125,7 @@ export function UnescoEntry() {
                 where the photograph had already dissolved, and put a hard edge
                 exactly where the figure ended. */}
             <div
-              className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.5)_0%,rgba(0,0,0,0.28)_38%,transparent_68%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_52%,transparent_100%)]"
+              className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.5)_0%,rgba(0,0,0,0.28)_38%,transparent_68%)] [mask-image:linear-gradient(to_bottom,#000_0%,#000_46%,transparent_86%)]"
               aria-hidden="true"
             />
             {/* Type sits in the upper, still-opaque part of the frame. It used
@@ -135,8 +152,7 @@ export function UnescoEntry() {
       </section>
 
       {/* ── 2. Why a graph ── prose beside a live web ── */}
-      <section aria-labelledby="intro-heading" className="relative isolate">
-        <AmbientWash />
+      <section aria-labelledby="intro-heading" className="relative pt-16 md:pt-24">
         <div className={wideColumn}>
           {/* The prose sits above the graph rather than beside it. In a side
               column the constellation was ~500px wide, which is not enough room
@@ -155,16 +171,6 @@ export function UnescoEntry() {
               <p className="mx-auto mt-4 max-w-[58ch] leading-relaxed text-foreground">
                 {t('introBody2')}
               </p>
-              <Link
-                href="/about"
-                className="group mt-7 inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
-              >
-                {t('introCta')}
-                <IconArrowRight
-                  className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
-                  aria-hidden="true"
-                />
-              </Link>
             </motion.div>
           </div>
 
@@ -176,8 +182,12 @@ export function UnescoEntry() {
           </motion.div>
         </div>
       </section>
+      </div>
 
-      {/* ── 3. The seven zones, as the readable index ── */}
+      {/* ── 3. What the platform actually does ── */}
+      <HowItWorks />
+
+      {/* ── 4. The seven zones, as the readable index ── */}
       <section aria-labelledby="zones-heading">
         <motion.div {...reveal} variants={revealOnScroll} className={`${wideColumn} mb-8`}>
           <Eyebrow>{t('inscribedYear', { year: KATHMANDU_VALLEY.yearInscribed })}</Eyebrow>
@@ -199,10 +209,10 @@ export function UnescoEntry() {
         </div>
       </section>
 
-      {/* ── 4. Two doors out ── */}
+      {/* ── 5. Two doors out ── */}
       <NextSteps />
 
-      {/* ── 5. Lumbini ──
+      {/* ── 6. Lumbini ──
           Was a full-bleed 21:9 band with the text underneath, which read as a
           photograph dropped onto the page. It is a half-width picture set into
           a composition now: glow behind it, edges feathered into the page, and
@@ -270,7 +280,7 @@ export function UnescoEntry() {
         </motion.div>
       </section>
 
-      {/* ── 6. Boundary, credits, provenance ── */}
+      {/* ── 7. Boundary, credits, provenance ── */}
       <GraphBoundaryNote />
 
       <div className={wideColumn}>
