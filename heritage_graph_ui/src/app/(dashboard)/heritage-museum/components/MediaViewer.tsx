@@ -46,10 +46,10 @@ export function MediaViewer({ node }: MediaViewerProps) {
         <div className="relative w-full overflow-hidden" style={{ height: 200 }}>
           <div
             className="absolute inset-0"
-            style={{ background: `linear-gradient(135deg, ${cfg.color}55 0%, #0f172a 60%, ${cfg.glowColor}22 100%)` }}
+            style={{ background: `linear-gradient(135deg, ${cfg.color}55 0%, var(--background) 60%, ${cfg.glowColor}22 100%)` }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <NodeGlyph nodeType={node.nodeType} size={120} color="#fff" strokeWidth={1.25} className="opacity-10 select-none" />
+            <NodeGlyph nodeType={node.nodeType} size={120} color="var(--node-glyph)" strokeWidth={1.25} className="opacity-10 select-none" />
           </div>
 
           {imageSrc && (
@@ -64,7 +64,7 @@ export function MediaViewer({ node }: MediaViewerProps) {
             />
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
           {imageSrc && imgLoaded && node.imageCredits?.[imageSrc] && (
             <div className="absolute bottom-2 right-2 max-w-[70%] text-right rounded bg-black/45 px-1.5 py-0.5">
@@ -88,11 +88,11 @@ export function MediaViewer({ node }: MediaViewerProps) {
 
         {/* Geo strip */}
         {node.lat && node.long && (
-          <div className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.08]">
+          <div className="flex items-center gap-3 border-b border-border bg-muted/30 px-4 py-2.5">
             <span className="text-sm">📍</span>
-            <div className="text-xs text-gray-400">
-              <span className="text-gray-300 font-medium">{node.label}</span>
-              <span className="text-gray-600 ml-2">
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{node.label}</span>
+              <span className="ml-2 text-muted-foreground">
                 {parseFloat(node.lat).toFixed(4)}°N, {parseFloat(node.long).toFixed(4)}°E
               </span>
             </div>
@@ -101,7 +101,7 @@ export function MediaViewer({ node }: MediaViewerProps) {
                 href={`https://www.openstreetmap.org/?mlat=${node.lat}&mlon=${node.long}&zoom=15`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-blue-400 hover:text-blue-300 border border-blue-500/30 bg-blue-900/20 px-2 py-0.5 rounded-full transition-colors"
+                className="rounded-full border border-primary/40 bg-primary/10 px-2 py-0.5 text-xs text-primary transition-colors hover:bg-primary/20"
               >
                 Map ↗
               </a>

@@ -99,3 +99,11 @@ Thumbs.db
 # run with the Zenodo deposit, not in git.
 /evaluation/reports/*.json
 /evaluation/reports/*.log
+
+# Isolated build output (NEXT_DIST_DIR), so a verification or CI build can
+# run alongside a live `next dev` without either clobbering the other.
+**/.next-*/
+**/.next-*/**
+.next-verify/
+.next/
+node_modules/

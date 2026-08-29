@@ -135,7 +135,7 @@ export function MuseumMethodsPanel({
               carries neither. Say so, rather than letting the rigour of the
               image credits imply the prose is sourced too. */}
           {provenance?.textAuthorship === 'unrecorded' ? (
-            <p className="rounded border border-amber-500/40 bg-amber-500/10 p-2 text-[11px] leading-snug text-amber-900 dark:text-amber-200">
+            <p className="rounded border border-warning/50 bg-warning-soft p-2 text-[11px] leading-snug text-warning-on-soft">
               {t('demoTextUnsourced')}
             </p>
           ) : null}

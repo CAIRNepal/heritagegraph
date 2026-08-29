@@ -4,46 +4,78 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #f7f9fb;
-  --foreground: #0b1220;
-  --card: #ffffff;
-  --card-foreground: #0b1220;
-  --popover: #ffffff;
-  --popover-foreground: #0b1220;
-  --primary: #1e4e8c;
-  --primary-foreground: #f7fbff;
+  --background: #e5e9e5;
+  --foreground: #121815;
+  --card: #f1f4f0;
+  --card-foreground: #121815;
+  --popover: #f1f4f0;
+  --popover-foreground: #121815;
+  --primary: #26584a;
+  --primary-foreground: #f1f7f4;
   /* Hero surfaces carry white text, so they need their own scale rather than
-     reusing --primary. In dark mode --primary is a *light* blue (#5a9bff) —
-     white on it measures 2.8:1, below the 3:1 large-text floor. These stops are
-     dark in both themes so --hero-foreground stays legible.
-     Contrast vs #ffffff: from 8.3:1, to 5.5:1 (both pass WCAG AA). */
-  --hero-from: #1e4e8c;
-  --hero-to: #2f6bb0;
+     reusing --primary. In dark mode --primary is a light verdigris (#74b79c)
+     and white on it measures 2.1:1. These stops are deep schist green, dark in
+     both themes, so --hero-foreground stays legible.
+     Contrast vs #ffffff: from 15.4:1, to 8.5:1 (both pass WCAG AA). */
+  --hero-from: #0f1f1a;
+  --hero-to: #26584a;
   --hero-foreground: #ffffff;
-  --secondary: #e3ebf3;
-  --secondary-foreground: #0e2238;
-  --muted: #dee6ee;
-  --muted-foreground: #526379;
-  --accent: #4073b5;
-  --accent-foreground: #f8fbff;
-  --destructive: #d13b3b;
-  --destructive-foreground: #fffaf9;
-  --border: #d6e0ea;
-  --input: #d6e0ea;
-  --ring: #2b5ea3;
-  --chart-1: #1e4e8c;
-  --chart-2: #2b74b9;
-  --chart-3: #78a9e0;
-  --chart-4: #11466d;
-  --chart-5: #1d88a6;
-  --sidebar: #f0f4f8;
-  --sidebar-foreground: #0b1220;
-  --sidebar-primary: #1e4e8c;
-  --sidebar-primary-foreground: #f7fbff;
-  --sidebar-accent: #e1e9f0;
-  --sidebar-accent-foreground: #0e2238;
-  --sidebar-border: #d6e0ea;
-  --sidebar-ring: #2b5ea3;
+  --secondary: #d8ded8;
+  --secondary-foreground: #1c2621;
+  --muted: #d4dbd4;
+  --muted-foreground: #4f5a54;
+  --accent: #26584a;
+  --accent-foreground: #f1f7f4;
+  --destructive: #5e1509;
+  --destructive-foreground: #fdf7f6;
+  --border: #c6cfc7;
+  --input: #c6cfc7;
+  --ring: #26584a;
+  --chart-1: #7a5b16;
+  --chart-2: #26584a;
+  --chart-3: #626e67;
+  --chart-4: #6d3a4e;
+  --chart-5: #3f5f7a;
+  --sidebar: #eaeeea;
+  --sidebar-foreground: #121815;
+  --sidebar-primary: #26584a;
+  --sidebar-primary-foreground: #f1f7f4;
+  --sidebar-accent: #d4dbd4;
+  --sidebar-accent-foreground: #1c2621;
+  --sidebar-border: #c6cfc7;
+  --sidebar-ring: #26584a;
+  /* ── Status + ordinal tokens ──
+     `--success` is a positive-outcome colour. It has to stay distinguishable
+     from `--primary`, which is itself a green in this palette — the two are
+     held at least 1.4:1 apart in luminance and sit on different hue angles
+     (olive vs verdigris), so a "+12 points" never reads as a link. The medal scale is ordinal (gold >
+     silver > bronze) and always ships alongside a rank number, so the colour
+     is never the only channel. All pairs verified: foreground/background ≥ 4.5:1,
+     solid marks ≥ 3:1 against --card. */
+  /* Glyph drawn on top of a graph node's own fill. The node fill comes from the
+     ontology palette and is the same colour in both themes, so this does NOT
+     flip with the theme — it is a token so the value has one home, not because
+     it varies. Node fills sit at ~0.15–0.27 relative luminance, which keeps
+     this comfortably legible on every one of them. */
+  --node-glyph: #f4f7f2;
+  /* Warning: an advisory state, distinct from --destructive (an error) and
+     from --primary (the accent). Used for the museum's "this narrative is
+     unverified" caution, which must read as a caveat, not as a brand flourish. */
+  --warning: #63480c;
+  --warning-soft: #f0e6cb;
+  --warning-on-soft: #5e4409;
+  --warning-strong: #63480c;
+  --success: #4a7a24;
+  --success-foreground: #f4f9f0;
+  --medal-gold: #8a6a1a;
+  --medal-gold-soft: #eee3c6;
+  --medal-gold-on-soft: #5c440f;
+  --medal-silver: #7c8280;
+  --medal-silver-soft: #e2e6e3;
+  --medal-silver-on-soft: #484d4b;
+  --medal-bronze: #8f6440;
+  --medal-bronze-soft: #eddfd2;
+  --medal-bronze-on-soft: #5f4020;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -67,42 +99,58 @@
 }
 
 .dark {
-  --background: #0b1016;
-  --foreground: #f3f6fa;
-  --card: #111821;
-  --card-foreground: #f3f6fa;
-  --popover: #17212e;
-  --popover-foreground: #f3f6fa;
-  --primary: #5a9bff;
-  --primary-foreground: #0b1016;
-  /* Contrast vs #ffffff: from 12.2:1, to 8.5:1 (both pass WCAG AA). */
-  --hero-from: #16365f;
-  --hero-to: #1f4d86;
+  --background: #0e1512;
+  --foreground: #e4eae6;
+  --card: #161f1b;
+  --card-foreground: #e4eae6;
+  --popover: #1b2521;
+  --popover-foreground: #e4eae6;
+  --primary: #8ec8ae;
+  --primary-foreground: #0e1512;
+  /* Contrast vs #ffffff: from 18.0:1, to 10.2:1 (both pass WCAG AA). */
+  --hero-from: #0a100d;
+  --hero-to: #1e4034;
   --hero-foreground: #ffffff;
-  --secondary: #1c2533;
-  --secondary-foreground: #f3f6fa;
-  --muted: #202b3b;
-  --muted-foreground: #a0b3c8;
-  --accent: #3374c2;
-  --accent-foreground: #f3f6fa;
-  --destructive: #e5544b;
-  --destructive-foreground: #fdf8f7;
-  --border: #1f2936;
-  --input: #263244;
-  --ring: #5a9bff;
-  --chart-1: #5a9bff;
-  --chart-2: #79b2ff;
-  --chart-3: #95c5ff;
-  --chart-4: #3a7bd5;
-  --chart-5: #1c9fc1;
-  --sidebar: #111821;
-  --sidebar-foreground: #f3f6fa;
-  --sidebar-primary: #5a9bff;
-  --sidebar-primary-foreground: #0b1016;
-  --sidebar-accent: #1c2533;
-  --sidebar-accent-foreground: #f3f6fa;
-  --sidebar-border: #1f2936;
-  --sidebar-ring: #5a9bff;
+  --secondary: #1d2723;
+  --secondary-foreground: #e4eae6;
+  --muted: #1d2723;
+  --muted-foreground: #9aa8a1;
+  --accent: #8ec8ae;
+  --accent-foreground: #0e1512;
+  --destructive: #e2705f;
+  --destructive-foreground: #160c0a;
+  --border: #2a3831;
+  --input: #35443c;
+  --ring: #8ec8ae;
+  --chart-1: #74b79c;
+  --chart-2: #b7c0ba;
+  --chart-3: #6f98bd;
+  --chart-4: #d3b46a;
+  --chart-5: #c88fa4;
+  --sidebar: #111a16;
+  --sidebar-foreground: #e4eae6;
+  --sidebar-primary: #8ec8ae;
+  --sidebar-primary-foreground: #0e1512;
+  --sidebar-accent: #1d2723;
+  --sidebar-accent-foreground: #e4eae6;
+  --sidebar-border: #2a3831;
+  --sidebar-ring: #8ec8ae;
+  --node-glyph: #f4f7f2;
+  --warning: #d9b463;
+  --warning-soft: #332a12;
+  --warning-on-soft: #efdcaa;
+  --warning-strong: #d9b463;
+  --success: #c2dc96;
+  --success-foreground: #101a08;
+  --medal-gold: #d4ac5c;
+  --medal-gold-soft: #332a12;
+  --medal-gold-on-soft: #f0dcae;
+  --medal-silver: #adb5b1;
+  --medal-silver-soft: #282e2b;
+  --medal-silver-on-soft: #d9dedb;
+  --medal-bronze: #c08a5c;
+  --medal-bronze-soft: #33251a;
+  --medal-bronze-on-soft: #eccdb0;
   --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Fraunces, ui-serif, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -151,6 +199,22 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-node-glyph: var(--node-glyph);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-on-soft: var(--warning-on-soft);
+  --color-warning-strong: var(--warning-strong);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-medal-gold: var(--medal-gold);
+  --color-medal-gold-soft: var(--medal-gold-soft);
+  --color-medal-gold-on-soft: var(--medal-gold-on-soft);
+  --color-medal-silver: var(--medal-silver);
+  --color-medal-silver-soft: var(--medal-silver-soft);
+  --color-medal-silver-on-soft: var(--medal-silver-on-soft);
+  --color-medal-bronze: var(--medal-bronze);
+  --color-medal-bronze-soft: var(--medal-bronze-soft);
+  --color-medal-bronze-on-soft: var(--medal-bronze-on-soft);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -163,6 +227,8 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --font-serif: var(--font-serif);
+  --font-devanagari: var(--font-devanagari);
+  --font-devanagari-serif: var(--font-devanagari-serif);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -185,6 +251,24 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  /*
+   * Nepali typography. Poppins and Fraunces have no Devanagari coverage, so
+   * ne.json strings fell back to an arbitrary system face. Rebinding the two
+   * font tokens for Nepali means every existing `font-sans` / `font-serif`
+   * utility resolves to a real Devanagari face with no per-component change.
+   *
+   * `body:lang(ne)` (0,1,1) — not `:lang(ne)` (0,1,0) — because next/font puts
+   * the --font-sans / --font-serif definitions on a class on <body>, which
+   * would otherwise win the cascade against a selector on <html>.
+   */
+  body:lang(ne) {
+    --font-sans: var(--font-devanagari);
+    --font-serif: var(--font-devanagari-serif);
+    /* Devanagari sits on a taller em box; a little more leading keeps matras
+       and the shirorekha from clipping in tight UI rows. */
+    line-height: 1.7;
   }
 }
 

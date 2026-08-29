@@ -48,18 +48,31 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     >
       <AppSidebar variant="sidebar" />
 
-      <SidebarInset>
+      {/*
+        SidebarInset renders its own <main>, which nested inside the explicit
+        <main role="main"> below and gave the document two main landmarks.
+        role="presentation" strips the implicit landmark from the wrapper
+        without modifying the shadcn primitive, leaving one banner, one main
+        and one contentinfo — and none of them nested inside another.
+
+        min-w-0 fixes a separate, pre-existing bug: the inset carries w-full
+        while sitting in a flex row beside an 18rem sidebar, so from the md
+        breakpoint up to roughly 1024px the shell was ~175px wider than the
+        viewport and every page scrolled sideways. A flex item will not shrink
+        below its content without min-width: 0.
+      */}
+      <SidebarInset role="presentation" className="min-w-0">
         <ApiBaseWarning />
         <DegradedSchemaBanner />
         {/* ── Header ── */}
         <header
-          className="sticky top-0 z-40 flex items-center px-4 md:px-6 h-14 border-b border-blue-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl transition-all duration-300"
+          className="sticky top-0 z-40 flex items-center px-4 md:px-6 h-14 border-b border-border bg-background/85 backdrop-blur-xl transition-all duration-300"
           role="banner"
           aria-label="Dashboard Header"
         >
           <SiteHeader />
 
-          <div className="ml-auto flex items-center gap-3 flex-shrink-0">
+          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
 
             <CommandMenuTrigger />
             {showAuthedHeader ? <UserProgressBadge /> : null}
@@ -73,33 +86,36 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* ── Main Content ── */}
         <main
           role="main"
-          className="flex min-h-0 flex-1 flex-col @container/main gap-3 bg-gradient-to-br from-blue-50/50 via-sky-50/30 to-blue-50/50 px-4 py-4 md:px-6 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950"
+          className="flex min-h-0 flex-1 flex-col @container/main gap-3 bg-background px-4 py-4 md:px-6"
         >
           {children}
         </main>
 
         {/* ── Footer ── */}
-        <footer className="px-4 md:px-6 py-2 border-t border-blue-200/60 dark:border-gray-700/60 bg-white/40 dark:bg-gray-900/40 backdrop-blur-sm">
-          <div className="flex items-center justify-between gap-4 text-xs text-blue-600/70 dark:text-blue-400/60">
+        <footer className="px-4 md:px-6 py-2 border-t border-border bg-card/40 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-3">
               <Image
                 src="/cair-logo/fulllogo_nobuffer.png"
                 alt="CAIR-Nepal"
-                width={80}
-                height={28}
-                className="h-5 w-auto opacity-70"
+                width={1280}
+                height={314}
+                className="opacity-70"
+                // next/image warns when CSS overrides one dimension but not the
+                // other; stating both keeps the intrinsic aspect ratio explicit.
+                style={{ height: '1.25rem', width: 'auto' }}
                 sizes="80px"
               />
               <span className="hidden sm:inline">{t('copyright', { year: new Date().getFullYear() })}</span>
             </div>
             <div className="flex items-center gap-1">
-              <a href="https://github.com/CAIRNepal/heritagegraph" target="_blank" rel="noopener noreferrer" className="p-1 rounded hover:text-blue-800 dark:hover:text-blue-200 transition-colors">
+              <a href="https://github.com/CAIRNepal/heritagegraph" target="_blank" rel="noopener noreferrer" className="rounded p-1 transition-colors hover:text-foreground focus-visible:text-foreground">
                 <Github className="w-3.5 h-3.5" />
               </a>
-              <a href="mailto:info@cair-nepal.org" className="p-1 rounded hover:text-blue-800 dark:hover:text-blue-200 transition-colors">
+              <a href="mailto:info@cair-nepal.org" className="rounded p-1 transition-colors hover:text-foreground focus-visible:text-foreground">
                 <Mail className="w-3.5 h-3.5" />
               </a>
-              <a href="https://www.cair-nepal.org/" target="_blank" rel="noopener noreferrer" className="p-1 rounded hover:text-blue-800 dark:hover:text-blue-200 transition-colors">
+              <a href="https://www.cair-nepal.org/" target="_blank" rel="noopener noreferrer" className="rounded p-1 transition-colors hover:text-foreground focus-visible:text-foreground">
                 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>

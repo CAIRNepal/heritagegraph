@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { IconDotsVertical, IconLogout, IconUserCircle, IconMedal } from '@tabler/icons-react';
@@ -90,12 +92,15 @@ export default function AuthSection() {
     };
   }, [status, session?.accessToken]);
 
+  const tNav = useTranslations('nav');
+  const tAuth = useTranslations('auth');
   const tierInfo = tierConfig[userTier];
 
   if (!session) {
     return (
-      <Button size="sm" onClick={() => signIn('google')}>
-        Sign In with Google
+      <Button size="sm" className="shrink-0" onClick={() => signIn('google')}>
+        <span className="hidden sm:inline">{tAuth('signInWithGoogle')}</span>
+        <span className="sm:hidden">{tAuth('signIn')}</span>
       </Button>
     );
   }
@@ -168,9 +173,9 @@ export default function AuthSection() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/dashboard" className="flex items-center gap-2">
               <IconUserCircle className="h-4 w-4" />
-              Dashboard
+              {tNav('dashboard')}
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>

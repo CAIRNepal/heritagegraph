@@ -328,8 +328,16 @@ export function HeritageMindMapClient() {
     if (viewParam === '2d' || viewParam === 'map' || viewParam === 'xr') {
       setViewMode(viewParam);
     }
-    if (searchParams.get('source') === 'demo') return;
-    if (API_BASE && isPublicApiUrlConfigured()) {
+    // Default to the frozen corpus, and switch to the live knowledge graph only
+    // when the URL asks for it.
+    //
+    // This used to auto-switch to live whenever an API base was configured,
+    // which meant the museum's own front door depended on the backend being
+    // reachable: anyone arriving from the entry page hit "Could not reach the
+    // HeritageGraph API" and an empty canvas. The demo corpus is self-contained
+    // and always renders, so it is the honest default; the toolbar's Live KG
+    // control switches over deliberately.
+    if (searchParams.get('source') === 'live' && API_BASE && isPublicApiUrlConfigured()) {
       setDataSource('live');
       void loadLiveData();
     }
@@ -708,13 +716,6 @@ export function HeritageMindMapClient() {
           >
             {/* Graph / Map canvas */}
             <div className="relative min-h-0 min-w-0">
-              {viewMode === '2d' && (
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-amber-500/[0.04] blur-3xl" />
-                  <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-indigo-500/[0.04] blur-3xl" />
-                </div>
-              )}
-
               {loading && <div className="absolute inset-0"><MandalaLoader /></div>}
               {!loading && error && (
                 <div className="absolute inset-0 flex items-center justify-center" role="alert">

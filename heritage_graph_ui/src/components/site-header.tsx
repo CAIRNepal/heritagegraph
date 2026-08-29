@@ -18,15 +18,15 @@ export function SiteHeader() {
       <SidebarTrigger />
 
       {/* Separator */}
-      <div className="h-5 w-px bg-blue-200 dark:bg-gray-700" />
+      <div className="h-5 w-px bg-border" />
 
       {/* Logo / brand — links back to landing */}
       <Link
         href="/"
         className="flex items-center gap-2 group transition-opacity hover:opacity-80"
       >
-        <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-sky-600 rounded-lg flex items-center justify-center shadow-sm">
-          <BookOpen className="w-3.5 h-3.5 text-white" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shadow-sm">
+          <BookOpen className="h-3.5 w-3.5 text-primary-foreground" />
         </div>
         <span className="font-serif font-semibold text-sm hidden sm:inline text-foreground">
           HeritageGraph

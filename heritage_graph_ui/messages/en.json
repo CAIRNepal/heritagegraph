@@ -46,7 +46,8 @@
     "loginSubmit": "Log In",
     "noAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
-    "forgotPassword": "Forgot password?"
+    "forgotPassword": "Forgot password?",
+    "signInWithGoogle": "Sign In with Google"
   },
   "nav": {
     "navigation": "Navigation",
@@ -106,7 +107,11 @@
     "projectDossiers": "Project dossiers",
     "mergeRequests": "Merge requests",
     "kgProposals": "KG proposals",
-    "staleLinks": "Stale links"
+    "staleLinks": "Stale links",
+    "explore": "Explore",
+    "reference": "Reference",
+    "dashboardGroup": "Dashboard",
+    "knowledgeHubShort": "Knowledge Hub"
   },
   "user": {
     "home": "Home",
@@ -194,7 +199,12 @@
         "hint": "Number of ontology classes with at least one instance in the public graph.",
         "hintCapped": "Ontology classes with at least one instance in the public graph. The query returns at most 200 rows, so the true figure may be higher."
       },
-      "verify": "These figures are read live from the triplestore. See the <methodsLink>methods and provenance page</methodsLink>, or run the query yourself against the <sparqlLink>public SPARQL endpoint</sparqlLink>."
+      "verify": "These figures are read live from the triplestore. See the <methodsLink>methods and provenance page</methodsLink>, or run the query yourself against the <sparqlLink>public SPARQL endpoint</sparqlLink>.",
+      "histogramTitle": "Entity types in the public graph",
+      "histogramSubtitle": "{total} records across the types below",
+      "histogramShare": "{share}% of all records",
+      "histogramMore": "and {count} further types not shown",
+      "histogramEmpty": "The graph reports no entity types yet. Nothing has been published to the public graph."
     },
     "stats": {
       "noToken": "Your session has no API token. Sign out and sign in again.",
@@ -554,7 +564,9 @@
       "provConfidence": "Confidence: {value}",
       "provAgent": "Asserted by: {value}",
       "provTemporal": "Temporal scope: {value}",
-      "provDate": "Recorded: {value}"
+      "provDate": "Recorded: {value}",
+      "noNarrativeRecorded": "No narrative recorded for this record.",
+      "sampleNarrative": "Sample narrative — written for this demonstration corpus, not sourced or verified. Do not cite."
     },
     "ontologyBadges": {
       "cidoc": "CIDOC-CRM",
@@ -568,9 +580,7 @@
       "narrate": "Listen to story narration",
       "narrateShort": "Narrate",
       "stop": "Stop"
-    },
-    "sampleNarrative": "Sample narrative — written for this demonstration corpus, not sourced or verified. Do not cite.",
-    "sampleNarrativeReference": "Reference article"
+    }
   },
   "landing": {
     "hero": {
@@ -1484,6 +1494,116 @@
       "escalated": "Escalated to an expert",
       "flagged": "Flagged for review",
       "conflictResolved": "Conflict resolved"
+    }
+  },
+  "unescoEntry": {
+    "eyebrow": "CAIR-Nepal",
+    "listSummary": "Nepal has four properties on the UNESCO World Heritage List — two cultural, two natural.",
+    "culturalHeading": "The cultural properties",
+    "inscribedYear": "Inscribed {year}",
+    "criteriaLabel": "Criteria",
+    "criteriaValue": "(iii), (iv), (vi)",
+    "typeCultural": "Cultural",
+    "typeNatural": "Natural",
+    "serialNote": "A serial property of seven monument zones.",
+    "zonesHeading": "The seven monument zones",
+    "zonesCaution": "These are the seven monument zones of one property — not seven World Heritage Sites.",
+    "boundaryConfirmed": "Zone boundaries confirmed by the World Heritage Committee in 2006.",
+    "dangerListing": "Placed on the List of World Heritage in Danger in 2003; removed in 2007.",
+    "scopeHeading": "What this page does not cover",
+    "scopeBody": "This page covers Nepal's two cultural properties. Sagarmatha National Park (1979) and Chitwan National Park (1984) are inscribed as natural properties, and fall outside a record scoped to cultural heritage.",
+    "alsoInscribed": "Also inscribed",
+    "naturalPropertyLine": "{name} — inscribed {year}, natural",
+    "graphBoundaryHeading": "UNESCO-inscribed, and everything else",
+    "graphBoundaryBody": "HeritageGraph records far more than the World Heritage List — Guthi institutions, ritual cycles, the Kumari lifecycle, syncretic relations. Nothing outside the list is UNESCO-inscribed, and this record never implies otherwise.",
+    "noPhotographRecorded": "No photograph recorded for this subject.",
+    "notRecorded": "Not recorded",
+    "photographOf": "Photograph of {name}",
+    "openInMuseum": "Open in the Heritage Museum",
+    "openInAtlas": "See it on the Atlas",
+    "browseKnowledge": "Browse the knowledge base",
+    "exploreGraph": "Follow this into the graph",
+    "allZones": "All seven zones",
+    "provenanceNote": "Photography from Wikimedia Commons, retrieved {date}. Each image carries its licence and author.",
+    "factsSourceNote": "Inscription facts on this page come from the UNESCO World Heritage List. Entity records come from the reviewed HeritageGraph knowledge graph.",
+    "zones": {
+      "hanuman-dhoka": "Hanuman Dhoka Durbar Square",
+      "patan-durbar-square": "Patan Durbar Square",
+      "bhaktapur-durbar-square": "Bhaktapur Durbar Square",
+      "swayambhu": "Swayambhu",
+      "bauddhanath": "Bauddhanath",
+      "pashupati": "Pashupati",
+      "changu-narayan": "Changu Narayan"
+    },
+    "descriptors": {
+      "religiousEnsembleOldestStupa": "Religious ensemble. Includes the oldest Buddhist stupa in the Valley.",
+      "religiousEnsembleLargestStupa": "Religious ensemble. Includes the largest stupa in Nepal.",
+      "hinduTemplePrecinct": "Extensive Hindu temple precinct.",
+      "newarSettlementEarliestInscription": "Traditional Newar settlement and Hindu temple complex, with one of the earliest inscriptions in the Valley, from the fifth century AD."
+    },
+    "properties": {
+      "kathmandu-valley": "Kathmandu Valley",
+      "lumbini": "Lumbini, the Birthplace of the Lord Buddha",
+      "sagarmatha-national-park": "Sagarmatha National Park",
+      "chitwan-national-park": "Chitwan National Park"
+    },
+    "directionA": {
+      "title": "Seven monument zones, one property",
+      "lede": "The Kathmandu Valley entered the World Heritage List in 1979 as a single serial property. These are its seven zones, read as one."
+    },
+    "directionB": {
+      "title": "Nepal on the World Heritage List",
+      "lede": "Four properties. Two of them cultural. This is the record, and what sits behind it.",
+      "registerHeading": "The register"
+    },
+    "statusMonumentZone": "Monument zone of the Kathmandu Valley World Heritage property, inscribed {year}",
+    "statusProperty": "UNESCO World Heritage property, inscribed {year}",
+    "statusMonumentZoneShort": "Monument zone · Kathmandu Valley",
+    "statusPropertyShort": "World Heritage property",
+    "facts": {
+      "heading": "Recorded facts",
+      "source": "Source: Wikidata, retrieved {date} —",
+      "refLabel": "UNESCO ref",
+      "refTitle": "Official UNESCO World Heritage reference. A 121bis-00N number identifies a component of the Kathmandu Valley property, not a separate site.",
+      "creditsHeading": "Image credits",
+      "creditsRetrieved": "All photographs from Wikimedia Commons, retrieved {date}.",
+      "labels": {
+        "worldHeritageId": "UNESCO reference",
+        "instanceOf": "Type",
+        "inception": "Inception",
+        "partOf": "Part of",
+        "locatedIn": "Located in",
+        "country": "Country",
+        "area": "Area",
+        "architecturalStyle": "Architectural style",
+        "architect": "Architect"
+      },
+      "descriptionHeading": "Description",
+      "descriptionSource": "Quoted from Wikipedia, retrieved {date} —",
+      "descriptionTrimmed": "{count} sentence about World Heritage listing removed; see the UNESCO reference above."
+    },
+    "zonesLede": "Seven monument zones, inscribed together in 1979 as a single World Heritage property.",
+    "aboutTheProperty": "About the property",
+    "wordmark": "HeritageGraph",
+    "heroLede": "Nepal's cultural heritage, recorded as a graph you can trace.",
+    "introTitle": "A temple is never just a temple",
+    "introBody": "It stands on land held by a guthi that has maintained it for generations. It wakes for a festival whose date is set by the lunar calendar. The deity inside it is worshipped, under another name, at a shrine on the far side of the valley.",
+    "introBody2": "Those links are the record. HeritageGraph keeps them — with a source attached to each one, and a reviewer's name behind it — so they can be followed, questioned, and used by anyone.",
+    "introCta": "How the record is built",
+    "constellationAlt": "An animated diagram of the seven Kathmandu Valley monument zones connected to one another. The same seven zones are listed as links below.",
+    "constellationHint": "Drag your cursor across the web. Every node opens a record.",
+    "zonesHeadingPlain": "Seven places, one listing",
+    "zonesPlainNote": "UNESCO lists the Kathmandu Valley as a single World Heritage property. These seven places are its parts — that is what the numbers on each card mean.",
+    "nextTitle": "Where to go from here",
+    "nextBrowse": {
+      "title": "See the whole record",
+      "desc": "Counts, coverage and what has been reviewed so far, across every type of record in the graph.",
+      "cta": "Open the dashboard"
+    },
+    "nextContribute": {
+      "title": "Add what you know",
+      "desc": "A festival date, a guthi, a shrine nobody has recorded. Contributions are attributed, and reviewed before they are published.",
+      "cta": "Start contributing"
     }
   }
 }

@@ -50,7 +50,7 @@ function buildIconHtml(node: GraphNode, selected: boolean): string {
     <div style="
       position:absolute;top:${size + 2}px;left:50%;transform:translateX(-50%);
       white-space:nowrap;font-size:11px;font-weight:600;
-      color:${selected ? '#fbbf24' : '#e5e7eb'};
+      color:${selected ? 'var(--ring)' : 'var(--foreground)'};
       text-shadow:0 1px 3px #000;pointer-events:none;
     ">${node.label.replace(/[<>]/g, '')}</div>`;
 }

@@ -149,9 +149,31 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
+      // UNESCO entry photography. The manifest in src/data/unesco-imagery.json
+      // stores direct upload.wikimedia.org URLs; Special:FilePath on
+      // en.wikipedia.org redirects there, and the museum corpus still uses that
+      // form, so both hosts are allowed.
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'en.wikipedia.org',
+        pathname: '/wiki/Special:FilePath/**',
+      },
       ...(apiMediaPattern ? [apiMediaPattern] : []),
     ],
   },
+  /**
+   * A running `next dev` writes into `.next` continuously. A production build
+   * sharing that directory gets its chunks overwritten mid-flight and fails
+   * with MODULE_NOT_FOUND, and a completed build then breaks the dev server in
+   * the same way. Setting NEXT_DIST_DIR lets a verification or CI build run
+   * alongside a live dev server instead of fighting it.
+   */
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
   eslint: {
     ignoreDuringBuilds: true, // disables ESLint errors breaking production build
   },
@@ -160,14 +182,22 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * Legacy URLs: the app previously exposed some routes under `/dashboard`.
-   * Authenticated UI now lives at the site root (e.g. `/` not `/dashboard`).
+   * Legacy URLs.
+   *
+   * An earlier migration moved the authenticated UI off `/dashboard` onto the
+   * site root and left blanket `/dashboard*` redirects behind. The 2026-08
+   * entry redesign puts the public UNESCO page at `/` and moves the dashboard
+   * back to `/dashboard`, so a redirect on that exact path would make the
+   * dashboard unreachable — it 308'd straight back to `/`.
+   *
+   * `:path+` (one or more segments) keeps the legacy sub-path redirects working
+   * — `/dashboard/team` still resolves to `/team` — while leaving `/dashboard`
+   * itself to the real page. `:path*` matched zero segments too, which is what
+   * swallowed it.
    */
   async redirects() {
     return [
-      { source: '/dashboard', destination: '/', permanent: true },
-      { source: '/dashboard/', destination: '/', permanent: true },
-      { source: '/dashboard/:path*', destination: '/:path*', permanent: true },
+      { source: '/dashboard/:path+', destination: '/:path*', permanent: true },
       { source: '/discover', destination: '/about', permanent: true },
       { source: '/discover/', destination: '/about', permanent: true },
     ];

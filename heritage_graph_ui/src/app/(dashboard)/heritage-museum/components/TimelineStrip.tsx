@@ -109,7 +109,7 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
           </span>
         ) : null}
         {layout.undatedCount > 0 ? (
-          <span className="text-[11px] text-amber-700/90 dark:text-amber-400/90">
+          <span className="text-[11px] text-primary">
             {t('undatedExcluded', { count: layout.undatedCount })}
           </span>
         ) : null}

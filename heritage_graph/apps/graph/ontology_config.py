@@ -2,7 +2,7 @@
 AUTO-GENERATED — do not edit by hand.
 Source:  ontology/HeritageGraph.yaml (prefixes section)
 Regen:   python3 tools/gen_heritage_viz_config.py
-Hash:    64ad8fff9a58cdf8
+Hash:    0927f171c2781d25
 
 Import this module wherever RDF prefix expansion is needed instead of
 re-declaring the dict inline (which risks silent drift).

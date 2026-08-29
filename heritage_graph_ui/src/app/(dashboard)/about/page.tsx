@@ -31,11 +31,11 @@ import {
   heroForeground,
   heroForegroundMuted,
   heroGradient,
-  motionInitialWhenEnabled,
   scaleIn,
   staggerContainer,
   surfaceCard,
 } from '@/lib/design';
+import { useReveal } from '@/lib/use-reveal';
 import { cn } from '@/lib/utils';
 
 const REPOSITORY_URL = 'https://github.com/CAIRNepal/heritagegraph';
@@ -90,13 +90,14 @@ function SectionHeading({ prefix, highlight }: { prefix: string; highlight: stri
 export default function AboutPage() {
   const t = useTranslations('about');
   const reduceMotion = useReducedMotion();
+  const reveal = useReveal();
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-10 pb-8">
       {/* Hero */}
       <motion.div
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        animate={reduceMotion ? false : 'show'}
+        initial="hidden"
+        animate="show"
         variants={staggerContainer}
         className={cn('relative overflow-hidden', surfaceCard, 'p-8 md:p-10')}
       >
@@ -165,9 +166,7 @@ export default function AboutPage() {
 
       {/* Mission */}
       <motion.div
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+        {...reveal}
         variants={fadeInUp}
       >
         <Card>
@@ -189,9 +188,7 @@ export default function AboutPage() {
 
       {/* Core features */}
       <motion.section
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.15 }}
+        {...reveal}
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp}>
@@ -210,9 +207,7 @@ export default function AboutPage() {
 
       {/* Data, provenance and reuse — the section a reviewer reads first. */}
       <motion.section
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.15 }}
+        {...reveal}
         variants={fadeInUp}
       >
         <SectionHeading
@@ -264,9 +259,7 @@ export default function AboutPage() {
 
       {/* Standards */}
       <motion.section
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.15 }}
+        {...reveal}
         variants={fadeInUp}
       >
         <SectionHeading
@@ -304,9 +297,7 @@ export default function AboutPage() {
 
       {/* CAIR-Nepal */}
       <motion.div
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+        {...reveal}
         variants={fadeInUp}
       >
         <Card className="overflow-hidden">
@@ -356,9 +347,7 @@ export default function AboutPage() {
 
       {/* CTA */}
       <motion.div
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+        {...reveal}
         variants={fadeInUp}
       >
         <Card className={cn('relative overflow-hidden', surfaceCard)}>
@@ -399,9 +388,7 @@ export default function AboutPage() {
 
       {/* Open source & citation */}
       <motion.div
-        initial={motionInitialWhenEnabled(reduceMotion)}
-        whileInView={reduceMotion ? undefined : 'show'}
-        viewport={reduceMotion ? undefined : { once: true, amount: 0.2 }}
+        {...reveal}
         variants={fadeInUp}
       >
         <Card className="border-dashed">

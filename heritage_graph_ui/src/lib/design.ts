@@ -12,10 +12,15 @@ export const fadeInUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
+/**
+ * A stagger container's only job is to time its children. It must not fade
+ * itself: `opacity: 0` on the parent hides every child no matter how the
+ * children animate, so one un-fired IntersectionObserver blanks a whole
+ * section. An empty `hidden` still propagates the variant to children.
+ */
 export const staggerContainer = {
-  hidden: { opacity: 0 },
+  hidden: {},
   show: {
-    opacity: 1,
     transition: { staggerChildren: 0.08, delayChildren: 0.15 },
   },
 };
@@ -55,3 +60,137 @@ export const heroForeground = 'text-hero-foreground';
 
 /** Secondary text on a hero surface — still ≥ 4.5:1 against both hero stops. */
 export const heroForegroundMuted = 'text-hero-foreground/90';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Editorial motion — added for the museum-style entry experience.
+
+   The direction is "slow, weighted, purposeful; reveal rather than decorate".
+   That rules out springs: a spring overshoots and settles, which reads as
+   bounce. These use a custom cubic-bézier with a long tail instead, so motion
+   decelerates into place and stops.
+
+   Every variant below is inert when the user prefers reduced motion, provided
+   the call site passes `motionInitialWhenEnabled(reduceMotion)` as `initial`.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/** Weighted deceleration curve. Slow start, long settle, no overshoot. */
+export const editorialEase = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * Scroll-triggered reveal for editorial sections.
+ *
+ * Pair with `whileInView="show"` and `viewport={{ once: true, amount: 0.25 }}`
+ * so a section reveals once when a quarter of it is on screen and never
+ * re-animates as the reader scrolls back.
+ */
+export const revealOnScroll = {
+  // Deliberately NO opacity. An earlier version faded from `opacity: 0`, which
+  // meant a section was invisible until its IntersectionObserver fired — so the
+  // page loaded with large blank bands and only filled in as you scrolled. Any
+  // hiccup (slow JS, a background tab, an observer that never fires, no JS at
+  // all) left the content unreadable, and the server-rendered markup carried
+  // the transparent state inline.
+  //
+  // Content visibility must never depend on an animation having run. Moving
+  // only the transform keeps the reveal — text settles upward into place — while
+  // the un-animated state is fully legible, just 24px low.
+  hidden: { y: 24 },
+  show: {
+    y: 0,
+    transition: { duration: 0.7, ease: editorialEase },
+  },
+};
+
+/**
+ * Image reveal. Fades opacity only — deliberately no transform and no scale.
+ *
+ * A transform on a large photograph is the usual cause of layout shift on
+ * image load, and the landing page has a CLS budget of zero. The container
+ * must reserve its aspect ratio before this runs.
+ */
+export const imageReveal = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { duration: 0.9, ease: editorialEase },
+  },
+};
+
+/**
+ * Slower, wider-spaced stagger for editorial rows — the dashboard's
+ * `staggerContainer` (0.08s) is too quick to read as deliberate at this scale.
+ */
+export const editorialStagger = {
+  // No opacity on the container — see staggerContainer above.
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.12, delayChildren: 0.1 },
+  },
+};
+
+/**
+ * Viewport config for `whileInView`. Reveal once, and trigger as soon as a
+ * tenth of the section is in view — a quarter meant tall sections sat
+ * un-revealed well after the reader had started reading them.
+ */
+export const revealViewport = { once: true, amount: 0.1 } as const;
+
+/* ── Editorial surfaces ─────────────────────────────────────────────────── */
+
+/**
+ * Full-bleed section on the page ground. Used to alternate bands down the
+ * landing page the way a Newar façade alternates brick courses and timber.
+ */
+export const editorialSection = 'w-full py-16 md:py-24';
+
+/** Reading column. Caps running text near 68 characters. */
+export const readingColumn = 'mx-auto w-full max-w-[68ch] px-5 sm:px-6';
+
+/** Wide content column for photography and grids. */
+export const wideColumn = 'mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8';
+
+/**
+ * Photograph frame. Reserves the aspect ratio before the image loads so
+ * nothing shifts, and clips the image to the surface radius.
+ */
+export const photoFrame =
+  'relative overflow-hidden rounded-xl bg-muted';
+
+/**
+ * Scrim laid under text that sits on a photograph. Uses a neutral black ramp
+ * rather than a token because it darkens *the photograph*, not a themed
+ * surface — it must behave identically in both themes.
+ */
+export const photoScrim =
+  'absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent';
+
+/**
+ * Props for a scroll-revealed element, correct under reduced motion.
+ *
+ * WHY THIS EXISTS — the naive spelling has a real bug:
+ *
+ *     initial={motionInitialWhenEnabled(reduceMotion)}
+ *     whileInView="show"
+ *
+ * `useReducedMotion()` returns null during SSR, so the server renders the
+ * `hidden` variant's styles inline (`opacity: 0`). On a client that prefers
+ * reduced motion, `initial` becomes `false`, so Framer does not animate — and
+ * with `whileInView` gated behind an IntersectionObserver that may never be
+ * satisfied for that element, nothing ever clears the inline `opacity: 0`.
+ * The section stays permanently invisible for exactly the users who asked for
+ * less motion.
+ *
+ * So when reduced motion is preferred we drop the scroll trigger entirely and
+ * assert the shown state with `animate`. Content visibility must never depend
+ * on an animation having run.
+ */
+export function revealProps(reduceMotion: boolean | null) {
+  if (reduceMotion) {
+    return { initial: false as const, animate: 'show' };
+  }
+  return {
+    initial: 'hidden',
+    whileInView: 'show',
+    viewport: revealViewport,
+  };
+}

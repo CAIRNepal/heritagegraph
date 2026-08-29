@@ -1,7 +1,7 @@
 // AUTO-GENERATED — do not edit by hand.
 // Source:  ontology/HeritageGraph.yaml + tools/ui-vizmap.yaml
 // Regen:   python3 tools/gen_heritage_viz_config.py  (or: make ontology)
-// Hash:    64ad8fff9a58cdf8
+// Hash:    0927f171c2781d25
 //
 // Cytoscape schema graph (/graphview → Ontology tab).
 
@@ -42,15 +42,15 @@ export const CATEGORY_COLORS: Record<
   OntologyCategory,
   { bg: string; border: string; text: string; label: string }
 > = {
-  tangible: { bg: "#3b82f6", border: "#2563eb", text: "#fff", label: "Tangible Heritage" },
-  conceptual: { bg: "#8b5cf6", border: "#7c3aed", text: "#fff", label: "Conceptual Entities" },
-  event: { bg: "#f59e0b", border: "#d97706", text: "#fff", label: "Events" },
-  social: { bg: "#10b981", border: "#059669", text: "#fff", label: "Social / Actors" },
-  spatial: { bg: "#06b6d4", border: "#0891b2", text: "#fff", label: "Spatiotemporal" },
-  provenance: { bg: "#ec4899", border: "#db2777", text: "#fff", label: "Provenance" },
-  kumari: { bg: "#ef4444", border: "#dc2626", text: "#fff", label: "Living Goddess" },
-  enum: { bg: "#94a3b8", border: "#64748b", text: "#fff", label: "Enumerations" },
-  external: { bg: "#78716c", border: "#57534e", text: "#fff", label: "External (CRM/AAT)" },
+  tangible: { bg: "#31556c", border: "#24404f", text: "#fff", label: "Tangible Heritage" },
+  conceptual: { bg: "#6f3c56", border: "#552e42", text: "#fff", label: "Conceptual Entities" },
+  event: { bg: "#7b3928", border: "#5d2b1e", text: "#fff", label: "Events" },
+  social: { bg: "#604914", border: "#48370f", text: "#fff", label: "Social / Actors" },
+  spatial: { bg: "#245445", border: "#1a3e33", text: "#fff", label: "Spatiotemporal" },
+  provenance: { bg: "#4d4d40", border: "#3a3a30", text: "#fff", label: "Provenance" },
+  kumari: { bg: "#7a2440", border: "#5c1b30", text: "#fff", label: "Living Goddess" },
+  enum: { bg: "#565650", border: "#41413c", text: "#fff", label: "Enumerations" },
+  external: { bg: "#4f5652", border: "#3c413e", text: "#fff", label: "External (CRM/AAT)" },
 };
 
 const NODES: OntologyNode[] = [

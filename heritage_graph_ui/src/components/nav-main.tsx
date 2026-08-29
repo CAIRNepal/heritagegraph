@@ -32,7 +32,7 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-1">
         <SidebarMenu>
-          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-blue-500/70 dark:text-blue-400/70">
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
             {navtitle}
           </SidebarGroupLabel>
 
@@ -51,11 +51,11 @@ export function NavMain({
                     {item.icon && (
                       <item.icon
                         className={`size-[18px] shrink-0 transition-colors duration-200 ${
-                          isActive ? 'text-blue-600 dark:text-blue-400' : ''
+                          isActive ? 'text-sidebar-primary' : ''
                         }`}
                       />
                     )}
-                    <span className={isActive ? 'font-medium text-blue-900 dark:text-blue-100' : ''}>{item.title}</span>
+                    <span className={isActive ? 'font-medium text-sidebar-foreground' : ''}>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
