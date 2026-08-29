@@ -15,6 +15,7 @@ import {
 import {
   IconExternalLink,
   IconMapPin,
+  IconPlayerPause,
   IconPlayerPlay,
   IconPlayerStop,
   IconShieldCheck,
@@ -122,15 +123,29 @@ function StorytellingOverlay({
         <div className="p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span
-                className="rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.16em]"
-                style={{ background: `${cfg.color}22`, color: cfg.color }}
-              >
-                {beat.icon} {beat.title}
+              {/* Same defect as the filter chips and worse: the identity hue as
+                  text on a 13% wash of itself gives even less separation. Token
+                  ink on a token tint. */}
+              <span className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-bold uppercase tracking-[0.16em] text-foreground">
+                {beat.title}
               </span>
-              {paused && !reducedMotion ? (
-                <span className={xrChip}>{t('paused')}</span>
-              ) : null}
+              {/* A real pause control, not a status chip.
+                  `setPaused` was reachable only from onMouseEnter/onMouseLeave:
+                  no keyboard path, and on touch no pause path at all, which
+                  fails WCAG 2.2.2 for content that advances on its own. */}
+              <button
+                type="button"
+                onClick={() => setPaused(!paused)}
+                aria-pressed={paused}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/30 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {paused ? (
+                  <IconPlayerPlay className="h-3.5 w-3.5" aria-hidden />
+                ) : (
+                  <IconPlayerPause className="h-3.5 w-3.5" aria-hidden />
+                )}
+                {paused ? t('play') : t('pause')}
+              </button>
             </div>
             <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
               {t('beatProgress', { current: safeIdx + 1, total: beats.length })}
@@ -262,6 +277,33 @@ function KeyFactBadges({
   );
 }
 
+/**
+ * A gallery card.
+ *
+ * THREE DEFECTS FIXED HERE TOGETHER, BECAUSE THEY WERE ONE PIECE OF MARKUP
+ *
+ * 1. The caption used to sit ON the photograph under
+ *    `from-background/90 via-background/25 to-transparent`. Keyed to
+ *    `--background`, that laid a white fog over the lower half of every image
+ *    in light mode — flattening Bisket Jatra, Boudhanath and the Bagmati — and
+ *    it lightened the exact band the caption occupied, so the gradient damaged
+ *    the picture and the text at once. The caption is on a solid plate below
+ *    the image now. The photograph is the artefact; it is not there to be
+ *    dimmed in service of an overlay.
+ *
+ * 2. The type label took `style={{ color: cfg.color }}` — a node-identity hue
+ *    as text, over an arbitrary photograph. That contrast is not low, it is
+ *    UNDEFINED: it varies per image and per region, and an undefined ratio
+ *    cannot be certified. On the plate it is token ink, with the glyph carrying
+ *    identity so type is never hue-only.
+ *
+ * 3. The grid rendered every photograph with no credit at any zoom. The
+ *    corpus imagery is Wikimedia CC-BY-SA, where attribution is a licence
+ *    condition. It is revealed on hover AND keyboard focus, and it is a SIBLING
+ *    of the button, never a child: the credit carries its own licence and
+ *    file-description anchors, and an <a> inside a <button> is invalid HTML
+ *    that fails hydration outright.
+ */
 function GalleryCard({
   node,
   onSelect,
@@ -272,43 +314,70 @@ function GalleryCard({
   const t = useXrTranslations();
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   const visual = hasVisual(node);
+  const heroImage = node.imageUrl ?? node.images?.[0];
+  const credit = heroImage ? node.imageCredits?.[heroImage] : undefined;
+
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(node)}
-      className={cn(
-        'group relative overflow-hidden rounded-2xl border border-border text-left transition-all',
-        'hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-      )}
-      style={{ aspectRatio: '4/3' }}
-    >
-      <div
-        className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
-        style={{
-          background: visual
-            ? `url(${node.imageUrl ?? node.images?.[0]}) center/cover no-repeat`
-            : `linear-gradient(135deg, ${cfg.color}33 0%, var(--muted) 100%)`,
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/25 to-transparent" />
-      <div
-        className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-border/60"
-        style={{ background: `${cfg.color}cc` }}
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:border-primary/40 hover:shadow-md focus-within:border-primary/40">
+      <button
+        type="button"
+        onClick={() => onSelect(node)}
+        className="block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
       >
-        <NodeGlyph nodeType={node.nodeType} size={17} color="#fff" />
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <span className="relative block overflow-hidden" style={{ aspectRatio: '4/3' }}>
+          {visual ? (
+            <span
+              className="absolute inset-0 transition-transform duration-700 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+              style={{ background: `url(${heroImage}) center/cover no-repeat` }}
+            />
+          ) : (
+            /* A deliberate absence, not a broken card: the glyph, the type and
+               a plain line saying no photograph is recorded. */
+            <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted/50">
+              <NodeGlyph nodeType={node.nodeType} size={28} className="text-muted-foreground" />
+              <span className="px-4 text-center text-[11px] leading-relaxed text-muted-foreground">
+                {t('noPhotograph')}
+              </span>
+            </span>
+          )}
+
+          {/* Identity badge. Solid fill rather than the old `cc` alpha, so the
+              glyph's contrast against it is a fixed number instead of a
+              function of whatever pixel sits behind. */}
+          <span
+            className="absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border border-border/60"
+            style={{ background: cfg.color }}
+          >
+            <NodeGlyph nodeType={node.nodeType} size={17} color="#fff" />
+          </span>
+
+          <span className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 motion-reduce:transition-none">
+            <span className="rounded-full border border-border bg-card/85 px-4 py-2 text-xs text-foreground backdrop-blur-sm">
+              {t('explore')} →
+            </span>
+          </span>
+        </span>
+      </button>
+
+      {/* The credit sits over the foot of the image, outside the button. */}
+      {credit ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-end p-2 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 motion-reduce:transition-none">
+          <div className="pointer-events-auto max-w-full rounded-md bg-black/65 px-2 py-1 backdrop-blur-sm">
+            <ImageAttribution credit={credit} variant="onImage" />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Caption plate — solid surface, token ink, no gradient anywhere near
+          the photograph. */}
+      <div className="flex flex-col gap-1 border-t border-border px-3 py-2.5">
         <p className="text-sm font-semibold leading-tight text-foreground">{node.label}</p>
-        <p className="mt-0.5 text-xs font-medium" style={{ color: cfg.color }}>
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <NodeGlyph nodeType={node.nodeType} size={13} aria-hidden />
           {cfg.label}
         </p>
       </div>
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-        <span className="rounded-full border border-border bg-card/80 px-4 py-2 text-xs text-foreground backdrop-blur-sm">
-          {t('explore')} →
-        </span>
-      </div>
-    </button>
+    </div>
   );
 }
 
@@ -428,17 +497,18 @@ export function ImmersiveScene({
         <style>{XR_STYLES}</style>
         <div className="h-full w-full overflow-y-auto bg-background p-4 sm:p-6">
           <div className="mx-auto max-w-5xl">
-            <div className="mb-8 text-center">
-              <div className="mb-3 flex justify-center">
-                <IconSparkles className="h-8 w-8 text-primary" aria-hidden />
-              </div>
-              <p className="mb-2 text-2xl font-bold text-foreground sm:text-3xl">
-                {t('galleryTitle')}
-              </p>
-              <p className="mx-auto max-w-xl text-sm text-muted-foreground">
-                {t('gallerySubtitle')}
-              </p>
-            </div>
+            {/* A real heading, and the decoration gone.
+                The default view rendered zero h1-h6 elements, so the page a
+                visitor lands on had no document outline at all — WCAG 1.3.1 and
+                2.4.6, and the first thing any audit tool reports. This <h2>
+                sits under the page <h1> in heritage-museum-client.
+                `gallerySubtitle` is dropped with it: it described the live
+                reviewed graph while the visitor is in the demo corpus, so it
+                read as an apology for the empty cards. The empty card says it
+                itself now. */}
+            <h2 className="mb-6 font-serif text-2xl leading-tight text-foreground sm:text-3xl">
+              {t('galleryTitle')}
+            </h2>
 
             {sortedNodes.length > 0 ? (
               <>
@@ -748,9 +818,16 @@ export function ImmersiveScene({
         ) : null}
       </div>
 
+      {/* A credit strip across the foot of the hero, not a corner label.
+          Both viewport corners are taken by fixed chrome — the chat button
+          bottom-right, the account avatar bottom-left — and D4 requires that no
+          floating element overlap a credit. Padding clears both, so the credit
+          cannot be occluded at any viewport. */}
       {heroImage && node.imageCredits?.[heroImage] ? (
-        <div className="absolute bottom-2 right-3 z-10 max-w-[45%] text-right">
-          <ImageAttribution credit={node.imageCredits[heroImage]} />
+        <div className="absolute inset-x-0 bottom-0 z-10 flex justify-center px-14 pb-2 sm:px-20">
+          <div className="max-w-full rounded-md bg-black/55 px-2.5 py-1 backdrop-blur-sm">
+            <ImageAttribution credit={node.imageCredits[heroImage]} variant="onImage" />
+          </div>
         </div>
       ) : null}
 
