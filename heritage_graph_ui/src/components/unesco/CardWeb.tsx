@@ -11,7 +11,13 @@
  *
  * It measures rather than assumes: the grid reflows from one column to three,
  * so hard-coded connections would be wrong at most widths. A ResizeObserver
- * re-reads positions whenever the layout changes.
+ * re-reads positions whenever the layout changes, and neighbours are chosen by
+ * measured proximity so the web is a real graph at every column count.
+ *
+ * Filaments are clipped to the card edges rather than drawn between centres.
+ * Centre-to-centre lines spend most of their length hidden behind the cards, so
+ * only faint slivers showed in the gutters; clipping puts the whole stroke, and
+ * a node at each end, in the space where it can actually be seen.
  *
  * Purely decorative — the canvas is hidden from assistive technology and sits
  * behind the cards, which remain ordinary links.
@@ -22,7 +28,28 @@ import { useReducedMotion } from 'framer-motion';
 
 import { cn } from '@/lib/utils';
 
-interface Pt { x: number; y: number }
+interface Box {
+  /** Centre, relative to the wrapper. */
+  cx: number;
+  cy: number;
+  /** Half-extents, used to clip a filament to the card's edge. */
+  hw: number;
+  hh: number;
+}
+
+/**
+ * Where a ray leaving a box's centre crosses its edge, pushed `pad` further out
+ * so the node sits in the gutter rather than on the card border.
+ */
+function edgePoint(b: Box, dx: number, dy: number, pad: number) {
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const tx = Math.abs(ux) > 1e-6 ? b.hw / Math.abs(ux) : Infinity;
+  const ty = Math.abs(uy) > 1e-6 ? b.hh / Math.abs(uy) : Infinity;
+  const t = Math.min(tx, ty) + pad;
+  return { x: b.cx + ux * t, y: b.cy + uy * t };
+}
 
 function cssVar(el: HTMLElement, name: string, fallback: string) {
   return getComputedStyle(el).getPropertyValue(name).trim() || fallback;
@@ -40,7 +67,7 @@ export function CardWeb({
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ptsRef = useRef<Pt[]>([]);
+  const ptsRef = useRef<Box[]>([]);
   const rafRef = useRef(0);
   const visibleRef = useRef(true);
   const reduce = useReducedMotion();
@@ -52,7 +79,12 @@ export function CardWeb({
     const nodes = Array.from(wrap.querySelectorAll<HTMLElement>(itemSelector));
     ptsRef.current = nodes.map((el) => {
       const r = el.getBoundingClientRect();
-      return { x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 };
+      return {
+        cx: r.left - base.left + r.width / 2,
+        cy: r.top - base.top + r.height / 2,
+        hw: r.width / 2,
+        hh: r.height / 2,
+      };
     });
   }, [itemSelector]);
 
@@ -102,43 +134,97 @@ export function CardWeb({
         return;
       }
 
-      const border = cssVar(wrap, '--border', '#c6cfc7');
       const primary = cssVar(wrap, '--primary', '#26584a');
 
-      // Chain each card to the next, plus a longer skip, so the web has depth
-      // instead of reading as a single dashed line.
+      // Neighbours by measured distance, not by index: the grid runs one, two
+      // or three columns wide, and the two closest cards are the ones a reader
+      // sees as adjacent at any of them. The sequential chain is added on top so
+      // reading order is always drawn.
       const pairs: Array<[number, number]> = [];
-      for (let i = 0; i < pts.length - 1; i++) pairs.push([i, i + 1]);
-      for (let i = 0; i + 2 < pts.length; i += 2) pairs.push([i, i + 2]);
+      const seen = new Set<string>();
+      const add = (a: number, b: number) => {
+        const key = a < b ? `${a}-${b}` : `${b}-${a}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        pairs.push([a, b]);
+      };
+      pts.forEach((p, i) => {
+        pts
+          .map((q, j) => ({ j, d: Math.hypot(q.cx - p.cx, q.cy - p.cy) }))
+          .filter((o) => o.j !== i)
+          .sort((a, b) => a.d - b.d)
+          .slice(0, 2)
+          .forEach((o) => add(i, o.j));
+      });
+      for (let i = 0; i < pts.length - 1; i++) add(i, i + 1);
+
+      // Longer filaments read as further away: thinner, fainter, and bowed
+      // less. That plus the drop shadow is what gives the web its depth.
+      const spans = pairs.map(([a, b]) => Math.hypot(pts[b].cx - pts[a].cx, pts[b].cy - pts[a].cy));
+      const maxSpan = Math.max(1, ...spans);
 
       ctx.lineCap = 'round';
       pairs.forEach(([a, b], k) => {
-        const pa = pts[a], pb = pts[b];
-        const mx = (pa.x + pb.x) / 2 + (pa.y - pb.y) * 0.12;
-        const my = (pa.y + pb.y) / 2 + (pb.x - pa.x) * 0.12;
+        const ba = pts[a];
+        const bb = pts[b];
+        const dx = bb.cx - ba.cx;
+        const dy = bb.cy - ba.cy;
+        const pa = edgePoint(ba, dx, dy, 5);
+        const pb = edgePoint(bb, -dx, -dy, 5);
 
+        // A filament whose endpoints have crossed over has no gutter to live in
+        // (the cards are touching), so there is nothing to draw.
+        if ((pb.x - pa.x) * dx + (pb.y - pa.y) * dy <= 0) return;
+
+        const near = 1 - Math.min(1, spans[k] / maxSpan) * 0.55;
+        const bow = 0.1 * near;
+        const mx = (pa.x + pb.x) / 2 + (pa.y - pb.y) * bow;
+        const my = (pa.y + pb.y) / 2 + (pb.x - pa.x) * bow;
+
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.18)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 2;
         ctx.beginPath();
         ctx.moveTo(pa.x, pa.y);
         ctx.quadraticCurveTo(mx, my, pb.x, pb.y);
-        ctx.strokeStyle = border;
-        ctx.globalAlpha = 0.7;
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = primary;
+        ctx.globalAlpha = 0.2 + 0.34 * near;
+        ctx.lineWidth = 1.1 + 1.5 * near;
         ctx.stroke();
+        ctx.restore();
 
         // One travelling highlight per filament, offset so they do not pulse
         // in unison.
         const u = (t * (0.5 + (k % 3) * 0.18) + k * 0.17) % 1;
         const inv = 1 - u;
-        const bx = inv * inv * pa.x + 2 * inv * u * mx + u * u * pb.x;
-        const by = inv * inv * pa.y + 2 * inv * u * my + u * u * pb.y;
-        const g = ctx.createRadialGradient(bx, by, 0, bx, by, 10);
+        const px = inv * inv * pa.x + 2 * inv * u * mx + u * u * pb.x;
+        const py = inv * inv * pa.y + 2 * inv * u * my + u * u * pb.y;
+        const rad = 9 + 5 * near;
+        const g = ctx.createRadialGradient(px, py, 0, px, py, rad);
         g.addColorStop(0, primary);
         g.addColorStop(1, 'transparent');
-        ctx.globalAlpha = 0.7;
+        ctx.globalAlpha = 0.55 + 0.35 * near;
         ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(bx, by, 10, 0, Math.PI * 2);
+        ctx.arc(px, py, rad, 0, Math.PI * 2);
         ctx.fill();
+
+        // A node where each filament meets its card, so the connection has
+        // visible terminals instead of vanishing under the photograph.
+        for (const pt of [pa, pb]) {
+          ctx.globalAlpha = 0.85;
+          ctx.fillStyle = primary;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 2.6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 0.3;
+          ctx.strokeStyle = primary;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, 6, 0, Math.PI * 2);
+          ctx.stroke();
+        }
       });
       ctx.globalAlpha = 1;
 

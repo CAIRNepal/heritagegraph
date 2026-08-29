@@ -316,7 +316,10 @@ export function ZoneCollection({
     <motion.div
       variants={editorialStagger}
       {...reveal}
-      className="grid grid-cols-1 gap-x-6 gap-y-10 @xl/main:grid-cols-2 @4xl/main:grid-cols-3"
+      // Wider gutters than a plain grid would need: the filaments and their
+      // terminals live in this space, and at gap-x-6 there was not enough room
+      // between adjacent cards for a connection to read.
+      className="grid grid-cols-1 gap-x-10 gap-y-12 @xl/main:grid-cols-2 @4xl/main:grid-cols-3"
     >
       {zones.map((zone, i) => (
         <ZoneCard key={zone.key} zone={zone} index={i} layout="grid" headingLevel={headingLevel} />
