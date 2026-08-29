@@ -102,14 +102,37 @@ export function SiteFooter() {
   );
 }
 
-/** The bar itself, so both shells share one set of paddings and borders. */
+/**
+ * The bar itself, so both shells share one set of paddings and borders.
+ *
+ * It read as a generic app chrome sitting on top of an editorial page — a
+ * flat strip with a hairline under it, in no particular relationship to
+ * anything below. Three changes tie it to the rest:
+ *
+ *  - the same faint accent wash the page sections use, so the bar is made of
+ *    the same material as the page rather than laid over it;
+ *  - a hairline that fades out at both ends instead of running wall to wall,
+ *    which is the entry page's whole approach to edges;
+ *  - a slightly taller bar, because the wordmark is set in the display serif
+ *    and needs the room.
+ */
 export function SiteBar({ children }: { children: React.ReactNode }) {
   return (
     <header
-      className="@container/header sticky top-0 z-40 flex h-14 items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-xl md:px-6"
+      className="@container/header sticky top-0 z-40 h-14 bg-background/80 backdrop-blur-xl"
       role="banner"
     >
-      {children}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,color-mix(in_oklab,var(--primary)_6%,transparent),transparent)]"
+      />
+      {/* A rule that dissolves at both ends. A full-width hairline is the
+          single strongest "this is a different surface" signal a bar can send. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-[linear-gradient(to_right,transparent,var(--border)_12%,var(--border)_88%,transparent)]"
+      />
+      <div className="relative flex h-full items-center gap-2 px-4 md:px-6">{children}</div>
     </header>
   );
 }

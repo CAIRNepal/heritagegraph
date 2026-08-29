@@ -19,8 +19,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <OntologyProvider>
     <PwaRegister />
+    {/*
+      The bar sits ABOVE the sidebar, not beside it.
+
+      It used to render inside the sidebar inset, which made it 597px wide at a
+      900px viewport and 812px at 1440 — not enough for the nav links, so they
+      collapsed to a hamburger on every workspace page while the public pages
+      showed them in full. Crossing between the two felt like changing site,
+      which is the one thing this bar exists to prevent.
+
+      Full width, it fits everywhere and is now literally identical on every
+      page. The sidebar starts below it (`top-14`, matching the bar's h-14) so
+      the two do not overlap.
+    */}
     <SidebarProvider
-      className="min-h-svh"
+      className="min-h-svh flex-col"
       style={
         {
           '--sidebar-width': 'calc(var(--spacing) * 72)',
@@ -28,7 +41,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="sidebar" />
+      <SiteBar>
+        <SiteNav withSidebarTrigger />
+        <HeaderControls />
+      </SiteBar>
+
+      <div className="flex min-h-0 w-full flex-1">
+      <AppSidebar variant="sidebar" className="top-14 h-[calc(100svh-3.5rem)]" />
 
       {/*
         SidebarInset renders its own <main>, which nested inside the explicit
@@ -44,14 +63,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         below its content without min-width: 0.
       */}
       <SidebarInset role="presentation" className="min-w-0">
+        {/* Banners sit below the bar, so the bar stays at y=0 and the sidebar's
+            `top-14` offset stays correct whether or not one is showing. */}
         <ApiBaseWarning />
         <DegradedSchemaBanner />
-        {/* ── Bar ── the same one the public shell renders, plus the trigger
-             for the sidebar this shell has. ── */}
-        <SiteBar>
-          <SiteNav withSidebarTrigger />
-          <HeaderControls />
-        </SiteBar>
 
         {/* ── Main Content ── */}
         <main
@@ -64,6 +79,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <SiteFooter />
 
       </SidebarInset>
+      </div>
       
       {/* Global Toast Notifications */}
       <Toaster 

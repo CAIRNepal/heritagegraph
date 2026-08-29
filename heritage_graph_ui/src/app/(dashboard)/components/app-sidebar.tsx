@@ -1,8 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
-import Image from "next/image";
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 
@@ -29,8 +28,6 @@ import {
   IconShield,
   IconScale,
   IconDashboard,
-  IconWorld,
-  IconBuildingMonument,
   IconQrcode,
   IconMedal,
   IconChevronUp,
@@ -57,10 +54,6 @@ import { NavKnowledgebase } from '@/components/nav-knowledgebase';
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
 
@@ -122,9 +115,35 @@ function useSidebarRoles(): SidebarRoles {
   return roles;
 }
 
+/**
+ * Which set of tools this sidebar should show.
+ *
+ * The sidebar used to show every group on every page: a contributor filling in
+ * a form was looking at review queues, and someone reading the dashboard was
+ * looking at Heritage Museum and Heritage Atlas — which are in the top bar, on
+ * every page, already. It is a section tool panel now. The top bar is the only
+ * global navigation.
+ */
+type Section = 'contribute' | 'curate' | 'admin' | 'browse';
+
+function sectionFor(pathname: string): Section {
+  if (pathname.startsWith('/contribute')) return 'contribute';
+  if (
+    pathname.startsWith('/curation') ||
+    pathname.startsWith('/review') ||
+    pathname.startsWith('/moderate')
+  ) {
+    return 'curate';
+  }
+  if (pathname.startsWith('/platform-admin')) return 'admin';
+  return 'browse';
+}
+
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const pathname = usePathname() ?? '/';
+  const section = sectionFor(pathname);
   const t = useTranslations('nav');
   const tCommon = useTranslations('common');
   const { status } = useSession();
@@ -182,36 +201,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-
-<SidebarMenuButton
-  asChild
-  className="data-[slot=sidebar-menu-button]:!p-1.5"
->
-  <div className="flex items-center justify-between w-full h-full">
-    <Link href="/" className="flex items-center">
-          <Image
-            src={isCollapsed ? "/logo1.svg" : "/logo.svg"}
-            alt="logo"
-            /* True intrinsic ratios: logo.svg is 8015×1842 (4.35:1),
-               logo1.svg is 3208×4685 (0.68:1). Declaring both square made
-               next/image warn and distorted the mark. */
-            width={isCollapsed ? 40 : 174}
-            height={isCollapsed ? 58 : 40}
-            sizes={isCollapsed ? "40px" : "150px"}
-          />
-      {/* <span className="">HeritageGraph</span> */}
-    </Link>
-  </div>
-
-</SidebarMenuButton>
-
-
-      </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
+      {/* No wordmark here. The top bar carries it directly above this panel,
+          and two stacked HeritageGraph logos read as a rendering fault. */}
       <SidebarContent ref={contentRef} className="relative pb-6">
         {showScrollTop && (
           <>
@@ -226,15 +217,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </>
         )}
 
-        {/* ── 1. Explore ── the heritage itself, first ── */}
-        <NavMain
-          navtitle={t('explore')}
-          items={[
-            { title: t('heritageMuseum'), url: '/heritage-museum', icon: IconBuildingMonument },
-            { title: t('heritageAtlas'), url: '/atlas', icon: IconWorld },
-          ]}
-        />
+        {/* Explore (Heritage Museum, Heritage Atlas) is not here any more: both
+            are top-level items in the bar above, on every page. Repeating them
+            two inches lower was the clearest sign this panel had stopped being
+            a tool and become a second, worse navigation. */}
 
+        {section === 'browse' ? (
         <NavKnowledgebase
           sectionTitle={t('browseByType')}
           hubTitle={t('knowledgeHub')}
@@ -243,8 +231,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           browseLabel={t('browseByType')}
           items={knowledgeBrowseItems}
         />
+        ) : null}
 
-        {/* ── 2. Dashboard ── numbers, for the audience that wants them ── */}
+        {/* ── Dashboard ── numbers, for the audience that wants them ── */}
+        {section === 'browse' ? (
         <NavMain
           navtitle={t('dashboardGroup')}
           items={[
@@ -255,7 +245,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             { title: t('leaderboard'), url: '/leaderboard', icon: IconTrophy },
           ]}
         />
+        ) : null}
 
+        {section === 'contribute' ? (
         <NavMain
           navtitle={t('record')}
           items={[
@@ -297,7 +289,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             { title: t('qrContributions'), url: '/curation/qr-contributions', icon: IconQrcode },
           ]}
         />
+        ) : null}
 
+        {section === 'curate' ? (
         <NavMain navtitle={t('claim')} items={[
           ...(isReviewer ? [
             { title: t('identityQueue'), url: '/curation/identity', icon: IconGitFork },
@@ -305,7 +299,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             { title: t('truthClaims'), url: '/knowledge/assertion', icon: IconShield },
           ] : []),
         ]} />
+        ) : null}
 
+        {section === 'curate' ? (
         <NavMain navtitle={t('verify')} items={[
           ...(isModerator ? [{ title: t('reviewerDashboard'), url: '/curation/dashboard', icon: IconDashboard }] : []),
           ...(isReviewer ? [
@@ -327,6 +323,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           { title: t('contributionsQueue'), url: '/curation/contributions', icon: IconFileDescription },
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
         ]} />
+        ) : null}
 
         {/* ── Reference used to be a fourth group here ──
              About, Methods & data, Team, Contributors and Organizations now sit
@@ -334,7 +331,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
              ones this sidebar does not appear on. Five low-emphasis links at
              the bottom of a contributor's tool panel was the wrong home for the
              material a first-time reader wants. ── */}
-        {isPlatformAdmin ? (
+        {isPlatformAdmin && section === 'admin' ? (
           <NavMain
             navtitle={t('platformAdmin')}
             items={[

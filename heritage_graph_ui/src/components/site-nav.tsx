@@ -73,8 +73,14 @@ export function SiteNav({ withSidebarTrigger = false }: { withSidebarTrigger?: b
 
   const linkCls = (active: boolean) =>
     cn(
-      'rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-      active ? 'font-medium text-foreground' : 'text-muted-foreground hover:text-foreground',
+      'relative rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+      // The current page is marked with a rule beneath it, not a heavier
+      // weight: a weight change makes the whole row jitter as you move between
+      // pages, because the labels reflow.
+      'after:absolute after:inset-x-2 after:-bottom-px after:h-px after:origin-left after:scale-x-0 after:bg-primary after:transition-transform after:duration-300 motion-reduce:after:transition-none',
+      active
+        ? 'text-foreground after:scale-x-100'
+        : 'text-muted-foreground hover:text-foreground hover:after:scale-x-100 hover:after:bg-border',
     );
 
   return (
@@ -94,7 +100,13 @@ export function SiteNav({ withSidebarTrigger = false }: { withSidebarTrigger?: b
         <span className="flex size-7 items-center justify-center rounded-lg bg-primary shadow-sm">
           <BookOpen className="size-3.5 text-primary-foreground" aria-hidden="true" />
         </span>
-        <span className="font-serif text-sm font-semibold text-foreground">HeritageGraph</span>
+        {/* The same two-tone compound the hero wordmark and the page titles
+            use — bold first half, light second. A single-weight label was the
+            main reason the bar felt unrelated to the page under it. */}
+        <span className="font-serif text-[0.95rem] leading-none tracking-[-0.01em] text-foreground">
+          <span className="font-bold">Heritage</span>
+          <span className="font-light text-muted-foreground">Graph</span>
+        </span>
       </Link>
 
       {/* Desktop nav. Keyed to the header's own container, not the viewport:
