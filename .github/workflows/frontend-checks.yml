@@ -36,3 +36,9 @@ jobs:
 
       - name: ESLint
         run: npx eslint src --quiet
+
+      # next-intl does not fail a build on a missing key — it falls back and
+      # logs — so a PR adding an English string without its Nepali counterpart
+      # would ship a raw key path to Nepali readers. This is the gate.
+      - name: Locale parity
+        run: npm run check:locales

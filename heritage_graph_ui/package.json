@@ -20,7 +20,8 @@
     "check:corpus": "node scripts/freeze-heritage-corpus.mjs --check",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:locales": "node scripts/check-locale-parity.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
