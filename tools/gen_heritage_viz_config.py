@@ -4,7 +4,7 @@ Generate ontology-derived TypeScript and Python artifacts from the canonical sch
 
 Inputs  (never edit the outputs below — edit these instead):
   ontology/HeritageGraph.yaml   — semantic source of truth (classes, slots, prefixes, enums)
-  tools/ui-vizmap.yaml          — presentational config (colors, emojis, hgCategory, predicates)
+  tools/ui-vizmap.yaml          — presentational config (colors, hgCategory, predicates)
 
 Outputs (auto-generated — do not edit by hand):
   heritage_graph_ui/src/lib/ontology/__generated__/heritage-viz-config.ts
@@ -244,7 +244,7 @@ def _gen_viz_config_ts(schema: dict, vizmap: dict, source_hash: str) -> str:
     lines.append(
         "export const NODE_TYPE_CONFIG: Record<\n"
         "  NodeType,\n"
-        "  { color: string; glowColor: string; emoji: string; label: string;"
+        "  { color: string; glowColor: string; label: string;"
         " cidocMapping: string; hgCategory: string }\n"
         "> = {"
     )
@@ -255,11 +255,10 @@ def _gen_viz_config_ts(schema: dict, vizmap: dict, source_hash: str) -> str:
         label = nt.get("label", key)
         color = nt["color"]
         glow = nt["glow_color"]
-        emoji = nt["emoji"]
         cat = nt["hg_category"]
         lines.append(
             f"  {key}: {{"
-            f" color: '{color}', glowColor: '{glow}', emoji: '{emoji}',"
+            f" color: '{color}', glowColor: '{glow}',"
             f" label: '{label}', cidocMapping: '{cidoc}', hgCategory: '{cat}'"
             f" }},"
         )

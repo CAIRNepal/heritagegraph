@@ -517,7 +517,7 @@ export function ImmersiveScene({
     return (
       <>
         <style>{XR_STYLES}</style>
-        <div className="h-full w-full overflow-y-auto bg-background p-4 sm:p-6">
+        <div className="h-full w-full overflow-y-auto bg-background px-4 pb-6 pt-3 sm:px-6">
           <div className="mx-auto max-w-5xl">
             {/* A real heading, and the decoration gone.
                 The default view rendered zero h1-h6 elements, so the page a
@@ -528,18 +528,20 @@ export function ImmersiveScene({
                 reviewed graph while the visitor is in the demo corpus, so it
                 read as an apology for the empty cards. The empty card says it
                 itself now. */}
-            <h2 className="mb-6 font-serif text-2xl leading-tight text-foreground sm:text-3xl">
-              {t('galleryTitle')}
-            </h2>
+            {/* The region heading, not shown.
+                "Heritage stories" sat one line under the page's own <h1>, two
+                headings carrying the same message with nothing between them —
+                and it cost ~56px at the top of a page whose first card was
+                already too far down. `sr-only` keeps the document outline the
+                accessibility work depends on (h1 > h2) while giving the space
+                back to the photographs. */}
+            <h2 className="sr-only">{t('galleryTitle')}</h2>
 
             {sortedNodes.length > 0 ? (
               <>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  {t('galleryAll', { count: sortedNodes.length })}
-                  {withMediaCount > 0
-                    ? ` · ${t('galleryWithMedia', { count: withMediaCount })}`
-                    : null}
-                </p>
+                {/* The count moved to the masthead, beside the other counts.
+                    It read "ALL STORIES (46) · 27 WITH IMAGERY" thirty pixels
+                    below "46 of 46 places" — the same number twice. */}
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 md:gap-4">
                   {cardNodes.map((n) => (
                     <GalleryCard key={n.id} node={n} onSelect={onSelect} />

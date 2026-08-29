@@ -2,7 +2,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Presentational metadata for the HeritageGraph network visualization.
 #
-# This file holds ONLY visual/display config (colors, emojis, hgCategory).
+# This file holds ONLY visual/display config (colors, hgCategory).
 # Semantic metadata (class_uri, slot_uri, CIDOC mappings) lives exclusively in
 # ontology/HeritageGraph.yaml — this file references it but never duplicates it.
 #
@@ -31,8 +31,11 @@
 #   label        — Human-readable label for UI display
 #   color        — Hex color for node fill
 #   glow_color   — Hex color for node glow/highlight
-#   emoji        — Single emoji for node icon
 #   hg_category  — Graph domain category (must be a key in hg_categories below)
+#
+#   There is no `emoji` field. node-icons.tsx replaced per-type emoji with baked
+#   Tabler paths so every surface renders the same glyph and it embeds cleanly in
+#   publication figures. Nothing read the field after that; it is not carried.
 
 node_types:
   - key: Place
@@ -40,7 +43,6 @@ node_types:
     label: Place
     color: "#30715d"
     glow_color: "#49c9a2"
-    emoji: "\U0001F3D4"   # 🏔
     hg_category: spatial
 
   - key: Temple
@@ -48,7 +50,6 @@ node_types:
     label: Temple
     color: "#476a83"
     glow_color: "#72a4c8"
-    emoji: "\U0001F6D5"   # 🛕
     hg_category: tangible
 
   - key: BuddhistMonument
@@ -56,7 +57,6 @@ node_types:
     label: Buddhist Monument
     color: "#4b718c"
     glow_color: "#7baacc"
-    emoji: "☸"       # ☸
     hg_category: tangible
 
   - key: ArchitecturalStructure
@@ -64,7 +64,6 @@ node_types:
     label: Architectural Structure
     color: "#507894"
     glow_color: "#85b0cf"
-    emoji: "\U0001F3DB"   # 🏛
     hg_category: tangible
 
   # Settlement is a Place subtype for urban settlements (no separate schema class)
@@ -73,7 +72,6 @@ node_types:
     label: Settlement
     color: "#347864"
     glow_color: "#51cba6"
-    emoji: "\U0001F3D9"   # 🏙
     hg_category: spatial
 
   - key: Deity
@@ -81,7 +79,6 @@ node_types:
     label: Deity
     color: "#945072"
     glow_color: "#cf85aa"
-    emoji: "\U0001FAB7"   # 🪷 lotus — sacred to Hindu & Buddhist deities (was ✨, which trivialised the concept)
     hg_category: conceptual
 
   - key: Festival
@@ -89,7 +86,6 @@ node_types:
     label: Festival
     color: "#a34c36"
     glow_color: "#de826b"
-    emoji: "\U0001FA94"   # 🪔 diya lamp — South Asian festival symbol (was 🎉 party popper)
     hg_category: event
 
   - key: TimeSpan
@@ -97,7 +93,6 @@ node_types:
     label: Time-Span
     color: "#546b5c"
     glow_color: "#7db28f"
-    emoji: "\U0001F4DC"   # 📜
     hg_category: temporal
 
   - key: ReligiousTradition
@@ -105,7 +100,6 @@ node_types:
     label: Religious Tradition
     color: "#9e557a"
     glow_color: "#d490b2"
-    emoji: "\U0001F4FF"   # 📿 prayer beads / mala — shared Hindu & Buddhist (was 🎨 artist palette)
     hg_category: conceptual
 
   # SacredSite is an ArchitecturalStructure subtype for consecrated sacred spaces
@@ -114,7 +108,6 @@ node_types:
     label: Sacred Site
     color: "#547e9c"
     glow_color: "#8db6d3"
-    emoji: "\U0001F6D0"   # 🛐 place of worship — multi-faith sacred site (was 🌿 herb)
     hg_category: tangible
 
   - key: Person
@@ -122,7 +115,6 @@ node_types:
     label: Person
     color: "#80611a"
     glow_color: "#e7ac24"
-    emoji: "\U0001F464"   # 👤
     hg_category: actor
 
   - key: Guthi
@@ -130,7 +122,6 @@ node_types:
     label: Guthi
     color: "#88681c"
     glow_color: "#e8b02d"
-    emoji: "\U0001F465"   # 👥 community/trust institution — pairs with Person 👤 (was 🏘 houses)
     hg_category: actor
 
   - key: IconographicObject
@@ -138,7 +129,6 @@ node_types:
     label: Iconographic Object
     color: "#5884a3"
     glow_color: "#95bbd6"
-    emoji: "\U0001F5BC"   # 🖼
     hg_category: tangible
 
   # Named historical periods (Lichhavi, Malla, …) — a heritageGraph:HistoricalPeriod
@@ -148,7 +138,6 @@ node_types:
     label: Historical Period
     color: "#5a7262"
     glow_color: "#85b796"
-    emoji: "⏳"       # ⏳
     hg_category: temporal
 
   # Source nodes are projected as heritageGraph:InformationObject (registry key
@@ -158,7 +147,6 @@ node_types:
     label: Source
     color: "#676756"
     glow_color: "#afaf7f"
-    emoji: "\U0001F4DA"   # 📚
     hg_category: provenance
 
   - key: HistoricalEvent
@@ -166,7 +154,6 @@ node_types:
     label: Historical Event
     color: "#ae513a"
     glow_color: "#e18c77"
-    emoji: "\U0001F4C5"   # 📅
     hg_category: event
 
   # ── Classes that appear in the KG but previously had no viz identity ───────
@@ -175,7 +162,6 @@ node_types:
     label: Ritual
     color: "#b8563d"
     glow_color: "#e39582"
-    emoji: "\U0001F549"   # 🕉
     hg_category: event
 
   - key: CasteGroup
@@ -183,7 +169,6 @@ node_types:
     label: Caste Group
     color: "#906e1e"
     glow_color: "#e9b336"
-    emoji: "\U0001F46A"   # 👪
     hg_category: actor
 
   - key: LivingGoddessTenure
@@ -191,7 +176,6 @@ node_types:
     label: Living Goddess Tenure
     color: "#5f7968"
     glow_color: "#8cbc9c"
-    emoji: "\U0001F451"   # 👑
     hg_category: temporal
 
   - key: SyncreticRelationship
@@ -199,7 +183,6 @@ node_types:
     label: Syncretic Link
     color: "#a65b81"
     glow_color: "#d89ab9"
-    emoji: "\U0001F517"   # 🔗
     hg_category: conceptual
 
   # ── LinkedArt/LUX interop node types (render imported Yale LUX entities) ──
@@ -208,7 +191,6 @@ node_types:
     label: Human-Made Object
     color: "#486d87"
     glow_color: "#76a7ca"
-    emoji: "\U0001F3FA"   # 🏺
     hg_category: tangible
 
   - key: Group
@@ -216,7 +198,6 @@ node_types:
     label: Group
     color: "#98741f"
     glow_color: "#eab63e"
-    emoji: "\U0001F465"   # 👥
     hg_category: actor
 
   - key: Set
@@ -224,42 +205,51 @@ node_types:
     label: Set / Collection
     color: "#6e6e5b"
     glow_color: "#b3b386"
-    emoji: "\U0001F5C2"   # 🗂
     hg_category: provenance
 
 
 # Domain category visual config.
 # Keys are the allowed hg_category values referenced above.
 
+# Labels name what each bucket actually CONTAINS, not the ontology's internal
+# grouping term. `spatial` was "Spatiotemporal" and holds Place and Settlement
+# only, with no temporal content, so that one is an accuracy fix rather than a
+# matter of taste. "guthi" stays: it is the precise local term for the
+# institution, not jargon standing in for one.
+#
+# `schema_view_categories` below is deliberately NOT renamed. That set labels the
+# Graph View ontology tab, which is the researcher-facing schema browser — the
+# formal terms are correct there, and it is the disclosure these friendlier
+# labels are allowed to sit in front of.
 hg_categories:
   tangible:
     color: "#476a83"
     border: "#35505f"
-    label: Tangible Heritage
+    label: Monuments & objects
   conceptual:
     color: "#945072"
     border: "#6f3c56"
-    label: Conceptual Entities
+    label: Deities & traditions
   event:
     color: "#a34c36"
     border: "#7b3928"
-    label: Events
+    label: Festivals & events
   spatial:
     color: "#30715d"
     border: "#245445"
-    label: Spatiotemporal
+    label: Places
   temporal:
     color: "#546b5c"
     border: "#3f5045"
-    label: Temporal
+    label: Periods
   actor:
     color: "#80611a"
     border: "#604914"
-    label: Actors & Institutions
+    label: People & guthis
   provenance:
     color: "#676756"
     border: "#4d4d40"
-    label: Provenance
+    label: Sources
 
 # ── Graph View → Ontology tab (Cytoscape schema graph) ─────────────────────
 # Class nodes are generated from ontology/HeritageGraph.yaml (is_a + slot ranges).

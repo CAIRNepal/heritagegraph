@@ -97,8 +97,12 @@ export default function AuthSection() {
   const tierInfo = tierConfig[userTier];
 
   if (!session) {
+    // Outline, not the filled primary. As a solid green button this was the
+    // heaviest element in the top bar on every page — including the museum and
+    // the entry page, which are meant to work fully signed out. Signing in is
+    // available, not the point.
     return (
-      <Button size="sm" className="shrink-0" onClick={() => signIn('google')}>
+      <Button variant="outline" size="sm" className="shrink-0" onClick={() => signIn('google')}>
         <span className="hidden @[52rem]/header:inline">{tAuth('signInWithGoogle')}</span>
         <span className="@[52rem]/header:hidden">{tAuth('signIn')}</span>
       </Button>

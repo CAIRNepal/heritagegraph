@@ -208,10 +208,6 @@ const ImmersiveScene = dynamic(
   () => import('./components/xr/ImmersiveScene').then((m) => m.ImmersiveScene),
   { ssr: false },
 );
-const PlaceNav = dynamic(
-  () => import('./components/xr/PlaceNav').then((m) => m.PlaceNav),
-  { ssr: false },
-);
 const MapView = dynamic(
   () => import('./components/MapView').then((m) => m.MapView),
   { ssr: false, loading: () => <div className="absolute inset-0 flex items-center justify-center"><MandalaLoader /></div> },
@@ -645,29 +641,61 @@ export function HeritageMindMapClient() {
           them what they were looking at, because the only title-like text sat
           below the controls. This is the root of the heading hierarchy every
           other heading on the page now hangs from. */}
-      <div className="flex-shrink-0 border-b border-border px-4 pb-3 pt-4 md:px-6">
-        <h1 className="font-serif text-2xl leading-tight text-foreground sm:text-3xl">
-          {t('title')}
-        </h1>
-        <p className="mt-1.5 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">
-          {t('pageLede')}
-        </p>
-      </div>
+      {/* ── Masthead: title, then tools, in ONE band ──
+          Five full-width bars used to stack before any content — global nav,
+          disclosure, toolbar, search, filter chips — putting the first card at
+          482px, and the only title-like text sat BELOW the controls, so a
+          visitor operated a search field and seven filters before being told
+          what they were looking at.
+          Two bands now: the disclosure bar above, and this. Title left, tools
+          right, so the title is still first in reading order. */}
+      <div className="flex-shrink-0 border-b border-border px-4 py-3 md:px-6">
+        {/* Grid, not a wrapping flex row.
+            With `flex-wrap` the controls dropped BELOW the lede once the two
+            columns exceeded the width, which cost ~70px of vertical chrome for
+            nothing. As a two-column grid the controls sit beside the title on
+            wide screens and the masthead is only as tall as the title block. */}
+        <div className="grid gap-x-6 gap-y-3 @3xl/main:grid-cols-[minmax(0,1fr)_auto] @3xl/main:items-start">
+          <div className="min-w-0">
+            <h1 className="font-serif text-2xl leading-tight text-foreground sm:text-3xl">
+              {t('title')}
+            </h1>
+            <p className="mt-1 max-w-[58ch] text-sm leading-relaxed text-muted-foreground">
+              {t('pageLede')}
+            </p>
+          </div>
 
-      <MuseumToolbar
-        viewMode={viewMode}
-        onViewModeChange={(mode) => (mode === 'xr' ? switchToXR() : setViewMode(mode))}
-        dataSource={dataSource}
-        liveLoading={liveLoading}
-        onToggleDataSource={toggleDataSource}
-        nodeCount={nodeCount}
-        linkCount={linkCount}
-        showStats={!loading}
-        provenance={dataSource === 'demo' ? demoProv : null}
-        liveApiBase={dataSource === 'live' ? API_BASE : null}
-        datasetMeta={dataSource === 'live' ? datasetMeta : null}
-        onExportJson={dataSource === 'live' ? handleExportJson : undefined}
-      />
+          <div className="flex min-w-0 flex-wrap items-center gap-2 @3xl/main:justify-end">
+            <FilterBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              activeCategoryFilter={activeCats}
+              onCategoryToggle={toggleCategory}
+              onShowAllCategories={showAllCategories}
+              categoryCounts={categoryCounts}
+              totalNodes={fullGraph?.nodes.length}
+              visibleNodes={filteredGraph?.nodes.length}
+              withMediaCount={
+                filteredGraph?.nodes.filter((n) => n.imageUrl || n.images?.length).length
+              }
+            />
+            <MuseumToolbar
+              viewMode={viewMode}
+              onViewModeChange={(mode) => (mode === 'xr' ? switchToXR() : setViewMode(mode))}
+              dataSource={dataSource}
+              liveLoading={liveLoading}
+              onToggleDataSource={toggleDataSource}
+              nodeCount={nodeCount}
+              linkCount={linkCount}
+              showStats={!loading}
+              provenance={dataSource === 'demo' ? demoProv : null}
+              liveApiBase={dataSource === 'live' ? API_BASE : null}
+              datasetMeta={dataSource === 'live' ? datasetMeta : null}
+              onExportJson={dataSource === 'live' ? handleExportJson : undefined}
+            />
+          </div>
+        </div>
+      </div>
 
       {liveError && (
         <div
@@ -703,19 +731,6 @@ export function HeritageMindMapClient() {
       {/* ── 2D / Map modes ── */}
       {(viewMode === '2d' || viewMode === 'map') && (
         <div className="flex min-h-0 flex-1 flex-col">
-          {/* Filter bar — visible in both 2D and Map modes */}
-          <div className="z-10 flex-shrink-0">
-            <FilterBar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              activeCategoryFilter={activeCats}
-              onCategoryToggle={toggleCategory}
-              onShowAllCategories={showAllCategories}
-              categoryCounts={categoryCounts}
-              totalNodes={fullGraph?.nodes.length}
-              visibleNodes={filteredGraph?.nodes.length}
-            />
-          </div>
 
           {/* Grid: graph | story on row 1; timeline pinned to workspace footer (row 2) */}
           <div
@@ -893,26 +908,14 @@ export function HeritageMindMapClient() {
       {/* ── XR Mode ── */}
       {viewMode === 'xr' && (
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="z-10 flex-shrink-0">
-            <FilterBar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              activeCategoryFilter={activeCats}
-              onCategoryToggle={toggleCategory}
-              onShowAllCategories={showAllCategories}
-              categoryCounts={categoryCounts}
-              totalNodes={fullGraph?.nodes.length}
-              visibleNodes={filteredGraph?.nodes.length}
-            />
-          </div>
+          {/* No Heritage Explorer rail in Stories.
+              It showed the same entities as the grid beside it, in thumbnails
+              too small to identify, with a third search field of its own — so
+              the page offered two presentations of one list competing for
+              attention, and three inputs a visitor could not tell apart. A rail
+              earns its place only when it drives and reflects a selection the
+              stage cannot show, which is true in Connections and not here. */}
           <div className="relative flex min-h-0 flex-1">
-            <div className="hidden w-52 flex-shrink-0 md:block lg:w-56">
-              <PlaceNav
-                nodes={filteredGraph?.nodes ?? []}
-                selectedId={selectedNode?.id ?? null}
-                onSelect={handleNodeSelect}
-              />
-            </div>
             <div className="relative min-w-0 flex-1">
               {loading ? (
                 <MandalaLoader />

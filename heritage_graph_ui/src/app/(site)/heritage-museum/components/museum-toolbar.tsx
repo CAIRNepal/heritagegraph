@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
-  IconDatabase,
   IconGraph,
   IconMapPin,
   IconBook,
@@ -38,7 +37,9 @@ interface MuseumToolbarProps {
   onViewModeChange: (mode: MuseumViewMode) => void;
   dataSource: MuseumDataSource;
   liveLoading: boolean;
-  onToggleDataSource: () => void;
+  /** No longer read here — the disclosure bar owns the switch. Kept so
+   *  the caller keeps one place to pass it if the control returns. */
+  onToggleDataSource?: () => void;
   nodeCount: number;
   linkCount: number;
   showStats: boolean;
@@ -57,7 +58,6 @@ export function MuseumToolbar({
   onViewModeChange,
   dataSource,
   liveLoading,
-  onToggleDataSource,
   nodeCount,
   linkCount,
   showStats,
@@ -70,21 +70,14 @@ export function MuseumToolbar({
   const [citationCopied, setCitationCopied] = useState(false);
 
   return (
+    /* Inline, not a band. This was a full-width bar of its own between the
+       title and the search bar; it sits in the masthead row now, so the page
+       opens with two bands instead of five. */
     <div
-      className={cn(
-        glassCard,
-        'flex-shrink-0 flex flex-wrap items-center gap-2 px-3 py-2 border-b border-border rounded-none shadow-none',
-      )}
+      className="flex flex-wrap items-center gap-2"
       role="toolbar"
-      aria-label={t('filters.regionLabel')}
+      aria-label={t('views.regionLabel')}
     >
-      {/* `subtitle` ("Explore Nepalese heritage through stories") used to sit
-          here, one line above "Heritage stories" — two headings saying the same
-          thing, adjacent, and both BELOW the controls the visitor had to
-          operate first. The page now carries a real <h1> above this toolbar, so
-          this line is redundant by construction. */}
-      <div className="flex-1 min-w-[1rem]" />
-
       {showStats && viewMode !== 'xr' ? (
         <span className="hidden md:inline text-xs text-muted-foreground tabular-nums">
           {t('stats', { nodes: nodeCount, links: linkCount })}
@@ -107,14 +100,17 @@ export function MuseumToolbar({
 
       <Popover>
         <PopoverTrigger asChild>
+          {/* Three registers, three shapes: the global bar is navigation, the
+              view switch below is a segmented control, and contextual actions
+              like this one are text links. As a ghost button beside the
+              segmented group it read as a fourth view. */}
           <Button
             type="button"
-            size="sm"
-            variant="ghost"
-            className="h-8 px-2.5 text-xs gap-1.5"
+            variant="link"
+            className="h-8 gap-1.5 px-1.5 text-xs text-muted-foreground hover:text-foreground"
             aria-label={t('methods.title')}
           >
-            <IconInfoCircle className="w-4 h-4" aria-hidden />
+            <IconInfoCircle className="h-3.5 w-3.5" aria-hidden />
             <span className="hidden sm:inline">{t('methods.buttonLabel')}</span>
           </Button>
         </PopoverTrigger>
@@ -135,25 +131,16 @@ export function MuseumToolbar({
         </PopoverContent>
       </Popover>
 
-      <Button
-        type="button"
-        size="sm"
-        variant={dataSource === 'live' ? 'default' : 'outline'}
-        disabled={liveLoading}
-        onClick={onToggleDataSource}
-        className="hidden sm:inline-flex gap-1.5 text-xs h-8"
-      >
-        {liveLoading ? (
-          <IconLoader2 className="w-3.5 h-3.5 animate-spin" aria-hidden />
-        ) : (
-          <IconDatabase className="w-3.5 h-3.5" aria-hidden />
-        )}
-        {liveLoading
-          ? t('dataSource.loading')
-          : dataSource === 'live'
-            ? t('dataSource.live')
-            : t('dataSource.demo')}
-      </Button>
+      {/* The "Demo corpus" chip used to sit here. The disclosure bar above the
+          title already says which corpus this is AND carries the switch-to-live
+          action, so the chip was the third of three adjacent elements saying one
+          thing. Only the loading state still needs surfacing. */}
+      {liveLoading ? (
+        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <IconLoader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          {t('dataSource.loading')}
+        </span>
+      ) : null}
 
       <Tabs
         value={viewMode}
