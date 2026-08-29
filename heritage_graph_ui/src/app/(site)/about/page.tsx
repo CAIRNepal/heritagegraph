@@ -30,6 +30,9 @@ import { useTranslations } from 'next-intl';
 import { IconArrowRight, IconExternalLink } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
+import { ImageCreditsList } from '@/components/unesco/SourcedFacts';
+import { ProvenanceFooter } from '@/components/unesco/entry-sections';
+import { KATHMANDU_VALLEY } from '@/lib/unesco/ground-truth';
 import { Eyebrow, OpeningGround } from '@/components/editorial';
 import { CardWeb } from '@/components/unesco/CardWeb';
 import { LiveBackdrop, TiltCard } from '@/components/unesco/depth';
@@ -49,6 +52,20 @@ const GraphViewEmbed = dynamicImport(
 );
 
 const REPOSITORY_URL = 'https://github.com/CAIRNepal/heritagegraph';
+
+/**
+ * The eight subjects whose photographs the entry page shows.
+ *
+ * Their credits used to sit at the bottom of that page — eight rows of author
+ * and licence, the last thing a first-time visitor read. They belong here with
+ * the rest of the reference material; the entry page links to this section,
+ * which is attribution "in a reasonable manner based on the medium" as CC
+ * BY-SA allows.
+ */
+const CREDITED_SUBJECTS = [
+  ...(KATHMANDU_VALLEY.monumentZones ?? []).map((z) => z.key),
+  'lumbini',
+] as const;
 
 /** The four things the platform does, each with somewhere to go and see it. */
 const CORE_FEATURES = [
@@ -439,6 +456,25 @@ export default function AboutPage() {
           ))}
         </motion.div>
       </section>
+
+      {/* ── Photograph credits ── moved off the entry page ── */}
+      <motion.section
+        {...reveal}
+        variants={revealOnScroll}
+        aria-labelledby="image-credits"
+        className={wideColumn}
+        // The entry page links straight to this section.
+        id="image-credits"
+      >
+        <div className="mx-auto max-w-3xl">
+          <ImageCreditsList subjectKeys={CREDITED_SUBJECTS} />
+        </div>
+      </motion.section>
+
+      {/* ── Where the facts on the entry page come from ── */}
+      <motion.div {...reveal} variants={revealOnScroll}>
+        <ProvenanceFooter />
+      </motion.div>
 
       {/* ── Source and citation ── the quiet footer register the entry uses ── */}
       <motion.section

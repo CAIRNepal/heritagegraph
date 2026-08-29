@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { IconPhotoOff } from '@tabler/icons-react';
 
-import { ImageAttribution } from '@/app/(dashboard)/heritage-museum/components/ImageAttribution';
+import { ImageAttribution } from '@/app/(site)/heritage-museum/components/ImageAttribution';
 import { aspectRatioOf, imageryFor } from '@/lib/unesco/imagery';
 
 import { Parallax } from './depth';

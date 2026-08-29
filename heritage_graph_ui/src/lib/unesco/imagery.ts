@@ -13,7 +13,7 @@
  */
 import manifest from '@/data/unesco-imagery.json';
 
-import type { ImageCredit } from '@/app/(dashboard)/heritage-museum/heritage-data';
+import type { ImageCredit } from '@/app/(site)/heritage-museum/heritage-data';
 
 export interface SubjectImage {
   readonly url: string;

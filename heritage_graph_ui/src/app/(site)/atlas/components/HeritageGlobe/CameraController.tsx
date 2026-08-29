@@ -15,7 +15,7 @@ import {
 } from 'cesium';
 import { useCesium } from 'resium';
 
-import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
+import type { AtlasGlobeHandles } from '@/app/(site)/atlas/globe-handles';
 import { atlasPrefersReducedMotion } from '@/lib/atlas-motion';
 import { GLOBE_DEFAULT_HEIGHT, MAP_DEFAULT } from '@/lib/map-config';
 import type { AtlasEntity } from '@/types/atlas';

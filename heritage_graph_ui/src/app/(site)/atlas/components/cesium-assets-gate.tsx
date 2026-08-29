@@ -1,7 +1,7 @@
 'use client';
 
 /* Side-effect: ensure CESIUM_BASE_URL matches globe.tsx before probing same-origin URLs. */
-import '@/app/(dashboard)/atlas/cesium-base-url';
+import '@/app/(site)/atlas/cesium-base-url';
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';

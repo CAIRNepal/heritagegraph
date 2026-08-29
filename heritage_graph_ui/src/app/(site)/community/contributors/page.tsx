@@ -3,7 +3,7 @@
 import { getPublicApiUrl } from '@/lib/api-base';
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { Leaderboard } from '../../components/leaderboard-card';
+import { Leaderboard } from '@/app/(dashboard)/components/leaderboard-card';
 import { motion } from 'framer-motion';
 import { IconSparkles } from '@tabler/icons-react';
 import { fadeInUp, staggerContainer, glassCard } from '@/lib/design';

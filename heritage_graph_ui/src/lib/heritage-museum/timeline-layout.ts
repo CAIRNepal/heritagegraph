@@ -1,4 +1,4 @@
-import type { GraphNode } from '@/app/(dashboard)/heritage-museum/heritage-data';
+import type { GraphNode } from '@/app/(site)/heritage-museum/heritage-data';
 
 import { parseTemporalAnchor, type TemporalAnchor } from './temporal-parse';
 

@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 
-import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
+import type { AtlasGlobeHandles } from '@/app/(site)/atlas/globe-handles';
 
 import { CesiumAssetsGate } from '../components/cesium-assets-gate';
 import { EarthScene } from '../components/HeritageGlobe/EarthScene';

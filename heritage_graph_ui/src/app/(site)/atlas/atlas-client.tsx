@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useRef } from 'react';
 
-import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
+import type { AtlasGlobeHandles } from '@/app/(site)/atlas/globe-handles';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { atlasSound } from '@/lib/atlas-sound';

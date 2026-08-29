@@ -1,5 +1,5 @@
-import type { GraphData, GraphLink, GraphNode, ImageCredit } from '@/app/(dashboard)/heritage-museum/heritage-data';
-import { NODE_TYPE_CONFIG } from '@/app/(dashboard)/heritage-museum/heritage-data';
+import type { GraphData, GraphLink, GraphNode, ImageCredit } from '@/app/(site)/heritage-museum/heritage-data';
+import { NODE_TYPE_CONFIG } from '@/app/(site)/heritage-museum/heritage-data';
 import { parseCoord, propagateCoordsAlongLocationEdges, type GeoCoord } from '@/lib/kg-geo';
 import type { KgGraphNode } from '@/lib/kg-graph';
 import type { NodeType } from '@/lib/ontology/__generated__/heritage-viz-config';

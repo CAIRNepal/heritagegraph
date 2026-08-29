@@ -11,7 +11,6 @@ import {
   IconLayoutDashboard,
   IconTrophy,
   IconPlus,
-  IconUsersGroup,
   IconBuildingCommunity,
   IconUser,
   IconMapPin,
@@ -21,7 +20,6 @@ import {
   IconInvoice,
   IconFileDescription,
   IconUsers,
-  IconBuilding,
   IconMoodSmile,
   IconBuildingArch,
   IconCandle,
@@ -35,7 +33,6 @@ import {
   IconBuildingMonument,
   IconQrcode,
   IconMedal,
-  IconInfoCircle,
   IconChevronUp,
   IconGitFork,
   IconSettings,
@@ -48,7 +45,6 @@ import {
   IconClipboardList,
   IconDatabase,
   IconSearch,
-  IconFlask,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 
@@ -332,17 +328,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           { title: t('activityLog'), url: '/curation/activity', icon: IconChartBar },
         ]} />
 
-        {/* ── 4. Reference ── low emphasis, at the bottom. About and Methods
-             stay complete and reachable — /methods matters to reviewers and to
-             anyone reusing the data — they just stop competing with the
-             heritage for attention. ── */}
-        <NavMain navtitle={t('reference')} items={[
-          { title: t('about'), url: '/about', icon: IconInfoCircle },
-          { title: t('methods'), url: '/methods', icon: IconFlask },
-          { title: t('team'), url: '/team', icon: IconUsersGroup },
-          { title: t('contributors'), url: '/community/contributors', icon: IconUsers },
-          { title: t('organizations'), url: '/community/organizations', icon: IconBuilding },
-        ]} />
+        {/* ── Reference used to be a fourth group here ──
+             About, Methods & data, Team, Contributors and Organizations now sit
+             under one menu in the top bar, which is on every page including the
+             ones this sidebar does not appear on. Five low-emphasis links at
+             the bottom of a contributor's tool panel was the wrong home for the
+             material a first-time reader wants. ── */}
         {isPlatformAdmin ? (
           <NavMain
             navtitle={t('platformAdmin')}

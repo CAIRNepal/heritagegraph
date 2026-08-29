@@ -1,7 +1,7 @@
 'use client';
 
 /* Side-effect MUST run before Cesium resolves worker URLs (see public/cesium). */
-import '@/app/(dashboard)/atlas/cesium-base-url';
+import '@/app/(site)/atlas/cesium-base-url';
 
 import type { ReactNode, RefObject } from 'react';
 import { useEffect, useMemo, useState } from 'react';
@@ -17,7 +17,7 @@ import {
 import { ImageryLayer, ScreenSpaceCameraController, Viewer, useCesium } from 'resium';
 import 'cesium/Build/Cesium/Widgets/widgets.css';
 
-import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
+import type { AtlasGlobeHandles } from '@/app/(site)/atlas/globe-handles';
 import type { AtlasEntity } from '@/types/atlas';
 
 import { useAtlasUiStore } from '../../hooks/use-atlas-ui-store';

@@ -3,7 +3,7 @@
 import type { RefObject } from 'react';
 import { useEffect } from 'react';
 
-import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
+import type { AtlasGlobeHandles } from '@/app/(site)/atlas/globe-handles';
 
 import { useAtlasStore } from './use-atlas-store';
 import { useAtlasUiStore } from './use-atlas-ui-store';

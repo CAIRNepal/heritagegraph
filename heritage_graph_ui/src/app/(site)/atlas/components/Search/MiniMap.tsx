@@ -7,7 +7,7 @@ import { useEffect, useRef } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 
-import type { AtlasGlobeHandles } from '@/app/(dashboard)/atlas/globe-handles';
+import type { AtlasGlobeHandles } from '@/app/(site)/atlas/globe-handles';
 import { cn } from '@/lib/utils';
 
 import { useAtlasStore } from '../../hooks/use-atlas-store';
