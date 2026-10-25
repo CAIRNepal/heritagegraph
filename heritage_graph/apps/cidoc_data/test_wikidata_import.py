@@ -129,18 +129,24 @@ class WikidataImportTests(TestCase):
         )
 
     def test_existing_curated_record_is_enriched_not_overwritten(self):
+        # Legacy corpus rows have no contributor or source; the import must not
+        # fill those in, or the curated text would claim Wikidata as its source.
         curated = Festival.objects.create(
             name="Biska Jatra",
             note="Curated note.",
-            status="accepted",
-            contributor="curator",
+            status="published",
+            source_citation="HeritageGraph curated corpus",
         )
         report = self._run()
         curated.refresh_from_db()
         self.assertEqual(Festival.objects.filter(name="Biska Jatra").count(), 1)
         self.assertEqual(curated.note, "Curated note.")
-        self.assertEqual(curated.contributor, "curator")
+        self.assertIsNone(curated.contributor)
+        self.assertIsNone(curated.source_id)
+        self.assertEqual(curated.status, "published")
         self.assertEqual(curated.labels["ne"], "बिस्का जात्रा")
+        self.assertTrue(curated.source_citation.startswith("HeritageGraph curated corpus\n"))
+        self.assertIn("Labels added from Wikidata Q4", curated.source_citation)
         self.assertIn("festival:Biska Jatra <- Q4", report.matched_existing)
 
     def test_reimport_is_idempotent(self):

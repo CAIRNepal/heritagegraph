@@ -265,6 +265,25 @@ def _fields_for(key: str, ent: dict, seed: dict) -> dict[str, Any]:
     return {"note": desc}  # festival, deity
 
 
+def _enrich_curated(instance, labels: dict, media: list, qid: str, ent: dict, retrieved: str) -> bool:
+    changed = []
+    merged = {**labels, **(instance.labels or {})}
+    if merged != (instance.labels or {}):
+        instance.labels = merged
+        changed.append("labels")
+    if media and not instance.media:
+        instance.media = media
+        changed.append("media")
+    note = f"Labels{' and image' if media else ''} added from {_citation(qid, ent, retrieved)}"
+    citation = (instance.source_citation or "").strip()
+    if changed and f"Wikidata {qid}" not in citation:
+        instance.source_citation = f"{citation}\n{note}".strip()
+        changed.append("source_citation")
+    if changed:
+        instance.save(update_fields=changed)
+    return bool(changed)
+
+
 def upsert_entities(
     snapshot: dict, seeds: dict[str, dict], source: DataSource, report: ImportReport
 ) -> dict[str, Any]:
@@ -324,26 +343,21 @@ def upsert_entities(
         if instance is None:
             instance = model.objects.create(name=name, **fields, **evidence)
             report.bump(report.created, key)
-        else:
+        elif instance.contributor == CONTRIBUTOR:
             changed = []
             for attr, value in {**fields, **evidence}.items():
-                current = getattr(instance, attr, None)
-                # Never overwrite curated text, status or provenance with imported values.
-                if (
-                    attr in {"status", "contributor", "source", "source_citation"}
-                    and current
-                ):
-                    continue
-                if attr in {"note", "description", "biography"} and current:
-                    continue
-                if value in ("", [], {}, None) or current == value:
-                    continue
-                if attr == "labels":
-                    value = {**value, **(current or {})}
-                setattr(instance, attr, value)
-                changed.append(attr)
+                if value not in ("", [], {}, None) and getattr(instance, attr, None) != value:
+                    setattr(instance, attr, value)
+                    changed.append(attr)
             if changed:
                 instance.save(update_fields=changed)
+                report.bump(report.updated, key)
+        else:
+            # A curated record keeps its own contributor, source, status and
+            # text: those describe where *its* content came from. Only what
+            # Wikidata supplies is added, and the citation says so.
+            changed = _enrich_curated(instance, labels, evidence["media"], qid, ent, retrieved)
+            if changed:
                 report.bump(report.updated, key)
         _bind(iri, instance)
         _ensure_exact_match(instance, name, iri)
