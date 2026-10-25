@@ -13,9 +13,11 @@ import { attachRelations, kgNeighborhoodToGraph } from '@/lib/heritage-museum/li
 import { enrichMuseumGraph } from '@/lib/heritage-museum/museum-graph';
 import { API_BASE, useHeritageCollection } from '@/lib/heritage-museum/use-heritage-collection';
 import { fetchKgNeighborhood } from '@/lib/kg-graph';
+import type { EraId } from '@/lib/heritage-atlas/atlas-model';
+import { filterCollection, parseMuseumParams, serializeMuseumParams, type Lens } from '@/lib/heritage-museum/museum-state';
 import { downloadJson } from '@/lib/provenance';
 
-import { NODE_TYPE_CONFIG, type GraphData, type GraphLink, type GraphNode, type HgCategory } from './heritage-data';
+import type { GraphData, GraphLink, GraphNode, HgCategory } from './heritage-data';
 import { CollectionNotices, useCollectionErrorMessage } from './components/CollectionNotices';
 import { MandalaLoader } from './components/MandalaLoader';
 import { CollectionRail } from './components/exhibit/CollectionRail';
@@ -33,9 +35,9 @@ const WIDE_QUERY = '(min-width: 1280px)';
 const RAIL_QUERY = '(min-width: 1024px)';
 const EMPTY: GraphData = { nodes: [], links: [] };
 
-/** Lens ↔ `?view=`. Old links used 2d (graph) and map; xr (stories) is now the default page. */
-const VIEW_FOR_LENS: Record<LensKind, string> = { map: 'map', graph: '2d', timeline: 'timeline' };
-const LENS_FOR_VIEW: Record<string, LensKind> = { map: 'map', '2d': 'graph', timeline: 'timeline' };
+/** Overlay lens ↔ the shared state's lens; the exhibit is "no overlay". */
+const LENS_FROM_STATE: Record<Lens, LensKind | null> = { exhibit: null, map: 'map', timeline: 'timeline', connections: 'graph' };
+const STATE_FROM_LENS: Record<LensKind, Lens> = { map: 'map', timeline: 'timeline', graph: 'connections' };
 
 /**
  * The Heritage Museum: one exhibit page.
@@ -61,6 +63,7 @@ export function HeritageMindMapClient() {
   // ── UI state ───────────────────────────────────────────────────────────────
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [kind, setKind] = useState<HgCategory | null>(null);
+  const [era, setEra] = useState<EraId | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [lens, setLens] = useState<LensKind | null>(null);
   const [railOpen, setRailOpen] = useState(false);
@@ -78,14 +81,16 @@ export function HeritageMindMapClient() {
   useEffect(() => {
     if (bootstrappedRef.current) return;
     bootstrappedRef.current = true;
-    const view = searchParams.get('view');
-    if (view && LENS_FOR_VIEW[view]) setLens(LENS_FOR_VIEW[view]);
-    const node = searchParams.get('node');
-    if (node) setSelectedId(decodeURIComponent(node));
+    const initial = parseMuseumParams(new URLSearchParams(searchParams.toString()));
+    setLens(LENS_FROM_STATE[initial.lens]);
+    if (initial.node) setSelectedId(initial.node);
+    setKind(initial.kind);
+    setEra(initial.era);
+    setSearchQuery(initial.q);
     // The reviewed live graph is the default: its records are sourced, while
     // the illustrated corpus's prose is explicitly uncitable. The corpus opens
     // when asked for, or when the live graph is unavailable.
-    if (searchParams.get('source') === 'demo') collection.switchTo('demo');
+    if (initial.source === 'demo') collection.switchTo('demo');
     else collection.preferLive();
     // Runs once; the collection is stable enough for a one-shot read.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -135,22 +140,10 @@ export function HeritageMindMapClient() {
   );
 
   // ── The collection, as listed ──────────────────────────────────────────────
-  const visibleNodes = useMemo<GraphNode[]>(() => {
-    if (!fullGraph) return [];
-    const q = searchQuery.trim().toLowerCase();
-    return fullGraph.nodes
-      .filter((n) => {
-        if (kind && n.hgCategory !== kind) return false;
-        if (!q) return true;
-        return (
-          n.label.toLowerCase().includes(q) ||
-          (n.description ?? '').toLowerCase().includes(q) ||
-          (NODE_TYPE_CONFIG[n.nodeType]?.label ?? '').toLowerCase().includes(q) ||
-          Boolean(n.tags?.some((tag) => tag.toLowerCase().includes(q)))
-        );
-      })
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [fullGraph, kind, searchQuery]);
+  const visibleNodes = useMemo<GraphNode[]>(
+    () => (fullGraph ? filterCollection(fullGraph.nodes, { kind, era, q: searchQuery }) : []),
+    [fullGraph, kind, era, searchQuery],
+  );
 
   // The open record: the one asked for, else the first listed record that has
   // a photograph, so the page never opens on an empty exhibit.
@@ -193,13 +186,17 @@ export function HeritageMindMapClient() {
   // ── State → URL, for citable links ─────────────────────────────────────────
   useEffect(() => {
     if (!bootstrappedRef.current || !selectedNode) return;
-    const p = new URLSearchParams();
-    p.set('source', dataSource);
-    p.set('node', selectedNode.id);
-    if (lens) p.set('view', VIEW_FOR_LENS[lens]);
-    const target = `/heritage-museum?${p.toString()}`;
+    const query = serializeMuseumParams({
+      source: dataSource,
+      node: selectedNode.id,
+      lens: lens ? STATE_FROM_LENS[lens] : 'exhibit',
+      kind,
+      era,
+      q: searchQuery,
+    });
+    const target = `/heritage-museum?${query}`;
     if (target !== `/heritage-museum?${searchParams.toString()}`) router.replace(target, { scroll: false });
-  }, [dataSource, selectedNode, lens, router, searchParams]);
+  }, [dataSource, selectedNode, lens, kind, era, searchQuery, router, searchParams]);
 
   const handleExportJson = useCallback(() => {
     if (!fullGraph) return;
