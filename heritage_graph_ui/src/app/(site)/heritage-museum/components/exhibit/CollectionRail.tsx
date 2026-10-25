@@ -26,8 +26,8 @@ export function RecordThumb({ node, size }: RecordThumbProps) {
   return (
     <span
       className={cn(
-        'grid shrink-0 place-items-center overflow-hidden bg-story-panel',
-        size === 'md' ? 'size-12' : 'size-[34px]',
+        'grid shrink-0 place-items-center overflow-hidden bg-muted',
+        size === 'md' ? 'size-12 rounded-lg' : 'size-[34px] rounded-md',
       )}
       aria-hidden="true"
     >
@@ -108,21 +108,14 @@ export function CollectionRail({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="grid gap-3 border-b border-story-rule px-[18px] pt-5 pb-3">
-        <div className="grid gap-1">
-          {showTitle ? (
-            <>
-              <h1 className="text-[1.9rem] leading-[0.95] font-extrabold tracking-tight">{t('title')}</h1>
-              <p lang="ne" className="font-devanagari text-sm font-semibold">
-                {t('titleNe')}
-              </p>
-            </>
-          ) : null}
-          <p className="pt-1 text-[13px] leading-relaxed text-story-ink-soft">{tx('railLede')}</p>
+      <div className="grid gap-3 border-b border-border px-[18px] pt-5 pb-3">
+        <div className="grid gap-1.5">
+          {showTitle ? <h1 className="font-serif text-[1.65rem] leading-tight text-foreground">{t('title')}</h1> : null}
+          <p className="text-[13px] leading-relaxed text-muted-foreground">{tx('railLede')}</p>
         </div>
         {controls}
         <div role="search" className="relative">
-          <IconSearch className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-story-ink-soft" aria-hidden />
+          <IconSearch className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <label htmlFor="museum-search" className="sr-only">
             {tx('searchLabel')}
           </label>
@@ -136,14 +129,14 @@ export function CollectionRail({
             }}
             placeholder={tx('searchPlaceholder')}
             autoComplete="off"
-            className="h-10 w-full border border-story-rule bg-story-paper pr-9 pl-9 text-sm placeholder:text-story-ink-soft focus:outline-2 focus:outline-story-accent [&::-webkit-search-cancel-button]:appearance-none"
+            className="h-10 w-full rounded-full border border-border bg-card pr-9 pl-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-2 focus:outline-ring [&::-webkit-search-cancel-button]:appearance-none"
           />
           {searchQuery ? (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label={tx('clearSearch')}
-              className="absolute top-1/2 right-1.5 grid size-7 -translate-y-1/2 cursor-pointer place-items-center text-story-ink-soft hover:bg-story-panel"
+              className="absolute top-1/2 right-1.5 grid size-7 -translate-y-1/2 cursor-pointer place-items-center rounded-full text-muted-foreground hover:bg-muted"
             >
               <IconX className="size-3.5" aria-hidden />
             </button>
@@ -157,18 +150,18 @@ export function CollectionRail({
               aria-pressed={kind === k}
               onClick={() => onKindChange(kind === k ? null : k)}
               className={cn(
-                'inline-flex min-h-[30px] cursor-pointer items-center gap-1.5 border px-2 py-0.5 text-xs transition-colors',
-                kind === k ? 'border-story-ink bg-story-ink text-story-paper' : 'border-story-rule hover:bg-story-panel',
+                'inline-flex min-h-[30px] cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors',
+                kind === k ? 'border-foreground bg-foreground text-background' : 'border-border bg-card text-foreground hover:border-muted-foreground',
               )}
             >
               <span className="size-2 rounded-full" style={{ background: HG_CATEGORY_CONFIG[k].color }} aria-hidden />
               {HG_CATEGORY_CONFIG[k].label}
-              <span className={cn('tabular-nums', kind === k ? 'opacity-70' : 'text-story-ink-soft')}>{counts[k]}</span>
+              <span className={cn('tabular-nums', kind === k ? 'opacity-70' : 'text-muted-foreground')}>{counts[k]}</span>
             </button>
           ))}
         </div>
         {filters}
-        <p className="text-xs text-story-ink-soft" aria-live="polite">
+        <p className="text-xs text-muted-foreground" aria-live="polite">
           {tx('count', {
             shown: visibleNodes.length,
             total: allNodes.length,
@@ -179,7 +172,7 @@ export function CollectionRail({
 
       <ul ref={listRef} className="min-h-0 flex-1 overflow-auto p-1.5">
         {visibleNodes.length === 0 ? (
-          <li className="grid justify-items-start gap-2 p-3 text-sm text-story-ink-soft">
+          <li className="grid justify-items-start gap-2 p-3 text-sm text-muted-foreground">
             {tx('noMatches')}
             <button
               type="button"
@@ -188,7 +181,7 @@ export function CollectionRail({
                 onKindChange(null);
                 onResetFilters?.();
               }}
-              className="cursor-pointer border border-story-rule px-3 py-1.5 text-story-ink hover:bg-story-panel"
+              className="cursor-pointer rounded-lg border border-border bg-card px-3 py-1.5 text-foreground"
             >
               {tx('resetFilters')}
             </button>
@@ -211,19 +204,19 @@ export function CollectionRail({
                     }
                   }}
                   className={cn(
-                    'grid w-full cursor-pointer grid-cols-[48px_minmax(0,1fr)] items-center gap-2.5 p-1.5 text-left hover:bg-story-panel',
-                    current && 'bg-story-panel shadow-[inset_3px_0_0_var(--story-accent)]',
+                    'grid w-full cursor-pointer grid-cols-[48px_minmax(0,1fr)] items-center gap-2.5 rounded-[10px] p-1.5 text-left hover:bg-card',
+                    current && 'bg-card shadow-[inset_3px_0_0_var(--primary)]',
                   )}
                 >
                   <RecordThumb node={n} size="md" />
                   <span className="min-w-0">
-                    <span className="block text-sm leading-tight font-semibold">{n.label}</span>
+                    <span className="block text-sm leading-tight font-medium text-foreground">{n.label}</span>
                     {n.labelNe ? (
-                      <span lang="ne" className="block font-devanagari text-xs">
+                      <span lang="ne" className="block font-devanagari text-xs text-foreground">
                         {n.labelNe}
                       </span>
                     ) : null}
-                    <span className="block text-xs text-story-ink-soft">
+                    <span className="block text-xs text-muted-foreground">
                       {words.typeLabel(n)}
                       {y != null ? ` · ${words.year(y)}` : ''}
                     </span>
