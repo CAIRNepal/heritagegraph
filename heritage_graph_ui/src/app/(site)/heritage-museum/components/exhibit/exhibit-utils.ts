@@ -1,5 +1,7 @@
 import { useTranslations } from 'next-intl';
 
+import { yearOfNode } from '@/lib/heritage-museum/museum-state';
+
 import {
   NODE_TYPE_CONFIG,
   RELATION_LABELS,
@@ -55,9 +57,9 @@ export function sizedImage(url: string, width: number): string {
   return url;
 }
 
+/** Same reading as the timeline and filters (see museum-state yearOfNode). */
 export function yearOf(node: GraphNode): number | null {
-  const y = parseInt(node.inceptionYear ?? '', 10);
-  return Number.isFinite(y) ? y : null;
+  return yearOfNode(node);
 }
 
 export function coordsOf(node: GraphNode): { lat: number; lon: number } | null {
