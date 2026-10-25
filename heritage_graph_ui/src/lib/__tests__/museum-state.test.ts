@@ -28,8 +28,9 @@ describe('parseMuseumParams', () => {
   });
 
   it('keeps old museum and atlas links working', () => {
-    expect(parseMuseumParams(new URLSearchParams('view=2d&node=a')).lens).toBe('connections');
-    expect(parseMuseumParams(new URLSearchParams('view=timeline')).lens).toBe('timeline');
+    expect(parseMuseumParams(new URLSearchParams('view=2d&node=a')).lens).toBe('exhibit');
+    expect(parseMuseumParams(new URLSearchParams('view=timeline')).lens).toBe('exhibit');
+    expect(parseMuseumParams(new URLSearchParams('lens=timeline')).lens).toBe('exhibit');
     expect(parseMuseumParams(new URLSearchParams('view=xr')).lens).toBe('exhibit');
     expect(parseMuseumParams(new URLSearchParams('selected=b&source=demo')).node).toBe('b');
   });

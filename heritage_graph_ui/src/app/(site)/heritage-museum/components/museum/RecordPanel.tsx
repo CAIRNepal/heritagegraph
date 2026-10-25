@@ -162,7 +162,6 @@ export function RecordPanel({
   const lede = node.significance || node.description;
   const tier = source === 'live' ? provenanceTier(node.recordSource) : null;
   const qid = wikidataIdIn(node.recordSource?.citation);
-  const dated = allNodes.some((n) => yearOf(n) != null);
 
   const distanceTo = (other: GraphNode) => {
     const p = placeById.get(other.id);
@@ -313,7 +312,7 @@ export function RecordPanel({
         )}
       </Section>
 
-      <Section id="rp-when" title={t('when')} action={dated && lens !== 'timeline' ? <LensLink onClick={() => onLens('timeline')}>{t('openTimeline')}</LensLink> : undefined}>
+      <Section id="rp-when" title={t('when')}>
         <MiniTimeline nodes={allNodes} selectedId={node.id} />
         <p className="text-[13px]">
           {y != null ? (
@@ -335,7 +334,6 @@ export function RecordPanel({
       <Section
         id="rp-connected"
         title={t('connected', { count: rest.length })}
-        action={connections.length && lens !== 'connections' ? <LensLink onClick={() => onLens('connections')}>{t('openGraph')}</LensLink> : undefined}
       >
         {rest.length ? <ul className="m-0 grid list-none gap-0.5 p-0">{rest.map(row)}</ul> : <p className="text-[13px] text-muted-foreground">{t('noConnections')}</p>}
       </Section>

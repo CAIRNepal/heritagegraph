@@ -6,7 +6,7 @@ import { IconKeyboard } from '@tabler/icons-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 const KEYS: [string, string][] = [
-  ['1–4', 'lenses'],
+  ['1 2', 'lenses'],
   ['/', 'search'],
   ['← →', 'step'],
   ['↑ ↓', 'list'],

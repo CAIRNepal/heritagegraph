@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { IconAffiliate, IconMap2, IconPhoto, IconTimeline, type Icon } from '@tabler/icons-react';
+import { IconMap2, IconPhoto, type Icon } from '@tabler/icons-react';
 
 import { LENSES, type Lens } from '@/lib/heritage-museum/museum-state';
 import { cn } from '@/lib/utils';
@@ -10,8 +10,6 @@ import { cn } from '@/lib/utils';
 const ICONS: Record<Lens, Icon> = {
   exhibit: IconPhoto,
   map: IconMap2,
-  timeline: IconTimeline,
-  connections: IconAffiliate,
 };
 
 export const LENS_PANEL_ID = 'museum-lens-panel';
@@ -24,8 +22,8 @@ interface LensTabsProps {
 }
 
 /**
- * The four ways to look at the collection. A WAI-ARIA tablist: arrow keys and
- * Home/End move between lenses, and the digits 1–4 work from anywhere on the
+ * The two ways to look at the collection. A WAI-ARIA tablist: arrow keys and
+ * Home/End move between lenses, and the digits 1–2 work from anywhere on the
  * page (see the keyboard handler in the museum client).
  */
 export function LensTabs({ lens, onLens, counts }: LensTabsProps) {

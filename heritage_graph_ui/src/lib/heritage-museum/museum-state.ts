@@ -19,7 +19,7 @@ import {
 import type { GraphNode } from '@/app/(site)/heritage-museum/heritage-data';
 import { parseTemporalAnchor } from '@/lib/heritage-museum/temporal-parse';
 
-export const LENSES = ['exhibit', 'map', 'timeline', 'connections'] as const;
+export const LENSES = ['exhibit', 'map'] as const;
 export type Lens = (typeof LENSES)[number];
 export type CollectionSourceParam = 'demo' | 'live';
 
@@ -42,12 +42,15 @@ export const DEFAULT_STATE: MuseumState = {
   q: '',
 };
 
-/** Legacy `?view=` values from the museum's earlier modes. */
+/**
+ * Legacy `?view=` values from the museum's earlier modes. The timeline and
+ * connections lenses were removed; their links still open the record.
+ */
 const LEGACY_VIEW: Record<string, Lens> = {
   map: 'map',
-  '2d': 'connections',
-  graph: 'connections',
-  timeline: 'timeline',
+  '2d': 'exhibit',
+  graph: 'exhibit',
+  timeline: 'exhibit',
   xr: 'exhibit',
   stories: 'exhibit',
 };

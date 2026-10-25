@@ -32,9 +32,7 @@ import { downloadJson } from '@/lib/provenance';
 import type { GraphData, GraphLink, GraphNode, HgCategory } from './heritage-data';
 import { CollectionNotices, useCollectionErrorMessage } from './components/CollectionNotices';
 import { MandalaLoader } from './components/MandalaLoader';
-import { TimelineStrip } from './components/TimelineStrip';
 import { CollectionRail } from './components/exhibit/CollectionRail';
-import { EgoGraph } from './components/exhibit/EgoGraph';
 import { ExhibitView } from './components/exhibit/ExhibitView';
 import { connectionsOf } from './components/exhibit/exhibit-utils';
 import { RailControls } from './components/exhibit/RailControls';
@@ -53,14 +51,14 @@ const EMPTY: GraphData = { nodes: [], links: [] };
 const NEARBY_KM = 15;
 
 /**
- * The Heritage Museum: one collection, four ways to look at it.
+ * The Heritage Museum: one collection, as exhibits and on a map.
  *
  * The museum and the atlas used to be two pages over the same records, each
  * with its own selection and URL, so moving between "what is it" and "where is
- * it" lost the reader's place. Now the record stays open across every lens —
- * exhibit, map, timeline, connections — the collection rail and its filters
- * stay put, and the record panel says where, when, what is near and what the
- * record rests on, whichever lens is showing.
+ * it" lost the reader's place. Now the record stays open across both lenses —
+ * exhibit and map — the collection rail and its filters stay put, and the
+ * record panel says where, when, what is near and what the record rests on,
+ * whichever lens is showing.
  */
 export function HeritageMindMapClient() {
   const { data: session } = useSession();
@@ -216,7 +214,7 @@ export function HeritageMindMapClient() {
     ? { k: tour.k, n: tour.stops.length, onPrev: () => tourStep(-1), onNext: () => tourStep(1), onEnd: () => setTour(null) }
     : null;
 
-  // ── Keyboard: 1–4 lenses, / search, ←/→ previous/next, Esc ends a walk ─────
+  // ── Keyboard: 1–2 lenses, / search, ←/→ previous/next, Esc ends a walk ─────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (railOpen || e.defaultPrevented || e.altKey || e.metaKey || e.ctrlKey) return;
@@ -381,8 +379,6 @@ export function HeritageMindMapClient() {
   const lensCounts: Partial<Record<Lens, number>> = {
     exhibit: visibleNodes.length,
     map: visiblePlaces.length,
-    timeline: datedCount,
-    connections: connections.length,
   };
 
   const stage = (() => {
@@ -430,21 +426,6 @@ export function HeritageMindMapClient() {
         />
       );
     }
-    if (lens === 'timeline') {
-      return (
-        <div className="flex h-full min-h-[420px] flex-col">
-          <TimelineStrip nodes={visibleNodes} selectedId={selectedNode.id} onSelect={selectByUser} />
-        </div>
-      );
-    }
-    if (lens === 'connections') {
-      return (
-        <div className="grid gap-2 px-4 py-5 sm:px-6">
-          <p className="text-xs text-muted-foreground">{tx('graphLensHint')}</p>
-          <EgoGraph node={selectedNode} graph={fullGraph} onSelect={selectByUser} />
-        </div>
-      );
-    }
     return (
       <div className="px-4 pt-5 pb-12 sm:px-6 lg:px-[clamp(1.25rem,3vw,2.75rem)] lg:pt-7">
         <ExhibitView
@@ -461,7 +442,7 @@ export function HeritageMindMapClient() {
     );
   })();
 
-  const fullBleed = lens === 'map' || lens === 'timeline';
+  const fullBleed = lens === 'map';
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background text-foreground">
