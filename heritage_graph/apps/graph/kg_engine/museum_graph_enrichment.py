@@ -115,6 +115,16 @@ def _coords_from_point_field(point: Any) -> tuple[str, str] | None:
 
 
 def coords_from_instance(instance: Any) -> tuple[str, str] | None:
+    """A record's own coordinates, else its name in the gazetteer table."""
+    own = recorded_coords(instance)
+    if own:
+        return own
+    label = getattr(instance, "name", None) or getattr(instance, "title", None)
+    return _KNOWN_PLACE_COORDS.get(_normalize_place_key(str(label) if label else ""))
+
+
+def recorded_coords(instance: Any) -> tuple[str, str] | None:
+    """Coordinates stored on the record itself (point or legacy fields)."""
     for attr in ("point", "coordinates_legacy", "place_coordinates"):
         raw = getattr(instance, attr, None)
         if attr == "point":
@@ -135,10 +145,6 @@ def coords_from_instance(instance: Any) -> tuple[str, str] | None:
                         return str(lat), str(lng)
                 except ValueError:
                     pass
-    label = getattr(instance, "name", None) or getattr(instance, "title", None)
-    key = _normalize_place_key(str(label) if label else "")
-    if key in _KNOWN_PLACE_COORDS:
-        return _KNOWN_PLACE_COORDS[key]
     return None
 
 
@@ -326,6 +332,11 @@ def enrich_museum_graph_nodes(
 
     keys = [k for k in (parse_resource_uri(n.get("id")) for n in nodes.values()) if k]
     instances = _load_instances(keys)
+    # Where each point comes from. Only "record" is the record's own location;
+    # the reader is told when a point is a gazetteer guess or borrowed.
+    for node in nodes.values():
+        if node.get("lat") is not None and node.get("long") is not None:
+            node["coordinateSource"] = "record"
     for node in nodes.values():
         parsed = parse_resource_uri(node.get("id"))
         if not parsed:
@@ -334,9 +345,10 @@ def enrich_museum_graph_nodes(
         instance = instances.get(parsed)
         if instance is not None:
             if node.get("lat") is None or node.get("long") is None:
-                coords = coords_from_instance(instance)
-                if coords:
-                    node["lat"], node["long"] = coords
+                own = recorded_coords(instance)
+                if own:
+                    node["lat"], node["long"] = own
+                    node["coordinateSource"] = "record"
             if not node.get("inceptionYear"):
                 hint = temporal_hint_from_instance(instance)
                 if hint:
@@ -359,6 +371,7 @@ def enrich_museum_graph_nodes(
         if key in _KNOWN_PLACE_COORDS:
             lat, lng = _KNOWN_PLACE_COORDS[key]
             node["lat"], node["long"] = lat, lng
+            node["coordinateSource"] = "gazetteer"
 
     coord_by_id: dict[str, tuple[str, str]] = {}
     for iri, node in nodes.items():
@@ -373,22 +386,21 @@ def enrich_museum_graph_nodes(
         and edge.get("source")
         and edge.get("target")
     ]
-    # Iterate to fixpoint so coordinates flow along chained location edges
-    # (object → structure → place) regardless of edge ordering.
+    # A record with no location of its own may borrow the point of what
+    # contains it (object -> structure -> place), iterated to a fixpoint along
+    # chains. Only that way round: a district must not take a temple's point.
+    # Borrowed points are marked, so they are never shown as the record's own.
     changed = True
     while changed:
         changed = False
         for edge in location_edges:
             src, tgt = edge["source"], edge["target"]
-            src_coords = coord_by_id.get(src)
             tgt_coords = coord_by_id.get(tgt)
-            if src_coords and tgt not in coord_by_id:
-                coord_by_id[tgt] = src_coords
-                nodes[tgt]["lat"], nodes[tgt]["long"] = src_coords
-                changed = True
-            elif tgt_coords and src not in coord_by_id:
+            if tgt_coords and src not in coord_by_id:
                 coord_by_id[src] = tgt_coords
                 nodes[src]["lat"], nodes[src]["long"] = tgt_coords
+                nodes[src]["coordinateSource"] = "inherited"
+                nodes[src]["coordinateFrom"] = tgt
                 changed = True
 
     enrich_museum_cluster_identity(nodes, instances)
