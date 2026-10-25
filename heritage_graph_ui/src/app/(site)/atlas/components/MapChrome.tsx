@@ -10,14 +10,14 @@ import { ERA_COLOR_VARS, useAtlasWords } from './atlas-words';
 
 function Segmented<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
   return (
-    <div role="group" aria-label={label} className="flex overflow-hidden border border-story-rule bg-story-paper">
+    <div role="group" aria-label={label} className="flex overflow-hidden rounded-[10px] border border-border bg-card">
       {options.map(([v, text]) => (
         <button
           key={v}
           type="button"
           aria-pressed={value === v}
           onClick={() => onChange(v)}
-          className={cn('cursor-pointer px-3 py-1.5 text-[13px] whitespace-nowrap', value === v ? 'bg-story-ink text-story-paper' : 'text-story-ink hover:bg-story-panel')}
+          className={cn('cursor-pointer px-3 py-1.5 text-[13px] whitespace-nowrap', value === v ? 'bg-foreground text-background' : 'text-foreground hover:bg-muted')}
         >
           {text}
         </button>
@@ -51,23 +51,23 @@ export function MapControls({ onExtent, basemap, onBasemap, colorBy, onColorBy, 
   return (
     <div className="pointer-events-none absolute top-3 left-3 z-[500] grid max-w-[calc(100%-1.5rem)] justify-items-start gap-2">
       <div className="pointer-events-auto flex flex-wrap gap-2">
-        <div role="group" aria-label={t('extentLabel')} className="flex overflow-hidden border border-story-rule bg-story-paper">
-          <button type="button" onClick={() => onExtent('nepal')} className="cursor-pointer px-3 py-1.5 text-[13px] whitespace-nowrap text-story-ink hover:bg-story-panel">
+        <div role="group" aria-label={t('extentLabel')} className="flex overflow-hidden rounded-[10px] border border-border bg-card">
+          <button type="button" onClick={() => onExtent('nepal')} className="cursor-pointer px-3 py-1.5 text-[13px] whitespace-nowrap text-foreground hover:bg-muted">
             {t('extentNepal')}
           </button>
-          <button type="button" onClick={() => onExtent('valley')} className="cursor-pointer border-l border-story-rule px-3 py-1.5 text-[13px] whitespace-nowrap text-story-ink hover:bg-story-panel">
+          <button type="button" onClick={() => onExtent('valley')} className="cursor-pointer border-l border-border px-3 py-1.5 text-[13px] whitespace-nowrap text-foreground hover:bg-muted">
             {t('extentValley')}
           </button>
         </div>
         <Segmented label={t('basemapLabel')} value={basemap} options={[['terrain', t('basemapTerrain')], ['streets', t('basemapStreets')]]} onChange={onBasemap} />
       </div>
-      <div className="pointer-events-auto grid max-w-[15rem] gap-1 border border-story-rule bg-story-paper/95 px-2.5 py-2 text-[11.5px] text-story-ink">
+      <div className="pointer-events-auto grid max-w-[15rem] gap-1 rounded-[10px] border border-border bg-card/95 px-2.5 py-2 text-[11.5px] text-foreground">
         <button
           type="button"
           aria-expanded={keyOpen}
           aria-controls="atlas-key"
           onClick={() => setKeyOpen((o) => !o)}
-          className="cursor-pointer text-left text-xs font-semibold text-story-ink"
+          className="cursor-pointer text-left text-xs font-medium text-foreground"
         >
           {t('mapKey')} {keyOpen ? '▴' : '▾'}
         </button>
