@@ -131,6 +131,11 @@ export function MuseumMethodsPanel({
               {t('demoImages', { source: provenance.imageSource })}
             </p>
           ) : null}
+          {provenance?.extension?.records ? (
+            <p className="text-[11px] text-muted-foreground">
+              {t('demoExtension', { count: provenance.extension.records })}
+            </p>
+          ) : null}
           {/* Images carry a license and a retrieval date; the narrative text
               carries neither. Say so, rather than letting the rigour of the
               image credits imply the prose is sourced too. */}

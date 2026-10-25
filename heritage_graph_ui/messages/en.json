@@ -381,7 +381,7 @@
     "switchToXr": "Switch to stories",
     "liveBadge": "Live graph",
     "graphCapped": "Showing the {shown} most connected of {total} entities — search or filter to focus on the rest.",
-    "demoBanner": "{count, plural, =0 {Illustrated demo corpus — curated heritage sites with sourced Wikimedia imagery.} other {Illustrated demo corpus — # curated sites with sourced Wikimedia imagery.}}",
+    "demoBanner": "{count, plural, =0 {Demo corpus — curated sites and records frozen from the reviewed knowledge graph.} other {Demo corpus — # records: curated sites plus records frozen from the reviewed knowledge graph.}}",
     "demoBannerAction": "Switch to the live graph",
     "sparseLive": "The live graph has {count} entities — the corpus is still growing.",
     "storiesLiveHint": "Stories highlights illustrated places. Switch to Map or Graph to see all {count} live entities (including recent imports without photos).",
@@ -427,7 +427,8 @@
       "openSparql": "Open SPARQL endpoint",
       "fullMethodsPage": "Full methods documentation",
       "doiPending": "Not yet deposited",
-      "demoTextUnsourced": "Descriptive text in this sample corpus has no recorded source and must not be cited. Image credits above are verified; the narrative is not."
+      "demoExtension": "Also holds {count} records frozen from the reviewed knowledge graph. They carry only sourced fields: labels, cited descriptions, licensed photographs, their own coordinates, dates and typed links, each with its record's source.",
+      "demoTextUnsourced": "Descriptive text on the curated sites has no recorded source and must not be cited. Image credits above are verified; the narrative is not."
     },
     "filters": {
       "regionLabel": "Heritage filters",
@@ -643,6 +644,9 @@
       "loadingRecord": "Loading the collection…",
       "relations": {
         "out": {
+          "hasReligiousTradition": "Tradition",
+          "P7_took_place_at": "Took place at",
+          "P9i_forms_part_of": "Part of",
           "P55_has_current_location": "Located at",
           "active_during": "Active during",
           "associated_with": "Associated with",
@@ -672,6 +676,9 @@
           "was_produced_by_event": "Made during"
         },
         "in": {
+          "hasReligiousTradition": "In this tradition",
+          "P7_took_place_at": "Took place here",
+          "P9i_forms_part_of": "Includes",
           "P55_has_current_location": "Located here",
           "active_during": "Active in this period",
           "associated_with": "Associated with",

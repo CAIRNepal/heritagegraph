@@ -381,7 +381,7 @@
     "switchToXr": "कथामा जानुहोस्",
     "liveBadge": "Live graph",
     "graphCapped": "{total} मध्ये सबैभन्दा बढी जोडिएका {shown} वस्तु देखाइँदै — बाँकी हेर्न खोज्नुहोस् वा फिल्टर गर्नुहोस्।",
-    "demoBanner": "{count, plural, =0 {सचित्र डेमो सङ्ग्रह — स्रोत उल्लेखित विकिमिडिया तस्बिरसहित छानिएका सम्पदा स्थल।} other {सचित्र डेमो सङ्ग्रह — स्रोत उल्लेखित विकिमिडिया तस्बिरसहित # छानिएका स्थल।}}",
+    "demoBanner": "{count, plural, =0 {डेमो सङ्ग्रह — छानिएका स्थल र समीक्षित ज्ञान ग्राफबाट लिइएका अभिलेख।} other {डेमो सङ्ग्रह — # अभिलेख: छानिएका स्थल र समीक्षित ज्ञान ग्राफबाट लिइएका अभिलेख।}}",
     "demoBannerAction": "Switch to the live graph",
     "sparseLive": "The live graph has {count} entities — the corpus is still growing.",
     "sparseLiveContribute": "योगदान गर्नुहोस्",
@@ -427,7 +427,8 @@
       "openSparql": "SPARQL एन्डपोइन्ट खोल्नुहोस्",
       "fullMethodsPage": "पूर्ण विधि दस्तावेज",
       "doiPending": "अझै जम्मा गरिएको छैन",
-      "demoTextUnsourced": "यस नमुना कोर्पसको वर्णनात्मक पाठको कुनै अभिलेखित स्रोत छैन र यसलाई उद्धृत गर्नुहुँदैन। माथिका चित्र श्रेय प्रमाणित छन्; कथन होइन।"
+      "demoExtension": "समीक्षित ज्ञान ग्राफबाट लिइएका {count} अभिलेख पनि छन्। तिनमा स्रोत भएका विवरण मात्र छन्: नाम, उद्धृत वर्णन, इजाजतपत्रसहितका तस्बिर, आफ्नै निर्देशाङ्क, मिति र प्रकारसहितका सम्बन्ध, प्रत्येकको अभिलेख स्रोतसहित।",
+      "demoTextUnsourced": "छानिएका स्थलहरूको वर्णनात्मक पाठको कुनै अभिलेखित स्रोत छैन र यसलाई उद्धृत गर्नुहुँदैन। माथिका चित्र श्रेय प्रमाणित छन्; कथन होइन।"
     },
     "filters": {
       "regionLabel": "हेरिटेज फिल्टर",
@@ -643,6 +644,9 @@
       "loadingRecord": "सङ्ग्रह लोड हुँदैछ…",
       "relations": {
         "out": {
+          "hasReligiousTradition": "परम्परा",
+          "P7_took_place_at": "भएको ठाउँ",
+          "P9i_forms_part_of": "को अंश",
           "P55_has_current_location": "यहाँ स्थित",
           "active_during": "सक्रिय काल",
           "associated_with": "सम्बन्धित",
@@ -672,6 +676,9 @@
           "was_produced_by_event": "निर्माण काल"
         },
         "in": {
+          "hasReligiousTradition": "यस परम्परामा",
+          "P7_took_place_at": "यहाँ भएको",
+          "P9i_forms_part_of": "समावेश",
           "P55_has_current_location": "यहाँ स्थित",
           "active_during": "यस कालमा सक्रिय",
           "associated_with": "सम्बन्धित",
