@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { IconX } from '@tabler/icons-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +16,7 @@ import { fetchKgNeighborhood } from '@/lib/kg-graph';
 import { downloadJson } from '@/lib/provenance';
 
 import { NODE_TYPE_CONFIG, type GraphData, type GraphLink, type GraphNode, type HgCategory } from './heritage-data';
+import { CollectionNotices, useCollectionErrorMessage } from './components/CollectionNotices';
 import { MandalaLoader } from './components/MandalaLoader';
 import { CollectionRail } from './components/exhibit/CollectionRail';
 import { ContextColumn, type LensKind } from './components/exhibit/ContextColumn';
@@ -213,19 +212,8 @@ export function HeritageMindMapClient() {
     );
   }, [fullGraph, visibleNodes, datasetMeta, dataSource]);
 
-  // Visitor-facing only; configuration detail goes to the console where loading fails.
-  const messageFor = (e: string | null) =>
-    e === 'unconfigured' || e === 'notfound'
-      ? t('errors.liveUnavailable')
-      : e === 'timeout'
-        ? t('errors.liveTimeout')
-        : e === 'live'
-          ? t('errors.liveLoad')
-          : e === 'demo'
-            ? t('errors.demoLoad')
-            : null;
+  const messageFor = useCollectionErrorMessage();
   const liveRetryable = liveError === 'timeout' || liveError === 'live';
-  const sparseLive = dataSource === 'live' && !liveLoading && !liveError && liveGraph && liveGraph.nodes.length < 20;
 
   const rail = (
     <CollectionRail
@@ -267,36 +255,15 @@ export function HeritageMindMapClient() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background text-foreground">
-      {liveError && (
-        <div className="z-20 flex flex-shrink-0 flex-wrap items-center gap-2 border-b border-destructive/20 bg-destructive/10 px-4 py-2 text-xs text-destructive" role="alert">
-          <span aria-hidden="true">⚠</span>
-          <span>{messageFor(liveError)}</span>
-          <span className="ml-auto flex items-center gap-2">
-            {liveRetryable && (
-              <Button onClick={retryLiveData} disabled={liveLoading} variant="outline" size="sm" className="h-7 text-xs" type="button">
-                {liveLoading ? t('errors.retrying') : t('errors.retry')}
-              </Button>
-            )}
-            {dataSource === 'live' && (
-              <Button onClick={toggleDataSource} variant="outline" size="sm" className="h-7 text-xs" type="button">
-                {t('errors.showDemo')}
-              </Button>
-            )}
-            <Button onClick={collection.dismissLiveError} variant="ghost" size="icon" className="size-7" aria-label={t('errors.dismiss')} type="button">
-              <IconX className="size-4" />
-            </Button>
-          </span>
-        </div>
-      )}
-
-      {sparseLive ? (
-        <div className="z-20 flex-shrink-0 border-b border-border bg-muted/40 px-4 py-2 text-xs text-muted-foreground" role="status">
-          {t('sparseLive', { count: liveGraph.nodes.length })}{' '}
-          <Link href="/contribute/entity" className="text-primary underline underline-offset-2">
-            {t('sparseLiveContribute')}
-          </Link>
-        </div>
-      ) : null}
+      <CollectionNotices
+        source={dataSource}
+        liveError={liveError}
+        liveLoading={liveLoading}
+        liveCount={liveGraph ? liveGraph.nodes.length : null}
+        onRetry={retryLiveData}
+        onShowDemo={toggleDataSource}
+        onDismiss={collection.dismissLiveError}
+      />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_330px]">
         {railColumn ? <aside aria-label={tx('browseCollection')} className="min-h-0 border-r border-border">{rail}</aside> : null}

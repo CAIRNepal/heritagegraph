@@ -12,16 +12,15 @@
  */
 
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { IconX } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { connectionsOf } from '@/app/(site)/heritage-museum/components/exhibit/exhibit-utils';
+import { CollectionNotices } from '@/app/(site)/heritage-museum/components/CollectionNotices';
 import { RailControls } from '@/app/(site)/heritage-museum/components/exhibit/RailControls';
 import { NODE_TYPE_CONFIG } from '@/app/(site)/heritage-museum/heritage-data';
 import {
@@ -206,18 +205,6 @@ export default function AtlasClient() {
     if (target !== `/atlas?${searchParams.toString()}`) router.replace(target, { scroll: false });
   }, [collection.source, selected, router, searchParams]);
 
-  const messageFor = (e: string | null) =>
-    e === 'unconfigured' || e === 'notfound'
-      ? tm('errors.liveUnavailable')
-      : e === 'timeout'
-        ? tm('errors.liveTimeout')
-        : e === 'live'
-          ? tm('errors.liveLoad')
-          : e === 'demo'
-            ? tm('errors.demoLoad')
-            : null;
-  const liveRetryable = collection.liveError === 'timeout' || collection.liveError === 'live';
-
   const rail = (
     <PlaceRail
       places={visible}
@@ -297,35 +284,15 @@ export default function AtlasClient() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background text-foreground">
-      {collection.liveError ? (
-        <div className="z-20 flex flex-shrink-0 flex-wrap items-center gap-2 border-b border-destructive/20 bg-destructive/10 px-4 py-2 text-xs text-destructive" role="alert">
-          <span aria-hidden="true">⚠</span>
-          <span>{messageFor(collection.liveError)}</span>
-          <span className="ml-auto flex items-center gap-2">
-            {liveRetryable ? (
-              <Button onClick={collection.retryLive} disabled={collection.liveLoading} variant="outline" size="sm" className="h-7 text-xs" type="button">
-                {collection.liveLoading ? tm('errors.retrying') : tm('errors.retry')}
-              </Button>
-            ) : null}
-            {collection.source === 'live' ? (
-              <Button onClick={switchSource} variant="outline" size="sm" className="h-7 text-xs" type="button">
-                {tm('errors.showDemo')}
-              </Button>
-            ) : null}
-            <Button onClick={collection.dismissLiveError} variant="ghost" size="icon" className="size-7" aria-label={tm('errors.dismiss')} type="button">
-              <IconX className="size-4" />
-            </Button>
-          </span>
-        </div>
-      ) : null}
-      {collection.source === 'live' && graph && graph.nodes.length < 20 ? (
-        <div className="flex-shrink-0 border-b border-border bg-muted/40 px-4 py-2 text-xs text-muted-foreground" role="status">
-          {tm('sparseLive', { count: graph.nodes.length })}{' '}
-          <Link href="/contribute/entity" className="text-primary underline underline-offset-2">
-            {tm('sparseLiveContribute')}
-          </Link>
-        </div>
-      ) : null}
+      <CollectionNotices
+        source={collection.source}
+        liveError={collection.liveError}
+        liveLoading={collection.liveLoading}
+        liveCount={collection.source === 'live' && graph ? graph.nodes.length : null}
+        onRetry={collection.retryLive}
+        onShowDemo={switchSource}
+        onDismiss={collection.dismissLiveError}
+      />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_340px]">
         {railColumn ? (
