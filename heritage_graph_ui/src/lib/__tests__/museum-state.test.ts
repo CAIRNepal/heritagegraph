@@ -75,3 +75,13 @@ describe('filterCollection', () => {
     expect(c.undated).toBe(0);
   });
 });
+
+describe('devanagariLabel', () => {
+  it('prefers Nepali, falls back to Nepal Bhasa, and skips a repeat of the label', async () => {
+    const { devanagariLabel } = await import('@/lib/heritage-museum/live-graph');
+    expect(devanagariLabel({ en: 'Indra Jatra', ne: 'इन्द्रजात्रा', new: 'येँया' }, 'Indra Jatra')).toBe('इन्द्रजात्रा');
+    expect(devanagariLabel({ new: 'येँया' }, 'Indra Jatra')).toBe('येँया');
+    expect(devanagariLabel({ ne: 'कुमारी' }, 'कुमारी')).toBeUndefined();
+    expect(devanagariLabel(undefined, 'x')).toBeUndefined();
+  });
+});

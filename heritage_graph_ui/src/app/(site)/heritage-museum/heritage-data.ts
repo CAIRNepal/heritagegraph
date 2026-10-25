@@ -4,6 +4,7 @@
 //      or  tools/ui-vizmap.yaml          (visual config: colors, emojis, categories)
 //   2. Run: python3 tools/gen_heritage_viz_config.py
 //   3. Commit all changed files together.
+import type { KgRecordSource } from '@/lib/kg-graph';
 import type { NodeType, HgCategory } from '@/lib/ontology/__generated__/heritage-viz-config';
 import { NODE_TYPE_CONFIG, RELATION_LABELS, HG_CATEGORY_CONFIG } from '@/lib/ontology/__generated__/heritage-viz-config';
 
@@ -53,6 +54,8 @@ export interface HeritageNode {
   label: string;
   /** Nepali or Nepal Bhasa label in Devanagari, where the record has one. */
   labelNe?: string;
+  /** Live graph only: where the record's own content came from. */
+  recordSource?: KgRecordSource | null;
   nodeType: NodeType;
   cidocMapping: string;
   hgCategory: HgCategory;
