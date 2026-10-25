@@ -48,6 +48,7 @@ const LIMITATIONS = [
   'corpusSize',
   'temporal',
   'reconciliation',
+  'authorityImport',
   'demoCorpus',
   'doi',
   'shacl',
