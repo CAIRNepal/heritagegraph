@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { NODE_TYPE_CONFIG, type GraphNode } from '../../heritage-data';
 import { NodeGlyph } from '../../node-icons';
 import { RecordThumb } from '../exhibit/CollectionRail';
-import { MiniTimeline, NepalMiniMap } from '../exhibit/ContextColumn';
+import { MiniTimeline, NepalMiniMap } from '../exhibit/MiniViews';
 import { coordsOf, heroImageOf, placeOf, sizedImage, useExhibitWords, yearOf, type Connection } from '../exhibit/exhibit-utils';
 import { ImageAttribution } from '../ImageAttribution';
 
