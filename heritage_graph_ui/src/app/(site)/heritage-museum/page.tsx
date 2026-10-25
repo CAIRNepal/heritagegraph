@@ -6,11 +6,11 @@ import { MandalaLoader } from './components/MandalaLoader';
 export const metadata = {
   title: 'Heritage Museum · HeritageGraph',
   description:
-    'Explore a CIDOC-CRM knowledge graph of cultural heritage: reviewed live data, provenance-backed relationships, map, timeline, and immersive views.',
+    "Nepal's heritage as one collection: every record as an exhibit, on a map of Nepal, on a timeline and through its connections, each with its source.",
   openGraph: {
     title: 'Heritage Museum · HeritageGraph',
     description:
-      'Interactive knowledge-graph museum with ontology-typed nodes, provenance-backed edges, and SPARQL-exportable data.',
+      'One collection, four lenses — exhibit, map, timeline, connections — over a CIDOC-CRM knowledge graph with per-record sources.',
     type: 'website',
   },
 };
@@ -24,7 +24,7 @@ export default function HeritageMuseumPage() {
   // `100svh - header(3.5rem)` makes h-full/grid resolve and keeps the timeline
   // pinned and on-screen. `-my-4` cancels main's py-4 so the math stays exact.
   return (
-    <div className="relative -mx-4 -my-4 flex h-[calc(100svh-3.5rem)] flex-col overflow-hidden bg-background md:-mx-6">
+    <div className="relative -mx-4 -my-4 flex h-[calc(100svh-3.5rem)] flex-col overflow-hidden bg-story-paper md:-mx-6">
       <Suspense
         fallback={
           <div className="flex flex-1 items-center justify-center">
