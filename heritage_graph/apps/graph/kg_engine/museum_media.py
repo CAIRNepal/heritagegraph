@@ -281,6 +281,21 @@ def media_bundle_for_resource(
         bundle.image_url = bundle.images[0]
         bundle.image_source = "orm_media"
 
+    # Images frozen with their licence by an authority import (Commons via Wikidata).
+    for item in (getattr(instance, "media", None) or []) if instance is not None else []:
+        url = item.get("url") if isinstance(item, dict) else None
+        if not url or url in bundle.images:
+            continue
+        bundle.images.append(url)
+        bundle.image_credits[url] = {
+            k: item[k]
+            for k in ("source", "license", "licenseUrl", "artist", "descriptionUrl", "retrieved")
+            if item.get(k)
+        }
+        if not bundle.image_url:
+            bundle.image_url = url
+            bundle.image_source = "record_media"
+
     if label:
         wiki = wikimedia_bundle_for_label(label)
         if wiki:
