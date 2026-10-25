@@ -1,16 +1,22 @@
-import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 
-import { AtlasPageClient } from './atlas-page-client';
-import { AtlasShellLoading } from './components/atlas-loading-fallbacks';
+interface AtlasPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
 
-export default function AtlasPage() {
-  // A definite height (viewport minus the 3.5rem site bar) so the rail, map and
-  // panel can each scroll inside it; -my-4 / -mx cancel main's padding.
-  return (
-    <div className="relative -mx-4 -my-4 flex h-[calc(100svh-3.5rem)] flex-col overflow-hidden bg-background md:-mx-6">
-      <Suspense fallback={<AtlasShellLoading />}>
-        <AtlasPageClient />
-      </Suspense>
-    </div>
-  );
+/**
+ * The atlas is now the museum's map lens. Old atlas links — including cited
+ * ones with `?selected=` and `?source=` — land on the same record, on the map.
+ */
+export default async function AtlasPage({ searchParams }: AtlasPageProps) {
+  const incoming = await searchParams;
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(incoming)) {
+    if (typeof value === 'string') params.set(key, value);
+  }
+  const selected = params.get('selected');
+  if (selected && !params.has('node')) params.set('node', selected);
+  params.delete('selected');
+  params.set('lens', 'map');
+  redirect(`/heritage-museum?${params.toString()}`);
 }
