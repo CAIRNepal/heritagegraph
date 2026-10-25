@@ -350,14 +350,10 @@ export function HeritageMindMapClient() {
         <div className="grid gap-2.5">
           <PeriodFilter era={era} onEra={setEra} counts={periodCounts} />
           {datedCount > 1 ? (
-            <button
-              type="button"
-              onClick={startTour}
-              className="inline-flex cursor-pointer items-center justify-center gap-2 border border-story-ink px-3 py-2 text-sm font-semibold hover:bg-story-ink hover:text-story-paper"
-            >
+            <Button type="button" onClick={startTour} className="w-full">
               <IconRoute className="size-4" aria-hidden />
               {ta('tour')}
-            </button>
+            </Button>
           ) : null}
         </div>
       }
@@ -402,7 +398,7 @@ export function HeritageMindMapClient() {
         <div className="grid min-h-[50vh] place-items-center" role="alert">
           <div className="grid max-w-md justify-items-center gap-3 p-8 text-center">
             <p className="text-sm font-medium">{t('errors.loadTitle')}</p>
-            <p className="text-xs text-story-ink-soft">{messageFor(error)}</p>
+            <p className="text-xs text-muted-foreground">{messageFor(error)}</p>
             {dataSource === 'live' ? (
               <div className="flex flex-wrap justify-center gap-2 pt-1">
                 {liveError === 'timeout' || liveError === 'live' ? (
@@ -444,7 +440,7 @@ export function HeritageMindMapClient() {
     if (lens === 'connections') {
       return (
         <div className="grid gap-2 px-4 py-5 sm:px-6">
-          <p className="text-xs text-story-ink-soft">{tx('graphLensHint')}</p>
+          <p className="text-xs text-muted-foreground">{tx('graphLensHint')}</p>
           <EgoGraph node={selectedNode} graph={fullGraph} onSelect={selectByUser} />
         </div>
       );
@@ -468,7 +464,7 @@ export function HeritageMindMapClient() {
   const fullBleed = lens === 'map' || lens === 'timeline';
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-story-paper text-story-ink">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background text-foreground">
       {/* One short announcement per move, instead of re-reading the whole panel. */}
       <p className="sr-only" aria-live="polite">
         {selectedNode ? tl('announce', { label: selectedNode.label, lens: tl(lens), k: index + 1, n: visibleNodes.length }) : ''}
@@ -485,30 +481,25 @@ export function HeritageMindMapClient() {
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)_340px]">
         {railColumn ? (
-          <aside aria-label={tx('browseCollection')} className="min-h-0 border-r border-story-rule">
+          <aside aria-label={tx('browseCollection')} className="min-h-0 border-r border-border">
             {rail}
           </aside>
         ) : null}
 
         <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)]">
-          <div className="flex flex-wrap items-center gap-2 border-b border-story-rule px-3 py-2 sm:px-4">
+          <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2 sm:px-4">
             {!railColumn ? (
-              <button
-                type="button"
-                onClick={() => setRailOpen(true)}
-                aria-label={tx('browseCollection')}
-                className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 border border-story-rule px-2.5 text-sm font-semibold hover:bg-story-panel"
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => setRailOpen(true)} aria-label={tx('browseCollection')}>
                 <IconLayoutSidebarLeftExpand className="size-4" aria-hidden />
                 <span className="hidden sm:inline">{tx('browseCollection')}</span>
-              </button>
+              </Button>
             ) : null}
             <LensTabs lens={lens} onLens={setLens} counts={lensCounts} />
             {/* Position and shortcuts are for wide, keyboard screens; on a phone
                 they pushed the stage down by a whole row. */}
             <span className="ml-auto hidden items-center gap-3 sm:flex">
               {index >= 0 ? (
-                <span className="text-xs text-story-ink-soft tabular-nums">
+                <span className="text-xs text-muted-foreground tabular-nums">
                   {tl('position', { k: index + 1, n: visibleNodes.length })}
                 </span>
               ) : null}
@@ -524,12 +515,12 @@ export function HeritageMindMapClient() {
             className={fullBleed && wide ? 'min-h-0 overflow-hidden' : 'min-h-0 overflow-auto'}
           >
             {fullBleed && !wide ? <div className="h-[62vh] min-h-[420px]">{stage}</div> : stage}
-            {!wide && panel ? <div className="border-t border-story-rule px-4 pt-5 pb-10 sm:px-6">{panel}</div> : null}
+            {!wide && panel ? <div className="border-t border-border px-4 pt-5 pb-10 sm:px-6">{panel}</div> : null}
           </div>
         </div>
 
         {wide && panel ? (
-          <aside aria-label={selectedNode?.label} className="min-h-0 overflow-auto border-l border-story-rule p-[18px]">
+          <aside aria-label={selectedNode?.label} className="min-h-0 overflow-auto border-l border-border p-[18px]">
             {panel}
           </aside>
         ) : null}
@@ -537,7 +528,7 @@ export function HeritageMindMapClient() {
 
       {!railColumn ? (
         <Sheet open={railOpen} onOpenChange={setRailOpen}>
-          <SheetContent side="left" className="w-[min(22rem,92vw)] gap-0 bg-story-paper p-0">
+          <SheetContent side="left" className="w-[min(22rem,92vw)] gap-0 bg-background p-0">
             <SheetTitle className="sr-only">{tx('browseCollection')}</SheetTitle>
             {rail}
           </SheetContent>

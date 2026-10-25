@@ -24,7 +24,7 @@ export default function HeritageMuseumPage() {
   // `100svh - header(3.5rem)` makes h-full/grid resolve and keeps the timeline
   // pinned and on-screen. `-my-4` cancels main's py-4 so the math stays exact.
   return (
-    <div className="relative -mx-4 -my-4 flex h-[calc(100svh-3.5rem)] flex-col overflow-hidden bg-story-paper md:-mx-6">
+    <div className="relative -mx-4 -my-4 flex h-[calc(100svh-3.5rem)] flex-col overflow-hidden bg-background md:-mx-6">
       <Suspense
         fallback={
           <div className="flex flex-1 items-center justify-center">
