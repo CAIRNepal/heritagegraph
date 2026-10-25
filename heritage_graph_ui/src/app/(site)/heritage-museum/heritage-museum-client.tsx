@@ -39,6 +39,7 @@ import { ExhibitView } from './components/exhibit/ExhibitView';
 import { connectionsOf, coordsOf } from './components/exhibit/exhibit-utils';
 import { RailControls } from './components/exhibit/RailControls';
 import { MapLens } from './components/lenses/MapLens';
+import { KeyboardHelp } from './components/museum/KeyboardHelp';
 import { LENS_PANEL_ID, LensTabs } from './components/museum/LensTabs';
 import { PeriodFilter } from './components/museum/PeriodFilter';
 import { RecordPanel, type TourState } from './components/museum/RecordPanel';
@@ -495,11 +496,14 @@ export function HeritageMindMapClient() {
               </Button>
             ) : null}
             <LensTabs lens={lens} onLens={setLens} counts={lensCounts} />
-            {index >= 0 ? (
-              <p className="ml-auto text-xs text-story-ink-soft tabular-nums" aria-live="polite">
-                {tl('position', { k: index + 1, n: visibleNodes.length })}
-              </p>
-            ) : null}
+            <span className="ml-auto flex items-center gap-3">
+              {index >= 0 ? (
+                <span className="text-xs text-story-ink-soft tabular-nums" aria-live="polite">
+                  {tl('position', { k: index + 1, n: visibleNodes.length })}
+                </span>
+              ) : null}
+              <KeyboardHelp />
+            </span>
           </div>
 
           <div
