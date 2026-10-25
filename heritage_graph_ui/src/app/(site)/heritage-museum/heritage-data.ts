@@ -51,6 +51,8 @@ export interface ImageCredit {
 export interface HeritageNode {
   id: string;
   label: string;
+  /** Nepali or Nepal Bhasa label in Devanagari, where the record has one. */
+  labelNe?: string;
   nodeType: NodeType;
   cidocMapping: string;
   hgCategory: HgCategory;
