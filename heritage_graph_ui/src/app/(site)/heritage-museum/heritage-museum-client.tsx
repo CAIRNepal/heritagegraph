@@ -82,9 +82,11 @@ export function HeritageMindMapClient() {
     if (view && LENS_FOR_VIEW[view]) setLens(LENS_FOR_VIEW[view]);
     const node = searchParams.get('node');
     if (node) setSelectedId(decodeURIComponent(node));
-    // The illustrated corpus is self-contained and always renders, so it is the
-    // default; the live graph loads only when the URL or the visitor asks.
-    if (searchParams.get('source') === 'live') collection.switchTo('live');
+    // The reviewed live graph is the default: its records are sourced, while
+    // the illustrated corpus's prose is explicitly uncitable. The corpus opens
+    // when asked for, or when the live graph is unavailable.
+    if (searchParams.get('source') === 'demo') collection.switchTo('demo');
+    else collection.preferLive();
     // Runs once; the collection is stable enough for a one-shot read.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);

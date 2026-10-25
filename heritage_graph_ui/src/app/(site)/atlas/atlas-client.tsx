@@ -86,7 +86,8 @@ export default function AtlasClient() {
     bootstrapped.current = true;
     const sel = searchParams.get('selected') ?? searchParams.get('node');
     if (sel) setSelectedId(decodeURIComponent(sel));
-    if (searchParams.get('source') === 'live') collection.switchTo('live');
+    if (searchParams.get('source') === 'demo') collection.switchTo('demo');
+    else collection.preferLive();
     // One-shot read of the incoming URL.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
