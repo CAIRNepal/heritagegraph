@@ -33,6 +33,9 @@ import { heroImageOf, placeOf, sizedImage, useExhibitWords, yearOf, type Connect
 // three.js; loaded only when someone opens a panorama.
 const PanoramaViewer = dynamic(() => import('../xr/PanoramaViewer').then((m) => m.PanoramaViewer), { ssr: false });
 
+/** Square, hairline buttons of the storytelling pages, on the shared Button. */
+const STORY_BUTTON = 'rounded-none border-story-rule bg-story-paper text-story-ink shadow-none hover:bg-story-panel';
+
 interface ExhibitViewProps {
   node: GraphNode;
   connections: Connection[];
@@ -104,10 +107,10 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
           {HG_CATEGORY_CONFIG[node.hgCategory]?.label} / {cfg?.label}
         </span>
         <span className="ml-auto flex gap-1.5">
-          <Button type="button" variant="outline" size="sm" onClick={onPrev} disabled={!onPrev} aria-label={tx('previousAria')}>
+          <Button type="button" variant="outline" className={STORY_BUTTON} size="sm" onClick={onPrev} disabled={!onPrev} aria-label={tx('previousAria')}>
             ← {tx('previous')}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onNext} disabled={!onNext} aria-label={tx('nextAria')}>
+          <Button type="button" variant="outline" className={STORY_BUTTON} size="sm" onClick={onNext} disabled={!onNext} aria-label={tx('nextAria')}>
             {tx('next')} →
           </Button>
         </span>
@@ -187,7 +190,7 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
         <div className="flex flex-wrap gap-2 pt-2">
           {narration.supported && node.storyText?.trim() ? (
             narration.state === 'idle' ? (
-              <Button type="button" variant="outline" size="sm" onClick={narration.play} title={t('media.narrate')}>
+              <Button type="button" variant="outline" className={STORY_BUTTON} size="sm" onClick={narration.play} title={t('media.narrate')}>
                 <IconPlayerPlay className="size-3.5" aria-hidden />
                 {t('media.narrateShort')}
               </Button>
@@ -195,27 +198,27 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
               <span className="inline-flex gap-1.5">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="outline" className={STORY_BUTTON}
                   size="sm"
                   onClick={narration.state === 'playing' ? narration.pause : narration.resume}
                   aria-label={narration.state === 'playing' ? tx('pauseNarration') : tx('resumeNarration')}
                 >
                   {narration.state === 'playing' ? <IconPlayerPause className="size-3.5" aria-hidden /> : <IconPlayerPlay className="size-3.5" aria-hidden />}
                 </Button>
-                <Button type="button" variant="outline" size="sm" onClick={narration.stop} aria-label={t('media.stop')}>
+                <Button type="button" variant="outline" className={STORY_BUTTON} size="sm" onClick={narration.stop} aria-label={t('media.stop')}>
                   <IconPlayerStop className="size-3.5" aria-hidden />
                 </Button>
               </span>
             )
           ) : null}
           {image && panoramic && !imgFailed ? (
-            <Button type="button" variant="outline" size="sm" onClick={() => setShowPanorama(true)}>
+            <Button type="button" variant="outline" className={STORY_BUTTON} size="sm" onClick={() => setShowPanorama(true)}>
               <IconSparkles className="size-3.5" aria-hidden />
               {t('xr.panoramaOpen')}
             </Button>
           ) : null}
           {detailHref ? (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" className={STORY_BUTTON} size="sm">
               <Link href={detailHref}>
                 <IconExternalLink className="size-3.5" aria-hidden />
                 {tp('openRecord')}
@@ -223,13 +226,13 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
             </Button>
           ) : null}
           {onShowOnMap ? (
-            <Button type="button" variant="outline" size="sm" onClick={onShowOnMap}>
+            <Button type="button" variant="outline" className={STORY_BUTTON} size="sm" onClick={onShowOnMap}>
               <IconWorld className="size-3.5" aria-hidden />
               {tp('viewOnGlobe')}
             </Button>
           ) : null}
           {onExpand ? (
-            <Button type="button" variant="outline" size="sm" onClick={onExpand} disabled={expanding} title={t('expand.title')}>
+            <Button type="button" variant="outline" className={STORY_BUTTON} size="sm" onClick={onExpand} disabled={expanding} title={t('expand.title')}>
               <IconPlus className="size-3.5" aria-hidden />
               {expanding ? t('expand.loading') : t('expand.action')}
             </Button>
