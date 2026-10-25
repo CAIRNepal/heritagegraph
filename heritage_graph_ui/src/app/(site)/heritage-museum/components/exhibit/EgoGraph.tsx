@@ -54,18 +54,18 @@ export function EgoGraph({ node, graph, onSelect }: EgoGraphProps) {
       {outer.map(([a, b]) => {
         const p = pos.get(a)!;
         const q = pos.get(b)!;
-        return <line key={`${a}>${b}`} x1={p.x} y1={p.y} x2={q.x} y2={q.y} className="stroke-border" strokeWidth={1.2} />;
+        return <line key={`${a}>${b}`} x1={p.x} y1={p.y} x2={q.x} y2={q.y} className="stroke-story-rule-soft" strokeWidth={1.2} />;
       })}
       {ring1.map((c) => {
         const q = pos.get(c.other.id)!;
         return (
           <g key={c.other.id}>
-            <line x1={cx} y1={cy} x2={q.x} y2={q.y} className="stroke-muted-foreground" strokeWidth={1.2} />
+            <line x1={cx} y1={cy} x2={q.x} y2={q.y} className="stroke-story-ink" strokeWidth={1} />
             <text
               x={(cx + q.x) / 2}
               y={(cy + q.y) / 2}
               textAnchor="middle"
-              className="fill-muted-foreground stroke-card text-[10px]"
+              className="fill-story-accent stroke-story-paper text-[10px] font-semibold"
               strokeWidth={3}
               paintOrder="stroke"
             >
@@ -90,14 +90,22 @@ export function EgoGraph({ node, graph, onSelect }: EgoGraphProps) {
                 activate(n);
               }
             }}
-            className="cursor-pointer outline-none focus-visible:[&>circle]:stroke-ring"
+            className="cursor-pointer outline-none focus-visible:[&>rect]:stroke-story-accent"
           >
-            <circle cx={x} cy={y} r={r} fill={NODE_TYPE_CONFIG[n.nodeType]?.color} className="stroke-card" strokeWidth={2.5} />
+            <rect
+              x={x - r}
+              y={y - r}
+              width={r * 2}
+              height={r * 2}
+              fill={level === 0 ? 'var(--story-accent)' : NODE_TYPE_CONFIG[n.nodeType]?.color}
+              className="stroke-story-paper"
+              strokeWidth={2.5}
+            />
             <text
               x={x}
               y={below ? y + r + 14 : y - r - 7}
               textAnchor="middle"
-              className="fill-foreground stroke-card text-xs font-medium"
+              className="fill-story-ink stroke-story-paper text-xs font-semibold"
               strokeWidth={3}
               paintOrder="stroke"
             >
