@@ -72,22 +72,14 @@ export function EgoGraph({ node, graph, onSelect }: EgoGraphProps) {
             onSelect(n);
           }
         }}
-        className="cursor-pointer outline-none focus-visible:[&>rect]:stroke-story-accent"
+        className="cursor-pointer outline-none focus-visible:[&>circle]:stroke-ring"
       >
-        <rect
-          x={x - size}
-          y={y - size}
-          width={size * 2}
-          height={size * 2}
-          fill={centre ? 'var(--story-accent)' : NODE_TYPE_CONFIG[n.nodeType]?.color}
-          className="stroke-story-paper"
-          strokeWidth={2.5}
-        />
+        <circle cx={x} cy={y} r={size} fill={NODE_TYPE_CONFIG[n.nodeType]?.color} className="stroke-card" strokeWidth={2.5} />
         <text
           x={x}
           y={below ? y + size + 14 : y - size - 7}
           textAnchor="middle"
-          className="fill-story-ink stroke-story-paper text-xs font-semibold"
+          className="fill-foreground stroke-card text-xs font-medium"
           strokeWidth={3}
           paintOrder="stroke"
         >
@@ -100,10 +92,10 @@ export function EgoGraph({ node, graph, onSelect }: EgoGraphProps) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="block h-auto w-full" role="group" aria-label={tx('graphAria', { name: node.label })}>
       {outer.map((o) => (
-        <line key={`${o.from.x},${o.from.y}>${o.n.id}`} x1={o.from.x} y1={o.from.y} x2={o.x} y2={o.y} className="stroke-story-rule-soft" strokeWidth={1.2} />
+        <line key={`${o.from.x},${o.from.y}>${o.n.id}`} x1={o.from.x} y1={o.from.y} x2={o.x} y2={o.y} className="stroke-border" strokeWidth={1.2} />
       ))}
       {[...records, ...mores].map(({ e, k, x, y }) => (
-        <line key={`l${k}`} x1={cx} y1={cy} x2={x} y2={y} className={e.kind === 'more' ? 'stroke-story-rule-soft' : 'stroke-story-ink'} strokeWidth={1} strokeDasharray={e.kind === 'more' ? '4 4' : undefined} />
+        <line key={`l${k}`} x1={cx} y1={cy} x2={x} y2={y} className={e.kind === 'more' ? 'stroke-border' : 'stroke-muted-foreground'} strokeWidth={1.2} strokeDasharray={e.kind === 'more' ? '4 4' : undefined} />
       ))}
       {records.map(({ e, k, x, y }) =>
         e.showRelation ? (
@@ -112,7 +104,7 @@ export function EgoGraph({ node, graph, onSelect }: EgoGraphProps) {
             x={(cx + x) / 2}
             y={(cy + y) / 2}
             textAnchor="middle"
-            className="fill-story-accent stroke-story-paper text-[10px] font-semibold"
+            className="fill-muted-foreground stroke-card text-[10px]"
             strokeWidth={3}
             paintOrder="stroke"
           >
@@ -129,8 +121,8 @@ export function EgoGraph({ node, graph, onSelect }: EgoGraphProps) {
       {mores.map(({ e, k, x, y }) =>
         e.kind === 'more' ? (
           <g key={`m${k}`}>
-            <rect x={x - 10} y={y - 10} width={20} height={20} className="fill-story-paper stroke-story-ink" strokeWidth={1} strokeDasharray="3 2" />
-            <text x={x} y={y >= cy ? y + 24 : y - 17} textAnchor="middle" className="fill-story-ink-soft stroke-story-paper text-[11px] font-semibold" strokeWidth={3} paintOrder="stroke">
+            <circle cx={x} cy={y} r={10} className="fill-card stroke-muted-foreground" strokeWidth={1} strokeDasharray="3 2" />
+            <text x={x} y={y >= cy ? y + 24 : y - 17} textAnchor="middle" className="fill-muted-foreground stroke-card text-[11px] font-medium" strokeWidth={3} paintOrder="stroke">
               {tr('moreRelation', { count: e.count, relation: e.relation.toLowerCase() })}
             </text>
           </g>
