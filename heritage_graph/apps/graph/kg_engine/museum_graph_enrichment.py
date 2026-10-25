@@ -14,7 +14,7 @@ import uuid
 from typing import Any
 
 from apps.cidoc_data.cidoc_registry_keys import DJANGO_MODEL_TO_REGISTRY_CLASS_KEY
-from apps.cidoc_data.identity_services import active_memberships_for_subject
+from apps.cidoc_data.identity_services import _active_membership_qs
 from apps.cidoc_data.models import EntityCluster
 from apps.graph.kg_engine.uris import resource_base
 from django.contrib.contenttypes.models import ContentType
@@ -169,6 +169,30 @@ def _load_instance(segment: str, pk: int) -> Any | None:
         return None
 
 
+def _load_instances(keys: list[tuple[str, int]]) -> dict[tuple[str, int], Any]:
+    """All rows for (registry segment, pk) pairs, one query per model."""
+    from django.apps import apps
+
+    by_segment: dict[str, set[int]] = {}
+    for segment, pk in keys:
+        by_segment.setdefault(segment, set()).add(pk)
+    out: dict[tuple[str, int], Any] = {}
+    for segment, pks in by_segment.items():
+        model_name = _REGISTRY_KEY_TO_MODEL.get(segment)
+        if not model_name:
+            continue
+        try:
+            model = apps.get_model("cidoc_data", model_name)
+            qs = model.objects.filter(pk__in=pks)
+            if any(f.name == "source" for f in model._meta.get_fields()):
+                qs = qs.select_related("source")
+            for row in qs:
+                out[(segment, row.pk)] = row
+        except Exception:
+            continue
+    return out
+
+
 def _comment_is_sparse(comment: str | None, label: str | None) -> bool:
     text = (comment or "").strip()
     if not text:
@@ -219,43 +243,78 @@ def _resolve_cluster(cluster: EntityCluster) -> EntityCluster:
     return current
 
 
-def enrich_museum_cluster_identity(nodes: dict[str, dict[str, Any]]) -> None:
-    """Attach clusterId / clusterLabel for museum UI deduplication."""
-    for node in nodes.values():
-        parsed = parse_resource_uri(node.get("id"))
-        if not parsed:
-            continue
-        segment, pk = parsed
-        instance = _load_instance(segment, pk)
+def enrich_museum_cluster_identity(
+    nodes: dict[str, dict[str, Any]],
+    instances: dict[tuple[str, int], Any] | None = None,
+) -> None:
+    """Attach clusterId / clusterLabel for museum UI deduplication.
+
+    Memberships come from one query rather than one per node, and a cluster
+    with a single member is its own canonical record without ranking: with
+    every authority import in a singleton cluster, per-node lookups made this
+    the slowest step of the graph endpoint.
+    """
+    keys = {iri: parse_resource_uri(n.get("id")) for iri, n in nodes.items()}
+    if instances is None:
+        instances = _load_instances([k for k in keys.values() if k])
+    subject_iri: dict[tuple[int, Any], str] = {}
+    for iri, key in keys.items():
+        instance = instances.get(key) if key else None
         if instance is None:
             continue
-        ct = ContentType.objects.get_for_model(
-            instance.__class__,
-            for_concrete_model=False,
-        )
-        mem = (
-            active_memberships_for_subject(ct, instance.pk)
-            .select_related("entity_cluster", "entity_cluster__merged_into")
-            .first()
-        )
-        if not mem or not mem.entity_cluster_id:
-            continue
+        ct = ContentType.objects.get_for_model(instance.__class__, for_concrete_model=False)
+        subject_iri[(ct.id, str(instance.pk))] = iri
+
+    first_membership: dict[str, Any] = {}
+    members_per_cluster: dict[Any, int] = {}
+    for mem in _active_membership_qs().select_related(
+        "entity_cluster", "entity_cluster__merged_into"
+    ):
+        members_per_cluster[mem.entity_cluster_id] = members_per_cluster.get(mem.entity_cluster_id, 0) + 1
+        iri = subject_iri.get((mem.content_type_id, str(mem.object_id)))
+        if iri and iri not in first_membership:
+            first_membership[iri] = mem
+
+    from apps.cidoc_data.canonical_record_selection import (
+        _load_member_instance,
+        select_canonical_member,
+    )
+    from apps.cidoc_data.rdf_publish import resource_uri_for_instance
+
+    for iri, mem in first_membership.items():
+        node = nodes[iri]
         cluster = _resolve_cluster(mem.entity_cluster)
         node["clusterId"] = str(cluster.id)
         node["clusterLabel"] = cluster.canonical_label
         node["typeScope"] = cluster.type_scope
-        from apps.cidoc_data.canonical_record_selection import (
-            _load_member_instance,
-            select_canonical_member,
-        )
-        from apps.cidoc_data.rdf_publish import resource_uri_for_instance
-
+        if cluster.id == mem.entity_cluster_id and members_per_cluster.get(cluster.id) == 1:
+            node["canonicalMemberId"] = iri
+            continue
         canonical = select_canonical_member(cluster)
         if canonical and canonical.get("entity_id") is not None:
             ct_canon = ContentType.objects.get(model=canonical["entity_type"])
             canon_obj = _load_member_instance(ct_canon, int(canonical["entity_id"]))
             if canon_obj is not None:
                 node["canonicalMemberId"] = resource_uri_for_instance(canon_obj)
+
+
+def record_source(instance: Any) -> dict[str, Any] | None:
+    """Where a record's own content came from, for the "Sources" line on a page.
+
+    Edges carry provenance per assertion; the record itself only has its
+    MetaData evidence fields, which are not projected to RDF.
+    """
+    source = getattr(instance, "source", None) if getattr(instance, "source_id", None) else None
+    citation = (getattr(instance, "source_citation", "") or "").strip()
+    if source is None and not citation:
+        return None
+    return {
+        "name": getattr(source, "name", None),
+        "url": getattr(source, "url", None) or None,
+        "citation": citation or None,
+        "contributor": getattr(instance, "contributor", None) or None,
+        "status": getattr(instance, "status", None) or None,
+    }
 
 
 def enrich_museum_graph_nodes(
@@ -265,12 +324,14 @@ def enrich_museum_graph_nodes(
     """Mutate *nodes* in place: ORM geo/temporal/narrative/media + coordinate propagation."""
     from apps.graph.kg_engine.museum_media import media_bundle_for_resource
 
+    keys = [k for k in (parse_resource_uri(n.get("id")) for n in nodes.values()) if k]
+    instances = _load_instances(keys)
     for node in nodes.values():
         parsed = parse_resource_uri(node.get("id"))
         if not parsed:
             continue
         segment, pk = parsed
-        instance = _load_instance(segment, pk)
+        instance = instances.get(parsed)
         if instance is not None:
             if node.get("lat") is None or node.get("long") is None:
                 coords = coords_from_instance(instance)
@@ -280,6 +341,7 @@ def enrich_museum_graph_nodes(
                 hint = temporal_hint_from_instance(instance)
                 if hint:
                     node["inceptionYear"] = hint
+            node["recordSource"] = record_source(instance)
 
         bundle = media_bundle_for_resource(
             segment,
@@ -329,4 +391,4 @@ def enrich_museum_graph_nodes(
                 nodes[src]["lat"], nodes[src]["long"] = tgt_coords
                 changed = True
 
-    enrich_museum_cluster_identity(nodes)
+    enrich_museum_cluster_identity(nodes, instances)
