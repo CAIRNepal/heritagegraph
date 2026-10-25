@@ -134,6 +134,13 @@ export interface CorpusProvenance {
    */
   textAuthorship?: 'unrecorded' | 'sourced';
   textAuthorshipNote?: string;
+  /** Records frozen from the reviewed knowledge graph (scripts/freeze-kg-extension.ts). */
+  extension?: {
+    generatedBy?: string;
+    source?: string;
+    records?: number;
+    note?: string;
+  } | null;
 }
 
 // ── JSON-LD parser ─────────────────────────────────────────────────────────────
@@ -179,6 +186,12 @@ function parseJsonLd(raw: any): HeritageNode[] {
         }
       }
     }
+    // Records frozen from the knowledge graph keep the graph's own predicates.
+    if (Array.isArray(item['kgRelations'])) {
+      for (const r of item['kgRelations'] as { predicate: string; target: string }[]) {
+        relations.push({ predicate: r.predicate, targetId: r.target, targetLabel: idToLabel[r.target] });
+      }
+    }
 
     const nodeType = item['nodeType'] as NodeType;
     const typeCfg = NODE_TYPE_CONFIG[nodeType];
@@ -186,6 +199,8 @@ function parseJsonLd(raw: any): HeritageNode[] {
     nodes.push({
       id,
       label: item['label'] || id,
+      labelNe: item['labelNe'],
+      recordSource: item['recordSource'] ?? null,
       nodeType,
       cidocMapping: typeCfg?.cidocMapping ?? '',
       hgCategory: (typeCfg?.hgCategory ?? 'tangible') as HgCategory,
@@ -205,6 +220,7 @@ function parseJsonLd(raw: any): HeritageNode[] {
       period:        item['period'],
       lat:           item['lat'],
       long:          item['long'],
+      coordinateSource: item['coordinateSource'],
       wikipediaTitle:item['wikipediaTitle'],
       keyFacts:      item['keyFacts'],
       rituals:       item['rituals'],
