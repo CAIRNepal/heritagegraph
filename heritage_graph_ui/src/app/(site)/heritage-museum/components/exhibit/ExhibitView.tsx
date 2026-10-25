@@ -17,7 +17,6 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { EntityRecordPanel } from '@/components/records/EntityRecordPanel';
-import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import { isEquirectangular } from '@/lib/heritage-museum/panorama-support';
 import { isCuratedResourceIri, resourceIriToDetailHref } from '@/lib/provenance';
 import { provenanceTier } from '@/lib/heritage-museum/provenance-tier';
@@ -43,6 +42,8 @@ interface ExhibitViewProps {
   /** Live data only: pull this record's neighbours from the knowledge graph. */
   onExpand?: () => void;
   expanding?: boolean;
+  /** Switch to the map lens on this record; absent when it has no location. */
+  onShowOnMap?: () => void;
 }
 
 /**
@@ -50,7 +51,7 @@ interface ExhibitViewProps {
  * (never cropped, nothing printed over it), then a label — name, kind, date,
  * place, why it matters — then what can be verified, then the story.
  */
-export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onExpand, expanding }: ExhibitViewProps) {
+export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onExpand, expanding, onShowOnMap }: ExhibitViewProps) {
   const t = useTranslations('heritageMuseum');
   const tx = useTranslations('heritageMuseum.exhibit');
   const tp = useTranslations('heritageMuseum.panel');
@@ -64,7 +65,6 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
   const place = placeOf(connections);
   const unesco = unescoStatementForLabel(node.label);
   const detailHref = resourceIriToDetailHref(node.id);
-  const globeHref = node.lat != null && node.long != null ? atlasHrefForNode(node.id, dataSource) : null;
   // What the record rests on, not merely which graph it came from: most live
   // records are Wikidata imports, and "reviewed" would overstate them.
   const tier = dataSource === 'live' && isCuratedResourceIri(node.id) ? provenanceTier(node.recordSource) : null;
@@ -217,12 +217,10 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
               </Link>
             </Button>
           ) : null}
-          {globeHref ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={globeHref}>
-                <IconWorld className="size-3.5" aria-hidden />
-                {tp('viewOnGlobe')}
-              </Link>
+          {onShowOnMap ? (
+            <Button type="button" variant="outline" size="sm" onClick={onShowOnMap}>
+              <IconWorld className="size-3.5" aria-hidden />
+              {tp('viewOnGlobe')}
             </Button>
           ) : null}
           {onExpand ? (
