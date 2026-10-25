@@ -8,23 +8,12 @@ import { Chip, Eyebrow, Nepali, StoryContainer, StoryShell } from '@/components/
 import { StoryFigure } from '@/components/story/story-figure';
 import { StoryMap } from '@/components/story/story-map';
 import { useStoryGraph } from '@/hooks/use-story-graph';
-import type { KgRecordSource } from '@/lib/kg-graph';
+import { provenanceTier, wikidataIdIn } from '@/lib/heritage-museum/provenance-tier';
 import { buildStory, findRecordId, recordHref, storyHref } from '@/lib/stories/build-story';
 
 interface RecordClientProps {
   segment: string;
   pk: string;
-}
-
-const WIKIDATA_QID = /Wikidata (Q\d+)/;
-
-/** What a reader may rely on: imported, reviewed, legacy corpus, or pending. */
-function provenanceKind(src: KgRecordSource | null | undefined) {
-  if (!src) return null;
-  if (src.contributor === 'wikidata_import') return 'imported';
-  if (src.status === 'accepted' || src.status === 'merged') return 'reviewed';
-  if (src.status === 'pending_review') return 'inReview';
-  return 'curated';
 }
 
 export function RecordClient({ segment, pk }: RecordClientProps) {
@@ -48,9 +37,9 @@ export function RecordClient({ segment, pk }: RecordClientProps) {
 
   const { focus, stops } = story;
   const src = focus.node.recordSource;
-  const kind = provenanceKind(src);
+  const kind = provenanceTier(src);
   const citationLines = (src?.citation ?? '').split('\n').filter(Boolean);
-  const qid = (src?.citation ?? '').match(WIKIDATA_QID)?.[1];
+  const qid = wikidataIdIn(src?.citation);
   const threads = stops.map((s) => ({ stop: s, link: s.links[0], more: s.links.length - 1 }));
 
   return (
