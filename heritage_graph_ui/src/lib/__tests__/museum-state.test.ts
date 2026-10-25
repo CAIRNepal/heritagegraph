@@ -85,3 +85,16 @@ describe('devanagariLabel', () => {
     expect(devanagariLabel(undefined, 'x')).toBeUndefined();
   });
 });
+
+describe('provenanceTier', () => {
+  it('never calls an imported record community reviewed', async () => {
+    const { provenanceTier, wikidataIdIn } = await import('@/lib/heritage-museum/provenance-tier');
+    const src = (contributor: string | null, status: string | null) => ({ name: null, url: null, citation: null, contributor, status });
+    expect(provenanceTier(src('wikidata_import', 'accepted'))).toBe('imported');
+    expect(provenanceTier(src('editor@example.org', 'accepted'))).toBe('reviewed');
+    expect(provenanceTier(src(null, 'published'))).toBe('curated');
+    expect(provenanceTier(src('someone', 'pending_review'))).toBe('inReview');
+    expect(provenanceTier(null)).toBeNull();
+    expect(wikidataIdIn('Labels added from Wikidata Q301339 (revision 1)')).toBe('Q301339');
+  });
+});

@@ -20,6 +20,7 @@ import { EntityRecordPanel } from '@/components/records/EntityRecordPanel';
 import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import { isEquirectangular } from '@/lib/heritage-museum/panorama-support';
 import { isCuratedResourceIri, resourceIriToDetailHref } from '@/lib/provenance';
+import { provenanceTier } from '@/lib/heritage-museum/provenance-tier';
 import { unescoStatementForLabel } from '@/lib/unesco/status';
 import { cn } from '@/lib/utils';
 
@@ -64,7 +65,9 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
   const unesco = unescoStatementForLabel(node.label);
   const detailHref = resourceIriToDetailHref(node.id);
   const globeHref = node.lat != null && node.long != null ? atlasHrefForNode(node.id, dataSource) : null;
-  const reviewed = dataSource === 'live' && isCuratedResourceIri(node.id);
+  // What the record rests on, not merely which graph it came from: most live
+  // records are Wikidata imports, and "reviewed" would overstate them.
+  const tier = dataSource === 'live' && isCuratedResourceIri(node.id) ? provenanceTier(node.recordSource) : null;
   const lede = node.significance || (node.description !== node.storyText ? node.description : '');
 
   // 0: ~1280px version, 1: original upload, 2: no photograph.
@@ -168,10 +171,10 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
               : tUnesco('statusProperty', { year: unesco.year })}
           </p>
         ) : null}
-        {reviewed ? (
+        {tier ? (
           <p className="inline-flex items-center gap-1 text-xs font-medium text-primary">
-            <IconShieldCheck className="size-3.5" aria-hidden />
-            {tp('reviewedBadge')}
+            {tier === 'reviewed' ? <IconShieldCheck className="size-3.5" aria-hidden /> : null}
+            {tp(`tier.${tier}`)}
           </p>
         ) : null}
         {lede ? <p className="font-serif text-lg leading-normal text-foreground">{lede}</p> : null}
