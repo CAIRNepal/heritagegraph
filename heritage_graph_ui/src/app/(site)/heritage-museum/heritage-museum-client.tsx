@@ -125,15 +125,29 @@ export function HeritageMindMapClient() {
   );
   const periodCounts = useMemo(() => eraCounts(fullGraph?.nodes ?? [], { kind, q: searchQuery }), [fullGraph, kind, searchQuery]);
 
-  // The open record: the one asked for, else the first listed record that has
-  // a photograph, so the page never opens on an empty exhibit.
+  // Links per record, for choosing where the page opens.
+  const degree = useMemo(() => {
+    const d = new Map<string, number>();
+    const idOf = (x: string | GraphNode) => (typeof x === 'string' ? x : x.id);
+    for (const l of fullGraph?.links ?? []) {
+      d.set(idOf(l.source), (d.get(idOf(l.source)) ?? 0) + 1);
+      d.set(idOf(l.target), (d.get(idOf(l.target)) ?? 0) + 1);
+    }
+    return d;
+  }, [fullGraph]);
+
+  // The open record: the one asked for, else the best-connected record with a
+  // photograph, so a first visit lands where every lens has something to show
+  // rather than on whichever record sorts first.
   const selectedNode = useMemo<GraphNode | null>(() => {
     if (!fullGraph?.nodes.length) return null;
     const asked = selectedId ? fullGraph.nodes.find((n) => n.id === selectedId) : undefined;
     if (asked) return asked;
     const pool = visibleNodes.length ? visibleNodes : fullGraph.nodes;
-    return pool.find((n) => n.imageUrl || n.images?.length) ?? pool[0];
-  }, [fullGraph, selectedId, visibleNodes]);
+    const photographed = pool.filter((n) => n.imageUrl || n.images?.length);
+    const ranked = (photographed.length ? photographed : pool).slice().sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0));
+    return ranked[0] ?? null;
+  }, [fullGraph, selectedId, visibleNodes, degree]);
 
   const connections = useMemo(
     () => (selectedNode && fullGraph ? connectionsOf(selectedNode, fullGraph) : []),
