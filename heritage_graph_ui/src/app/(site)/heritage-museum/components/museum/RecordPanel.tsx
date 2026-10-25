@@ -157,10 +157,10 @@ export function RecordPanel({
   const rest = connections.filter((x) => !here.includes(x));
   const linkedLocated = connections.some((x) => placeById.has(x.other.id));
   const ref = isCuratedResourceIri(node.id) ? recordRef(node.id) : null;
-  const storyHref = source === 'live' && ref && connections.length >= 2 ? `/stories/${ref.segment}/${ref.pk}` : null;
+  const storyHref = ref && connections.length >= 2 ? `/stories/${ref.segment}/${ref.pk}` : null;
   const detailHref = resourceIriToDetailHref(node.id);
   const lede = node.significance || node.description;
-  const tier = source === 'live' ? provenanceTier(node.recordSource) : null;
+  const tier = provenanceTier(node.recordSource);
   const qid = wikidataIdIn(node.recordSource?.citation);
 
   const distanceTo = (other: GraphNode) => {
@@ -365,7 +365,7 @@ export function RecordPanel({
       ) : null}
 
       <Section id="rp-sources" title={tr('sources')}>
-        {source === 'demo' ? (
+        {source === 'demo' && !node.recordSource ? (
           <p className="text-[13px] leading-relaxed">{tr('demoSources')}</p>
         ) : node.recordSource ? (
           <div className="grid gap-1 text-[13px]">

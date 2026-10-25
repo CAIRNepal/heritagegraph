@@ -67,7 +67,7 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
   const detailHref = resourceIriToDetailHref(node.id);
   // What the record rests on, not merely which graph it came from: most live
   // records are Wikidata imports, and "reviewed" would overstate them.
-  const tier = dataSource === 'live' && isCuratedResourceIri(node.id) ? provenanceTier(node.recordSource) : null;
+  const tier = isCuratedResourceIri(node.id) ? provenanceTier(node.recordSource) : null;
   const lede = node.significance || (node.description !== node.storyText ? node.description : '');
 
   // 0: ~1280px version, 1: original upload, 2: no photograph.
