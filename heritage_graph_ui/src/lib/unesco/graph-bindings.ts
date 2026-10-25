@@ -37,11 +37,11 @@ export function museumHref(subjectKey: string): string {
   return `/heritage-museum?source=demo&node=${encodeURIComponent(node)}`;
 }
 
-/** Atlas URL for a subject; falls back to the atlas entry state. */
+/** The subject on the museum's map lens; falls back to the map of the whole collection. */
 export function atlasHref(subjectKey: string): string {
   const node = DEMO_CORPUS_NODE[subjectKey];
-  if (!node) return '/atlas';
-  return `/atlas?source=demo&selected=${encodeURIComponent(node)}`;
+  if (!node) return '/heritage-museum?lens=map';
+  return `/heritage-museum?source=demo&node=${encodeURIComponent(node)}&lens=map`;
 }
 
 /** True when the subject resolves to a specific record rather than a surface. */

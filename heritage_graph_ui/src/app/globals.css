@@ -447,3 +447,36 @@
 .atlas-pick { display: grid; gap: 2px; min-width: 12rem; }
 .atlas-pick button { text-align: left; font: 500 13px/1.3 var(--font-sans); color: var(--foreground); background: none; border: 0; border-radius: 6px; padding: 6px 8px; cursor: pointer; }
 .atlas-pick button:hover, .atlas-pick button:focus-visible { background: var(--muted); }
+
+/* Stories: the paper, ink and signal red of the storytelling pages. Hairline
+   rules and square corners come from the layout, not from extra tokens. */
+:root {
+  --story-paper: #f2f1ee;
+  --story-panel: #e9e8e4;
+  --story-ink: #1b1b1a;
+  --story-ink-soft: #55534e;
+  --story-rule: #1b1b1a;
+  --story-rule-soft: #cfcdc7;
+  --story-accent: #c4321a; /* 4.9:1 on paper, 5.1:1 under paper-white text */
+  --story-accent-ink: #fbf6f4;
+}
+.dark {
+  --story-paper: #151514;
+  --story-panel: #1e1e1c;
+  --story-ink: #ecebe7;
+  --story-ink-soft: #a9a7a0;
+  --story-rule: #ecebe7;
+  --story-rule-soft: #3a3936;
+  --story-accent: #ff6a4a;
+  --story-accent-ink: #1b0d09;
+}
+@theme inline {
+  --color-story-paper: var(--story-paper);
+  --color-story-panel: var(--story-panel);
+  --color-story-ink: var(--story-ink);
+  --color-story-ink-soft: var(--story-ink-soft);
+  --color-story-rule: var(--story-rule);
+  --color-story-rule-soft: var(--story-rule-soft);
+  --color-story-accent: var(--story-accent);
+  --color-story-accent-ink: var(--story-accent-ink);
+}

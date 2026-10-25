@@ -297,6 +297,24 @@ def _label_literal(text: str) -> tuple[str, str]:
     return (text, f"@{lang}") if lang else (text, "")
 
 
+def _language_labels(instance: Any, label: str) -> tuple[tuple[str, str], list[tuple[str, str]]]:
+    """The main label and any further per-language labels a record carries.
+
+    `labels` holds labels whose language is known (authority imports). When the
+    record's name is its English label it is tagged @en, not the corpus default:
+    "Pashupatinath Temple" is English, not romanised Nepali.
+    """
+    labels = {
+        str(k): str(v).strip()
+        for k, v in (getattr(instance, "labels", None) or {}).items()
+        if v and str(v).strip()
+    }
+    main_lang = next((lang for lang, text in labels.items() if text == label), None)
+    main = (label, f"@{main_lang}") if main_lang else _label_literal(label)
+    others = [(text, f"@{lang}") for lang, text in sorted(labels.items()) if lang != main_lang]
+    return main, others
+
+
 def _triple_to_line(t: _Triple) -> str:
     sub = f"<{t.subj}>"
     pred = f"<{t.pred}>"
@@ -505,10 +523,13 @@ def tripleset_for_metadata_instance(
     subj_uri = resource_uri_fn(instance)
     label = label_fn(instance)
 
-    label_lit = _label_literal(label)
+    label_lit, other_labels = _language_labels(instance, label)
     triples: list[_Triple] = [
         _Triple(subj_uri, RDF_PREFIXES["rdfs"] + "label", None, label_lit)
     ]
+    triples.extend(
+        _Triple(subj_uri, RDF_PREFIXES["rdfs"] + "label", None, lit) for lit in other_labels
+    )
     managed: set[str] = {RDF_PREFIXES["rdfs"] + "label"}
 
     ck = registry_class_key_for_model(instance.__class__)
@@ -530,7 +551,7 @@ def tripleset_for_metadata_instance(
 
         extras_no_dup_label: list[_Triple] = []
         for t in extra:
-            if t.pred == RDF_PREFIXES["rdfs"] + "label" and t.literal == label_lit:
+            if t.pred == RDF_PREFIXES["rdfs"] + "label" and t.literal and t.literal[0] == label:
                 continue
             extras_no_dup_label.append(t)
 

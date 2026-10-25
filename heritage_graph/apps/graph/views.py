@@ -47,9 +47,14 @@ def _resource_uri_from_ct(content_type, pk) -> str | None:
 
 
 def _assertion_provenance_map() -> dict[tuple[str, str, str], dict]:
-    """(subjectIRI, predicateLocal, objectIRI) → provenance, from accepted relationship.*
-    assertions (the system of record). Lets every KG edge cite who/why/confidence/when."""
+    """(subjectIRI, predicateIRI, objectIRI) → provenance, from accepted relationship.*
+    assertions (the system of record). Lets every KG edge cite who/why/confidence/when.
+
+    Keyed on the published predicate IRI, not the code: an ontology-slot code
+    publishes under its slot_uri (`has_current_location` →
+    `crm:P55_has_current_location`), so a code key never matched those edges."""
     from apps.cidoc_data.models import HeritageAssertion
+    from apps.graph.kg_engine.uris import relationship_predicate_uri
 
     out: dict[tuple[str, str, str], dict] = {}
     qs = HeritageAssertion.objects.filter(
@@ -61,10 +66,10 @@ def _assertion_provenance_map() -> dict[tuple[str, str, str], dict]:
         o = _resource_uri_from_ct(a.object_content_type, a.object_object_id)
         if not s or not o:
             continue
-        pred = a.asserted_property[len("relationship.") :]
+        pred = relationship_predicate_uri(a.asserted_property)
         out[(s, pred, o)] = {
-            "source": (getattr(a.source, "title", None) if a.source_id else None)
-            or (a.source_citation or None),
+            "source": (a.source.name if a.source_id else None) or (a.source_citation or None),
+            "citation": a.source_citation or None,
             "confidence": a.confidence or None,
             "confidenceScore": float(a.confidence_score)
             if a.confidence_score is not None
@@ -174,7 +179,7 @@ class KnowledgeGraphGraphView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, *args, **kwargs):
-        node_limit = min(int(request.query_params.get("node_limit") or 600), 2000)
+        node_limit = min(int(request.query_params.get("node_limit") or 2000), 5000)
         edge_limit = min(int(request.query_params.get("edge_limit") or 3000), 10000)
         # Default to the curated graph: a public/unauthenticated request only ever
         # sees reviewed data. scope=all (every typed entity, incl. draft/pending/
@@ -208,6 +213,7 @@ class KnowledgeGraphGraphView(APIView):
                     "id": iri,
                     "types": [],
                     "label": None,
+                    "labels": {},
                     "comment": None,
                     "lat": None,
                     "long": None,
@@ -224,8 +230,8 @@ class KnowledgeGraphGraphView(APIView):
             type_iri = row.get("type")
             if type_iri and type_iri not in node["types"]:
                 node["types"].append(type_iri)
-            if not node["label"] and row.get("label"):
-                node["label"] = row["label"]
+            if row.get("label"):
+                node["labels"].setdefault((row.get("labelLang") or "").lower(), row["label"])
             if not node["comment"] and row.get("comment"):
                 node["comment"] = row["comment"]
             if not node["comment"] and row.get("crmNote"):
@@ -249,10 +255,14 @@ class KnowledgeGraphGraphView(APIView):
             if not node.get("externalUri") and row.get("external"):
                 node["externalUri"] = row.get("external")
 
-        # Fall back to the IRI local name when a resource carries no rdfs:label.
+        # Display label: English, then the romanised corpus default, then any;
+        # the IRI local name only when a resource carries no rdfs:label.
         for node in nodes.values():
-            if not node["label"]:
-                node["label"] = _local_name(node["id"])
+            labels = node["labels"]
+            node["label"] = next(
+                (labels[k] for k in ("en", "ne-latn", "") if labels.get(k)),
+                next(iter(labels.values()), None),
+            ) or _local_name(node["id"])
 
         if include_lux and excluded:
             curated_ids = {
@@ -304,7 +314,7 @@ class KnowledgeGraphGraphView(APIView):
             if s not in node_ids or o not in node_ids:
                 continue
             p_local = _local_name(p)
-            prov = provenance.get((s, p_local, o))
+            prov = provenance.get((s, p, o))
             if prov:
                 edges_with_prov += 1
             edges.append(

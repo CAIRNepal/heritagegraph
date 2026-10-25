@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { ERAS, eraOf, type AtlasPlace, type EraId } from '@/lib/heritage-atlas/atlas-model';
+import { ERAS, eraOf, type AtlasPlace } from '@/lib/heritage-atlas/atlas-model';
 import { NODE_TYPE_CONFIG } from '@/app/(site)/heritage-museum/heritage-data';
 import { cn } from '@/lib/utils';
 
@@ -82,48 +82,6 @@ export function MapControls({ onExtent, basemap, onBasemap, colorBy, onColorBy, 
           ))}
         </ul>
         </div>
-      </div>
-    </div>
-  );
-}
-
-interface EraBarProps {
-  counts: Record<EraId, number>;
-  era: EraId | null;
-  onEra: (e: EraId | null) => void;
-  shown: number;
-}
-
-/** Periods with their dates and counts; pick one to show only its places. */
-export function EraBar({ counts, era, onEra, shown }: EraBarProps) {
-  const { t, eraName, eraSpan } = useAtlasWords();
-  return (
-    <div role="group" aria-labelledby="atlas-when" className="grid gap-2 border-t border-border bg-card px-3.5 pt-2.5 pb-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 text-xs text-muted-foreground">
-        <span id="atlas-when">
-          <b className="font-medium text-foreground">{t('whenTitle')}</b> · {t('whenHint')}
-        </span>
-        <span aria-live="polite">{era ? t('periodPlaces', { count: shown, period: eraName(era) }) : t('allPeriods', { count: shown })}</span>
-      </div>
-      {/* One scrolling row on phones, so the bar does not eat the map's height. */}
-      <div className="-mx-3.5 flex gap-1.5 overflow-x-auto px-3.5 pb-0.5 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
-        {ERAS.map((e) => (
-          <button
-            key={e.id}
-            type="button"
-            aria-pressed={era === e.id}
-            disabled={!counts[e.id]}
-            onClick={() => onEra(era === e.id ? null : e.id)}
-            className={cn(
-              'inline-flex min-h-9 shrink-0 cursor-pointer items-center gap-2 rounded-[10px] border px-2.5 py-1.5 text-[13px] whitespace-nowrap disabled:cursor-default disabled:opacity-45',
-              era === e.id ? 'border-foreground bg-foreground text-background' : 'border-border bg-background text-foreground hover:border-muted-foreground',
-            )}
-          >
-            {eraName(e.id)}
-            <span className={cn('text-[11.5px]', era === e.id ? 'opacity-75' : 'text-muted-foreground')}>{eraSpan(e.id)}</span>
-            <span className={cn('text-xs tabular-nums', era === e.id ? 'opacity-75' : 'text-muted-foreground')}>{counts[e.id]}</span>
-          </button>
-        ))}
       </div>
     </div>
   );
