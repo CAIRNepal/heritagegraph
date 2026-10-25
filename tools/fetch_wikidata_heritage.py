@@ -113,6 +113,11 @@ def qid(uri: str) -> str:
     return uri.rsplit("/", 1)[-1]
 
 
+def in_nepal(coord: dict) -> bool:
+    """Nepal's bounding box, with a small margin for border sites."""
+    return 26.2 <= coord["lat"] <= 30.6 and 79.9 <= coord["lon"] <= 88.4
+
+
 def fetch_entities(ids: list[str]) -> dict[str, dict]:
     out: dict[str, dict] = {}
     ids = sorted(set(ids))
@@ -305,7 +310,9 @@ def main() -> int:
     keys = classify(set(entities))
     keys.update(primary)  # seeds and sweeps keep the key they were listed under
     # A place outside Nepal (a Bihar district, the British Raj) is only reached
-    # through a stray statement; leave it out so no edge points at it.
+    # through a stray statement; leave it out so no edge points at it. The same
+    # goes for anything whose own coordinates lie outside Nepal: "108 Divya
+    # desams" is a set of temples in India that lists Nepal as a country.
     for q, e in entities.items():
         if (
             keys.get(q) == "location"
@@ -313,6 +320,8 @@ def main() -> int:
             and NEPAL not in e["country"]
             and q not in seed_keys
         ):
+            keys[q] = None
+        if keys.get(q) and q not in seed_keys and e.get("coord") and not in_nepal(e["coord"]):
             keys[q] = None
     for q, e in entities.items():
         e["key"] = keys.get(q)
