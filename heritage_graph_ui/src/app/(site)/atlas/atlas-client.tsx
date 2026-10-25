@@ -19,6 +19,7 @@ import { useTranslations } from 'next-intl';
 import { IconX } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { connectionsOf } from '@/app/(site)/heritage-museum/components/exhibit/exhibit-utils';
 import { RailControls } from '@/app/(site)/heritage-museum/components/exhibit/RailControls';
@@ -52,18 +53,6 @@ const WIDE_QUERY = '(min-width: 1280px)';
 const NEARBY_KM = 15;
 const REGION_TYPES = new Set(['Place', 'Settlement']);
 
-function useMedia(query: string): boolean {
-  const [match, setMatch] = useState(true);
-  useEffect(() => {
-    const mql = window.matchMedia(query);
-    const sync = () => setMatch(mql.matches);
-    sync();
-    mql.addEventListener('change', sync);
-    return () => mql.removeEventListener('change', sync);
-  }, [query]);
-  return match;
-}
-
 interface ReliefFile extends ReliefMeta {
   elevation: { nepal: ElevationGrid; valley: ElevationGrid };
 }
@@ -74,8 +63,8 @@ export default function AtlasClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const collection = useHeritageCollection();
-  const railColumn = useMedia(RAIL_QUERY);
-  const wide = useMedia(WIDE_QUERY);
+  const railColumn = useMediaQuery(RAIL_QUERY);
+  const wide = useMediaQuery(WIDE_QUERY);
   const bootstrapped = useRef(false);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);

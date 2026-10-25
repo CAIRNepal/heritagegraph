@@ -9,6 +9,7 @@ import { IconX } from '@tabler/icons-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { attachRelations, kgNeighborhoodToGraph } from '@/lib/heritage-museum/live-graph';
 import { enrichMuseumGraph } from '@/lib/heritage-museum/museum-graph';
@@ -37,18 +38,6 @@ const EMPTY: GraphData = { nodes: [], links: [] };
 const VIEW_FOR_LENS: Record<LensKind, string> = { map: 'map', graph: '2d', timeline: 'timeline' };
 const LENS_FOR_VIEW: Record<string, LensKind> = { map: 'map', '2d': 'graph', timeline: 'timeline' };
 
-function useMedia(query: string): boolean {
-  const [match, setMatch] = useState(true);
-  useEffect(() => {
-    const mql = window.matchMedia(query);
-    const sync = () => setMatch(mql.matches);
-    sync();
-    mql.addEventListener('change', sync);
-    return () => mql.removeEventListener('change', sync);
-  }, [query]);
-  return match;
-}
-
 /**
  * The Heritage Museum: one exhibit page.
  *
@@ -64,8 +53,8 @@ export function HeritageMindMapClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bootstrappedRef = useRef(false);
-  const wide = useMedia(WIDE_QUERY);
-  const railColumn = useMedia(RAIL_QUERY);
+  const wide = useMediaQuery(WIDE_QUERY);
+  const railColumn = useMediaQuery(RAIL_QUERY);
 
   const collection = useHeritageCollection();
   const { source: dataSource, graph: fullGraph, loading, error, liveLoading, liveError, liveGraph, setLiveGraph, retryLive: retryLiveData, datasetMeta } = { ...collection, liveGraph: collection.source === 'live' ? collection.graph : null };
