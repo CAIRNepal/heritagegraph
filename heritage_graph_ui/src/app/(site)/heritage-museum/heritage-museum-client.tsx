@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { IconRoute } from '@tabler/icons-react';
+import { IconLayoutSidebarLeftExpand, IconRoute } from '@tabler/icons-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -495,12 +495,20 @@ export function HeritageMindMapClient() {
         <div className="grid min-h-0 grid-rows-[auto_minmax(0,1fr)]">
           <div className="flex flex-wrap items-center gap-2 border-b border-story-rule px-3 py-2 sm:px-4">
             {!railColumn ? (
-              <Button type="button" variant="outline" size="sm" onClick={() => setRailOpen(true)}>
-                {tx('browseCollection')}
-              </Button>
+              <button
+                type="button"
+                onClick={() => setRailOpen(true)}
+                aria-label={tx('browseCollection')}
+                className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 border border-story-rule px-2.5 text-sm font-semibold hover:bg-story-panel"
+              >
+                <IconLayoutSidebarLeftExpand className="size-4" aria-hidden />
+                <span className="hidden sm:inline">{tx('browseCollection')}</span>
+              </button>
             ) : null}
             <LensTabs lens={lens} onLens={setLens} counts={lensCounts} />
-            <span className="ml-auto flex items-center gap-3">
+            {/* Position and shortcuts are for wide, keyboard screens; on a phone
+                they pushed the stage down by a whole row. */}
+            <span className="ml-auto hidden items-center gap-3 sm:flex">
               {index >= 0 ? (
                 <span className="text-xs text-story-ink-soft tabular-nums">
                   {tl('position', { k: index + 1, n: visibleNodes.length })}
