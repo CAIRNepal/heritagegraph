@@ -38,6 +38,9 @@ UA = {
 }
 
 LANGS = ["en", "ne", "new"]
+# Wikidata has Latin-script junk under "ne" ("gaijatra" on Pratap Malla).
+DEVANAGARI_LANGS = {"ne", "new"}
+DEVANAGARI = re.compile("[\u0900-\u097F]")
 NEPAL = "Q837"
 
 # Statements the importer turns into edges or fields. Everything else is dropped.
@@ -160,7 +163,11 @@ def compact(entity: dict) -> dict:
     claims = {p: item_targets(entity, p) for p in EDGE_PROPS}
     claims = {p: v for p, v in claims.items() if v}
     rec = {
-        "labels": {k: v["value"] for k, v in entity.get("labels", {}).items()},
+        "labels": {
+            k: v["value"]
+            for k, v in entity.get("labels", {}).items()
+            if k not in DEVANAGARI_LANGS or DEVANAGARI.search(v["value"])
+        },
         "descriptions": {
             k: v["value"] for k, v in entity.get("descriptions", {}).items()
         },

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -78,6 +79,11 @@ EDGE_RULES: dict[tuple[str, str, str], str] = {
 # Single-valued slots take the first statement, preferring the earlier property.
 SINGLE_VALUED = {"has_current_location", "took_place_at", "is_component_of"}
 PROPERTY_PREFERENCE = ["P276", "P131", "P706"]
+
+# A Nepali or Nepal Bhasa label must be in Devanagari; Wikidata carries a few
+# Latin-script values under "ne" that are not labels at all.
+DEVANAGARI_LANGS = {"ne", "new"}
+DEVANAGARI = re.compile("[\u0900-\u097F]")
 
 TEMPLE_CLASSES = {"Q44539", "Q842402", "Q5393308", "Q697295", "Q1088552"}
 STUPA_CLASSES = {"Q180987"}
@@ -310,7 +316,11 @@ def upsert_entities(
             continue
         iri = WD + qid
         fields = _fields_for(key, ent, seeds.get(qid, {}))
-        labels = {k: v for k, v in (ent.get("labels") or {}).items() if v}
+        labels = {
+            k: v
+            for k, v in (ent.get("labels") or {}).items()
+            if v and (k not in DEVANAGARI_LANGS or DEVANAGARI.search(v))
+        }
         image = media.get(ent.get("image") or "")
         evidence = {
             "status": "accepted",

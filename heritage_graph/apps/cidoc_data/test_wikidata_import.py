@@ -56,7 +56,9 @@ SNAPSHOT = {
         "Q3": _ent("deity", "Siddhi Lakshmi", role="neighbour"),
         "Q4": _ent("festival", "Biska Jatra", "बिस्का जात्रा", claims={"P276": ["Q2"]}),
         # Two different temples that share a name must stay two records.
-        "Q5": _ent("structure", "Manakamana Temple", role="sweep"),
+        "Q5": _ent(
+            "structure", "Manakamana Temple", "Manakamana of Tumlingtar", role="sweep"
+        ),
         "Q6": _ent("structure", "Manakamana Temple", role="sweep"),
         "Q7": _ent(None, "Newar people", role="neighbour"),
     },
@@ -121,6 +123,11 @@ class WikidataImportTests(TestCase):
         # "has part" from a temple to a town has no HeritageGraph reading.
         self.assertEqual(report.skipped.get("edge:no_rule:structure-P527-location"), 1)
         self.assertEqual(report.skipped.get("entity:unclassified"), 1)
+
+    def test_latin_script_nepali_label_is_dropped(self):
+        self._run()
+        rows = ArchitecturalStructure.objects.filter(name="Manakamana Temple")
+        self.assertTrue(all("ne" not in r.labels for r in rows))
 
     def test_same_name_items_are_not_merged(self):
         self._run()
