@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { IconDownload, IconInfoCircle, IconLoader2 } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { DatasetMeta } from '@/lib/provenance';
 
@@ -37,14 +38,31 @@ export function RailControls({
   const [copied, setCopied] = useState(false);
 
   return (
-    <div className="grid gap-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-      <p className="leading-snug">
+    <div className="grid gap-2 border border-story-rule px-3 py-2.5 text-xs">
+      {/* Which collection is showing is the first thing a reader must know:
+          a two-way switch, never a sentence with a link hidden in it. */}
+      <div role="radiogroup" aria-label={t('dataSource.label')} className="grid grid-cols-2 border border-story-rule text-[12.5px] font-semibold">
+        {(['live', 'demo'] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            role="radio"
+            aria-checked={dataSource === s}
+            disabled={liveLoading}
+            onClick={() => dataSource !== s && onSwitchSource()}
+            className={cn(
+              'cursor-pointer px-2 py-1.5 first:border-r first:border-story-rule disabled:opacity-60',
+              dataSource === s ? 'bg-story-ink text-story-paper' : 'hover:bg-story-panel',
+            )}
+          >
+            {s === 'live' ? t('dataSource.live') : t('dataSource.demo')}
+          </button>
+        ))}
+      </div>
+      <p className="leading-snug text-story-ink-soft">
         {dataSource === 'demo' ? t('demoBanner', { count: demoCount }) : t('exhibit.liveSourceLine')}
       </p>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <button type="button" onClick={onSwitchSource} disabled={liveLoading} className="cursor-pointer font-medium text-primary hover:underline disabled:opacity-60">
-          {dataSource === 'demo' ? t('demoBannerAction') : t('errors.showDemo')}
-        </button>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-story-ink-soft">
         {liveLoading ? (
           <span className="inline-flex items-center gap-1" role="status">
             <IconLoader2 className="size-3.5 motion-safe:animate-spin" aria-hidden />
@@ -53,7 +71,7 @@ export function RailControls({
         ) : null}
         <Popover>
           <PopoverTrigger asChild>
-            <Button type="button" variant="link" className="h-auto gap-1 p-0 text-xs text-muted-foreground hover:text-foreground" aria-label={t('methods.title')}>
+            <Button type="button" variant="link" className="h-auto gap-1 p-0 text-xs text-story-ink-soft hover:text-story-ink" aria-label={t('methods.title')}>
               <IconInfoCircle className="size-3.5" aria-hidden />
               {t('methods.buttonLabel')}
             </Button>
@@ -73,7 +91,7 @@ export function RailControls({
           </PopoverContent>
         </Popover>
         {onExportJson ? (
-          <Button type="button" variant="link" className="h-auto gap-1 p-0 text-xs text-muted-foreground hover:text-foreground" onClick={onExportJson} aria-label={t('export.jsonAria')}>
+          <Button type="button" variant="link" className="h-auto gap-1 p-0 text-xs text-story-ink-soft hover:text-story-ink" onClick={onExportJson} aria-label={t('export.jsonAria')}>
             <IconDownload className="size-3.5" aria-hidden />
             {t('export.json')}
           </Button>
