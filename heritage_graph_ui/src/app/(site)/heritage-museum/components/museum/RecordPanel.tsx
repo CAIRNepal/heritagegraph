@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { IconBook2, IconExternalLink, IconRoute } from '@tabler/icons-react';
 
-import { Eyebrow, Nepali } from '@/components/story/story-chrome';
+import { Button } from '@/components/ui/button';
 import { useAtlasWords } from '@/app/(site)/atlas/components/atlas-words';
 import { distanceKm, eraOf, roundAltitude, type AtlasPlace } from '@/lib/heritage-atlas/atlas-model';
 import { provenanceTier, wikidataIdIn } from '@/lib/heritage-museum/provenance-tier';
@@ -63,9 +63,9 @@ interface RecordPanelProps {
 
 function Section({ id, title, action, children }: { id: string; title: string; action?: ReactNode; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="grid gap-2.5 border-t border-story-rule pt-3">
+    <section aria-labelledby={id} className="grid gap-2.5 rounded-xl border border-border bg-card px-3.5 py-3">
       <div className="flex items-baseline justify-between gap-2">
-        <h3 id={id} className="text-[11px] font-bold tracking-[0.14em] text-story-ink uppercase">
+        <h3 id={id} className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
           {title}
         </h3>
         {action}
@@ -77,8 +77,8 @@ function Section({ id, title, action, children }: { id: string; title: string; a
 
 function LensLink({ onClick, children }: { onClick: () => void; children: ReactNode }) {
   return (
-    <button type="button" onClick={onClick} className="cursor-pointer text-xs font-semibold text-story-accent underline-offset-4 hover:underline">
-      {children} →
+    <button type="button" onClick={onClick} className="cursor-pointer py-1 text-[12.5px] font-medium text-primary hover:underline">
+      {children}
     </button>
   );
 }
@@ -92,7 +92,7 @@ function Photo({ node }: { node: GraphNode }) {
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
   if (!original || stage >= 2) {
     return (
-      <figure className="m-0 grid aspect-[3/2] place-items-center gap-1.5 border border-story-rule bg-story-panel text-xs text-story-ink-soft">
+      <figure className="m-0 grid aspect-[3/2] place-items-center gap-1.5 rounded-xl border border-border bg-muted text-[12.5px] text-muted-foreground">
         <span className="grid size-8 place-items-center rounded-full" style={{ background: cfg?.color }}>
           <NodeGlyph nodeType={node.nodeType} size={16} color="var(--node-glyph)" />
         </span>
@@ -101,19 +101,19 @@ function Photo({ node }: { node: GraphNode }) {
     );
   }
   return (
-    <figure className="m-0 border border-story-rule bg-story-panel">
-      <div className="flex justify-center">
+    <figure className="m-0 overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex justify-center bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element -- remote, credited per file */}
         <img
           key={stage}
           src={stage === 0 ? sizedImage(original, 800) : original}
           alt={tx('photoAlt', { name: node.label })}
           onError={() => setStage((s) => s + 1)}
-          className="block h-auto max-h-[240px] w-auto max-w-full object-contain"
+          className="block h-auto max-h-[260px] w-auto max-w-full object-contain"
         />
       </div>
       {credit ? (
-        <figcaption className="border-t border-story-rule px-2.5 py-1.5">
+        <figcaption className="border-t border-border px-3 py-1.5">
           <ImageAttribution credit={credit} variant="onSurface" className="text-[11px]" />
         </figcaption>
       ) : null}
@@ -179,18 +179,18 @@ export function RecordPanel({
         <button
           type="button"
           onClick={() => onSelect(x.other)}
-          className="grid w-full cursor-pointer grid-cols-[34px_minmax(0,1fr)] items-center gap-2.5 px-1 py-1.5 text-left hover:bg-story-panel"
+          className="grid w-full cursor-pointer grid-cols-[34px_minmax(0,1fr)] items-center gap-2.5 rounded-lg px-1 py-1.5 text-left hover:bg-background"
         >
           <RecordThumb node={x.other} size="sm" />
           <span className="min-w-0">
-            <span className="block text-[11.5px] text-story-accent">{words.relation(x)}</span>
-            <span className="block text-[13.5px] leading-tight font-semibold">{x.other.label}</span>
+            <span className="block text-[11.5px] text-muted-foreground">{words.relation(x)}</span>
+            <span className="block text-[13.5px] leading-tight font-medium text-foreground">{x.other.label}</span>
             {x.other.labelNe ? (
               <span lang="ne" className="block font-devanagari text-xs">
                 {x.other.labelNe}
               </span>
             ) : null}
-            <span className="block text-[11px] text-story-ink-soft">
+            <span className="block text-[11px] text-muted-foreground">
               {[d, source === 'live' && p?.source ? tp('provSource', { value: p.source }) : null].filter(Boolean).join(' · ')}
             </span>
           </span>
@@ -200,27 +200,24 @@ export function RecordPanel({
   };
 
   return (
-    <div className="grid content-start gap-4 text-story-ink">
+    <div className="grid content-start gap-3.5 text-foreground">
       {tour ? (
-        <div role="group" aria-label={ta('tourTitle')} className="grid gap-2 border border-story-accent bg-story-paper px-3 py-2.5">
-          <p className="text-[12.5px]">
-            <b className="font-semibold text-story-accent">{ta('tourTitle')}</b> · {ta('tourStop', { k: tour.k + 1, n: tour.n })}
-          </p>
-          <div className="flex flex-wrap gap-1.5 text-sm font-semibold">
-            <button type="button" onClick={tour.onPrev} disabled={tour.k === 0} className="cursor-pointer border border-story-rule px-2.5 py-1 disabled:opacity-40">
-              ← {ta('tourPrev')}
-            </button>
-            <button
-              type="button"
-              onClick={tour.onNext}
-              disabled={tour.k === tour.n - 1}
-              className="cursor-pointer bg-story-accent px-2.5 py-1 text-story-accent-ink disabled:opacity-40"
-            >
-              {ta('tourNext')} →
-            </button>
-            <button type="button" onClick={tour.onEnd} className="ml-auto cursor-pointer px-1 underline underline-offset-4">
+        <div role="group" aria-label={ta('tourTitle')} className="grid gap-2 rounded-xl border border-primary bg-card px-3 py-2.5">
+          <div className="flex items-center justify-between gap-2 text-[12.5px]">
+            <span>
+              <b className="font-semibold text-primary">{ta('tourTitle')}</b> · {ta('tourStop', { k: tour.k + 1, n: tour.n })}
+            </span>
+            <Button type="button" variant="outline" size="sm" onClick={tour.onEnd}>
               {ta('tourEnd')}
-            </button>
+            </Button>
+          </div>
+          <div className="flex gap-1.5">
+            <Button type="button" variant="outline" size="sm" onClick={tour.onPrev} disabled={tour.k === 0}>
+              ← {ta('tourPrev')}
+            </Button>
+            <Button type="button" size="sm" onClick={tour.onNext} disabled={tour.k === tour.n - 1}>
+              {ta('tourNext')} →
+            </Button>
           </div>
         </div>
       ) : null}
@@ -228,45 +225,52 @@ export function RecordPanel({
       {lens !== 'exhibit' ? (
         <div className="grid gap-2.5">
           <Photo node={node} />
-          <div className="grid gap-1">
-            <Eyebrow>
-              {cfg?.label}
-              {y != null ? ` · ${words.year(y)}` : ''}
-            </Eyebrow>
-            <h2 className="text-[1.65rem] leading-[1.05] font-extrabold tracking-tight">{node.label}</h2>
-            {node.labelNe ? <Nepali className="text-base">{node.labelNe}</Nepali> : null}
-            {lede ? <p className="pt-1 text-sm leading-relaxed">{lede}</p> : null}
+          <div className="grid gap-1.5">
+            <h2 className="font-serif text-[1.75rem] leading-[1.08] text-foreground">{node.label}</h2>
+            {node.labelNe ? (
+              <p lang="ne" className="font-devanagari text-base text-foreground">
+                {node.labelNe}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[13.5px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                <span className="size-[9px] rounded-full" style={{ background: cfg?.color }} aria-hidden />
+                {cfg?.label}
+              </span>
+              {y != null ? <span>{words.year(y)}</span> : null}
+            </div>
+            {lede ? <p className="font-serif text-base leading-normal text-foreground">{lede}</p> : null}
           </div>
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2 text-sm font-semibold">
+      <div className="flex flex-wrap gap-2">
         {lens !== 'exhibit' ? (
-          <button type="button" onClick={() => onLens('exhibit')} className="cursor-pointer bg-story-ink px-3 py-1.5 text-story-paper hover:brightness-125">
+          <Button type="button" size="sm" onClick={() => onLens('exhibit')}>
             {tr('openExhibit')}
-          </button>
+          </Button>
         ) : null}
         {storyHref ? (
-          <Link href={storyHref} className="inline-flex items-center gap-1.5 bg-story-accent px-3 py-1.5 text-story-accent-ink hover:brightness-110">
-            <IconBook2 className="size-4" aria-hidden />
-            {tr('readStory')}
-          </Link>
+          <Button asChild variant="outline" size="sm">
+            <Link href={storyHref}>
+              <IconBook2 className="size-3.5" aria-hidden />
+              {tr('readStory')}
+            </Link>
+          </Button>
         ) : null}
         {linkedLocated ? (
-          <button
-            type="button"
-            onClick={onShowConnectionsOnMap}
-            className="inline-flex cursor-pointer items-center gap-1.5 border border-story-rule px-3 py-1.5 hover:bg-story-panel"
-          >
-            <IconRoute className="size-4" aria-hidden />
+          <Button type="button" variant="outline" size="sm" onClick={onShowConnectionsOnMap}>
+            <IconRoute className="size-3.5" aria-hidden />
             {ta('showConnections')}
-          </button>
+          </Button>
         ) : null}
         {detailHref ? (
-          <Link href={detailHref} className="inline-flex items-center gap-1.5 border border-story-rule px-3 py-1.5 hover:bg-story-panel">
-            <IconExternalLink className="size-4" aria-hidden />
-            {ta('knowledgeRecord')}
-          </Link>
+          <Button asChild variant="outline" size="sm">
+            <Link href={detailHref}>
+              <IconExternalLink className="size-3.5" aria-hidden />
+              {ta('knowledgeRecord')}
+            </Link>
+          </Button>
         ) : null}
       </div>
 
@@ -274,38 +278,38 @@ export function RecordPanel({
         <NepalMiniMap nodes={allNodes} selectedId={node.id} />
         {c ? (
           <dl className="m-0 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-0.5 text-[13px]">
-            <dt className="text-story-ink-soft">{ta('location')}</dt>
+            <dt className="text-muted-foreground">{ta('location')}</dt>
             <dd className="m-0">
               {c.lat.toFixed(4)}° N, {c.lon.toFixed(4)}° E
             </dd>
             {place ? (
               <>
-                <dt className="text-story-ink-soft">{tr('in')}</dt>
+                <dt className="text-muted-foreground">{tr('in')}</dt>
                 <dd className="m-0">{place.label}</dd>
               </>
             ) : null}
             {self ? (
               <>
-                <dt className="text-story-ink-soft">{tr('region')}</dt>
+                <dt className="text-muted-foreground">{tr('region')}</dt>
                 <dd className="m-0">{self.inValley ? ta('regionValley') : ta('regionNepal')}</dd>
               </>
             ) : null}
             {altitude != null ? (
               <>
-                <dt className="text-story-ink-soft">{ta('altitude')}</dt>
+                <dt className="text-muted-foreground">{ta('altitude')}</dt>
                 <dd className="m-0">{ta('altitudeValue', { metres: roundAltitude(altitude).toLocaleString() })}</dd>
               </>
             ) : null}
           </dl>
         ) : borrowedFrom ? (
           <p className="text-[13px]">
-            <span className="text-story-ink-soft">{tr('noOwnLocation')} </span>
-            <button type="button" onClick={() => onSelect(borrowedFrom)} className="cursor-pointer font-semibold underline underline-offset-4">
+            <span className="text-muted-foreground">{tr('noOwnLocation')} </span>
+            <button type="button" onClick={() => onSelect(borrowedFrom)} className="cursor-pointer font-medium text-primary hover:underline">
               {tr('within', { place: borrowedFrom.label })}
             </button>
           </p>
         ) : (
-          <p className="text-[13px] text-story-ink-soft">{t('noLocation')}</p>
+          <p className="text-[13px] text-muted-foreground">{t('noLocation')}</p>
         )}
       </Section>
 
@@ -317,7 +321,7 @@ export function RecordPanel({
               {words.year(y)} · {eraName(eraOf(y))}
             </>
           ) : (
-            <span className="text-story-ink-soft">{t('noDate')}</span>
+            <span className="text-muted-foreground">{t('noDate')}</span>
           )}
         </p>
       </Section>
@@ -333,7 +337,7 @@ export function RecordPanel({
         title={t('connected', { count: rest.length })}
         action={connections.length && lens !== 'connections' ? <LensLink onClick={() => onLens('connections')}>{t('openGraph')}</LensLink> : undefined}
       >
-        {rest.length ? <ul className="m-0 grid list-none gap-0.5 p-0">{rest.map(row)}</ul> : <p className="text-[13px] text-story-ink-soft">{t('noConnections')}</p>}
+        {rest.length ? <ul className="m-0 grid list-none gap-0.5 p-0">{rest.map(row)}</ul> : <p className="text-[13px] text-muted-foreground">{t('noConnections')}</p>}
       </Section>
 
       {c ? (
@@ -345,19 +349,19 @@ export function RecordPanel({
                   <button
                     type="button"
                     onClick={() => onSelect(p.node)}
-                    className="grid w-full cursor-pointer grid-cols-[34px_minmax(0,1fr)] items-center gap-2.5 px-1 py-1.5 text-left hover:bg-story-panel"
+                    className="grid w-full cursor-pointer grid-cols-[34px_minmax(0,1fr)] items-center gap-2.5 rounded-lg px-1 py-1.5 text-left hover:bg-background"
                   >
                     <RecordThumb node={p.node} size="sm" />
                     <span className="min-w-0">
-                      <span className="block text-[11.5px] text-story-ink-soft">{km(d)}</span>
-                      <span className="block text-[13.5px] leading-tight font-semibold">{p.node.label}</span>
+                      <span className="block text-[11.5px] text-muted-foreground">{km(d)}</span>
+                      <span className="block text-[13.5px] leading-tight font-medium text-foreground">{p.node.label}</span>
                     </span>
                   </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-[13px] text-story-ink-soft">{ta('noNearby')}</p>
+            <p className="text-[13px] text-muted-foreground">{ta('noNearby')}</p>
           )}
         </Section>
       ) : null}
@@ -368,9 +372,9 @@ export function RecordPanel({
         ) : node.recordSource ? (
           <div className="grid gap-1 text-[13px]">
             <p className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold">{node.recordSource.name ?? (tier ? tp(`tier.${tier}`) : '')}</span>
+              <span className="font-medium">{node.recordSource.name ?? (tier ? tp(`tier.${tier}`) : '')}</span>
               {tier ? (
-                <span className={cn('border px-1.5 py-0.5 text-[11px] font-medium', tier === 'reviewed' ? 'border-story-accent bg-story-accent text-story-accent-ink' : 'border-story-accent text-story-accent')}>
+                <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-medium', tier === 'reviewed' ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary')}>
                   {tp(`tier.${tier}`)}
                 </span>
               ) : null}
@@ -379,20 +383,20 @@ export function RecordPanel({
               .split('\n')
               .filter(Boolean)
               .map((line) => (
-                <p key={line} className="text-xs text-story-ink-soft">
+                <p key={line} className="text-xs text-muted-foreground">
                   {line}
                 </p>
               ))}
             {qid ? (
-              <a href={`https://www.wikidata.org/wiki/${qid}`} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold underline underline-offset-4">
+              <a href={`https://www.wikidata.org/wiki/${qid}`} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-primary hover:underline">
                 Wikidata {qid} ↗
               </a>
             ) : null}
           </div>
         ) : (
-          <p className="text-[13px] text-story-ink-soft">{tr('noSource')}</p>
+          <p className="text-[13px] text-muted-foreground">{tr('noSource')}</p>
         )}
-        <Link href="/contribute" className="text-xs font-semibold text-story-accent underline underline-offset-4">
+        <Link href="/contribute" className="text-xs font-medium text-primary hover:underline">
           {tr('suggest')} →
         </Link>
       </Section>
