@@ -56,6 +56,10 @@ export interface HeritageNode {
   labelNe?: string;
   /** Live graph only: where the record's own content came from. */
   recordSource?: KgRecordSource | null;
+  /** Live graph only: "inherited" when lat/long are the containing record's, not this one's. */
+  coordinateSource?: 'record' | 'gazetteer' | 'inherited';
+  /** The record whose point was borrowed, when inherited. */
+  coordinateFrom?: string;
   nodeType: NodeType;
   cidocMapping: string;
   hgCategory: HgCategory;

@@ -41,6 +41,9 @@ const within = (lat: number, lon: number, b: { west: number; east: number; south
 export function placesOf(nodes: GraphNode[]): AtlasPlace[] {
   const out: AtlasPlace[] = [];
   for (const node of nodes) {
+    // A borrowed point is the containing place's, not this record's: drawing
+    // it would stack every unmapped temple on its city's centre.
+    if (node.coordinateSource === 'inherited') continue;
     const lat = parseFloat(node.lat ?? '');
     const lon = parseFloat(node.long ?? '');
     if (!Number.isFinite(lat) || !Number.isFinite(lon) || !within(lat, lon, NEPAL_BOUNDS)) continue;

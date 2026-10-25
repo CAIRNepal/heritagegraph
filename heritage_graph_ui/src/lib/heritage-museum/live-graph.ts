@@ -45,6 +45,8 @@ export function kgToGraphData(resp: KgGraphResponse): GraphData {
       imageCredits: narrative.imageCredits,
       lat: n.lat ?? undefined,
       long: n.long ?? undefined,
+      coordinateSource: n.coordinateSource,
+      coordinateFrom: n.coordinateFrom,
       inceptionYear: n.inceptionYear ?? undefined,
       tags: isLux ? ['Yale LUX', 'Collection link'] : undefined,
       keyFacts: narrative.keyFacts,

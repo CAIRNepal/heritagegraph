@@ -44,6 +44,12 @@ export interface KgGraphNode {
   labels?: Record<string, string>;
   /** Where the record's own content came from (not projected to RDF). */
   recordSource?: KgRecordSource | null;
+  /**
+   * Where lat/long come from: the record itself, the gazetteer of well-known
+   * sites, or borrowed from the record that contains it (`coordinateFrom`).
+   */
+  coordinateSource?: 'record' | 'gazetteer' | 'inherited';
+  coordinateFrom?: string;
   comment: string | null;
   lat: string | null;
   long: string | null;
