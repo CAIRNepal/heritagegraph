@@ -471,6 +471,10 @@ export function HeritageMindMapClient() {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-story-paper text-story-ink">
+      {/* One short announcement per move, instead of re-reading the whole panel. */}
+      <p className="sr-only" aria-live="polite">
+        {selectedNode ? tl('announce', { label: selectedNode.label, lens: tl(lens), k: index + 1, n: visibleNodes.length }) : ''}
+      </p>
       <CollectionNotices
         source={dataSource}
         liveError={liveError}
@@ -498,7 +502,7 @@ export function HeritageMindMapClient() {
             <LensTabs lens={lens} onLens={setLens} counts={lensCounts} />
             <span className="ml-auto flex items-center gap-3">
               {index >= 0 ? (
-                <span className="text-xs text-story-ink-soft tabular-nums" aria-live="polite">
+                <span className="text-xs text-story-ink-soft tabular-nums">
                   {tl('position', { k: index + 1, n: visibleNodes.length })}
                 </span>
               ) : null}
@@ -519,7 +523,7 @@ export function HeritageMindMapClient() {
         </div>
 
         {wide && panel ? (
-          <aside aria-label={selectedNode?.label} aria-live="polite" className="min-h-0 overflow-auto border-l border-story-rule p-[18px]">
+          <aside aria-label={selectedNode?.label} className="min-h-0 overflow-auto border-l border-story-rule p-[18px]">
             {panel}
           </aside>
         ) : null}
