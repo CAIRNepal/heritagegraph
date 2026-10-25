@@ -83,7 +83,7 @@ export function MapLens({ places, unlocated, selectedId, onSelect, linked, relie
       />
       <MapControls onExtent={(k) => move({ kind: k })} basemap={basemap} onBasemap={setBasemap} colorBy={colorBy} onColorBy={setColorBy} places={places} />
       {unlocated > 0 ? (
-        <p className="pointer-events-none absolute bottom-2 left-2 z-[500] max-w-[60%] bg-story-paper/90 px-2 py-1 text-[11px] text-story-ink">
+        <p className="pointer-events-none absolute bottom-2 left-2 z-[500] max-w-[60%] rounded-md bg-card/90 px-2 py-1 text-[11px] text-muted-foreground">
           {t('unlocatedNote', { count: unlocated })}
         </p>
       ) : null}

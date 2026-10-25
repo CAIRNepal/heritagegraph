@@ -21,19 +21,19 @@ export function KeyboardHelp() {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex size-9 cursor-pointer items-center justify-center border border-story-rule hover:bg-story-panel"
+          className="inline-flex size-9 cursor-pointer items-center justify-center rounded-[10px] border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground"
           aria-label={t('title')}
         >
           <IconKeyboard className="size-4" aria-hidden />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 rounded-none border-story-rule bg-story-paper text-story-ink">
-        <p className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('title')}</p>
+      <PopoverContent align="end" className="w-72">
+        <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">{t('title')}</p>
         <dl className="mt-2 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-sm">
           {KEYS.map(([key, what]) => (
             <div key={what} className="contents">
               <dt>
-                <kbd className="border border-story-rule px-1.5 py-0.5 font-sans text-xs">{key}</kbd>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-sans text-xs">{key}</kbd>
               </dt>
               <dd className="m-0">{t(what)}</dd>
             </div>

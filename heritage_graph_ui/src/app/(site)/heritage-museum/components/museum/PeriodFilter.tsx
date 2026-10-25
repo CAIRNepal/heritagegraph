@@ -19,7 +19,7 @@ export function PeriodFilter({ era, onEra, counts }: PeriodFilterProps) {
   const { t, eraName, eraSpan } = useAtlasWords();
   return (
     <div role="group" aria-label={t('whenTitle')} className="grid gap-1.5">
-      <p className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('whenTitle')}</p>
+      <p className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">{t('whenTitle')}</p>
       <div className="flex flex-wrap gap-1">
         {ERAS.map((e) => {
           const n = counts[e.id];
@@ -33,12 +33,12 @@ export function PeriodFilter({ era, onEra, counts }: PeriodFilterProps) {
               onClick={() => onEra(on ? null : e.id)}
               title={eraSpan(e.id)}
               className={cn(
-                'inline-flex min-h-[30px] cursor-pointer items-center gap-1.5 border px-2 py-0.5 text-xs disabled:cursor-default disabled:opacity-35',
-                on ? 'border-story-ink bg-story-ink text-story-paper' : 'border-story-rule hover:bg-story-panel',
+                'inline-flex min-h-[30px] cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors disabled:cursor-default disabled:opacity-40',
+                on ? 'border-foreground bg-foreground text-background' : 'border-border bg-card text-foreground hover:border-muted-foreground',
               )}
             >
               {eraName(e.id)}
-              <span className={cn('tabular-nums', on ? 'opacity-70' : 'text-story-ink-soft')}>{n}</span>
+              <span className={cn('tabular-nums', on ? 'opacity-70' : 'text-muted-foreground')}>{n}</span>
             </button>
           );
         })}
