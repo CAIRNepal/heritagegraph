@@ -224,7 +224,7 @@ export function GraphBoundaryNote() {
                 </Link>
               </Button>
               <Button asChild variant="outline">
-                <Link href="/atlas">
+                <Link href="/heritage-museum?lens=map">
                   <IconMap2 className="size-4" aria-hidden="true" />
                   {t('openInAtlas')}
                 </Link>

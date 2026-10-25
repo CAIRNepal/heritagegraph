@@ -12,7 +12,7 @@ import {
   IconBuildingMonument,
   IconSearch,
   IconPlus,
-  IconWorld,
+  IconBook2,
 } from '@tabler/icons-react';
 
 import {
@@ -30,16 +30,16 @@ const STEPS = [
   {
     icon: IconBuildingMonument,
     title: 'Explore the Heritage Museum',
-    body: 'Browse the living knowledge graph as an interactive graph, map, timeline, or illustrated story.',
+    body: 'Every record as an exhibit, on a map of Nepal, on a timeline and through its connections, with its sources.',
     href: '/heritage-museum',
     cta: 'Open Museum',
   },
   {
-    icon: IconWorld,
-    title: 'See it on the Atlas',
-    body: 'Discover heritage entities across place and time on an interactive globe.',
-    href: '/atlas',
-    cta: 'Open Atlas',
+    icon: IconBook2,
+    title: 'Read a story',
+    body: 'Follow one record through the knowledge graph, one question at a time.',
+    href: '/stories',
+    cta: 'Stories',
   },
   {
     icon: IconPlus,
@@ -55,7 +55,7 @@ export function WelcomeDialog() {
   const pathname = usePathname();
 
   // The entry experience at `/` is itself the orientation: it opens on the
-  // heritage and routes into the museum, atlas and knowledge base. Covering it
+  // heritage and routes into the museum, stories and knowledge base. Covering it
   // with a modal that explains the same three destinations is redundant, and it
   // hides the page during exactly the first seconds it has to earn attention.
   // Onboarding still fires on any other route a first-time visitor lands on.

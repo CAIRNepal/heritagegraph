@@ -43,7 +43,10 @@ data/*.log
 
 # ==================== Data ====================
 # Anchor to repo root so app source dirs like landing/src/data/ remain trackable.
-/data/
+/data/*
+# The Wikidata seed list and its frozen CC0 snapshot are inputs to an import
+# that must be reproducible from the repository.
+!/data/wikidata/
 documentation/research/_*.local.json
 heritage_graph/db.sqlite3.bak-*
 

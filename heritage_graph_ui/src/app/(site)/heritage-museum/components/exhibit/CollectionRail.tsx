@@ -54,6 +54,10 @@ interface CollectionRailProps {
   onKindChange: (kind: HgCategory | null) => void;
   /** Data-source line, Sources popover and the like, under the title. */
   controls?: ReactNode;
+  /** More filters and actions under the kind chips (period, time walk). */
+  filters?: ReactNode;
+  /** Clear every filter, not only search and kind. */
+  onResetFilters?: () => void;
   /** False in the phone sheet, where the page bar already carries the title. */
   showTitle?: boolean;
 }
@@ -73,6 +77,8 @@ export function CollectionRail({
   kind,
   onKindChange,
   controls,
+  filters,
+  onResetFilters,
   showTitle = true,
 }: CollectionRailProps) {
   const t = useTranslations('heritageMuseum');
@@ -154,6 +160,7 @@ export function CollectionRail({
             </button>
           ))}
         </div>
+        {filters}
         <p className="text-xs text-muted-foreground" aria-live="polite">
           {tx('count', {
             shown: visibleNodes.length,
@@ -172,6 +179,7 @@ export function CollectionRail({
               onClick={() => {
                 onSearchChange('');
                 onKindChange(null);
+                onResetFilters?.();
               }}
               className="cursor-pointer rounded-lg border border-border bg-card px-3 py-1.5 text-foreground"
             >
@@ -203,6 +211,11 @@ export function CollectionRail({
                   <RecordThumb node={n} size="md" />
                   <span className="min-w-0">
                     <span className="block text-sm leading-tight font-medium text-foreground">{n.label}</span>
+                    {n.labelNe ? (
+                      <span lang="ne" className="block font-devanagari text-xs text-foreground">
+                        {n.labelNe}
+                      </span>
+                    ) : null}
                     <span className="block text-xs text-muted-foreground">
                       {words.typeLabel(n)}
                       {y != null ? ` · ${words.year(y)}` : ''}

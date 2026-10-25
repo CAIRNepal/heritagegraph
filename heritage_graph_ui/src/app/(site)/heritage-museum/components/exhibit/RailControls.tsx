@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { IconDownload, IconInfoCircle, IconLoader2 } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import type { DatasetMeta } from '@/lib/provenance';
 
@@ -38,13 +39,30 @@ export function RailControls({
 
   return (
     <div className="grid gap-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
+      {/* Which collection is showing is the first thing a reader must know:
+          a two-way switch, never a sentence with a link hidden in it. */}
+      <div role="radiogroup" aria-label={t('dataSource.label')} className="grid grid-cols-2 overflow-hidden rounded-[10px] border border-border bg-card text-[12.5px] font-medium">
+        {(['live', 'demo'] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            role="radio"
+            aria-checked={dataSource === s}
+            disabled={liveLoading}
+            onClick={() => dataSource !== s && onSwitchSource()}
+            className={cn(
+              'cursor-pointer px-2 py-1.5 first:border-r first:border-border disabled:opacity-60',
+              dataSource === s ? 'bg-foreground text-background' : 'text-foreground hover:bg-muted',
+            )}
+          >
+            {s === 'live' ? t('dataSource.live') : t('dataSource.demo')}
+          </button>
+        ))}
+      </div>
       <p className="leading-snug">
         {dataSource === 'demo' ? t('demoBanner', { count: demoCount }) : t('exhibit.liveSourceLine')}
       </p>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <button type="button" onClick={onSwitchSource} disabled={liveLoading} className="cursor-pointer font-medium text-primary hover:underline disabled:opacity-60">
-          {dataSource === 'demo' ? t('demoBannerAction') : t('errors.showDemo')}
-        </button>
         {liveLoading ? (
           <span className="inline-flex items-center gap-1" role="status">
             <IconLoader2 className="size-3.5 motion-safe:animate-spin" aria-hidden />

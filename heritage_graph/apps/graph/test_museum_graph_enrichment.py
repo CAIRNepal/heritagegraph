@@ -170,3 +170,32 @@ class MuseumGraphEnrichmentTests(TestCase):
             nodes[monument_iri].get("narrativeSource"),
             "demo_corpus_label_match",
         )
+
+    def test_borrowed_coordinates_are_marked_and_flow_inward_only(self):
+        """A temple may borrow its town's point; a district must not take a temple's."""
+        base = resource_base().rstrip("/")
+        district = f"{base}/location/20"
+        temple = f"{base}/structure/21"
+        shrine = f"{base}/structure/22"
+        nodes = {
+            district: {"id": district, "label": "Unmapped District", "lat": None, "long": None, "inceptionYear": None},
+            temple: {"id": temple, "label": "Mapped Temple", "lat": "27.70", "long": "85.30", "inceptionYear": None},
+            shrine: {"id": shrine, "label": "Unmapped Shrine", "lat": None, "long": None, "inceptionYear": None},
+        }
+        edges = [
+            {"source": temple, "target": district, "predicate": f"{base}/located_in", "predicateLocal": "located_in"},
+            {"source": shrine, "target": temple, "predicate": f"{base}/located_at", "predicateLocal": "located_at"},
+        ]
+        enrich_museum_graph_nodes(nodes, edges)
+        self.assertIsNone(nodes[district]["lat"])
+        self.assertEqual(nodes[temple]["coordinateSource"], "record")
+        self.assertEqual(nodes[shrine]["coordinateSource"], "inherited")
+        self.assertEqual(nodes[shrine]["coordinateFrom"], temple)
+        self.assertEqual(nodes[shrine]["lat"], "27.70")
+
+    def test_gazetteer_coordinates_are_marked(self):
+        base = resource_base().rstrip("/")
+        stub = f"{base}/location/30"
+        nodes = {stub: {"id": stub, "label": "Boudhanath", "lat": None, "long": None, "inceptionYear": None}}
+        enrich_museum_graph_nodes(nodes, [])
+        self.assertEqual(nodes[stub]["coordinateSource"], "gazetteer")

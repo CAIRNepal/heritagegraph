@@ -55,6 +55,7 @@
     "graphVisualization": "ग्राफ भिजुअलाइजेसन",
     "heritageAtlas": "हेरिटेज एटलास",
     "heritageMuseum": "हेरिटेज सङ्ग्रहालय",
+    "stories": "कथाहरू",
     "contribute": "योगदान",
     "progression": "प्रगति",
     "leaderboard": "लिडरबोर्ड",
@@ -365,7 +366,8 @@
     "dataSource": {
       "demo": "डेमो डाटा",
       "live": "लाइभ KG",
-      "loading": "लोड हुँदैछ…"
+      "loading": "लोड हुँदैछ…",
+      "label": "Which collection to show"
     },
     "views": {
       "graph": "सम्बन्धहरू",
@@ -377,11 +379,11 @@
     "backToGraph": "सम्बन्धमा फर्कनुहोस्",
     "backToGallery": "सबै कथाहरू",
     "switchToXr": "कथामा जानुहोस्",
-    "liveBadge": "लाइभ हेरिटेजग्राफ KG",
+    "liveBadge": "Live graph",
     "graphCapped": "{total} मध्ये सबैभन्दा बढी जोडिएका {shown} वस्तु देखाइँदै — बाँकी हेर्न खोज्नुहोस् वा फिल्टर गर्नुहोस्।",
     "demoBanner": "{count, plural, =0 {सचित्र डेमो सङ्ग्रह — स्रोत उल्लेखित विकिमिडिया तस्बिरसहित छानिएका सम्पदा स्थल।} other {सचित्र डेमो सङ्ग्रह — स्रोत उल्लेखित विकिमिडिया तस्बिरसहित # छानिएका स्थल।}}",
-    "demoBannerAction": "लाइभ समीक्षित ग्राफमा जानुहोस्",
-    "sparseLive": "लाइभ समीक्षित ग्राफमा {count} वस्तु छन् — सङ्ग्रह बढ्दै छ।",
+    "demoBannerAction": "Switch to the live graph",
+    "sparseLive": "The live graph has {count} entities — the corpus is still growing.",
     "sparseLiveContribute": "योगदान गर्नुहोस्",
     "storiesLiveHint": "कथाहरूले चित्रयुक्त स्थान देखाउँछन्। फोटो नभएका हालसालै आयात गरिएका सहित सबै {count} लाइभ वस्तु हेर्न नक्सा वा ग्राफ खोल्नुहोस्।",
     "storiesLiveHintMap": "नक्सा खोल्नुहोस्",
@@ -395,7 +397,7 @@
       "title": "स्रोत, विधि र प्रामाणिकता",
       "standards": "यो ग्राफले पालना गर्ने मानक",
       "demoImages": "तस्बिर: {source}",
-      "intro": "हेरिटेजग्राफ CIDOC-CRM अनुरूप ज्ञान ग्राफ प्रकाशित गर्छ। लाइभ मोडमा समुदायद्वारा समीक्षित वस्तुहरू मात्र देखाइन्छ।",
+      "intro": "HeritageGraph publishes a CIDOC-CRM-aligned knowledge graph. Live mode shows entities that passed the publication gate (scope=reviewed: accepted, merged or published records), projected from the public Oxigraph partition. Records imported from Wikidata pass that gate as accepted by the importer and are marked as not yet reviewed.",
       "datasetIdentity": "डाटासेट परिचय",
       "release": "संस्करण",
       "scope": "दायरा",
@@ -417,7 +419,7 @@
       "liveStep3": "सङ्ग्रहालयले GET /api/v1/cidoc/kg/graph/?scope=reviewed पढ्छ",
       "liveStep4": "उपलब्ध हुँदा सम्बन्धहरूले HeritageAssertion प्रामाणिकता उद्धृत गर्छन्",
       "demoWarningTitle": "डेमो मोड",
-      "demoWarningBody": "स्थिर डेमो सङ्ग्रह पुनरुत्पादनयोग्य उदाहरणका लागि हो।",
+      "demoWarningBody": "The frozen demo corpus is for reproducible illustrations. Cite the live graph, with each record's own source, for research.",
       "demoFrozen": "स्थिर मिति: {date}",
       "reproducibility": "पुनरुत्पादनीयता",
       "sparqlNote": "सार्वजनिक पार्टिसनमा सिधै प्रश्न सोध्नुहोस्:",
@@ -497,7 +499,7 @@
       "searchAria": "कथा नेभिगेटरमा वस्तु फिल्टर",
       "searchNoMatch": "यो फिल्टरसँग मेल खाने वस्तु छैन।",
       "galleryTitle": "हेरिटेज कथाहरू",
-      "gallerySubtitle": "कथा पढ्न कार्ड खोल्नुहोस्। लाइभ समीक्षित अभिलेखमा तस्बिर नभए पनि कथा र सम्बन्ध हुन्छ।",
+      "gallerySubtitle": "Open a card to read its story. Live records include their connections and sources even without linked imagery.",
       "galleryAll": "सबै कथा ({count})",
       "galleryEmpty": "तपाईंको खोजसँग मिल्ने केही छैन। फिल्टर हटाउनुहोस्।",
       "galleryClearFilters": "फिल्टर हटाउनुहोस्",
@@ -553,7 +555,7 @@
       "browseStories": "कथाहरू हेर्नुहोस्",
       "recordDetails": "अभिलेख विवरण",
       "recordDetailsShow": "देखाउनुहोस्",
-      "viewOnGlobe": "एटलसमा हेर्नुहोस्",
+      "viewOnGlobe": "नक्सामा हेर्नुहोस्",
       "ontologyMapping": "अन्टोलोजी म्यापिङ",
       "hgClass": "HG वर्ग",
       "category": "श्रेणी",
@@ -579,7 +581,13 @@
       "provTemporal": "समय सीमा: {value}",
       "provDate": "अभिलेखित: {value}",
       "noNarrativeRecorded": "यस अभिलेखको कुनै विवरण राखिएको छैन।",
-      "sampleNarrative": "नमुना कथन — यस प्रदर्शन कोर्पसका लागि लेखिएको, स्रोतबाट लिइएको वा प्रमाणित होइन। उद्धृत नगर्नुहोस्।"
+      "sampleNarrative": "नमुना कथन — यस प्रदर्शन कोर्पसका लागि लेखिएको, स्रोतबाट लिइएको वा प्रमाणित होइन। उद्धृत नगर्नुहोस्।",
+      "tier": {
+        "imported": "Imported from Wikidata, not yet reviewed",
+        "reviewed": "Community reviewed",
+        "curated": "From the curated corpus",
+        "inReview": "In review"
+      }
     },
     "ontologyBadges": {
       "cidoc": "CIDOC-CRM",
@@ -625,18 +633,11 @@
       "when": "कहिले",
       "connected": "सम्बन्धित · {count}",
       "openMap": "पूरा नक्सा खोल्नुहोस्",
-      "openTimeline": "समयरेखा खोल्नुहोस्",
-      "openGraph": "ग्राफ खोल्नुहोस्",
       "noLocation": "स्थान अभिलेखित छैन।",
       "noDate": "मिति अभिलेखित छैन।",
       "noConnections": "अहिलेसम्म कुनै सम्बन्ध अभिलेखित छैन।",
-      "mapLensTitle": "नक्सा · स्थान भएका {count} अभिलेख",
-      "timelineLensTitle": "समयरेखा",
-      "graphLensTitle": "सम्बन्धहरू · {name}",
-      "graphLensHint": "छानिएको अभिलेख, त्यससँग सिधै जोडिएका अभिलेख (नामसहित) र तिनका केही सम्बन्ध। कुनै पनि अभिलेख छानेर त्यहाँ जानुहोस्।",
       "close": "बन्द गर्नुहोस्",
       "mapAria": "स्थान भएका {count} अभिलेखसहित नेपालको नक्सा",
-      "graphAria": "{name} र त्यससँग जोडिएका अभिलेखहरू",
       "yearCE": "ई. {year}",
       "yearBCE": "ई.पू. {year}",
       "loadingRecord": "सङ्ग्रह लोड हुँदैछ…",
@@ -700,10 +701,38 @@
           "was_produced_by_event": "यस कालमा निर्मित"
         }
       },
-      "liveSourceLine": "प्रत्यक्ष ज्ञान ग्राफ: समीक्षा गरिएका अभिलेख, हरेक सम्बन्धको स्रोतसहित।",
+      "liveSourceLine": "Live knowledge graph: published records, each citing its source. Records imported from Wikidata are marked as not yet reviewed.",
       "pauseNarration": "वाचन रोक्नुहोस्",
       "resumeNarration": "वाचन जारी राख्नुहोस्"
-    }
+    },
+    "lenses": {
+      "label": "Ways to look at the collection",
+      "exhibit": "Exhibit",
+      "map": "Map",
+      "position": "{k} of {n}",
+      "announce": "{label}, {lens}, {k} of {n}"
+    },
+    "record": {
+      "openExhibit": "Open the exhibit",
+      "readStory": "Read its story",
+      "in": "In",
+      "region": "Region",
+      "sources": "Sources",
+      "demoSources": "Illustrated demo corpus: the photographs carry their licences, but the text was written for the demonstration and has no source. Do not cite it; switch to the live graph for sourced records.",
+      "noSource": "No source is recorded for this record yet.",
+      "suggest": "Suggest a correction",
+      "noOwnLocation": "No location of its own is recorded;",
+      "within": "it is within {place}"
+    },
+    "keys": {
+      "title": "Keyboard",
+      "lenses": "Switch lens: exhibit or map",
+      "search": "Search the collection",
+      "step": "Previous or next record (or stop on a walk)",
+      "list": "Move through the list when it has focus",
+      "endWalk": "End a walk through time"
+    },
+    "titleNe": "सम्पदा संग्रहालय"
   },
   "landing": {
     "hero": {
@@ -978,11 +1007,12 @@
       "corpusSize": "कोर्पस समुदायद्वारा क्युरेट गरिएको र बढ्दै गएको छ — यो पूर्ण राष्ट्रिय सूची होइन।",
       "temporal": "धेरै घटना नोडमा समयगत कभरेज (EDTF) अपूर्ण छ।",
       "reconciliation": "DANAM <code>sameAs</code> बाहेकको बाह्य पहिचायक मिलान (Wikidata, Getty) जारी छ।",
-      "demoCorpus": "संग्रहालयको डेमो कोर्पस उदाहरणका लागि मात्र हो; अनुसन्धानका लागि प्रत्यक्ष समीक्षित ग्राफ उद्धृत गर्नुहोस्।",
+      "demoCorpus": "The museum demo corpus is illustrative only; cite the live graph, with each record's own source, for research.",
       "doi": "अझैसम्म Zenodo DOI बनाइएको छैन। बीचमा माथिको रिपोजिटरी र कोर्पस SHA-256 उद्धृत गर्नुहोस्।",
       "shacl": "लेख्दा SHACL प्रमाणीकरण ऐच्छिक छ (<code>RDF_SHACL_VALIDATE_ON_WRITE</code>); आकारहरू उत्पन्न गरिएका छन् र अफलाइन अनुरूपता प्रतिवेदनका लागि उपलब्ध छन्।",
       "evaluation": "अझैसम्म उद्धृत गर्न मिल्ने precision/recall मूल्याङ्कन छैन: स्वर्ण मानक तयार गरिएको छैन। हाल उत्पन्न हुने कुनै पनि मूल्याङ्कन अङ्क 'उद्धृत नगर्ने' भनी चिन्ह लगाइन्छ।",
-      "consent": "औपचारिक सामुदायिक सहमति प्रक्रिया र संस्थागत नैतिकता समीक्षा पूरा भएको छैन। त्यो काम नसकिँदासम्म सांस्कृतिक रूपमा संवेदनशील वर्गहरू सार्वजनिक क्वेरी परिणामबाट रोकिएका छन्।"
+      "consent": "औपचारिक सामुदायिक सहमति प्रक्रिया र संस्थागत नैतिकता समीक्षा पूरा भएको छैन। त्यो काम नसकिँदासम्म सांस्कृतिक रूपमा संवेदनशील वर्गहरू सार्वजनिक क्वेरी परिणामबाट रोकिएका छन्।",
+      "authorityImport": "Most published records were imported from Wikidata (CC0) by an automated pipeline and accepted by the importer, not by a reviewer. Each cites its Wikidata item, revision and retrieval date, the museum marks it as not yet reviewed, and Wikidata statements with no matching HeritageGraph predicate were skipped rather than mapped onto the nearest one."
     },
     "lux": {
       "heading": "LUX श्रेय",
@@ -1606,6 +1636,71 @@
     "photoAlt": "{name} को तस्बिर",
     "empty": "यस सङ्ग्रहका कुनै पनि अभिलेखको स्थान अहिलेसम्म छैन।",
     "attribution": "भू-बनोट: AWS Terrain Tiles (SRTM) · सीमा: Natural Earth",
-    "mapKey": "नक्साको सङ्केत"
+    "mapKey": "नक्साको सङ्केत",
+    "unlocatedNote": "{count, plural, one {# record here has no location yet} other {# records here have no location yet}}"
+  },
+  "stories": {
+    "indexEyebrow": "A museum experience, one story at a time",
+    "indexTitle": "Every tradition opens a world.",
+    "indexLead": "Step beyond the object. Meet the places, practices and connections that give it meaning. Each story is a walk through the knowledge graph, and every link names its source.",
+    "search": "कथा खोज्नुहोस्",
+    "all": "All",
+    "storyCount": "{count, plural, one {# story} other {# stories}}",
+    "stops": "{count, plural, one {# stop} other {# stops}}",
+    "readStory": "Read the story",
+    "loading": "Loading the knowledge graph…",
+    "error": "The knowledge graph could not be loaded.",
+    "empty": "No story matches this search.",
+    "allStories": "All stories",
+    "lead": "This story follows {label} through the knowledge graph. Each stop answers a question the last one raised. Watch the map fill in as you go.",
+    "mapSoFar": "The map so far",
+    "mapSoFarNe": "नक्सा",
+    "mapCount": "{records, plural, one {# record} other {# records}} · {links, plural, one {# link} other {# links}}",
+    "stop": "Stop {n}",
+    "alsoConnected": "Also connected",
+    "moreOnRecord": "{count} more on the record page",
+    "source": "Source",
+    "whereNext": "Where next?",
+    "whereNextTitle": "Every thread here is a story of its own.",
+    "readItsStory": "Read its story",
+    "openRecord": "Open the record",
+    "tooShort": "This record has too few links for a story yet.",
+    "notFound": "This record is not in the published graph.",
+    "yourPath": "Your path",
+    "everyRecord": "Every record has a story",
+    "readStoryOf": "Read the story of {label}",
+    "worldEyebrow": "The world around it",
+    "worldNe": "यसको संसार",
+    "threads": "{count, plural, one {# thread leads out from here.} other {# threads lead out from here.}}",
+    "pickOne": "Pick one to keep going.",
+    "goThere": "Go there",
+    "andMore": "and {count} more",
+    "sourcesEyebrow": "Sources",
+    "sourcesNe": "स्रोत",
+    "sourcesTitle": "Where this record comes from",
+    "imported": "Imported",
+    "reviewed": "Reviewed",
+    "curated": "Curated corpus",
+    "inReview": "In review",
+    "image": "Image",
+    "noSource": "No source is recorded for this record yet.",
+    "suggest": "Suggest a correction",
+    "noThreads": "No links are recorded for this record yet.",
+    "kind": {
+      "belief": "Belief",
+      "place": "Place",
+      "time": "Time",
+      "people": "Community",
+      "part": "Part of",
+      "tie": "Connection"
+    },
+    "kindNe": {
+      "belief": "आस्था",
+      "place": "स्थान",
+      "time": "",
+      "people": "समुदाय",
+      "part": "",
+      "tie": ""
+    }
   }
 }

@@ -14,7 +14,7 @@ import uuid
 from typing import Any
 
 from apps.cidoc_data.cidoc_registry_keys import DJANGO_MODEL_TO_REGISTRY_CLASS_KEY
-from apps.cidoc_data.identity_services import active_memberships_for_subject
+from apps.cidoc_data.identity_services import _active_membership_qs
 from apps.cidoc_data.models import EntityCluster
 from apps.graph.kg_engine.uris import resource_base
 from django.contrib.contenttypes.models import ContentType
@@ -115,6 +115,16 @@ def _coords_from_point_field(point: Any) -> tuple[str, str] | None:
 
 
 def coords_from_instance(instance: Any) -> tuple[str, str] | None:
+    """A record's own coordinates, else its name in the gazetteer table."""
+    own = recorded_coords(instance)
+    if own:
+        return own
+    label = getattr(instance, "name", None) or getattr(instance, "title", None)
+    return _KNOWN_PLACE_COORDS.get(_normalize_place_key(str(label) if label else ""))
+
+
+def recorded_coords(instance: Any) -> tuple[str, str] | None:
+    """Coordinates stored on the record itself (point or legacy fields)."""
     for attr in ("point", "coordinates_legacy", "place_coordinates"):
         raw = getattr(instance, attr, None)
         if attr == "point":
@@ -135,10 +145,6 @@ def coords_from_instance(instance: Any) -> tuple[str, str] | None:
                         return str(lat), str(lng)
                 except ValueError:
                     pass
-    label = getattr(instance, "name", None) or getattr(instance, "title", None)
-    key = _normalize_place_key(str(label) if label else "")
-    if key in _KNOWN_PLACE_COORDS:
-        return _KNOWN_PLACE_COORDS[key]
     return None
 
 
@@ -167,6 +173,30 @@ def _load_instance(segment: str, pk: int) -> Any | None:
         return model.objects.filter(pk=pk).first()
     except Exception:
         return None
+
+
+def _load_instances(keys: list[tuple[str, int]]) -> dict[tuple[str, int], Any]:
+    """All rows for (registry segment, pk) pairs, one query per model."""
+    from django.apps import apps
+
+    by_segment: dict[str, set[int]] = {}
+    for segment, pk in keys:
+        by_segment.setdefault(segment, set()).add(pk)
+    out: dict[tuple[str, int], Any] = {}
+    for segment, pks in by_segment.items():
+        model_name = _REGISTRY_KEY_TO_MODEL.get(segment)
+        if not model_name:
+            continue
+        try:
+            model = apps.get_model("cidoc_data", model_name)
+            qs = model.objects.filter(pk__in=pks)
+            if any(f.name == "source" for f in model._meta.get_fields()):
+                qs = qs.select_related("source")
+            for row in qs:
+                out[(segment, row.pk)] = row
+        except Exception:
+            continue
+    return out
 
 
 def _comment_is_sparse(comment: str | None, label: str | None) -> bool:
@@ -219,43 +249,78 @@ def _resolve_cluster(cluster: EntityCluster) -> EntityCluster:
     return current
 
 
-def enrich_museum_cluster_identity(nodes: dict[str, dict[str, Any]]) -> None:
-    """Attach clusterId / clusterLabel for museum UI deduplication."""
-    for node in nodes.values():
-        parsed = parse_resource_uri(node.get("id"))
-        if not parsed:
-            continue
-        segment, pk = parsed
-        instance = _load_instance(segment, pk)
+def enrich_museum_cluster_identity(
+    nodes: dict[str, dict[str, Any]],
+    instances: dict[tuple[str, int], Any] | None = None,
+) -> None:
+    """Attach clusterId / clusterLabel for museum UI deduplication.
+
+    Memberships come from one query rather than one per node, and a cluster
+    with a single member is its own canonical record without ranking: with
+    every authority import in a singleton cluster, per-node lookups made this
+    the slowest step of the graph endpoint.
+    """
+    keys = {iri: parse_resource_uri(n.get("id")) for iri, n in nodes.items()}
+    if instances is None:
+        instances = _load_instances([k for k in keys.values() if k])
+    subject_iri: dict[tuple[int, Any], str] = {}
+    for iri, key in keys.items():
+        instance = instances.get(key) if key else None
         if instance is None:
             continue
-        ct = ContentType.objects.get_for_model(
-            instance.__class__,
-            for_concrete_model=False,
-        )
-        mem = (
-            active_memberships_for_subject(ct, instance.pk)
-            .select_related("entity_cluster", "entity_cluster__merged_into")
-            .first()
-        )
-        if not mem or not mem.entity_cluster_id:
-            continue
+        ct = ContentType.objects.get_for_model(instance.__class__, for_concrete_model=False)
+        subject_iri[(ct.id, str(instance.pk))] = iri
+
+    first_membership: dict[str, Any] = {}
+    members_per_cluster: dict[Any, int] = {}
+    for mem in _active_membership_qs().select_related(
+        "entity_cluster", "entity_cluster__merged_into"
+    ):
+        members_per_cluster[mem.entity_cluster_id] = members_per_cluster.get(mem.entity_cluster_id, 0) + 1
+        iri = subject_iri.get((mem.content_type_id, str(mem.object_id)))
+        if iri and iri not in first_membership:
+            first_membership[iri] = mem
+
+    from apps.cidoc_data.canonical_record_selection import (
+        _load_member_instance,
+        select_canonical_member,
+    )
+    from apps.cidoc_data.rdf_publish import resource_uri_for_instance
+
+    for iri, mem in first_membership.items():
+        node = nodes[iri]
         cluster = _resolve_cluster(mem.entity_cluster)
         node["clusterId"] = str(cluster.id)
         node["clusterLabel"] = cluster.canonical_label
         node["typeScope"] = cluster.type_scope
-        from apps.cidoc_data.canonical_record_selection import (
-            _load_member_instance,
-            select_canonical_member,
-        )
-        from apps.cidoc_data.rdf_publish import resource_uri_for_instance
-
+        if cluster.id == mem.entity_cluster_id and members_per_cluster.get(cluster.id) == 1:
+            node["canonicalMemberId"] = iri
+            continue
         canonical = select_canonical_member(cluster)
         if canonical and canonical.get("entity_id") is not None:
             ct_canon = ContentType.objects.get(model=canonical["entity_type"])
             canon_obj = _load_member_instance(ct_canon, int(canonical["entity_id"]))
             if canon_obj is not None:
                 node["canonicalMemberId"] = resource_uri_for_instance(canon_obj)
+
+
+def record_source(instance: Any) -> dict[str, Any] | None:
+    """Where a record's own content came from, for the "Sources" line on a page.
+
+    Edges carry provenance per assertion; the record itself only has its
+    MetaData evidence fields, which are not projected to RDF.
+    """
+    source = getattr(instance, "source", None) if getattr(instance, "source_id", None) else None
+    citation = (getattr(instance, "source_citation", "") or "").strip()
+    if source is None and not citation:
+        return None
+    return {
+        "name": getattr(source, "name", None),
+        "url": getattr(source, "url", None) or None,
+        "citation": citation or None,
+        "contributor": getattr(instance, "contributor", None) or None,
+        "status": getattr(instance, "status", None) or None,
+    }
 
 
 def enrich_museum_graph_nodes(
@@ -265,21 +330,30 @@ def enrich_museum_graph_nodes(
     """Mutate *nodes* in place: ORM geo/temporal/narrative/media + coordinate propagation."""
     from apps.graph.kg_engine.museum_media import media_bundle_for_resource
 
+    keys = [k for k in (parse_resource_uri(n.get("id")) for n in nodes.values()) if k]
+    instances = _load_instances(keys)
+    # Where each point comes from. Only "record" is the record's own location;
+    # the reader is told when a point is a gazetteer guess or borrowed.
+    for node in nodes.values():
+        if node.get("lat") is not None and node.get("long") is not None:
+            node["coordinateSource"] = "record"
     for node in nodes.values():
         parsed = parse_resource_uri(node.get("id"))
         if not parsed:
             continue
         segment, pk = parsed
-        instance = _load_instance(segment, pk)
+        instance = instances.get(parsed)
         if instance is not None:
             if node.get("lat") is None or node.get("long") is None:
-                coords = coords_from_instance(instance)
-                if coords:
-                    node["lat"], node["long"] = coords
+                own = recorded_coords(instance)
+                if own:
+                    node["lat"], node["long"] = own
+                    node["coordinateSource"] = "record"
             if not node.get("inceptionYear"):
                 hint = temporal_hint_from_instance(instance)
                 if hint:
                     node["inceptionYear"] = hint
+            node["recordSource"] = record_source(instance)
 
         bundle = media_bundle_for_resource(
             segment,
@@ -297,6 +371,7 @@ def enrich_museum_graph_nodes(
         if key in _KNOWN_PLACE_COORDS:
             lat, lng = _KNOWN_PLACE_COORDS[key]
             node["lat"], node["long"] = lat, lng
+            node["coordinateSource"] = "gazetteer"
 
     coord_by_id: dict[str, tuple[str, str]] = {}
     for iri, node in nodes.items():
@@ -311,22 +386,21 @@ def enrich_museum_graph_nodes(
         and edge.get("source")
         and edge.get("target")
     ]
-    # Iterate to fixpoint so coordinates flow along chained location edges
-    # (object → structure → place) regardless of edge ordering.
+    # A record with no location of its own may borrow the point of what
+    # contains it (object -> structure -> place), iterated to a fixpoint along
+    # chains. Only that way round: a district must not take a temple's point.
+    # Borrowed points are marked, so they are never shown as the record's own.
     changed = True
     while changed:
         changed = False
         for edge in location_edges:
             src, tgt = edge["source"], edge["target"]
-            src_coords = coord_by_id.get(src)
             tgt_coords = coord_by_id.get(tgt)
-            if src_coords and tgt not in coord_by_id:
-                coord_by_id[tgt] = src_coords
-                nodes[tgt]["lat"], nodes[tgt]["long"] = src_coords
-                changed = True
-            elif tgt_coords and src not in coord_by_id:
+            if tgt_coords and src not in coord_by_id:
                 coord_by_id[src] = tgt_coords
                 nodes[src]["lat"], nodes[src]["long"] = tgt_coords
+                nodes[src]["coordinateSource"] = "inherited"
+                nodes[src]["coordinateFrom"] = tgt
                 changed = True
 
-    enrich_museum_cluster_identity(nodes)
+    enrich_museum_cluster_identity(nodes, instances)

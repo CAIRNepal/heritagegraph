@@ -1,0 +1,82 @@
+# Wikidata subjects imported into the live HeritageGraph.
+#
+# `tools/fetch_wikidata_heritage.py` reads this file, fetches the subjects, the
+# items their statements point to, and the administrative chain above every
+# place, and freezes the result in heritage-snapshot.json. The importer
+# (`manage.py import_wikidata_heritage`) only ever reads the frozen snapshot, so
+# an import is reproducible from the repository alone.
+#
+# `seeds` are hand-picked; each QID was checked against its Wikidata label and
+# description before being listed. `key` is the HeritageGraph registry key the
+# subject is imported as; `type`, where given, fills the Tradition type choice.
+# `sweeps` pull every item of a class in Nepal.
+
+sweeps:
+  - key: structure
+    note: every place of worship (and subclass) located in Nepal
+    class: Q1370598
+    country: Q837
+
+seeds:
+  # Monument zones, palaces and named structures
+  - {qid: Q380384,  key: structure}   # Pashupatinath Temple
+  - {qid: Q889902,  key: structure}   # Boudhanath
+  - {qid: Q12946982, key: structure}  # Swayambhunath
+  - {qid: Q1062150, key: structure}   # Changu Narayan Temple
+  - {qid: Q4900869, key: structure}   # Bhaktapur Durbar Square
+  - {qid: Q7144236, key: structure}   # Patan Durbar Square
+  - {qid: Q6122177, key: structure}   # Basantapur (Kathmandu) Durbar Square
+  - {qid: Q12947124, key: structure}  # Hanuman Dhoka
+  - {qid: Q1513892, key: structure}   # Nyatapola Temple
+  - {qid: Q83776242, key: structure}  # Taleju Temple, Kathmandu
+  - {qid: Q6374805, key: structure}   # Kasthamandap
+  - {qid: Q13183200, key: structure}  # Krishna Mandir, Lalitpur
+  - {qid: Q9213,    key: location}    # Lumbini
+
+  # Places
+  - {qid: Q970717,  key: location}    # Kathmandu Valley
+  - {qid: Q2608296, key: location}    # Bungamati
+  - {qid: Q1517030, key: location}    # Kirtipur
+
+  # Festivals and observances
+  - {qid: Q301339,  key: festival}    # Indra Jatra (Yenya)
+  - {qid: Q16971988, key: festival}   # Rato Machindranath Jatra
+  - {qid: Q20704257, key: festival}   # Biska Jatra
+  - {qid: Q40887536, key: festival}   # Sā Pāru (Gai Jatra)
+  - {qid: Q106855753, key: festival}  # Ghode Jatra
+  - {qid: Q10379695, key: festival}   # Dashain
+  - {qid: Q15128500, key: festival}   # Tihar
+  - {qid: Q3630226, key: festival}    # Teej
+  - {qid: Q2671645, key: festival}    # Chhath
+  - {qid: Q848070,  key: festival}    # Maha Shivaratri
+  - {qid: Q5348941, key: festival}    # Buddha's birthday (Buddha Jayanti)
+  - {qid: Q105953215, key: festival}  # Mani Rimdu
+  - {qid: Q12927731, key: festival}   # Yomari Punhi
+  - {qid: Q6826848, key: festival}    # Mha Puja
+  - {qid: Q5578046, key: festival}    # Kushe Aunsi
+
+  # Deities
+  - {qid: Q11378,   key: deity}       # Shiva
+  - {qid: Q2055566, key: deity}       # Pashupati
+  - {qid: Q11380,   key: deity}       # Vishnu
+  - {qid: Q1579,    key: deity}       # Ganesha
+  - {qid: Q854730,  key: deity}       # Bhairava
+  - {qid: Q193849,  key: deity}       # Avalokiteshvara
+  - {qid: Q471696,  key: deity}       # Manjushri
+  - {qid: Q1420753, key: deity}       # Matsyendranath
+  - {qid: Q134696426, key: deity}     # Taleju Bhawani
+  - {qid: Q1064555, key: deity}       # Kumari
+
+  # Religious and cultural traditions
+  - {qid: Q9089,    key: tradition}   # Hinduism
+  - {qid: Q3655926, key: tradition}   # Newar Buddhism
+  - {qid: Q3429351, key: tradition}   # Kirat Mundhum
+  - {qid: Q13180926, key: tradition, type: dance}  # Charya Nritya
+  - {qid: Q7148832, key: tradition, type: craft}   # Paubha
+  - {qid: Q916651,  key: tradition, type: craft}   # Thangka
+
+  # People
+  - {qid: Q626019,  key: person}      # Araniko
+  - {qid: Q574450,  key: person}      # Prithvi Narayan Shah
+  - {qid: Q7238587, key: person}      # Pratap Malla
+  - {qid: Q13184445, key: person}     # Bhupatindra Malla

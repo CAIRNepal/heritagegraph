@@ -33,6 +33,8 @@ export function kgToGraphData(resp: KgGraphResponse): GraphData {
     nodes.push({
       id: n.id,
       label: n.label,
+      labelNe: devanagariLabel(n.labels, n.label),
+      recordSource: n.recordSource ?? null,
       nodeType,
       cidocMapping: cfg.cidocMapping,
       hgCategory: cfg.hgCategory as GraphNode['hgCategory'],
@@ -43,6 +45,8 @@ export function kgToGraphData(resp: KgGraphResponse): GraphData {
       imageCredits: narrative.imageCredits,
       lat: n.lat ?? undefined,
       long: n.long ?? undefined,
+      coordinateSource: n.coordinateSource,
+      coordinateFrom: n.coordinateFrom,
       inceptionYear: n.inceptionYear ?? undefined,
       tags: isLux ? ['Yale LUX', 'Collection link'] : undefined,
       keyFacts: narrative.keyFacts,
@@ -64,6 +68,12 @@ export function kgToGraphData(resp: KgGraphResponse): GraphData {
     }));
 
   return collapseClusterDuplicates({ nodes, links });
+}
+
+/** The record's Nepali (else Nepal Bhasa) label, when it differs from the display label. */
+export function devanagariLabel(labels: Record<string, string> | undefined, label: string): string | undefined {
+  const ne = labels?.ne ?? labels?.new;
+  return ne && ne !== label ? ne : undefined;
 }
 
 // Local name of an IRI (after the last # or /).

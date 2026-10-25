@@ -28,6 +28,12 @@ describe('placesOf', () => {
     expect(ps[1].inValley).toBe(false);
     expect(ps[0].year).toBe(460);
   });
+
+  it('leaves out a point borrowed from the containing place', () => {
+    const borrowed = { ...node('shrine', '27.7172', '85.3240'), coordinateSource: 'inherited' as const };
+    const gazetteer = { ...node('boudha', '27.7215', '85.3620'), coordinateSource: 'gazetteer' as const };
+    expect(placesOf([borrowed, gazetteer]).map((p) => p.node.id)).toEqual(['boudha']);
+  });
 });
 
 describe('eraOf', () => {

@@ -17,9 +17,9 @@ import {
 
 import { Button } from '@/components/ui/button';
 import { EntityRecordPanel } from '@/components/records/EntityRecordPanel';
-import { atlasHrefForNode } from '@/lib/cross-surface-links';
 import { isEquirectangular } from '@/lib/heritage-museum/panorama-support';
 import { isCuratedResourceIri, resourceIriToDetailHref } from '@/lib/provenance';
+import { provenanceTier } from '@/lib/heritage-museum/provenance-tier';
 import { unescoStatementForLabel } from '@/lib/unesco/status';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +42,8 @@ interface ExhibitViewProps {
   /** Live data only: pull this record's neighbours from the knowledge graph. */
   onExpand?: () => void;
   expanding?: boolean;
+  /** Switch to the map lens on this record; absent when it has no location. */
+  onShowOnMap?: () => void;
 }
 
 /**
@@ -49,7 +51,7 @@ interface ExhibitViewProps {
  * (never cropped, nothing printed over it), then a label — name, kind, date,
  * place, why it matters — then what can be verified, then the story.
  */
-export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onExpand, expanding }: ExhibitViewProps) {
+export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onExpand, expanding, onShowOnMap }: ExhibitViewProps) {
   const t = useTranslations('heritageMuseum');
   const tx = useTranslations('heritageMuseum.exhibit');
   const tp = useTranslations('heritageMuseum.panel');
@@ -63,8 +65,9 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
   const place = placeOf(connections);
   const unesco = unescoStatementForLabel(node.label);
   const detailHref = resourceIriToDetailHref(node.id);
-  const globeHref = node.lat != null && node.long != null ? atlasHrefForNode(node.id, dataSource) : null;
-  const reviewed = dataSource === 'live' && isCuratedResourceIri(node.id);
+  // What the record rests on, not merely which graph it came from: most live
+  // records are Wikidata imports, and "reviewed" would overstate them.
+  const tier = dataSource === 'live' && isCuratedResourceIri(node.id) ? provenanceTier(node.recordSource) : null;
   const lede = node.significance || (node.description !== node.storyText ? node.description : '');
 
   // 0: ~1280px version, 1: original upload, 2: no photograph.
@@ -148,6 +151,11 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
         <h2 id="exhibit-title" className="font-serif text-[clamp(1.9rem,4vw,2.75rem)] leading-[1.05] tracking-[-0.01em] text-foreground">
           {node.label}
         </h2>
+        {node.labelNe ? (
+          <p lang="ne" className="font-devanagari text-lg text-foreground">
+            {node.labelNe}
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
             <span className="size-[9px] rounded-full" style={{ background: cfg?.color }} aria-hidden />
@@ -168,10 +176,10 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
               : tUnesco('statusProperty', { year: unesco.year })}
           </p>
         ) : null}
-        {reviewed ? (
+        {tier ? (
           <p className="inline-flex items-center gap-1 text-xs font-medium text-primary">
-            <IconShieldCheck className="size-3.5" aria-hidden />
-            {tp('reviewedBadge')}
+            {tier === 'reviewed' ? <IconShieldCheck className="size-3.5" aria-hidden /> : null}
+            {tp(`tier.${tier}`)}
           </p>
         ) : null}
         {lede ? <p className="font-serif text-lg leading-normal text-foreground">{lede}</p> : null}
@@ -214,12 +222,10 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
               </Link>
             </Button>
           ) : null}
-          {globeHref ? (
-            <Button asChild variant="outline" size="sm">
-              <Link href={globeHref}>
-                <IconWorld className="size-3.5" aria-hidden />
-                {tp('viewOnGlobe')}
-              </Link>
+          {onShowOnMap ? (
+            <Button type="button" variant="outline" size="sm" onClick={onShowOnMap}>
+              <IconWorld className="size-3.5" aria-hidden />
+              {tp('viewOnGlobe')}
             </Button>
           ) : null}
           {onExpand ? (

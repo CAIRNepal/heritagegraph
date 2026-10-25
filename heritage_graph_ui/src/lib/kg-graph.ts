@@ -28,10 +28,28 @@ export interface KgImageCredit {
   retrieved?: string;
 }
 
+export interface KgRecordSource {
+  name: string | null; // registered DataSource, e.g. "Wikidata"
+  url: string | null;
+  citation: string | null; // the record's own source_citation
+  contributor: string | null;
+  status: string | null;
+}
+
 export interface KgGraphNode {
   id: string; // resource IRI
   types: string[]; // rdf:type IRIs
   label: string;
+  /** Labels by lower-cased BCP-47 tag ("en", "ne", "new", "ne-latn"). */
+  labels?: Record<string, string>;
+  /** Where the record's own content came from (not projected to RDF). */
+  recordSource?: KgRecordSource | null;
+  /**
+   * Where lat/long come from: the record itself, the gazetteer of well-known
+   * sites, or borrowed from the record that contains it (`coordinateFrom`).
+   */
+  coordinateSource?: 'record' | 'gazetteer' | 'inherited';
+  coordinateFrom?: string;
   comment: string | null;
   lat: string | null;
   long: string | null;
@@ -55,7 +73,8 @@ export interface KgGraphNode {
 }
 
 export interface KgEdgeProvenance {
-  source: string | null; // citation / DataSource title
+  source: string | null; // DataSource name, else the citation
+  citation?: string | null; // the assertion's own citation text
   confidence: string | null;
   confidenceScore: number | null;
   assertedBy: string | null; // contributor or agent id

@@ -135,6 +135,22 @@ class MetaData(models.Model):
         related_name="+",
         help_text="Registered DataSource backing this record, when one exists.",
     )
+    # `name` carries one label with no language. Records imported from an
+    # authority (Wikidata) arrive with labels in several languages, and the
+    # Nepali/Nepal Bhasa ones are exactly what the bilingual museum needs.
+    labels = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Labels by BCP-47 tag, e.g. {"en": "Indra Jatra", "ne": "इन्द्रजात्रा"}.',
+    )
+    media = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=(
+            "Sourced images: [{url, file, descriptionUrl, license, licenseUrl, "
+            "artist, source, retrieved}]."
+        ),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -227,9 +243,14 @@ class Location(MetaData):
                 "Requires GDAL for spatial queries."
             ),
         )
-    type = models.CharField(max_length=50, choices=LOCATION_TYPE_CHOICES)
+    type = models.CharField(max_length=50, choices=LOCATION_TYPE_CHOICES, blank=True)
     description = models.TextField(blank=True)
-    current_status = models.CharField(max_length=20, choices=LOCATION_STATUS_CHOICES)
+    current_status = models.CharField(
+        max_length=20,
+        choices=LOCATION_STATUS_CHOICES,
+        blank=True,
+        help_text="Physical state; blank where it does not apply (a district) or is not recorded.",
+    )
 
     ## Relationships
 
@@ -318,7 +339,12 @@ class Tradition(MetaData):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
-    type = models.CharField(max_length=20, choices=TRADITION_TYPE_CHOICES)
+    type = models.CharField(
+        max_length=20,
+        choices=TRADITION_TYPE_CHOICES,
+        blank=True,
+        help_text="Blank for traditions none of the choices describe, e.g. a religion.",
+    )
     description = models.TextField()
     associated_materials = models.TextField(
         blank=True, help_text="Tools, garments, instruments used"
