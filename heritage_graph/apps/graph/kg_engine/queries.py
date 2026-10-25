@@ -78,28 +78,47 @@ def fetch_type_counts(*, store: KnowledgeGraphStore | None = None) -> list[dict[
 # (POINT) so the map view keeps working.
 
 
-def graph_nodes_query(*, graph_uri: str | None, limit: int = 600) -> str:
+def graph_nodes_queries(*, graph_uri: str | None, limit: int = 600) -> list[str]:
+    """Node facts as four narrow SELECTs.
+
+    One query joining types, labels, comments, images and geometry returned a
+    row per combination, so a record with three labels and four images cost a
+    dozen rows and the row LIMIT cut whole nodes off the projection. Each of
+    these returns about one row per value, and `limit` is per node.
+    """
     graph_clause = f"GRAPH <{graph_uri}>" if graph_uri else ""
     curated = curated_resource_uri_filter(var="?s")
-    return f"""
+    head = f"""
 PREFIX rdf: <{RDF}>
 PREFIX rdfs: <{RDFS}>
 PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
 PREFIX schema: <https://schema.org/>
-SELECT DISTINCT ?s ?type ?label ?comment ?crmNote ?image ?wkt WHERE {{
-  {graph_clause} {{
-    ?s rdf:type ?type .
-    OPTIONAL {{ ?s rdfs:label ?label }}
-    OPTIONAL {{ ?s rdfs:comment ?comment }}
-    OPTIONAL {{ ?s crm:P3_has_note ?crmNote }}
-    OPTIONAL {{ ?s schema:image ?image }}
-    OPTIONAL {{ ?s ?geop ?wkt . FILTER(isLiteral(?wkt) && CONTAINS(STR(?wkt), "POINT")) }}
-    FILTER(STRSTARTS(STR(?type), "http"))
-    {curated}
-  }}
-}}
-LIMIT {int(limit)}
 """
+    typed = f"?s rdf:type ?anyType . FILTER(STRSTARTS(STR(?anyType), \"http\")) {curated}"
+    return [
+        head
+        + f"""SELECT DISTINCT ?s ?type WHERE {{ {graph_clause} {{
+    ?s rdf:type ?type . FILTER(STRSTARTS(STR(?type), "http")) {curated} }} }}
+LIMIT {int(limit) * 4}""",
+        head
+        + f"""SELECT DISTINCT ?s ?label ?labelLang WHERE {{ {graph_clause} {{
+    {typed} ?s rdfs:label ?label . BIND(LANG(?label) AS ?labelLang) }} }}
+LIMIT {int(limit) * 6}""",
+        head
+        + f"""SELECT ?s (SAMPLE(?c) AS ?comment) (SAMPLE(?n) AS ?crmNote) (SAMPLE(?w) AS ?wkt) WHERE {{
+  {graph_clause} {{
+    {typed}
+    OPTIONAL {{ ?s rdfs:comment ?c }}
+    OPTIONAL {{ ?s crm:P3_has_note ?n }}
+    OPTIONAL {{ ?s ?geop ?w . FILTER(isLiteral(?w) && CONTAINS(STR(?w), "POINT")) }}
+  }}
+}} GROUP BY ?s
+LIMIT {int(limit) * 2}""",
+        head
+        + f"""SELECT DISTINCT ?s ?image WHERE {{ {graph_clause} {{
+    {typed} ?s schema:image ?image }} }}
+LIMIT {int(limit) * 8}""",
+    ]
 
 
 def graph_edges_query(*, graph_uri: str | None, limit: int = 3000) -> str:
@@ -133,7 +152,10 @@ def fetch_graph_projection(
 ) -> dict[str, list[dict[str, str]]]:
     kg = store or KnowledgeGraphStore()
     graph_uri = GraphPartition.PUBLIC.uri()
+    nodes: list[dict[str, str]] = []
+    for query in graph_nodes_queries(graph_uri=graph_uri, limit=node_limit):
+        nodes.extend(kg.select(query))
     return {
-        "nodes": kg.select(graph_nodes_query(graph_uri=graph_uri, limit=node_limit)),
+        "nodes": nodes,
         "edges": kg.select(graph_edges_query(graph_uri=graph_uri, limit=edge_limit)),
     }
