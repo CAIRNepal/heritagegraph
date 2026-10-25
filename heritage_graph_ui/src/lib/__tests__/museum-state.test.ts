@@ -98,3 +98,12 @@ describe('provenanceTier', () => {
     expect(wikidataIdIn('Labels added from Wikidata Q301339 (revision 1)')).toBe('Q301339');
   });
 });
+
+describe('yearOfNode', () => {
+  it('reads circa, century and BCE dates the way the timeline does', async () => {
+    const { yearOfNode } = await import('@/lib/heritage-museum/museum-state');
+    expect(yearOfNode(node('a', 'A', { inceptionYear: 'c. 1200' }))).toBe(1200);
+    expect(yearOfNode(node('b', 'B', { inceptionYear: '3rd century BCE' }))).toBe(-250);
+    expect(yearOfNode(node('c', 'C', { inceptionYear: '' }))).toBeNull();
+  });
+});

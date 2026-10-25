@@ -17,6 +17,7 @@ import {
   type HgCategory,
 } from '@/lib/ontology/__generated__/heritage-viz-config';
 import type { GraphNode } from '@/app/(site)/heritage-museum/heritage-data';
+import { parseTemporalAnchor } from '@/lib/heritage-museum/temporal-parse';
 
 export const LENSES = ['exhibit', 'map', 'timeline', 'connections'] as const;
 export type Lens = (typeof LENSES)[number];
@@ -83,9 +84,13 @@ export function serializeMuseumParams(state: MuseumState): string {
   return p.toString();
 }
 
+/**
+ * A record's year on the axis, read the way the timeline reads it: circa
+ * dates, centuries and BCE forms count, so the timeline, the period filter
+ * and the walk through time agree on which records are dated.
+ */
 export function yearOfNode(node: GraphNode): number | null {
-  const y = parseInt(node.inceptionYear ?? '', 10);
-  return Number.isFinite(y) ? y : null;
+  return parseTemporalAnchor(node.inceptionYear)?.year ?? null;
 }
 
 /** Does a record match the search text? Label, any-language label, type, description, tags. */
