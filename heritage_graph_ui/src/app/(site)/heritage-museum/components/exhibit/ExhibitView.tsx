@@ -100,7 +100,7 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
   return (
     <article className="grid gap-0" aria-labelledby="exhibit-title">
       <div className="mb-3.5 flex items-center justify-between gap-3">
-        <span className="hidden text-[13px] text-muted-foreground sm:inline">
+        <span className="hidden text-[11px] font-bold tracking-[0.14em] text-story-accent uppercase sm:inline">
           {HG_CATEGORY_CONFIG[node.hgCategory]?.label} / {cfg?.label}
         </span>
         <span className="ml-auto flex gap-1.5">
@@ -113,11 +113,11 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
         </span>
       </div>
 
-      <figure className="m-0 overflow-hidden rounded-[14px] border border-border bg-card">
+      <figure className="m-0 overflow-hidden border border-story-rule bg-story-panel">
         {image && !imgFailed ? (
           // Holds its height while the photograph loads, so the label below
           // does not jump up and then down again.
-          <div className={cn('flex w-full items-center justify-center bg-muted', !imgLoaded && 'min-h-[45vh]')}>
+          <div className={cn('flex w-full items-center justify-center bg-story-panel', !imgLoaded && 'min-h-[45vh]')}>
             {/* Whole photograph at its own proportions, scaled to fit. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -133,7 +133,7 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
             />
           </div>
         ) : (
-          <div className="flex aspect-[3/2] max-h-[50vh] w-full flex-col items-center justify-center gap-2 bg-muted text-[13px] text-muted-foreground">
+          <div className="flex aspect-[3/2] max-h-[50vh] w-full flex-col items-center justify-center gap-2 bg-story-panel text-[13px] text-story-ink-soft">
             <span className="grid size-11 place-items-center rounded-full" style={{ background: cfg?.color }}>
               <NodeGlyph nodeType={node.nodeType} size={22} color="var(--node-glyph)" />
             </span>
@@ -141,18 +141,23 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
           </div>
         )}
         {credit && !imgFailed ? (
-          <figcaption className="border-t border-border px-3.5 py-2">
+          <figcaption className="border-t border-story-rule px-3.5 py-2">
             <ImageAttribution credit={credit} variant="onSurface" className="text-[11.5px]" />
           </figcaption>
         ) : null}
       </figure>
 
       <div className="grid max-w-[46rem] gap-2 pt-5">
-        <h2 id="exhibit-title" className="font-serif text-[clamp(1.9rem,4vw,2.75rem)] leading-[1.05] tracking-[-0.01em] text-foreground">
+        <h2 id="exhibit-title" className="text-[clamp(2.2rem,5vw,3.75rem)] leading-[0.95] font-extrabold tracking-tight text-balance">
           {node.label}
         </h2>
-        <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+        {node.labelNe ? (
+          <p lang="ne" className="font-devanagari text-xl font-semibold">
+            {node.labelNe}
+          </p>
+        ) : null}
+        <div className="flex flex-wrap gap-x-3.5 gap-y-1 text-sm text-story-ink-soft">
+          <span className="inline-flex items-center gap-1.5 font-semibold text-story-ink">
             <span className="size-[9px] rounded-full" style={{ background: cfg?.color }} aria-hidden />
             {cfg?.label}
           </span>
@@ -161,23 +166,23 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
           {node.religion ? <span>{node.religion}</span> : null}
           {node.dynasty ? <span>{tp('dynasty', { name: node.dynasty })}</span> : null}
         </div>
-        <p className="text-xs text-muted-foreground">{tGloss(node.nodeType)}</p>
+        <p className="text-xs text-story-ink-soft">{tGloss(node.nodeType)}</p>
         {/* From ground truth, never node.unescoStatus (see lib/unesco/status). */}
         {unesco ? (
-          <p className="inline-flex items-center gap-1.5 text-xs text-primary">
-            <span className="size-2 rounded-full bg-primary" aria-hidden />
+          <p className="inline-flex items-center gap-1.5 text-xs font-medium text-story-accent">
+            <span className="size-2 bg-story-accent" aria-hidden />
             {unesco.kind === 'monumentZone'
               ? tUnesco('statusMonumentZone', { year: unesco.year })
               : tUnesco('statusProperty', { year: unesco.year })}
           </p>
         ) : null}
         {tier ? (
-          <p className="inline-flex items-center gap-1 text-xs font-medium text-primary">
+          <p className="inline-flex items-center gap-1 border border-story-accent px-1.5 py-0.5 text-xs font-medium text-story-accent">
             {tier === 'reviewed' ? <IconShieldCheck className="size-3.5" aria-hidden /> : null}
             {tp(`tier.${tier}`)}
           </p>
         ) : null}
-        {lede ? <p className="font-serif text-lg leading-normal text-foreground">{lede}</p> : null}
+        {lede ? <p className="pt-1 text-lg leading-relaxed">{lede}</p> : null}
 
         <div className="flex flex-wrap gap-2 pt-2">
           {narration.supported && node.storyText?.trim() ? (
@@ -239,29 +244,29 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
       </div>
 
       <section className="grid max-w-[46rem] gap-2.5 pt-6" aria-labelledby="exhibit-story">
-        <h3 id="exhibit-story" className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+        <h3 id="exhibit-story" className="text-[11px] font-bold tracking-[0.14em] uppercase">
           {tp('story')}
         </h3>
         {dataSource === 'demo' && node.storyText?.trim() ? (
-          <p className="justify-self-start rounded-full bg-warning-soft px-2.5 py-0.5 text-xs text-warning-on-soft">{tp('sampleNarrative')}</p>
+          <p className="justify-self-start border border-warning-strong/40 bg-warning-soft px-2.5 py-1 text-xs font-medium text-warning-on-soft">{tp('sampleNarrative')}</p>
         ) : null}
         {node.storyText?.trim() ? (
-          <p className="text-base leading-[1.75] whitespace-pre-line text-foreground">{node.storyText}</p>
+          <p className="text-base leading-[1.75] whitespace-pre-line text-story-ink">{node.storyText}</p>
         ) : (
-          <p className="text-sm italic text-muted-foreground">{tp('noNarrativeRecorded')}</p>
+          <p className="text-sm italic text-story-ink-soft">{tp('noNarrativeRecorded')}</p>
         )}
       </section>
 
       {node.keyFacts?.length ? (
         <section className="grid max-w-[46rem] gap-2.5 pt-6" aria-labelledby="exhibit-facts">
-          <h3 id="exhibit-facts" className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+          <h3 id="exhibit-facts" className="text-[11px] font-bold tracking-[0.14em] uppercase">
             {tp('keyFacts')}
           </h3>
           <dl className="m-0 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-5 gap-y-2 text-sm">
             {node.keyFacts.map((f, i) => (
               <div key={i} className="contents">
-                <dt className="text-muted-foreground">{f.label}</dt>
-                <dd className="m-0 text-foreground">{f.value}</dd>
+                <dt className="text-story-ink-soft">{f.label}</dt>
+                <dd className="m-0 text-story-ink">{f.value}</dd>
               </div>
             ))}
           </dl>
@@ -270,17 +275,17 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
 
       {more.length || node.rituals?.length ? (
         <details className="group max-w-[46rem] pt-6">
-          <summary className="cursor-pointer text-sm font-medium text-primary">{tx('moreAbout', { name: node.label })}</summary>
-          <div className="grid gap-4 pt-3 text-sm leading-relaxed text-foreground">
+          <summary className="cursor-pointer text-sm font-semibold text-story-accent">{tx('moreAbout', { name: node.label })}</summary>
+          <div className="grid gap-4 pt-3 text-sm leading-relaxed text-story-ink">
             {more.map(([h, v]) => (
               <div key={h} className="grid gap-1">
-                <h4 className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">{h}</h4>
+                <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase">{h}</h4>
                 <p>{v}</p>
               </div>
             ))}
             {node.rituals?.length ? (
               <div className="grid gap-1">
-                <h4 className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">{tp('rituals')}</h4>
+                <h4 className="text-[11px] font-bold tracking-[0.14em] uppercase">{tp('rituals')}</h4>
                 <ul className="list-disc pl-5">
                   {node.rituals.map((r, i) => (
                     <li key={i}>{r}</li>
@@ -293,16 +298,16 @@ export function ExhibitView({ node, connections, dataSource, onPrev, onNext, onE
       ) : null}
 
       <section className="grid max-w-[46rem] gap-2 pt-6 pb-2" aria-labelledby="exhibit-record">
-        <h3 id="exhibit-record" className="text-xs font-medium tracking-[0.08em] text-muted-foreground uppercase">
+        <h3 id="exhibit-record" className="text-[11px] font-bold tracking-[0.14em] uppercase">
           {tx('record')}
         </h3>
         <dl className="m-0 grid grid-cols-[max-content_minmax(0,1fr)] gap-x-5 gap-y-1.5 text-[13px]">
-          <dt className="text-muted-foreground">ID</dt>
-          <dd className="m-0 font-mono text-xs break-all text-foreground">{node.id}</dd>
-          <dt className="text-muted-foreground">{tp('hgClass')}</dt>
-          <dd className="m-0 font-mono text-xs text-foreground">hg:{node.nodeType}</dd>
-          <dt className="text-muted-foreground">CIDOC-CRM</dt>
-          <dd className="m-0 font-mono text-xs break-all text-foreground">{node.cidocMapping}</dd>
+          <dt className="text-story-ink-soft">ID</dt>
+          <dd className="m-0 font-mono text-xs break-all text-story-ink">{node.id}</dd>
+          <dt className="text-story-ink-soft">{tp('hgClass')}</dt>
+          <dd className="m-0 font-mono text-xs text-story-ink">hg:{node.nodeType}</dd>
+          <dt className="text-story-ink-soft">CIDOC-CRM</dt>
+          <dd className="m-0 font-mono text-xs break-all text-story-ink">{node.cidocMapping}</dd>
         </dl>
       </section>
 
