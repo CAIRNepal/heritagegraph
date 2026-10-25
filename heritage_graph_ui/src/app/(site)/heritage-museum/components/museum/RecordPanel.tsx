@@ -147,7 +147,9 @@ export function RecordPanel({
   const { t: ta, eraName, km } = useAtlasWords();
   const words = useExhibitWords();
   const cfg = NODE_TYPE_CONFIG[node.nodeType];
-  const c = coordsOf(node);
+  // A borrowed point is the containing record's; say so instead of printing it as this one's.
+  const borrowedFrom = node.coordinateSource === 'inherited' ? allNodes.find((n) => n.id === node.coordinateFrom) ?? null : null;
+  const c = node.coordinateSource === 'inherited' ? null : coordsOf(node);
   const y = yearOf(node);
   const place = placeOf(connections);
   const self = placeById.get(node.id);
@@ -295,6 +297,13 @@ export function RecordPanel({
               </>
             ) : null}
           </dl>
+        ) : borrowedFrom ? (
+          <p className="text-[13px]">
+            <span className="text-story-ink-soft">{tr('noOwnLocation')} </span>
+            <button type="button" onClick={() => onSelect(borrowedFrom)} className="cursor-pointer font-semibold underline underline-offset-4">
+              {tr('within', { place: borrowedFrom.label })}
+            </button>
+          </p>
         ) : (
           <p className="text-[13px] text-story-ink-soft">{t('noLocation')}</p>
         )}

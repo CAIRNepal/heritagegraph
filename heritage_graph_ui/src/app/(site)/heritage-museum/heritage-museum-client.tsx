@@ -36,7 +36,7 @@ import { TimelineStrip } from './components/TimelineStrip';
 import { CollectionRail } from './components/exhibit/CollectionRail';
 import { EgoGraph } from './components/exhibit/EgoGraph';
 import { ExhibitView } from './components/exhibit/ExhibitView';
-import { connectionsOf, coordsOf } from './components/exhibit/exhibit-utils';
+import { connectionsOf } from './components/exhibit/exhibit-utils';
 import { RailControls } from './components/exhibit/RailControls';
 import { MapLens } from './components/lenses/MapLens';
 import { KeyboardHelp } from './components/museum/KeyboardHelp';
@@ -461,7 +461,7 @@ export function HeritageMindMapClient() {
           onNext={next ? () => selectByUser(next) : undefined}
           onExpand={dataSource === 'live' ? () => void expandNode(selectedNode) : undefined}
           expanding={expanding}
-          onShowOnMap={coordsOf(selectedNode) ? () => setLens('map') : undefined}
+          onShowOnMap={selectedPlace ? () => setLens('map') : undefined}
         />
       </div>
     );

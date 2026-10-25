@@ -28,6 +28,7 @@ interface NepalMapProps {
 export function NepalMiniMap({ nodes, selectedId }: NepalMapProps) {
   const tx = useTranslations('heritageMuseum.exhibit');
   const located = nodes
+    .filter((n) => n.coordinateSource !== 'inherited')
     .map((n) => ({ n, c: coordsOf(n) }))
     .filter((x): x is { n: GraphNode; c: { lat: number; lon: number } } => x.c !== null && x.c.lon >= W && x.c.lon <= E && x.c.lat >= S && x.c.lat <= N);
   const sel = located.find((x) => x.n.id === selectedId);
