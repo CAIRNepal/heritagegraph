@@ -110,11 +110,9 @@ export function HeritageMindMapClient() {
     setKind(initial.kind);
     setEra(initial.era);
     setSearchQuery(initial.q);
-    // The reviewed live graph is the default: its records are sourced, while
-    // the illustrated corpus's prose is explicitly uncitable. The corpus opens
-    // when asked for, or when the live graph is unavailable.
-    if (initial.source === 'demo') collection.switchTo('demo');
-    else collection.preferLive();
+    // The illustrated corpus is self-contained and always renders, so it is the
+    // default; the live graph loads when the URL or the visitor asks for it.
+    if (initial.source === 'live') collection.switchTo('live');
     // Runs once; the collection is stable enough for a one-shot read.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);

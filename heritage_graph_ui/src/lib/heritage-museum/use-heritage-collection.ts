@@ -140,28 +140,6 @@ export function useHeritageCollection() {
     [liveGraph, loadLive],
   );
 
-  // Set when live was chosen as the default rather than asked for: if it then
-  // fails to load, the page falls back to the demo corpus instead of an empty
-  // stage, and keeps the failure notice up so the fallback is never silent.
-  const fallbackArmedRef = useRef(false);
-
-  /** Open on the live graph when it is configured; otherwise stay on the demo corpus. */
-  const preferLive = useCallback((): boolean => {
-    if (!API_BASE || !isPublicApiUrlConfigured()) return false;
-    fallbackArmedRef.current = true;
-    setSource('live');
-    if (!liveGraph) void loadLive();
-    return true;
-  }, [liveGraph, loadLive]);
-
-  useEffect(() => {
-    if (fallbackArmedRef.current && source === 'live' && liveError && !liveGraph) {
-      fallbackArmedRef.current = false;
-      setSource('demo');
-    }
-    if (liveGraph) fallbackArmedRef.current = false;
-  }, [source, liveError, liveGraph]);
-
   const retryLive = useCallback(() => {
     setLiveError(null);
     void loadLive();
@@ -171,7 +149,6 @@ export function useHeritageCollection() {
   return {
     source,
     switchTo,
-    preferLive,
     graph,
     /** Waiting for the first graph of the current source. */
     loading: source === 'live' ? liveLoading && !liveGraph : demoLoading,
