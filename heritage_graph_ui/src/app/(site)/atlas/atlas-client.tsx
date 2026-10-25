@@ -25,21 +25,18 @@ import { RailControls } from '@/app/(site)/heritage-museum/components/exhibit/Ra
 import { NODE_TYPE_CONFIG } from '@/app/(site)/heritage-museum/heritage-data';
 import {
   ERAS,
-  decodeGrid,
-  elevationAt,
   eraOf,
   mapFacts,
   nearbyPlaces,
   placesOf,
   type AtlasPlace,
-  type DecodedGrid,
-  type ElevationGrid,
   type EraId,
   type MapFact,
 } from '@/lib/heritage-atlas/atlas-model';
+import { useAtlasRelief } from '@/lib/heritage-atlas/use-atlas-relief';
 import { API_BASE, useHeritageCollection } from '@/lib/heritage-museum/use-heritage-collection';
 
-import type { MapCommand, ReliefMeta } from './components/AtlasMap';
+import type { MapCommand } from './components/AtlasMap';
 import { readEraColors, useAtlasWords } from './components/atlas-words';
 import { EraBar, MapControls } from './components/MapChrome';
 import { PlacePanel } from './components/PlacePanel';
@@ -51,10 +48,6 @@ const RAIL_QUERY = '(min-width: 1024px)';
 const WIDE_QUERY = '(min-width: 1280px)';
 const NEARBY_KM = 15;
 const REGION_TYPES = new Set(['Place', 'Settlement']);
-
-interface ReliefFile extends ReliefMeta {
-  elevation: { nepal: ElevationGrid; valley: ElevationGrid };
-}
 
 export default function AtlasClient() {
   const tm = useTranslations('heritageMuseum');
@@ -73,8 +66,7 @@ export default function AtlasClient() {
   const [basemap, setBasemap] = useState<'terrain' | 'streets'>('terrain');
   const [tour, setTour] = useState<{ stops: string[]; k: number } | null>(null);
   const [command, setCommand] = useState<(MapCommand & { n: number }) | null>(null);
-  const [relief, setRelief] = useState<ReliefMeta | null>(null);
-  const [grids, setGrids] = useState<{ nepal: DecodedGrid; valley: DecodedGrid } | null>(null);
+  const { relief, altitudeAt } = useAtlasRelief();
   const [railOpen, setRailOpen] = useState(false);
   const [eraColors, setEraColors] = useState<Record<EraId, string> | null>(null);
 
@@ -92,17 +84,7 @@ export default function AtlasClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // ── relief + elevation, after first paint ──
-  useEffect(() => {
-    setEraColors(readEraColors());
-    fetch('/atlas/relief.json')
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`relief ${r.status}`))))
-      .then((f: ReliefFile) => {
-        setRelief({ nepal: f.nepal, valley: f.valley });
-        setGrids({ nepal: decodeGrid(f.elevation.nepal), valley: decodeGrid(f.elevation.valley) });
-      })
-      .catch((err) => console.error('atlas: relief failed to load', err));
-  }, []);
+  useEffect(() => setEraColors(readEraColors()), []);
 
   // ── places ──
   const graph = collection.graph;
@@ -147,7 +129,7 @@ export default function AtlasClient() {
     () => (selected ? nearbyPlaces(selected, allPlaces, NEARBY_KM, new Set(connections.map((c) => c.other.id))).slice(0, 6) : []),
     [selected, allPlaces, connections],
   );
-  const altitude = useCallback((p: AtlasPlace) => elevationAt(grids, p.lat, p.lon), [grids]);
+  const altitude = useCallback((p: AtlasPlace) => altitudeAt(p.lat, p.lon), [altitudeAt]);
   const facts = useMemo(() => mapFacts(allPlaces, altitude), [allPlaces, altitude]);
 
   const colorOf = useCallback(
