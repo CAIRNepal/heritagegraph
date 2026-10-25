@@ -76,9 +76,6 @@ export function LensTabs({ lens, onLens, counts }: LensTabsProps) {
             {count != null ? (
               <span className={cn('text-xs tabular-nums', active ? 'opacity-70' : 'text-story-ink-soft')}>{count}</span>
             ) : null}
-            <kbd className={cn('hidden font-sans text-[10px] lg:inline', active ? 'opacity-60' : 'text-story-ink-soft')} aria-hidden>
-              {i + 1}
-            </kbd>
           </button>
         );
       })}
