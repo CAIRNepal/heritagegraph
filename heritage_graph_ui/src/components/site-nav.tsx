@@ -40,7 +40,6 @@ import { cn } from '@/lib/utils';
 const PRIMARY = [
   { key: 'heritageMuseum', href: '/heritage-museum' },
   { key: 'stories', href: '/stories' },
-  { key: 'heritageAtlas', href: '/atlas' },
   { key: 'contribute', href: '/contribute' },
   { key: 'dashboard', href: '/dashboard' },
 ] as const;
