@@ -31,6 +31,8 @@ export interface Relation {
   out: Question;
   /** Question raised by following it backwards. */
   in: Question;
+  /** `out`, worded for a person: "When did they live?", not "When was it alive?". */
+  outPerson?: Question;
   kind: ThemeKind;
   /** Lower comes first in a story. */
   order: number;
@@ -123,6 +125,7 @@ export const RELATIONS: Record<string, Relation> = {
     phrase: 'was active during',
     inversePhrase: 'was the time of',
     out: { en: 'When was it alive?' },
+    outPerson: { en: 'When did they live?' },
     in: { en: 'What was alive then?' },
     kind: 'time',
     order: 4,
@@ -140,6 +143,7 @@ export const RELATIONS: Record<string, Relation> = {
     phrase: 'is a member of',
     inversePhrase: 'counts as a member',
     out: { en: 'Who does it belong with?' },
+    outPerson: { en: 'Who did they belong with?' },
     in: { en: 'Who belongs to it?' },
     kind: 'people',
     order: 5,
@@ -148,6 +152,7 @@ export const RELATIONS: Record<string, Relation> = {
     phrase: 'belongs to',
     inversePhrase: 'is the community of',
     out: { en: 'Which community is it part of?' },
+    outPerson: { en: 'Which community did they come from?' },
     in: { en: 'Who belongs to this community?' },
     kind: 'people',
     order: 5,
@@ -188,6 +193,7 @@ export const RELATIONS: Record<string, Relation> = {
     phrase: 'is associated with',
     inversePhrase: 'is associated with',
     out: { en: 'What else is it tied to?' },
+    outPerson: { en: 'What else are they tied to?' },
     in: { en: 'What else is it tied to?' },
     kind: 'tie',
     order: 9,

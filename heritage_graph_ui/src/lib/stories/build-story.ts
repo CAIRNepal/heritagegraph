@@ -166,7 +166,7 @@ export function buildStory(index: GraphIndex, focusId: string, maxStops = 7): St
     const relation = relationFor(edge.predicateLocal);
     const question = relation
       ? direction === 'out'
-        ? relation.out
+        ? (focus.segment === 'person' && relation.outPerson) || relation.out
         : relation.in
       : { en: 'What else is it tied to?' };
     const key = `${direction}|${question.en}`;

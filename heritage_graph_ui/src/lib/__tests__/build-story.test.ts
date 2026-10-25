@@ -89,6 +89,17 @@ describe('buildStory', () => {
   });
 });
 
+describe('person stories', () => {
+  it('word their questions for a person', () => {
+    const idx = indexGraph({
+      nodes: [node('person/1', 'Pratap Malla'), node('period/2', 'Malla period')],
+      edges: [edge('person/1', 'active_during', 'period/2')],
+    });
+    expect(buildStory(idx, R + 'person/1')!.stops[0].question.en).toBe('When did they live?');
+    expect(buildStory(idx, R + 'period/2')!.stops[0].question.en).toBe('What was alive then?');
+  });
+});
+
 describe('storyReadyRecords', () => {
   it('lists records that can answer at least two questions', () => {
     const labels = storyReadyRecords(index).map((r) => r.label);
