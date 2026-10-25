@@ -55,7 +55,7 @@ const T0 = -300;
 const T1 = 2030;
 const tx = (y: number) => ((y - T0) / (T1 - T0)) * 100;
 
-function MiniTimeline({ nodes, selectedId }: { nodes: GraphNode[]; selectedId: string | null }) {
+export function MiniTimeline({ nodes, selectedId }: { nodes: GraphNode[]; selectedId: string | null }) {
   const tt = useTranslations('heritageMuseum.timeline');
   return (
     <div className="relative h-[54px]" aria-hidden="true">
