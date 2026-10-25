@@ -6,6 +6,7 @@ import { IconInfoCircle } from '@tabler/icons-react';
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { glassCard } from '@/lib/design';
 import { buildTimelineLayout } from '@/lib/heritage-museum/timeline-layout';
 import { cn } from '@/lib/utils';
 
@@ -58,14 +59,17 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
   if (!layout) {
     return (
       <div
-        className="flex h-full min-h-0 flex-col px-4 py-3 sm:px-6"
+        className={cn(
+          glassCard,
+          'flex h-full min-h-0 flex-col rounded-none border-0 px-4 py-3 shadow-none sm:px-6',
+        )}
         role="status"
         aria-label={t('title')}
       >
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-story-ink-soft">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {t('title')}
         </h3>
-        <p className="mt-2 text-xs text-story-ink-soft">
+        <p className="mt-2 text-xs text-muted-foreground">
           {nodes.length === 0 ? t('emptyNoNodes') : t('emptyUndated', { count: nodes.length })}
         </p>
       </div>
@@ -81,28 +85,31 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
 
   return (
     <div
-      className="flex h-full min-h-0 flex-col px-4 py-3 sm:px-6"
+      className={cn(
+        glassCard,
+        'flex h-full min-h-0 flex-col rounded-none border-0 px-4 py-3 shadow-none sm:px-6',
+      )}
       role="region"
       aria-label={t('title')}
     >
       {/* Header: title, coverage stats, methods */}
       <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-story-ink-soft">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {t('title')}
         </h3>
-        <span className="text-[11px] text-story-ink-soft">
+        <span className="text-[11px] text-muted-foreground">
           {t('coverage', {
             dated: layout.datedCount,
             total: nodes.length,
           })}
         </span>
         {layout.uncertainCount > 0 ? (
-          <span className="text-[11px] text-story-ink-soft">
+          <span className="text-[11px] text-muted-foreground">
             {t('uncertainCount', { count: layout.uncertainCount })}
           </span>
         ) : null}
         {layout.undatedCount > 0 ? (
-          <span className="text-[11px] text-story-accent">
+          <span className="text-[11px] text-primary">
             {t('undatedExcluded', { count: layout.undatedCount })}
           </span>
         ) : null}
@@ -114,22 +121,22 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 gap-1 px-2 text-[11px] text-story-ink-soft"
+                className="h-7 gap-1 px-2 text-[11px] text-muted-foreground"
               >
                 <IconInfoCircle className="h-3.5 w-3.5" aria-hidden />
                 {t('methodsButton')}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[min(22rem,90vw)] text-xs leading-relaxed" align="end">
-              <p className="font-semibold text-story-ink">{t('methodsTitle')}</p>
-              <ul className="mt-2 list-disc space-y-1.5 pl-4 text-story-ink-soft">
+              <p className="font-semibold text-foreground">{t('methodsTitle')}</p>
+              <ul className="mt-2 list-disc space-y-1.5 pl-4 text-muted-foreground">
                 <li>{t('methodsAxis')}</li>
                 <li>{t('methodsPeriods')}</li>
                 <li>{t('methodsUncertainty')}</li>
                 <li>{t('methodsLanes')}</li>
                 <li>{t('methodsProvenance')}</li>
               </ul>
-              <p className="mt-2 font-mono text-[10px] text-story-ink-soft">
+              <p className="mt-2 font-mono text-[10px] text-muted-foreground">
                 {t('axisRange', { min: minYear, max: maxYear })}
               </p>
             </PopoverContent>
@@ -137,7 +144,7 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
         </div>
       </div>
 
-      <div className="relative min-h-0 flex-1 overflow-hidden border border-story-rule bg-story-paper">
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-md border border-border/60 bg-muted/25">
         <div
           ref={scrollRef}
           className="absolute inset-0 overflow-x-auto overflow-y-auto overscroll-contain pb-9"
@@ -151,7 +158,7 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
           {periods.map((p) => (
             <div
               key={p.id}
-              className="absolute top-0 flex items-end justify-center overflow-hidden border-x border-story-rule-soft bg-story-panel"
+              className="absolute top-0 flex items-end justify-center overflow-hidden rounded-sm border border-primary/15 bg-primary/5"
               style={{
                 left: Math.min(p.x0, p.x1),
                 width: Math.max(8, Math.abs(p.x1 - p.x0)),
@@ -163,7 +170,7 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
                 end: p.endYear,
               })}
             >
-              <span className="truncate px-1.5 pb-0.5 text-[10px] font-semibold text-story-ink">
+              <span className="truncate px-1.5 pb-0.5 text-[10px] font-medium text-primary/90">
                 {t(p.labelKey)}
               </span>
             </div>
@@ -176,11 +183,11 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
               className="absolute flex flex-col-reverse items-center -translate-x-1/2"
               style={{ left: tick.x, bottom: TIMELINE_AXIS_RESERVE_PX - 4 }}
             >
-              <span className="text-[10px] font-mono tabular-nums text-story-ink-soft">
+              <span className="text-[10px] font-mono tabular-nums text-muted-foreground">
                 {tick.year}
               </span>
               <span
-                className="mb-0.5 block h-2 w-px bg-story-rule-soft"
+                className="mb-0.5 block h-2 w-px bg-border/70"
                 aria-hidden
               />
             </div>
@@ -190,7 +197,7 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
           {clusterPills.map((pill) => (
             <div
               key={`cluster-${pill.year}`}
-              className="absolute -translate-x-1/2 border border-story-rule bg-story-paper px-1.5 py-0.5 text-[9px] font-semibold text-story-ink-soft"
+              className="absolute -translate-x-1/2 rounded-full border border-border bg-card/90 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground shadow-sm"
               style={{ left: pill.x, bottom: 6 }}
               title={t('sameYearCluster', { year: pill.year, count: pill.size })}
             >
@@ -219,27 +226,33 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
                 title={ariaLabel}
                 className={cn(
                   'absolute flex flex-col items-center gap-0.5 -translate-x-1/2',
-                  'group focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-story-accent',
+                  'group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
                 )}
                 style={{ left: m.x, top }}
               >
                 {/* Uncertainty: dashed halo (does not imply false precision) */}
-                {/* Flat squares in the record type's colour; the open record in
-                    red, an uncertain date dashed (no false precision). */}
                 <div
                   className={cn(
-                    'flex items-center justify-center outline-offset-2 motion-safe:transition-transform motion-safe:group-hover:scale-110',
-                    isSelected ? 'outline-3 outline-story-accent' : m.anchor.uncertain ? 'outline-2 outline-dashed outline-story-ink-soft' : '',
+                    'flex items-center justify-center rounded-full text-base transition-transform group-hover:scale-110',
+                    m.anchor.uncertain && 'ring-2 ring-dashed ring-muted-foreground/50 ring-offset-1 ring-offset-transparent',
                   )}
-                  style={{ width: MARKER_SIZE, height: MARKER_SIZE, background: cfg.color }}
+                  style={{
+                    width: MARKER_SIZE,
+                    height: MARKER_SIZE,
+                    background: `radial-gradient(circle at 35% 35%, ${cfg.glowColor}, ${cfg.color})`,
+                    boxShadow: isSelected ? `0 0 14px ${cfg.color}` : undefined,
+                    border: isSelected
+                      ? `2px solid ${cfg.glowColor}`
+                      : '2px solid transparent',
+                  }}
                   aria-hidden
                 >
                   <NodeGlyph nodeType={m.node.nodeType} size={MARKER_SIZE - 16} color="#fff" />
                 </div>
-                <span className="max-w-[72px] truncate text-center text-[9px] font-mono text-story-ink-soft">
+                <span className="max-w-[72px] truncate text-center text-[9px] font-mono text-muted-foreground/90">
                   {m.anchor.uncertain ? `~${m.anchor.year}` : m.anchor.year}
                 </span>
-                <span className="pointer-events-none absolute bottom-full mb-1 hidden whitespace-nowrap border border-story-rule bg-story-paper px-1.5 py-0.5 text-[10px] font-semibold text-story-ink opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:block">
+                <span className="pointer-events-none absolute bottom-full mb-1 hidden whitespace-nowrap rounded border border-border bg-card/95 px-1.5 py-0.5 text-[10px] text-foreground opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 sm:block">
                   {m.node.label}
                 </span>
               </button>
@@ -250,12 +263,12 @@ export function TimelineStrip({ nodes, selectedId, onSelect }: TimelineStripProp
 
         {/* Axis pinned to bottom of lower pane */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-7 z-10 h-px bg-story-rule"
+          className="pointer-events-none absolute inset-x-0 bottom-7 z-10 h-px bg-gradient-to-r from-transparent via-border to-transparent"
           aria-hidden
         />
       </div>
 
-      <p className="mt-2 shrink-0 text-[10px] leading-snug text-story-ink-soft">
+      <p className="mt-2 shrink-0 text-[10px] leading-snug text-muted-foreground">
         {t('footerHint')}
       </p>
     </div>
