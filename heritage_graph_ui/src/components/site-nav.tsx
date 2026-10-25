@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 /** The destinations a visitor navigates by. */
 const PRIMARY = [
   { key: 'heritageMuseum', href: '/heritage-museum' },
+  { key: 'stories', href: '/stories' },
   { key: 'heritageAtlas', href: '/atlas' },
   { key: 'contribute', href: '/contribute' },
   { key: 'dashboard', href: '/dashboard' },
