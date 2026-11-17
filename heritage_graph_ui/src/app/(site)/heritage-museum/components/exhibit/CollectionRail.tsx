@@ -110,6 +110,7 @@ export function CollectionRail({
     <div className="flex h-full min-h-0 flex-col">
       <div className="grid gap-3 border-b border-border px-[18px] pt-5 pb-3">
         <div className="grid gap-1.5">
+          {showTitle ? <p className="text-[10px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">{t('eyebrow')}</p> : null}
           {showTitle ? <h1 className="font-serif text-[1.65rem] leading-tight text-foreground">{t('title')}</h1> : null}
           <p className="text-[13px] leading-relaxed text-muted-foreground">{tx('railLede')}</p>
         </div>
@@ -142,6 +143,7 @@ export function CollectionRail({
             </button>
           ) : null}
         </div>
+        <p className="-mt-1 text-[11px] leading-snug text-muted-foreground">{tx('filterHint')}</p>
         <div role="group" aria-label={tx('kindsLabel')} className="flex flex-wrap gap-1.5">
           {kinds.map((k) => (
             <button

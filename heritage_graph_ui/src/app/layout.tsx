@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import {
   Poppins,
   Fraunces,
-  Geist_Mono,
+  JetBrains_Mono,
   Noto_Sans_Devanagari,
   Noto_Serif_Devanagari,
 } from 'next/font/google';
@@ -49,7 +49,9 @@ const notoSerifDevanagari = Noto_Serif_Devanagari({
   display: 'swap',
 });
 
-const geistMono = Geist_Mono({
+// Geist Mono removed: Google Fonts now serves it from extensionless gstatic URLs
+// that next/font (15.5.x) cannot parse, which breaks `next build`.
+const geistMono = JetBrains_Mono({
   subsets: ['latin'],
   weight: ['400', '600', '700'],
   variable: '--font-mono',

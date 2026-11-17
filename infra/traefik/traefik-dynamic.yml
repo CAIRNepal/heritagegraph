@@ -101,12 +101,9 @@ http:
         - securityHeaders
         - compression
 
-    # Frontend router (example)
-    frontend:
-      rule: Host(`frontend.localhost`) || Host(`localhost`)
-      service: frontend-service
-      middlewares:
-        - securityHeaders
+    # NOTE: no frontend router here. Docker labels on the `frontend` service define it;
+    # a duplicate here applied securityHeaders and overwrote the app's own CSP
+    # (blocking hydration + API calls, so the page flashed then went blank).
 
   # ================================================================
   # Services (backend targets)
@@ -117,9 +114,3 @@ http:
       loadBalancer:
         servers:
           - url: http://backend:8000
-
-    # Frontend service
-    frontend-service:
-      loadBalancer:
-        servers:
-          - url: http://frontend:3000

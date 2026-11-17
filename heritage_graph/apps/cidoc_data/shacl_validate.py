@@ -64,10 +64,12 @@ def triples_to_rdflib_graph(triples: list[Any]):
                 graph.add((subject, predicate, Literal(lexical, datatype=xsd_type)))
             else:
                 graph.add(
-                    (subject, predicate, Literal(lexical, datatype=URIRef(datatype))
+                    (subject, predicate, Literal(lexical, datatype=URIRef(datatype)))
                 )
         else:
-            graph.add((subject, predicate, Literal(lexical, datatype=URIRef(datatype)))
+            graph.add(
+                (subject, predicate, Literal(lexical, datatype=URIRef(datatype)))
+            )
     return graph
 
 

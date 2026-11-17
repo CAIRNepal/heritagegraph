@@ -66,8 +66,8 @@ services:
       - "--log.level=INFO"
       - "--accesslog=true"
     ports:
-      - "80:80"
-      - "443:443"
+      - "8081:80"
+      - "8444:443"
       - "8080:8080"  # Dashboard (disable in production)
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -99,8 +99,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend
-      target: runtime-lean
+      dockerfile: Dockerfile.backend.lean
     container_name: heritage-backend
     restart: unless-stopped
     environment:
@@ -122,7 +121,7 @@ services:
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/2}
       HERITAGEGRAPH_DEV_AUTH: ${HERITAGEGRAPH_DEV_AUTH:-true}
       # CORS
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend.localhost}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend.localhost,http://frontend.localhost:8081}
       # OCR: configuration only (actual OCR runs in `ocr-worker`, not this container)
       OCR_ENABLED: ${OCR_ENABLED:-false}
       TESSERACT_PATH: ${TESSERACT_PATH:-/usr/bin/tesseract}
@@ -159,6 +158,7 @@ services:
     volumes:
       - ./heritage_graph:/app/heritage_graph
       - ./ontology:/app/ontology
+      - ./ontology:/ontology
       - ./tools:/app/tools
       - ./.cursor:/home/nabin/projects/heritagegraph/.cursor
       - backend-static:/app/heritage_graph/staticfiles
@@ -168,15 +168,16 @@ services:
       - backend
     expose:
       - 8000
+    ports:
+      - "8001:8000"
     labels:
       - "traefik.enable=true"
-      # Route backend for both host-based API access and path-based access.
-      # The app uses endpoints like /data/* and /cidoc/* (not just /api/*).
-      - "traefik.http.routers.backend.rule=Host(`backend.localhost`) || PathPrefix(`/api`) || PathPrefix(`/data`) || PathPrefix(`/cidoc`) || PathPrefix(`/health`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`) || PathPrefix(`/schema`)"
+      - "traefik.docker.network=proxy"
+      # Host-based only: PathPrefix(`/api`) would steal the frontend's own Next.js
+      # routes (/api/auth/*, /api/heritage-demo) and Django would answer 400.
+      - "traefik.http.routers.backend.rule=Host(`backend.localhost`)"
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health"
-      - "traefik.http.services.backend.loadbalancer.healthcheck.interval=10s"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
@@ -200,7 +201,7 @@ services:
       # NEXT_PUBLIC_* must be passed at BUILD time (inlined into the client
       # bundle); the runtime `environment` block below does not affect them.
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost/api}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
         NEXT_PUBLIC_DEV_AUTH: ${HERITAGEGRAPH_DEV_AUTH:-true}
         NEXT_PUBLIC_RDF_RESOURCE_BASE_URI: ${NEXT_PUBLIC_RDF_RESOURCE_BASE_URI:-https://cair-nepal.org/heritagegraph/resource/}
@@ -210,7 +211,7 @@ services:
     restart: unless-stopped
     environment:
       # Frontend configuration
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost/api}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000/api}
       # NextAuth + Google OAuth
       NEXTAUTH_URL: ${NEXTAUTH_URL:-http://frontend.localhost}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-nextauth-secret-change-in-production}
@@ -229,6 +230,7 @@ services:
       - 3000
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`) || Host(`localhost`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=3000"
@@ -253,7 +255,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     container_name: heritage-landing
     restart: unless-stopped
     environment:
@@ -261,13 +263,14 @@ services:
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
     networks:
       - proxy
     expose:
       - 3000
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.landing.rule=Host(`landing.localhost`)"
       - "traefik.http.routers.landing.entrypoints=web"
       - "traefik.http.services.landing.loadbalancer.server.port=3000"
@@ -366,8 +369,8 @@ volumes:
 networks:
   # Proxy network for Traefik routing
   proxy:
+    name: proxy
     driver: bridge
   # Backend network for inter-service communication
   backend:
     driver: bridge
-

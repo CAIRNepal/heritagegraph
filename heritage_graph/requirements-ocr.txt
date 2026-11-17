@@ -24,8 +24,10 @@ surya-ocr==0.17.1
 
 # Handwritten Text Recognition (HTR)
 # TrOCR via transformers
-# surya-ocr>=0.17 requires transformers>=4.56.1; pin to that floor so pip can resolve
-transformers>=4.56.1
+# Keep transformers on the 4.x line: transformers 5.x currently pulls a
+# huggingface-hub release requiring click>=8.4, which conflicts with LinkML's
+# click<8.2 requirement in the main backend.
+transformers>=4.56.1,<5
 torch==2.7.1
 torchvision==0.22.1
 
