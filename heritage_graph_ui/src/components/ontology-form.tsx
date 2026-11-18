@@ -209,7 +209,13 @@ function FieldRenderer({
     </div>
   );
 
-  const helpText = field.description;
+  // The ontology describes `note` as "description, reason, verification
+  // notes", but it is published as the record's public description. Say so,
+  // so private remarks go to the reviewer, not into the graph.
+  const helpText =
+    field.key === "note"
+      ? "Published with the record as its description. Remarks meant only for reviewers belong in your source description."
+      : field.description;
   const constraintHint = buildFieldConstraintHint(field);
 
   const descEl =
@@ -546,6 +552,25 @@ function FieldRenderer({
       );
 
     case "relation": {
+      if (!field.relationEndpoint) {
+        // The range has no record type to pick from (Actor, TimeSpan, Material,
+        // …). Take the names as written; they are kept as a sourced value.
+        return (
+          <div className="space-y-1">
+            {labelEl}
+            {descEl}
+            <Input
+              id={id}
+              value={typeof value === "string" ? value : ""}
+              onChange={(e) => onChange(field.key, e.target.value)}
+              placeholder={field.multivalued ? "Names, separated by commas" : "Name, as written in your source"}
+              disabled={disabled}
+              className={errorRing}
+            />
+            {errorFooter}
+          </div>
+        );
+      }
       const childClass = getRelatedOntologyClass?.(field);
       const showNested =
         Boolean(field.inlineAuthoring) &&
@@ -764,6 +789,15 @@ function FieldRenderer({
       );
   }
 }
+
+/**
+ * Registry slots the API cannot store yet and refuses with a 400 (see
+ * ASSERTION_SLOTS_NOT_STORED in cidoc_data/serializers.py). Not offered,
+ * rather than offered and lost.
+ */
+const NOT_STORED_FIELDS: Record<string, readonly string[]> = {
+  assertion: ["asserts_about_entity", "asserts_about_event", "was_attributed_to_agent", "supersedes_assertion"],
+};
 
 export interface OntologyFormProps {
   ontologyClass: OntologyClass;
@@ -994,10 +1028,11 @@ export default function OntologyForm({
   const sortedFields = useMemo(
     () =>
       [...ontologyClass.fields]
+        .filter((f) => !NOT_STORED_FIELDS[ontologyClass.key]?.includes(f.key))
         .map((f) => withContributePlainCopy(f, { showExpertFields }) ?? null)
         .filter((f): f is NonNullable<typeof f> => f != null)
         .sort((a, b) => (a.order ?? 99) - (b.order ?? 99)),
-    [ontologyClass.fields, showExpertFields]
+    [ontologyClass.fields, ontologyClass.key, showExpertFields]
   );
 
   const visibleSortedFields = sortedFields;
