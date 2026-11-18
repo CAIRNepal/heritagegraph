@@ -76,6 +76,11 @@ def is_published_for_rdf(instance: Any) -> bool:
     canonical = to_canonical_status(getattr(instance, "status", None))
     if canonical in _WITHHELD_CANONICAL:
         return False
+    # graph/public feeds the museum, record pages, LOD dumps and deposits, none
+    # of which filter by CARE tier; only the SPARQL proxy did. So a record that
+    # is not public does not enter it at all.
+    if (getattr(instance, "access_tier", None) or "public") != "public":
+        return False
     return has_publishable_label(instance)
 
 
@@ -104,6 +109,9 @@ def unpublished_resource_iris() -> set[str]:
             continue
         rows = model.objects.filter(status__in=WITHHELD_STATUSES).only("id")
         out.update(resource_uri_for_instance(o) for o in rows)
+        if any(f.name == "access_tier" for f in model._meta.concrete_fields):
+            tiered = model.objects.exclude(access_tier="public").only("id")
+            out.update(resource_uri_for_instance(o) for o in tiered)
 
         field_names = {f.name for f in model._meta.get_fields()}
         label_fields = [f for f in ("name", "title") if f in field_names]

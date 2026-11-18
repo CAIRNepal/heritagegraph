@@ -311,3 +311,32 @@ class StatedConfidenceTest(APITestCase):
             "/api/v1/cidoc/deities/", {"name": "Plain", "source_citation": "A book."}, format="json"
         )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.content)
+
+
+@override_settings(
+    OXIGRAPH_STORE_PATH=tempfile.mkdtemp(prefix="hg_care_tier_"),
+    RDF_SYNC_ENABLED=True,
+    RDF_ENDPOINT_URL="",
+    RDF_QUERY_URL="",
+)
+class CareTierPublicationTest(APITestCase):
+    """Only public-tier records enter graph/public, whatever their status."""
+
+    def test_a_non_public_record_is_not_published(self):
+        from apps.cidoc_data.publication_policy import (
+            is_published_for_rdf,
+            unpublished_resource_iris,
+        )
+
+        for tier in ("restricted", "community_only", "sensitive_indigenous"):
+            with self.captureOnCommitCallbacks(execute=True):
+                deity = Deity.objects.create(
+                    name=f"Tiered {tier}", status="accepted", access_tier=tier, source_citation="x"
+                )
+            self.assertFalse(is_published_for_rdf(deity), tier)
+            uri = resource_uri_for_instance(deity)
+            self.assertIn(uri, unpublished_resource_iris(), tier)
+            self.assertEqual(get_kg_engine().neighborhood(uri), [], tier)
+
+        public = Deity.objects.create(name="Open", status="accepted", source_citation="x")
+        self.assertTrue(is_published_for_rdf(public))
