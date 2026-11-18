@@ -132,6 +132,32 @@ Open, in the ontology rather than the data (raise upstream):
 Until those are settled, `RDF_SHACL_STRICT_ON_WRITE` stays off: strict mode
 would refuse every relationship belief.
 
+## Write permissions
+
+Audited endpoint by endpoint (every POST/PUT/PATCH/DELETE route, resolved
+per action, then each action body read). Fixed, with a failing-then-passing
+test each in `heritage_data/test_write_permissions.py`:
+
+- the DRF default was `AllowAny`, so a view that declared nothing was writable
+  by anyone; the project default is now `IsAuthenticatedOrReadOnly`;
+- merge requests could be approved (which runs the merge) by any signed-in user
+  other than the opener; deciding now needs a merge moderator, and editing or
+  deleting needs the opener or a moderator;
+- reconciled links (which feed `skos:exactMatch`) and curator alerts could be
+  changed or resolved by any signed-in user; now reviewers only;
+- person revisions were open to anonymous create, edit and delete;
+- partner institutions could be edited by any signed-in user; now staff;
+- any signed-in user could edit or delete anyone's comment; now the author or
+  staff;
+- project assets and entities could be edited by anyone who could view the
+  project; edits now need edit rights, as deletes already did;
+- contributor-created assertions were accepted on request (fixed earlier; see
+  Source coverage).
+
+Deliberately open: sign-in and token routes, QR public contributions, share
+tracking, the read-only `kg/query/` (it refuses SPARQL updates) and the
+assistant chat, all behind the default throttles.
+
 ## Sample corpus policy
 
 The Atlas ships a fictional sample corpus so the interface is explorable before
