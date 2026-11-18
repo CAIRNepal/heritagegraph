@@ -22,13 +22,18 @@ class ShaclValidateTest(SimpleTestCase):
     def test_a_labelled_deity_conforms(self):
         s = f"{HG}resource/deity/1"
         conforms, _ = validate_projection_triples(
-            [_Triple(s, RDF_TYPE, f"{HG}Deity", None), _Triple(s, LABEL, None, ("Vishnu", ""))]
+            [
+                _Triple(s, RDF_TYPE, f"{HG}Deity", None),
+                _Triple(s, LABEL, None, ("Vishnu", "")),
+            ]
         )
         self.assertTrue(conforms)
 
     def test_a_deity_without_a_label_does_not(self):
         s = f"{HG}resource/deity/2"
-        conforms, report = validate_projection_triples([_Triple(s, RDF_TYPE, f"{HG}Deity", None)])
+        conforms, report = validate_projection_triples(
+            [_Triple(s, RDF_TYPE, f"{HG}Deity", None)]
+        )
         self.assertFalse(conforms, report)
 
 
