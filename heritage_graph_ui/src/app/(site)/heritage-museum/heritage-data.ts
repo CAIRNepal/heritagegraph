@@ -196,6 +196,13 @@ function parseJsonLd(raw: any): HeritageNode[] {
     const nodeType = item['nodeType'] as NodeType;
     const typeCfg = NODE_TYPE_CONFIG[nodeType];
 
+    // The curated sites carry no record source: their prose, facts and dates
+    // were written for the demo and the corpus says they must not be cited.
+    // They are left out rather than shown with a warning. What can be checked
+    // about those sites comes from entity-records.json (Wikidata, Wikipedia).
+    const sourced = item['recordSource'] != null;
+    const claim = <T,>(value: T): T | undefined => (sourced ? value : undefined);
+
     nodes.push({
       id,
       label: item['label'] || id,
@@ -204,30 +211,31 @@ function parseJsonLd(raw: any): HeritageNode[] {
       nodeType,
       cidocMapping: typeCfg?.cidocMapping ?? '',
       hgCategory: (typeCfg?.hgCategory ?? 'tangible') as HgCategory,
-      description: item['description'] || '',
-      storyText: item['storyText'] || '',
+      description: (sourced && item['description']) || '',
+      storyText: (sourced && item['storyText']) || '',
       imageUrl: proxyImg(item['imageUrl']),
       images: Array.isArray(item['images'])
         ? (item['images'] as string[]).map(proxyImg).filter(Boolean) as string[]
         : undefined,
       imageCredits:  item['imageCredits'],
-      significance:  item['significance'],
+      significance:  claim(item['significance']),
+      // Search keywords only; never displayed.
       tags:          item['tags'],
-      religion:      item['religion'],
-      inceptionYear: item['inceptionYear'],
-      dynasty:       item['dynasty'],
-      ethnicity:     item['ethnicity'],
-      period:        item['period'],
+      religion:      claim(item['religion']),
+      inceptionYear: claim(item['inceptionYear']),
+      dynasty:       claim(item['dynasty']),
+      ethnicity:     claim(item['ethnicity']),
+      period:        claim(item['period']),
       lat:           item['lat'],
       long:          item['long'],
       coordinateSource: item['coordinateSource'],
       wikipediaTitle:item['wikipediaTitle'],
-      keyFacts:      item['keyFacts'],
-      rituals:       item['rituals'],
-      architecture:  item['architecture'],
-      history:       item['history'],
-      culturalRole:  item['culturalRole'],
-      visitNote:     item['visitNote'],
+      keyFacts:      claim(item['keyFacts']),
+      rituals:       claim(item['rituals']),
+      architecture:  claim(item['architecture']),
+      history:       claim(item['history']),
+      culturalRole:  claim(item['culturalRole']),
+      visitNote:     claim(item['visitNote']),
       relations,
     });
   }
