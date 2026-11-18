@@ -20,14 +20,14 @@
 # OCR Engines
 pytesseract==0.3.13
 easyocr==1.7.0
-surya-ocr==0.17.1
+surya-ocr==0.24.0
 
 # Handwritten Text Recognition (HTR)
 # TrOCR via transformers
 # surya-ocr>=0.17 requires transformers>=4.56.1; pin to that floor so pip can resolve
 transformers>=4.56.1
-torch==2.7.1
-torchvision==0.22.1
+torch==2.13.0
+torchvision==0.28.0
 
 # NER and structured extraction
 instructor==1.3.4
@@ -36,7 +36,7 @@ spacy==3.7.2
 # Document processing
 pdf2image==1.16.3
 pdfplumber==0.11.0
-Pillow==10.4.0  # Already in main requirements, but ensure
+Pillow==13.0.0  # Already in main requirements, but ensure
 
 # Claude Vision for rescue OCR
 anthropic==0.31.0
