@@ -33,7 +33,7 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 | R5 | Reject audit (unmapped predicates) | ✅ | `corpus_fingerprint --reject-audit-json` |
 | C1 | CARE-aware SPARQL filter | ✅ | `CARESparqlProxyView` |
 | C2 | DataSource CARE / TK fields | ✅ | model + importer notes |
-| C3 | Community review for new claims | ✅ | epistemic review queue |
+| C3 | Community review for new claims | ✅ | epistemic review queue; **two independent reviewers** (neither the contributor) for caste, guthi and Kumari records, any non-public CARE tier or CARE label, and caste or guthi membership links — `heritage_data/dual_review.py`. The first accept is recorded (HTTP 202) and the record stays in review until a second reviewer accepts. |
 | C4 | Community consent / authority agreement | 🔴 | **none obtained** — see [`ETHICS_AND_CONSENT.md`](./ETHICS_AND_CONSENT.md) §5 |
 | C5 | Contributor privacy notice + leaderboard opt-out | 🔴 | not implemented — see ethics doc §3 |
 | C6 | Institutional ethics review | 🔴 | not obtained |
