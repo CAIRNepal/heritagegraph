@@ -25,6 +25,10 @@ import json
 from pathlib import Path
 
 from apps.cidoc_data.cidoc_registry_keys import registry_class_key_for_model
+from apps.cidoc_data.serializers import (
+    ASSERTION_SLOTS_NOT_STORED,
+    CulturalEntityLinkMixin,
+)
 from apps.cidoc_data.urls import router
 from django.core.management.base import BaseCommand
 
@@ -60,6 +64,8 @@ SLOT_FIELD_ALIASES: dict[tuple[str, str], tuple[str, ...]] = {
     # `Source` is the registry's InformationObject, whose label slot is `name`;
     # the column is `title`, and SourceSerializer accepts both.
     ("source", "name"): ("title",),
+    # HeritageAssertionSerializer maps the registry's evidence slot onto `source`.
+    ("assertion", "was_derived_from_source"): ("source",),
 }
 
 # Coordinates are posted as a `latitude`/`longitude` pair, which the serializers
@@ -94,7 +100,10 @@ def _domains():
             fields = set(viewset.serializer_class().fields)
         except Exception:
             fields = set()
-        out.append((key, model, fields))
+        # Serializers with the link mixin keep column-less slots for review
+        # and store them as assertions on acceptance (see registry_slots).
+        keeps_extras = issubclass(viewset.serializer_class, CulturalEntityLinkMixin)
+        out.append((key, model, fields, keeps_extras))
     return sorted(out, key=lambda row: row[0])
 
 
@@ -103,10 +112,11 @@ def build_report() -> str:
     classes = payload.get("classes") or {}
 
     rows = []
-    tot_persisted = tot_dropped = tot_unexposed = 0
+    tot_persisted = tot_asserted = tot_dropped = tot_unexposed = 0
+    all_refused: list[tuple[str, list[str]]] = []
     blocking: list[tuple[str, list[str]]] = []
 
-    for key, model, ser_fields in _domains():
+    for key, model, ser_fields, keeps_extras in _domains():
         entry = classes.get(key)
         if not entry:
             continue
@@ -116,9 +126,16 @@ def build_report() -> str:
         slots = entry.get("fields") or []
 
         persisted = sorted(f["key"] for f in slots if _persists(key, f, ser_fields))
-        dropped = sorted(
+        not_in_column = sorted(
             f["key"] for f in slots if not _persists(key, f, ser_fields)
         )
+        refused_here = (
+            set(ASSERTION_SLOTS_NOT_STORED) if key == "assertion" else set()
+        )
+        refused = [k for k in not_in_column if k in refused_here]
+        not_in_column = [k for k in not_in_column if k not in refused_here]
+        asserted = not_in_column if keeps_extras else []
+        dropped = [] if keeps_extras else not_in_column
         exposed_columns = {f["key"] for f in slots}
         if any(f.get("type") == "geo_point" for f in slots):
             exposed_columns |= {"point", *GEO_POINT_ALIAS}
@@ -133,15 +150,25 @@ def build_report() -> str:
         )
 
         tot_persisted += len(persisted)
+        tot_asserted += len(asserted)
+        if refused:
+            all_refused.append((key, refused))
         tot_dropped += len(dropped)
         tot_unexposed += len(unexposed)
         if blocked_by:
             blocking.append((key, blocked_by))
 
-        rows.append((key, persisted, dropped, unexposed))
+        rows.append((key, persisted, asserted, dropped, unexposed))
 
-    total_slots = tot_persisted + tot_dropped
+    total_slots = (
+        tot_persisted
+        + tot_asserted
+        + tot_dropped
+        + sum(len(r) for _k, r in all_refused)
+    )
     pct = (tot_persisted / total_slots * 100) if total_slots else 0.0
+    kept = tot_persisted + tot_asserted
+    kept_pct = (kept / total_slots * 100) if total_slots else 0.0
 
     out: list[str] = []
     out.append("# Registry / model alignment")
@@ -154,10 +181,23 @@ def build_report() -> str:
     out.append("## Summary")
     out.append("")
     out.append(
-        f"- Form fields that persist: "
-        f"**{tot_persisted} / {total_slots}** ({pct:.0f}%)"
+        f"- Form fields kept: **{kept} / {total_slots}** ({kept_pct:.0f}%)"
+    )
+    out.append(
+        f"  - in a column on the record: **{tot_persisted}** ({pct:.0f}%)"
+    )
+    out.append(
+        f"  - as an assertion on acceptance (links and column-less values): "
+        f"**{tot_asserted}**"
     )
     out.append(f"- Form fields silently discarded on submit: **{tot_dropped}**")
+    n_refused = sum(len(r) for _k, r in all_refused)
+    out.append(
+        f"- Form fields hidden from the form and refused by the API (no column "
+        f"yet): **{n_refused}**"
+    )
+    for key, refused in all_refused:
+        out.append(f"  - `{key}`: {', '.join(f'`{s}`' for s in refused)}")
     out.append(
         f"- Model columns reachable by no form and no RDF projection: "
         f"**{tot_unexposed}**"
@@ -182,18 +222,24 @@ def build_report() -> str:
 
     out.append("## Per-domain detail")
     out.append("")
-    out.append("| Domain | Persists | Discarded | Columns with no form field |")
-    out.append("| --- | ---: | ---: | ---: |")
-    for key, persisted, dropped, unexposed in rows:
+    out.append(
+        "| Domain | Column | Assertion | Discarded | Columns with no form field |"
+    )
+    out.append("| --- | ---: | ---: | ---: | ---: |")
+    for key, persisted, asserted, dropped, unexposed in rows:
         out.append(
-            f"| `{key}` | {len(persisted)} | {len(dropped)} | {len(unexposed)} |"
+            f"| `{key}` | {len(persisted)} | {len(asserted)} | {len(dropped)} "
+            f"| {len(unexposed)} |"
         )
     out.append("")
 
-    for key, persisted, dropped, unexposed in rows:
+    for key, persisted, asserted, dropped, unexposed in rows:
         out.append(f"### `{key}`")
         out.append("")
-        out.append(f"- Persists: {', '.join(f'`{s}`' for s in persisted) or '_none_'}")
+        out.append(f"- Column: {', '.join(f'`{s}`' for s in persisted) or '_none_'}")
+        out.append(
+            f"- Assertion: {', '.join(f'`{s}`' for s in asserted) or '_none_'}"
+        )
         out.append(f"- Discarded: {', '.join(f'`{s}`' for s in dropped) or '_none_'}")
         out.append(
             f"- Columns with no form field: "
