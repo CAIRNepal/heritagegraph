@@ -85,7 +85,7 @@ export function StoryClient({ segment, pk }: StoryClientProps) {
           <Chip filled>{focus.typeLabel}</Chip>
           <Chip>{t('stops', { count: stops.length })}</Chip>
         </div>
-        <h1 className="mt-5 max-w-5xl text-5xl leading-[0.95] font-extrabold tracking-tight text-balance md:text-8xl">
+        <h1 className="mt-5 max-w-5xl text-5xl leading-[1.02] font-serif font-medium tracking-[-0.01em] text-balance md:text-7xl">
           {focus.label}
         </h1>
         {focus.labelNe && <Nepali className="mt-3 text-2xl md:text-3xl">{focus.labelNe}</Nepali>}
@@ -120,15 +120,15 @@ export function StoryClient({ segment, pk }: StoryClientProps) {
           {next.length > 0 && (
             <section className="relative py-14 pl-10 md:pl-14">
               <Marker className="absolute top-[3.9rem] left-0" />
-              <h2 className="text-3xl font-bold text-story-accent md:text-4xl">{t('whereNext')}</h2>
-              <p className="mt-3 max-w-3xl text-4xl leading-tight font-extrabold tracking-tight md:text-5xl">
+              <h2 className="text-3xl font-serif font-medium text-story-accent md:text-4xl">{t('whereNext')}</h2>
+              <p className="mt-3 max-w-3xl text-4xl leading-tight font-serif font-medium tracking-[-0.01em] md:text-5xl">
                 {t('whereNextTitle')}
               </p>
-              <div className="mt-8 grid border border-story-rule sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {next.map((r) => (
-                  <Link key={r.id} href={storyHref(r)} className="group border-story-rule p-4 hover:bg-story-panel sm:[&:not(:last-child)]:border-r">
+                  <Link key={r.id} href={storyHref(r)} className="group rounded-xl border border-story-rule bg-story-panel p-4 hover:shadow-md">
                     <Eyebrow>{r.typeLabel}</Eyebrow>
-                    <p className="mt-1 text-lg font-bold">{r.label}</p>
+                    <p className="mt-1 font-serif text-lg">{r.label}</p>
                     {r.labelNe && <Nepali className="text-sm font-normal">{r.labelNe}</Nepali>}
                     <p className="mt-3 text-sm font-semibold group-hover:underline">{t('readItsStory')} →</p>
                   </Link>
@@ -175,7 +175,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
   return (
     <section ref={ref} data-stop={index} className="relative border-b border-story-rule-soft py-14 pl-10 md:pl-14">
       <Marker className="absolute top-[3.9rem] left-0" />
-      <h2 className="text-3xl leading-tight font-bold text-story-accent md:text-[2.6rem]">{stop.question.en}</h2>
+      <h2 className="text-3xl leading-tight font-serif font-medium text-story-accent md:text-[2.6rem]">{stop.question.en}</h2>
       {stop.question.ne && <Nepali className="mt-1 text-lg">{stop.question.ne}</Nepali>}
       <Eyebrow className="mt-4" ne={kindNe || null}>
         {t('stop', { n: String(index + 1).padStart(2, '0') })} · {t(`kind.${stop.kind}`)}
@@ -183,7 +183,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
 
       <div className="mt-3 grid gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
         <div>
-          <h3 className="text-4xl leading-[0.98] font-extrabold tracking-tight text-balance md:text-6xl">
+          <h3 className="text-4xl leading-[0.98] font-serif font-medium tracking-[-0.01em] text-balance md:text-6xl">
             <Link href={recordHref(lead.record)} className="hover:underline">
               {lead.record.label}
             </Link>
@@ -197,7 +197,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
             src={lead.record.imageUrl}
             alt={lead.record.label}
             credit={lead.record.imageCredit}
-            className="aspect-[4/5] border border-story-rule"
+            className="aspect-[4/5] overflow-hidden rounded-xl border border-story-rule"
           />
         )}
       </div>
@@ -207,10 +207,10 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
       {shown.length > 0 && (
         <div className="mt-6">
           <p className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('alsoConnected')}</p>
-          <ul className="mt-3 grid border-t border-l border-story-rule sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {shown.map((l) => (
-              <li key={l.record.id} className="border-r border-b border-story-rule">
-                <Link href={recordHref(l.record)} className="block p-3 hover:bg-story-panel">
+              <li key={l.record.id}>
+                <Link href={recordHref(l.record)} className="block h-full rounded-xl border border-story-rule bg-story-panel p-3 hover:shadow-md">
                   <span className="block font-semibold">{l.record.label}</span>
                   {l.record.labelNe && (
                     <span lang="ne" className="block font-devanagari text-sm">

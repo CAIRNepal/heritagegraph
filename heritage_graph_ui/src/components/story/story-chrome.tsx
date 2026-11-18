@@ -54,7 +54,7 @@ export function Chip({ children, filled }: ChipProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center border border-story-accent px-2 py-0.5 text-[11px] font-medium',
+        'inline-flex items-center rounded-full border border-story-accent px-2.5 py-0.5 text-[11px] font-medium',
         filled ? 'bg-story-accent text-story-accent-ink' : 'text-story-accent',
       )}
     >
@@ -78,5 +78,5 @@ export function Nepali({ children, className }: NepaliProps) {
 }
 
 export function Marker({ className }: { className?: string }) {
-  return <span aria-hidden className={cn('inline-block size-3.5 border-2 border-story-accent bg-story-paper', className)} />;
+  return <span aria-hidden className={cn('inline-block size-3.5 rounded-full border-2 border-story-accent bg-story-paper', className)} />;
 }
