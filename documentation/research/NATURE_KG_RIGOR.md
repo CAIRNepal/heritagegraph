@@ -18,7 +18,7 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 |---|-----------|--------|--------------------|
 | F1 | Findable PIDs (w3id resource IRIs) | ✅ | `RDF_RESOURCE_BASE_URI` + LOD content negotiation |
 | F2 | Dataset VoID / DCAT | ✅ | `void_generator` / `regen_void` |
-| F3 | Zenodo DOI for software + L0 dump | 🟡 | `.zenodo.json` + `CITATION.cff` (DOI placeholder until deposit) |
+| F3 | Zenodo DOI for software + dataset | 🟡 | `manage.py build_deposit` assembles the dataset deposit (exact N-Quads, ontology, reports, manifest, SHA-256 sums, README, `zenodo.json`); software metadata in `.zenodo.json` + `CITATION.cff`. No DOI until the deposits are published — see [Dataset deposit](#dataset-deposit). |
 | F4 | Corpus fingerprint (SHA-256 + ontology pin) | ✅ | `manage.py corpus_fingerprint` |
 | A1 | Public read-only SPARQL | ✅ | CARE proxy `/sparql/` |
 | A2 | Methods page reproducibility | ✅ | `/methods` |
@@ -158,6 +158,31 @@ Deliberately open: sign-in and token routes, QR public contributions, share
 tracking, the read-only `kg/query/` (it refuses SPARQL updates) and the
 assistant chat, all behind the default throttles.
 
+## Dataset deposit
+
+Two Zenodo records: the **software** (this repository at a tagged release;
+metadata in `.zenodo.json` and `CITATION.cff`, MIT) and the **dataset**
+(CC BY 4.0), built by
+
+```bash
+cd heritage_graph
+manage.py build_deposit --output-dir ../deposit-1.0.0 --dataset-version 1.0.0
+manage.py build_deposit --check ../deposit-1.0.0   # or: shasum -a 256 -c SHA256SUMS
+```
+
+The deposit holds the public graph and every belief/provenance graph as N-Quads
+written by the triplestore's own serialiser (datatypes, language tags and
+escaping are exact — the older line formatter dropped all three, and
+`rdf_export_dump` and `shacl_conformance` now use the exact serialiser too),
+the ontology files, the provenance audit, SHACL conformance and quality
+reports, a README with the snapshot's own figures, `LICENSE-DATA`, a
+`zenodo.json` for the dataset record, and `manifest.json` / `SHA256SUMS`.
+
+Build it from a clean checkout (the manifest marks a dirty tree with
+`-dirty`) against the deployed store, not a development database. Upload the
+folder, publish, then add the DOI to `CITATION.cff`, `.zenodo.json` and the
+paper — never before the record exists.
+
 ## Sample corpus policy
 
 The Atlas ships a fictional sample corpus so the interface is explorable before
@@ -201,9 +226,10 @@ Do **not** commit `_fingerprint.local.json` / `_reject_audit.local.json` (local 
 
 ## Remaining for the paper package (not code)
 
-1. Mint Zenodo DOI; add the `doi:` key to `CITATION.cff` and the identifier to
-   `.zenodo.json` / Methods. Both files deliberately carry **no** DOI until the
-   deposit exists — a placeholder identifier propagates into bibliographies.
+1. Publish the two Zenodo records (see [Dataset deposit](#dataset-deposit)),
+   then add the DOIs to `CITATION.cff`, `.zenodo.json` and Methods. Both files
+   deliberately carry **no** DOI until the deposit exists — a placeholder
+   identifier propagates into bibliographies.
 2. Deposit `danam-heritagegraph.nq` with the pinned SHA-256 from `corpus_fingerprint`.
 3. Enable SHACL-on-write in staging; attach sample conformance report (≥100 shapes).
 4. Expert gold-standard evaluation (`kg_evaluate`). No reportable evaluation
