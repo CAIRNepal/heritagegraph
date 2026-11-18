@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from apps.graph.kg_engine.engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
-from apps.graph.kg_engine.rdf_serialize import format_nt_line
+from apps.graph.kg_engine.rdf_serialize import dump_graph_ntriples
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -29,10 +28,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options["format"] != "nt":
-            self.stderr.write(self.style.WARNING("Only --format nt is supported; using nt."))
+            self.stderr.write(
+                self.style.WARNING("Only --format nt is supported; using nt.")
+            )
 
-        engine = get_kg_engine()
-        store = engine.store
         public = GraphPartition.PUBLIC.uri()
         schema = GraphPartition.SCHEMA.uri()
         out_dir = Path(
@@ -45,9 +44,9 @@ class Command(BaseCommand):
             if not graph:
                 continue
             path = out_dir / f"heritagegraph-{label}.nt"
-            lines: list[str] = []
-            for s, p, o in store.iter_named_graph_triples(graph):
-                if s and p and o is not None:
-                    lines.append(format_nt_line(s, p, o))
-            path.write_text("\n".join(lines) + ("\n" if lines else ""), encoding="utf-8")
-            self.stdout.write(self.style.SUCCESS(f"Wrote {path} ({len(lines)} triples)"))
+            # The store's own serialiser keeps datatypes, language tags and
+            # escaping; the line formatter used before dropped all three.
+            data = dump_graph_ntriples(graph)
+            path.write_bytes(data)
+            n = data.count(b"\n")
+            self.stdout.write(self.style.SUCCESS(f"Wrote {path} ({n} triples)"))
