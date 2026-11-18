@@ -22,9 +22,10 @@ DATABASES = {
 
 CACHES = build_caches_config()
 
-# Dev: SHACL off by default unless explicitly enabled (pyshacl optional).
+# Dev validates on write like production (logs, does not block unless
+# RDF_SHACL_STRICT_ON_WRITE); set RDF_SHACL_VALIDATE_ON_WRITE=false to skip.
 RDF_SHACL_VALIDATE_ON_WRITE = os.environ.get(
-    "RDF_SHACL_VALIDATE_ON_WRITE", "false"
+    "RDF_SHACL_VALIDATE_ON_WRITE", "true"
 ).lower() in {"1", "true", "yes", "y", "on"}
 
 # --------------------------------------------------------------------
