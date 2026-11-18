@@ -38,7 +38,7 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 | C5 | Contributor privacy notice + leaderboard opt-out | 🔴 | not implemented — see ethics doc §3 |
 | C6 | Institutional ethics review | 🔴 | not obtained |
 | P1 | Named-graph provenance (L0) | ✅ | OSM / WD / UNESCO / crosswalk graphs |
-| P2 | DataSource + PROV on L1 assertions | 🟡 | **Required for new records**: a record cannot be accepted without `source` or `source_citation`, and links from the contribute forms are published only as `relationship.*` assertions citing a registered DataSource with the contributor's stated confidence. **Not yet** for older records or other assertion paths: `HeritageAssertion.source` is still nullable, `confidence` still defaults to `likely` outside the forms, and SHACL-on-write is off. See [Source coverage](#source-coverage). |
+| P2 | DataSource + PROV on L1 assertions | 🟡 | **Required for new records**: a record cannot be accepted without `source` or `source_citation`, and links from the contribute forms are published only as `relationship.*` assertions citing a registered DataSource with the contributor's stated confidence. Every accepted assertion states its confidence (no default). Older records were audited with `audit_provenance`. **Not yet**: `HeritageAssertion.source` is still nullable outside the forms, and SHACL-on-write is off. See [Source coverage](#source-coverage). |
 | P3 | Integrity gate | ✅ | `kg_rigor_audit` (incl. L0 isolation) |
 | P4 | No L0 IRIs in PUBLIC | ✅ | rigor HARD + `kg_verify` / purge |
 | H1 | L1 editable under revision semantics | ✅ | contribute / improve |
@@ -62,6 +62,14 @@ What is enforced (new contributions):
   form fields.
 - **Review gate on assertions.** A contributor-created assertion is always
   `pending`; only reviewers and admins can create one already accepted.
+- **Stated confidence.** `HeritageAssertion.confidence` has no default. An
+  accepted assertion must state one of certain / likely / uncertain /
+  speculative (model `save()` and `clean()`, the assertion API, the inline
+  contribute routes); a pending one may leave it for the reviewer. Forms and
+  relationship proposals start with no choice selected. System writers state
+  theirs explicitly: identity merges `certain` (a decision, not an estimate),
+  Wikidata statements `likely`, seed rows `uncertain`. Values outside the scale
+  (seed rows wrote `medium`) were cleared to unstated by migration 0024.
 
 What is not (yet):
 
@@ -75,9 +83,8 @@ What is not (yet):
   memberships at the Wikidata source their record cites; `--withdraw --as
   <curator> --manifest <path>` sends unsourced records and claims back to
   review (out of the public graph) and `--restore <path>` undoes it exactly.
-- `HeritageAssertion.source` is still nullable and `confidence` still defaults
-  to `"likely"` on paths other than the contribute forms (imports, agents,
-  the identity queue).
+- `HeritageAssertion.source` is still nullable on paths other than the
+  contribute forms.
 - The `AssertionRequiresSource` SHACL shape runs only on project merge, and
   SHACL-on-write is off by default.
 
