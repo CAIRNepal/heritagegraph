@@ -187,7 +187,9 @@ def _resolve(iri: str) -> Any | None:
     return model.objects.filter(pk=row.object_id).first() if model else None
 
 
-def _ensure_exact_match(instance: Any, label: str, iri: str) -> None:
+def _ensure_exact_match(
+    instance: Any, label: str, iri: str, source: DataSource
+) -> None:
     """skos:exactMatch through the record's identity cluster (the DANAM pattern).
 
     A curated record may already sit in a cluster (bootstrap_identity_clusters);
@@ -242,6 +244,8 @@ def _ensure_exact_match(instance: Any, label: str, iri: str) -> None:
         asserted_value="",
         assertion_content="Wikidata import singleton membership",
         entity_cluster=cluster,
+        source=source,
+        source_citation=f"Wikidata item {iri.rsplit('/', 1)[-1]}.",
         reconciliation_status="accepted",
         confidence="certain",
         contributed_by=CONTRIBUTOR,
@@ -370,7 +374,7 @@ def upsert_entities(
             if changed:
                 report.bump(report.updated, key)
         _bind(iri, instance)
-        _ensure_exact_match(instance, name, iri)
+        _ensure_exact_match(instance, name, iri, source)
         rows[qid] = instance
     return rows
 
