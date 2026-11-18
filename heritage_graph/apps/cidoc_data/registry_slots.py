@@ -158,6 +158,11 @@ def split_registry_extras(serializer, data) -> tuple[dict, dict, dict]:
         extras["links"] = links
     if values:
         extras["values"] = values
+    if (links or values) and not extras.get("confidence") and "confidence" not in errors:
+        errors["confidence"] = (
+            "Say how sure you are about the links and details you added: "
+            f"{', '.join(CONFIDENCE_VALUES)}."
+        )
     return payload, extras, errors
 
 
@@ -254,7 +259,9 @@ def apply_revision_extras(instance, data: dict, *, contributor, reviewer) -> int
             "Links to other records must cite a registered source. Pick one "
             "on the form, or give the citation and its kind."
         )
-    confidence = data.get("_confidence") or "uncertain"
+    confidence = data.get("_confidence")
+    if confidence not in CONFIDENCE_VALUES:
+        raise MissingEvidence("The revision does not say how sure its links are.")
     s_ct = ContentType.objects.get_for_model(instance, for_concrete_model=True)
     username = getattr(contributor, "username", "") or ""
     common = {

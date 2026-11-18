@@ -230,6 +230,7 @@ class AssertionReviewGateTest(APITestCase):
                 "object_id": self.deity.pk,
                 "asserted_property": "note",
                 "asserted_value": "Worshipped at night.",
+                "confidence": "likely",
                 **extra,
             },
             format="json",
@@ -249,3 +250,64 @@ class AssertionReviewGateTest(APITestCase):
         resp = self._post(supersedes_assertion="Older claim")
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST, resp.content)
         self.assertIn("supersedes_assertion", resp.json())
+
+
+class StatedConfidenceTest(APITestCase):
+    """No assertion enters the graph with a confidence nobody stated."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="sure", email="s@example.com", password="pw")
+        self.client.force_authenticate(user=self.user)
+        self.tradition = Tradition.objects.create(name="Vaishnavism", status="accepted")
+
+    def test_an_accepted_assertion_cannot_be_saved_without_a_confidence(self):
+        with self.assertRaises(ValueError):
+            HeritageAssertion.objects.create(
+                content_type=ContentType.objects.get_for_model(Tradition),
+                object_id=self.tradition.pk,
+                asserted_property="note",
+                asserted_value="x",
+                reconciliation_status="accepted",
+            )
+
+    def test_a_pending_assertion_may_leave_it_to_the_reviewer(self):
+        ha = HeritageAssertion.objects.create(
+            content_type=ContentType.objects.get_for_model(Tradition),
+            object_id=self.tradition.pk,
+            asserted_property="note",
+            asserted_value="x",
+            reconciliation_status="pending",
+        )
+        reviewer = User.objects.create_user(username="rv", email="rv@example.com", is_staff=True)
+        self.client.force_authenticate(user=reviewer)
+        resp = self.client.patch(
+            f"/api/v1/cidoc/assertions/{ha.pk}/", {"reconciliation_status": "accepted"}, format="json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST, resp.content)
+        self.assertIn("confidence", resp.json())
+        resp = self.client.patch(
+            f"/api/v1/cidoc/assertions/{ha.pk}/",
+            {"reconciliation_status": "accepted", "confidence": "uncertain"},
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_200_OK, resp.content)
+
+    def test_form_links_need_a_stated_confidence(self):
+        resp = self.client.post(
+            "/api/v1/cidoc/deities/",
+            {
+                "name": "Vishnu",
+                "has_religious_tradition": str(self.tradition.pk),
+                "source_citation": "A book.",
+                "source_kind": "published",
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST, resp.content)
+        self.assertIn("confidence", resp.json())
+
+    def test_a_record_without_links_needs_no_confidence(self):
+        resp = self.client.post(
+            "/api/v1/cidoc/deities/", {"name": "Plain", "source_citation": "A book."}, format="json"
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.content)
