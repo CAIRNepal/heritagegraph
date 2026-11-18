@@ -14,6 +14,7 @@ type QueueRow = {
   entity_id: string;
   name: string;
   category?: string;
+  record_type?: string | null;
   status?: string;
   contributor?: {
     username?: string;
@@ -157,7 +158,7 @@ export default function ReviewWorkspacePage() {
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium">{r.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {r.category || "—"} · {r.status || "—"}
+                  {r.record_type || r.category || "—"} · {r.status || "—"}
                   {typeof r.days_in_review === "number" ? ` · ${r.days_in_review}d in review` : ""}
                 </div>
               </div>

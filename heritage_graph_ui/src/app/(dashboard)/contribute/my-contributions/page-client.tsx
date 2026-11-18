@@ -40,6 +40,7 @@ interface MyContribution {
   entity_id: string;
   name: string;
   category?: string | null;
+  record_type?: string | null;
   status: string;
   created_at: string;
   updated_at?: string;
@@ -135,9 +136,9 @@ function ContributionCard({ item }: { item: MyContribution }) {
             <Badge variant="secondary" className={cn("text-[10px] px-1.5 py-0", meta.color)}>
               {t(`status.${meta.key}.label`)}
             </Badge>
-            {item.category ? (
+            {item.record_type || item.category ? (
               <span className="text-xs text-muted-foreground capitalize">
-                {item.category.replace(/_/g, " ")}
+                {item.record_type ?? item.category?.replace(/_/g, " ")}
               </span>
             ) : null}
           </div>

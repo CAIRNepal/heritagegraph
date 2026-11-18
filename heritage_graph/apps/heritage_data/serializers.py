@@ -522,12 +522,27 @@ class ActivitySerializer(serializers.ModelSerializer):
         ]
 
 
+def record_type_label(entity) -> str | None:
+    """The record's own kind ("Deity"), where `category` only has seven buckets."""
+    ct = getattr(entity, "cidoc_content_type", None)
+    model = ct.model_class() if ct is not None else None
+    if model is None:
+        return None
+    from apps.cidoc_data.cidoc_registry_keys import registry_class_key_for_model
+    from apps.cidoc_data.linkml_loader import get_effective_registry_payload
+
+    key = registry_class_key_for_model(model)
+    entry = (get_effective_registry_payload().get("classes") or {}).get(key or "") or {}
+    return entry.get("label") or str(model._meta.verbose_name).title()
+
+
 class CulturalEntityListSerializer(
     CanonicalStatusSerializerMixin, serializers.ModelSerializer
 ):
     contributor = UserSerializer(read_only=True)
     current_revision = serializers.SerializerMethodField()
     is_fork = serializers.SerializerMethodField()
+    record_type = serializers.SerializerMethodField()
 
     class Meta:
         model = CulturalEntity
@@ -535,6 +550,7 @@ class CulturalEntityListSerializer(
             "entity_id",
             "name",
             "category",
+            "record_type",
             "status",
             "canonical_status",
             "contributor",
@@ -545,6 +561,9 @@ class CulturalEntityListSerializer(
             "fork_depth",
             "is_fork",
         ]
+
+    def get_record_type(self, obj):
+        return record_type_label(obj)
 
     def get_current_revision(self, obj):
         """
@@ -737,6 +756,7 @@ class ContributionQueueSerializer(serializers.ModelSerializer):
     triage_breakdown = serializers.SerializerMethodField()
     worst_source_tier = serializers.SerializerMethodField()
     worst_source_type = serializers.SerializerMethodField()
+    record_type = serializers.SerializerMethodField()
 
     class Meta:
         model = CulturalEntity
@@ -745,6 +765,7 @@ class ContributionQueueSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "category",
+            "record_type",
             "status",
             "contributor",
             "created_at",
@@ -764,6 +785,9 @@ class ContributionQueueSerializer(serializers.ModelSerializer):
             "worst_source_tier",
             "worst_source_type",
         ]
+
+    def get_record_type(self, obj):
+        return record_type_label(obj)
 
     def get_latest_revision(self, obj):
         latest = obj.get_latest_revision()
@@ -1107,6 +1131,8 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
     triage_breakdown = serializers.SerializerMethodField()
     worst_source_tier = serializers.SerializerMethodField()
     worst_source_type = serializers.SerializerMethodField()
+    record_type = serializers.SerializerMethodField()
+    proposal = serializers.SerializerMethodField()
 
     class Meta:
         model = CulturalEntity
@@ -1115,6 +1141,8 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "category",
+            "record_type",
+            "proposal",
             "status",
             "contributor",
             "current_revision",
@@ -1135,6 +1163,17 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
             "worst_source_tier",
             "worst_source_type",
         ]
+
+    def get_record_type(self, obj):
+        return record_type_label(obj)
+
+    def get_proposal(self, obj):
+        """Links, values and evidence the revision under review proposes."""
+        from apps.cidoc_data.registry_slots import describe_revision_extras
+
+        rev = obj.current_revision or obj.get_latest_revision()
+        data = rev.data if rev is not None and isinstance(rev.data, dict) else {}
+        return describe_revision_extras(obj, data)
 
     def get_flags(self, obj):
         flags = obj.review_flags.filter(is_resolved=False)
