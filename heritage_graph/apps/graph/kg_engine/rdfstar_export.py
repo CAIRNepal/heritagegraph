@@ -23,7 +23,7 @@ def export_rdfstar_trig(output_path: Path) -> int:
 
     prov_base = GraphPartition.PROVENANCE.uri(suffix="") or ""
     lines = [
-        "@prefix crminf: <http://www.cidoc-crm.org/crminf/> .",
+        "@prefix crminf: <http://www.cidoc-crm.org/extensions/crminf/> .",
         "@prefix prov: <http://www.w3.org/ns/prov#> .",
         "",
         "<https://cair-nepal.org/heritagegraph/graph/annotations> {",

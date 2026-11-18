@@ -28,8 +28,8 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-CRM_INF_I2 = "http://www.cidoc-crm.org/crminf/I2_Belief"
-CRMINF_J4_THAT = "http://www.cidoc-crm.org/crminf/J4_that"
+CRM_INF_I2 = "http://www.cidoc-crm.org/extensions/crminf/I2_Belief"
+CRMINF_J4_THAT = "http://www.cidoc-crm.org/extensions/crminf/J4_that"
 PROV_ENTITY = RDF_PREFIXES["prov"] + "Entity"
 PROV_AGENT = RDF_PREFIXES["prov"] + "Agent"
 PROV_WAS_DERIVED_FROM = RDF_PREFIXES["prov"] + "wasDerivedFrom"
