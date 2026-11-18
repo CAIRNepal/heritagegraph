@@ -615,6 +615,16 @@ class RelationshipPredicateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+def _stated_confidence(assertion_data: dict) -> str:
+    """The confidence the contributor stated; there is no default to fall back on."""
+    value = (assertion_data or {}).get("confidence")
+    if value not in dict(CONFIDENCE_CHOICES):
+        raise serializers.ValidationError(
+            {"assertion": {"confidence": "Say how sure you are: certain, likely, uncertain or speculative."}}
+        )
+    return value
+
+
 # Assertion-form slots whose meaning has no column yet. Refused, not dropped.
 ASSERTION_SLOTS_NOT_STORED = (
     "asserts_about_entity",
@@ -636,6 +646,18 @@ class HeritageAssertionSerializer(serializers.ModelSerializer):
         model = HeritageAssertion
         fields = "__all__"
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        status = attrs.get(
+            "reconciliation_status", getattr(self.instance, "reconciliation_status", None)
+        )
+        confidence = attrs.get("confidence", getattr(self.instance, "confidence", ""))
+        if status == "accepted" and confidence not in dict(CONFIDENCE_CHOICES):
+            raise serializers.ValidationError(
+                {"confidence": "State how sure this claim is before accepting it."}
+            )
+        return attrs
 
     def to_internal_value(self, data):
         if hasattr(data, "items"):
@@ -888,7 +910,7 @@ class AssertionAwareStructureSerializer(serializers.ModelSerializer):
                 source=source,
                 source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get("confidence", "likely"),
+                confidence=_stated_confidence(assertion_data),
                 data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 
@@ -937,7 +959,7 @@ class AssertionAwareRitualSerializer(serializers.ModelSerializer):
                 source=source,
                 source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get("confidence", "likely"),
+                confidence=_stated_confidence(assertion_data),
                 data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 
@@ -986,7 +1008,7 @@ class AssertionAwareDeitySerializer(serializers.ModelSerializer):
                 source=source,
                 source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get("confidence", "likely"),
+                confidence=_stated_confidence(assertion_data),
                 data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 
@@ -1035,7 +1057,7 @@ class AssertionAwareGuthiSerializer(serializers.ModelSerializer):
                 source=source,
                 source_citation=assertion_data.get("source_citation", ""),
                 contributed_by=contributed_by,
-                confidence=assertion_data.get("confidence", "likely"),
+                confidence=_stated_confidence(assertion_data),
                 data_quality_note=assertion_data.get("data_quality_note", ""),
             )
 

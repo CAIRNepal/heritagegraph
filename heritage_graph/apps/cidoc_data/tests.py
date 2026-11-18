@@ -343,6 +343,7 @@ class OwlSameAsTriplesetTest(TestCase):
         )
         ct = ContentType.objects.get_for_model(Person)
         assertion = HeritageAssertion(
+            confidence="certain",
             content_type=ct,
             object_id=person.pk,
             entity_cluster=cluster,
@@ -383,6 +384,7 @@ class OwlSameAsTriplesetTest(TestCase):
         ct = ContentType.objects.get_for_model(Person)
         for cluster in (c1, c2):
             row = HeritageAssertion(
+                confidence="certain",
                 content_type=ct,
                 object_id=person.pk,
                 entity_cluster=cluster,

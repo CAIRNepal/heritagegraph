@@ -41,6 +41,7 @@ class AuditProvenanceTest(TestCase):
         )
         ct = ContentType.objects.get_for_model(Deity)
         self.membership = HeritageAssertion.objects.create(
+            confidence="certain",
             content_type=ct,
             object_id=self.imported.pk,
             asserted_property=IDENTITY_SAME_REFERENT_PROPERTY,
@@ -51,6 +52,7 @@ class AuditProvenanceTest(TestCase):
             contributed_by="wikidata_import",
         )
         self.claim = HeritageAssertion.objects.create(
+            confidence="certain",
             content_type=ct,
             object_id=self.seed.pk,
             asserted_property="note",

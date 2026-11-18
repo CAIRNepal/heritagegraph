@@ -33,6 +33,7 @@ class EdgeProvenanceTests(TestCase):
         )
         source = DataSource.objects.create(name="Wikidata", source_type="web")
         HeritageAssertion.objects.create(
+            confidence="certain",
             content_type=ContentType.objects.get_for_model(temple),
             object_id=temple.pk,
             object_content_type=ContentType.objects.get_for_model(place),
