@@ -404,7 +404,7 @@
     "switchToXr": "Switch to stories",
     "liveBadge": "Live graph",
     "graphCapped": "Showing the {shown} most connected of {total} entities — search or filter to focus on the rest.",
-    "demoBanner": "{count, plural, =0 {Demo corpus — curated sites and records frozen from the reviewed knowledge graph.} other {Demo corpus — # records: curated sites plus records frozen from the reviewed knowledge graph.}}",
+    "demoBanner": "{count, plural, =0 {Demo corpus — curated sites and records frozen from the public knowledge graph.} other {Demo corpus — # records: curated sites plus records frozen from the public knowledge graph, most of them imported from Wikidata and not yet reviewed by a person.}}",
     "demoBannerAction": "Switch to the live graph",
     "sparseLive": "The live graph has {count} entities — the corpus is still growing.",
     "storiesLiveHint": "Stories highlights illustrated places. Switch to Map or Graph to see all {count} live entities (including recent imports without photos).",
@@ -450,8 +450,8 @@
       "openSparql": "Open SPARQL endpoint",
       "fullMethodsPage": "Full methods documentation",
       "doiPending": "Not yet deposited",
-      "demoExtension": "Also holds {count} records frozen from the reviewed knowledge graph. They carry only sourced fields: labels, cited descriptions, licensed photographs, their own coordinates, dates and typed links, each with its record's source.",
-      "demoTextUnsourced": "Descriptive text on the curated sites has no recorded source and must not be cited. Image credits above are verified; the narrative is not."
+      "demoExtension": "Also holds {count} records frozen from the public knowledge graph. Records imported from Wikidata were accepted by the importer, not reviewed by a person. They carry only sourced fields: labels, cited descriptions, licensed photographs, their own coordinates, dates and typed links, each with its record's source.",
+      "demoTextUnsourced": "The curated sites' descriptions, facts and dates have no recorded source, so they are not shown. Their photographs are credited, and the facts that can be checked come from Wikidata and Wikipedia, linked on each record."
     },
     "filters": {
       "regionLabel": "Heritage filters",
@@ -840,7 +840,7 @@
       },
       "epistemicReview": {
         "title": "Epistemic review",
-        "desc": "Claims carry sources and confidence, and are reviewed before publication. How that works is documented on the methods page."
+        "desc": "Claims carry sources and confidence, and contributions are reviewed before publication. Records imported from Wikidata are marked as imported until a person reviews them. How that works is documented on the methods page."
       }
     },
     "data": {
@@ -1731,6 +1731,18 @@
       "people": "समुदाय",
       "part": "",
       "tie": ""
-    }
+    },
+    "titleSuffix": "Stories · HeritageGraph",
+    "noLinkSource": "No source recorded for this link",
+    "citedSources": "What does it cite?",
+    "citeTitle": "Cite this story",
+    "citation": "{label}. Story built from the HeritageGraph public knowledge graph (v{release}), as read on {date}. CAIR-Nepal. {url}",
+    "citeNote": "A story is computed from the graph, so it changes when the graph does. The date says which state of the graph this one reflects. Cite each fact by the source shown beside it.",
+    "citeCopy": "Copy citation",
+    "citeCopied": "Citation copied",
+    "placeOnlyHidden": "{count, plural, one {# story that only says where something is is not listed.} other {# stories that only say where things are are not listed.}}",
+    "placeOnlyIncluded": "{count, plural, one {Includes # story that only says where something is.} other {Includes # stories that only say where things are.}}",
+    "placeOnlyShow": "Show them",
+    "placeOnlyHide": "Hide them"
   }
 }

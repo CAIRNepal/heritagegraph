@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+
 import { Chip, Eyebrow, Marker, Nepali, StoryContainer, StoryShell } from '@/components/story/story-chrome';
 import { StoryFigure } from '@/components/story/story-figure';
 import { StoryMap, type StoryMapItem } from '@/components/story/story-map';
@@ -15,8 +17,10 @@ import {
   storyHref,
   storyLength,
   type StoryLink,
+  type StoryRecord,
   type StoryStop,
 } from '@/lib/stories/build-story';
+import { HERITAGEGRAPH_RELEASE } from '@/lib/provenance';
 
 interface StoryClientProps {
   segment: string;
@@ -25,7 +29,7 @@ interface StoryClientProps {
 
 export function StoryClient({ segment, pk }: StoryClientProps) {
   const t = useTranslations('stories');
-  const { index, loading, error } = useStoryGraph();
+  const { index, fetchedAt, loading, error } = useStoryGraph();
   const story = useMemo(() => {
     if (!index) return null;
     const id = findRecordId(index, segment, pk);
@@ -54,6 +58,11 @@ export function StoryClient({ segment, pk }: StoryClientProps) {
     stopRefs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
   }, [story]);
+
+  // The page's own title, so a saved or shared story says which one it is.
+  useEffect(() => {
+    if (story) document.title = `${story.focus.label} · ${t('titleSuffix')}`;
+  }, [story, t]);
 
   if (loading) return <Status text={t('loading')} />;
   if (error) return <Status text={t('error')} />;
@@ -117,6 +126,8 @@ export function StoryClient({ segment, pk }: StoryClientProps) {
               onRecordPage={recordHref(focus)}
             />
           ))}
+          {story.sources.length > 0 && <SourcesSection sources={story.sources} />}
+          <CiteStory label={focus.label} fetchedAt={fetchedAt} />
           {next.length > 0 && (
             <section className="relative py-14 pl-10 md:pl-14">
               <Marker className="absolute top-[3.9rem] left-0" />
@@ -218,6 +229,9 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
                     </span>
                   )}
                   <span className="block text-xs text-story-ink-soft">{l.record.typeLabel}</span>
+                  <span className="mt-1 block text-[11px] text-story-ink-soft">
+                    {l.provenance?.source ? `${t('source')}: ${l.provenance.source}` : t('noLinkSource')}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -236,6 +250,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
 function RelationLine({ focusLabel, link }: { focusLabel: string; link: StoryLink }) {
   const t = useTranslations('stories');
   const source = link.provenance?.source;
+  const citation = link.provenance?.citation?.trim();
   return (
     <div className="mt-8 border-y border-story-rule py-3">
       <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-semibold">
@@ -243,12 +258,66 @@ function RelationLine({ focusLabel, link }: { focusLabel: string; link: StoryLin
         <span className="text-story-accent">— {link.phrase} →</span>
         <span>{link.record.label}</span>
       </p>
-      {source && (
-        <p className="mt-1 text-xs text-story-ink-soft" title={link.provenance?.citation ?? undefined}>
-          {t('source')}: {source}
-        </p>
-      )}
+      {/* The citation is printed, not hidden in a tooltip that touch and
+          keyboard readers never see. A link with no source says so. */}
+      <p className="mt-1 text-xs text-story-ink-soft">
+        {source ? `${t('source')}: ${source}` : t('noLinkSource')}
+        {citation && citation !== source ? ` — ${citation}` : null}
+      </p>
     </div>
+  );
+}
+
+/** The records this one cites (`cites` edges), which the story walk skips. */
+function SourcesSection({ sources }: { sources: StoryRecord[] }) {
+  const t = useTranslations('stories');
+  return (
+    <section className="relative border-b border-story-rule-soft py-14 pl-10 md:pl-14">
+      <Marker className="absolute top-[3.9rem] left-0" />
+      <h2 className="text-3xl font-serif font-medium text-story-accent md:text-4xl">{t('citedSources')}</h2>
+      <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+        {sources.map((r) => (
+          <li key={r.id}>
+            <Link href={recordHref(r)} className="block h-full rounded-xl border border-story-rule bg-story-panel p-3 hover:shadow-md">
+              <span className="block font-semibold">{r.label}</span>
+              <span className="block text-xs text-story-ink-soft">{r.typeLabel}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/**
+ * How to cite this story: the record, the graph release and the date this page
+ * read the graph. A story is computed from the graph, so it can change when the
+ * graph does; the date says which state it reflects.
+ */
+function CiteStory({ label, fetchedAt }: { label: string; fetchedAt: string | null }) {
+  const t = useTranslations('stories');
+  const [url, setUrl] = useState('');
+  const [copied, setCopied] = useState(false);
+  useEffect(() => setUrl(window.location.href.split('#')[0]), []);
+  const date = fetchedAt ? fetchedAt.slice(0, 10) : null;
+  const citation = t('citation', { label, release: HERITAGEGRAPH_RELEASE, date: date ?? '—', url });
+  return (
+    <section className="relative border-b border-story-rule-soft py-10 pl-10 md:pl-14">
+      <h2 className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('citeTitle')}</h2>
+      <p className="mt-3 max-w-3xl font-mono text-xs leading-relaxed break-words">{citation}</p>
+      <p className="mt-2 max-w-3xl text-xs text-story-ink-soft">{t('citeNote')}</p>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-3"
+        onClick={() => {
+          void navigator.clipboard?.writeText(citation).then(() => setCopied(true));
+        }}
+      >
+        {copied ? t('citeCopied') : t('citeCopy')}
+      </Button>
+    </section>
   );
 }
 

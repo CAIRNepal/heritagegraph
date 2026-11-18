@@ -115,7 +115,10 @@ export function toRecord(index: GraphIndex, id: string): StoryRecord | null {
   const node = index.nodes.get(id);
   const ref = node ? recordRef(node.id) : null;
   if (!node || !ref) return null;
-  const imageUrl = node.imageUrl ?? null;
+  // A photograph is shown only with its author and licence; one without a
+  // recorded credit is left out rather than shown uncredited.
+  const imageCredit = (node.imageUrl && node.imageCredits?.[node.imageUrl]) || null;
+  const imageUrl = imageCredit ? node.imageUrl! : null;
   return {
     id: node.id,
     segment: ref.segment,
@@ -125,7 +128,7 @@ export function toRecord(index: GraphIndex, id: string): StoryRecord | null {
     typeLabel: typeLabel(node, ref.segment),
     comment: node.comment && node.comment !== node.label ? node.comment : null,
     imageUrl,
-    imageCredit: (imageUrl && node.imageCredits?.[imageUrl]) || null,
+    imageCredit,
     degree: index.degree.get(node.id) ?? 0,
     node,
   };
@@ -225,6 +228,15 @@ export function storyScore(story: Story): number {
     (story.focus.imageUrl ? 3 : 0) +
     (story.focus.labelNe ? 0.5 : 0)
   );
+}
+
+/**
+ * True when a story says more than where things are. Most links in the graph
+ * are location links, so most stories are only "where does it stand?" and
+ * "what lies within it?"; the index leads with the others.
+ */
+export function goesBeyondPlace(story: Story): boolean {
+  return story.stops.some((s) => s.kind !== 'place');
 }
 
 /** Records with enough to say for a story of at least `min` stops, richest first. */

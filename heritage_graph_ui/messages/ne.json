@@ -404,7 +404,7 @@
     "switchToXr": "कथामा जानुहोस्",
     "liveBadge": "Live graph",
     "graphCapped": "{total} मध्ये सबैभन्दा बढी जोडिएका {shown} वस्तु देखाइँदै — बाँकी हेर्न खोज्नुहोस् वा फिल्टर गर्नुहोस्।",
-    "demoBanner": "{count, plural, =0 {डेमो सङ्ग्रह — छानिएका स्थल र समीक्षित ज्ञान ग्राफबाट लिइएका अभिलेख।} other {डेमो सङ्ग्रह — # अभिलेख: छानिएका स्थल र समीक्षित ज्ञान ग्राफबाट लिइएका अभिलेख।}}",
+    "demoBanner": "{count, plural, =0 {डेमो सङ्ग्रह — छानिएका स्थल र सार्वजनिक ज्ञान ग्राफबाट लिइएका अभिलेख।} other {डेमो सङ्ग्रह — # अभिलेख: छानिएका स्थल र सार्वजनिक ज्ञान ग्राफबाट लिइएका अभिलेख, जसमध्ये अधिकांश विकिडेटाबाट आयात गरिएका र अझै कुनै व्यक्तिले समीक्षा नगरेका छन्।}}",
     "demoBannerAction": "Switch to the live graph",
     "sparseLive": "The live graph has {count} entities — the corpus is still growing.",
     "sparseLiveContribute": "योगदान गर्नुहोस्",
@@ -450,8 +450,8 @@
       "openSparql": "SPARQL एन्डपोइन्ट खोल्नुहोस्",
       "fullMethodsPage": "पूर्ण विधि दस्तावेज",
       "doiPending": "अझै जम्मा गरिएको छैन",
-      "demoExtension": "समीक्षित ज्ञान ग्राफबाट लिइएका {count} अभिलेख पनि छन्। तिनमा स्रोत भएका विवरण मात्र छन्: नाम, उद्धृत वर्णन, इजाजतपत्रसहितका तस्बिर, आफ्नै निर्देशाङ्क, मिति र प्रकारसहितका सम्बन्ध, प्रत्येकको अभिलेख स्रोतसहित।",
-      "demoTextUnsourced": "छानिएका स्थलहरूको वर्णनात्मक पाठको कुनै अभिलेखित स्रोत छैन र यसलाई उद्धृत गर्नुहुँदैन। माथिका चित्र श्रेय प्रमाणित छन्; कथन होइन।"
+      "demoExtension": "सार्वजनिक ज्ञान ग्राफबाट लिइएका {count} अभिलेख पनि छन्। विकिडेटाबाट आयात गरिएका अभिलेख आयातकर्ताले स्वीकार गरेका हुन्, कुनै व्यक्तिले समीक्षा गरेका होइनन्। तिनमा स्रोत भएका विवरण मात्र छन्: नाम, उद्धृत वर्णन, इजाजतपत्रसहितका तस्बिर, आफ्नै निर्देशाङ्क, मिति र प्रकारसहितका सम्बन्ध, प्रत्येकको अभिलेख स्रोतसहित।",
+      "demoTextUnsourced": "छानिएका स्थलहरूको वर्णन, तथ्य र मितिको कुनै अभिलेखित स्रोत नभएकाले ती देखाइँदैनन्। तिनका तस्बिरको श्रेय दिइएको छ, र जाँच्न सकिने तथ्य विकिडेटा र विकिपिडियाबाट आउँछन्, प्रत्येक अभिलेखमा लिङ्कसहित।"
     },
     "filters": {
       "regionLabel": "हेरिटेज फिल्टर",
@@ -840,7 +840,7 @@
       },
       "epistemicReview": {
         "title": "ज्ञानमीमांसीय समीक्षा",
-        "desc": "दाबीहरूसँग स्रोत र विश्वास मात्रा हुन्छ, र प्रकाशन अघि समीक्षा हुन्छ। यो कसरी काम गर्छ भन्ने विधि पृष्ठमा दस्तावेज गरिएको छ।"
+        "desc": "दाबीहरूसँग स्रोत र विश्वास मात्रा हुन्छ, र योगदानहरूको प्रकाशन अघि समीक्षा हुन्छ। विकिडेटाबाट आयात गरिएका अभिलेखलाई कुनै व्यक्तिले समीक्षा नगरेसम्म आयातित भनेर चिनाइन्छ। यो कसरी काम गर्छ भन्ने विधि पृष्ठमा दस्तावेज गरिएको छ।"
       }
     },
     "data": {
@@ -1731,6 +1731,18 @@
       "people": "समुदाय",
       "part": "",
       "tie": ""
-    }
+    },
+    "titleSuffix": "Stories · HeritageGraph",
+    "noLinkSource": "No source recorded for this link",
+    "citedSources": "What does it cite?",
+    "citeTitle": "Cite this story",
+    "citation": "{label}. Story built from the HeritageGraph public knowledge graph (v{release}), as read on {date}. CAIR-Nepal. {url}",
+    "citeNote": "A story is computed from the graph, so it changes when the graph does. The date says which state of the graph this one reflects. Cite each fact by the source shown beside it.",
+    "citeCopy": "Copy citation",
+    "citeCopied": "Citation copied",
+    "placeOnlyHidden": "{count, plural, one {# story that only says where something is is not listed.} other {# stories that only say where things are are not listed.}}",
+    "placeOnlyIncluded": "{count, plural, one {Includes # story that only says where something is.} other {Includes # stories that only say where things are.}}",
+    "placeOnlyShow": "Show them",
+    "placeOnlyHide": "Hide them"
   }
 }

@@ -8,11 +8,13 @@ import { Eyebrow, Nepali, StoryContainer, StoryShell } from '@/components/story/
 import { StoryFigure } from '@/components/story/story-figure';
 import { useStoryGraph } from '@/hooks/use-story-graph';
 import { cn } from '@/lib/utils';
-import { buildStory, storyHref, storyReadyRecords, type StoryRecord } from '@/lib/stories/build-story';
+import { buildStory, goesBeyondPlace, storyHref, storyReadyRecords, type StoryRecord } from '@/lib/stories/build-story';
 
 interface Card {
   record: StoryRecord;
   stops: number;
+  /** Says more than where things are (see goesBeyondPlace). */
+  rich: boolean;
 }
 
 export function StoriesClient() {
@@ -20,14 +22,19 @@ export function StoriesClient() {
   const { index, loading, error } = useStoryGraph();
   const [type, setType] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [placeOnlyShown, setPlaceOnlyShown] = useState(false);
 
-  const cards = useMemo<Card[]>(() => {
+  const allCards = useMemo<Card[]>(() => {
     if (!index) return [];
-    return storyReadyRecords(index).map((record) => ({
-      record,
-      stops: buildStory(index, record.id)?.stops.length ?? 0,
-    }));
+    return storyReadyRecords(index).map((record) => {
+      const story = buildStory(index, record.id);
+      return { record, stops: story?.stops.length ?? 0, rich: story ? goesBeyondPlace(story) : false };
+    });
   }, [index]);
+  const placeOnlyCount = allCards.filter((c) => !c.rich).length;
+  // Location-only stories are listed only on request, and the page says how
+  // many are held back, so the filter is visible rather than silent.
+  const cards = useMemo(() => (placeOnlyShown ? allCards : allCards.filter((c) => c.rich)), [allCards, placeOnlyShown]);
 
   const types = useMemo(() => {
     const counts = new Map<string, number>();
@@ -85,6 +92,18 @@ export function StoriesClient() {
         {!loading && !error && (
           <>
             <p className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('storyCount', { count: shown.length })}</p>
+            {placeOnlyCount > 0 && (
+              <p className="mt-2 max-w-3xl text-sm text-story-ink-soft">
+                {placeOnlyShown ? t('placeOnlyIncluded', { count: placeOnlyCount }) : t('placeOnlyHidden', { count: placeOnlyCount })}{' '}
+                <button
+                  type="button"
+                  onClick={() => setPlaceOnlyShown((v) => !v)}
+                  className="font-semibold text-story-accent underline underline-offset-4"
+                >
+                  {placeOnlyShown ? t('placeOnlyHide') : t('placeOnlyShow')}
+                </button>
+              </p>
+            )}
             {shown.length === 0 ? (
               <p className="mt-6 text-xl font-bold">{t('empty')}</p>
             ) : (
@@ -93,7 +112,7 @@ export function StoriesClient() {
                   <li key={record.id}>
                     <Link href={storyHref(record)} className="group flex h-full flex-col overflow-hidden rounded-xl border border-story-rule bg-story-panel shadow-xs transition-shadow hover:shadow-md">
                       {record.imageUrl ? (
-                        <StoryFigure src={record.imageUrl} alt={record.label} credit={null} className="aspect-[16/10] border-b border-story-rule" />
+                        <StoryFigure src={record.imageUrl} alt={record.label} credit={record.imageCredit} linked={false} className="aspect-[16/10] border-b border-story-rule" />
                       ) : (
                         <div className="flex aspect-[16/10] items-end border-b border-story-rule bg-story-panel p-3">
                           <span className="font-serif text-3xl leading-none text-story-ink-soft/40">{record.typeLabel}</span>
