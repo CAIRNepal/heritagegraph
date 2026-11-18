@@ -66,8 +66,15 @@ What is enforced (new contributions):
 What is not (yet):
 
 - Records and assertions published **before** this enforcement keep whatever
-  provenance they had. Measure it before quoting it:
-  `kg_quality_report` → `with_source` / `entity_source_coverage`.
+  provenance they had. `manage.py audit_provenance` measures it, counting
+  records, claims and identity bookkeeping separately (bookkeeping says which
+  records are the same, not anything about heritage). Quote its figures, and
+  `kg_quality_report` → `entity_source_coverage` /
+  `provenance_coverage.with_registered_source`, rather than asserting coverage.
+- Repairs that invent nothing: `--backfill-wikidata` points Wikidata cluster
+  memberships at the Wikidata source their record cites; `--withdraw --as
+  <curator> --manifest <path>` sends unsourced records and claims back to
+  review (out of the public graph) and `--restore <path>` undoes it exactly.
 - `HeritageAssertion.source` is still nullable and `confidence` still defaults
   to `"likely"` on paths other than the contribute forms (imports, agents,
   the identity queue).
