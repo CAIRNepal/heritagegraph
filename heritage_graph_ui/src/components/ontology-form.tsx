@@ -29,7 +29,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { SourcePrompt } from "@/components/contribute/source-prompt";
+import {
+  EMPTY_SOURCE_ANSWER,
+  SourcePrompt,
+  sourceAnswerComplete,
+  sourceAnswerPayload,
+  type SourceAnswer,
+} from "@/components/contribute/source-prompt";
 
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
@@ -933,7 +939,20 @@ export default function OntologyForm({
           },
         });
         if (cancelled) return;
-        setFormData(mapCidocRecordToFormData(ontologyClass, data));
+        const knownSource =
+          data.source && typeof data.source === "object"
+            ? (data.source as { id: string | number; name?: string })
+            : data.source
+              ? { id: data.source as string, name: String(data.source) }
+              : null;
+        setFormData({
+          ...mapCidocRecordToFormData(ontologyClass, data),
+          __source: {
+            ...EMPTY_SOURCE_ANSWER,
+            citation: typeof data.source_citation === "string" ? data.source_citation : "",
+            source: knownSource ? { id: knownSource.id, name: knownSource.name ?? String(knownSource.id) } : null,
+          },
+        });
         setRecordMeta({
           id: String(recordId),
           status: typeof data.status === "string" ? data.status : undefined,
@@ -1643,9 +1662,23 @@ export default function OntologyForm({
     sectionLabelForField,
   ]);
 
+  const sourceAnswer: SourceAnswer =
+    (formData.__source as SourceAnswer | undefined) ?? EMPTY_SOURCE_ANSWER;
+  const setSourceAnswer = (next: SourceAnswer) =>
+    setFormData((prev) => ({ ...prev, __source: next }));
+  // The cultural-entity wrapper endpoint has no source columns; CIDOC records do.
+  const asksForSource = !ontologyClass.apiEndpoint.includes("cultural-entities");
+  const sourceReady = !asksForSource || sourceAnswerComplete(sourceAnswer);
+
   const openSubmitConfirm = () => {
     setSubmitAttempted(true);
     if (!validate()) return;
+    if (!sourceReady) {
+      toast.error("Say where this came from before submitting.", {
+        description: "Name a source, or describe it and choose its kind, and say how sure you are.",
+      });
+      return;
+    }
     if (!isSignedIn) {
       toast.error("Please sign in to submit contributions.");
       return;
@@ -1659,7 +1692,10 @@ export default function OntologyForm({
     try {
       const token = (session as { accessToken?: string } | null)
         ?.accessToken;
-      const payload = buildOntologyFormPayload(ontologyClass.fields, formData);
+      const payload = {
+        ...buildOntologyFormPayload(ontologyClass.fields, formData),
+        ...(asksForSource ? sourceAnswerPayload(sourceAnswer) : {}),
+      };
 
       // The CulturalEntity endpoint ("entity" class) is not a flat CIDOC resource:
       // its serializer expects {name, description, category, form_data}, where
@@ -2085,6 +2121,10 @@ export default function OntologyForm({
           </CardContent>
         </Card>
 
+        {asksForSource ? (
+          <SourcePrompt value={sourceAnswer} onChange={setSourceAnswer} disabled={!isSignedIn} />
+        ) : null}
+
         <div className="flex justify-end gap-3">
           <Button
             variant="outline"
@@ -2304,13 +2344,9 @@ export default function OntologyForm({
           )}
         </div>
 
-        <SourcePrompt
-          value={(formData.source_citation as string) ?? ""}
-          onChange={(next) =>
-            setFormData((prev) => ({ ...prev, source_citation: next }))
-          }
-          disabled={!isSignedIn}
-        />
+        {asksForSource ? (
+          <SourcePrompt value={sourceAnswer} onChange={setSourceAnswer} disabled={!isSignedIn} />
+        ) : null}
 
         <div className="flex gap-2">
           <Button
