@@ -688,6 +688,8 @@ def resolve_identity_candidate(
                 entity_cluster=target,
                 contributed_by=actor_label,
                 reconciliation_status="accepted",
+                # A curator's merge is a decision, not an estimate.
+                confidence="certain",
             )
             dup.full_clean()
             dup.save()
