@@ -55,7 +55,7 @@ class KgDedupeAndGhostCleanupTest(APITestCase):
         with self.captureOnCommitCallbacks(execute=True):
             resp = self.client.post(
                 "/api/v1/cidoc/monuments/",
-                {
+                {"source_citation": "Test fixture source.", 
                     "name": "Dedupe Test Stupa",
                     "latitude": "27.7215",
                     "longitude": "85.3620",

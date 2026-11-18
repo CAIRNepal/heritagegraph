@@ -165,6 +165,8 @@ class RegistryContributionMatrixTest(APITestCase):
                 payload[name] = f"E2E {key} {name}"
 
         payload.setdefault("name", f"E2E {key}")
+        # Records are accepted only when they name a source.
+        payload.setdefault("source_citation", f"E2E {key} source")
         return payload
 
     # ── the pipeline ─────────────────────────────────────────────────────────

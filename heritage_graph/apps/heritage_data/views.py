@@ -1592,6 +1592,8 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
         action = serializer.validated_data["action"]
         comment = serializer.validated_data.get("comment", "")
 
+        from apps.cidoc_data.registry_slots import MissingEvidence
+
         from .models import IllegalStatusTransition
 
         try:
@@ -1608,7 +1610,7 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
                     {"message": "Entity rejected successfully"},
                     status=status.HTTP_200_OK,
                 )
-        except IllegalStatusTransition as exc:
+        except (IllegalStatusTransition, MissingEvidence) as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)
@@ -2526,6 +2528,8 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
             **serializer.validated_data,
         )
 
+        from apps.cidoc_data.registry_slots import MissingEvidence
+
         from .models import IllegalStatusTransition
 
         # Apply the verdict
@@ -2535,7 +2539,7 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
                     entity.reject_contribution(request.user, feedback)
                 else:
                     entity.accept_contribution(request.user, feedback)
-            except IllegalStatusTransition as exc:
+            except (IllegalStatusTransition, MissingEvidence) as exc:
                 decision.delete()
                 return Response(
                     {"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST

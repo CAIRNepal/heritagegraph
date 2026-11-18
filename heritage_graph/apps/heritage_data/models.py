@@ -209,12 +209,23 @@ def accept_contribution(self, editor, comment=None):
 
         cidoc = _resolve_linked_cidoc_instance(self)
         if cidoc is not None:
+            from apps.cidoc_data.registry_slots import (
+                apply_revision_extras,
+                require_evidence,
+            )
+
             # The CIDOC row may still hold the previously accepted values
             # (published edits are staged in revisions, not written in place).
             if isinstance(data, dict):
                 _apply_revision_data_to_cidoc(cidoc, data)
+            # Nothing is published without saying where it came from.
+            require_evidence(cidoc)
             cidoc.status = "accepted"
             cidoc.save()
+            if isinstance(data, dict):
+                apply_revision_extras(
+                    cidoc, data, contributor=self.contributor, reviewer=editor
+                )
 
         # Log the activity
         Activity.objects.create(
