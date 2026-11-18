@@ -11,7 +11,7 @@ interface StoryFigureProps {
 }
 
 /** A photograph with its author and licence, linked to the file page. */
-export function StoryFigure({ src, alt, credit, className, monochrome = true }: StoryFigureProps) {
+export function StoryFigure({ src, alt, credit, className, monochrome = false }: StoryFigureProps) {
   const byline = [credit?.artist, credit?.license].filter(Boolean).join(' · ');
   return (
     <figure className={cn('relative overflow-hidden bg-story-panel', className)}>
