@@ -95,7 +95,8 @@ export default function RelationshipProposalContributePage() {
     { id: string; label: string }[]
   >([]);
   const [temporal, setTemporal] = useState('');
-  const [confidence, setConfidence] = useState('likely');
+  // Empty until the contributor chooses: a preselected value would be a claim they never made.
+  const [confidence, setConfidence] = useState('');
   const [note, setNote] = useState('');
   const [proposalId, setProposalId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -302,13 +303,8 @@ export default function RelationshipProposalContributePage() {
         if (!cancelled) setSupportingSources(supRows);
 
         setTemporal(typeof row.temporal_scope_edtf === 'string' ? row.temporal_scope_edtf : '');
-        const conf =
-          typeof row.confidence === 'string' && row.confidence
-            ? row.confidence
-            : 'likely';
-        setConfidence(
-          ['certain', 'likely', 'uncertain', 'speculative'].includes(conf) ? conf : 'likely'
-        );
+        const conf = typeof row.confidence === 'string' ? row.confidence : '';
+        setConfidence(['certain', 'likely', 'uncertain', 'speculative'].includes(conf) ? conf : '');
         setNote(
           typeof row.interpretation_note === 'string' ? row.interpretation_note : ''
         );
@@ -674,8 +670,8 @@ export default function RelationshipProposalContributePage() {
           <div className="space-y-2">
             <Label>How sure are you?</Label>
             <Select value={confidence} onValueChange={setConfidence}>
-              <SelectTrigger className="max-w-xs">
-                <SelectValue />
+              <SelectTrigger className="max-w-xs" aria-label="How sure are you?">
+                <SelectValue placeholder="Choose one" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="certain">Certain</SelectItem>
@@ -701,7 +697,8 @@ export default function RelationshipProposalContributePage() {
             </Button>
             <Button
               type="button"
-              disabled={busy || draftHydrating || !proposalEditable}
+              disabled={busy || draftHydrating || !proposalEditable || !confidence}
+              title={!confidence ? 'Say how sure you are first' : undefined}
               onClick={() => void submitForReview()}
             >
               Submit for review

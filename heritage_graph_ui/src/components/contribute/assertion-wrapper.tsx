@@ -69,7 +69,8 @@ export const defaultAssertionData: AssertionData = {
   source_type: "published",
   source_citation: "",
   source_url: "",
-  confidence: "likely",
+  // No preselected confidence: the API refuses an assertion that does not state one.
+  confidence: "",
   data_quality_note: "",
 };
 

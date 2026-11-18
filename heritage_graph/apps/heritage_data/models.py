@@ -1953,7 +1953,8 @@ class RelationshipProposal(models.Model):
     )
     supporting_source_ids = models.JSONField(default=list, blank=True)
     temporal_scope_edtf = models.CharField(max_length=255, blank=True)
-    confidence = models.CharField(max_length=20, default="likely")
+    # No default: a proposal says how sure its author is before it is submitted.
+    confidence = models.CharField(max_length=20, blank=True, default="")
     interpretation_note = models.TextField(blank=True)
     moderator_comment = models.TextField(blank=True)
     materialized_assertion = models.ForeignKey(
