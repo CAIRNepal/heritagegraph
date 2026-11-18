@@ -654,6 +654,15 @@ class PersonRevisionViewSet(viewsets.ModelViewSet):
     queryset = PersonRevision.objects.all()
     serializer_class = PersonRevisionSerializer
 
+    def get_permissions(self):
+        # Inherited the project default (AllowAny), so anyone could rewrite or
+        # delete a person's revision history.
+        if self.action in ("list", "retrieve"):
+            return [permissions.AllowAny()]
+        if self.action == "create":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated(), IsReviewerOrAdmin()]
+
 
 # =====================================================================
 # PROVENANCE VIEWSETS
