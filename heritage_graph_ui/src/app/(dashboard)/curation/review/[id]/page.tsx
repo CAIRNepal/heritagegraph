@@ -64,6 +64,7 @@ interface TriageBreakdown {
 
 interface ReviewWorkspaceData {
   entity_id: string; name: string; description: string; category: string; record_type?: string | null; status: string;
+  dual_review?: { required: boolean; reasons: string[]; needed: number; approvals: string[] };
   proposal?: {
     links: { slot: string; label: string; target_id: string; target_type: string; target_label: string | null; target_status: string | null }[];
     values: { slot: string; label: string; value: string }[];
@@ -169,12 +170,19 @@ export default function ReviewWorkspacePage() {
       };
       if (confidenceOverride) body.confidence_override = confidenceOverride;
       if (verificationMethod) body.verification_method = verificationMethod;
-      await apiFetchJson(`${API_BASE}/data/api/review-workspace/${entityId}/decide/`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(body),
-      });
-      toast.success('Review decision submitted successfully');
+      const result = await apiFetchJson<{ status?: string; detail?: string }>(
+        `${API_BASE}/data/api/review-workspace/${entityId}/decide/`,
+        {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify(body),
+        },
+      );
+      if (result?.status === 'awaiting_second_review') {
+        toast.success('Your approval is recorded', { description: result.detail });
+      } else {
+        toast.success('Review decision submitted successfully');
+      }
       await fetchWorkspace();
       setDecisionConfirmOpen(false);
       setVerdict('');
@@ -548,6 +556,18 @@ function SubmissionPanel({ workspace, revisionData, latestRevision }: {
               <div><Label className="text-xs text-primary dark:text-primary">Type</Label><p className="text-sm capitalize text-primary dark:text-primary">{workspace.record_type ?? workspace.category}</p></div>
             </div>
             <Separator className="bg-primary/10 dark:bg-gray-700" />
+            {workspace.dual_review?.required ? (
+              <div className="rounded-xl border border-warning/50 bg-warning-soft p-3 text-sm text-warning-on-soft">
+                <p className="font-medium">Needs two independent reviewers</p>
+                <p className="text-xs">
+                  Because of {workspace.dual_review.reasons.join(', ')}. Approvals so far:{' '}
+                  {workspace.dual_review.approvals.length
+                    ? workspace.dual_review.approvals.map((a) => `@${a}`).join(', ')
+                    : 'none'}{' '}
+                  ({workspace.dual_review.approvals.length} of {workspace.dual_review.needed}).
+                </p>
+              </div>
+            ) : null}
             {workspace.proposal ? <ProposalSummary proposal={workspace.proposal} /> : null}
             <Separator className="bg-primary/10 dark:bg-gray-700" />
             <div>

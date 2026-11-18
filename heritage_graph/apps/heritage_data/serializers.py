@@ -1133,6 +1133,7 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
     worst_source_type = serializers.SerializerMethodField()
     record_type = serializers.SerializerMethodField()
     proposal = serializers.SerializerMethodField()
+    dual_review = serializers.SerializerMethodField()
 
     class Meta:
         model = CulturalEntity
@@ -1143,6 +1144,7 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
             "category",
             "record_type",
             "proposal",
+            "dual_review",
             "status",
             "contributor",
             "current_revision",
@@ -1166,6 +1168,11 @@ class ReviewWorkspaceSerializer(serializers.ModelSerializer):
 
     def get_record_type(self, obj):
         return record_type_label(obj)
+
+    def get_dual_review(self, obj):
+        from .dual_review import status_for
+
+        return status_for(obj)
 
     def get_proposal(self, obj):
         """Links, values and evidence the revision under review proposes."""
