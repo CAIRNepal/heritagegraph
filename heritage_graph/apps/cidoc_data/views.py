@@ -761,6 +761,11 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
             extra["contributed_by"] = (
                 self.request.user.email or self.request.user.username
             )
+        # Contributors propose; reviewers decide. An accepted assertion is
+        # projected to the public graph on save, so a contributor must not be
+        # able to create one already accepted.
+        if not IsReviewerOrAdmin().has_permission(self.request, self):
+            extra["reconciliation_status"] = "pending"
         serializer.save(**extra)
 
     def get_queryset(self):

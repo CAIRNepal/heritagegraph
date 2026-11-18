@@ -615,6 +615,15 @@ class RelationshipPredicateSerializer(serializers.ModelSerializer):
         read_only_fields = ["id"]
 
 
+# Assertion-form slots whose meaning has no column yet. Refused, not dropped.
+ASSERTION_SLOTS_NOT_STORED = (
+    "asserts_about_entity",
+    "asserts_about_event",
+    "was_attributed_to_agent",
+    "supersedes_assertion",
+)
+
+
 class HeritageAssertionSerializer(serializers.ModelSerializer):
     content_type_name = serializers.SerializerMethodField()
     source_type = serializers.SerializerMethodField()
@@ -627,6 +636,24 @@ class HeritageAssertionSerializer(serializers.ModelSerializer):
         model = HeritageAssertion
         fields = "__all__"
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def to_internal_value(self, data):
+        if hasattr(data, "items"):
+            data = dict(data.items())
+            # The registry calls the evidence slot `was_derived_from_source`.
+            derived = data.pop("was_derived_from_source", None)
+            if derived and not data.get("source"):
+                data["source"] = str(derived).split(",")[0].strip()
+            refused = {
+                key: "Not stored on assertions yet; use Connect two records."
+                for key in ASSERTION_SLOTS_NOT_STORED
+                if data.get(key) not in (None, "", [], {})
+            }
+            if refused:
+                raise serializers.ValidationError(refused)
+            for key in ASSERTION_SLOTS_NOT_STORED:
+                data.pop(key, None)
+        return super().to_internal_value(data)
 
     def get_content_type_name(self, obj):
         return obj.content_type.model if obj.content_type else None
