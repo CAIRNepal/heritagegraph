@@ -49,6 +49,12 @@ POST /api/v1/cidoc/<type>/      # e.g. /api/v1/cidoc/festivals/, /api/v1/cidoc/c
 4. Creates a **`CulturalEntity`** wrapper (`status="pending_review"`) — the review-queue item.
 5. Creates **`Revision` #1** whose JSON `data` includes the fields **plus `_cidoc_model` and
    `_cidoc_id`** (the back-link to the CIDOC row).
+   Registry slots the row has no column for — every link to another record, and
+   some plain values — ride along as **`_links`** / **`_values`**, with the
+   contributor's **`_source_kind`** and **`_confidence`**
+   (`CulturalEntityLinkMixin.to_internal_value` → `registry_slots.split_registry_extras`).
+   A link must name an existing record of the slot's target type; a key that is
+   neither a field nor a slot is refused with 400 rather than dropped.
 6. Logs an **`Activity`** ("submitted") and fires **`Notification`s** to the contributor and
    every active reviewer.
 
@@ -62,6 +68,14 @@ A reviewer accepts the `CulturalEntity`. `CulturalEntity.accept_contribution()`
    the legacy `_cidoc_model`/`_cidoc_id` JSON back-link is a logged fallback that
    heals the FK), **applies the accepted revision's fields to the row**, and sets its
    `status="accepted"`. Every resolution failure logs at ERROR — never silent.
+4. **Refuses a record that names no source** (`source` or `source_citation`):
+   `MissingEvidence` → 400, nothing changes.
+5. Turns the revision's `_links` / `_values` into accepted `HeritageAssertion`
+   rows (`registry_slots.apply_revision_extras`) citing the record's DataSource —
+   a typed citation is registered as one, with the contributor's chosen kind —
+   and the contributor's stated confidence. An edge whose other end is still in
+   review is projected when that record is accepted
+   (`rdf_signals._publish_edges_touching`).
 
 ### 1b′. Editing a published record (staged revisions)
 `PATCH /api/v1/cidoc/<type>/<id>/` on a published row **never edits it in place**:

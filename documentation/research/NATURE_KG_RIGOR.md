@@ -38,7 +38,7 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 | C5 | Contributor privacy notice + leaderboard opt-out | 🔴 | not implemented — see ethics doc §3 |
 | C6 | Institutional ethics review | 🔴 | not obtained |
 | P1 | Named-graph provenance (L0) | ✅ | OSM / WD / UNESCO / crosswalk graphs |
-| P2 | DataSource + PROV on L1 assertions | 🟡 | Supported and measured, **not required**: `HeritageAssertion.source` is nullable, `confidence` defaults to `likely`, and the `AssertionRequiresSource` SHACL shape runs only on project merge with `RDF_SHACL_VALIDATE_ON_WRITE` off by default. `kg_quality_report` reports `with_source`. See [Source coverage](#source-coverage). |
+| P2 | DataSource + PROV on L1 assertions | 🟡 | **Required for new records**: a record cannot be accepted without `source` or `source_citation`, and links from the contribute forms are published only as `relationship.*` assertions citing a registered DataSource with the contributor's stated confidence. **Not yet** for older records or other assertion paths: `HeritageAssertion.source` is still nullable, `confidence` still defaults to `likely` outside the forms, and SHACL-on-write is off. See [Source coverage](#source-coverage). |
 | P3 | Integrity gate | ✅ | `kg_rigor_audit` (incl. L0 isolation) |
 | P4 | No L0 IRIs in PUBLIC | ✅ | rigor HARD + `kg_verify` / purge |
 | H1 | L1 editable under revision semantics | ✅ | contribute / improve |
@@ -46,27 +46,39 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 
 ## Source coverage
 
-An assertion can currently be created, accepted and published with **no source
-at all**:
+What is enforced (new contributions):
 
-- `HeritageAssertion.source` is `null=True, blank=True`.
-- `confidence` defaults to `"likely"` — so an unsourced claim enters the graph
-  already carrying a confidence value that no contributor stated.
-- Entity records (`cidoc_data.MetaData` and its subclasses) have no source field
-  at all; evidence attaches to assertions, not to the descriptive record.
-- The `AssertionRequiresSource` SHACL shape detects the gap, but only for
-  project-scoped merges, and SHACL-on-write is opt-in.
+- **Records.** `accept_contribution` refuses to publish a record that names no
+  `source` and no `source_citation` (`registry_slots.require_evidence`); the
+  review API answers 400 and the record stays in review. Every contribute form
+  asks for the source, its kind and the contributor's confidence before Submit.
+- **Links and column-less values.** Registry slots with no column on the record
+  are no longer dropped by the serializer. They travel in the revision
+  (`_links` / `_values`), are shown to the reviewer by name, and on acceptance
+  become `HeritageAssertion` rows citing the record's DataSource (a typed
+  citation is registered as one, with the kind the contributor chose) and the
+  contributor's stated confidence. A key that is neither a field nor a slot is
+  refused with 400. `REGISTRY_MODEL_ALIGNMENT.md` reports 0 silently discarded
+  form fields.
+- **Review gate on assertions.** A contributor-created assertion is always
+  `pending`; only reviewers and admins can create one already accepted.
 
-What this means for the paper: do not claim that published assertions are
-source-backed. The accurate claim is that the model *supports* per-assertion
-provenance, that coverage is *measured* (`kg_quality_report` → `with_source`),
-and that enforcement is not yet switched on. Report the measured coverage
-figure rather than asserting the property.
+What is not (yet):
 
-Before claiming enforcement, three things need to change: make `source` or
-`source_citation` required for the `accepted` transition, remove the silent
-`confidence` default so contributors state it explicitly, and enable
-SHACL-on-write.
+- Records and assertions published **before** this enforcement keep whatever
+  provenance they had. Measure it before quoting it:
+  `kg_quality_report` → `with_source` / `entity_source_coverage`.
+- `HeritageAssertion.source` is still nullable and `confidence` still defaults
+  to `"likely"` on paths other than the contribute forms (imports, agents,
+  the identity queue).
+- The `AssertionRequiresSource` SHACL shape runs only on project merge, and
+  SHACL-on-write is off by default.
+
+What this means for the paper: the accurate claim is that new contributions
+are source-backed by construction, and that coverage of the whole graph is
+*measured* and reported as a figure, not asserted as a property. Backfilling
+or withdrawing the unsourced older records, removing the silent `confidence`
+default everywhere, and enabling SHACL-on-write would close the gap.
 
 ## Sample corpus policy
 

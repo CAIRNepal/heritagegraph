@@ -252,7 +252,7 @@ The Django `ROOT_URLCONF` in base.py is set to `"urls"` — the file is at `heri
 - `/dashboard` — dashboard home (authenticated shell); moved off `/` in the 2026-08 entry redesign
 - `/preview/entry-a`, `/preview/entry-b` — the two compositional directions the entry was chosen from; `noindex`, retained for comparison and safe to delete
 - `/knowledge/<domain>` — knowledge base (entity, person, location, event, period, tradition, source)
-- `/contribute/<domain>` — contribution forms (add `?id=<recordId>` to edit an existing CIDOC record)
+- `/contribute/<domain>` — contribution forms (add `?id=<recordId>` to edit an existing CIDOC record). Every form asks for the source (a registered DataSource, or a citation and its kind) and the contributor's confidence; a record with no source cannot be accepted. Registry slots with no column (links, some values) travel in the revision as `_links` / `_values`, are listed by name on the review page, and become `HeritageAssertion` rows on acceptance (`heritage_graph/apps/cidoc_data/registry_slots.py`); unknown keys get a 400. Link fields whose range has no record type (Actor, TimeSpan, …) are taken as text.
 - `/contribute/pattern/<slug>` — guided **semantic workflows** (`tools/semantic-patterns.yaml`; registry key as slug)
 - `/curation/contributions` — moderation queue
 - `/curation/activity` — activity log
