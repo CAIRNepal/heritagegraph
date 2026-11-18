@@ -67,6 +67,13 @@ def _get_category_for_model(model_class):
     return mapping.get(model_class.__name__, "other")
 
 
+def _extras_for_revision(serializer) -> dict:
+    """Links and values the serializer could not store, for the revision."""
+    from .registry_slots import revision_extras
+
+    return revision_extras(getattr(serializer, "registry_extras", None) or {})
+
+
 class ContributionFlowMixin:
     """
     Mixin for CIDOC ViewSets that hooks every create into the
@@ -221,6 +228,7 @@ class ContributionFlowMixin:
         data = dict(serializer.to_representation(instance))
         for key, value in serializer.validated_data.items():
             data[key] = coerce_for_jsonschema(value)
+        data.update(_extras_for_revision(serializer))
         return data
 
     def _append_wrapper_revision(self, instance, revision_data, *, entity=None):
@@ -330,7 +338,11 @@ class ContributionFlowMixin:
         try:
             with transaction.atomic():
                 entity, revision = self._append_wrapper_revision(
-                    instance, coerce_for_jsonschema(serializer.data)
+                    instance,
+                    {
+                        **coerce_for_jsonschema(serializer.data),
+                        **_extras_for_revision(serializer),
+                    },
                 )
                 entity.current_revision = revision
                 entity.save(update_fields=["current_revision"])
@@ -398,6 +410,7 @@ class ContributionFlowMixin:
             # that exposes a UUID-pk relation from 500-ing the whole
             # contribution.
             revision_data = coerce_for_jsonschema(serializer.data)
+            revision_data.update(_extras_for_revision(serializer))
             revision_data["_cidoc_model"] = instance.__class__.__name__
             revision_data["_cidoc_id"] = coerce_for_jsonschema(instance.pk)
 

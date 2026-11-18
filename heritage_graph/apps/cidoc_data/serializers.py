@@ -136,6 +136,17 @@ class CulturalEntityLinkMixin(serializers.Serializer):
 
     cultural_entity_id = serializers.SerializerMethodField()
 
+    def to_internal_value(self, data):
+        # Registry slots with no column (links, some values) would otherwise be
+        # dropped silently; keep them for the revision. See registry_slots.
+        from .registry_slots import split_registry_extras
+
+        payload, extras, errors = split_registry_extras(self, data)
+        if errors:
+            raise serializers.ValidationError(errors)
+        self.registry_extras = extras
+        return super().to_internal_value(payload)
+
     def get_cultural_entity_id(self, obj):
         cached = self.context.get("cultural_entity_id")
         if cached:
