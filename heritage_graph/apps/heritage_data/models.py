@@ -191,6 +191,15 @@ def accept_contribution(self, editor, comment=None):
         # staging and restored by rejection). Falling back to the newest
         # revision would resurrect a previously rejected proposal.
         reviewed_revision = self.current_revision or self.get_latest_revision()
+        from .dual_review import require_independent_approvals
+
+        require_independent_approvals(
+            self,
+            _resolve_linked_cidoc_instance(self),
+            reviewed_revision.data if reviewed_revision else None,
+            reviewed_revision,
+            editor,
+        )
         if reviewed_revision:
             self.current_revision = reviewed_revision
             self.accepted_revision = reviewed_revision

@@ -1600,6 +1600,7 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
 
         from apps.cidoc_data.registry_slots import MissingEvidence
 
+        from .dual_review import AwaitingSecondReview
         from .models import IllegalStatusTransition
 
         try:
@@ -1618,6 +1619,14 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
                 )
         except (IllegalStatusTransition, MissingEvidence) as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except AwaitingSecondReview:
+            return Response(
+                {
+                    "error": "This record needs two independent reviewers. "
+                    "Accept it from the review workspace, where each approval is recorded."
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
 
         return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -2536,6 +2545,7 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
 
         from apps.cidoc_data.registry_slots import MissingEvidence
 
+        from .dual_review import AwaitingSecondReview
         from .models import IllegalStatusTransition
 
         # Apply the verdict
@@ -2545,6 +2555,34 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
                     entity.reject_contribution(request.user, feedback)
                 else:
                     entity.accept_contribution(request.user, feedback)
+            except AwaitingSecondReview as exc:
+                # Keep the decision: it is the first of the two approvals.
+                Activity.objects.create(
+                    entity=entity,
+                    user=request.user,
+                    activity_type="commented",
+                    comment=f"First approval by {request.user.username}; awaiting a second reviewer.",
+                )
+                for other in User.objects.filter(reviewer_role__is_active=True).exclude(
+                    pk__in=[request.user.pk, entity.contributor_id]
+                ):
+                    Notification.objects.create(
+                        user=other,
+                        actor=request.user,
+                        notification_type="submission_update",
+                        message=f'"{entity.name}" needs a second reviewer before it is published.',
+                        entity=entity,
+                        link=f"/curation/review/{entity.entity_id}",
+                    )
+                return Response(
+                    {
+                        "status": "awaiting_second_review",
+                        "detail": str(exc),
+                        "approvals": exc.approvals,
+                        "needed": 2,
+                    },
+                    status=status.HTTP_202_ACCEPTED,
+                )
             except (IllegalStatusTransition, MissingEvidence) as exc:
                 decision.delete()
                 return Response(
