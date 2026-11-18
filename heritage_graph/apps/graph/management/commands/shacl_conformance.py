@@ -20,7 +20,7 @@ from pathlib import Path
 
 from apps.graph.kg_engine import get_kg_engine
 from apps.graph.kg_engine.partitions import GraphPartition
-from apps.graph.kg_engine.rdf_serialize import format_nt_line
+from apps.graph.kg_engine.rdf_serialize import dump_graph_ntriples
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
@@ -35,7 +35,7 @@ def _data_graph():
     from rdflib import Graph
 
     store = get_kg_engine().store
-    lines: list[str] = []
+    nt = bytearray()
     per_graph: dict[str, int] = {}
     for partition in PARTITIONS:
         base = partition.uri()
@@ -52,14 +52,14 @@ def _data_graph():
             graphs = sorted({r["g"] for r in rows if r.get("g")} | {base})
         n = 0
         for uri in graphs:
-            for s, p, o in store.iter_named_graph_triples(uri):
-                if s and p and o is not None:
-                    lines.append(format_nt_line(s, p, o))
-                    n += 1
+            # The store's serialiser: exact datatypes, language tags, escaping.
+            data = dump_graph_ntriples(uri)
+            nt += data
+            n += data.count(b"\n")
         per_graph[partition.value] = n
     graph = Graph()
-    if lines:
-        graph.parse(data="\n".join(lines), format="nt")
+    if nt:
+        graph.parse(data=bytes(nt).decode("utf-8"), format="nt")
     return graph, per_graph
 
 
