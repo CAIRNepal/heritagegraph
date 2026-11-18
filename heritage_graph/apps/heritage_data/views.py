@@ -52,6 +52,7 @@ from .models import (
     Share,
 )
 from .permissions import (
+    IsAuthorOrStaff,
     IsCommunityReviewer,
     IsContributorOrReadOnly,
     IsEditor,
@@ -244,7 +245,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     queryset = Comments.objects.all().order_by("-created_at")
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrStaff]
 
     def get_queryset(self):
         submission_id = self.request.query_params.get("submission_id")
@@ -948,6 +949,11 @@ class SubmissionSuggestionViewSet(viewsets.ModelViewSet):
     queryset = SubmissionEditSuggestion.objects.all()
     serializer_class = SubmissionEditSuggestionSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ("approve", "reject", "update", "partial_update", "destroy"):
+            return [permissions.IsAuthenticated(), IsReviewerOrAdmin()]
+        return [permissions.IsAuthenticated()]
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -2620,7 +2626,7 @@ class ReviewFlagViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == "create":
             return [permissions.IsAuthenticated()]
-        if self.action in ["update", "partial_update", "destroy"]:
+        if self.action in ["update", "partial_update", "destroy", "resolve"]:
             return [permissions.IsAuthenticated(), IsCommunityReviewer()]
         return [permissions.IsAuthenticated()]
 
@@ -3561,6 +3567,9 @@ class RevisionDiffView(APIView):
 class ShareViewSet(viewsets.ViewSet):
     """Track shares of entities to external platforms."""
 
+    # Anonymous visitors share too; declared rather than inherited.
+    permission_classes = [permissions.AllowAny]
+
     def create(self, request):
         serializer = ShareCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -3614,7 +3623,7 @@ class EntityCommentViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = CommentWithReactionsSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrStaff]
 
     def get_queryset(self):
         entity_id = self.kwargs.get("entity_id")
@@ -4724,6 +4733,10 @@ class ProjectAssetViewSet(_ProjectScopedViewSet):
             payload={"media_id": str(asset.media_id), "role": asset.role},
         )
 
+    def perform_update(self, serializer):
+        self._require_edit(self._get_project())
+        serializer.save()
+
     def perform_destroy(self, instance):
         project = self._get_project()
         self._require_edit(project)
@@ -4760,6 +4773,10 @@ class ProjectEntityViewSet(_ProjectScopedViewSet):
             target_id=link.id,
             payload={"entity_id": str(link.entity_id)},
         )
+
+    def perform_update(self, serializer):
+        self._require_edit(self._get_project())
+        serializer.save()
 
     def perform_destroy(self, instance):
         project = self._get_project()
@@ -4832,6 +4849,39 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from rest_framework.permissions import IsAuthenticated
         return [IsAuthenticated()]
 
+    def _require_merge_moderator(self, mr):
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        from .project_services import user_can_merge_project
+
+        # Approving runs the merge into the canonical graph; deciding is a
+        # moderator's job, not any signed-in user's.
+        if not user_can_merge_project(self.request.user, mr.project):
+            raise DRFPermDenied("Only moderators can decide merge requests.")
+
+    def perform_update(self, serializer):
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        from .project_services import user_can_merge_project
+
+        mr = serializer.instance
+        if mr.opened_by_id != self.request.user.id and not user_can_merge_project(
+            self.request.user, mr.project
+        ):
+            raise DRFPermDenied("Only the opener or a moderator can edit this merge request.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        from .project_services import user_can_merge_project
+
+        if instance.opened_by_id != self.request.user.id and not user_can_merge_project(
+            self.request.user, instance.project
+        ):
+            raise DRFPermDenied("Only the opener or a moderator can delete this merge request.")
+        instance.delete()
+
     def perform_create(self, serializer):
         from apps.graph.conflict_diff import compute_diff
         from apps.graph.shacl_validate import check_pid_uniqueness, validate_project_graph
@@ -4869,6 +4919,7 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from rest_framework.exceptions import PermissionDenied as DRFPermDenied
 
         mr = self.get_object()
+        self._require_merge_moderator(mr)
         if request.user == mr.opened_by:
             raise DRFPermDenied("You cannot approve your own merge request.")
         if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
@@ -4890,6 +4941,7 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from .models import MergeRequest as _MR
 
         mr = self.get_object()
+        self._require_merge_moderator(mr)
         if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
             return Response({"detail": f"Cannot reject from status '{mr.status}'."}, status=400)
 
@@ -4905,6 +4957,7 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from .models import MergeRequest as _MR
 
         mr = self.get_object()
+        self._require_merge_moderator(mr)
         if mr.status != _MR.STATUS_PENDING:
             return Response({"detail": "Can only request changes on a pending MR."}, status=400)
 
@@ -4934,6 +4987,13 @@ class ReconciledLinkViewSet(viewsets.ModelViewSet):
     """CRUD for skos:exactMatch / closeMatch / broadMatch links to authority files."""
 
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        # Links to external authorities feed skos:exactMatch; reading them is
+        # open to signed-in users, changing them is a reviewer's job.
+        if self.action in ("list", "retrieve"):
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsReviewerOrAdmin()]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["authority", "is_stale", "match_type"]
     search_fields = ["entity_uri", "target_uri", "target_label"]
@@ -4975,6 +5035,11 @@ class CuratorAlertViewSet(viewsets.ReadOnlyModelViewSet):
     """Read + dismiss/resolve curator alerts created by the re-reconciliation beat task."""
 
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsReviewerOrAdmin()]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ["status", "issue_type"]
     ordering_fields = ["detected_at"]
