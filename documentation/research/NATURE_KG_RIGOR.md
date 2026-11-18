@@ -24,7 +24,7 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 | A2 | Methods page reproducibility | ✅ | `/methods` |
 | A3 | Demo vs live corpus labeled | ✅ | Atlas `SampleDataBanner` (always visible) + `?source=` + Methods limitations. See [Sample corpus policy](#sample-corpus-policy). |
 | I1 | CIDOC-CRM + CRMinf + LinkML | ✅ | `ontology/HeritageGraph.yaml` + CRM bridge |
-| I2 | SHACL shapes generated | 🟡 | shapes exist; `RDF_SHACL_VALIDATE_ON_WRITE` default off |
+| I2 | SHACL shapes generated | 🟡 | Validation on write is **on** by default (dev and `docker-compose.yml`; logs, does not block). `manage.py shacl_conformance` validates the published, assertion and provenance graphs in one pass and writes a summary and full report. Records conform; beliefs fail two constraints that come from the ontology, not the data — see [SHACL conformance](#shacl-conformance). |
 | I3 | Crosswalk documented | ✅ | `data/reconcile_crosswalk.json` + DANAM report |
 | R1 | License matrix (OSM / WD / UNESCO / HG) | ✅ | `danam_import/licenses.py` + Methods |
 | R2 | Idempotent L1 ETL | ✅ | `LodExternalIdentity` + `import_danam_nq` |
@@ -93,6 +93,44 @@ are source-backed by construction, and that coverage of the whole graph is
 *measured* and reported as a figure, not asserted as a property. Backfilling
 or withdrawing the unsourced older records, removing the silent `confidence`
 default everywhere, and enabling SHACL-on-write would close the gap.
+
+## SHACL conformance
+
+`manage.py shacl_conformance --output-dir <dir>` validates the public graph
+plus every per-assertion belief and provenance graph against
+`ontology/shapes/generated-heritagegraph-minimal-shacl.ttl`, and writes
+`shacl-conformance.json` (counts, violations grouped by shape, path and
+constraint) and `shacl-conformance-report.ttl`. Run it on the deployed store
+and attach both files; do not quote numbers from a development database.
+
+What fixing it turned up:
+
+- `shacl_validate.py` did not import (two unclosed calls). Validation was off,
+  so nothing failed; switching it on would have broken every publish. Fixed and
+  covered by `test_shacl_validate`.
+- The shape generator mapped unknown prefixes onto the HeritageGraph namespace,
+  so the belief shape targeted a class no data uses and validated nothing. It
+  now raises on an unknown prefix.
+- Beliefs were typed `http://www.cidoc-crm.org/crminf/I2_Belief`, while the
+  ontology, OWL file and CRM bridge declare `…/extensions/crminf/`. The
+  projection now uses the ontology's namespace.
+- Graphs written before the namespace moved to cair-nepal.org were never
+  cleared and stayed queryable through the public SPARQL proxy, which forwards
+  any named graph. Clear any `https://w3id.org/heritagegraph/graph/` graphs on
+  a deployed store.
+
+Open, in the ontology rather than the data (raise upstream):
+
+1. `justification_note` uses `crminf:J4_that` with a string range. In CRMinf,
+   J4_that relates a belief to a proposition set — which is how the projection
+   uses it — so the generated shape demands a literal where the data, correctly,
+   has an IRI.
+2. `asserted_value` is required on every assertion. A relationship belief's
+   value is its object record, not a literal, so every relationship belief
+   fails `minCount 1`.
+
+Until those are settled, `RDF_SHACL_STRICT_ON_WRITE` stays off: strict mode
+would refuse every relationship belief.
 
 ## Sample corpus policy
 
