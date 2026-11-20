@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from .base import *  # noqa: F403
@@ -69,3 +70,11 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 # OCR / document processing guardrails (read from environment in `settings.base`)
 # - OCR_ENABLED, OCR_MAX_FILE_BYTES, OCR_MAX_PAGES_PER_DOCUMENT, OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT, TESSERACT_PATH, ...
+
+# Contributor terms are required before contributing. The general test run
+# switches the gate off so existing fixtures need no consent rows; the gate
+# itself is covered by heritage_data.test_contributor_consent, which turns it on.
+CONTRIBUTOR_TERMS_REQUIRED = "test" not in sys.argv[1:2] and os.environ.get(
+    "CONTRIBUTOR_TERMS_REQUIRED", "true"
+).lower() in {"1", "true", "yes", "y", "on"}
+

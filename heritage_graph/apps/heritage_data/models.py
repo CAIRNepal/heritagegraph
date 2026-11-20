@@ -1327,6 +1327,16 @@ class UserProfile(models.Model):
         default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
 
+    # Consent and visibility (see heritage_data/contributor_terms.py).
+    contributor_terms_version = models.CharField(
+        max_length=32, blank=True, help_text="Version of the contributor terms accepted."
+    )
+    contributor_terms_accepted_at = models.DateTimeField(null=True, blank=True)
+    show_on_leaderboard = models.BooleanField(
+        default=True,
+        help_text="Appear in the public leaderboard and contributor directory.",
+    )
+
     @property
     def member_since(self):
         return self.user.date_joined.strftime("%B %Y")

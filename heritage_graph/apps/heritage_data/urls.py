@@ -152,6 +152,7 @@ urlpatterns = [
     ),
     path("api/activity-logs/", views.ActivityLogView.as_view(), name="activity-logs"),
     path("activity-logs/", views.ActivityLogView.as_view(), name="activity-logs-clean"),
+    path("api/contributor-consent/", views.ContributorConsentView.as_view(), name="contributor-consent"),
     path("api/leaderboard/", views.LeaderboardView.as_view(), name="leaderboard-legacy"),
     path("leaderboard/", views.LeaderboardView.as_view(), name="leaderboard"),
     path("api/contributors/", views.ContributorsListView.as_view(), name="contributors-list"),

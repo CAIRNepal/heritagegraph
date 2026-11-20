@@ -61,6 +61,7 @@ from .permissions import (
     IsSchemaExtensionModerator,
     IsStaffOrExpertCurator,
 )
+from .contributor_terms import require_accepted as require_contributor_terms
 from .serializers import *
 from .throttles import (
     ProjectAssetUploadThrottle,
@@ -375,6 +376,36 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ContributorConsentView(APIView):
+    """The signed-in contributor's terms acceptance and leaderboard visibility.
+
+    GET returns the current terms and the contributor's status; POST with
+    ``{"accept": true}`` records acceptance of the current version, and
+    ``{"show_on_leaderboard": false}`` leaves the public rankings.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .contributor_terms import status_for
+
+        return Response(status_for(request.user))
+
+    def post(self, request):
+        from .contributor_terms import _profile, accept, status_for
+
+        if request.data.get("accept") is True:
+            accept(request.user)
+        if "show_on_leaderboard" in request.data:
+            value = request.data.get("show_on_leaderboard")
+            if not isinstance(value, bool):
+                raise ValidationError({"show_on_leaderboard": "Must be true or false."})
+            profile = _profile(request.user)
+            profile.show_on_leaderboard = value
+            profile.save(update_fields=["show_on_leaderboard"])
+        return Response(status_for(request.user))
+
+
 class LeaderboardView(APIView):
     """
     Public leaderboard with server-side pagination, search, and filtering.
@@ -446,6 +477,8 @@ class LeaderboardView(APIView):
                 | Q(revision_count__gt=0)
                 | Q(submission_count__gt=0)
             )
+            # Contributors who left the leaderboard are not ranked publicly.
+            .exclude(profile__show_on_leaderboard=False)
         )
 
         users = list(qs.order_by("username"))
@@ -564,6 +597,7 @@ class ContributorsListView(APIView):
 
         qs = (
             User.objects.select_related("profile")
+            .exclude(profile__show_on_leaderboard=False)
             .annotate(
                 contributions_count=Count("contributed_entities", distinct=True),
                 accepted_count=Count(
@@ -2001,6 +2035,7 @@ class SchemaExtensionProposalViewSet(viewsets.ModelViewSet):
         return qs.filter(author=user)
 
     def perform_create(self, serializer):
+        require_contributor_terms(self.request.user)
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
@@ -2198,6 +2233,7 @@ class EntityProposalViewSet(viewsets.ModelViewSet):
         return qs.filter(author=user)
 
     def perform_create(self, serializer):
+        require_contributor_terms(self.request.user)
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
@@ -2362,6 +2398,7 @@ class RelationshipProposalViewSet(viewsets.ModelViewSet):
         return qs.filter(author=user)
 
     def perform_create(self, serializer):
+        require_contributor_terms(self.request.user)
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):

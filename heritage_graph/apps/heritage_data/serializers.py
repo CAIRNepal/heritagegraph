@@ -1724,6 +1724,9 @@ class PublicContributionCreateSerializer(serializers.ModelSerializer):
     entity_id = serializers.CharField(
         required=False, allow_blank=True, help_text="UUID of linked entity (if exists)"
     )
+    # A QR visitor has no account to record consent on, so they confirm the
+    # contributor terms with each submission.
+    accepts_terms = serializers.BooleanField(required=False, write_only=True)
 
     class Meta:
         model = PublicContribution
@@ -1739,7 +1742,18 @@ class PublicContributionCreateSerializer(serializers.ModelSerializer):
             "submitted_via",
             "latitude",
             "longitude",
+            "accepts_terms",
         ]
+
+    def validate(self, attrs):
+        from .contributor_terms import required
+
+        accepted = attrs.pop("accepts_terms", False)
+        if required() and not accepted:
+            raise serializers.ValidationError(
+                {"accepts_terms": "Please accept the contributor terms to submit."}
+            )
+        return super().validate(attrs)
 
     def validate_entity_id(self, value):
         """Try to link to an existing entity if provided."""

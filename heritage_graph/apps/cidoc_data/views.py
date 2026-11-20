@@ -322,6 +322,9 @@ class ContributionFlowMixin:
 
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
+        from apps.heritage_data.contributor_terms import require_accepted
+
+        require_accepted(request.user)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self._validate_registry_payload(serializer, instance=instance)
@@ -368,6 +371,9 @@ class ContributionFlowMixin:
             Revision,
         )
 
+        from apps.heritage_data.contributor_terms import require_accepted
+
+        require_accepted(self.request.user)
         self._validate_registry_payload(serializer, instance=None)
 
         # The CIDOC row, its review-queue wrapper, and the first revision are
