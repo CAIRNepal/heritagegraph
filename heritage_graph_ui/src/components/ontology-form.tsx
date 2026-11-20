@@ -29,6 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { ContributorTermsDialog } from "@/components/contribute/contributor-terms-dialog";
+import { fetchContributorConsent, type ContributorConsent } from "@/lib/contributor-consent";
 import {
   EMPTY_SOURCE_ANSWER,
   SourcePrompt,
@@ -868,6 +870,17 @@ export default function OntologyForm({
     contributor?: string;
   } | null>(null);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  // Contributor terms: asked once, before the first submission (and again when
+  // the terms change). The backend refuses contributions until they are accepted.
+  const [consent, setConsent] = useState<ContributorConsent | null>(null);
+  const [termsOpen, setTermsOpen] = useState(false);
+  useEffect(() => {
+    if (!isSignedIn) return;
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    fetchContributorConsent(token)
+      .then(setConsent)
+      .catch(() => setConsent(null));
+  }, [isSignedIn, session]);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [suggestKey, setSuggestKey] = useState<string | null>(null);
@@ -1718,6 +1731,10 @@ export default function OntologyForm({
       toast.error("Please sign in to submit contributions.");
       return;
     }
+    if (consent && !consent.accepted) {
+      setTermsOpen(true);
+      return;
+    }
     setSubmitConfirmOpen(true);
   };
 
@@ -1998,6 +2015,17 @@ export default function OntologyForm({
 
   const submitConfirmDialogs = (
     <>
+      <ContributorTermsDialog
+        open={termsOpen}
+        consent={consent}
+        token={(session as { accessToken?: string } | null)?.accessToken}
+        onOpenChange={setTermsOpen}
+        onAccepted={(next) => {
+          setConsent(next);
+          setTermsOpen(false);
+          setSubmitConfirmOpen(true);
+        }}
+      />
       <ConfirmActionDialog
         open={submitConfirmOpen}
         onOpenChange={setSubmitConfirmOpen}

@@ -25,7 +25,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ContributorTermsDialog } from '@/components/contribute/contributor-terms-dialog';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { fetchContributorConsent, type ContributorConsent } from '@/lib/contributor-consent';
 import { getPublicApiUrl } from '@/lib/api-base';
 import {
   buildPatternCompletionUrl,
@@ -74,6 +76,14 @@ function toPositiveInt(raw: unknown): number | null {
 export default function RelationshipProposalContributePage() {
   const { data: session, status } = useSession();
   const token = (session as { accessToken?: string } | null)?.accessToken;
+  const [consent, setConsent] = useState<ContributorConsent | null>(null);
+  const [termsOpen, setTermsOpen] = useState(false);
+  useEffect(() => {
+    if (!token) return;
+    fetchContributorConsent(token)
+      .then(setConsent)
+      .catch(() => setConsent(null));
+  }, [token]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftIdParam = searchParams.get('id');
@@ -381,8 +391,12 @@ export default function RelationshipProposalContributePage() {
     }
   };
 
-  const submitForReview = async () => {
+  const submitForReview = async (termsJustAccepted = false) => {
     if (!token) return;
+    if (!termsJustAccepted && consent && !consent.accepted) {
+      setTermsOpen(true);
+      return;
+    }
     if (!proposalEditable) {
       toast.error('This proposal cannot be edited.');
       return;
@@ -467,6 +481,18 @@ export default function RelationshipProposalContributePage() {
   }
 
   return (
+    <>
+      <ContributorTermsDialog
+        open={termsOpen}
+        consent={consent}
+        token={token}
+        onOpenChange={setTermsOpen}
+        onAccepted={(next) => {
+          setConsent(next);
+          setTermsOpen(false);
+          void submitForReview(true);
+        }}
+      />
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Propose a relationship</h1>
@@ -711,5 +737,6 @@ export default function RelationshipProposalContributePage() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
