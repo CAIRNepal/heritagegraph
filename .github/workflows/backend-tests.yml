@@ -1,0 +1,52 @@
+name: Backend tests
+
+# Runs the Django test suite and, crucially, verifies migrations apply on a
+# fresh database. The latter catches deploy-only regressions that unit tests
+# miss — e.g. an app whose migrations package lacks __init__.py, so `migrate`
+# silently never creates its tables.
+
+on:
+  push:
+    branches: [v1, main]
+    paths:
+      - "heritage_graph/**"
+      - "requirements.txt"
+      - "heritage_graph/requirements.txt"
+      - ".github/workflows/backend-tests.yml"
+  pull_request:
+    paths:
+      - "heritage_graph/**"
+      - "requirements.txt"
+      - "heritage_graph/requirements.txt"
+      - ".github/workflows/backend-tests.yml"
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_ENV: development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # The backend image installs heritage_graph/requirements.txt; the root file
+      # lacks pyoxigraph and linkml, so projection tests saw an empty store.
+      - name: Install dependencies
+        run: pip install -r heritage_graph/requirements.txt
+
+      - name: Check for missing migrations
+        working-directory: heritage_graph
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations on a fresh database
+        # Plain `migrate` (no --run-syncdb): an unmigrated app would NOT get its
+        # tables here, reproducing production and failing loudly at runtime.
+        working-directory: heritage_graph
+        run: python manage.py migrate --noinput
+
+      - name: Run test suite
+        working-directory: heritage_graph
+        run: python manage.py test --verbosity 1

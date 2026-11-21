@@ -1,0 +1,358 @@
+# AUTO-GENERATED — do not edit by hand.
+# Source:  ontology/HeritageGraph.yaml (enums section)
+# Regen:   python3 tools/emit_skos_vocabularies.py
+#
+# AAT-aligned SKOS controlled vocabularies for HeritageGraph enums.
+
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix crm:  <http://www.cidoc-crm.org/cidoc-crm/> .
+@prefix aat:  <http://vocab.getty.edu/aat/> .
+@prefix hg:   <https://cair-nepal.org/heritagegraph/> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ConditionType> a skos:ConceptScheme ;
+  skos:prefLabel "ConditionType"@en .
+<https://cair-nepal.org/heritagegraph/vocab/ConditionType/Good> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ConditionType> ;
+  skos:prefLabel "Good"@en ;
+  skos:definition "No significant damage"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Good> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ConditionType/Damaged> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ConditionType> ;
+  skos:prefLabel "Damaged"@en ;
+  skos:definition "Partially damaged"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Damaged> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ConditionType/Ruined> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ConditionType> ;
+  skos:prefLabel "Ruined"@en ;
+  skos:definition "Severely damaged or collapsed"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Ruined> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ConditionType/Restored> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ConditionType> ;
+  skos:prefLabel "Restored"@en ;
+  skos:definition "Repaired and stabilized"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Restored> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus> a skos:ConceptScheme ;
+  skos:prefLabel "ExistenceStatus"@en .
+<https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus/Extant> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus> ;
+  skos:prefLabel "Extant"@en ;
+  skos:definition "Currently exists in physical form"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Extant> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus/PartiallyExtant> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus> ;
+  skos:prefLabel "PartiallyExtant"@en ;
+  skos:definition "Fragments or ruins remain"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/PartiallyExtant> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus/Destroyed> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus> ;
+  skos:prefLabel "Destroyed"@en ;
+  skos:definition "Known to have been destroyed; no physical remains"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Destroyed> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus/Lost> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus> ;
+  skos:prefLabel "Lost"@en ;
+  skos:definition "Existence documented but location/remains unknown"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Lost> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus/Hypothetical> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus> ;
+  skos:prefLabel "Hypothetical"@en ;
+  skos:definition "Reconstructed or theorized; never physically realized"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Hypothetical> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus/Unknown> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ExistenceStatus> ;
+  skos:prefLabel "Unknown"@en ;
+  skos:definition "Existence status uncertain"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Unknown> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType> a skos:ConceptScheme ;
+  skos:prefLabel "RitualType"@en .
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/NityaPuja> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "NityaPuja"@en ;
+  skos:definition "Daily mandatory worship"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/NityaPuja> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/NaimittikaPuja> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "NaimittikaPuja"@en ;
+  skos:definition "Occasional/Festival worship"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/NaimittikaPuja> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/KamyaPuja> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "KamyaPuja"@en ;
+  skos:definition "Desire-based optional worship"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/KamyaPuja> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/Abhisheka> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "Abhisheka"@en ;
+  skos:definition "Ritual bathing/anointing of deity"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Abhisheka> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/Homa> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "Homa"@en ;
+  skos:definition "Fire offering ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Homa> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/Bhajan> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "Bhajan"@en ;
+  skos:definition "Devotional singing ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Bhajan> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/Yagna> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "Yagna"@en ;
+  skos:definition "Vedic sacrifice ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Yagna> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/Vrata> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "Vrata"@en ;
+  skos:definition "Vow observance ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Vrata> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/Jatra> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "Jatra"@en ;
+  skos:definition "Festival procession ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Jatra> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/ChariotProcession> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "ChariotProcession"@en ;
+  skos:definition "Ritual chariot pulling"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/ChariotProcession> ;
+  skos:broadMatch <http://vocab.getty.edu/aat/300069290> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/MaskedPerformance> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "MaskedPerformance"@en ;
+  skos:definition "Ritual masked dance"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/MaskedPerformance> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/RitualConsecration> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "RitualConsecration"@en ;
+  skos:definition "Consecration/activation ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/RitualConsecration> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/ProcessionRitual> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "ProcessionRitual"@en ;
+  skos:definition "Ritual procession/movement"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/ProcessionRitual> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/InstallationRitual> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "InstallationRitual"@en ;
+  skos:definition "Installation/enshrinement ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/InstallationRitual> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/DeinstallationRitual> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "DeinstallationRitual"@en ;
+  skos:definition "De-installation/conclusion ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/DeinstallationRitual> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/ReturningRitual> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "ReturningRitual"@en ;
+  skos:definition "Return to normal state ritual"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/ReturningRitual> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/Circumambulation> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "Circumambulation"@en ;
+  skos:definition "Ritual circular movement around sacred site"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Circumambulation> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/RelicTour> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "RelicTour"@en ;
+  skos:definition "Procession with sacred relics between sites"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/RelicTour> .
+
+<https://cair-nepal.org/heritagegraph/vocab/RitualType/ProcessionalMovement> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/RitualType> ;
+  skos:prefLabel "ProcessionalMovement"@en ;
+  skos:definition "General ritual movement between locations"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/ProcessionalMovement> .
+
+<https://cair-nepal.org/heritagegraph/vocab/DatePrecision> a skos:ConceptScheme ;
+  skos:prefLabel "DatePrecision"@en .
+<https://cair-nepal.org/heritagegraph/vocab/DatePrecision/Exact> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/DatePrecision> ;
+  skos:prefLabel "Exact"@en ;
+  skos:definition "Precise date known"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Exact> .
+
+<https://cair-nepal.org/heritagegraph/vocab/DatePrecision/Year> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/DatePrecision> ;
+  skos:prefLabel "Year"@en ;
+  skos:definition "Year-level precision only"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Year> .
+
+<https://cair-nepal.org/heritagegraph/vocab/DatePrecision/Decade> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/DatePrecision> ;
+  skos:prefLabel "Decade"@en ;
+  skos:definition "Within 10-year range"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Decade> .
+
+<https://cair-nepal.org/heritagegraph/vocab/DatePrecision/Century> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/DatePrecision> ;
+  skos:prefLabel "Century"@en ;
+  skos:definition "Within century range"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Century> .
+
+<https://cair-nepal.org/heritagegraph/vocab/DatePrecision/Circa> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/DatePrecision> ;
+  skos:prefLabel "Circa"@en ;
+  skos:definition "Approximate date"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Circa> .
+
+<https://cair-nepal.org/heritagegraph/vocab/SyncreticType> a skos:ConceptScheme ;
+  skos:prefLabel "SyncreticType"@en .
+<https://cair-nepal.org/heritagegraph/vocab/SyncreticType/Equivalence> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/SyncreticType> ;
+  skos:prefLabel "Equivalence"@en ;
+  skos:definition "Same deity in different traditions (e.g., Avalokiteshvara = Matsyendranath)"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Equivalence> .
+
+<https://cair-nepal.org/heritagegraph/vocab/SyncreticType/Appropriation> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/SyncreticType> ;
+  skos:prefLabel "Appropriation"@en ;
+  skos:definition "Deity borrowed from one tradition into another"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Appropriation> .
+
+<https://cair-nepal.org/heritagegraph/vocab/SyncreticType/Fusion> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/SyncreticType> ;
+  skos:prefLabel "Fusion"@en ;
+  skos:definition "Intrinsically syncretic deity merging multiple traditions"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Fusion> .
+
+<https://cair-nepal.org/heritagegraph/vocab/SyncreticType/Historical> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/SyncreticType> ;
+  skos:prefLabel "Historical"@en ;
+  skos:definition "Gradual syncretism over time"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/Historical> .
+
+<https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle> a skos:ConceptScheme ;
+  skos:prefLabel "ArchitecturalStyle"@en .
+<https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle/Pagoda> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle> ;
+  skos:prefLabel "Pagoda"@en ;
+  skos:definition "Multi-tiered roof style indigenous to Nepal"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle/Shikhara> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle> ;
+  skos:prefLabel "Shikhara"@en ;
+  skos:definition "North Indian spire-shaped style"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle/Dome> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle> ;
+  skos:prefLabel "Dome"@en ;
+  skos:definition "Dome-based style (Mughal/Neo-classical influence)"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle/Chaitya> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle> ;
+  skos:prefLabel "Chaitya"@en ;
+  skos:definition "Buddhist votive shrine style"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle/Stupa> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/ArchitecturalStyle> ;
+  skos:prefLabel "Stupa"@en ;
+  skos:definition "Buddhist dome-shaped reliquary"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType> a skos:ConceptScheme ;
+  skos:prefLabel "GuthiType"@en .
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/SiGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "SiGuthi"@en ;
+  skos:definition "Funeral trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/SiGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/JatraGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "JatraGuthi"@en ;
+  skos:definition "Festival organization trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/JatraGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/PujaGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "PujaGuthi"@en ;
+  skos:definition "Daily worship trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/PujaGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/TempleGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "TempleGuthi"@en ;
+  skos:definition "Temple maintenance trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/TempleGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/NashaGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "NashaGuthi"@en ;
+  skos:definition "Music and dance trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/NashaGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/SanaGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "SanaGuthi"@en ;
+  skos:definition "Agricultural cooperative trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/SanaGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/SanGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "SanGuthi"@en ;
+  skos:definition "Life-cycle ritual trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/SanGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/GuthiType/RajGuthi> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/GuthiType> ;
+  skos:prefLabel "RajGuthi"@en ;
+  skos:definition "Royal endowment trust"@en ;
+  skos:exactMatch <https://cair-nepal.org/heritagegraph/RajGuthi> .
+
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> a skos:ConceptScheme ;
+  skos:prefLabel "CulturalEntityCategory"@en .
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory/monument> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> ;
+  skos:prefLabel "monument"@en ;
+  skos:definition "Monument or built heritage"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory/artifact> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> ;
+  skos:prefLabel "artifact"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory/ritual> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> ;
+  skos:prefLabel "ritual"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory/festival> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> ;
+  skos:prefLabel "festival"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory/tradition> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> ;
+  skos:prefLabel "tradition"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory/document> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> ;
+  skos:prefLabel "document"@en .
+
+<https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory/other> a skos:Concept ;
+  skos:inScheme <https://cair-nepal.org/heritagegraph/vocab/CulturalEntityCategory> ;
+  skos:prefLabel "other"@en .
+

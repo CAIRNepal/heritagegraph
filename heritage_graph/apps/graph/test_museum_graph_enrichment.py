@@ -1,0 +1,201 @@
+"""Tests for museum graph ORM enrichment (geo + temporal)."""
+
+from apps.cidoc_data.models import Location, Monument
+from apps.graph.kg_engine.museum_graph_enrichment import (
+    coords_from_instance,
+    enrich_museum_graph_nodes,
+    parse_resource_uri,
+    temporal_hint_from_instance,
+)
+from apps.graph.kg_engine.uris import resource_base
+from django.test import TestCase
+
+
+class MuseumGraphEnrichmentTests(TestCase):
+    def test_parse_resource_uri(self):
+        base = resource_base().rstrip("/")
+        hit = parse_resource_uri(f"{base}/monument/12")
+        self.assertEqual(hit, ("monument", 12))
+        self.assertIsNone(parse_resource_uri("https://example.org/other/1"))
+
+    def test_temporal_from_monument(self):
+        m = Monument.objects.create(
+            name="Test Stupa",
+            construction_date="c. 5th century CE",
+        )
+        self.assertEqual(temporal_hint_from_instance(m), "c. 5th century CE")
+
+    def test_coords_from_known_place_label(self):
+        loc = Location.objects.create(
+            name="Swayambhunath",
+            type="temple",
+            current_status="active",
+        )
+        coords = coords_from_instance(loc)
+        self.assertIsNotNone(coords)
+        lat, lng = coords
+        self.assertAlmostEqual(float(lat), 27.7149, places=2)
+        self.assertAlmostEqual(float(lng), 85.2903, places=2)
+
+    def test_coords_from_settlement_labels(self):
+        """Valley settlements + national anchors backfill from the gazetteer."""
+        for name, expected_lat in [
+            ("Kirtipur", 27.6717),
+            ("Lumbini", 27.4833),
+            ("Janakpur", 26.7288),
+        ]:
+            loc = Location.objects.create(
+                name=name,
+                type="settlement",
+                current_status="active",
+            )
+            coords = coords_from_instance(loc)
+            self.assertIsNotNone(coords, name)
+            self.assertAlmostEqual(float(coords[0]), expected_lat, places=2)
+
+    def test_coords_from_stored_point_preferred_over_gazetteer(self):
+        """A stored point field wins over a label match."""
+        loc = Location.objects.create(
+            name="Patan",
+            type="settlement",
+            current_status="active",
+            point="POINT(85.9999 27.9999)",
+        )
+        coords = coords_from_instance(loc)
+        self.assertIsNotNone(coords)
+        lat, lng = coords
+        self.assertAlmostEqual(float(lat), 27.9999, places=3)
+        self.assertAlmostEqual(float(lng), 85.9999, places=3)
+
+    def test_propagate_coords_chain_two_hops(self):
+        """Coordinates flow along chained location edges (A→B→C)."""
+        base = resource_base().rstrip("/")
+        place_iri = f"{base}/location/10"
+        structure_iri = f"{base}/structure/11"
+        object_iri = f"{base}/iconography/12"
+        nodes = {
+            place_iri: {
+                "id": place_iri,
+                "label": "Boudhanath",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+            structure_iri: {
+                "id": structure_iri,
+                "label": "Unmapped Shrine",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+            object_iri: {
+                "id": object_iri,
+                "label": "Unmapped Murti",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+        }
+        edges = [
+            {
+                "source": structure_iri,
+                "target": place_iri,
+                "predicate": f"{base}/located_at",
+                "predicateLocal": "located_at",
+            },
+            {
+                "source": object_iri,
+                "target": structure_iri,
+                "predicate": f"{base}/has_current_location",
+                "predicateLocal": "has_current_location",
+            },
+        ]
+        enrich_museum_graph_nodes(nodes, edges)
+        self.assertIsNotNone(nodes[place_iri]["lat"])
+        self.assertEqual(nodes[structure_iri]["lat"], nodes[place_iri]["lat"])
+        self.assertEqual(nodes[object_iri]["lat"], nodes[place_iri]["lat"])
+
+    def test_propagate_coords_along_location_edge(self):
+        base = resource_base().rstrip("/")
+        place_iri = f"{base}/location/1"
+        monument_iri = f"{base}/monument/2"
+        nodes = {
+            place_iri: {
+                "id": place_iri,
+                "label": "Pashupatinath",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+            monument_iri: {
+                "id": monument_iri,
+                "label": "Test Monument",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+            },
+        }
+        edges = [
+            {
+                "source": monument_iri,
+                "target": place_iri,
+                "predicate": f"{base}/located_at",
+                "predicateLocal": "located_at",
+            }
+        ]
+        enrich_museum_graph_nodes(nodes, edges)
+        self.assertIsNotNone(nodes[place_iri]["lat"])
+        self.assertIsNotNone(nodes[monument_iri]["lat"])
+        self.assertEqual(nodes[monument_iri]["lat"], nodes[place_iri]["lat"])
+
+    def test_wikimedia_images_for_known_label(self):
+        base = resource_base().rstrip("/")
+        monument_iri = f"{base}/monument/99"
+        nodes = {
+            monument_iri: {
+                "id": monument_iri,
+                "label": "Boudhanath Stupa",
+                "lat": None,
+                "long": None,
+                "inceptionYear": None,
+                "comment": None,
+            },
+        }
+        enrich_museum_graph_nodes(nodes, [])
+        self.assertTrue(nodes[monument_iri].get("imageUrl"))
+        self.assertTrue(nodes[monument_iri].get("images"))
+        self.assertEqual(nodes[monument_iri].get("imageSource"), "demo_wikimedia_label_match")
+        self.assertIn("Buddha", nodes[monument_iri].get("comment") or "")
+        self.assertEqual(
+            nodes[monument_iri].get("narrativeSource"),
+            "demo_corpus_label_match",
+        )
+
+    def test_borrowed_coordinates_are_marked_and_flow_inward_only(self):
+        """A temple may borrow its town's point; a district must not take a temple's."""
+        base = resource_base().rstrip("/")
+        district = f"{base}/location/20"
+        temple = f"{base}/structure/21"
+        shrine = f"{base}/structure/22"
+        nodes = {
+            district: {"id": district, "label": "Unmapped District", "lat": None, "long": None, "inceptionYear": None},
+            temple: {"id": temple, "label": "Mapped Temple", "lat": "27.70", "long": "85.30", "inceptionYear": None},
+            shrine: {"id": shrine, "label": "Unmapped Shrine", "lat": None, "long": None, "inceptionYear": None},
+        }
+        edges = [
+            {"source": temple, "target": district, "predicate": f"{base}/located_in", "predicateLocal": "located_in"},
+            {"source": shrine, "target": temple, "predicate": f"{base}/located_at", "predicateLocal": "located_at"},
+        ]
+        enrich_museum_graph_nodes(nodes, edges)
+        self.assertIsNone(nodes[district]["lat"])
+        self.assertEqual(nodes[temple]["coordinateSource"], "record")
+        self.assertEqual(nodes[shrine]["coordinateSource"], "inherited")
+        self.assertEqual(nodes[shrine]["coordinateFrom"], temple)
+        self.assertEqual(nodes[shrine]["lat"], "27.70")
+
+    def test_gazetteer_coordinates_are_marked(self):
+        base = resource_base().rstrip("/")
+        stub = f"{base}/location/30"
+        nodes = {stub: {"id": stub, "label": "Boudhanath", "lat": None, "long": None, "inceptionYear": None}}
+        enrich_museum_graph_nodes(nodes, [])
+        self.assertEqual(nodes[stub]["coordinateSource"], "gazetteer")

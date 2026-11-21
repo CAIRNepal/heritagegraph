@@ -1,0 +1,452 @@
+# tools/ui-vizmap.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# Presentational metadata for the HeritageGraph network visualization.
+#
+# This file holds ONLY visual/display config (colors, hgCategory).
+# Semantic metadata (class_uri, slot_uri, CIDOC mappings) lives exclusively in
+# ontology/HeritageGraph.yaml — this file references it but never duplicates it.
+#
+# Consumed by:
+#   tools/gen_heritage_viz_config.py
+#
+# Outputs (do not edit by hand):
+#   heritage_graph_ui/src/lib/ontology/__generated__/heritage-viz-config.ts
+#   heritage_graph_ui/src/lib/ontology/__generated__/enums.ts
+#   heritage_graph_ui/src/lib/ontology/__generated__/ontology-graph.ts
+#   heritage_graph/apps/graph/ontology_config.py
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# ADDING A NEW NODE TYPE
+#   1. Add / verify the class in ontology/HeritageGraph.yaml with a class_uri.
+#   2. Add a new entry in node_types below.
+#   3. Run: python3 tools/gen_heritage_viz_config.py
+#   4. Commit all three changed files together.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Each node_type entry:
+#   key          — TypeScript NodeType value (string key in generated config)
+#   linkml_class — class name in ontology/HeritageGraph.yaml; generator resolves
+#                  class_uri from there. Use an alias key when the VIZ type is a
+#                  subtype or grouping that doesn't have its own schema class.
+#   label        — Human-readable label for UI display
+#   color        — Hex color for node fill
+#   glow_color   — Hex color for node glow/highlight
+#   hg_category  — Graph domain category (must be a key in hg_categories below)
+#
+#   There is no `emoji` field. node-icons.tsx replaced per-type emoji with baked
+#   Tabler paths so every surface renders the same glyph and it embeds cleanly in
+#   publication figures. Nothing read the field after that; it is not carried.
+
+node_types:
+  - key: Place
+    linkml_class: Place
+    label: Place
+    color: "#30715d"
+    glow_color: "#49c9a2"
+    hg_category: spatial
+
+  - key: Temple
+    linkml_class: Temple
+    label: Temple
+    color: "#476a83"
+    glow_color: "#72a4c8"
+    hg_category: tangible
+
+  - key: BuddhistMonument
+    linkml_class: BuddhistMonument
+    label: Buddhist Monument
+    color: "#4b718c"
+    glow_color: "#7baacc"
+    hg_category: tangible
+
+  - key: ArchitecturalStructure
+    linkml_class: ArchitecturalStructure
+    label: Architectural Structure
+    color: "#507894"
+    glow_color: "#85b0cf"
+    hg_category: tangible
+
+  # Settlement is a Place subtype for urban settlements (no separate schema class)
+  - key: Settlement
+    linkml_class: Place
+    label: Settlement
+    color: "#347864"
+    glow_color: "#51cba6"
+    hg_category: spatial
+
+  - key: Deity
+    linkml_class: Deity
+    label: Deity
+    color: "#945072"
+    glow_color: "#cf85aa"
+    hg_category: conceptual
+
+  - key: Festival
+    linkml_class: Festival
+    label: Festival
+    color: "#a34c36"
+    glow_color: "#de826b"
+    hg_category: event
+
+  - key: TimeSpan
+    linkml_class: TimeSpan
+    label: Time-Span
+    color: "#546b5c"
+    glow_color: "#7db28f"
+    hg_category: temporal
+
+  - key: ReligiousTradition
+    linkml_class: ReligiousTradition
+    label: Religious Tradition
+    color: "#9e557a"
+    glow_color: "#d490b2"
+    hg_category: conceptual
+
+  # SacredSite is an ArchitecturalStructure subtype for consecrated sacred spaces
+  - key: SacredSite
+    linkml_class: ArchitecturalStructure
+    label: Sacred Site
+    color: "#547e9c"
+    glow_color: "#8db6d3"
+    hg_category: tangible
+
+  - key: Person
+    linkml_class: Person
+    label: Person
+    color: "#80611a"
+    glow_color: "#e7ac24"
+    hg_category: actor
+
+  - key: Guthi
+    linkml_class: Guthi
+    label: Guthi
+    color: "#88681c"
+    glow_color: "#e8b02d"
+    hg_category: actor
+
+  - key: IconographicObject
+    linkml_class: IconographicObject
+    label: Iconographic Object
+    color: "#5884a3"
+    glow_color: "#95bbd6"
+    hg_category: tangible
+
+  # Named historical periods (Lichhavi, Malla, …) — a heritageGraph:HistoricalPeriod
+  # (crm:E4_Period), the class instances are actually projected with.
+  - key: HistoricalPeriod
+    linkml_class: HistoricalPeriod
+    label: Historical Period
+    color: "#5a7262"
+    glow_color: "#85b796"
+    hg_category: temporal
+
+  # Source nodes are projected as heritageGraph:InformationObject (registry key
+  # `source`); point the viz at the class the KG actually emits.
+  - key: Source
+    linkml_class: InformationObject
+    label: Source
+    color: "#676756"
+    glow_color: "#afaf7f"
+    hg_category: provenance
+
+  - key: HistoricalEvent
+    linkml_class: HistoricalEvent
+    label: Historical Event
+    color: "#ae513a"
+    glow_color: "#e18c77"
+    hg_category: event
+
+  # ── Classes that appear in the KG but previously had no viz identity ───────
+  - key: RitualEvent
+    linkml_class: RitualEvent
+    label: Ritual
+    color: "#b8563d"
+    glow_color: "#e39582"
+    hg_category: event
+
+  - key: CasteGroup
+    linkml_class: CasteGroup
+    label: Caste Group
+    color: "#906e1e"
+    glow_color: "#e9b336"
+    hg_category: actor
+
+  - key: LivingGoddessTenure
+    linkml_class: LivingGoddessTenure
+    label: Living Goddess Tenure
+    color: "#5f7968"
+    glow_color: "#8cbc9c"
+    hg_category: temporal
+
+  - key: SyncreticRelationship
+    linkml_class: SyncreticRelationship
+    label: Syncretic Link
+    color: "#a65b81"
+    glow_color: "#d89ab9"
+    hg_category: conceptual
+
+  # ── LinkedArt/LUX interop node types (render imported Yale LUX entities) ──
+  - key: HumanMadeObject
+    linkml_class: HumanMadeObject
+    label: Human-Made Object
+    color: "#486d87"
+    glow_color: "#76a7ca"
+    hg_category: tangible
+
+  - key: Group
+    linkml_class: Group
+    label: Group
+    color: "#98741f"
+    glow_color: "#eab63e"
+    hg_category: actor
+
+  - key: Set
+    linkml_class: Set
+    label: Set / Collection
+    color: "#6e6e5b"
+    glow_color: "#b3b386"
+    hg_category: provenance
+
+
+# Domain category visual config.
+# Keys are the allowed hg_category values referenced above.
+
+# Labels name what each bucket actually CONTAINS, not the ontology's internal
+# grouping term. `spatial` was "Spatiotemporal" and holds Place and Settlement
+# only, with no temporal content, so that one is an accuracy fix rather than a
+# matter of taste. "guthi" stays: it is the precise local term for the
+# institution, not jargon standing in for one.
+#
+# `schema_view_categories` below is deliberately NOT renamed. That set labels the
+# Graph View ontology tab, which is the researcher-facing schema browser — the
+# formal terms are correct there, and it is the disclosure these friendlier
+# labels are allowed to sit in front of.
+hg_categories:
+  tangible:
+    color: "#476a83"
+    border: "#35505f"
+    label: Monuments & objects
+  conceptual:
+    color: "#945072"
+    border: "#6f3c56"
+    label: Deities & traditions
+  event:
+    color: "#a34c36"
+    border: "#7b3928"
+    label: Festivals & events
+  spatial:
+    color: "#30715d"
+    border: "#245445"
+    label: Places
+  temporal:
+    color: "#546b5c"
+    border: "#3f5045"
+    label: Periods
+  actor:
+    color: "#80611a"
+    border: "#604914"
+    label: People & guthis
+  provenance:
+    color: "#676756"
+    border: "#4d4d40"
+    label: Sources
+
+# ── Graph View → Ontology tab (Cytoscape schema graph) ─────────────────────
+# Class nodes are generated from ontology/HeritageGraph.yaml (is_a + slot ranges).
+# hg_category from node_types above is mapped into these schema-view categories.
+
+schema_category_map:
+  tangible: tangible
+  conceptual: conceptual
+  event: event
+  spatial: spatial
+  temporal: spatial
+  actor: social
+  provenance: provenance
+
+schema_view_categories:
+  tangible:
+    bg: "#31556c"
+    border: "#24404f"
+    text: "#fff"
+    label: Tangible Heritage
+  conceptual:
+    bg: "#6f3c56"
+    border: "#552e42"
+    text: "#fff"
+    label: Conceptual Entities
+  event:
+    bg: "#7b3928"
+    border: "#5d2b1e"
+    text: "#fff"
+    label: Events
+  social:
+    bg: "#604914"
+    border: "#48370f"
+    text: "#fff"
+    label: Social / Actors
+  spatial:
+    bg: "#245445"
+    border: "#1a3e33"
+    text: "#fff"
+    label: Spatiotemporal
+  provenance:
+    bg: "#4d4d40"
+    border: "#3a3a30"
+    text: "#fff"
+    label: Provenance
+  kumari:
+    bg: "#7a2440"
+    border: "#5c1b30"
+    text: "#fff"
+    label: Living Goddess
+  enum:
+    bg: "#565650"
+    border: "#41413c"
+    text: "#fff"
+    label: Enumerations
+  external:
+    bg: "#4f5652"
+    border: "#3c413e"
+    text: "#fff"
+    label: External (CRM/AAT)
+
+# Slots from ontology/HeritageGraph.yaml that appear as edge labels in the
+# graph visualization. The generator resolves slot_uri from the schema.
+# Add the cidoc_note field only for custom HG properties not yet in the schema.
+
+viz_predicates:
+  - slot: has_current_location
+    label: has current location
+    # schema slot_uri: crm:P55_has_current_location
+
+  - slot: is_component_of
+    label: is component of
+    # schema slot_uri: crm:P46i_forms_part_of
+
+  - slot: associated_with
+    label: associated with
+    cidoc_note: "heritageGraph:associated_with"   # custom HG property, not yet in schema
+
+  - slot: invokes_deity
+    label: invokes deity
+    # schema slot_uri: crm:P12_occurred_in_the_presence_of
+
+  - slot: took_place_at
+    label: took place at
+    # schema slot_uri: crm:P7_took_place_at
+
+  - slot: was_produced_by_event
+    label: was produced by event
+    # schema slot_uri: crm:P108i_was_produced_by
+
+  - slot: was_derived_from_source
+    label: was derived from source
+    # schema slot_uri: prov:wasDerivedFrom
+
+  - slot: has_component
+    label: has component
+    # schema slot_uri: crm:P46_is_composed_of
+
+  - slot: carried_out_by
+    label: carried out by
+    # schema slot_uri: crm:P14_carried_out_by
+
+  # ── Live-data backend edge labels ──
+  # These are produced by heritage_graph_ui/src/lib/instance-graph.ts when
+  # building edges from CIDOC API rawData. They do not correspond to LinkML
+  # slots, so each carries a cidoc_note pointing to its nearest CIDOC analog.
+  - slot: located_at
+    label: located at
+    cidoc_note: "crm:P53_has_former_or_current_location"
+
+  - slot: co_located
+    label: co-located with
+    cidoc_note: "heritageGraph:co_located"
+
+  - slot: mentions
+    label: mentions
+    cidoc_note: "heritageGraph:mentions"
+
+  - slot: depicts
+    label: depicts
+    cidoc_note: "crm:P138_represents"
+
+  - slot: manages
+    label: manages
+    cidoc_note: "heritageGraph:manages"
+
+  - slot: tradition
+    label: tradition
+    cidoc_note: "heritageGraph:religious_tradition"
+
+  - slot: style
+    label: architectural style
+    cidoc_note: "heritageGraph:architectural_style"
+
+  - slot: type
+    label: type
+    cidoc_note: "crm:P2_has_type"
+
+  - slot: structure_type
+    label: structure type
+    cidoc_note: "heritageGraph:structure_type"
+
+  - slot: ritual_type
+    label: ritual type
+    cidoc_note: "heritageGraph:ritual_type"
+
+  - slot: festival_type
+    label: festival type
+    cidoc_note: "heritageGraph:festival_type"
+
+  - slot: guthi_type
+    label: guthi type
+    cidoc_note: "heritageGraph:guthi_type"
+
+  - slot: monument_type
+    label: monument type
+    cidoc_note: "heritageGraph:monument_type"
+
+  - slot: object_type
+    label: object type
+    cidoc_note: "heritageGraph:object_type"
+
+  - slot: event_type
+    label: event type
+    cidoc_note: "heritageGraph:event_type"
+
+  - slot: source_type
+    label: source type
+    cidoc_note: "heritageGraph:source_type"
+
+  - slot: tradition_type
+    label: tradition type
+    cidoc_note: "heritageGraph:tradition_type"
+
+  - slot: occupation
+    label: occupation
+    cidoc_note: "heritageGraph:occupation"
+
+  - slot: performed_by
+    label: performed by
+    cidoc_note: "crm:P14_carried_out_by"
+
+  - slot: technique
+    label: technique
+    cidoc_note: "crm:P32_used_general_technique"
+
+
+# Subset of schema prefixes to emit into TypeScript and Python.
+# Must be a subset of the prefixes defined in ontology/HeritageGraph.yaml.
+# The generator validates this list against the schema and errors on unknown keys.
+
+core_prefixes:
+  - rdf
+  - rdfs
+  - owl
+  - xsd
+  - crm
+  - heritageGraph
+  - geo
+  - prov

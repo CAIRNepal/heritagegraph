@@ -1,0 +1,924 @@
+'use client';
+
+import * as React from 'react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { HERITAGEGRAPH_RELEASE, downloadJson } from '@/lib/provenance';
+import { useSession } from 'next-auth/react';
+import {
+  closestCenter,
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type UniqueIdentifier,
+} from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
+  IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
+  IconGripVertical,
+  IconLayoutColumns,
+  IconLoader,
+  IconPlus,
+  IconDownload,
+} from '@tabler/icons-react';
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  FilterFn,
+  flexRender,
+  getCoreRowModel,
+  getFacetedRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  Row,
+  SortingState,
+  Table,
+  useReactTable,
+  VisibilityState,
+} from '@tanstack/react-table';
+import { toast } from 'sonner';
+import { rankItem } from '@tanstack/match-sorter-utils';
+
+import { apiFetch, apiUrl, getApiErrorMessage } from '@/lib/api-client';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table as UITable,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+import {
+  createStatusWorkflowTabs,
+  statusQueryParamsForTab,
+} from './create-status-tabs';
+import type { DataTableConfig, DataTableTab } from './types';
+
+function useServerListMode<T>(config: DataTableConfig<T>) {
+  return config.serverPagination ?? config.endpoint.startsWith('/cidoc/');
+}
+
+/** Normalize legacy tab count keys from earlier dashboard props. */
+function mergeTabCountOverrides(
+  raw?: Partial<Record<string, number>> & {
+    underReview?: number;
+    accepted?: number;
+    reviewed?: number;
+  },
+): Partial<Record<string, number>> | undefined {
+  if (!raw) return undefined;
+  const { underReview, accepted, reviewed, ...rest } = raw;
+  return {
+    ...rest,
+    ...(underReview !== undefined ? { pending: underReview } : {}),
+    ...(accepted !== undefined ? { approved: accepted } : {}),
+    ...(reviewed !== undefined ? { reviewed } : {}),
+  };
+}
+
+const fuzzyFilter: FilterFn<unknown> = (row, columnId, value, addMeta) => {
+  const itemRank = rankItem(row.getValue(columnId), value);
+  addMeta({ itemRank });
+  return itemRank.passed;
+};
+
+function DragHandle({ id, disabled }: { id: UniqueIdentifier; disabled?: boolean }) {
+  const t = useTranslations('dataTable');
+  const { attributes, listeners } = useSortable({ id, disabled });
+
+  return (
+    <Button
+      {...attributes}
+      {...listeners}
+      variant="ghost"
+      size="icon"
+      disabled={disabled}
+      className="text-muted-foreground size-7 hover:bg-transparent disabled:opacity-40"
+    >
+      <IconGripVertical className="text-muted-foreground size-3" />
+      <span className="sr-only">{t('dragToReorder')}</span>
+    </Button>
+  );
+}
+
+function DraggableRow<TData>({
+  row,
+  rowId,
+  disableDrag,
+}: {
+  row: Row<TData>;
+  rowId: UniqueIdentifier;
+  disableDrag?: boolean;
+}) {
+  const { transform, transition, setNodeRef, isDragging } = useSortable({
+    id: rowId,
+    disabled: disableDrag,
+  });
+
+  return (
+    <TableRow
+      data-state={row.getIsSelected() && 'selected'}
+      data-dragging={isDragging}
+      ref={setNodeRef}
+      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition: transition,
+      }}
+    >
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+}
+
+function StaticTableRow<TData>({ row }: { row: Row<TData> }) {
+  return (
+    <TableRow data-state={row.getIsSelected() && 'selected'}>
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+}
+
+function ColumnVisibilityMenu<TData>({ table }: { table: Table<TData> }) {
+  const t = useTranslations('dataTable');
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          <IconLayoutColumns />
+          <span className="hidden lg:inline">{t('columns')}</span>
+          <IconChevronDown />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {table
+          .getAllColumns()
+          .filter(
+            (column) => typeof column.accessorFn !== 'undefined' && column.getCanHide(),
+          )
+          .map((column) => (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              className="capitalize"
+              checked={column.getIsVisible()}
+              onCheckedChange={(value) => column.toggleVisibility(!!value)}
+            >
+              {column.id}
+            </DropdownMenuCheckboxItem>
+          ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+export interface GenericDataTableProps<TData> {
+  config: DataTableConfig<TData>;
+  initialData?: TData[];
+  fetchFn?: () => Promise<TData[]>;
+  /**
+   * Optional badge counts keyed by tab id (`pending`, `approved`, …).
+   * Overrides client-side counts for those keys.
+   * Legacy: `underReview` → `pending`, `accepted` → `approved`.
+   */
+  tabCounts?: Partial<Record<string, number>> & {
+    underReview?: number;
+    accepted?: number;
+    reviewed?: number;
+  };
+}
+
+export function GenericDataTable<TData>({
+  config,
+  initialData,
+  fetchFn,
+  tabCounts,
+}: GenericDataTableProps<TData>) {
+  const t = useTranslations('dataTable');
+  const { data: session } = useSession();
+  const tabCountOverrides = React.useMemo(
+    () => mergeTabCountOverrides(tabCounts),
+    [tabCounts],
+  );
+  const [data, setData] = React.useState<TData[]>(initialData ?? []);
+  const [loading, setLoading] = React.useState(!initialData);
+  const [fetchError, setFetchError] = React.useState<string | null>(null);
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [pagination, setPagination] = React.useState({
+    pageIndex: 0,
+    pageSize: 20,
+  });
+  const [totalCount, setTotalCount] = React.useState(0);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [debouncedSearch, setDebouncedSearch] = React.useState('');
+
+  const serverListMode = useServerListMode(config);
+
+  React.useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(searchQuery.trim()), 300);
+    return () => window.clearTimeout(t);
+  }, [searchQuery]);
+
+  const sortableId = React.useId();
+  const sensors = useSensors(
+    useSensor(MouseSensor, {}),
+    useSensor(TouchSensor, {}),
+    useSensor(KeyboardSensor, {}),
+  );
+
+  const resolvedTabs = React.useMemo((): DataTableTab<TData>[] | null => {
+    if (config.tabs === false || config.showTabs === false) return null;
+    if (Array.isArray(config.tabs)) {
+      return config.tabs.length ? config.tabs : null;
+    }
+    return createStatusWorkflowTabs<
+      TData & { status?: string | null }
+    >() as DataTableTab<TData>[];
+  }, [config.tabs, config.showTabs]);
+
+  const firstTabId = resolvedTabs?.[0]?.id ?? 'all';
+  const [activeTab, setActiveTab] = React.useState(() => {
+    if (config.defaultTabId) return config.defaultTabId;
+    if (resolvedTabs?.some((t) => t.id === 'approved')) return 'approved';
+    return firstTabId;
+  });
+
+  React.useEffect(() => {
+    if (!resolvedTabs?.length) return;
+    if (!resolvedTabs.some((t) => t.id === activeTab)) {
+      setActiveTab(config.defaultTabId ?? resolvedTabs[0].id);
+    }
+  }, [resolvedTabs, activeTab, config.defaultTabId]);
+
+  const rowIdKey = React.useMemo(
+    () => (config.rowIdField ?? config.idField ?? 'id') as keyof TData,
+    [config.rowIdField, config.idField],
+  );
+
+  const resolveRowId = React.useCallback(
+    (row: TData) => String(row[rowIdKey]),
+    [rowIdKey],
+  );
+
+  const tableData = React.useMemo(() => {
+    if (serverListMode || !resolvedTabs?.length) return data;
+    const tab = resolvedTabs.find((t) => t.id === activeTab);
+    if (!tab?.filter) return data;
+    return data.filter(tab.filter);
+  }, [data, resolvedTabs, activeTab, serverListMode]);
+
+  const dragDropActive =
+    config.enableDragDrop === true && (!resolvedTabs?.length || activeTab === 'all');
+
+  const columns = React.useMemo(() => {
+    const cols: ColumnDef<TData>[] = [];
+
+    if (config.enableDragDrop === true) {
+      cols.push({
+        id: 'drag',
+        header: () => null,
+        cell: ({ row }) => (
+          <DragHandle id={resolveRowId(row.original)} disabled={!dragDropActive} />
+        ),
+        enableHiding: false,
+      });
+    }
+
+    if (config.enableSelection !== false) {
+      cols.push({
+        id: 'select',
+        header: ({ table: tableInstance }) => (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={
+                tableInstance.getIsAllPageRowsSelected() ||
+                (tableInstance.getIsSomePageRowsSelected() && 'indeterminate')
+              }
+              onCheckedChange={(value) =>
+                tableInstance.toggleAllPageRowsSelected(!!value)
+              }
+              aria-label={t('selectAll')}
+            />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label={t('selectRow')}
+            />
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      });
+    }
+
+    return [...cols, ...config.columns];
+  }, [
+    config.columns,
+    config.enableDragDrop,
+    config.enableSelection,
+    resolveRowId,
+    dragDropActive,
+    t,
+  ]);
+
+  const dataIds = React.useMemo<UniqueIdentifier[]>(
+    () => tableData.map((d) => resolveRowId(d)),
+    [tableData, resolveRowId],
+  );
+
+  const table = useReactTable({
+    data: tableData,
+    columns,
+    filterFns: {
+      fuzzy: fuzzyFilter,
+    },
+    state: {
+      sorting,
+      columnVisibility,
+      rowSelection,
+      columnFilters,
+      pagination,
+    },
+    getRowId: resolveRowId,
+    enableRowSelection: config.enableSelection !== false,
+    onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onPaginationChange: setPagination,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    manualPagination: serverListMode,
+    pageCount: serverListMode
+      ? Math.max(1, Math.ceil(totalCount / pagination.pageSize))
+      : undefined,
+  });
+
+  React.useEffect(() => {
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  }, [columnFilters, sorting, activeTab, debouncedSearch]);
+
+  const buildListUrl = React.useCallback(() => {
+    const params = new URLSearchParams();
+    if (serverListMode) {
+      params.set('limit', String(pagination.pageSize));
+      params.set('offset', String(pagination.pageIndex * pagination.pageSize));
+      if (debouncedSearch && config.enableServerSearch !== false) {
+        params.set('search', debouncedSearch);
+      }
+      if (resolvedTabs?.length) {
+        for (const [key, value] of Object.entries(statusQueryParamsForTab(activeTab))) {
+          params.set(key, value);
+        }
+      }
+    } else {
+      params.set('limit', '500');
+    }
+    const base = apiUrl(config.endpoint);
+    const sep = base.includes('?') ? '&' : '?';
+    return `${base}${sep}${params.toString()}`;
+  }, [
+    serverListMode,
+    pagination.pageSize,
+    pagination.pageIndex,
+    debouncedSearch,
+    config.endpoint,
+    config.enableServerSearch,
+    resolvedTabs,
+    activeTab,
+  ]);
+
+  const loadRows = React.useCallback(async () => {
+    if (initialData) return;
+
+    setFetchError(null);
+    setLoading(true);
+
+    try {
+      if (fetchFn) {
+        const result = await fetchFn();
+        setData(Array.isArray(result) ? result : []);
+        setTotalCount(Array.isArray(result) ? result.length : 0);
+        return;
+      }
+
+      const headers: HeadersInit = {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      };
+      if (session?.accessToken) {
+        headers.Authorization = `Bearer ${session.accessToken}`;
+      }
+
+      const response = await apiFetch(buildListUrl(), { headers });
+      const result = await response.json();
+
+      let rows: TData[];
+      let count = 0;
+      if (config.dataKey && typeof result === 'object' && result !== null) {
+        const raw = (result as Record<string, unknown>)[config.dataKey as string];
+        rows = Array.isArray(raw) ? raw : [];
+        count =
+          typeof (result as { count?: number }).count === 'number'
+            ? (result as { count: number }).count
+            : rows.length;
+      } else if (Array.isArray(result)) {
+        rows = result;
+        count = result.length;
+      } else if (Array.isArray((result as { results?: TData[] }).results)) {
+        rows = (result as { results: TData[] }).results;
+        count =
+          typeof (result as { count?: number }).count === 'number'
+            ? (result as { count: number }).count
+            : rows.length;
+      } else {
+        rows = [];
+      }
+
+      setData(rows);
+      setTotalCount(count);
+    } catch (error) {
+      const message = getApiErrorMessage(
+        error,
+        'Could not load this table. Please try again.',
+      );
+      setFetchError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [initialData, fetchFn, session?.accessToken, buildListUrl, config.dataKey]);
+
+  React.useEffect(() => {
+    if (initialData) return;
+    void loadRows();
+  }, [initialData, loadRows]);
+
+  function handleDragEnd(event: DragEndEvent) {
+    if (!dragDropActive) return;
+    const { active, over } = event;
+    if (active && over && active.id !== over.id) {
+      setData((old) => {
+        const safeData = Array.isArray(old) ? old : [];
+        const oldIndex = safeData.findIndex(
+          (item) => resolveRowId(item) === String(active.id),
+        );
+        const newIndex = safeData.findIndex(
+          (item) => resolveRowId(item) === String(over.id),
+        );
+        if (oldIndex < 0 || newIndex < 0) return old;
+        return arrayMove(safeData, oldIndex, newIndex);
+      });
+    }
+  }
+
+  const tabBadge = React.useCallback(
+    (tab: DataTableTab<TData>) => {
+      if (serverListMode) {
+        return tab.id === activeTab ? totalCount : undefined;
+      }
+      if (tab.id === 'all') return undefined;
+      const override = tabCountOverrides?.[tab.id];
+      if (override !== undefined) return override;
+      if (!tab.filter) return data.length;
+      return data.filter(tab.filter).length;
+    },
+    [data, tabCountOverrides, serverListMode, activeTab, totalCount],
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <IconLoader className="animate-spin h-8 w-8 text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (fetchError && data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 h-64 px-4">
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          {fetchError}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => void loadRows()}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const renderTable = () => (
+    <div className="overflow-hidden rounded-lg border">
+      <DndContext
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={handleDragEnd}
+        sensors={sensors}
+        id={sortableId}
+      >
+        <UITable>
+          <TableHeader className="bg-muted">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} colSpan={header.colSpan}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+
+            {config.enableFilters !== false &&
+              table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={`${headerGroup.id}-filter`} className="bg-background">
+                  {headerGroup.headers.map((header) => {
+                    const column = header.column;
+                    return (
+                      <TableHead key={`${header.id}-filter`}>
+                        {column.getCanFilter() ? (
+                          <div className="w-full pt-2">
+                            <Input
+                              placeholder={t('filter')}
+                              value={(column.getFilterValue() as string) ?? ''}
+                              onChange={(e) => column.setFilterValue(e.target.value)}
+                              className="h-9 text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                        ) : (
+                          <div className="pt-2" />
+                        )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+          </TableHeader>
+          <TableBody className="**:data-[slot=table-cell]:first:w-10">
+            {table.getRowModel().rows?.length ? (
+              dragDropActive ? (
+                <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
+                  {table.getRowModel().rows.map((row) => (
+                    <DraggableRow
+                      key={row.id}
+                      row={row}
+                      rowId={resolveRowId(row.original)}
+                      disableDrag={false}
+                    />
+                  ))}
+                </SortableContext>
+              ) : (
+                table
+                  .getRowModel()
+                  .rows.map((row) => <StaticTableRow key={row.id} row={row} />)
+              )
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center text-muted-foreground"
+                >
+                  {config.emptyMessage || t('noResults')}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </UITable>
+      </DndContext>
+    </div>
+  );
+
+  const renderPagination = () => (
+    <div className="flex items-center justify-between px-4">
+      <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+        {serverListMode
+          ? `${totalCount} record(s)`
+          : t('rowsSelected', {
+              selected: table.getFilteredSelectedRowModel().rows.length,
+              total: table.getFilteredRowModel().rows.length,
+            })}
+      </div>
+      <div className="flex w-full items-center gap-8 lg:w-fit">
+        <div className="hidden items-center gap-2 lg:flex">
+          <Label htmlFor="rows-per-page" className="text-sm font-medium">
+            {t('pagination.rowsPerPage')}
+          </Label>
+          <Select
+            value={`${table.getState().pagination.pageSize}`}
+            onValueChange={(value) => {
+              table.setPageSize(Number(value));
+            }}
+          >
+            <SelectTrigger size="sm" className="w-20" id="rows-per-page">
+              <SelectValue placeholder={table.getState().pagination.pageSize} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {[10, 20, 30, 40, 50].map((pageSize) => (
+                <SelectItem key={pageSize} value={`${pageSize}`}>
+                  {pageSize}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex w-fit items-center justify-center text-sm font-medium">
+          Page {table.getState().pagination.pageIndex + 1} of{' '}
+          {table.getPageCount() || 1}
+        </div>
+        <div className="ml-auto flex items-center gap-2 lg:ml-0">
+          <Button
+            variant="outline"
+            className="hidden h-8 w-8 p-0 lg:flex"
+            onClick={() => table.setPageIndex(0)}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <span className="sr-only">{t('pagination.first')}</span>
+            <IconChevronsLeft />
+          </Button>
+          <Button
+            variant="outline"
+            className="size-8"
+            size="icon"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            <span className="sr-only">{t('pagination.previous')}</span>
+            <IconChevronLeft />
+          </Button>
+          <Button
+            variant="outline"
+            className="size-8"
+            size="icon"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            <span className="sr-only">{t('pagination.next')}</span>
+            <IconChevronRight />
+          </Button>
+          <Button
+            variant="outline"
+            className="hidden size-8 lg:flex"
+            size="icon"
+            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+            disabled={!table.getCanNextPage()}
+          >
+            <span className="sr-only">{t('pagination.last')}</span>
+            <IconChevronsRight />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderHeader = () => {
+    if (
+      config.showHeader === false ||
+      (!config.title && !config.description && !config.addAction)
+    ) {
+      return null;
+    }
+
+    return (
+      <div className="px-4 lg:px-6 pt-4">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                {config.title && (
+                  <CardTitle className="text-2xl font-bold">{config.title}</CardTitle>
+                )}
+                {config.description && (
+                  <CardDescription>{config.description}</CardDescription>
+                )}
+              </div>
+              {config.addAction && (
+                <Link href={config.addAction.href}>
+                  <Button size="sm">
+                    <IconPlus className="h-4 w-4 mr-1" />
+                    {config.addAction.label}
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  };
+
+  /**
+   * Export the rows currently in view.
+   *
+   * A browse interface for a citable dataset has to let a reader take the rows
+   * away; previously the only routes out were the SPARQL endpoint and a
+   * management command, neither reachable from this page. The payload carries
+   * the release and an export timestamp so a downloaded slice can be cited.
+   */
+  const exportRows = (format: 'csv' | 'json') => {
+    const rows = table.getFilteredRowModel().rows.map((r) => r.original);
+    if (rows.length === 0) return;
+
+    const visibleCols = table
+      .getVisibleFlatColumns()
+      .map((c) => c.id)
+      .filter((id) => id !== 'select' && id !== 'drag' && id !== 'actions');
+
+    const stamp = new Date().toISOString();
+    const slug = `${config.exportName ?? 'heritagegraph'}_${stamp.slice(0, 10)}`;
+
+    if (format === 'json') {
+      downloadJson(`${slug}.json`, {
+        release: HERITAGEGRAPH_RELEASE,
+        exportedAt: stamp,
+        note: 'Rows as filtered in the browse interface. Only accepted and merged records are part of the published graph.',
+        count: rows.length,
+        rows,
+      });
+      return;
+    }
+
+    const escape = (v: unknown) => {
+      const text = v == null ? '' : String(v);
+      return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    };
+    const body = [
+      visibleCols.join(','),
+      ...rows.map((row) =>
+        visibleCols.map((c) => escape((row as Record<string, unknown>)[c])).join(','),
+      ),
+    ].join('\n');
+    const preamble =
+      `# HeritageGraph export — release ${HERITAGEGRAPH_RELEASE} — ${stamp}\n` +
+      `# Rows as filtered in the browse interface; only accepted and merged records are published.\n`;
+    const blob = new Blob([preamble + body], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${slug}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const renderToolbar = () => (
+    <div className="flex items-center justify-between px-4 lg:px-6 gap-3">
+      {serverListMode && config.enableServerSearch !== false ? (
+        <Input
+          placeholder={t('search')}
+          aria-label={t('searchLabel')}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-sm h-9"
+        />
+      ) : (
+        <div className="flex-1" />
+      )}
+      <div className="flex items-center gap-2 ml-auto">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" aria-label={t('export.label')}>
+              <IconDownload />
+              <span className="hidden lg:inline">{t('export.label')}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => exportRows('csv')}>
+              {t('export.csv')}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportRows('json')}>
+              {t('export.json')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <ColumnVisibilityMenu table={table} />
+        {config.addAction && (
+          <Link href={config.addAction.href}>
+            <Button variant="outline" size="sm">
+              <IconPlus />
+              <span className="hidden lg:inline">{config.addAction.label}</span>
+            </Button>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+
+  if (resolvedTabs?.length) {
+    return (
+      <div className="w-full flex flex-col gap-4">
+        {renderHeader()}
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full flex-col justify-start gap-6"
+        >
+          <div className="flex items-center justify-between px-4 lg:px-6">
+            <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex flex-wrap h-auto min-h-9">
+              {resolvedTabs.map((tab) => {
+                const n = tabBadge(tab);
+                return (
+                  <TabsTrigger key={tab.id} value={tab.id} className="gap-1.5">
+                    {tab.label}
+                    {tab.id !== 'all' && n !== undefined && (
+                      <Badge variant="secondary">{n}</Badge>
+                    )}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+            <div className="flex items-center gap-2 shrink-0">
+              <ColumnVisibilityMenu table={table} />
+              {config.addAction && (
+                <Link href={config.addAction.href}>
+                  <Button variant="outline" size="sm">
+                    <IconPlus />
+                    <span className="hidden lg:inline">{config.addAction.label}</span>
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+          <TabsContent
+            value={activeTab}
+            className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+          >
+            {renderTable()}
+            {renderPagination()}
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full flex flex-col gap-4">
+      {renderHeader()}
+      {renderToolbar()}
+      {renderTable()}
+      {renderPagination()}
+    </div>
+  );
+}

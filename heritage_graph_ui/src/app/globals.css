@@ -1,0 +1,482 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #e5e9e5;
+  --foreground: #121815;
+  --card: #f1f4f0;
+  --card-foreground: #121815;
+  --popover: #f1f4f0;
+  --popover-foreground: #121815;
+  --primary: #26584a;
+  --primary-foreground: #f1f7f4;
+  /* Hero surfaces carry white text, so they need their own scale rather than
+     reusing --primary. In dark mode --primary is a light verdigris (#74b79c)
+     and white on it measures 2.1:1. These stops are deep schist green, dark in
+     both themes, so --hero-foreground stays legible.
+     Contrast vs #ffffff: from 15.4:1, to 8.5:1 (both pass WCAG AA). */
+  --hero-from: #0f1f1a;
+  --hero-to: #26584a;
+  --hero-foreground: #ffffff;
+  --secondary: #d8ded8;
+  --secondary-foreground: #1c2621;
+  --muted: #d4dbd4;
+  --muted-foreground: #4f5a54;
+  --accent: #26584a;
+  --accent-foreground: #f1f7f4;
+  --destructive: #5e1509;
+  --destructive-foreground: #fdf7f6;
+  --border: #c6cfc7;
+  --input: #c6cfc7;
+  --ring: #26584a;
+  --chart-1: #7a5b16;
+  --chart-2: #26584a;
+  --chart-3: #626e67;
+  --chart-4: #6d3a4e;
+  --chart-5: #3f5f7a;
+  --sidebar: #eaeeea;
+  --sidebar-foreground: #121815;
+  --sidebar-primary: #26584a;
+  --sidebar-primary-foreground: #f1f7f4;
+  --sidebar-accent: #d4dbd4;
+  --sidebar-accent-foreground: #1c2621;
+  --sidebar-border: #c6cfc7;
+  --sidebar-ring: #26584a;
+  /* ── Status + ordinal tokens ──
+     `--success` is a positive-outcome colour. It has to stay distinguishable
+     from `--primary`, which is itself a green in this palette — the two are
+     held at least 1.4:1 apart in luminance and sit on different hue angles
+     (olive vs verdigris), so a "+12 points" never reads as a link. The medal scale is ordinal (gold >
+     silver > bronze) and always ships alongside a rank number, so the colour
+     is never the only channel. All pairs verified: foreground/background ≥ 4.5:1,
+     solid marks ≥ 3:1 against --card. */
+  /* Glyph drawn on top of a graph node's own fill. The node fill comes from the
+     ontology palette and is the same colour in both themes, so this does NOT
+     flip with the theme — it is a token so the value has one home, not because
+     it varies. Node fills sit at ~0.15–0.27 relative luminance, which keeps
+     this comfortably legible on every one of them. */
+  --node-glyph: #f4f7f2;
+  /* Warning: an advisory state, distinct from --destructive (an error) and
+     from --primary (the accent). Used for the museum's "this narrative is
+     unverified" caution, which must read as a caveat, not as a brand flourish. */
+  --warning: #63480c;
+  --warning-soft: #f0e6cb;
+  --warning-on-soft: #5e4409;
+  --warning-strong: #63480c;
+  --success: #4a7a24;
+  --success-foreground: #f4f9f0;
+  --medal-gold: #8a6a1a;
+  --medal-gold-soft: #eee3c6;
+  --medal-gold-on-soft: #5c440f;
+  --medal-silver: #7c8280;
+  --medal-silver-soft: #e2e6e3;
+  --medal-silver-on-soft: #484d4b;
+  --medal-bronze: #8f6440;
+  --medal-bronze-soft: #eddfd2;
+  --medal-bronze-on-soft: #5f4020;
+  --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
+  --font-serif: Fraunces, ui-serif, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --radius: 0.625rem;
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: oklch(0 0 0);
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: #0e1512;
+  --foreground: #e4eae6;
+  --card: #161f1b;
+  --card-foreground: #e4eae6;
+  --popover: #1b2521;
+  --popover-foreground: #e4eae6;
+  --primary: #8ec8ae;
+  --primary-foreground: #0e1512;
+  /* Contrast vs #ffffff: from 18.0:1, to 10.2:1 (both pass WCAG AA). */
+  --hero-from: #0a100d;
+  --hero-to: #1e4034;
+  --hero-foreground: #ffffff;
+  --secondary: #1d2723;
+  --secondary-foreground: #e4eae6;
+  --muted: #1d2723;
+  --muted-foreground: #9aa8a1;
+  --accent: #8ec8ae;
+  --accent-foreground: #0e1512;
+  --destructive: #e2705f;
+  --destructive-foreground: #160c0a;
+  --border: #2a3831;
+  --input: #35443c;
+  --ring: #8ec8ae;
+  --chart-1: #74b79c;
+  --chart-2: #b7c0ba;
+  --chart-3: #6f98bd;
+  --chart-4: #d3b46a;
+  --chart-5: #c88fa4;
+  --sidebar: #111a16;
+  --sidebar-foreground: #e4eae6;
+  --sidebar-primary: #8ec8ae;
+  --sidebar-primary-foreground: #0e1512;
+  --sidebar-accent: #1d2723;
+  --sidebar-accent-foreground: #e4eae6;
+  --sidebar-border: #2a3831;
+  --sidebar-ring: #8ec8ae;
+  --node-glyph: #f4f7f2;
+  --warning: #d9b463;
+  --warning-soft: #332a12;
+  --warning-on-soft: #efdcaa;
+  --warning-strong: #d9b463;
+  --success: #c2dc96;
+  --success-foreground: #101a08;
+  --medal-gold: #d4ac5c;
+  --medal-gold-soft: #332a12;
+  --medal-gold-on-soft: #f0dcae;
+  --medal-silver: #adb5b1;
+  --medal-silver-soft: #282e2b;
+  --medal-silver-on-soft: #d9dedb;
+  --medal-bronze: #c08a5c;
+  --medal-bronze-soft: #33251a;
+  --medal-bronze-on-soft: #eccdb0;
+  --font-sans: Poppins, ui-sans-serif, sans-serif, system-ui;
+  --font-serif: Fraunces, ui-serif, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --radius: 0.625rem;
+  --shadow-x: 0;
+  --shadow-y: 1px;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-opacity: 0.1;
+  --shadow-color: oklch(0 0 0);
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-hero-from: var(--hero-from);
+  --color-hero-to: var(--hero-to);
+  --color-hero-foreground: var(--hero-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-node-glyph: var(--node-glyph);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-on-soft: var(--warning-on-soft);
+  --color-warning-strong: var(--warning-strong);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-medal-gold: var(--medal-gold);
+  --color-medal-gold-soft: var(--medal-gold-soft);
+  --color-medal-gold-on-soft: var(--medal-gold-on-soft);
+  --color-medal-silver: var(--medal-silver);
+  --color-medal-silver-soft: var(--medal-silver-soft);
+  --color-medal-silver-on-soft: var(--medal-silver-on-soft);
+  --color-medal-bronze: var(--medal-bronze);
+  --color-medal-bronze-soft: var(--medal-bronze-soft);
+  --color-medal-bronze-on-soft: var(--medal-bronze-on-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+  --font-devanagari: var(--font-devanagari);
+  --font-devanagari-serif: var(--font-devanagari-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /*
+   * Nepali typography. Poppins and Fraunces have no Devanagari coverage, so
+   * ne.json strings fell back to an arbitrary system face. Rebinding the two
+   * font tokens for Nepali means every existing `font-sans` / `font-serif`
+   * utility resolves to a real Devanagari face with no per-component change.
+   *
+   * `body:lang(ne)` (0,1,1) — not `:lang(ne)` (0,1,0) — because next/font puts
+   * the --font-sans / --font-serif definitions on a class on <body>, which
+   * would otherwise win the cascade against a selector on <html>.
+   */
+  body:lang(ne) {
+    --font-sans: var(--font-devanagari);
+    --font-serif: var(--font-devanagari-serif);
+    /* Devanagari sits on a taller em box; a little more leading keeps matras
+       and the shirorekha from clipping in tight UI rows. */
+    line-height: 1.7;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /*
+   * Atlas spotlight disc + dock gutters: tuned in JS from
+   * src/app/(site)/atlas/lib/atlas-spotlight-config.ts (single source of truth).
+   * Fallbacks below apply before hydration / outside Globe view.
+   * --atlas-gutter-l / --atlas-gutter-r are overwritten with real measured values
+   * by the SpotlightDisc ResizeObserver once the page has painted.
+   */
+  .atlas-shell-grid {
+    --atlas-bar-h: 40px;
+    --atlas-dock-h: 80px;
+    --atlas-radius: 10px;
+    --atlas-gap: 8px;
+    --atlas-pad: 8px;
+    --atlas-card-bg: color-mix(in srgb, var(--background) 72%, transparent);
+    --atlas-card-border: color-mix(in srgb, var(--border) 55%, transparent);
+    --atlas-card-shadow: 0 1px 2px rgba(0, 0, 0, 0.18),
+      0 0 0 1px color-mix(in srgb, var(--border) 25%, transparent) inset;
+    --atlas-spot-d: 560px;
+    --atlas-gutter-l: 0px;
+    --atlas-gutter-r: 0px;
+    --atlas-gutter-b: 0px;
+  }
+
+  /* GPU compositing layer — promotes disc to its own layer without pixelated rendering.
+     NOTE: will-change:transform is intentionally absent; it creates a compositor layer
+     conflict with the WebGL canvas (globe goes blank on Chrome/Safari). */
+  .atlas-gpu-layer {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Legacy alias kept so any lingering references don't hard-break. */
+  .atlas-pixel-snap {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Circular clip mask for the disc viewport. Tight 1px feather gives a crisp edge. */
+  .atlas-spot-mask {
+    mask-image: radial-gradient(
+      circle at 50% 50%,
+      black calc(50% - 1.5px),
+      transparent calc(50% + 0.5px)
+    );
+    -webkit-mask-image: radial-gradient(
+      circle at 50% 50%,
+      black calc(50% - 1.5px),
+      transparent calc(50% + 0.5px)
+    );
+  }
+
+  /* Shared card shell used by every atlas panel. */
+  .atlas-card {
+    border-radius: var(--atlas-radius, 10px);
+    border: 1px solid var(--atlas-card-border);
+    background: var(--atlas-card-bg);
+    box-shadow: var(--atlas-card-shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  /* Standard card header row (title + action button). */
+  .atlas-card-header {
+    height: 36px;
+    min-height: 36px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 40%, transparent);
+    flex-shrink: 0;
+  }
+
+  .atlas-sidebar-scroll {
+    scrollbar-gutter: stable both-edges;
+  }
+
+  /* Legacy named-area grid class kept for compatibility with prior layouts. */
+  .atlas-grid-areas {
+    grid-template-columns: minmax(304px, 1fr) minmax(200px, 2.1fr) minmax(304px, 1fr);
+    grid-template-rows: minmax(132px, 1fr) minmax(320px, 2.2fr) minmax(132px, 1fr);
+    grid-template-areas:
+      'graph . search'
+      'leftDock disc rightDock'
+      'time . ai';
+  }
+
+  .atlas-shell-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Reduce motion — snap framer animations to instant */
+  @media (prefers-reduced-motion: reduce) {
+    .atlas-shell-grid * {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* Heritage Museum map — divIcon markers must not use Leaflet's default white tile */
+.leaflet-container.hm-map-root,
+.leaflet-container.hm-map-root .leaflet-tile-pane {
+  z-index: 0;
+}
+
+/* The basemap is a light raster; in dark mode invert it rather than show a
+   bright map inside a dark page. Markers sit in another pane and keep their colours. */
+.dark .leaflet-container.hm-map-root .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
+
+.hm-map-marker.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* ── Heritage Atlas map (components/AtlasMap.tsx) ──
+   Leaflet draws SVG paths and tooltips; these give them the app's tokens so
+   the map follows the theme without colours in the component. Marker fills
+   are the ontology's node colours, passed as data. */
+.atlas-map { background: var(--muted); font-family: var(--font-sans); }
+.atlas-map .leaflet-control-attribution { background: color-mix(in srgb, var(--card) 88%, transparent); color: var(--muted-foreground); font-size: 10.5px; }
+.atlas-map .leaflet-control-attribution a { color: var(--primary); }
+.atlas-map .leaflet-bar a { background: var(--card); color: var(--foreground); border-color: var(--border); }
+.atlas-shroud { fill: var(--background); fill-opacity: 0.62; }
+.atlas-border { fill: none; stroke: var(--foreground); stroke-opacity: 0.55; stroke-width: 1.4; }
+.atlas-dot { stroke: var(--card); stroke-width: 2; cursor: pointer; }
+.atlas-dot.is-selected { stroke: var(--foreground); stroke-width: 2.5; }
+.atlas-ring { fill: none; stroke: var(--primary); stroke-width: 2.5; }
+.atlas-link { fill: none; stroke: var(--primary); stroke-width: 2; stroke-dasharray: 5 4; opacity: 0.85; }
+.atlas-cluster { display: grid; place-items: center; border-radius: 9999px; background: var(--primary); color: var(--primary-foreground); border: 2.5px solid var(--card); font: 600 13px/1 var(--font-sans); cursor: pointer; box-shadow: 0 1px 3px rgb(0 0 0 / 0.2); }
+.atlas-cluster.is-selected { border-color: var(--foreground); }
+.leaflet-tooltip.atlas-label,
+.leaflet-tooltip.atlas-link-label { background: transparent; border: 0; box-shadow: none; padding: 0; color: var(--foreground); font: 500 12px/1.2 var(--font-sans); text-shadow: 0 0 3px var(--card), 0 0 3px var(--card), 0 0 6px var(--card); }
+.leaflet-tooltip.atlas-label::before,
+.leaflet-tooltip.atlas-link-label::before { display: none; }
+.leaflet-tooltip.atlas-label.is-selected { font-weight: 600; font-size: 13.5px; }
+.leaflet-tooltip.atlas-link-label { color: var(--primary); font-size: 11px; }
+.dark .atlas-relief { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.95); }
+.dark .atlas-streets { filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9); }
+/* Atlas "colour by period": ordered dark-to-light by hue family so periods read as time. */
+:root {
+  --atlas-era-early: #8a6a1a;
+  --atlas-era-licchavi: #26584a;
+  --atlas-era-transitional: #6b8f7a;
+  --atlas-era-malla: #945072;
+  --atlas-era-shah: #476a83;
+  --atlas-era-undated: #9aa29c;
+}
+/* Atlas: a cluster of records on one spot opens this list. */
+.atlas-pick-popup .leaflet-popup-content-wrapper { background: var(--card); color: var(--foreground); border-radius: 10px; }
+.atlas-pick-popup .leaflet-popup-tip { background: var(--card); }
+.atlas-pick-popup .leaflet-popup-content { margin: 8px; }
+.atlas-pick { display: grid; gap: 2px; min-width: 12rem; }
+.atlas-pick button { text-align: left; font: 500 13px/1.3 var(--font-sans); color: var(--foreground); background: none; border: 0; border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+.atlas-pick button:hover, .atlas-pick button:focus-visible { background: var(--muted); }
+
+/* Stories: the paper, ink and signal red of the storytelling pages. Hairline
+   rules and square corners come from the layout, not from extra tokens. */
+:root {
+  --story-paper: #f2f1ee;
+  --story-panel: #e9e8e4;
+  --story-ink: #1b1b1a;
+  --story-ink-soft: #55534e;
+  --story-rule: #1b1b1a;
+  --story-rule-soft: #cfcdc7;
+  --story-accent: #c4321a; /* 4.9:1 on paper, 5.1:1 under paper-white text */
+  --story-accent-ink: #fbf6f4;
+}
+.dark {
+  --story-paper: #151514;
+  --story-panel: #1e1e1c;
+  --story-ink: #ecebe7;
+  --story-ink-soft: #a9a7a0;
+  --story-rule: #ecebe7;
+  --story-rule-soft: #3a3936;
+  --story-accent: #ff6a4a;
+  --story-accent-ink: #1b0d09;
+}
+@theme inline {
+  --color-story-paper: var(--story-paper);
+  --color-story-panel: var(--story-panel);
+  --color-story-ink: var(--story-ink);
+  --color-story-ink-soft: var(--story-ink-soft);
+  --color-story-rule: var(--story-rule);
+  --color-story-rule-soft: var(--story-rule-soft);
+  --color-story-accent: var(--story-accent);
+  --color-story-accent-ink: var(--story-accent-ink);
+}

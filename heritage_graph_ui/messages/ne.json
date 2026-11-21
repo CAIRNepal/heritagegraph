@@ -1,0 +1,1706 @@
+{
+  "common": {
+    "appName": "हेरिटेजग्राफ",
+    "loading": "लोड हुँदैछ…",
+    "error": "केही गल्ती भयो",
+    "save": "सुरक्षित गर्नुहोस्",
+    "cancel": "रद्द गर्नुहोस्",
+    "delete": "मेटाउनुहोस्",
+    "edit": "सम्पादन गर्नुहोस्",
+    "create": "सिर्जना गर्नुहोस्",
+    "search": "खोज्नुहोस्",
+    "filter": "फिल्टर",
+    "submit": "पेश गर्नुहोस्",
+    "confirm": "पुष्टि गर्नुहोस्",
+    "back": "पछाडि",
+    "next": "अर्को",
+    "previous": "अघिल्लो",
+    "close": "बन्द गर्नुहोस्",
+    "yes": "हो",
+    "no": "होइन",
+    "all": "सबै",
+    "none": "कुनै पनि होइन",
+    "actions": "कार्यहरू",
+    "status": "स्थिति",
+    "date": "मिति",
+    "type": "प्रकार",
+    "name": "नाम",
+    "description": "विवरण",
+    "viewAll": "सबै हेर्नुहोस्",
+    "noResults": "कुनै परिणाम फेला परेन",
+    "copyright": "© {year} हेरिटेजग्राफ · कोड MIT · तस्बिर CC BY-SA",
+    "poweredBy": "CAIR-Nepal को एक अनुसन्धान पहल",
+    "scrollToTop": "माथि जानुहोस्"
+  },
+  "metadata": {
+    "title": "हेरिटेजग्राफ: ज्ञान ग्राफहरू मार्फत सांस्कृतिक सम्पदा र पहिचान संरक्षण",
+    "description": "हेरिटेजग्राफ CAIR-Nepal द्वारा सांस्कृतिक सम्पदा, इतिहास, कला, र परम्पराहरूको डिजिटल संरक्षणका लागि AI र ज्ञान ग्राफहरू प्रयोग गर्ने अनुसन्धान पहल हो — भावी पुस्ताहरूका लागि साझा पहिचान सुरक्षित गर्दै।"
+  },
+  "auth": {
+    "signIn": "साइन इन",
+    "signOut": "साइन आउट",
+    "signUp": "साइन अप",
+    "loginWith": "{provider} बाट लगइन गर्नुहोस्",
+    "loginUsername": "प्रयोगकर्ता नाम",
+    "loginPassword": "पासवर्ड",
+    "loginSubmit": "लगइन गर्नुहोस्",
+    "noAccount": "खाता छैन?",
+    "alreadyHaveAccount": "पहिले नै खाता छ?",
+    "forgotPassword": "पासवर्ड बिर्सनुभयो?",
+    "signInWithGoogle": "गुगलबाट साइन इन गर्नुहोस्"
+  },
+  "nav": {
+    "navigation": "नेभिगेसन",
+    "dashboard": "ड्यासबोर्ड",
+    "graphVisualization": "ग्राफ भिजुअलाइजेसन",
+    "heritageAtlas": "हेरिटेज एटलास",
+    "heritageMuseum": "हेरिटेज सङ्ग्रहालय",
+    "stories": "कथाहरू",
+    "contribute": "योगदान",
+    "progression": "प्रगति",
+    "leaderboard": "लिडरबोर्ड",
+    "notifications": "सूचनाहरू",
+    "team": "टोली",
+    "about": "बारेमा",
+    "knowledgebase": "ज्ञानकोष",
+    "knowledgeHub": "सबै इकाईहरू",
+    "browseByType": "प्रकार अनुसार ब्राउज",
+    "culturalEntity": "सांस्कृतिक इकाई",
+    "person": "व्यक्ति",
+    "location": "स्थान",
+    "event": "घटना",
+    "historicalPeriod": "ऐतिहासिक काल",
+    "traditionPractice": "परम्परा / अभ्यास",
+    "source": "स्रोत",
+    "deity": "देवता",
+    "guthi": "गुठी",
+    "structure": "संरचना",
+    "ritual": "विधि",
+    "festival": "पर्व",
+    "iconography": "मूर्तिकला",
+    "monument": "स्मारक",
+    "curation": "क्युरेसन",
+    "reviewerDashboard": "समीक्षक ड्यासबोर्ड",
+    "reviewQueue": "समीक्षा लाइन",
+    "conflicts": "द्वन्द्वहरू",
+    "contributionsQueue": "योगदान लाइन",
+    "activityLog": "गतिविधि लग",
+    "qrContributions": "QR योगदान",
+    "platformAdmin": "प्लेटफर्म प्रशासन",
+    "platformAdminUsers": "प्रयोगकर्ताहरू",
+    "community": "समुदाय",
+    "contributors": "योगदानकर्ताहरू",
+    "organizations": "संस्थाहरू",
+    "describe": "अन्वेषण",
+    "record": "योगदान",
+    "claim": "पहिचान",
+    "verify": "क्युरेसन",
+    "identityQueue": "पहिचान सूची",
+    "truthClaims": "सत्य दाबीहरू",
+    "reviewWorkspace": "समीक्षा कार्यस्थल",
+    "methods": "विधि र डाटा",
+    "mySubmissions": "मेरा पेसकसहरू",
+    "updateExisting": "अवस्थित अद्यावधिक",
+    "myProjects": "मेरा परियोजनाहरू",
+    "evidenceSources": "प्रमाण स्रोतहरू",
+    "entityProposal": "एउटै कुरा दुई पटक?",
+    "relationshipProposal": "दुई अभिलेख जोड्नुहोस्",
+    "projectDossiers": "परियोजना मिसिलहरू",
+    "mergeRequests": "मर्ज अनुरोधहरू",
+    "kgProposals": "KG प्रस्तावहरू",
+    "staleLinks": "बासी लिंकहरू",
+    "explore": "अन्वेषण",
+    "reference": "सन्दर्भ",
+    "dashboardGroup": "ड्यासबोर्ड",
+    "knowledgeHubShort": "ज्ञानकोश"
+  },
+  "user": {
+    "home": "गृहपृष्ठ",
+    "viewProfile": "प्रोफाइल हेर्नुहोस्",
+    "accountSettings": "खाता सेटिङ्स",
+    "signOut": "साइन आउट"
+  },
+  "platformAdmin": {
+    "title": "प्लेटफर्म प्रशासन",
+    "usersTitle": "प्रयोगकर्ताहरू",
+    "userDetailTitle": "प्रयोगकर्ता",
+    "searchPlaceholder": "इमेल, प्रयोगकर्ता नाम वा नाम खोज्नुहोस्…",
+    "noUsers": "यो खोज मिल्दो प्रयोगकर्ता छैन।",
+    "loadError": "प्रयोगकर्ता लोड गर्न सकिएन।",
+    "dateJoined": "सामेल भएको",
+    "reviewerRole": "समीक्षक भूमिका",
+    "groups": "समूहहरू",
+    "none": "—",
+    "backToUsers": "प्रयोगकर्ताहरूमा फर्कनुहोस्",
+    "assignRole": "समीक्षक भूमिका",
+    "assignLabel": "समीक्षक प्रकार सेट गर्नुहोस्",
+    "assignSubmit": "भूमिका बचत गर्नुहोस्",
+    "assignSuccess": "समीक्षक भूमिका अद्यावधिक भयो।",
+    "assignError": "समीक्षक भूमिका अद्यावधिक गर्न सकिएन।",
+    "assignForbidden": "भूमिका तोक्न विशेषज्ञ क्यूरेटर वा स्टाफ लाई मात्र अनुमति छ।",
+    "staffBadge": "स्टाफ",
+    "superuserBadge": "सुपरयुजर",
+    "activeBadge": "सक्रिय",
+    "inactiveBadge": "निष्क्रिय",
+    "prev": "अघिल्लो",
+    "next": "अर्को",
+    "pageStatus": "{from}–{to} मध्ये {total}",
+    "roleCommunity": "सामुदायिक समीक्षक",
+    "roleDomain": "विषयविज्ञ",
+    "roleCurator": "विशेषज्ञ क्यूरेटर"
+  },
+  "dashboard": {
+    "eyebrow": "ड्यासबोर्ड",
+    "title": "ड्यासबोर्ड",
+    "welcome": "फेरि स्वागत छ, {name}!",
+    "overview": "समग्र दृश्य",
+    "recentActivity": "हालको गतिविधि",
+    "totalContributions": "कुल योगदानहरू",
+    "pendingReviews": "विचाराधीन समीक्षाहरू",
+    "approvedEntities": "स्वीकृत इकाईहरू",
+    "greetingMorning": "शुभ प्रभात",
+    "greetingAfternoon": "शुभ दिउँसो",
+    "greetingEvening": "शुभ साँझ",
+    "greetingFallback": "स्वागत छ",
+    "heroTitleAnonymous": "सांस्कृतिक सम्पदाको ज्ञान ग्राफ",
+    "heroSubtitle": "सांस्कृतिक सम्पदा डाटा योगदान, समीक्षा र अन्वेषण गर्ने तपाईंको कार्यक्षेत्र।",
+    "heroSubtitleAnonymous": "समुदायद्वारा क्युरेट गरिएका सम्पदा अभिलेखहरू, CIDOC-CRM मा नमुनाकृत र लिंक्ड ओपन डाटाको रूपमा प्रकाशित। खाता बिना नै ब्राउज गर्नुहोस्; योगदान गर्न साइन इन गर्नुहोस्।",
+    "exploreGraph": "ज्ञान ग्राफ अन्वेषण",
+    "methodsAndData": "विधि र डाटा",
+    "corpusOverview": "ग्राफमा के छ",
+    "yourOverview": "तपाईंका योगदानहरू",
+    "yourProgress": "तपाईंको प्रगति",
+    "browseByCategory": "वर्ग अनुसार ब्राउज",
+    "viewAllCategories": "साइडबारमा सबै वर्गहरू हेर्नुहोस्",
+    "shortcuts": {
+      "culturalEntity": "सांस्कृतिक इकाई",
+      "person": "व्यक्ति",
+      "location": "स्थान",
+      "event": "घटना",
+      "contributors": "योगदानकर्ताहरू"
+    },
+    "corpus": {
+      "loading": "ज्ञान ग्राफका तथ्याङ्क लोड हुँदै…",
+      "unavailable": "ज्ञान ग्राफका तथ्याङ्क उपलब्ध छैनन्",
+      "storeUnhealthy": "ट्रिपलस्टोरले प्रतिक्रिया दिइरहेको छैन। तलका तथ्याङ्क अपूर्ण हुन सक्छन्।",
+      "notAvailable": "उपलब्ध छैन",
+      "publicTriples": {
+        "label": "प्रकाशित ट्रिपलहरू",
+        "hint": "सार्वजनिक ग्राफका कथनहरू — संग्रहालय, एटलस र SPARQL एन्डपोइन्टले प्रस्तुत गर्ने क्युरेट गरिएका अभिलेखहरू।"
+      },
+      "totalTriples": {
+        "label": "कुल ट्रिपलहरू",
+        "hint": "सबै नामाङ्कित ग्राफहरू, क्युरेट गरिएको डाटाको रूपमा कहिल्यै प्रस्तुत नगरिने स्थिर स्रोत अभिलेखालय सहित।"
+      },
+      "schemaTriples": {
+        "label": "अन्टोलोजी ट्रिपलहरू",
+        "hint": "डाटा प्रमाणित गरिने CIDOC-CRM र हेरिटेजग्राफका वर्ग तथा गुण परिभाषाहरू।"
+      },
+      "distinctTypes": {
+        "label": "प्रयोगमा रहेका वर्गहरू",
+        "hint": "सार्वजनिक ग्राफमा कम्तीमा एक उदाहरण भएका अन्टोलोजी वर्गहरूको सङ्ख्या।",
+        "hintCapped": "सार्वजनिक ग्राफमा कम्तीमा एक उदाहरण भएका अन्टोलोजी वर्गहरू। क्वेरीले बढीमा २०० पङ्क्ति फर्काउँछ, त्यसैले वास्तविक सङ्ख्या बढी हुन सक्छ।"
+      },
+      "verify": "यी तथ्याङ्क ट्रिपलस्टोरबाट प्रत्यक्ष पढिएका हुन्। <methodsLink>विधि र उद्गम पृष्ठ</methodsLink> हेर्नुहोस्, वा <sparqlLink>सार्वजनिक SPARQL एन्डपोइन्ट</sparqlLink> मा आफैं क्वेरी चलाउनुहोस्।",
+      "histogramTitle": "सार्वजनिक ग्राफमा रहेका संस्था प्रकार",
+      "histogramSubtitle": "तलका प्रकारहरूमा जम्मा {total} अभिलेख",
+      "histogramShare": "सबै अभिलेखको {share}%",
+      "histogramMore": "अरू {count} प्रकार यहाँ देखाइएका छैनन्",
+      "histogramEmpty": "ग्राफमा अहिलेसम्म कुनै संस्था प्रकार छैन। सार्वजनिक ग्राफमा केही पनि प्रकाशित गरिएको छैन।"
+    },
+    "stats": {
+      "noToken": "तपाईंको सत्रमा API टोकन छैन। साइन आउट गरी फेरि साइन इन गर्नुहोस्।",
+      "loadFailed": "तपाईंका योगदान तथ्याङ्क लोड गर्न सकिएन",
+      "loading": "तपाईंका योगदान तथ्याङ्क लोड हुँदै…",
+      "notYet": "—",
+      "noChange": "कुनै परिवर्तन छैन",
+      "submissions": {
+        "title": "तपाईंका पेसकसहरू",
+        "basis": "यस महिना {thisMonth}, गत महिना {lastMonth}। ड्राफ्टहरू गणना गरिँदैनन्।",
+        "unmeasured": "गत महिना कुनै पेसकस नभएकाले प्रतिशत परिवर्तन परिभाषित छैन।"
+      },
+      "approval": {
+        "title": "स्वीकृति दर",
+        "basis": "समीक्षा भएका {reviewed} मध्ये {accepted} योगदान स्वीकृत वा मर्ज भए।",
+        "unmeasuredNoReviews": "तपाईंको कुनै पनि योगदानको समीक्षा भइसकेको छैन।",
+        "unmeasuredNoCohort": "तुलना गर्न यस महिना र गत महिना दुवैमा समीक्षा भएका योगदान चाहिन्छ।"
+      },
+      "rank": {
+        "title": "योगदानकर्ता श्रेणी",
+        "basis": "सबै योगदानकर्ताहरूमध्ये योगदान अङ्कका आधारमा स्थान।",
+        "unmeasured": "श्रेणी परिवर्तन अघिल्लो महिनाको अन्त्यको स्न्यापसटबाट नापिन्छ; अहिलेसम्म कुनै छैन।"
+      },
+      "reviewed": {
+        "title": "समीक्षा भएका",
+        "basis": "अन्तिम समीक्षा निर्णय भएका योगदानहरू।",
+        "pending": "{pending} अझै समीक्षाको प्रतीक्षामा।"
+      }
+    }
+  },
+  "contribute": {
+    "title": "योगदान",
+    "newContribution": "नयाँ योगदान",
+    "selectType": "योगदानको प्रकार छान्नुहोस्",
+    "formInstructions": "सम्पदा डाटा योगदान गर्न तलको विवरणहरू भर्नुहोस्।",
+    "submitSuccess": "योगदान सफलतापूर्वक पेश भयो!",
+    "submitError": "योगदान पेश गर्न असफल।",
+    "sourcePrompt": {
+      "label": "यसको तपाईंको स्रोत के हो?",
+      "help": "तपाईंलाई यो कसरी थाहा भयो? पुस्तक, अभिलेख, सङ्ग्रहालयको लेबल, अन्तर्वार्ता, स्थल भ्रमण, वा तपाईंको आफ्नै सामुदायिक ज्ञान — सबै मान्य छन्। यो अभिलेखसँगै जान्छ ताकि अरूले जाँच्न सकून्।",
+      "placeholder": "जस्तै: उत्तरी भित्ताको अभिलेख, चैत २०८२ को भ्रमणमा पढिएको — वा: मन्दिरको गुठीले बताएको",
+      "optional": "ऐच्छिक, तर स्रोत भएका अभिलेख अनुसन्धानकर्ताका लागि धेरै उपयोगी हुन्छन् र समीक्षकलाई स्वीकार गर्न सजिलो हुन्छ।",
+      "answered": "धन्यवाद — यो अभिलेखसँगै प्रकाशित हुनेछ।"
+    }
+  },
+  "knowledge": {
+    "title": "ज्ञानकोष",
+    "entity": {
+      "title": "सांस्कृतिक इकाईहरू",
+      "description": "भौतिक र अभौतिक सांस्कृतिक सम्पदा वस्तुहरू"
+    },
+    "person": {
+      "title": "ऐतिहासिक व्यक्तिहरू",
+      "description": "सांस्कृतिक इतिहासका उल्लेखनीय व्यक्तिहरू"
+    },
+    "location": {
+      "title": "सम्पदा स्थानहरू",
+      "description": "सांस्कृतिक महत्त्वका स्थानहरू"
+    },
+    "event": {
+      "title": "सांस्कृतिक घटनाहरू",
+      "description": "ऐतिहासिक र सांस्कृतिक घटनाहरू"
+    },
+    "period": {
+      "title": "ऐतिहासिक कालहरू",
+      "description": "सांस्कृतिक इतिहासका समयावधिहरू"
+    },
+    "tradition": {
+      "title": "परम्परा र अभ्यासहरू",
+      "description": "जीवित सांस्कृतिक परम्पराहरू र अभ्यासहरू"
+    },
+    "source": {
+      "title": "दस्तावेजी स्रोतहरू",
+      "description": "सन्दर्भ सामग्री र प्राथमिक स्रोतहरू"
+    },
+    "deity": {
+      "title": "देवताहरू",
+      "description": "धार्मिक र सांस्कृतिक देवताहरू"
+    },
+    "guthi": {
+      "title": "गुठीहरू",
+      "description": "परम्परागत सामुदायिक संगठनहरू"
+    },
+    "structure": {
+      "title": "संरचनाहरू",
+      "description": "वास्तुकला सम्पदा संरचनाहरू"
+    },
+    "ritual": {
+      "title": "विधिहरू",
+      "description": "सांस्कृतिक र धार्मिक विधिहरू"
+    },
+    "festival": {
+      "title": "पर्वहरू",
+      "description": "सांस्कृतिक उत्सव र पर्वहरू"
+    },
+    "iconography": {
+      "title": "मूर्तिकला",
+      "description": "धार्मिक र सांस्कृतिक मूर्तिकला तत्वहरू"
+    },
+    "monument": {
+      "title": "स्मारकहरू",
+      "description": "सम्पदा स्मारकहरू र ल्यान्डमार्कहरू"
+    }
+  },
+  "review": {
+    "title": "समीक्षा",
+    "approve": "स्वीकृत गर्नुहोस्",
+    "reject": "अस्वीकार गर्नुहोस्",
+    "requestChanges": "परिवर्तन अनुरोध",
+    "addComment": "टिप्पणी थप्नुहोस्",
+    "reviewHistory": "समीक्षा इतिहास",
+    "noItemsToReview": "समीक्षाका लागि कुनै वस्तुहरू छैनन्",
+    "decision": "निर्णय",
+    "reviewer": "समीक्षक",
+    "reviewDate": "समीक्षा मिति"
+  },
+  "calendar": {
+    "bikramSambat": "विक्रम सम्वत्",
+    "gregorian": "ग्रेगोरियन",
+    "today": "आज",
+    "todayBS": "आज (वि.सं.)",
+    "months": {
+      "1": "वैशाख",
+      "2": "जेठ",
+      "3": "असार",
+      "4": "श्रावण",
+      "5": "भदौ",
+      "6": "असोज",
+      "7": "कार्तिक",
+      "8": "मंसिर",
+      "9": "पुष",
+      "10": "माघ",
+      "11": "फाल्गुन",
+      "12": "चैत्र"
+    },
+    "days": {
+      "sun": "आइत",
+      "mon": "सोम",
+      "tue": "मंगल",
+      "wed": "बुध",
+      "thu": "बिहि",
+      "fri": "शुक्र",
+      "sat": "शनि"
+    }
+  },
+  "language": {
+    "switchTo": "भाषा परिवर्तन",
+    "english": "English",
+    "nepali": "नेपाली",
+    "current": "ने"
+  },
+  "heritageMuseum": {
+    "title": "हेरिटेज म्युजियम",
+    "pageLede": "नेपालका स्थान, व्यक्ति र जात्रा — हरेक अभिलेखले आफ्नो स्रोत देखाउँछ।",
+    "subtitle": "कथामार्फत नेपाली सम्पदा अन्वेषण गर्नुहोस्",
+    "stats": "{nodes} नोड · {links} सम्बन्ध",
+    "dataSource": {
+      "demo": "डेमो डाटा",
+      "live": "लाइभ KG",
+      "loading": "लोड हुँदैछ…",
+      "label": "Which collection to show"
+    },
+    "views": {
+      "graph": "सम्बन्धहरू",
+      "map": "नक्सा",
+      "xr": "कथा",
+      "regionLabel": "दृश्य र स्रोत"
+    },
+    "viewInXr": "कथाको रूपमा हेर्नुहोस्",
+    "backToGraph": "सम्बन्धमा फर्कनुहोस्",
+    "backToGallery": "सबै कथाहरू",
+    "switchToXr": "कथामा जानुहोस्",
+    "liveBadge": "Live graph",
+    "graphCapped": "{total} मध्ये सबैभन्दा बढी जोडिएका {shown} वस्तु देखाइँदै — बाँकी हेर्न खोज्नुहोस् वा फिल्टर गर्नुहोस्।",
+    "demoBanner": "{count, plural, =0 {सचित्र डेमो सङ्ग्रह — स्रोत उल्लेखित विकिमिडिया तस्बिरसहित छानिएका सम्पदा स्थल।} other {सचित्र डेमो सङ्ग्रह — स्रोत उल्लेखित विकिमिडिया तस्बिरसहित # छानिएका स्थल।}}",
+    "demoBannerAction": "Switch to the live graph",
+    "sparseLive": "The live graph has {count} entities — the corpus is still growing.",
+    "sparseLiveContribute": "योगदान गर्नुहोस्",
+    "storiesLiveHint": "कथाहरूले चित्रयुक्त स्थान देखाउँछन्। फोटो नभएका हालसालै आयात गरिएका सहित सबै {count} लाइभ वस्तु हेर्न नक्सा वा ग्राफ खोल्नुहोस्।",
+    "storiesLiveHintMap": "नक्सा खोल्नुहोस्",
+    "storiesLiveHintGraph": "ग्राफ खोल्नुहोस्",
+    "export": {
+      "json": "JSON निर्यात",
+      "jsonAria": "देखिएको उपग्राफ JSON मा डाउनलोड गर्नुहोस्"
+    },
+    "methods": {
+      "buttonLabel": "स्रोत",
+      "title": "स्रोत, विधि र प्रामाणिकता",
+      "standards": "यो ग्राफले पालना गर्ने मानक",
+      "demoImages": "तस्बिर: {source}",
+      "intro": "HeritageGraph publishes a CIDOC-CRM-aligned knowledge graph. Live mode shows entities that passed the publication gate (scope=reviewed: accepted, merged or published records), projected from the public Oxigraph partition. Records imported from Wikidata pass that gate as accepted by the importer and are marked as not yet reviewed.",
+      "datasetIdentity": "डाटासेट परिचय",
+      "release": "संस्करण",
+      "scope": "दायरा",
+      "scopeReviewed": "समीक्षित",
+      "license": "अनुमतिपत्र",
+      "licenseValue": "कोड: MIT · क्युरेट गरिएको डाटा: CC BY 4.0",
+      "graphPartition": "नामित ग्राफ",
+      "counts": "गणना",
+      "nodes": "नोड",
+      "edges": "सम्बन्ध",
+      "withProvenance": "प्रामाणिकता सहितका सम्बन्ध",
+      "fetched": "प्राप्त गरिएको",
+      "copyCitation": "उद्धरण प्रतिलिपि गर्नुहोस्",
+      "citationCopied": "उद्धरण क्लिपबोर्डमा प्रतिलिपि भयो।",
+      "livePipeline": "लाइभ ग्राफ प्रक्रिया",
+      "livePipelineBody": "नोडको प्रकार LinkML अन्टोलोजी रजिस्ट्रीको rdf:type बाट आउँछ।",
+      "liveStep1": "योगदान → ज्ञानमूलक समीक्षा → प्रकाशन नीति",
+      "liveStep2": "kg_publish / rdf_rebuild मार्फत graph/public मा RDF प्रक्षेपण",
+      "liveStep3": "सङ्ग्रहालयले GET /api/v1/cidoc/kg/graph/?scope=reviewed पढ्छ",
+      "liveStep4": "उपलब्ध हुँदा सम्बन्धहरूले HeritageAssertion प्रामाणिकता उद्धृत गर्छन्",
+      "demoWarningTitle": "डेमो मोड",
+      "demoWarningBody": "The frozen demo corpus is for reproducible illustrations. Cite the live graph, with each record's own source, for research.",
+      "demoFrozen": "स्थिर मिति: {date}",
+      "reproducibility": "पुनरुत्पादनीयता",
+      "sparqlNote": "सार्वजनिक पार्टिसनमा सिधै प्रश्न सोध्नुहोस्:",
+      "copySparql": "नमुना SPARQL प्रतिलिपि गर्नुहोस्",
+      "openSparql": "SPARQL एन्डपोइन्ट खोल्नुहोस्",
+      "fullMethodsPage": "पूर्ण विधि दस्तावेज",
+      "doiPending": "अझै जम्मा गरिएको छैन",
+      "demoTextUnsourced": "यस नमुना कोर्पसको वर्णनात्मक पाठको कुनै अभिलेखित स्रोत छैन र यसलाई उद्धृत गर्नुहुँदैन। माथिका चित्र श्रेय प्रमाणित छन्; कथन होइन।"
+    },
+    "filters": {
+      "regionLabel": "हेरिटेज फिल्टर",
+      "searchPlaceholder": "स्थान खोज्नुहोस्…",
+      "searchAria": "हेरिटेज खोज्नुहोस्",
+      "domain": "देखाउनुहोस्",
+      "showAll": "सबै देखाउनुहोस्",
+      "clearSearch": "खोज मेट्नुहोस्",
+      "showingCount": "{total} मध्ये {visible} स्थान",
+      "showingWithMedia": "{count} मा तस्बिर"
+    },
+    "legend": {
+      "show": "वस्तु प्रकारहरू देखाउनुहोस्",
+      "hide": "वस्तु प्रकारहरू लुकाउनुहोस्",
+      "title": "वस्तु प्रकारहरू"
+    },
+    "timeline": {
+      "title": "ऐतिहासिक समयरेखा",
+      "emptyNoNodes": "हालको फिल्टरमा नोड छैन।",
+      "emptyUndated": "देखाइएका {count} वस्तुमध्ये कुनैमा पार्स हुने मिति छैन।",
+      "licchavi": "लिच्छवी",
+      "malla": "मल्ल",
+      "shah": "शाह",
+      "ce": "{year} ईस्वी",
+      "coverage": "{total} मध्ये {dated} वस्तुमा मिति छ",
+      "undatedExcluded": "{count} बिना मिति — देखाइएको छैन",
+      "uncertainCount": "{count} अनुमानित (c./ca.) मिति",
+      "methodsButton": "मिति कसरी निकालिन्छ",
+      "methodsTitle": "यो समयरेखा कसरी बनाइन्छ",
+      "methodsAxis": "स्थान inceptionYear क्षेत्रबाट पार्स गरिएको पहिलो वर्षमा आधारित।",
+      "methodsPeriods": "रङ्गीन पट्टी सन्दर्भ अवधि हुन्, प्रत्येक वस्तुको सटीक सीमा होइन।",
+      "methodsUncertainty": "टुटेको घेरा = अनुमानित मिति (स्रोत रेकर्ड अनुसार)।",
+      "methodsLanes": "एकै वर्ष/ओभरल्याप भएका चिन्हहरू स्विमलेनमा स्ट्याक गरिन्छ।",
+      "methodsProvenance": "पूर्ण विवरण र स्रोतका लागि वस्तु प्यानल खोल्नुहोस्।",
+      "axisRange": "अक्ष: {min} – {max} ईस्वी",
+      "periodInterval": "{label}: {start}–{end} ईस्वी",
+      "sameYearCluster": "{year} ईस्वीमा {count} वस्तु",
+      "clusterBadge": "×{count}",
+      "markerLabel": "{name}, {when}",
+      "footerHint": "पट्टी = सन्दर्भ काल · टुटेको घेरा = अनिश्चित मिति"
+    },
+    "errors": {
+      "demoLoad": "हेरिटेज डाटा लोड गर्न सकिएन।",
+      "liveLoad": "हेरिटेजग्राफ API मा पुग्न सकिएन।",
+      "loadTitle": "हेरिटेज डाटा लोड गर्न सकिएन",
+      "retry": "पुनः प्रयास",
+      "retrying": "पुनः प्रयास हुँदैछ…",
+      "dismiss": "त्रुटि खारेज गर्नुहोस्",
+      "liveUnavailable": "प्रत्यक्ष ज्ञान ग्राफ अहिले उपलब्ध छैन। चित्रसहितको सङ्ग्रह भने चल्छ।",
+      "liveTimeout": "प्रत्यक्ष ज्ञान ग्राफले जवाफ दिन धेरै समय लगाइरहेको छ। केही बेरपछि फेरि प्रयास गर्नुहोस्।",
+      "showDemo": "चित्रसहितको सङ्ग्रह देखाउनुहोस्"
+    },
+    "empty": {
+      "filtersTitle": "फिल्टरसँग मेल खाने नोड छैन",
+      "filtersBody": "ग्राफमा {total} नोड छ, तर खोज र फिल्टरसँग मेल खाएन।",
+      "resetFilters": "फिल्टर रिसेट"
+    },
+    "hints": {
+      "graph": "नोड क्लिक · तान्नुहोस् · जुम गर्न स्क्रोल"
+    },
+    "map": {
+      "emptyTitle": "हालको दृश्यमा भू-सन्दर्भित नोड छैन",
+      "emptyFilters": "सक्रिय फिल्टरसँग मेल खाने नोड छैन। फिल्टर फराकिलो पार्नुहोस्।",
+      "emptyNoCoords": "{count} नोड देखाइँदैछ, तर कुनैमा मान्य निर्देशाङ्क छैन।",
+      "geoCount": "{geo} / {total} नोड भू-सन्दर्भित"
+    },
+    "xr": {
+      "navCount": "{count} वस्तुहरू",
+      "searchAria": "कथा नेभिगेटरमा वस्तु फिल्टर",
+      "searchNoMatch": "यो फिल्टरसँग मेल खाने वस्तु छैन।",
+      "galleryTitle": "हेरिटेज कथाहरू",
+      "gallerySubtitle": "Open a card to read its story. Live records include their connections and sources even without linked imagery.",
+      "galleryAll": "सबै कथा ({count})",
+      "galleryEmpty": "तपाईंको खोजसँग मिल्ने केही छैन। फिल्टर हटाउनुहोस्।",
+      "galleryClearFilters": "फिल्टर हटाउनुहोस्",
+      "galleryWithMedia": "{count} मा छवि",
+      "galleryTextOnly": "पाठ मात्र ({count})",
+      "mobilePickerAria": "हेरिटेज वस्तु छान्नुहोस्",
+      "mobilePickerPlaceholder": "वस्तु बदल्नुहोस्…",
+      "explore": "अन्वेषण",
+      "noMediaTitle": "पूर्वावलोकन छवि छैन",
+      "noMediaBody": "यस रेकर्डमा कथा छ तर छवि जोडिएको छैन। पूर्ण रेकर्ड खोल्नुहोस्।",
+      "paused": "पज",
+      "beatProgress": "{current} / {total}",
+      "prev": "अघिल्लो",
+      "next": "अर्को",
+      "storyHintAuto": "रोक्न पज बटन प्रयोग गर्नुहोस्, वा डटहरूले फड्को मार्नुहोस्। हरेक १० सेकेन्डमा अगाडि बढ्छ।",
+      "storyHintManual": "अघिल्लो/अर्को वा डट प्रयोग गर्नुहोस्",
+      "narrate": "पढ्नुहोस्",
+      "stopNarration": "पढ्न रोक्नुहोस्",
+      "transcriptShow": "ट्रान्सक्रिप्ट देखाउनुहोस्",
+      "transcriptHide": "ट्रान्सक्रिप्ट लुकाउनुहोस्",
+      "panoramaOpen": "प्यानोरामा दृश्य",
+      "openMap": "नक्सामा खोल्नुहोस्",
+      "coords": "{lat}°N, {lng}°E",
+      "panoramaLoading": "{label} लोड हुँदैछ…",
+      "panoramaLoadError": "इमर्सिभ दृश्य लोड भएन",
+      "panoramaLoadErrorBody": "प्रायः क्रस-ओरिजिन वा ब्लक गरिएको स्रोत। अर्को छवि वा पूर्ण रेकर्ड प्रयास गर्नुहोस्।",
+      "panoramaSubtitleLoading": "छवि लोड हुँदैछ…",
+      "panoramaSubtitleFlat": "मानक फोटो — वास्तविक ३६०° क्याप्चर होइन",
+      "panoramaSubtitleControls": "हेर्न तान्नुहोस् वा तीर कुञ्जी · जुम स्क्रोल वा +/-",
+      "panoramaClose": "इमर्सिभ दृश्य बन्द",
+      "panoramaExpand": "कथा विस्तार",
+      "panoramaCollapse": "कथा संक्षिप्त",
+      "panoramaTrue360": "वास्तविक ३६०° इक्विरेक्ट्याङ्गुलर प्यानोरामा",
+      "panoramaFlatDisclaimer": "मानक फोटो गोलो सतहमा — ३६०° होइन",
+      "panoramaPreparing": "इमर्सिभ दृश्य तयार हुँदैछ…",
+      "enterVr": "VR मा जानुहोस्",
+      "enterAr": "AR मा जानुहोस्",
+      "exitXr": "XR सत्र बन्द",
+      "webXrUnavailable": "यो ब्राउजरमा WebXR उपलब्ध छैन",
+      "badge360": "३६०°",
+      "badgeUnesco": "युनेस्को",
+      "noPhotograph": "कुनै तस्बिर अभिलिखित छैन",
+      "creditsLabel": "तस्बिरको श्रेय",
+      "pause": "रोक्नुहोस्",
+      "play": "चलाउनुहोस्",
+      "unsourcedBeat": "स्रोत नखुलेको — प्रदर्शन पाठ"
+    },
+    "panel": {
+      "emptyTitle": "स्थल वा कथा छान्नुहोस्",
+      "emptyBody": "कुनै पनि नोड छान्नुहोस् — मन्दिर, देवता, पर्व, र नेपालको जीवित सम्पदाका युगहरू।",
+      "emptyBodyConnections": "कथा पढ्न ग्राफमा सम्बन्ध क्लिक गर्नुहोस्।",
+      "emptyBodyMap": "कथा पढ्न नक्सामा स्थान छान्नुहोस्।",
+      "browseStories": "कथाहरू हेर्नुहोस्",
+      "recordDetails": "अभिलेख विवरण",
+      "recordDetailsShow": "देखाउनुहोस्",
+      "viewOnGlobe": "नक्सामा हेर्नुहोस्",
+      "ontologyMapping": "अन्टोलोजी म्यापिङ",
+      "hgClass": "HG वर्ग",
+      "category": "श्रेणी",
+      "namespace": "नेमस्पेस",
+      "keyFacts": "मुख्य तथ्य",
+      "story": "कथा",
+      "history": "इतिहास",
+      "culturalRole": "सांस्कृतिक भूमिका",
+      "architecture": "वास्तुकला",
+      "significance": "महत्त्व",
+      "rituals": "संस्कार र परम्परा",
+      "visitorGuide": "आगन्तुक मार्गदर्शन",
+      "connections": "सम्बन्धहरू",
+      "mapLink": "नक्सामा खोल्नुहोस्",
+      "dynasty": "{name} वंश",
+      "inception": "लगभग {year} ईस्वी",
+      "openRecord": "पूर्ण अभिलेख खोल्नुहोस्",
+      "reviewedBadge": "समुदायद्वारा समीक्षित",
+      "provenance": "दाबीको स्रोत",
+      "provSource": "स्रोत: {value}",
+      "provConfidence": "विश्वसनीयता: {value}",
+      "provAgent": "दाबीकर्ता: {value}",
+      "provTemporal": "समय सीमा: {value}",
+      "provDate": "अभिलेखित: {value}",
+      "noNarrativeRecorded": "यस अभिलेखको कुनै विवरण राखिएको छैन।",
+      "sampleNarrative": "नमुना कथन — यस प्रदर्शन कोर्पसका लागि लेखिएको, स्रोतबाट लिइएको वा प्रमाणित होइन। उद्धृत नगर्नुहोस्।",
+      "tier": {
+        "imported": "Imported from Wikidata, not yet reviewed",
+        "reviewed": "Community reviewed",
+        "curated": "From the curated corpus",
+        "inReview": "In review"
+      }
+    },
+    "ontologyBadges": {
+      "cidoc": "CIDOC-CRM",
+      "hg": "hg:",
+      "prov": "PROV-O",
+      "jsonld": "JSON-LD"
+    },
+    "loadingGraph": "सम्पदा ग्राफ लोड हुँदै",
+    "graphAriaLabel": "अन्तर्क्रियात्मक सम्पदा ज्ञान ग्राफ",
+    "media": {
+      "narrate": "कथा वाचन सुन्नुहोस्",
+      "narrateShort": "वाचन",
+      "stop": "रोक्नुहोस्"
+    },
+    "expand": {
+      "action": "जोडिएका अभिलेख देखाउनुहोस्",
+      "loading": "सम्बन्धहरू लोड हुँदैछन्…",
+      "title": "ज्ञान ग्राफबाट यससँग जोडिएका अभिलेखहरू थप्नुहोस्",
+      "none": "{name} सँग जोडिएका थप अभिलेख छैनन्।",
+      "added": "{name} सँग जोडिएका {count, plural, one {# अभिलेख} other {# अभिलेख}} थपियो।",
+      "failed": "{name} का सम्बन्धहरू लोड हुन सकेनन्। फेरि प्रयास गर्नुहोस्।"
+    },
+    "exhibit": {
+      "railLede": "नेपालका ठाउँ, व्यक्ति र पर्वहरू। कुनै एक छान्नुहोस् र त्यो के हो, कहाँ छ, कहिलेको हो र केसँग जोडिएको छ हेर्नुहोस्।",
+      "searchLabel": "सङ्ग्रहमा खोज्नुहोस्",
+      "searchPlaceholder": "ठाउँ, देवता, पर्व खोज्नुहोस्",
+      "clearSearch": "खोज हटाउनुहोस्",
+      "kindsLabel": "प्रकारअनुसार छान्नुहोस्",
+      "count": "{total} मध्ये {shown} अभिलेख · {withPhoto} मा तस्बिर",
+      "noMatches": "केही मिलेन।",
+      "resetFilters": "खोज र छनोट हटाउनुहोस्",
+      "browseCollection": "सङ्ग्रह हेर्नुहोस्",
+      "closeCollection": "सङ्ग्रह बन्द गर्नुहोस्",
+      "previous": "अघिल्लो",
+      "next": "अर्को",
+      "previousAria": "अघिल्लो अभिलेख",
+      "nextAria": "अर्को अभिलेख",
+      "photoAlt": "{name} को तस्बिर",
+      "noPhoto": "यस अभिलेखको तस्बिर छैन।",
+      "moreAbout": "{name} बारे थप",
+      "record": "अभिलेख",
+      "where": "कहाँ",
+      "when": "कहिले",
+      "connected": "सम्बन्धित · {count}",
+      "openMap": "पूरा नक्सा खोल्नुहोस्",
+      "noLocation": "स्थान अभिलेखित छैन।",
+      "noDate": "मिति अभिलेखित छैन।",
+      "noConnections": "अहिलेसम्म कुनै सम्बन्ध अभिलेखित छैन।",
+      "close": "बन्द गर्नुहोस्",
+      "mapAria": "स्थान भएका {count} अभिलेखसहित नेपालको नक्सा",
+      "yearCE": "ई. {year}",
+      "yearBCE": "ई.पू. {year}",
+      "loadingRecord": "सङ्ग्रह लोड हुँदैछ…",
+      "relations": {
+        "out": {
+          "P55_has_current_location": "यहाँ स्थित",
+          "active_during": "सक्रिय काल",
+          "associated_with": "सम्बन्धित",
+          "based_in": "आधार",
+          "belongs_to_caste": "अभिलेखित जात",
+          "carried_out_by": "सम्पन्न गर्ने",
+          "celebrated_at": "मनाइने ठाउँ",
+          "cites": "उद्धृत गर्छ",
+          "dedicated_to": "समर्पित",
+          "depicts": "चित्रण गर्छ",
+          "embodies": "मूर्त रूप",
+          "has_component": "समावेश",
+          "has_current_location": "स्थित",
+          "held_at": "आयोजना हुने ठाउँ",
+          "honors": "सम्मान गर्छ",
+          "housed_in": "राखिएको ठाउँ",
+          "instance_of": "को एक आयोजन",
+          "invokes_deity": "सम्मान गर्छ",
+          "is_component_of": "को भाग",
+          "located_at": "स्थित",
+          "located_in": "स्थित",
+          "member_of": "सदस्य",
+          "observed_by": "पालना गर्ने",
+          "performed_at": "सम्पन्न हुने ठाउँ",
+          "took_place_at": "घटेको ठाउँ",
+          "was_derived_from_source": "स्रोत",
+          "was_produced_by_event": "निर्माण काल"
+        },
+        "in": {
+          "P55_has_current_location": "यहाँ स्थित",
+          "active_during": "यस कालमा सक्रिय",
+          "associated_with": "सम्बन्धित",
+          "based_in": "यहाँ आधारित",
+          "belongs_to_caste": "यस जातको",
+          "carried_out_by": "यसले सम्पन्न गरेको",
+          "celebrated_at": "यहाँ मनाइन्छ",
+          "cites": "यसलाई उद्धृत गर्छ",
+          "dedicated_to": "यसमा समर्पित",
+          "depicts": "यसको चित्रण गर्छ",
+          "embodies": "यसको मूर्त रूप",
+          "has_component": "यसको भाग",
+          "has_current_location": "यहाँ स्थित",
+          "held_at": "यहाँ आयोजना हुन्छ",
+          "honors": "यसको सम्मान गर्छ",
+          "housed_in": "यहाँ राखिएको",
+          "instance_of": "यसको एक आयोजन",
+          "invokes_deity": "यसको सम्मान गर्छ",
+          "is_component_of": "यसमा समावेश",
+          "located_at": "यहाँ स्थित",
+          "located_in": "यहाँ स्थित",
+          "member_of": "सदस्य",
+          "observed_by": "यस समूहले पालना गर्छ",
+          "performed_at": "यहाँ सम्पन्न हुन्छ",
+          "took_place_at": "यहाँ घटेको",
+          "was_derived_from_source": "यस स्रोतमा आधारित",
+          "was_produced_by_event": "यस कालमा निर्मित"
+        }
+      },
+      "liveSourceLine": "Live knowledge graph: published records, each citing its source. Records imported from Wikidata are marked as not yet reviewed.",
+      "pauseNarration": "वाचन रोक्नुहोस्",
+      "resumeNarration": "वाचन जारी राख्नुहोस्"
+    },
+    "lenses": {
+      "label": "Ways to look at the collection",
+      "exhibit": "Exhibit",
+      "map": "Map",
+      "position": "{k} of {n}",
+      "announce": "{label}, {lens}, {k} of {n}"
+    },
+    "record": {
+      "openExhibit": "Open the exhibit",
+      "readStory": "Read its story",
+      "in": "In",
+      "region": "Region",
+      "sources": "Sources",
+      "demoSources": "Illustrated demo corpus: the photographs carry their licences, but the text was written for the demonstration and has no source. Do not cite it; switch to the live graph for sourced records.",
+      "noSource": "No source is recorded for this record yet.",
+      "suggest": "Suggest a correction",
+      "noOwnLocation": "No location of its own is recorded;",
+      "within": "it is within {place}"
+    },
+    "keys": {
+      "title": "Keyboard",
+      "lenses": "Switch lens: exhibit or map",
+      "search": "Search the collection",
+      "step": "Previous or next record (or stop on a walk)",
+      "list": "Move through the list when it has focus",
+      "endWalk": "End a walk through time"
+    },
+    "titleNe": "सम्पदा संग्रहालय"
+  },
+  "landing": {
+    "hero": {
+      "title": "ज्ञान ग्राफहरू मार्फत सांस्कृतिक सम्पदा संरक्षण",
+      "subtitle": "CAIR-Nepal द्वारा सांस्कृतिक सम्पदा, इतिहास, कला, र परम्पराहरूको डिजिटल संरक्षणका लागि AI र ज्ञान ग्राफहरू प्रयोग गर्ने अनुसन्धान पहल।",
+      "cta": "सुरु गर्नुहोस्",
+      "exploreDashboard": "ड्यासबोर्ड अन्वेषण"
+    },
+    "features": {
+      "title": "किन हेरिटेजग्राफ?",
+      "linkedData": {
+        "title": "लिंक्ड ओपन डाटा",
+        "description": "CIDOC-CRM अन्टोलजी प्रयोग गरी मेसिन-पठनीय लिंक्ड ओपन डाटाको रूपमा प्रकाशित सांस्कृतिक सम्पदा डाटा।"
+      },
+      "communityDriven": {
+        "title": "समुदाय चालित",
+        "description": "स्थानीय समुदायहरू, अनुसन्धानकर्ताहरू, र विश्वभरका सांस्कृतिक संस्थाहरूबाट योगदान।"
+      },
+      "aiPowered": {
+        "title": "AI सक्षम",
+        "description": "उन्नत AI द्वारा संचालित बुद्धिमान डाटा निकासी र ज्ञान ग्राफ निर्माण।"
+      }
+    },
+    "faq": {
+      "title": "बारम्बार सोधिने प्रश्नहरू"
+    }
+  },
+  "Atlas": {
+    "loadingAtlas": "एटलस लोड हुँदै…",
+    "loadErrorTitle": "सम्पदा एटलस लोड हुन सकेन।",
+    "loadErrorHint": "पृष्ठ रिफ्रेस गर्नुहोस्। समस्या रह्यो भने समर्थनमा सम्पर्क गर्नुहोस्।",
+    "loadErrorRetry": "पुनः प्रयास गर्नुहोस्"
+  },
+  "about": {
+    "eyebrow": "बारेमा",
+    "hero": {
+      "titlePrefix": "ज्ञान ग्राफ मार्फत सांस्कृतिक सम्पदाको",
+      "titleHighlight": "संरक्षण",
+      "description": "हेरिटेजग्राफ CAIR-Nepal द्वारा सञ्चालित प्लेटफर्म हो, जसले सांस्कृतिक सम्पदा — विशेष गरी नेपाली र हिमाली सम्पदा — दस्तावेजीकरण गरी CIDOC-CRM मा नमुनाकृत लिंक्ड ओपन डाटाको रूपमा प्रकाशित गर्दछ।",
+      "startContributing": "योगदान सुरु गर्नुहोस्",
+      "methods": "विधि र उद्गम"
+    },
+    "mission": {
+      "title": "हाम्रो लक्ष्य",
+      "paragraph1": "सांस्कृतिक सम्पदा समुदायहरूको जीवित स्मृति हो — परम्परा, कलाकृति, कथा र अभ्यासहरू जसले वर्तमानलाई विगतसँग जोड्छन्। यसको ठूलो हिस्सा अझै दस्तावेज नभएको, संस्थाहरूमा छरिएको, वा हराउने जोखिममा छ।",
+      "appName": "हेरिटेजग्राफ",
+      "paragraph2": "ले ज्ञान ग्राफ प्रविधि प्रयोग गरी त्यस सम्पदाको अन्तरसम्बन्धित डिजिटल अभिलेख निर्माण गर्दछ। CIDOC-CRM अनुसार सम्पदा डाटालाई लिंक्ड ओपन डाटाको रूपमा प्रकाशित गर्दा अनुसन्धानकर्ता, समुदाय र संस्थाहरूले सम्बन्ध पहिल्याउन, स्रोत उद्धृत गर्न र स्पष्ट सर्तमा पुनःप्रयोग गर्न सक्छन्।"
+    },
+    "sections": {
+      "coreFeatures": {
+        "prefix": "मुख्य",
+        "highlight": "विशेषताहरू"
+      },
+      "data": {
+        "prefix": "डाटा,",
+        "highlight": "उद्गम र पुनःप्रयोग"
+      },
+      "standards": {
+        "prefix": "मापदण्ड",
+        "highlight": "र शब्दावली"
+      }
+    },
+    "features": {
+      "knowledgeGraph": {
+        "title": "ज्ञान ग्राफ",
+        "desc": "CIDOC-CRM नमुनामा आधारित अन्तर्क्रियात्मक ग्राफ दृश्य, जसले अभिलेखहरू कसरी जोडिन्छन् देखाउँछ।"
+      },
+      "linkedOpenData": {
+        "title": "लिंक्ड ओपन डाटा",
+        "desc": "स्थायी cair-nepal.org पहिचायक, RDF कन्टेन्ट नेगोसिएसन, र सार्वजनिक SPARQL एन्डपोइन्ट।"
+      },
+      "communityCuration": {
+        "title": "सामुदायिक क्युरेसन",
+        "desc": "समुदायका सदस्य, विद्वान र संस्थाहरूका योगदान, प्रत्येकको श्रेय र संस्करण अभिलेख सहित।"
+      },
+      "epistemicReview": {
+        "title": "ज्ञानमीमांसीय समीक्षा",
+        "desc": "दाबीहरूसँग स्रोत र विश्वास मात्रा हुन्छ, र प्रकाशन अघि समीक्षा हुन्छ। यो कसरी काम गर्छ भन्ने विधि पृष्ठमा दस्तावेज गरिएको छ।"
+      }
+    },
+    "data": {
+      "title": "डाटा कसरी नियन्त्रित छ",
+      "description": "यी अभिलेखमा भर पर्नुअघि पाठक, समीक्षक वा पुनःप्रयोगकर्ताले जान्नुपर्ने कुरा।",
+      "provenance": {
+        "term": "उद्गम",
+        "definition": "आयातित स्रोतहरू छुट्टै नामाङ्कित स्थिर ग्राफमा राखिन्छन्। क्युरेट गरिएका दाबीहरूसँग डाटा स्रोत र विश्वास मात्रा हुन्छ, त्यसैले प्रत्येक प्रकाशित कथन कहाँबाट आयो पहिल्याउन सकिन्छ।"
+      },
+      "access": {
+        "term": "पहुँच तह (CARE)",
+        "definition": "अभिलेखहरू सार्वजनिक, प्रतिबन्धित, समुदाय-मात्र, वा सांस्कृतिक रूपमा संवेदनशील भनी चिन्ह लगाउन सकिन्छ। SPARQL प्रोक्सीले प्रतिबन्धित सामग्री छान्छ — इन्टरफेसले लुकाउने भरमा छाडिँदैन।"
+      },
+      "licensing": {
+        "term": "इजाजतपत्र",
+        "definition": "सफ्टवेयर MIT इजाजतपत्रमा छ। डाटाका सर्त स्रोत अनुसार फरक हुन्छन् — OpenStreetMap, Wikidata, UNESCO र सामुदायिक योगदानका सर्त फरक छन्, र लागू हुने इजाजतपत्र प्रत्येक स्रोतसँगै जान्छ।"
+      },
+      "identifiers": {
+        "term": "पहिचायक",
+        "definition": "इकाईहरूले स्थायी cair-nepal.org IRI पाउँछन्। बाह्य पङ्क्तिबद्धता मौन रूपमा मिसाइँदैन, स्पष्ट लिंकका रूपमा अभिलेख गरिन्छ।"
+      },
+      "methodsCta": "विधि र उद्गम",
+      "licenseCta": "डाटा इजाजतपत्रका सर्त"
+    },
+    "standards": {
+      "title": "प्रकाशित मापदण्डमा आधारित",
+      "description": "नमुना आफ्नै मात्र होइन: यसले स्थापित सम्पदा र सिमान्टिक वेब शब्दावली पुनःप्रयोग गर्छ, जसले डाटालाई अन्य अभिलेखालयसँग अन्तरसञ्चालनीय बनाउँछ।",
+      "cidoc": {
+        "name": "CIDOC-CRM",
+        "role": "सांस्कृतिक सम्पदा दस्तावेजीकरणको मुख्य अन्टोलोजी"
+      },
+      "crminf": {
+        "name": "CRMinf",
+        "role": "विश्वास, अनुमान र प्रमाणका लागि तर्क नमुना"
+      },
+      "linkml": {
+        "name": "LinkML",
+        "role": "अन्टोलोजी र फारम उत्पन्न गर्ने स्किमा स्रोत"
+      },
+      "shacl": {
+        "name": "SHACL",
+        "role": "प्रकाशन अघि अभिलेख प्रमाणित गर्ने आकार अवरोध"
+      },
+      "skos": {
+        "name": "SKOS",
+        "role": "नियन्त्रित शब्दावली र अवधारणा योजना"
+      },
+      "voidDcat": {
+        "name": "VoID / DCAT",
+        "role": "खोजका लागि मेसिन-पठनीय डाटासेट विवरण"
+      }
+    },
+    "cair": {
+      "title": "CAIR-Nepal बारेमा",
+      "subtitle": "कृत्रिम बुद्धिमत्ता अनुसन्धान केन्द्र नेपाल",
+      "description": "CAIR-Nepal नेपाल र व्यापक क्षेत्रमा सामाजिक भलाइका लागि कृत्रिम बुद्धिमत्ता अनुसन्धान र यसका अनुप्रयोग अगाडि बढाउन समर्पित गैर-नाफामूलक अनुसन्धान संस्था हो। हेरिटेजग्राफ यसका परियोजनाहरूमध्ये एक हो।",
+      "website": "वेबसाइट हेर्नुहोस्",
+      "contact": "सम्पर्क"
+    },
+    "cta": {
+      "title": "अभिलेखमा योगदान गर्नुहोस्",
+      "description": "सम्पदाको दस्तावेजीकरण ढिलो र सहकार्यमूलक काम हो। एउटा अभिलेख थप्नुहोस्, स्रोत उद्धृत गर्नुहोस्, वा अरूको योगदान समीक्षा गर्नुहोस्।",
+      "contribute": "योगदान गर्नुहोस्",
+      "browse": "अभिलेखालय ब्राउज गर्नुहोस्"
+    },
+    "openSource": {
+      "title": "ओपन सोर्स",
+      "description": "हेरिटेजग्राफ खुला रूपमा विकास गरिएको छ। इस्यु र योगदानहरू स्वागत छन्।",
+      "viewSource": "स्रोत हेर्नुहोस्",
+      "howToCite": "कसरी उद्धृत गर्ने"
+    },
+    "graph": {
+      "prefix": "हाम्रो",
+      "highlight": "ज्ञान ग्राफ",
+      "description": "हरेक अभिलेखपछाडिको ढाँचा: संस्थाका प्रकार, तिनबीच अनुमति दिइएका सम्बन्ध, र अहिलेसम्म प्रकाशित भइसकेको जीवित ग्राफ।",
+      "cta": "पूरा ग्राफ हेर्नुहोस्",
+      "loading": "ग्राफ लोड हुँदै…"
+    }
+  },
+  "methods": {
+    "metaTitle": "विधि · हेरिटेजग्राफ",
+    "metaDescription": "हेरिटेजग्राफ सांस्कृतिक सम्पदा ज्ञान ग्राफका विधि, उद्गम, समीक्षा नमुना, FAIR/CARE अनुपालन र पुनरुत्पादनशीलता।",
+    "eyebrow": "हेरिटेजग्राफ · विधि दस्तावेज",
+    "title": "विधि र डाटा",
+    "intro": "हेरिटेजग्राफले CIDOC-CRM अनुरूप ज्ञान ग्राफ कसरी निर्माण, समीक्षा र प्रकाशन गर्छ, र पाठकले यीमध्ये कुनै पनि कुरा स्वतन्त्र रूपमा जाँच्न के चाहिन्छ।",
+    "release": {
+      "heading": "सफ्टवेयर रिलिज",
+      "version": "संस्करण",
+      "doi": "DOI",
+      "doiPending": "अझै जम्मा गरिएको छैन — तलको रिपोजिटरी र कोर्पस SHA-256 उद्धृत गर्नुहोस्।",
+      "codeLicense": "कोड इजाजतपत्र",
+      "dataLicense": "डाटा इजाजतपत्र",
+      "dataLicenseValue": "क्युरेट गरिएको तहमा CC BY 4.0; तेस्रो पक्षका तहहरूले आफ्नै इजाजतपत्र कायम राख्छन् (तालिका हेर्नुहोस्)"
+    },
+    "review": {
+      "heading": "समीक्षा नमुना",
+      "intro": "योगदानहरूको समीक्षा तीनमध्ये एक समीक्षक भूमिका बोक्ने व्यक्तिले गर्छन्, जुन <code>ReviewerRole</code> मा विशेषज्ञता क्षेत्र र सक्रिय अवस्था सहित अभिलेख गरिन्छ। क्षमता संचयी हुन्छ: प्रत्येक भूमिकाले माथिको भूमिकाले गर्न सक्ने सबै गर्न सक्छ।",
+      "tablePersona": "भूमिका",
+      "tableCan": "गर्न सक्ने",
+      "tableCannot": "गर्न नसक्ने",
+      "personas": {
+        "communityReviewer": {
+          "name": "सामुदायिक समीक्षक",
+          "can": "स्पष्ट योगदान स्वीकृत गर्ने, परिवर्तन माग्ने, विशेषज्ञसमक्ष पठाउने।",
+          "cannot": "विश्वास मात्रा परिवर्तन गर्ने, वा विवादित दाबी समाधान गर्ने।"
+        },
+        "domainExpert": {
+          "name": "क्षेत्र विशेषज्ञ",
+          "can": "दाबी प्रमाणित गर्ने, विश्वास मात्रा समायोजन गर्ने, विवादित प्रमाण मिलाउने।",
+          "cannot": "अभिलेख प्रतिस्थापन गर्ने, लक गरिएका पहिचान मर्ज गर्ने, वा समीक्षक भूमिका दिने।"
+        },
+        "expertCurator": {
+          "name": "विशेषज्ञ क्युरेटर",
+          "can": "पहिचान मिलाउने, अभिलेख प्रतिस्थापन गर्ने, डाटा निर्यात गर्ने, प्रमाणीकरण व्यवस्थापन गर्ने, समीक्षक भूमिका दिने।",
+          "cannot": "आफैंले खोलेको मर्ज अनुरोध स्वीकृत गर्ने।"
+        }
+      },
+      "assignment": "<term>भूमिका प्रदान</term> — भूमिकाहरू अर्को प्रयोगकर्ताले दिन्छन् र दिने खाता सहित अभिलेख हुन्छ, त्यसैले समीक्षक अधिकार आफैं लेखापरीक्षणयोग्य हुन्छ।",
+      "separationOfDuties": "<term>कर्तव्य पृथकीकरण</term> — <code>CannotApproveOwnMergeRequest</code> ले मर्ज अनुरोध खोल्ने खातालाई त्यही अनुरोध स्वीकृत गर्नबाट रोक्छ, इन्टरफेसमा होइन वस्तु-अनुमति तहमा।",
+      "publicationGate": "<term>प्रकाशन नाका</term> — <code>accepted</code>, <code>merged</code> र <code>published</code> अवस्थाका पङ्क्तिहरू मात्र सार्वजनिक ग्राफमा पुग्छन्। अज्ञात अवस्था स्वतः रोकिन्छ।",
+      "labelGate": "<term>नाम नाका</term> — वास्तविक नाम नभएको पङ्क्ति स्वीकृत भए पनि रोकिन्छ, ताकि गल्तीले थिचिएको अक्षर ग्राफको नोड वा एटलसको पिन नबनोस्।",
+      "identityLock": "<term>पहिचान लक</term> — लक गरिएको समूहमा वा अभिलेखित विवादमाथि मर्ज गर्न विशेषज्ञ क्युरेटर आवश्यक हुन्छ।",
+      "selectivityCaveat": "समीक्षकको छनोटक्षमता अझै मापन गरिएको छैन: हालको कोर्पसमा स्वीकृति दर यो नमुना आकारमा अर्थपूर्ण मापन होइन, र समीक्षकबीचको सहमति गणना गरिएको छैन। यस डिप्लोइमेन्टको स्वीकृति दरलाई समीक्षा कठोरताको प्रमाणका रूपमा उद्धृत नगर्नुहोस्।"
+    },
+    "fair": {
+      "heading": "FAIR + CARE",
+      "findable": "<term>खोज्न सकिने</term> — cair-nepal.org स्रोत IRI; VoID/DCAT डाटासेट विवरण; कोर्पस फिंगरप्रिन्ट (<code>manage.py corpus_fingerprint</code>)।",
+      "accessible": "<term>पहुँचयोग्य</term> — HTTPS डिरेफरेन्स र CARE-सचेत पढ्ने-मात्र SPARQL एन्डपोइन्ट (<code>/sparql/</code>)।",
+      "interoperable": "<term>अन्तरसञ्चालनीय</term> — CIDOC-CRM, CRMinf, LinkML रजिस्ट्री, CRM ब्रिज, SHACL आकार, SKOS शब्दावली।",
+      "reusable": "<term>पुनःप्रयोगयोग्य</term> — तलको इजाजतपत्र तालिका; SHA-256 सहितको स्थिर L0 डम्प; idempotent L1 ETL; आयात प्रतिवेदनमा अन्टोलोजी पिन।",
+      "care": "<term>CARE</term> — स्रोतहरूमा <code>access_tier</code> र TK लेबल; संवेदनशील तहहरू SPARQL प्रोक्सीले छान्छ, इन्टरफेसले लुकाउने मात्र होइन। सामुदायिक सहमति प्रशासन अझै स्थापित छैन — सीमाहरू हेर्नुहोस्।",
+      "checklist": "पूर्ण मेसिन-पठनीय जाँचसूची: <code>documentation/research/NATURE_KG_RIGOR.md</code>; नैतिकता र सहमति अवस्था: <code>documentation/research/ETHICS_AND_CONSENT.md</code>।"
+    },
+    "licenses": {
+      "heading": "इजाजतपत्र तालिका",
+      "layer": "तह",
+      "license": "इजाजतपत्र",
+      "note": "टिप्पणी",
+      "layers": {
+        "software": {
+          "name": "सफ्टवेयर",
+          "note": "प्लेटफर्मको स्रोत कोड (CITATION.cff / LICENSE)।"
+        },
+        "curatedOverlay": {
+          "name": "क्युरेट गरिएको तह (graph/public)",
+          "note": "समीक्षा-नियन्त्रित दाबीहरू; CARE तहले केही पङ्क्ति सार्वजनिक SPARQL बाट रोक्न सक्छ।"
+        },
+        "openstreetmap": {
+          "name": "OpenStreetMap उपसमूह (L0/L1)",
+          "note": "© OSM योगदानकर्ता — डाटाबेस उपसमूहमा श्रेय र समान-साझेदारी।"
+        },
+        "wikidata": {
+          "name": "Wikidata उपसमूह (L0/L1)",
+          "note": "तथ्यपरक कथनहरू; मिडिया र साइटलिंकका सर्त फरक हुन सक्छन्।"
+        },
+        "unesco": {
+          "name": "UNESCO WHC उपसमूह",
+          "note": "CC BY मानिँदैन; प्रत्येक स्रोत पृष्ठमा प्रमाणित गर्नुहोस्।"
+        },
+        "intangible": {
+          "name": "CAIR क्युरेट गरिएको अमूर्त सम्पदा",
+          "note": "जीवित परम्परा — नियन्त्रण गर्ने सामुदायिक अधिकार (TK लेबल लागू भएमा)।"
+        }
+      }
+    },
+    "model": {
+      "heading": "अन्टोलोजी र ग्राफ नमुना",
+      "schema": "स्किमा: <code>ontology/HeritageGraph.yaml</code> बाट उत्पन्न LinkML रजिस्ट्री (CIDOC-CRM ब्रिज, SHACL आकार, SKOS शब्दावली)।",
+      "namedGraph": "प्रकाशित उदाहरणहरू <code>{graph}</code> नामाङ्कित ग्राफमा रहन्छन्।",
+      "museumView": "संग्रहालय प्रत्यक्ष दृश्य: <code>GET /api/v1/cidoc/kg/graph/?scope=reviewed</code> मार्फत SPARQL प्रक्षेपण — नोडहरू <code>rdf:type</code> ले टाइप गरिएका, किनाराहरू वास्तविक ट्रिपल हुन्, क्लाइन्ट-साइड अनुमान होइन।",
+      "lux": "Yale LUX को बल्क आयात <code>imported/lux</code> मै रहन्छ; <code>skos:exactMatch</code> ले जोडिएका इकाईहरू मात्र संग्रहालयमा देखिन्छन्। यो लिंकसेट हो, सार्वजनिक खण्डमा मर्ज होइन।",
+      "twoLayer": "ठूला अनुसन्धान डम्प (DANAM अनुरूप N-Quads) मा दुई-तह नीति लागू हुन्छ: उद्धरण र SPARQL का लागि स्थिर L0 नामाङ्कित ग्राफ, र <code>graph/public</code> मा क्युरेट गरिएको L1 सामग्रीकरण। हेर्नुहोस् <code>documentation/research/DANAM_CORPUS_INTEGRATION_REPORT.md</code>।"
+    },
+    "corpusPin": {
+      "heading": "DANAM कोर्पस पिन",
+      "dump": "डम्प",
+      "sha": "SHA-256",
+      "l0": "L0 लोड",
+      "l0Value": "<code>manage.py rdf_load_imported_nq</code> (सार्वजनिक ग्राफमा कहिल्यै लेख्दैन)",
+      "l1": "L1 ETL",
+      "l1Value": "<code>manage.py import_danam_nq</code> (बाह्य IRI अनुसार idempotent)",
+      "competency": "दक्षता SPARQL"
+    },
+    "pipeline": {
+      "heading": "प्रकाशन प्रक्रिया",
+      "save": "योगदानहरू Django मा भण्डारण हुन्छन् — सांस्कृतिक इकाई, CIDOC मेटाडाटा, र सम्बन्ध दाबीहरू।",
+      "review": "माथि वर्णन गरिएझैं योग्य भूमिकाद्वारा समीक्षा; अन्तिम स्वीकृति अवस्थाहरू मात्र प्रकाशन नाका पार गर्छन्।",
+      "project": "<code>kg_publish</code> / <code>rdf_rebuild</code> ले ट्रिपलहरू Oxigraph मा प्रक्षेपण गर्छन्; उद्गम खण्डले कर्ता र स्रोत अभिलेख गर्छ।",
+      "integrity": "अखण्डता नाका: <code>kg_rigor_audit</code> ले नेमस्पेस, जडान, प्रदूषण, L0 पृथकीकरण र उद्गम कभरेज जाँच्छ। रिलिजका लागि <code>--strict</code> प्रयोग गर्नुहोस्।",
+      "evaluate": "मूल्याङ्कन: विशेषज्ञ स्वर्ण मानकसँग <code>kg_evaluate</code>। स्वर्ण सेट सानो वा अनुपस्थित हुँदा रन आफैंलाई <code>reportable: false</code> चिन्ह लगाउँछ, र ती अङ्क उद्धृत गर्नुहुँदैन।"
+    },
+    "limitations": {
+      "heading": "सीमाहरू",
+      "corpusSize": "कोर्पस समुदायद्वारा क्युरेट गरिएको र बढ्दै गएको छ — यो पूर्ण राष्ट्रिय सूची होइन।",
+      "temporal": "धेरै घटना नोडमा समयगत कभरेज (EDTF) अपूर्ण छ।",
+      "reconciliation": "DANAM <code>sameAs</code> बाहेकको बाह्य पहिचायक मिलान (Wikidata, Getty) जारी छ।",
+      "demoCorpus": "The museum demo corpus is illustrative only; cite the live graph, with each record's own source, for research.",
+      "doi": "अझैसम्म Zenodo DOI बनाइएको छैन। बीचमा माथिको रिपोजिटरी र कोर्पस SHA-256 उद्धृत गर्नुहोस्।",
+      "shacl": "लेख्दा SHACL प्रमाणीकरण ऐच्छिक छ (<code>RDF_SHACL_VALIDATE_ON_WRITE</code>); आकारहरू उत्पन्न गरिएका छन् र अफलाइन अनुरूपता प्रतिवेदनका लागि उपलब्ध छन्।",
+      "evaluation": "अझैसम्म उद्धृत गर्न मिल्ने precision/recall मूल्याङ्कन छैन: स्वर्ण मानक तयार गरिएको छैन। हाल उत्पन्न हुने कुनै पनि मूल्याङ्कन अङ्क 'उद्धृत नगर्ने' भनी चिन्ह लगाइन्छ।",
+      "consent": "औपचारिक सामुदायिक सहमति प्रक्रिया र संस्थागत नैतिकता समीक्षा पूरा भएको छैन। त्यो काम नसकिँदासम्म सांस्कृतिक रूपमा संवेदनशील वर्गहरू सार्वजनिक क्वेरी परिणामबाट रोकिएका छन्।",
+      "authorityImport": "Most published records were imported from Wikidata (CC0) by an automated pipeline and accepted by the importer, not by a reviewer. Each cites its Wikidata item, revision and retrieval date, the museum marks it as not yet reviewed, and Wikidata statements with no matching HeritageGraph predicate were skipped rather than mapped onto the nearest one."
+    },
+    "lux": {
+      "heading": "LUX श्रेय",
+      "body": "Yale University Art Gallery को LUX डाटा यसका सर्तअनुसार जोडिएको बाह्य प्राधिकरणका रूपमा प्रयोग गरिएको छ। हेरिटेजग्राफले <code>imported/lux</code> मा स्टब राख्छ र क्युरेट गरिएका इकाईलाई <code>skos:exactMatch</code> ले जोड्छ; Yale का IRI संग्रहालय दृश्यमा छुट्टै डम्पका रूपमा प्रस्तुत गरिँदैनन्।"
+    },
+    "cta": {
+      "museum": "सम्पदा संग्रहालय खोल्नुहोस् (प्रत्यक्ष)",
+      "about": "हेरिटेजग्राफ बारेमा"
+    }
+  },
+  "graphview": {
+    "title": "ज्ञान ग्राफ",
+    "tabs": {
+      "schema": "स्किमा",
+      "heritage": "सम्पदा"
+    },
+    "subtitle": {
+      "instance": "सम्पदा अभिलेखहरू कसरी जोडिन्छन् अन्वेषण गर्नुहोस्।",
+      "instanceCounts": "{entities} इकाई · {links} जडान।",
+      "loading": "लोड हुँदै…",
+      "clickHint": "निरीक्षण गर्न नोड छान्नुहोस्।",
+      "ontology": "हेरिटेजग्राफ अन्टोलोजीको स्किमा — {classes} वर्ग र {properties} गुण, LinkML स्रोतबाट उत्पन्न।"
+    },
+    "toolbar": {
+      "searchClasses": "वर्ग खोज्नुहोस्…",
+      "searchEntities": "इकाई खोज्नुहोस्…",
+      "searchClassesLabel": "अन्टोलोजी वर्गहरू खोज्नुहोस्",
+      "searchEntitiesLabel": "सम्पदा इकाईहरू खोज्नुहोस्",
+      "zoomIn": "जुम इन",
+      "zoomOut": "जुम आउट",
+      "fitAll": "सबै अटाउनुहोस्",
+      "exportPng": "उद्गम फुटर सहित छवि निर्यात",
+      "exportJson": "ग्राफ डाटा JSON मा निर्यात",
+      "showForks": "फोर्कहरू देखाउनुहोस्",
+      "forksShown": "फोर्कहरू देखिएका"
+    },
+    "layouts": {
+      "natural": {
+        "label": "प्राकृतिक",
+        "hint": "बल-निर्देशित समूहहरू"
+      },
+      "spacious": {
+        "label": "फराकिलो",
+        "hint": "थप खुला ठाउँ"
+      },
+      "radial": {
+        "label": "त्रिज्यात्मक",
+        "hint": "केन्द्रमा मुख्य नोडहरू"
+      },
+      "tree": {
+        "label": "रूख",
+        "hint": "माथिबाट तलको संरचना"
+      }
+    },
+    "filters": {
+      "groupLabel": "वर्ग फिल्टरहरू"
+    },
+    "loading": {
+      "instance": "सम्पदा डाटा ल्याउँदै…",
+      "ontology": "ग्राफ तयार गर्दै…"
+    },
+    "empty": {
+      "title": "अझै कुनै सम्पदा अभिलेख छैन",
+      "body": "एउटा अभिलेख योगदान गरेर रिफ्रेस गर्नुहोस् — कोर्पस बढ्दै जाँदा ग्राफ भरिन्छ।",
+      "contribute": "योगदान गर्नुहोस्"
+    },
+    "detail": {
+      "selectNode": "नोड छान्नुहोस्",
+      "hintInstance": "कुनै इकाई छानेर त्यसको विवरण पढ्नुहोस् र जडानहरू पछ्याउनुहोस्।",
+      "hintOntology": "वर्ग छानेर संरचना, म्यापिङ र गुणहरू हेर्नुहोस्।",
+      "openRecord": "पूरा अभिलेख खोल्नुहोस्"
+    },
+    "a11y": {
+      "listSummary": "सबै {count} नोडहरू सूचीमा हेर्नुहोस् (किबोर्डबाट पहुँचयोग्य)"
+    },
+    "common": {
+      "retry": "पुनः प्रयास",
+      "close": "बन्द गर्नुहोस्"
+    }
+  },
+  "progression": {
+    "title": "योगदान अभिलेख",
+    "intro": "तपाईंले अभिलेखालयमा के योगदान गर्नुभयो, र योगदानको अङ्क कसरी गणना हुन्छ। अङ्क निरन्तर सहभागिताको मान्यता हो — यो विद्वत्तापूर्ण गुणस्तरको मापन होइन।",
+    "loadFailed": "योगदान डाटा लोड गर्न सकिएन",
+    "retry": "पुनः प्रयास",
+    "points": "अङ्क",
+    "record": {
+      "heading": "तपाईंको अभिलेख",
+      "signInTitle": "आफ्नो अभिलेख हेर्न साइन इन गर्नुहोस्",
+      "signInBody": "तपाईंको योगदान गणना र अङ्क तपाईंको खातामा मात्र निजी हुन्छ।",
+      "signIn": "साइन इन",
+      "empty": "अझै कुनै योगदान डाटा छैन। एउटा अभिलेख पेस गर्नुहोस्, यहाँ देखिनेछ।",
+      "submitted": "पेस गरिएका",
+      "submittedHint": "तपाईंले सिर्जना गरेका सांस्कृतिक इकाईहरू, ड्राफ्ट बाहेक।",
+      "accepted": "स्वीकृत",
+      "acceptedHint": "समीक्षापछि स्वीकृत वा मर्ज भएका पेसकसहरू।",
+      "revisions": "संशोधनहरू",
+      "revisionsHint": "अवस्थित अभिलेखहरूमा तपाईंले गरेका सम्पादनहरू।",
+      "reviews": "समीक्षाहरू",
+      "reviewsHint": "तपाईंले समीक्षा गर्नुभएका अरूका योगदानहरू।",
+      "byCategory": "योगदान वर्ग अनुसार",
+      "byCategoryHint": "प्रत्येक वर्गमा अङ्क, त्यस वर्गको अर्को सीमा विरुद्ध।"
+    },
+    "tracks": {
+      "curation": {
+        "name": "क्युरेसन",
+        "desc": "सम्पदा अभिलेख पेस गर्ने र वर्गीकरण गर्ने।"
+      },
+      "annotation": {
+        "name": "टिप्पणी",
+        "desc": "अवस्थित अभिलेखमा उद्गम, सन्दर्भ र विद्वत् टिप्पणी थप्ने।"
+      },
+      "verification": {
+        "name": "प्रमाणीकरण",
+        "desc": "पेसकसहरू समीक्षा गर्ने र स्रोतसँग मिलाएर जाँच्ने।"
+      },
+      "exhibition": {
+        "name": "प्रदर्शनी",
+        "desc": "अभिलेखहरूलाई सार्वजनिक सङ्ग्रहमा क्युरेट गर्ने।"
+      }
+    },
+    "tiers": {
+      "apprentice": "प्रशिक्षार्थी",
+      "scholar": "विद्वान",
+      "curator": "क्युरेटर",
+      "archivist": "अभिलेखपाल",
+      "grandkeeper": "महासंरक्षक"
+    },
+    "medals": {
+      "gold": "स्वर्ण",
+      "silver": "रजत",
+      "bronze": "कांस्य"
+    },
+    "scoring": {
+      "heading": "अङ्क कसरी गणना हुन्छ",
+      "formulaTitle": "अङ्क सूत्र",
+      "formulaLead": "प्रत्येक योगदानले आफ्नो प्रकार अनुसार आधार अङ्क पाउँछ। छुट अवधिभन्दा पुराना योगदान घातीय रूपमा घट्छन्, त्यसैले अङ्कले एकपटकको बढीभन्दा निरन्तर सहभागिता झल्काउँछ।",
+      "terms": {
+        "t": {
+          "symbol": "t",
+          "meaning": "योगदान सिर्जना भएदेखिका दिनहरू।"
+        },
+        "lambda": {
+          "symbol": "λ = 0.004",
+          "meaning": "क्षय स्थिरांक। क्षय छुट अवधिपछि मात्र लागू हुन्छ।"
+        },
+        "grace": {
+          "symbol": "१८० दिन",
+          "meaning": "छुट अवधि। यसभन्दा नयाँ योगदानले पूरा आधार अङ्क राख्छन्।"
+        }
+      },
+      "tiersTitle": "तह सीमाहरू",
+      "tierCol": "तह",
+      "thresholdCol": "कुल अङ्क",
+      "medalsTitle": "पदकहरू",
+      "medalBand": "{medal} — हालको अङ्क अनुसार दर्तामा शीर्ष {percentile}% योगदानकर्तालाई प्रदान गरिन्छ।",
+      "caveat": "पदक र तह स्थान तथा कुल अङ्कबाट मात्र निस्कन्छन्। तिनले सहभागिता अभिलेख गर्छन्, कुनै योगदानको शुद्धता वा विद्वत् मूल्य होइन — त्यसका लागि समीक्षा प्रक्रिया छ। तह वा पदकलाई गुणस्तरको सङ्केतका रूपमा उद्धृत नगर्नुहोस्।",
+      "methodsCta": "विधि र डाटा"
+    },
+    "register": {
+      "heading": "समुदाय दर्ता",
+      "title": "शीर्ष ५० योगदानकर्ता",
+      "description": "क्षय लागू गरिएको हालको अङ्क अनुसार क्रमबद्ध।",
+      "empty": "अझै कुनै योगदानकर्ता छैनन्।",
+      "rankCol": "#",
+      "contributorCol": "योगदानकर्ता",
+      "institutionCol": "संस्था",
+      "pointsCol": "अङ्क",
+      "footnote": "दर्ताले शीर्ष ५० योगदानकर्ता सूचीबद्ध गर्छ र बढीमा हरेक ५ मिनेटमा पुनर्गणना हुन्छ। श्रेणीले सहभागिताको परिमाण र नवीनता झल्काउँछ, योगदानको गुणस्तर होइन।"
+    }
+  },
+  "leaderboard": {
+    "scoring": {
+      "title": "यो श्रेणी कसरी गणना हुन्छ",
+      "lead": "जीवनकालको योगदान परिमाण — उमेर जेसुकै भए पनि प्रत्येक योगदान पूरा भारमा गणना हुन्छ। यो",
+      "progressionLink": "तपाईंको योगदान अभिलेख",
+      "leadSuffix": "मा देखिने हालको अङ्कभन्दा फरक मापन हो, जहाँ समय क्षय लागू हुन्छ। दुवै श्रेणी फरक हुनेछन्।"
+    },
+    "columns": {
+      "contributor": "योगदानकर्ता",
+      "institution": "संस्था",
+      "breakdown": "विवरण",
+      "score": "अङ्क"
+    },
+    "allInstitutions": "सबै संस्थाहरू"
+  },
+  "knowledgeList": {
+    "statusNote": "प्रत्येक पङ्क्तिले आफ्नो समीक्षा अवस्था देखाउँछ। स्वीकृत र मर्ज भएका अभिलेख मात्र सार्वजनिक ग्राफमा प्रकाशित हुन्छन्; विचाराधीन र अस्वीकृत पङ्क्तिहरू पारदर्शिताका लागि यहाँ देखिन्छन् तर उद्धरणयोग्य डाटासेटको भाग होइनन्।",
+    "methodsCta": "विधि र डाटा",
+    "domains": {
+      "entity": {
+        "title": "सांस्कृतिक इकाईहरू",
+        "definition": "कुनै पनि दस्तावेजीकृत सांस्कृतिक सम्पदा वस्तु — वस्तु, स्थान, अभ्यास वा अभिलेख — CIDOC-CRM इकाईका रूपमा नमुनाकृत। यो रजिस्ट्रीको सबैभन्दा व्यापक वर्ग हो; तलका विशिष्ट वर्गहरू यसकै उपसमूह हुन्।"
+      },
+      "person": {
+        "title": "ऐतिहासिक व्यक्तिहरू",
+        "definition": "सम्पदा अभिलेखमा दर्ता व्यक्तिहरू: शासक, कालिगड, दाता, पुजारी र इतिहासकार। CIDOC-CRM E21 Person मा आधारित।"
+      },
+      "location": {
+        "title": "सम्पदा स्थानहरू",
+        "definition": "सम्पदा महत्त्व भएका स्थानहरू, थाहा भएसम्म निर्देशाङ्क सहित। निर्देशाङ्कको उद्गम प्रत्येक अभिलेखमा उल्लेख गरिन्छ।"
+      },
+      "event": {
+        "title": "सांस्कृतिक घटनाहरू",
+        "definition": "मिति तोक्न सकिने घटनाहरू — निर्माण, प्रतिष्ठा, विनाश, जीर्णोद्धार — जसले इकाईलाई काल र स्थानसँग जोड्छन्।"
+      },
+      "period": {
+        "title": "ऐतिहासिक कालहरू",
+        "definition": "इकाई र घटनाको मिति तोक्न प्रयोग हुने नामाङ्कित समयावधि, जस्तै वंशीय वा वास्तुकलात्मक काल।"
+      },
+      "tradition": {
+        "title": "परम्परा र अभ्यासहरू",
+        "definition": "जीवित वा अभिलेखित अमूर्त सम्पदा: अनुष्ठान, शिल्प, प्रस्तुति र मौखिक अभ्यास।"
+      },
+      "source": {
+        "title": "दस्तावेजी स्रोतहरू",
+        "definition": "ग्राफका दाबीका प्रमाणस्वरूप उद्धृत प्रकाशन, अभिलेखालय, पाण्डुलिपि, सर्वेक्षण र अन्तर्वार्ता।"
+      },
+      "deity": {
+        "title": "देवताहरू",
+        "definition": "दस्तावेजीकृत स्थलहरूमा पूजित दिव्य स्वरूपहरू, तिनलाई आह्वान गर्ने इकाई र घटनासँग जोडिएका।"
+      },
+      "guthi": {
+        "title": "गुठी",
+        "definition": "सम्पदा स्थलको संरक्षण र अनुष्ठानिक जीवनको जिम्मेवारी बोक्ने नेवार सामुदायिक ट्रस्टहरू।"
+      },
+      "structure": {
+        "title": "वास्तुकलात्मक संरचनाहरू",
+        "definition": "निर्मित सम्पदा — मन्दिर, चोक, जलप्रणाली र स्मारक — तिनको निर्माण र अवस्था इतिहास सहित।"
+      },
+      "monument": {
+        "title": "स्मारकहरू",
+        "definition": "स्मारकका रूपमा तोकिएका वा अभिलेखित संरचनाहरू, थाहा भएसम्म संरक्षण अवस्था सहित।"
+      },
+      "ritual": {
+        "title": "अनुष्ठान घटनाहरू",
+        "definition": "विशेष स्थान, देवता र समुदायसँग जोडिएका आवर्ती धार्मिक अनुष्ठानहरू।"
+      },
+      "festival": {
+        "title": "चाडपर्वहरू",
+        "definition": "स्थान, सहभागी र सम्बन्धित अभ्यास सहित दस्तावेजीकृत पात्रोका चाडपर्वहरू।"
+      },
+      "iconography": {
+        "title": "प्रतिमाशास्त्रीय वस्तुहरू",
+        "definition": "प्रतिमाशास्त्रीय विषयवस्तु र श्रेय अनुसार वर्णित चित्र तथा मूर्तिकला।"
+      }
+    }
+  },
+  "dataTable": {
+    "search": "खोज्नुहोस्…",
+    "searchLabel": "अभिलेखहरू खोज्नुहोस्",
+    "filter": "फिल्टर…",
+    "columns": "स्तम्भहरू",
+    "selectAll": "सबै पङ्क्ति छान्नुहोस्",
+    "selectRow": "पङ्क्ति छान्नुहोस्",
+    "dragToReorder": "क्रम मिलाउन तान्नुहोस्",
+    "noResults": "यी फिल्टरसँग मिल्ने कुनै अभिलेख छैन।",
+    "rowsSelected": "{total} मध्ये {selected} पङ्क्ति छानिएको।",
+    "export": {
+      "label": "निर्यात",
+      "csv": "CSV डाउनलोड",
+      "json": "JSON डाउनलोड"
+    },
+    "pagination": {
+      "rowsPerPage": "प्रति पृष्ठ पङ्क्ति",
+      "first": "पहिलो पृष्ठमा जानुहोस्",
+      "previous": "अघिल्लो पृष्ठमा जानुहोस्",
+      "next": "अर्को पृष्ठमा जानुहोस्",
+      "last": "अन्तिम पृष्ठमा जानुहोस्"
+    }
+  },
+  "contributeHub": {
+    "addNew": "नयाँ थप्नुहोस्",
+    "browseByKind": "प्रकार अनुसार ब्राउज",
+    "popularStarts": "लोकप्रिय सुरुवात बिन्दुहरू",
+    "searchExisting": "अवस्थित अभिलेख खोज्नुहोस्",
+    "updateExisting": "पहिले नै भएको कुरा अद्यावधिक गर्नुहोस्",
+    "whatAreYouAdding": "तपाईं के थप्दै हुनुहुन्छ?",
+    "clearSearch": "खोज खाली गर्नुहोस्",
+    "scrollLeft": "बायाँ स्क्रोल",
+    "scrollRight": "दायाँ स्क्रोल",
+    "scrollHint": "थप प्रकार हेर्न स्क्रोल गर्नुहोस्",
+    "swipeHint": "स्वाइप गर्नुहोस् वा तीर प्रयोग गर्नुहोस्",
+    "searchTypesPlaceholder": "प्रकार खोज्नुहोस्… जस्तै मन्दिर, चाड, व्यक्ति",
+    "journeys": {
+      "places": {
+        "label": "स्थान र वस्तुहरू",
+        "hint": "मन्दिर, कला, देवता, स्थानहरू"
+      },
+      "people": {
+        "label": "व्यक्ति र समूहहरू",
+        "hint": "व्यक्ति, गुठी, समुदायहरू"
+      },
+      "events": {
+        "label": "घटना र अनुष्ठानहरू",
+        "hint": "चाडपर्व, अनुष्ठान, इतिहास"
+      },
+      "sources": {
+        "label": "स्रोतहरू",
+        "hint": "पुस्तक, अभिलेख, दाबीहरू"
+      }
+    },
+    "quick": {
+      "connect": "दुई अभिलेख जोड्नुहोस्",
+      "duplicate": "एउटै कुरा दुई पटक?",
+      "mySubmissions": "मेरा पेसकसहरू",
+      "project": "परियोजनाका रूपमा काम गर्नुहोस्"
+    }
+  },
+  "myContributions": {
+    "title": "मेरा योगदानहरू",
+    "startContributing": "योगदान सुरु गर्नुहोस्",
+    "loadFailed": "तपाईंका योगदानहरू लोड गर्न सकिएन।",
+    "hideHistory": "इतिहास लुकाउनुहोस्",
+    "untitled": "शीर्षकविहीन",
+    "status": {
+      "draft": {
+        "label": "ड्राफ्ट",
+        "hint": "सुरक्षित छ तर समीक्षाका लागि पेस गरिएको छैन।"
+      },
+      "pendingReview": {
+        "label": "समीक्षा विचाराधीन",
+        "hint": "पङ्क्तिमा छ — समीक्षकले चाँडै हेर्नेछन्।"
+      },
+      "pendingRevision": {
+        "label": "परिवर्तन अनुरोध",
+        "hint": "समीक्षकले परिवर्तन माग्नुभयो। नोट पढेर संशोधन गरी पुनः पेस गर्नुहोस्।"
+      },
+      "accepted": {
+        "label": "प्रकाशित",
+        "hint": "स्वीकृत र सार्वजनिक ज्ञान ग्राफमा प्रत्यक्ष।"
+      },
+      "merged": {
+        "label": "प्रकाशित",
+        "hint": "मर्ज भई सार्वजनिक ज्ञान ग्राफमा प्रत्यक्ष।"
+      },
+      "rejected": {
+        "label": "स्वीकृत भएन",
+        "hint": "समीक्षकले अस्वीकार गर्नुभयो। कारणका लागि नोट हेर्नुहोस्।"
+      },
+      "superseded": {
+        "label": "प्रतिस्थापित",
+        "hint": "नयाँ संस्करणले प्रतिस्थापन गरेको।"
+      }
+    },
+    "activity": {
+      "submitted": "समीक्षाका लागि पेस",
+      "accepted": "स्वीकृत",
+      "rejected": "अस्वीकृत",
+      "changesRequested": "परिवर्तन अनुरोध",
+      "revised": "संशोधित",
+      "commented": "टिप्पणी",
+      "escalated": "विशेषज्ञसमक्ष पठाइएको",
+      "flagged": "समीक्षाका लागि चिन्हित",
+      "conflictResolved": "विवाद समाधान"
+    }
+  },
+  "unescoEntry": {
+    "eyebrow": "CAIR-Nepal",
+    "listSummary": "नेपालका चारवटा सम्पदा युनेस्कोको विश्व सम्पदा सूचीमा सूचीकृत छन् — दुई सांस्कृतिक र दुई प्राकृतिक।",
+    "culturalHeading": "विश्व सम्पदा सूचीमा रहेको अर्को",
+    "inscribedYear": "सन् {year} मा सूचीकृत",
+    "criteriaLabel": "मापदण्ड",
+    "criteriaValue": "(iii), (iv), (vi)",
+    "typeCultural": "सांस्कृतिक",
+    "typeNatural": "प्राकृतिक",
+    "serialNote": "सात स्मारक क्षेत्र मिलेर बनेको एउटै शृंखलाबद्ध सम्पदा।",
+    "zonesHeading": "सातवटा स्मारक क्षेत्र",
+    "zonesCaution": "यी एउटै सम्पदाका सात स्मारक क्षेत्र हुन् — सातवटा छुट्टाछुट्टै विश्व सम्पदा स्थल होइनन्।",
+    "boundaryConfirmed": "क्षेत्रको सिमाना सन् २००६ मा विश्व सम्पदा समितिद्वारा पुष्टि गरिएको।",
+    "dangerListing": "सन् २००३ मा संकटग्रस्त विश्व सम्पदा सूचीमा राखिएको; सन् २००७ मा हटाइएको।",
+    "scopeHeading": "यस पृष्ठले नसमेट्ने कुरा",
+    "scopeBody": "यस पृष्ठले नेपालका दुई सांस्कृतिक सम्पदा समेट्छ। सगरमाथा राष्ट्रिय निकुञ्ज (१९७९) र चितवन राष्ट्रिय निकुञ्ज (१९८४) प्राकृतिक सम्पदाका रूपमा सूचीकृत छन्, र सांस्कृतिक सम्पदामा केन्द्रित यस अभिलेखको दायराभन्दा बाहिर पर्छन्।",
+    "alsoInscribed": "अन्य सूचीकृत सम्पदा",
+    "naturalPropertyLine": "{name} — सन् {year} मा सूचीकृत, प्राकृतिक",
+    "graphBoundaryHeading": "युनेस्कोले सूचीकृत गरेको, र हामी राख्ने अरू",
+    "graphBoundaryBody": "विश्व सम्पदा सूची हेरिटेजग्राफमा रहेको सामग्रीको सानो हिस्सा मात्र हो। गुठीको जग्गा, जात्राको पात्रो, कुमारीको जीवन, विभिन्न ठाउँमा भिन्न नामले पुजिने देवता — यसमध्ये धेरैजसो कुनै अन्तर्राष्ट्रिय सूचीमा पर्दैनन्, र यहाँ कतैले पनि पर्छन् भन्ने संकेत गर्दैन।",
+    "noPhotographRecorded": "यस विषयको तस्बिर अभिलेखमा छैन।",
+    "notRecorded": "अभिलेखमा छैन",
+    "photographOf": "{name} को तस्बिर",
+    "openInMuseum": "हेरिटेज म्युजियममा खोल्नुहोस्",
+    "openInAtlas": "एट्लसमा हेर्नुहोस्",
+    "browseKnowledge": "हामीसँग भएका सबै हेर्नुहोस्",
+    "exploreGraph": "सम्बन्धहरू हेर्नुहोस्",
+    "allZones": "सातै स्मारक क्षेत्र",
+    "provenanceNote": "तस्बिरहरू विकिमिडिया कमन्सबाट, सन् {date} मा प्राप्त। प्रत्येक तस्बिरसँग यसको इजाजतपत्र र सर्जकको नाम राखिएको छ।",
+    "factsSourceNote": "यस पृष्ठका सूचीकरण सम्बन्धी तथ्य युनेस्को विश्व सम्पदा सूचीबाट लिइएका हुन्। हरेक स्थानको विवरण समीक्षकले जाँचेका हेरिटेजग्राफ अभिलेखबाट आउँछ।",
+    "zones": {
+      "hanuman-dhoka": "हनुमानढोका दरबार क्षेत्र",
+      "patan-durbar-square": "पाटन दरबार क्षेत्र",
+      "bhaktapur-durbar-square": "भक्तपुर दरबार क्षेत्र",
+      "swayambhu": "स्वयम्भू",
+      "bauddhanath": "बौद्धनाथ",
+      "pashupati": "पशुपति",
+      "changu-narayan": "चाँगुनारायण"
+    },
+    "descriptors": {
+      "religiousEnsembleOldestStupa": "धार्मिक समूह। उपत्यकाको सबैभन्दा पुरानो बौद्ध स्तूप यसभित्र पर्छ।",
+      "religiousEnsembleLargestStupa": "धार्मिक समूह। नेपालको सबैभन्दा ठूलो स्तूप यसभित्र पर्छ।",
+      "hinduTemplePrecinct": "विस्तृत हिन्दू मन्दिर परिसर।",
+      "newarSettlementEarliestInscription": "परम्परागत नेवार बस्ती र हिन्दू मन्दिर परिसर, जहाँ उपत्यकाकै सबैभन्दा प्रारम्भिक अभिलेखमध्ये एक — पाँचौं शताब्दीको — रहेको छ।"
+    },
+    "properties": {
+      "kathmandu-valley": "काठमाडौं उपत्यका",
+      "lumbini": "लुम्बिनी, भगवान बुद्धको जन्मस्थल",
+      "sagarmatha-national-park": "सगरमाथा राष्ट्रिय निकुञ्ज",
+      "chitwan-national-park": "चितवन राष्ट्रिय निकुञ्ज"
+    },
+    "directionA": {
+      "title": "सात स्मारक क्षेत्र, एउटै सम्पदा",
+      "lede": "काठमाडौं उपत्यका सन् १९७९ मा एउटै शृंखलाबद्ध सम्पदाका रूपमा विश्व सम्पदा सूचीमा प्रवेश गर्‍यो। यी त्यसका सात क्षेत्र हुन्, एकसाथ पढिने।"
+    },
+    "directionB": {
+      "title": "विश्व सम्पदा सूचीमा नेपाल",
+      "lede": "चार सम्पदा। तीमध्ये दुई सांस्कृतिक। यो त्यही अभिलेख हो, र यसपछाडि रहेका कुरा।",
+      "registerHeading": "अभिलेख"
+    },
+    "statusMonumentZone": "विश्व सम्पदा सूचीमा रहेको काठमाडौं उपत्यकाको स्मारक क्षेत्र, सन् {year} मा सूचीकृत",
+    "statusProperty": "युनेस्को विश्व सम्पदा, सन् {year} मा सूचीकृत",
+    "statusMonumentZoneShort": "स्मारक क्षेत्र · काठमाडौं उपत्यका",
+    "statusPropertyShort": "विश्व सम्पदा",
+    "facts": {
+      "heading": "अभिलिखित तथ्यहरू",
+      "source": "स्रोत: विकिडाटा, {date} मा प्राप्त —",
+      "creditsHeading": "तस्बिर श्रेय",
+      "creditsRetrieved": "सबै तस्बिर विकिमिडिया कमन्सबाट, {date} मा प्राप्त।",
+      "labels": {
+        "worldHeritageId": "युनेस्को सन्दर्भ",
+        "instanceOf": "प्रकार",
+        "inception": "स्थापना",
+        "partOf": "यसको अंग",
+        "locatedIn": "अवस्थित",
+        "country": "देश",
+        "area": "क्षेत्रफल",
+        "architecturalStyle": "वास्तुकला शैली",
+        "architect": "वास्तुकार"
+      },
+      "descriptionHeading": "विवरण",
+      "descriptionSource": "विकिपिडियाबाट उद्धृत, {date} मा प्राप्त —",
+      "descriptionTrimmed": "विश्व सम्पदा सूचीकरणसम्बन्धी {count} वाक्य हटाइएको; माथिको युनेस्को सन्दर्भ हेर्नुहोस्।"
+    },
+    "zonesLede": "सात स्मारक क्षेत्र, सन् १९७९ मा एउटै विश्व सम्पदाका रूपमा सँगै सूचीकृत।",
+    "aboutTheProperty": "सम्पदाबारे",
+    "wordmark": "हेरिटेजग्राफ",
+    "heroLede": "नेपालका मन्दिर, जात्रा र त्यसको रेखदेख गर्ने मानिस — अभिलिखित, आपसमा जोडिएका, र स्रोतसम्म पछ्याउन सकिने।",
+    "introTitle": "मन्दिर केवल मन्दिर मात्र होइन",
+    "introBody": "यो पुस्तौंदेखि हेरचाह गर्दै आएको गुठीको जग्गामा उभिएको हुन्छ। चन्द्र पात्रोले तोकेको तिथिमा जात्राका लागि ब्युँझन्छ। भित्रको देवता अर्कै नाममा उपत्यकाको अर्को छेउको मन्दिरमा पनि पुजिन्छ।",
+    "introBody2": "हेरिटेजग्राफ यही सम्बन्धहरू लेखी राख्छ। हरेकमा त्यो कहाँबाट आयो र कसले जाँच्यो भन्ने उल्लेख हुन्छ, ताकि जो कोहीले पछ्याउन, प्रश्न गर्न वा त्यसमाथि थप्न सकून्।",
+    "introCta": "अभिलेख कसरी बनाइन्छ",
+    "constellationAlt": "काठमाडौं उपत्यकाका सात स्मारक क्षेत्र एकआपसमा जोडिएको चलायमान रेखाचित्र। यी सातै क्षेत्र तल लिंकका रूपमा सूचीबद्ध छन्।",
+    "constellationHint": "कर्सर तस्बिरमा घुमाउनुहोस्। यहाँका हरेक स्थानले आफ्नो पृष्ठ खोल्छ।",
+    "zonesHeadingPlain": "सात स्थान, एउटै विश्व सम्पदा",
+    "zonesPlainNote": "सन् १९७९ मा युनेस्कोले यी सातै स्थानलाई सँगै, एउटै विश्व सम्पदाका रूपमा विश्व सम्पदा सूचीमा राखेको थियो। प्रत्येक त्यसकै एक अंश हो — सात छुट्टाछुट्टै सम्पदा होइनन्।",
+    "nextTitle": "अब कता जाने",
+    "nextBrowse": {
+      "title": "अहिलेसम्म यहाँ के छ हेर्नुहोस्",
+      "desc": "कति अभिलिखित भइसक्यो, र त्यसमध्ये कति जाँचिसकिएको छ।",
+      "cta": "ड्यासबोर्ड खोल्नुहोस्"
+    },
+    "nextContribute": {
+      "title": "आफूलाई थाहा भएको थप्नुहोस्",
+      "desc": "कुनै जात्राको मिति, कुनै गुठी, कसैले नलेखेको कुनै देवस्थल। तपाईंले थपेकोमा तपाईंको नाम रहन्छ, र प्रकाशित हुनु अघि कसैले जाँच्छ।",
+      "cta": "योगदान सुरु गर्नुहोस्"
+    },
+    "wordmarkFirst": "हेरिटेज",
+    "wordmarkSecond": "ग्राफ",
+    "lumbiniLede": "नेपालका दुई सांस्कृतिक विश्व सम्पदामध्ये दोस्रो, दक्षिणको तराईमा, जहाँ बुद्धको जन्म भएको थियो।",
+    "recordedDetails": "अभिलिखित विवरण",
+    "how": {
+      "eyebrow": "यसले कसरी काम गर्छ",
+      "heading": "हरेक पटक, तीन चरण",
+      "steps": {
+        "record": {
+          "title": "कसैले अभिलेख गर्छ",
+          "desc": "कुनै जात्राको मिति, कुनै देवस्थल, जग्गा राख्ने गुठी।"
+        },
+        "check": {
+          "title": "कसैले जाँच्छ",
+          "desc": "समीक्षकले स्रोत पढ्छ र त्यसमा आफ्नो नाम राख्छ।"
+        },
+        "connect": {
+          "title": "यो ग्राफमा जोडिन्छ",
+          "desc": "सम्बन्धित सबैसँग जोडिएको, र पछ्याउन खुला।"
+        }
+      },
+      "cta": "अभिलेख कसरी बनाइन्छ"
+    },
+    "photoCreditLine": "तस्बिरहरू विकिमिडिया कमन्सबाट, प्रत्येक आफ्नै अनुमतिपत्र अन्तर्गत।",
+    "photoCreditLink": "श्रेय र अनुमतिपत्र",
+    "exploreDoor": {
+      "title": "सङ्ग्रह घुम्नुहोस्",
+      "desc": "अभिलेखमा रहेका हरेक स्थान, व्यक्ति र जात्रा, स्रोत र जाँच्ने व्यक्तिसहित।",
+      "cta": "हेरिटेज म्युजियम खोल्नुहोस्"
+    },
+    "heroPause": "रोक्नुहोस्",
+    "heroPlay": "चलाउनुहोस्"
+  },
+  "entityRecord": {
+    "descriptionHeading": "विवरण",
+    "factsHeading": "अभिलिखित तथ्य",
+    "descriptionSource": "विकिपिडियाबाट उद्धृत, {date} मा प्राप्त —",
+    "trimmed": "विश्व सम्पदा सूचीकरणसम्बन्धी {count} वाक्य हटाइएको",
+    "factsSource": "तथ्य विकिडाटाबाट —",
+    "labels": {
+      "worldHeritageId": "युनेस्को सन्दर्भ",
+      "instanceOf": "प्रकार",
+      "heritageDesignation": "मान्यता",
+      "inception": "स्थापना",
+      "startTime": "देखि",
+      "endTime": "सम्म",
+      "birth": "जन्म",
+      "death": "मृत्यु",
+      "occupation": "भूमिका",
+      "title": "पद",
+      "citizenship": "नागरिकता",
+      "religion": "धर्म",
+      "venerated": "पूजित",
+      "partOf": "यसको अंग",
+      "locatedIn": "अवस्थित",
+      "country": "देश",
+      "period": "कालखण्ड",
+      "area": "क्षेत्रफल",
+      "elevation": "उचाई",
+      "architecturalStyle": "शैली",
+      "architect": "वास्तुकार"
+    },
+    "typeGloss": {
+      "Place": "नाम गरेको स्थान — उपत्यका, जिल्ला वा क्षेत्र।",
+      "Temple": "देवता पुजिने भवन।",
+      "BuddhistMonument": "स्तूप, चैत्य वा गुम्बा।",
+      "ArchitecturalStructure": "निर्मित संरचना — दरबार, चोक वा ढोका।",
+      "Settlement": "सहर वा नगर।",
+      "Deity": "पुजिने देवी वा देवता।",
+      "Festival": "वर्षेनि दोहोरिने सार्वजनिक पर्व।",
+      "TimeSpan": "अभिलेख जोडिने समयको अवधि।",
+      "ReligiousTradition": "समुदायभित्र पुस्तान्तरण हुँदै आएको जीवित परम्परा।",
+      "SacredSite": "पवित्र मानिने स्थान — निर्मित वा प्राकृतिक।",
+      "Person": "बाँचेका व्यक्ति, जसको भूमिका यहाँ अभिलिखित छ।",
+      "Guthi": "जग्गा राख्ने र मन्दिर वा जात्राको हेरचाह गर्ने नेवार संस्था।",
+      "IconographicObject": "धार्मिक अर्थ बोकेको मूर्ति, कुँदाइ वा चित्र।",
+      "HistoricalPeriod": "नाम गरेको कालखण्ड, सामान्यतया कुनै वंश।",
+      "Source": "कुनै दाबी अडिने पुस्तक, अभिलेख वा कागजात।",
+      "HistoricalEvent": "मितिसँग जोडिएको कुनै घटना।",
+      "RitualEvent": "निश्चित स्थानमा गरिने अनुष्ठान।",
+      "CasteGroup": "परम्परामा अभिलिखित सामाजिक समूह।",
+      "LivingGoddessTenure": "एउटी बालिका कुमारी रहने अवधि।",
+      "SyncreticRelationship": "दुई परम्पराले एउटै देवता वा स्थान साझा गर्ने सम्बन्ध।",
+      "HumanMadeObject": "कतै राखिएको वा प्रदर्शन गरिएको निर्मित वस्तु।",
+      "Group": "मानिसहरूको संस्था वा समुदाय।",
+      "Set": "सँगै राखिएका अभिलेखहरूको समूह।"
+    }
+  },
+  "atlasMap": {
+    "title": "सम्पदा एटलस",
+    "lede": "नेपालका मन्दिर, पर्व र पवित्र स्थलहरू कहाँ छन्। नक्सा वा सूचीबाट कुनै ठाउँ छान्नुहोस्।",
+    "searchLabel": "ठाउँ खोज्नुहोस्",
+    "searchPlaceholder": "ठाउँ खोज्नुहोस्",
+    "clearSearch": "खोज हटाउनुहोस्",
+    "tour": "निर्देशित भ्रमण सुरु गर्नुहोस्",
+    "tourTitle": "निर्देशित भ्रमण",
+    "tourStop": "{n} मध्ये {k} औँ ठाउँ",
+    "tourPrev": "अघिल्लो ठाउँ",
+    "tourNext": "अर्को ठाउँ",
+    "tourEnd": "भ्रमण अन्त्य गर्नुहोस्",
+    "count": "{shown} ठाउँ देखाइएको · थप {unlocated} अभिलेखको स्थान अहिलेसम्म छैन",
+    "groupValley": "काठमाडौँ उपत्यका",
+    "groupElsewhere": "नेपालका अन्य ठाउँ",
+    "noMatches": "कुनै ठाउँ मिलेन।",
+    "reset": "खोज र काल हटाउनुहोस्",
+    "browsePlaces": "ठाउँहरू हेर्नुहोस्",
+    "extentLabel": "नक्साको दायरा",
+    "extentNepal": "पूरै नेपाल",
+    "extentValley": "काठमाडौँ उपत्यका",
+    "basemapLabel": "आधार नक्सा",
+    "basemapTerrain": "भू-बनोट",
+    "basemapStreets": "सडक",
+    "colorBy": "ठाउँको रङ",
+    "byKind": "प्रकारअनुसार",
+    "byPeriod": "कालअनुसार",
+    "mapAria": "{count} ठाउँसहित नेपालको नक्सा",
+    "clusterAria": "यहाँ {count} ठाउँ छन्। नजिकबाट हेर्नुहोस्",
+    "whenTitle": "कहिले",
+    "whenHint": "एउटा कालका ठाउँ मात्र देखाउनुहोस्",
+    "allPeriods": "सबै काल · {count} ठाउँ",
+    "periodPlaces": "{period} कालका {count} ठाउँ",
+    "eras": {
+      "early": "लिच्छवि अघि",
+      "licchavi": "लिच्छवि",
+      "transitional": "सङ्क्रमण काल",
+      "malla": "मल्ल",
+      "shah": "शाह",
+      "undated": "मिति नभएका"
+    },
+    "spanTo": "ई. {year} सम्म",
+    "spanFrom": "{year} देखि",
+    "noDate": "मिति छैन",
+    "factsTitle": "नक्साले के देखाउँछ",
+    "factValley": "{total} मध्ये {count} ठाउँ काठमाडौँ उपत्यकामा छन्",
+    "factOldest": "सबैभन्दा पुरानो मिति भएको: {name}, {year}",
+    "factHighest": "सबैभन्दा उच्च: {name}, करिब {metres} मि.",
+    "factLowest": "सबैभन्दा होचो: {name}, करिब {metres} मि.",
+    "factGap": "{name} भन्दा पश्चिममा अहिलेसम्म केही अभिलेखित छैन। त्यहाँको ठाउँ थाहा छ? थप्नुहोस्",
+    "location": "स्थान",
+    "altitude": "उचाइ",
+    "altitudeValue": "समुद्री सतहबाट करिब {metres} मि.",
+    "period": "काल",
+    "regionValley": "काठमाडौँ उपत्यका",
+    "regionNepal": "नेपाल",
+    "openInMuseum": "सङ्ग्रहालयमा खोल्नुहोस्",
+    "knowledgeRecord": "ज्ञान अभिलेख",
+    "showConnections": "यसका सम्बन्ध नक्सामा देखाउनुहोस्",
+    "atThisPlace": "यस ठाउँमा · {count}",
+    "connected": "सम्बन्धित · {count}",
+    "nearby": "१५ कि.मि. भित्र नजिकै · {count}",
+    "noConnections": "अहिलेसम्म कुनै सम्बन्ध अभिलेखित छैन।",
+    "noNearby": "१५ कि.मि. भित्र अर्को अभिलेखित ठाउँ छैन।",
+    "notOnMap": "नक्सामा छैन",
+    "away": "{distance} टाढा",
+    "sameSpot": "उही ठाउँ",
+    "noPhoto": "तस्बिर अभिलेखित छैन",
+    "photoAlt": "{name} को तस्बिर",
+    "empty": "यस सङ्ग्रहका कुनै पनि अभिलेखको स्थान अहिलेसम्म छैन।",
+    "attribution": "भू-बनोट: AWS Terrain Tiles (SRTM) · सीमा: Natural Earth",
+    "mapKey": "नक्साको सङ्केत",
+    "unlocatedNote": "{count, plural, one {# record here has no location yet} other {# records here have no location yet}}"
+  },
+  "stories": {
+    "indexEyebrow": "A museum experience, one story at a time",
+    "indexTitle": "Every tradition opens a world.",
+    "indexLead": "Step beyond the object. Meet the places, practices and connections that give it meaning. Each story is a walk through the knowledge graph, and every link names its source.",
+    "search": "कथा खोज्नुहोस्",
+    "all": "All",
+    "storyCount": "{count, plural, one {# story} other {# stories}}",
+    "stops": "{count, plural, one {# stop} other {# stops}}",
+    "readStory": "Read the story",
+    "loading": "Loading the knowledge graph…",
+    "error": "The knowledge graph could not be loaded.",
+    "empty": "No story matches this search.",
+    "allStories": "All stories",
+    "lead": "This story follows {label} through the knowledge graph. Each stop answers a question the last one raised. Watch the map fill in as you go.",
+    "mapSoFar": "The map so far",
+    "mapSoFarNe": "नक्सा",
+    "mapCount": "{records, plural, one {# record} other {# records}} · {links, plural, one {# link} other {# links}}",
+    "stop": "Stop {n}",
+    "alsoConnected": "Also connected",
+    "moreOnRecord": "{count} more on the record page",
+    "source": "Source",
+    "whereNext": "Where next?",
+    "whereNextTitle": "Every thread here is a story of its own.",
+    "readItsStory": "Read its story",
+    "openRecord": "Open the record",
+    "tooShort": "This record has too few links for a story yet.",
+    "notFound": "This record is not in the published graph.",
+    "yourPath": "Your path",
+    "everyRecord": "Every record has a story",
+    "readStoryOf": "Read the story of {label}",
+    "worldEyebrow": "The world around it",
+    "worldNe": "यसको संसार",
+    "threads": "{count, plural, one {# thread leads out from here.} other {# threads lead out from here.}}",
+    "pickOne": "Pick one to keep going.",
+    "goThere": "Go there",
+    "andMore": "and {count} more",
+    "sourcesEyebrow": "Sources",
+    "sourcesNe": "स्रोत",
+    "sourcesTitle": "Where this record comes from",
+    "imported": "Imported",
+    "reviewed": "Reviewed",
+    "curated": "Curated corpus",
+    "inReview": "In review",
+    "image": "Image",
+    "noSource": "No source is recorded for this record yet.",
+    "suggest": "Suggest a correction",
+    "noThreads": "No links are recorded for this record yet.",
+    "kind": {
+      "belief": "Belief",
+      "place": "Place",
+      "time": "Time",
+      "people": "Community",
+      "part": "Part of",
+      "tie": "Connection"
+    },
+    "kindNe": {
+      "belief": "आस्था",
+      "place": "स्थान",
+      "time": "",
+      "people": "समुदाय",
+      "part": "",
+      "tie": ""
+    }
+  }
+}

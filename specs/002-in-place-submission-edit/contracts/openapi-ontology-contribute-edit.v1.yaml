@@ -1,0 +1,145 @@
+# Contract sketch: CIDOC resource read + partial update (edit mode)
+# Pattern applies to all DefaultRouter-registered resources under /cidoc/
+# (persons, locations, events, …) with that model’s serializer fields.
+# Base URL: {API_ORIGIN}/cidoc/  (also under /api/v1/cidoc/ per root urlconf)
+openapi: 3.0.3
+info:
+  title: HeritageGraph CIDOC — contribute edit (representative: Person)
+  version: 1.0.0
+  description: |
+    GET retrieves the same JSON shape the knowledge view page uses to render details.
+    PATCH updates editable fields; exact writable fields follow each ModelSerializer.
+    After implementation (see plan research R-004), PATCH requires a valid Bearer session
+    and must pass object-level rules (e.g. contributor must match) — not anonymous.
+
+servers:
+  - url: /cidoc
+    description: In-repo default include path
+
+paths:
+  /persons/{id}/:
+    get:
+      summary: Load one person (pre-fill for edit; same as view)
+      operationId: getPerson
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Person record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      summary: Partially update a person (authenticated editor)
+      operationId: patchPerson
+      parameters:
+        - $ref: "#/components/parameters/ResourceId"
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersonPatch"
+        required: true
+      responses:
+        "200":
+          description: Updated person
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Person"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Google ID token as used by NextAuth session (Authorization Bearer)
+
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Primary key of the CIDOC row (integer Person.id serialized as string in practice)
+
+  schemas:
+    Person:
+      type: object
+      description: Exemplar; `fields = '__all__'` on the serializer — extra keys may appear.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+        aliases:
+          type: string
+        birth_date:
+          type: string
+        death_date:
+          type: string
+        occupation:
+          type: string
+        biography:
+          type: string
+        title:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        contributor:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        # CulturalEntityLinkMixin may add e.g. cultural_entity_id, entity_id — see live schema
+    PersonPatch:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string }
+        aliases: { type: string }
+        birth_date: { type: string }
+        death_date: { type: string }
+        occupation: { type: string }
+        biography: { type: string }
+        description: { type: string }
+        title: { type: string }
+      description: |
+        Use only fields the client intends to change; DRF ModelSerializer supports partial
+        update. Do not send read-only or server-owned fields if the server rejects them.
+
+  responses:
+    NotFound:
+      description: No row for {id}
+    ValidationError:
+      description: DRF 400 with field errors
+    Unauthorized:
+      description: No or invalid credential when auth is required
+    Forbidden:
+      description: Authenticated but not allowed to modify this object

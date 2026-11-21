@@ -1,0 +1,68 @@
+name: Ontology registry
+
+on:
+  push:
+    paths:
+      - "ontology/**"
+      - "Makefile"
+      - "heritage_graph/requirements.txt"
+      - "tools/ui-classmap.yaml"
+      - "tools/ui-presentation.yaml"
+      - "tools/contribute-hub.yaml"
+      - "tools/linkml_generate_registry.py"
+      - "tools/generate_serializers.py"
+      - "heritage_graph/apps/cidoc_data/ontology_builder.py"
+      - "heritage_graph/apps/cidoc_data/cidoc_registry_keys.py"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+      - "heritage_graph_ui/src/lib/ontology/__generated__/**"
+      - "heritage_graph/apps/graph/ontology_config.py"
+      - "heritage_graph/apps/cidoc_data/serializers.generated.py"
+      - "ontology/shapes/generated-heritagegraph-minimal-shacl.ttl"
+      - "tools/gen_heritage_viz_config.py"
+      - "tools/emit_minimal_shacl.py"
+  pull_request:
+    paths:
+      - "ontology/**"
+      - "Makefile"
+      - "heritage_graph/requirements.txt"
+      - "tools/ui-classmap.yaml"
+      - "tools/ui-presentation.yaml"
+      - "tools/contribute-hub.yaml"
+      - "tools/linkml_generate_registry.py"
+      - "tools/generate_serializers.py"
+      - "heritage_graph/apps/cidoc_data/ontology_builder.py"
+      - "heritage_graph/apps/cidoc_data/cidoc_registry_keys.py"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.json"
+      - "heritage_graph_ui/src/lib/ontology/registry.generated.ts"
+      - "heritage_graph_ui/src/lib/ontology/__generated__/**"
+      - "heritage_graph/apps/graph/ontology_config.py"
+      - "heritage_graph/apps/cidoc_data/serializers.generated.py"
+      - "ontology/shapes/generated-heritagegraph-minimal-shacl.ttl"
+      - "tools/gen_heritage_viz_config.py"
+      - "tools/emit_minimal_shacl.py"
+
+jobs:
+  check-generated-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Generated files depend on the LinkML version, and the Django-backed checks
+      # (entityrefs, registry alignment) run from .venv, so build it from the
+      # pinned backend requirements instead of installing the latest linkml.
+      - name: Install pinned backend dependencies into .venv
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -r heritage_graph/requirements.txt
+      - name: Create the database the Django-backed checks read
+        working-directory: heritage_graph
+        env:
+          DJANGO_ENV: development
+        run: ../.venv/bin/python manage.py migrate --noinput
+      - name: Verify all generated files are up to date
+        env:
+          DJANGO_ENV: development
+        run: make check

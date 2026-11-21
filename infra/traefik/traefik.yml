@@ -1,0 +1,81 @@
+# ================================================================
+# Traefik Static Configuration (YAML)
+# ================================================================
+# This file contains static configuration for Traefik reverse proxy.
+# It handles provider setup, logs, and TLS configuration.
+
+# ================================================================
+# API Configuration
+# ================================================================
+api:
+  insecure: true                 # Dashboard accessible without authentication (development)
+  dashboard: true                # Enable Traefik dashboard
+  debug: true                    # Enable debug mode for logs
+
+# ================================================================
+# Providers Configuration
+# ================================================================
+providers:
+  # Docker provider for discovering services via labels
+  docker:
+    endpoint: unix:///var/run/docker.sock
+    exposedByDefault: false
+    network: proxy
+
+  # File provider for static configuration
+  file:
+    filename: /etc/traefik/traefik-dynamic.yml
+    watch: true
+
+# ================================================================
+# Entrypoints Configuration
+# ================================================================
+entryPoints:
+  # HTTP entrypoint
+  web:
+    address: :80
+    # Redirect HTTP to HTTPS (uncomment for production)
+    # http:
+    #   redirections:
+    #     entrypoint:
+    #       to: websecure
+    #       scheme: https
+
+  # HTTPS entrypoint (for production with SSL)
+  websecure:
+    address: :443
+    # http:
+    #   tls:
+    #     certResolver: letsencrypt
+
+# ================================================================
+# Logging Configuration
+# ================================================================
+log:
+  level: INFO
+  filePath: /var/log/traefik/traefik.log
+
+accessLog:
+  filePath: /var/log/traefik/access.log
+  format: json
+
+# ================================================================
+# Metrics Configuration (for monitoring)
+# ================================================================
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+
+# ================================================================
+# Certificate Resolver (Let's Encrypt) - for production
+# ================================================================
+# certificatesResolvers:
+#   letsencrypt:
+#     acme:
+#       email: admin@example.com
+#       storage: /etc/traefik/acme/acme.json
+#       httpChallenge:
+#         entryPoint: web
+#       caServer: https://acme-v02.api.letsencrypt.org/directory  # Production
+#       # caServer: https://acme-staging-v02.api.letsencrypt.org/directory  # Staging for testing

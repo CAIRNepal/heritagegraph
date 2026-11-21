@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: heritagegraph-db
+    restart: always
+    environment:
+      POSTGRES_DB: appdb        # generic database name
+      POSTGRES_USER: appuser    # generic username
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # strong password from .env
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    ports:  
+      - "5432:5432"   # expose port to host for local access
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  app-db-data:
+
+networks:
+  backend:
+    driver: bridge

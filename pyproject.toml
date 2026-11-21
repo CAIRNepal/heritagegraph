@@ -1,0 +1,26 @@
+[tool.black]
+line-length = 88
+target-version = ['py311']
+exclude = '''
+/(
+    \.myvenv
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip = ["myvenv", "migrations"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+exclude = ["myvenv", "migrations"]
+select = ["E", "F", "I"]
+
+[tool.mypy]
+python_version = 3.12
+ignore_missing_imports = true

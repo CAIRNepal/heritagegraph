@@ -1,0 +1,374 @@
+# ================================================================
+# HeritageGraph Docker Compose - Coolify Deployment
+# ================================================================
+# This is a self-contained compose file for deploying to Coolify.
+# 
+# KEY DIFFERENCES FROM LOCAL DOCKER-COMPOSE:
+# - No Traefik service (Coolify provides its own reverse proxy)
+# - No Traefik labels (Coolify handles routing via its UI)
+# - Production-ready settings baked in
+# - Uses Coolify's network injection automatically
+# - `backend` is runtime-lean; OCR runs in `ocr-worker` with Redis (same as docker-compose-dokploy.yml)
+#
+# COOLIFY SETUP:
+# 1. Create a new "Docker Compose" resource in Coolify
+# 2. Paste this file or point to this file in the repo
+# 3. Configure environment variables in Coolify UI
+# 4. Map each public domain to the correct *service* and *internal port*:
+#    - API host (e.g. devapi.example.com)  → backend : 8000
+#    - App host (e.g. dev.example.com)     → frontend : 3000
+#    - Landing / marketing                 → landing : 3000
+#    If the API domain points at the frontend container, /admin, /data/,
+#    /cidoc/, /docs, etc. will all 404 because those routes exist on Django only.
+# 5. After routing the API domain to backend:8000, open the root URL in a browser.
+#    You get a small index page linking to:
+#      /admin/   Django admin
+#      /docs     Swagger UI (API docs)
+#      /redoc/   ReDoc
+#      /schema/  OpenAPI JSON
+#      /health/  Health probe
+#    JSON index: https://<api-domain>/?format=json
+# ================================================================
+
+services:
+  # ---------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    hostname: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-heritage_db}
+      POSTGRES_USER: ${POSTGRES_USER:-heritage_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      internal:
+        aliases:
+          - postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-heritage_user} -d ${POSTGRES_DB:-heritage_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Redis (Celery broker for OCR / document processing)
+  # ---------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    restart: always
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - internal
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: '0.5'
+        reservations:
+          memory: 64M
+          cpus: '0.1'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Django REST Framework Backend
+  # Public API host should point here (port 8000). Root GET / shows links to
+  # /admin/, /docs, /redoc/, /schema/, /health/ for operators.
+  # ---------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: runtime-lean
+    restart: always
+    environment:
+      # Django settings
+      DJANGO_ENV: production
+      DJANGO_SETTINGS_MODULE: heritage_graph.settings.production
+      DEBUG: "False"
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
+      # Include Docker hostname `backend` for NextAuth server-side Host: backend (INTERNAL_BACKEND_URL).
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-api.heritagegraph.xyz,localhost,backend}
+      # Database
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${POSTGRES_DB:-heritage_db}
+      DB_USER: ${POSTGRES_USER:-heritage_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      # Google Auth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      HERITAGEGRAPH_DEV_AUTH: "false"
+      REDIS_URL: redis://redis:6379/2
+      # CORS - Set to your frontend domain(s), comma-separated
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://heritagegraph.xyz,https://heritagegraph.xyz}
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+      OCR_ENABLED: ${OCR_ENABLED:-false}
+      TESSERACT_PATH: /usr/bin/tesseract
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
+      OCR_MAX_PAGES_PER_DOCUMENT: ${OCR_MAX_PAGES_PER_DOCUMENT:-100}
+      OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
+      OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - backend-static:/app/heritage_graph/staticfiles
+      - backend-media:/app/heritage_graph/media
+    networks:
+      - internal
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Celery worker (heavy OCR image — PyTorch, etc.)
+  # ---------------------------------------------------------------
+  # ocr-worker — SUSPENDED (future functionality). The OCR / document-to-graph
+  # pipeline is paused and removed from the active stack; full definition is in
+  # git history. To revive: restore this service and set OCR_ENABLED=true.
+
+  # ---------------------------------------------------------------
+  # Next.js Frontend (Main Application)
+  # ---------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: heritage_graph_ui/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXTAUTH_URL: ${NEXTAUTH_URL:-}
+        NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-build-placeholder}
+        GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-build-placeholder}
+        GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-build-placeholder}
+    restart: always
+    environment:
+      NODE_ENV: production
+      # API URL - must match your backend domain
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api.heritagegraph.xyz}
+      # NextAuth configuration
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://heritagegraph.xyz}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
+      # Google OAuth (optional - omit for dev auth mode)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      NEXT_PUBLIC_DEV_AUTH: "false"
+      # Server binding
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      # Internal backend URL for server-side calls (NextAuth)
+      INTERNAL_BACKEND_URL: http://backend:8000
+    networks:
+      - internal
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Landing Page (Marketing Site)
+  # ---------------------------------------------------------------
+  landing:
+    build:
+      context: ./heritage_graph_landing
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-}
+        NEXT_PUBLIC_APP_URL: ${NEXTAUTH_URL:-}
+    restart: always
+    environment:
+      NODE_ENV: production
+    networks:
+      - internal
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Prometheus (metrics storage + scraper)
+  # ---------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    hostname: prometheus
+    restart: always
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION_TIME:-15d}"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./infra/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - internal
+    expose:
+      - "9090"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9090/-/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ---------------------------------------------------------------
+  # Grafana (dashboards)
+  # Expose this service via platform to access dashboards.
+  # ---------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    hostname: grafana
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      prometheus:
+        condition: service_started
+    networks:
+      - internal
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ---------------------------------------------------------------
+  # Postgres exporter (Prometheus target for PostgreSQL metrics)
+  # ---------------------------------------------------------------
+  postgres_exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    hostname: postgres-exporter
+    restart: always
+    environment:
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_USER:-heritage_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-heritage_db}?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+    expose:
+      - "9187"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:9187/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# ================================================================
+# VOLUMES
+# ================================================================
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  backend-static:
+    driver: local
+  backend-media:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+# ================================================================
+# NETWORKS
+# ================================================================
+# Explicit internal network ensures all services can resolve each
+# other by service name (e.g. backend → postgres). Coolify will
+# additionally attach its own proxy network for external access.
+networks:
+  internal:
+    driver: bridge

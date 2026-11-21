@@ -1,0 +1,149 @@
+'use client';
+
+/**
+ * First-visit onboarding. Shows once (localStorage-gated) to orient new visitors:
+ * search (⌘K), explore the museum, and contribute. Dismissible; never nags.
+ */
+
+import * as React from 'react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import {
+  IconBuildingMonument,
+  IconSearch,
+  IconPlus,
+  IconBook2,
+} from '@tabler/icons-react';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+
+const STORAGE_KEY = 'hg_welcome_seen_v1';
+
+const STEPS = [
+  {
+    icon: IconBuildingMonument,
+    title: 'Explore the Heritage Museum',
+    body: 'Every record as an exhibit, on a map of Nepal, on a timeline and through its connections, with its sources.',
+    href: '/heritage-museum',
+    cta: 'Open Museum',
+  },
+  {
+    icon: IconBook2,
+    title: 'Read a story',
+    body: 'Follow one record through the knowledge graph, one question at a time.',
+    href: '/stories',
+    cta: 'Stories',
+  },
+  {
+    icon: IconPlus,
+    title: 'Contribute your knowledge',
+    body: 'Add monuments, deities, festivals, rituals and more. Every contribution is reviewed before it is published.',
+    href: '/contribute',
+    cta: 'Contribute',
+  },
+];
+
+export function WelcomeDialog() {
+  const [open, setOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // The entry experience at `/` is itself the orientation: it opens on the
+  // heritage and routes into the museum, stories and knowledge base. Covering it
+  // with a modal that explains the same three destinations is redundant, and it
+  // hides the page during exactly the first seconds it has to earn attention.
+  // Onboarding still fires on any other route a first-time visitor lands on.
+  // NOTE: the /preview/* clause is temporary — those routes exist only for
+  // Phase 2 review and are removed once a direction is chosen.
+  const suppressed = pathname === '/' || pathname.startsWith('/preview/');
+  // Never offer "open the page you are on": on /heritage-museum that step was
+  // the focused primary action and did nothing.
+  const steps = STEPS.filter((s) => s.href !== pathname);
+  const getStartedRef = React.useRef<HTMLButtonElement>(null);
+
+  React.useEffect(() => {
+    if (suppressed) return;
+    try {
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        const t = setTimeout(() => setOpen(true), 600);
+        return () => clearTimeout(t);
+      }
+    } catch {
+      /* localStorage unavailable — skip onboarding */
+    }
+  }, [suppressed]);
+
+  const dismiss = React.useCallback((value: boolean) => {
+    setOpen(value);
+    if (!value) {
+      try {
+        localStorage.setItem(STORAGE_KEY, '1');
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  return (
+    <Dialog open={open} onOpenChange={dismiss}>
+      <DialogContent
+        className="sm:max-w-lg"
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          getStartedRef.current?.focus();
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle className="text-xl">Welcome to HeritageGraph 🏛️</DialogTitle>
+          <DialogDescription>
+            A community knowledge graph of cultural heritage. Here is how to get started —
+            press{' '}
+            <kbd className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">⌘K</kbd> any
+            time to search.
+          </DialogDescription>
+        </DialogHeader>
+
+        <ul className="mt-2 flex flex-col gap-3">
+          {steps.map((s) => {
+            const Icon = s.icon;
+            return (
+              <li
+                key={s.href}
+                className="flex items-start gap-3 rounded-lg border border-border/60 p-3"
+              >
+                <span className="mt-0.5 rounded-md bg-primary/10 p-2 text-primary">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <div className="flex-1">
+                  <p className="font-medium leading-tight">{s.title}</p>
+                  <p className="text-sm text-muted-foreground">{s.body}</p>
+                </div>
+                {/* One interactive element, not a button inside a link. */}
+                <Button asChild size="sm" variant="outline">
+                  <Link href={s.href} onClick={() => dismiss(false)}>
+                    {s.cta}
+                  </Link>
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="mt-2 flex items-center justify-between">
+          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <IconSearch className="h-3.5 w-3.5" /> Tip: ⌘K opens search anywhere
+          </span>
+          <Button ref={getStartedRef} onClick={() => dismiss(false)}>
+            Get started
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

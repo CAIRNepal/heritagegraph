@@ -1,0 +1,238 @@
+# Contribute landing page: browse groups, per-type copy, and quick-start keys.
+# Keys in `intents.registryKey` must match `key` in tools/ui-classmap.yaml.
+# Contributor-facing copy: plain language only (no CRM class codes / RDF jargon).
+
+hubCategories:
+  - key: general
+    label: General Heritage
+    icon: "🏮"
+    order: 0
+  - key: tangible
+    label: Places & objects
+    icon: "🏛️"
+    order: 1
+  - key: events
+    label: Events & rituals
+    icon: "🔥"
+    order: 2
+  - key: kumari
+    label: Living Goddess
+    icon: "👑"
+    order: 3
+  - key: conceptual
+    label: Beliefs & traditions
+    icon: "✨"
+    order: 4
+  - key: social
+    label: People & groups
+    icon: "👥"
+    order: 5
+  - key: spatiotemporal
+    label: Places & time
+    icon: "🗺️"
+    order: 6
+  - key: provenance
+    label: Sources & evidence
+    icon: "📚"
+    order: 7
+
+intents:
+  - registryKey: entity
+    hubCategory: general
+    route: /contribute/cultural-entity
+    emoji: "🏮"
+    shortDescription: "Something that doesn’t fit a more specific type"
+    description: "Use this when your heritage item isn’t clearly a temple, person, festival, or other listed type."
+    difficulty: beginner
+  - registryKey: structure
+    hubCategory: tangible
+    route: /contribute/structure
+    emoji: "🏛️"
+    shortDescription: "Temples, stupas, rest houses, water spouts"
+    description: "Record a building or structure — where it is, its condition, and who looks after it."
+    difficulty: beginner
+  - registryKey: iconography
+    hubCategory: tangible
+    route: /contribute/iconography
+    emoji: "🎨"
+    shortDescription: "Paintings, statues, and sacred art"
+    description: "Document a painting, murti, or sacred image and what (or who) it shows."
+    difficulty: intermediate
+  - registryKey: monument
+    hubCategory: tangible
+    route: /contribute/monument
+    emoji: "⛩️"
+    shortDescription: "Stupas, chaityas, and similar monuments"
+    description: "Add a monument or sacred outdoor structure and how people use it."
+    difficulty: beginner
+  - registryKey: ritual
+    hubCategory: events
+    route: /contribute/ritual
+    emoji: "🔥"
+    shortDescription: "Puja, consecrations, processions"
+    description: "Describe a ritual — who performs it, when, where, and for which deity or tradition."
+    difficulty: intermediate
+  - registryKey: festival
+    hubCategory: events
+    route: /contribute/festival
+    emoji: "🎪"
+    shortDescription: "Jatras, chariot festivals, dances"
+    description: "Record a community festival or procession and the rituals that make it up."
+    difficulty: intermediate
+  - registryKey: production
+    hubCategory: events
+    route: /contribute/production
+    emoji: "🔨"
+    shortDescription: "When something was made or built"
+    description: "Document the making of a structure, murti, or artwork — who made it, where, and when."
+    difficulty: intermediate
+  - registryKey: consecration
+    hubCategory: events
+    route: /contribute/consecration
+    emoji: "✨"
+    shortDescription: "Making an object sacred (prana pratistha)"
+    description: "Record the ritual that activates or consecrates a sacred object."
+    difficulty: advanced
+  - registryKey: enshrinement
+    hubCategory: events
+    route: /contribute/enshrinement
+    emoji: "🛕"
+    shortDescription: "Placing a deity in a sanctum"
+    description: "Document when a murti or symbol was installed inside a temple or shrine."
+    difficulty: advanced
+  - registryKey: transfer_of_custody
+    hubCategory: events
+    route: /contribute/transfer-of-custody
+    emoji: "↔️"
+    shortDescription: "Change of stewardship or Guthi care"
+    description: "Record when care of a temple, ritual, or object moved from one steward to another."
+    difficulty: advanced
+  - registryKey: event
+    hubCategory: events
+    route: /contribute/event
+    emoji: "📅"
+    shortDescription: "Earthquakes, fires, major changes"
+    description: "Log a historical event that affected heritage places or practices."
+    difficulty: beginner
+  - registryKey: kumari_tenure
+    hubCategory: kumari
+    route: /contribute/kumari-tenure
+    emoji: "👑"
+    shortDescription: "A Living Goddess’s period of service"
+    description: "Document a Kumari’s tenure — the person, residence, and supporting community."
+    difficulty: advanced
+  - registryKey: kumari_selection
+    hubCategory: kumari
+    route: /contribute/kumari-selection
+    emoji: "🔍"
+    shortDescription: "How a Living Goddess was chosen"
+    description: "Document the selection process for a Living Goddess."
+    difficulty: advanced
+  - registryKey: kumari_retirement
+    hubCategory: kumari
+    route: /contribute/kumari-retirement
+    emoji: "🚪"
+    shortDescription: "End of a Living Goddess tenure"
+    description: "Record when a Living Goddess tenure formally ended."
+    difficulty: advanced
+  - registryKey: deity
+    hubCategory: conceptual
+    route: /contribute/deity
+    emoji: "✨"
+    shortDescription: "Hindu, Buddhist, or shared deities"
+    description: "Add a deity with tradition, other names, and links to art or temples."
+    difficulty: beginner
+  - registryKey: syncretism
+    hubCategory: conceptual
+    route: /contribute/syncretism
+    emoji: "🔗"
+    shortDescription: "Same deity known by different names"
+    description: "Link deities that communities treat as the same (for example Avalokiteshvara and Matsyendranath)."
+    difficulty: advanced
+  - registryKey: guthi
+    hubCategory: social
+    route: /contribute/guthi
+    emoji: "🏘️"
+    shortDescription: "Trusts that care for temples and rituals"
+    description: "Register a Guthi — what it manages and who belongs to it."
+    difficulty: intermediate
+  - registryKey: person
+    hubCategory: social
+    route: /contribute/person
+    emoji: "👤"
+    shortDescription: "Kings, artisans, priests, scholars"
+    description: "Record a historical person and their role in heritage."
+    difficulty: beginner
+  - registryKey: caste_group
+    hubCategory: social
+    route: /contribute/caste-group
+    emoji: "👥"
+    shortDescription: "Hereditary groups with ritual roles"
+    description: "Document a community group known for particular ritual or craft duties."
+    difficulty: intermediate
+  - registryKey: location
+    hubCategory: spatiotemporal
+    route: /contribute/location
+    emoji: "🗺️"
+    shortDescription: "Towns, neighbourhoods, sites"
+    description: "Add a place where heritage structures stand or events happen."
+    difficulty: beginner
+  - registryKey: period
+    hubCategory: spatiotemporal
+    route: /contribute/period
+    emoji: "⏳"
+    shortDescription: "Historical eras (Lichhavi, Malla, …)"
+    description: "Define a time period used to date heritage."
+    difficulty: beginner
+  - registryKey: calendar
+    hubCategory: spatiotemporal
+    route: /contribute/calendar
+    emoji: "📆"
+    shortDescription: "Bikram Sambat, Nepal Sambat, and others"
+    description: "Register a calendar system used in sources or inscriptions."
+    difficulty: intermediate
+  - registryKey: tradition
+    hubCategory: conceptual
+    route: /contribute/tradition
+    emoji: "🕯️"
+    shortDescription: "Religious and cultural traditions"
+    description: "Record a tradition or practice and how it connects to places or objects."
+    difficulty: beginner
+  - registryKey: source
+    hubCategory: provenance
+    route: /contribute/source
+    emoji: "📚"
+    shortDescription: "Books, inscriptions, oral histories"
+    description: "Add a book, inscription, interview, or other document you cite as evidence."
+    difficulty: beginner
+  - registryKey: data_source
+    hubCategory: provenance
+    route: /contribute/data-source
+    emoji: "🗂️"
+    shortDescription: "Evidence used when linking records"
+    description: "Register evidence you will attach when proposing links between records or making claims."
+    difficulty: beginner
+  - registryKey: entity_proposal
+    hubCategory: social
+    route: /contribute/entity-proposal
+    emoji: "🔗"
+    shortDescription: "Mark duplicate records as the same thing"
+    description: >-
+      Propose that two or more existing records refer to the same real place, person, or object.
+      Reviewers check your evidence before the records are linked under one identity.
+    difficulty: intermediate
+  - registryKey: assertion
+    hubCategory: provenance
+    route: /contribute/assertion
+    emoji: "✅"
+    shortDescription: "A fact with a source and how sure you are"
+    description: "State a claim about heritage — what you believe, where you learned it, and how confident you are."
+    difficulty: advanced
+
+quickStart:
+  - structure
+  - source
+  - location
+  - person
+  - entity
+  - entity_proposal

@@ -1,0 +1,201 @@
+import type { NextConfig } from 'next';
+import path from 'path';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+import { LEAFLET_TILE_CSP_HOSTS } from './src/lib/map-tiles';
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+function apiMediaRemotePattern(): {
+  protocol: 'http' | 'https';
+  hostname: string;
+  port?: string;
+  pathname: string;
+} | null {
+  const raw = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  try {
+    const u = new URL(raw);
+    return {
+      protocol: u.protocol === 'https:' ? 'https' : 'http',
+      hostname: u.hostname,
+      ...(u.port ? { port: u.port } : {}),
+      pathname: '/media/**',
+    };
+  } catch {
+    return null;
+  }
+}
+
+const apiMediaPattern = apiMediaRemotePattern();
+
+function buildContentSecurityPolicy(): string {
+  const connectSrc = ["'self'", 'https://accounts.google.com', 'https://oauth2.googleapis.com'];
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (apiUrl) {
+    try {
+      connectSrc.push(new URL(apiUrl).origin);
+    } catch {
+      /* ignore invalid URL at build time */
+    }
+  }
+  connectSrc.push(...LEAFLET_TILE_CSP_HOSTS);
+  // Wikimedia image credits + the XR panorama loader may resolve Special:FilePath
+  // URLs via the MediaWiki API to obtain a direct upload.wikimedia.org URL.
+  connectSrc.push('https://*.wikipedia.org', 'https://*.wikimedia.org');
+
+  return [
+    "default-src 'self'",
+    `connect-src ${connectSrc.join(' ')}`,
+    "form-action 'self' https://accounts.google.com",
+    "frame-src https://accounts.google.com",
+    // The PWA service worker (public/sw.js).
+    "worker-src 'self'",
+    // Legacy CSP for some browsers/extensions that still consult child-src.
+    "child-src 'self'",
+    // Wikimedia hosts power the heritage-museum demo corpus (Special:FilePath on
+    // *.wikipedia.org redirects to upload.wikimedia.org); they feed both the <img>
+    // heroes/thumbnails and the WebGL panorama texture in the XR view.
+    // LEAFLET_TILE_CSP_HOSTS serve the map basemaps (museum map, atlas Streets).
+    `img-src 'self' data: blob: https://lh3.googleusercontent.com https://*.googleusercontent.com https://i.imgur.com https://*.wikipedia.org https://*.wikimedia.org ${LEAFLET_TILE_CSP_HOSTS.join(' ')}`,
+    "style-src 'self' 'unsafe-inline'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "font-src 'self' data:",
+  ].join('; ');
+}
+
+const nextConfig: NextConfig = {
+  /* config options here */
+  output: 'standalone',
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      '@tabler/icons-react',
+      'date-fns',
+      'framer-motion',
+      'recharts',
+    ],
+  },
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
+  /**
+   * Work around sporadic dev/webpack failures:
+   * `TypeError: Cannot read properties of undefined (reading 'createFilename')`
+   * from Next's forked `EvalSourceMapDevToolPlugin` when `ModuleFilenameHelpers`
+   * is not yet bound on the compiled webpack singleton (e.g. duplicate Next
+   * resolution, env quirks). Dropping that plugin in development only disables
+   * eval-source-map style maps; production is unchanged.
+   */
+  webpack: (config, { dev }) => {
+    if (!dev || !config.plugins?.length) return config;
+    config.plugins = config.plugins.filter((plugin: { constructor?: { name?: string } }) => {
+      const name =
+        plugin &&
+        typeof plugin === 'object' &&
+        'constructor' in plugin &&
+        plugin.constructor != null &&
+        typeof plugin.constructor === 'function'
+          ? plugin.constructor.name
+          : '';
+      return name !== 'EvalSourceMapDevToolPlugin';
+    });
+    return config;
+  },
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 86_400,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      // UNESCO entry photography. The manifest in src/data/unesco-imagery.json
+      // stores direct upload.wikimedia.org URLs; Special:FilePath on
+      // en.wikipedia.org redirects there, and the museum corpus still uses that
+      // form, so both hosts are allowed.
+      {
+        protocol: 'https',
+        hostname: 'upload.wikimedia.org',
+      },
+      {
+        protocol: 'https',
+        hostname: 'en.wikipedia.org',
+        pathname: '/wiki/Special:FilePath/**',
+      },
+      ...(apiMediaPattern ? [apiMediaPattern] : []),
+    ],
+  },
+  /**
+   * A running `next dev` writes into `.next` continuously. A production build
+   * sharing that directory gets its chunks overwritten mid-flight and fails
+   * with MODULE_NOT_FOUND, and a completed build then breaks the dev server in
+   * the same way. Setting NEXT_DIST_DIR lets a verification or CI build run
+   * alongside a live dev server instead of fighting it.
+   */
+  distDir: process.env.NEXT_DIST_DIR || '.next',
+
+  eslint: {
+    ignoreDuringBuilds: true, // disables ESLint errors breaking production build
+  },
+  typescript: {
+    ignoreBuildErrors: true, // allow build even if there are TS errors
+  },
+
+  /**
+   * Legacy URLs.
+   *
+   * An earlier migration moved the authenticated UI off `/dashboard` onto the
+   * site root and left blanket `/dashboard*` redirects behind. The 2026-08
+   * entry redesign puts the public UNESCO page at `/` and moves the dashboard
+   * back to `/dashboard`, so a redirect on that exact path would make the
+   * dashboard unreachable — it 308'd straight back to `/`.
+   *
+   * `:path+` (one or more segments) keeps the legacy sub-path redirects working
+   * — `/dashboard/team` still resolves to `/team` — while leaving `/dashboard`
+   * itself to the real page. `:path*` matched zero segments too, which is what
+   * swallowed it.
+   */
+  async redirects() {
+    return [
+      { source: '/dashboard/:path+', destination: '/:path*', permanent: true },
+      { source: '/discover', destination: '/about', permanent: true },
+      { source: '/discover/', destination: '/about', permanent: true },
+    ];
+  },
+
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: buildContentSecurityPolicy(),
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default withNextIntl(nextConfig);

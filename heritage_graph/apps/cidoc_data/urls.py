@@ -1,0 +1,136 @@
+# urls.py
+from apps.graph.views import (
+    KnowledgeGraphGraphView,
+    KnowledgeGraphNeighborhoodView,
+    KnowledgeGraphQueryView,
+    KnowledgeGraphStatsView,
+)
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+from .views import *
+
+router = DefaultRouter()
+
+# Users
+# router.register(r'users', UserViewSet)
+
+# Main models
+router.register(r'historical_periods', HistoricalPeriodViewSet)
+router.register(r'locations', LocationViewSet)
+router.register(r'persons', PersonViewSet)
+router.register(r'events', EventViewSet)
+router.register(r'traditions', TraditionViewSet)
+router.register(r'sources', SourceViewSet)
+
+# New ontology-driven models
+router.register(r'deities', DeityViewSet)
+router.register(r'guthis', GuthiViewSet)
+router.register(r'structures', ArchitecturalStructureViewSet)
+router.register(r'rituals', RitualEventViewSet)
+router.register(r'festivals', FestivalViewSet)
+router.register(r'productions', ProductionViewSet)
+router.register(r'consecrations', ConsecrationViewSet)
+router.register(r'enshrinements', EnshrinementViewSet)
+router.register(r'transfers_of_custody', TransferOfCustodyViewSet)
+router.register(r'iconographic_objects', IconographicObjectViewSet)
+router.register(r'monuments', MonumentViewSet)
+
+# Kumari / Syncretic / Social / Temporal models
+router.register(r'kumari_tenures', KumariTenureViewSet)
+router.register(r'kumari_selections', KumariSelectionViewSet)
+router.register(r'kumari_retirements', KumariRetirementViewSet)
+router.register(r'syncretic_relationships', SyncreticRelationshipViewSet)
+router.register(r'caste_groups', CasteGroupViewSet)
+router.register(r'calendar_systems', CalendarSystemViewSet)
+
+# Provenance models
+router.register(r'data_sources', DataSourceViewSet, basename='data-source')
+router.register(
+    r'relationship-predicates',
+    RelationshipPredicateViewSet,
+    basename='relationship-predicate',
+)
+router.register(r'assertions', HeritageAssertionViewSet)
+router.register(r'entity-clusters', EntityClusterViewSet, basename='entity-cluster')
+router.register(
+    r'identity-candidates', IdentityCandidateViewSet, basename='identity-candidate'
+)
+
+# Assertion-aware endpoints (enhanced versions for contribution wizard)
+router.register(r'contribute/structures', AssertionAwareStructureViewSet, basename='contribute-structures')
+router.register(r'contribute/rituals', AssertionAwareRitualViewSet, basename='contribute-rituals')
+router.register(r'contribute/deities', AssertionAwareDeityViewSet, basename='contribute-deities')
+router.register(r'contribute/guthis', AssertionAwareGuthiViewSet, basename='contribute-guthis')
+
+# router.register(r'artifacts', ArtifactViewSet)
+
+## Revisions
+# router.register(r'historical_period_revisions', HistoricalPeriodRevisionViewSet)
+# router.register(r'location_revisions', LocationRevisionViewSet)
+router.register(r'person_revisions', PersonRevisionViewSet)
+# router.register(r'artifact_revisions', ArtifactRevisionViewSet)
+# router.register(r'event_revisions', EventRevisionViewSet)
+# router.register(r'tradition_revisions', TraditionRevisionViewSet)
+# router.register(r'source_revisions', SourceRevisionViewSet)
+
+# # Activities & comments
+# router.register(r'activities', ActivityViewSet)
+# router.register(r'historical_period_comments', HistoricalPeriodCommentViewSet)
+# router.register(r'location_comments', LocationCommentViewSet)
+# router.register(r'person_comments', PersonCommentViewSet)
+# router.register(r'artifact_comments', ArtifactCommentViewSet)
+# router.register(r'event_comments', EventCommentViewSet)
+# router.register(r'tradition_comments', TraditionCommentViewSet)
+# router.register(r'source_comments', SourceCommentViewSet)
+
+# router.register(r'historical_period_revision_comments', HistoricalPeriodRevisionCommentViewSet)
+# router.register(r'location_revision_comments', LocationRevisionCommentViewSet)
+# router.register(r'person_revision_comments', PersonRevisionCommentViewSet)
+# router.register(r'artifact_revision_comments', ArtifactRevisionCommentViewSet)
+# router.register(r'event_revision_comments', EventRevisionCommentViewSet)
+# router.register(r'tradition_revision_comments', TraditionRevisionCommentViewSet)
+# router.register(r'source_revision_comments', SourceRevisionCommentViewSet)
+
+# # Notifications
+# router.register(r'notifications', NotificationForUserViewSet)
+
+urlpatterns = [
+    path(
+        "identity-summary/",
+        EntityIdentitySummaryView.as_view(),
+        name="entity-identity-summary",
+    ),
+    path(
+        "schema/registry/",
+        OntologySchemaRegistryView.as_view(),
+        name="ontology-schema-registry",
+    ),
+    path(
+        "sparql/",
+        SparqlProxyView.as_view(),
+        name="cidoc-sparql-proxy",
+    ),
+    path("kg/stats/", KnowledgeGraphStatsView.as_view(), name="kg-stats"),
+    path(
+        "kg/neighborhood/",
+        KnowledgeGraphNeighborhoodView.as_view(),
+        name="kg-neighborhood",
+    ),
+    path("kg/query/", KnowledgeGraphQueryView.as_view(), name="kg-query"),
+    path("kg/graph/", KnowledgeGraphGraphView.as_view(), name="kg-graph"),
+    path(
+        "assist/suggest-field/",
+        AssistSuggestFieldView.as_view(),
+        name="cidoc-assist-suggest-field",
+    ),
+    path(
+        "<str:resource>/<path:pk>/revert/",
+        CidocRevertView.as_view(),
+        name="cidoc-revert",
+    ),
+    path('', include(router.urls)),
+    path("search/", universal_search, name="universal-search"),
+    path("discovery/", public_discovery, name="public-discovery"),
+    path("related/", related_entities, name="related-entities"),
+]

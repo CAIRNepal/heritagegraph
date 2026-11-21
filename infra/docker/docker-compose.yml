@@ -1,0 +1,104 @@
+services:
+  # -------------------
+  # Postgres Database
+  # -------------------
+  db:
+    image: postgres:14
+    container_name: heritagegraph-db
+    restart: always
+    environment:
+      POSTGRES_DB: keycloak        # database name
+      POSTGRES_USER: keycloak      # user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}   # use strong password from .env
+    volumes:
+      - db-data:/var/lib/postgresql/data   # persistent volume for data
+    networks:
+      - backend
+    shm_size: 128mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------
+  # Keycloak
+  # -------------------
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    container_name: heritagegraph-keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:db://db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+    command: start
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    ports:
+      - "8081:8081"
+
+  # -------------------
+  # Next.js Frontend
+  # -------------------
+  # frontend:
+  #   image: nabin968/heritage-frontend:latest
+  #   container_name: heritage-frontend
+  #   networks:
+  #     - proxy
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+  #     - "traefik.http.routers.frontend.entrypoints=http"
+  #     - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+  #   restart: unless-stopped
+
+  frontend:
+    image: nabin968/heritage-frontend
+    container_name: heritage-frontend
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=http"
+    restart: unless-stopped
+
+
+  # -------------------
+  # Traefik
+  # -------------------
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true"         # dashboard on :8080
+      - "--providers.docker=true"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    networks:
+      - proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+
+
+volumes:
+  db-data:
+  keycloak-db-data:
+
+networks:
+  backend:
+    driver: bridge
+  proxy:
+    external: true
+

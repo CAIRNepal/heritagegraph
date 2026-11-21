@@ -1,0 +1,263 @@
+// ── Ontology config — generated from canonical schema ─────────────────────────
+// To change node types, predicates, colors, or enums:
+//   1. Edit ontology/HeritageGraph.yaml  (semantic definitions)
+//      or  tools/ui-vizmap.yaml          (visual config: colors, emojis, categories)
+//   2. Run: python3 tools/gen_heritage_viz_config.py
+//   3. Commit all changed files together.
+import type { KgRecordSource } from '@/lib/kg-graph';
+import type { NodeType, HgCategory } from '@/lib/ontology/__generated__/heritage-viz-config';
+import { NODE_TYPE_CONFIG, RELATION_LABELS, HG_CATEGORY_CONFIG } from '@/lib/ontology/__generated__/heritage-viz-config';
+
+export type { NodeType, HgCategory };
+export { NODE_TYPE_CONFIG, RELATION_LABELS, HG_CATEGORY_CONFIG };
+
+/** Assertion-backed edge metadata (live KG from HeritageAssertion). */
+export interface RelationProvenance {
+  source?: string | null;
+  confidence?: string | null;
+  confidenceScore?: number | null;
+  assertedBy?: string | null;
+  temporalScope?: string | null;
+  assertedAt?: string | null;
+}
+
+export interface HeritageRelation {
+  predicate: string;
+  targetId: string;
+  targetLabel?: string;
+  provenance?: RelationProvenance | null;
+}
+
+/**
+ * Per-image provenance + licensing, captured at corpus-freeze time by
+ * `scripts/freeze-heritage-corpus.mjs` from the Wikimedia API. Surfacing this
+ * is both a licensing requirement (CC-BY-SA attribution) and a FAIR/provenance
+ * expectation for a publishable dataset. Keyed by image URL on the node.
+ */
+export interface ImageCredit {
+  /** Short license name, e.g. "CC BY-SA 4.0" or "Public domain". */
+  license?: string;
+  /** Canonical license deed URL. */
+  licenseUrl?: string;
+  /** Author/creator attribution string (may contain markup-free text). */
+  artist?: string;
+  /** File description page on the source wiki (the citable landing page). */
+  descriptionUrl?: string;
+  /** Originating repository, e.g. "Wikimedia Commons". */
+  source?: string;
+  /** ISO date the metadata was retrieved (reproducibility anchor). */
+  retrieved?: string;
+}
+
+export interface HeritageNode {
+  id: string;
+  label: string;
+  /** Nepali or Nepal Bhasa label in Devanagari, where the record has one. */
+  labelNe?: string;
+  /** Live graph only: where the record's own content came from. */
+  recordSource?: KgRecordSource | null;
+  /** Live graph only: "inherited" when lat/long are the containing record's, not this one's. */
+  coordinateSource?: 'record' | 'gazetteer' | 'inherited';
+  /** The record whose point was borrowed, when inherited. */
+  coordinateFrom?: string;
+  nodeType: NodeType;
+  cidocMapping: string;
+  hgCategory: HgCategory;
+  description: string;
+  storyText: string;
+  imageUrl?: string;
+  images?: string[];
+  /** Provenance/licensing for each image, keyed by image URL. */
+  imageCredits?: Record<string, ImageCredit>;
+  significance?: string;
+  tags?: string[];
+  religion?: string;
+  inceptionYear?: string;
+  dynasty?: string;
+  ethnicity?: string;
+  period?: string;
+  lat?: string;
+  long?: string;
+  wikipediaTitle?: string;
+  keyFacts?: Array<{ label: string; value: string }>;
+  rituals?: string[];
+  architecture?: string;
+  history?: string;
+  culturalRole?: string;
+  visitNote?: string;
+  relations: HeritageRelation[];
+  /** Identity cluster (live KG): UUID string from EntityCluster. */
+  clusterId?: string;
+  /** Evidence-weighted canonical record IRI within the cluster (museum display). */
+  canonicalMemberId?: string;
+  clusterLabel?: string;
+  typeScope?: string;
+  /** Other merged record labels (museum dedup). */
+  clusterAliases?: string[];
+}
+
+export interface GraphNode extends HeritageNode {
+  x?: number;
+  y?: number;
+  vx?: number;
+  vy?: number;
+  fx?: number | null;
+  fy?: number | null;
+  index?: number;
+}
+
+export interface GraphLink {
+  source: string | GraphNode;
+  target: string | GraphNode;
+  predicate: string;
+  provenance?: RelationProvenance | null;
+  index?: number;
+}
+
+export interface GraphData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
+export interface CorpusProvenance {
+  generatedBy?: string;
+  retrieved?: string;
+  imageSource?: string;
+  note?: string;
+  /**
+   * How the descriptive prose was produced.
+   *
+   * Images in this corpus carry a license, an author and a retrieval date;
+   * the narrative fields carried nothing at all, which made the text look as
+   * sourced as the photographs. `"unrecorded"` states the gap explicitly so
+   * the UI can warn rather than imply provenance that does not exist.
+   */
+  textAuthorship?: 'unrecorded' | 'sourced';
+  textAuthorshipNote?: string;
+}
+
+// ── JSON-LD parser ─────────────────────────────────────────────────────────────
+
+// Derived from RELATION_LABELS so it stays in sync automatically.
+const RELATION_PREDICATES = Object.keys(RELATION_LABELS);
+
+function proxyImg(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  // Return the URL directly — Wikimedia images are generally accessible
+  return url;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseJsonLd(raw: any): HeritageNode[] {
+  const graph = raw['@graph'] as any[];
+  const idToLabel: Record<string, string> = {};
+
+  for (const item of graph) {
+    idToLabel[item['@id']] = item['label'] || String(item['@id']).split('/').pop() || item['@id'];
+  }
+
+  const nodes: HeritageNode[] = [];
+
+  for (const item of graph) {
+    if (!item['nodeType']) continue;
+
+    const id = item['@id'] as string;
+    const relations: HeritageRelation[] = [];
+
+    for (const pred of RELATION_PREDICATES) {
+      const val = item[pred];
+      if (!val) continue;
+      const targets = Array.isArray(val) ? val : [val];
+      for (const t of targets) {
+        const targetId = typeof t === 'string' ? t : t['@id'];
+        if (targetId) {
+          relations.push({
+            predicate: pred,
+            targetId,
+            targetLabel: idToLabel[targetId] || String(targetId).split(':').pop(),
+          });
+        }
+      }
+    }
+
+    const nodeType = item['nodeType'] as NodeType;
+    const typeCfg = NODE_TYPE_CONFIG[nodeType];
+
+    nodes.push({
+      id,
+      label: item['label'] || id,
+      nodeType,
+      cidocMapping: typeCfg?.cidocMapping ?? '',
+      hgCategory: (typeCfg?.hgCategory ?? 'tangible') as HgCategory,
+      description: item['description'] || '',
+      storyText: item['storyText'] || '',
+      imageUrl: proxyImg(item['imageUrl']),
+      images: Array.isArray(item['images'])
+        ? (item['images'] as string[]).map(proxyImg).filter(Boolean) as string[]
+        : undefined,
+      imageCredits:  item['imageCredits'],
+      significance:  item['significance'],
+      tags:          item['tags'],
+      religion:      item['religion'],
+      inceptionYear: item['inceptionYear'],
+      dynasty:       item['dynasty'],
+      ethnicity:     item['ethnicity'],
+      period:        item['period'],
+      lat:           item['lat'],
+      long:          item['long'],
+      wikipediaTitle:item['wikipediaTitle'],
+      keyFacts:      item['keyFacts'],
+      rituals:       item['rituals'],
+      architecture:  item['architecture'],
+      history:       item['history'],
+      culturalRole:  item['culturalRole'],
+      visitNote:     item['visitNote'],
+      relations,
+    });
+  }
+
+  return nodes;
+}
+
+function buildGraphData(nodes: HeritageNode[]): GraphData {
+  const nodeIds = new Set(nodes.map((n) => n.id));
+  const graphNodes: GraphNode[] = nodes.map((n) => ({ ...n }));
+  const linkSet = new Set<string>();
+  const links: GraphLink[] = [];
+
+  for (const node of nodes) {
+    for (const rel of node.relations) {
+      if (!nodeIds.has(rel.targetId)) continue;
+      const key = `${node.id}→${rel.targetId}→${rel.predicate}`;
+      if (!linkSet.has(key)) {
+        linkSet.add(key);
+        links.push({ source: node.id, target: rel.targetId, predicate: rel.predicate });
+      }
+    }
+  }
+
+  return { nodes: graphNodes, links };
+}
+
+// ── Public fetch (cached) ─────────────────────────────────────────────────────
+
+let _cache: GraphData | null = null;
+let _provenanceCache: CorpusProvenance | null = null;
+
+export async function fetchHeritageDemoData(): Promise<GraphData> {
+  if (_cache) return _cache;
+  const res = await fetch('/api/heritage-demo');
+  const raw = await res.json();
+  const nodes = parseJsonLd(raw);
+  _cache = buildGraphData(nodes);
+  _provenanceCache = (raw?._provenance ?? null) as CorpusProvenance | null;
+  return _cache;
+}
+
+export async function fetchHeritageDemoCorpus(): Promise<{
+  graph: GraphData;
+  provenance: CorpusProvenance | null;
+}> {
+  const graph = await fetchHeritageDemoData();
+  return { graph, provenance: _provenanceCache };
+}

@@ -1,0 +1,284 @@
+# Contract sketch: Schema extension proposals (moderator-gated)
+openapi: 3.0.3
+info:
+  title: HeritageGraph — Schema extension proposals
+  version: 1.0.0
+  description: |
+    REST sketch for SchemaExtensionProposal + audit timeline.
+    Base path illustrative — align with `heritage_graph/apps/heritage_data/urls.py` router registration.
+
+servers:
+  - url: /api/v1/data
+    description: Heritage data API prefix
+
+paths:
+  /schema-extension-proposals/:
+    get:
+      summary: List proposals (filtered by role)
+      operationId: listSchemaExtensionProposals
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, submitted, approved, rejected, published, withdrawn]
+      responses:
+        "200":
+          description: List
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    post:
+      summary: Create draft proposal
+      operationId: createSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SchemaExtensionProposalCreate"
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Validation error
+
+  /schema-extension-proposals/{id}/:
+    get:
+      summary: Proposal detail + summary for moderators
+      operationId: getSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchemaExtensionProposalDetail"
+        "404":
+          description: Not found
+
+    patch:
+      summary: Update draft fields (author only)
+      operationId: patchSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SchemaExtensionProposalPatch"
+      responses:
+        "200":
+          description: Updated
+
+  /schema-extension-proposals/{id}/submit/:
+    post:
+      summary: Draft to submitted
+      operationId: submitSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      responses:
+        "200":
+          description: Submitted
+        "409":
+          description: Conflict with another active proposal on same keys
+
+  /schema-extension-proposals/{id}/withdraw/:
+    post:
+      summary: Withdraw draft or submitted (policy-enforced)
+      operationId: withdrawSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      responses:
+        "200":
+          description: Withdrawn
+
+  /schema-extension-proposals/{id}/approve/:
+    post:
+      summary: Moderator approve (may transition to approved pending publish)
+      operationId: approveSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comment:
+                  type: string
+      responses:
+        "200":
+          description: Approved
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /schema-extension-proposals/{id}/reject/:
+    post:
+      summary: Moderator reject with required comment
+      operationId: rejectSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [comment]
+              properties:
+                comment:
+                  type: string
+                  minLength: 1
+      responses:
+        "200":
+          description: Rejected
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /schema-extension-proposals/{id}/publish/:
+    post:
+      summary: Moderator publish approved YAML to extension path and invalidate registry cache
+      operationId: publishSchemaExtensionProposal
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      responses:
+        "200":
+          description: Published with new schema version snapshot
+        "400":
+          description: Fatal validation / merge failure
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /schema-extension-proposals/{id}/audit/:
+    get:
+      summary: Append-only audit timeline
+      operationId: listSchemaExtensionProposalAudit
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/ProposalId"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SchemaExtensionAuditEvent"
+
+components:
+  parameters:
+    ProposalId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid token
+    Forbidden:
+      description: Insufficient role
+
+  schemas:
+    SchemaExtensionProposalCreate:
+      type: object
+      required: [title, proposed_yaml]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        proposed_yaml:
+          type: string
+
+    SchemaExtensionProposalPatch:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        proposed_yaml:
+          type: string
+
+    SchemaExtensionProposalDetail:
+      allOf:
+        - $ref: "#/components/schemas/SchemaExtensionProposalCreate"
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              type: string
+            author_id:
+              type: string
+              format: uuid
+            base_schema_version:
+              type: string
+            published_schema_version:
+              type: string
+              nullable: true
+            change_summary:
+              type: object
+              description: Human-readable structured summary for moderator UI
+            conflict_warning:
+              type: string
+              nullable: true
+
+    SchemaExtensionAuditEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        action:
+          type: string
+        from_status:
+          type: string
+          nullable: true
+        to_status:
+          type: string
+          nullable: true
+        comment:
+          type: string
+          nullable: true
+        actor_id:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        schema_version_snapshot:
+          type: string
+          nullable: true

@@ -1,0 +1,63 @@
+site_name: HeritageGraph Documentation
+site_description: Documentation for contributors, developers, API users, partners, and AI integrations
+site_author: CAIR-Nepal
+# Required for GitHub Pages project sites so CSS/JS resolve under /heritagegraph/
+site_url: https://cairnepal.github.io/heritagegraph/
+repo_name: heritagegraph
+repo_url: https://github.com/CAIRNepal/heritagegraph
+
+# Canonical guides live under documentation/ (see documentation/ARCHIVED.md for legacy Sphinx).
+docs_dir: documentation
+site_dir: site
+
+theme:
+  name: material
+  language: en
+  logo: images/logo.svg
+  favicon: images/logo.svg
+  custom_dir: overrides
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - search.suggest
+
+plugins:
+  - search
+
+nav:
+  - Home: README.md
+  - Start here:
+    - System overview: SYSTEM_OVERVIEW.md
+    - Feature walkthrough: FEATURE_WALKTHROUGH.md
+    - Troubleshooting: TROUBLESHOOTING.md
+  - Contribution:
+    - Forms system: contribution/FORMS.md
+    - Testing guide: testing/TESTING.md
+  - Knowledge graph:
+    - RDF engine: knowledge-graph/RDF_ENGINE.md
+    - Ingestion pipeline: knowledge-graph/PIPELINE.md
+  - Ontology:
+    - Registry & CIDOC mapping: ontology/ONTOLOGY.md
+  - Authentication:
+    - OAuth & sessions: auth/AUTH.md
+    - Roles & permissions: auth/AUTH_ROLES_DEVELOPER_GUIDE.md
+    - Adding providers: auth/AUTH_GUIDE.md
+  - API:
+    - Versioning: api/VERSIONING.md
+  - Deployment:
+    - Production: deployment/DEPLOYMENT.md
+    - Dokploy: deployment/DOKPLOY.md
+    - Coolify: deployment/deploy_on_coolify.md
+  - Developer:
+    - Conventions: developer/CONVENTIONS.md
+    - Skills matrix: developer/SKILLS.md
+  - Performance:
+    - Caching: performance/CACHING.md
+    - Search: performance/SEARCH.md
+  - i18n:
+    - Translation workflow: i18n/TRANSLATION.md
+  - Pipelines:
+    - OCR (suspended): pipelines/OCR.md
+  - Reference:
+    - Technical debt: TECHNICAL_DEBT.md
+    - Archived Sphinx site: ARCHIVED.md

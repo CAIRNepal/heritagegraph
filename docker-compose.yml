@@ -1,0 +1,373 @@
+# ================================================================
+# HeritageGraph Docker Compose Configuration
+# ================================================================
+# This is the main docker-compose file for orchestrating all
+# services. Use with environment variables from .env file
+#
+# For development: docker-compose up --build
+# For production: docker-compose -f docker-compose.yml \
+#                 -f docker-compose.prod.yml up -d
+# ================================================================
+
+# ================================================================
+# SERVICES
+# ================================================================
+services:
+  # ---------------------------------------------------------------
+  # PostgreSQL Database
+  # Database for Django backend
+  # ---------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: heritage-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-heritage_db}
+      POSTGRES_USER: ${POSTGRES_USER:-heritage_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      HERITAGE_DB_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-keycloak}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Traefik Reverse Proxy & Load Balancer
+  # Routes all traffic to appropriate services
+  # ---------------------------------------------------------------
+  traefik:
+    image: traefik:latest
+    container_name: heritage-traefik
+    restart: unless-stopped
+    command:
+      # API & Dashboard (disabled in production)
+      - "--api.dashboard=true"
+      - "--api.debug=true"
+      # Providers
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+      - "--providers.file.filename=/etc/traefik/traefik.yml"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Logs
+      - "--log.level=INFO"
+      - "--accesslog=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard (disable in production)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infra/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./infra/traefik/traefik-dynamic.yml:/etc/traefik/traefik-dynamic.yml:ro
+      - ./infra/traefik/acme:/etc/traefik/acme
+      - traefik-logs:/var/log/traefik
+    networks:
+      - proxy
+    labels:
+      # Dashboard configuration
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      # Basic auth for dashboard (optional)
+      # - "traefik.http.routers.dashboard.middlewares=auth"
+      # - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$..."
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Django REST Framework Backend
+  # Main API server
+  # ---------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: runtime-lean
+    container_name: heritage-backend
+    restart: unless-stopped
+    environment:
+      # Django settings (pipeline_e2e: dev + Postgres, no GDAL)
+      DJANGO_ENV: ${DJANGO_ENV:-development}
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-heritage_graph.settings.pipeline_e2e}
+      DEBUG: ${DEBUG:-False}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-key-change-in-production}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend.localhost}
+      # Database
+      DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
+      DB_NAME: ${DB_NAME:-heritage_db}
+      DB_USER: ${DB_USER:-heritage_user}
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      # Google Auth (backend verifies Google ID tokens)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/2}
+      HERITAGEGRAPH_DEV_AUTH: ${HERITAGEGRAPH_DEV_AUTH:-true}
+      # CORS
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://frontend.localhost}
+      # OCR: configuration only (actual OCR runs in `ocr-worker`, not this container)
+      OCR_ENABLED: ${OCR_ENABLED:-false}
+      TESSERACT_PATH: ${TESSERACT_PATH:-/usr/bin/tesseract}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      # In-app chat assistant (OpenRouter; tiering: apps/assistant/services/routing.py)
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENROUTER_MODEL_FAST: ${OPENROUTER_MODEL_FAST}
+      OPENROUTER_MODEL_STANDARD: ${OPENROUTER_MODEL_STANDARD}
+      OPENROUTER_MODEL_PREMIUM: ${OPENROUTER_MODEL_PREMIUM}
+      OCR_CONFIDENCE_THRESHOLD: ${OCR_CONFIDENCE_THRESHOLD:-0.6}
+      OCR_MAX_PAGES_PER_DOCUMENT: ${OCR_MAX_PAGES_PER_DOCUMENT:-100}
+      OCR_MAX_FILE_BYTES: ${OCR_MAX_FILE_BYTES:-26214400}
+      OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT: ${OCR_CLAUDE_VISION_MAX_CALLS_PER_DOCUMENT:-1}
+      # Triplestore
+      OXIGRAPH_URL: http://oxigraph:7878
+      # Project contribution saves to Oxigraph via SPARQL UPDATE; reads use /query.
+      RDF_SYNC_ENABLED: ${RDF_SYNC_ENABLED:-true}
+      RDF_ENDPOINT_URL: ${RDF_ENDPOINT_URL:-http://oxigraph:7878/update}
+      RDF_QUERY_URL: ${RDF_QUERY_URL:-http://oxigraph:7878/query}
+      RDF_PUBLIC_GRAPH_URI: ${RDF_PUBLIC_GRAPH_URI:-https://cair-nepal.org/heritagegraph/graph/public}
+      RDF_RESOURCE_BASE_URI: ${RDF_RESOURCE_BASE_URI:-https://cair-nepal.org/heritagegraph/resource/}
+      RDF_SHACL_VALIDATE_ON_WRITE: ${RDF_SHACL_VALIDATE_ON_WRITE:-false}
+      HERITAGEGRAPH_SHACL_SHAPES_PATH: /app/ontology/shapes/generated-heritagegraph-minimal-shacl.ttl
+      # KG ingestion pipeline (Agent 2): host-side Ollama
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      HERITAGEGRAPH_OLLAMA_MODEL: ${HERITAGEGRAPH_OLLAMA_MODEL:-llama3:latest}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./heritage_graph:/app/heritage_graph
+      - ./ontology:/app/ontology
+      - ./tools:/app/tools
+      - ./.cursor:/home/nabin/projects/heritagegraph/.cursor
+      - backend-static:/app/heritage_graph/staticfiles
+      - backend-media:/app/heritage_graph/media
+    networks:
+      - proxy
+      - backend
+    expose:
+      - 8000
+    labels:
+      - "traefik.enable=true"
+      # Route backend for both host-based API access and path-based access.
+      # The app uses endpoints like /data/* and /cidoc/* (not just /api/*).
+      - "traefik.http.routers.backend.rule=Host(`backend.localhost`) || PathPrefix(`/api`) || PathPrefix(`/data`) || PathPrefix(`/cidoc`) || PathPrefix(`/health`) || PathPrefix(`/docs`) || PathPrefix(`/redoc`) || PathPrefix(`/schema`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.services.backend.loadbalancer.healthcheck.path=/health"
+      - "traefik.http.services.backend.loadbalancer.healthcheck.interval=10s"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Next.js Frontend
+  # Main UI application
+  # ---------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: heritage_graph_ui/Dockerfile
+      # NEXT_PUBLIC_* must be passed at BUILD time (inlined into the client
+      # bundle); the runtime `environment` block below does not affect them.
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost/api}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
+        NEXT_PUBLIC_DEV_AUTH: ${HERITAGEGRAPH_DEV_AUTH:-true}
+        NEXT_PUBLIC_RDF_RESOURCE_BASE_URI: ${NEXT_PUBLIC_RDF_RESOURCE_BASE_URI:-https://cair-nepal.org/heritagegraph/resource/}
+        NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL: ${NEXT_PUBLIC_ATLAS_SHOW_ERROR_DETAIL:-false}
+        NEXT_PUBLIC_SHOW_FORM_GRAPH: ${NEXT_PUBLIC_SHOW_FORM_GRAPH:-false}
+    container_name: heritage-frontend
+    restart: unless-stopped
+    environment:
+      # Frontend configuration
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost/api}
+      # NextAuth + Google OAuth
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://frontend.localhost}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-dev-nextauth-secret-change-in-production}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      NEXT_PUBLIC_DEV_AUTH: ${HERITAGEGRAPH_DEV_AUTH:-true}
+      # Standalone server must listen on all interfaces
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      # Internal backend URL for server-side calls (NextAuth)
+      INTERNAL_BACKEND_URL: http://backend:8000
+    networks:
+      - proxy
+      - backend
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`) || Host(`localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Marketing landing (Next.js) — same design tokens as dashboard
+  # ---------------------------------------------------------------
+  landing:
+    build:
+      context: ./heritage_graph_landing
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost}
+    container_name: heritage-landing
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://frontend.localhost}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend.localhost}
+    networks:
+      - proxy
+    expose:
+      - 3000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.landing.rule=Host(`landing.localhost`)"
+      - "traefik.http.routers.landing.entrypoints=web"
+      - "traefik.http.services.landing.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # Redis Cache & Message Broker
+  # Used by Celery for async task queue
+  # ---------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: heritage-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - backend
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+  # OCR / document-ingestion worker — SUSPENDED (future functionality)
+  # The OCR + document-to-graph pipeline is currently paused and not part of
+  # the active deployment. The Celery worker service has been removed from the
+  # running stack; its full definition is preserved in git history. To
+  # re-enable: restore the `ocr-worker` service, build the `ocr-worker` image
+  # target, and set OCR_ENABLED=true. (`OCR_ENABLED` defaults to false.)
+  # ---------------------------------------------------------------
+
+  # ---------------------------------------------------------------
+  # Oxigraph Triplestore
+  # SPARQL 1.1 endpoint storing all knowledge graph triples
+  # ---------------------------------------------------------------
+  oxigraph:
+    image: ghcr.io/oxigraph/oxigraph:latest
+    container_name: heritage-oxigraph
+    restart: unless-stopped
+    command: serve --location /data --bind 0.0.0.0:7878
+    volumes:
+      - oxigraph-data:/data
+    networks:
+      - backend
+    expose:
+      - 7878
+    healthcheck:
+      test: ["NONE"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ---------------------------------------------------------------
+
+# ================================================================
+# VOLUMES
+# ================================================================
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  backend-static:
+    driver: local
+  backend-media:
+    driver: local
+  traefik-logs:
+    driver: local
+  oxigraph-data:
+    driver: local
+
+# ================================================================
+# NETWORKS
+# ================================================================
+networks:
+  # Proxy network for Traefik routing
+  proxy:
+    driver: bridge
+  # Backend network for inter-service communication
+  backend:
+    driver: bridge
+

@@ -1,0 +1,125 @@
+# AUTO-GENERATED — do not edit by hand.
+# Source:  ontology/HeritageGraph.yaml
+# Regen:   python3 tools/emit_crm_bridge.py
+#
+# CIDOC-CRM alignment bridge + disjointness axioms. Loaded into the SCHEMA
+# named graph so OWL-RL/RDFS reasoning can (a) entail CRM supertypes for
+# every heritage class and (b) detect class-disjointness violations.
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix hg:   <https://cair-nepal.org/heritagegraph/> .
+@prefix crm:  <http://www.cidoc-crm.org/cidoc-crm/> .
+
+# ── rdfs:subClassOf → CIDOC-CRM (sound upward entailment) ──────────────
+<https://cair-nepal.org/heritagegraph/Actor> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> .
+<https://cair-nepal.org/heritagegraph/ArchitecturalElement> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E25_Human-Made_Feature> .
+<https://cair-nepal.org/heritagegraph/ArchitecturalStructure> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> .
+<https://cair-nepal.org/heritagegraph/ArchivalRecord> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E31_Document> .
+<https://cair-nepal.org/heritagegraph/Assertion> rdfs:subClassOf <http://www.cidoc-crm.org/extensions/crminf/I2_Belief> .
+<https://cair-nepal.org/heritagegraph/CasteGroup> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E74_Group> .
+<https://cair-nepal.org/heritagegraph/ConditionAssessment> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E14_Condition_Assessment> .
+<https://cair-nepal.org/heritagegraph/ConditionState> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E3_Condition_State> .
+<https://cair-nepal.org/heritagegraph/Consecration> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/DataSource> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> .
+<https://cair-nepal.org/heritagegraph/Deity> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E28_Conceptual_Object> .
+<https://cair-nepal.org/heritagegraph/DestructionEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E6_Destruction> .
+<https://cair-nepal.org/heritagegraph/DocumentationActivity> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/Enshrinement> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/Festival> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/FieldSurveyActivity> rdfs:subClassOf <http://www.cidoc-crm.org/extensions/crmsci/S4_Observation> .
+<https://cair-nepal.org/heritagegraph/FieldSurveyDataset> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E31_Document> .
+<https://cair-nepal.org/heritagegraph/Group> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E74_Group> .
+<https://cair-nepal.org/heritagegraph/Guthi> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E74_Group> .
+<https://cair-nepal.org/heritagegraph/HeritageAssertion> rdfs:subClassOf <http://www.cidoc-crm.org/extensions/crminf/I2_Belief> .
+<https://cair-nepal.org/heritagegraph/HistoricalEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E5_Event> .
+<https://cair-nepal.org/heritagegraph/HistoricalPeriod> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E4_Period> .
+<https://cair-nepal.org/heritagegraph/HumanMadeObject> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> .
+<https://cair-nepal.org/heritagegraph/IconographicObject> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> .
+<https://cair-nepal.org/heritagegraph/IconographicObject> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item> .
+<https://cair-nepal.org/heritagegraph/InformationObject> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object> .
+<https://cair-nepal.org/heritagegraph/KumariEnthronementEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/KumariLifecycleEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/KumariRetirementEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/KumariRole> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E55_Type> .
+<https://cair-nepal.org/heritagegraph/KumariSelectionEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/KumariTenure> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E4_Period> .
+<https://cair-nepal.org/heritagegraph/LivingGoddessRetirement> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/LivingGoddessSelection> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/LivingGoddessTenure> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E4_Period> .
+<https://cair-nepal.org/heritagegraph/Material> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E57_Material> .
+<https://cair-nepal.org/heritagegraph/OralHistoryInterview> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E65_Creation> .
+<https://cair-nepal.org/heritagegraph/OralHistoryRecording> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object> .
+<https://cair-nepal.org/heritagegraph/Person> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E21_Person> .
+<https://cair-nepal.org/heritagegraph/Place> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E53_Place> .
+<https://cair-nepal.org/heritagegraph/Production> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E12_Production> .
+<https://cair-nepal.org/heritagegraph/Proposition> rdfs:subClassOf <http://www.cidoc-crm.org/extensions/crminf/I4_Proposition_Set> .
+<https://cair-nepal.org/heritagegraph/ReligiousTradition> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E55_Type> .
+<https://cair-nepal.org/heritagegraph/RitualAssessment> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/RitualEvent> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E7_Activity> .
+<https://cair-nepal.org/heritagegraph/SelectionCriterion> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E55_Type> .
+<https://cair-nepal.org/heritagegraph/SyncreticRelationship> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment> .
+<https://cair-nepal.org/heritagegraph/Technique> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E29_Design_or_Procedure> .
+<https://cair-nepal.org/heritagegraph/TimeSpan> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span> .
+<https://cair-nepal.org/heritagegraph/TransferOfCustody> rdfs:subClassOf <http://www.cidoc-crm.org/cidoc-crm/E10_Transfer_of_Custody> .
+
+# ── skos:exactMatch → external authorities ────────────────────────────
+<https://cair-nepal.org/heritagegraph/ArchitecturalElement> skos:exactMatch <http://vocab.getty.edu/aat/300000885> .
+<https://cair-nepal.org/heritagegraph/ArchitecturalStructure> skos:exactMatch <http://www.wikidata.org/entity/Q811979> .
+<https://cair-nepal.org/heritagegraph/ArchivalRecord> skos:exactMatch <https://www.ica.org/standards/RiC/ontology#Record> .
+<https://cair-nepal.org/heritagegraph/BuddhistMonument> skos:exactMatch <http://vocab.getty.edu/aat/300007576> .
+<https://cair-nepal.org/heritagegraph/BuddhistMonument> skos:exactMatch <http://www.wikidata.org/entity/Q177980> .
+<https://cair-nepal.org/heritagegraph/Deity> skos:exactMatch <http://dbpedia.org/ontology/Deity> .
+<https://cair-nepal.org/heritagegraph/Deity> skos:exactMatch <http://vocab.getty.edu/aat/300343850> .
+<https://cair-nepal.org/heritagegraph/Deity> skos:exactMatch <http://www.wikidata.org/entity/Q178885> .
+<https://cair-nepal.org/heritagegraph/HeritageAssertion> skos:exactMatch <http://schema.org/Claim> .
+<https://cair-nepal.org/heritagegraph/Murti> skos:exactMatch <http://www.wikidata.org/entity/Q1781039> .
+<https://cair-nepal.org/heritagegraph/Paubha> skos:exactMatch <http://www.wikidata.org/entity/Q7148832> .
+<https://cair-nepal.org/heritagegraph/ReligiousTradition> skos:exactMatch <http://vocab.getty.edu/aat/300073708> .
+<https://cair-nepal.org/heritagegraph/Stupa> skos:exactMatch <http://vocab.getty.edu/aat/300007576> .
+<https://cair-nepal.org/heritagegraph/Stupa> skos:exactMatch <http://www.wikidata.org/entity/Q180987> .
+<https://cair-nepal.org/heritagegraph/Temple> skos:exactMatch <http://dbpedia.org/ontology/Temple> .
+<https://cair-nepal.org/heritagegraph/Temple> skos:exactMatch <http://vocab.getty.edu/aat/300007595> .
+<https://cair-nepal.org/heritagegraph/Temple> skos:exactMatch <http://www.wikidata.org/entity/Q44539> .
+
+# ── skos:closeMatch → external authorities (EDM / GeoNames / schema.org) ──
+<https://cair-nepal.org/heritagegraph/ArchitecturalStructure> skos:closeMatch <http://schema.org/Place> .
+<https://cair-nepal.org/heritagegraph/Assertion> skos:closeMatch <http://schema.org/Claim> .
+<https://cair-nepal.org/heritagegraph/HistoricalPeriod> skos:closeMatch <http://www.europeana.eu/schemas/edm/TimeSpan> .
+<https://cair-nepal.org/heritagegraph/HumanMadeObject> skos:closeMatch <http://schema.org/CreativeWork> .
+<https://cair-nepal.org/heritagegraph/Paubha> skos:closeMatch <http://www.wikidata.org/entity/Q916651> .
+<https://cair-nepal.org/heritagegraph/Proposition> skos:closeMatch <http://www.w3.org/1999/02/22-rdf-syntax-ns#Statement> .
+<https://cair-nepal.org/heritagegraph/Temple> skos:closeMatch <http://schema.org/HinduTemple> .
+<https://cair-nepal.org/heritagegraph/Temple> skos:closeMatch <http://schema.org/PlaceOfWorship> .
+
+# ── skos:broadMatch → external authorities ────────────────────────────
+<https://cair-nepal.org/heritagegraph/CalendarSystem> skos:broadMatch <http://www.w3.org/2006/time#TRS> .
+<https://cair-nepal.org/heritagegraph/CasteGroup> skos:broadMatch <http://www.w3.org/ns/prov#Organization> .
+<https://cair-nepal.org/heritagegraph/Container> skos:broadMatch <http://www.w3.org/ns/prov#Collection> .
+<https://cair-nepal.org/heritagegraph/DataCustodian> skos:broadMatch <http://www.w3.org/ns/prov#Agent> .
+<https://cair-nepal.org/heritagegraph/Festival> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+<https://cair-nepal.org/heritagegraph/Guthi> skos:broadMatch <http://www.w3.org/ns/prov#Organization> .
+<https://cair-nepal.org/heritagegraph/HeritageAssertion> skos:broadMatch <http://www.w3.org/ns/prov#Entity> .
+<https://cair-nepal.org/heritagegraph/IconographicObject> skos:broadMatch <http://dbpedia.org/ontology/Artwork> .
+<https://cair-nepal.org/heritagegraph/KumariEnthronementEvent> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+<https://cair-nepal.org/heritagegraph/KumariLifecycleEvent> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+<https://cair-nepal.org/heritagegraph/KumariRetirementEvent> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+<https://cair-nepal.org/heritagegraph/KumariSelectionEvent> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+<https://cair-nepal.org/heritagegraph/Paubha> skos:broadMatch <http://vocab.getty.edu/aat/300033618> .
+<https://cair-nepal.org/heritagegraph/Person> skos:broadMatch <http://www.w3.org/ns/prov#Person> .
+<https://cair-nepal.org/heritagegraph/RitualAssessment> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+<https://cair-nepal.org/heritagegraph/Temple> skos:broadMatch <http://dbpedia.org/ontology/ReligiousBuilding> .
+<https://cair-nepal.org/heritagegraph/Verification> skos:broadMatch <http://www.w3.org/ns/prov#Activity> .
+
+# ── owl:disjointWith (class-level consistency constraints) ────────────
+<https://cair-nepal.org/heritagegraph/BuddhistMonument> owl:disjointWith <https://cair-nepal.org/heritagegraph/RestHouse> .
+<https://cair-nepal.org/heritagegraph/BuddhistMonument> owl:disjointWith <https://cair-nepal.org/heritagegraph/Temple> .
+<https://cair-nepal.org/heritagegraph/BuddhistMonument> owl:disjointWith <https://cair-nepal.org/heritagegraph/WaterStructure> .
+<https://cair-nepal.org/heritagegraph/Chaitya> owl:disjointWith <https://cair-nepal.org/heritagegraph/Stupa> .
+<https://cair-nepal.org/heritagegraph/DataSource> owl:disjointWith <https://cair-nepal.org/heritagegraph/HeritageAssertion> .
+<https://cair-nepal.org/heritagegraph/Deity> owl:disjointWith <https://cair-nepal.org/heritagegraph/HistoricalPeriod> .
+<https://cair-nepal.org/heritagegraph/DocumentationActivity> owl:disjointWith <https://cair-nepal.org/heritagegraph/HeritageAssertion> .
+<https://cair-nepal.org/heritagegraph/HistoricalPeriod> owl:disjointWith <https://cair-nepal.org/heritagegraph/Person> .
+<https://cair-nepal.org/heritagegraph/HistoricalPeriod> owl:disjointWith <https://cair-nepal.org/heritagegraph/Place> .
+<https://cair-nepal.org/heritagegraph/LivingGoddessRetirement> owl:disjointWith <https://cair-nepal.org/heritagegraph/LivingGoddessSelection> .
