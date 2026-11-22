@@ -187,7 +187,9 @@ def _resolve(iri: str) -> Any | None:
     return model.objects.filter(pk=row.object_id).first() if model else None
 
 
-def _ensure_exact_match(instance: Any, label: str, iri: str) -> None:
+def _ensure_exact_match(
+    instance: Any, label: str, iri: str, source: DataSource
+) -> None:
     """skos:exactMatch through the record's identity cluster (the DANAM pattern).
 
     A curated record may already sit in a cluster (bootstrap_identity_clusters);
@@ -242,6 +244,8 @@ def _ensure_exact_match(instance: Any, label: str, iri: str) -> None:
         asserted_value="",
         assertion_content="Wikidata import singleton membership",
         entity_cluster=cluster,
+        source=source,
+        source_citation=f"Wikidata item {iri.rsplit('/', 1)[-1]}.",
         reconciliation_status="accepted",
         confidence="certain",
         contributed_by=CONTRIBUTOR,
@@ -280,11 +284,16 @@ def _enrich_curated(instance, labels: dict, media: list, qid: str, ent: dict, re
     if media and not instance.media:
         instance.media = media
         changed.append("media")
-    note = f"Labels{' and image' if media else ''} added from {_citation(qid, ent, retrieved)}"
-    citation = (instance.source_citation or "").strip()
-    if changed and f"Wikidata {qid}" not in citation:
-        instance.source_citation = f"{citation}\n{note}".strip()
-        changed.append("source_citation")
+    # What Wikidata supplied supports these fields only, not the record's own
+    # content, so it is recorded per field rather than in source_citation.
+    if changed:
+        cite = _citation(qid, ent, retrieved)
+        sources = dict(instance.field_sources or {})
+        for field in ("labels", "media"):
+            if field in changed:
+                sources[field] = cite
+        instance.field_sources = sources
+        changed.append("field_sources")
     if changed:
         instance.save(update_fields=changed)
     return bool(changed)
@@ -370,7 +379,7 @@ def upsert_entities(
             if changed:
                 report.bump(report.updated, key)
         _bind(iri, instance)
-        _ensure_exact_match(instance, name, iri)
+        _ensure_exact_match(instance, name, iri, source)
         rows[qid] = instance
     return rows
 

@@ -165,9 +165,25 @@ class RegistryContributionMatrixTest(APITestCase):
                 payload[name] = f"E2E {key} {name}"
 
         payload.setdefault("name", f"E2E {key}")
+        # Records are accepted only when they name a source.
+        payload.setdefault("source_citation", f"E2E {key} source")
         return payload
 
     # ── the pipeline ─────────────────────────────────────────────────────────
+
+    def _first_independent_approval(self, wrapper):
+        from apps.heritage_data.dual_review import reasons
+        from apps.heritage_data.models import ReviewDecision, _resolve_linked_cidoc_instance
+
+        revision = wrapper.current_revision or wrapper.get_latest_revision()
+        if not reasons(_resolve_linked_cidoc_instance(wrapper), revision.data):
+            return
+        other = User.objects.create_user(
+            username=f"matrix-reviewer-2-{wrapper.pk}", email=f"r2-{wrapper.pk}@example.com"
+        )
+        ReviewDecision.objects.create(
+            entity=wrapper, reviewer=other, revision_reviewed=revision, verdict="accept"
+        )
 
     def _wrapper_for(self, instance):
         ct = ContentType.objects.get_for_model(type(instance))
@@ -224,6 +240,8 @@ class RegistryContributionMatrixTest(APITestCase):
         )
 
         # ── STAGE 3: reviewer accepts ────────────────────────────────────────
+        # Sensitive domains need a second, independent approval first.
+        self._first_independent_approval(wrapper)
         with self.captureOnCommitCallbacks(execute=True):
             wrapper.accept_contribution(self.reviewer, "matrix accept")
         instance.refresh_from_db()

@@ -29,7 +29,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { SourcePrompt } from "@/components/contribute/source-prompt";
+import { ContributorTermsDialog } from "@/components/contribute/contributor-terms-dialog";
+import { fetchContributorConsent, type ContributorConsent } from "@/lib/contributor-consent";
+import {
+  EMPTY_SOURCE_ANSWER,
+  SourcePrompt,
+  sourceAnswerComplete,
+  sourceAnswerPayload,
+  type SourceAnswer,
+} from "@/components/contribute/source-prompt";
 
 import type { OntologyClass, OntologyField } from "@/lib/ontology/types";
 import { apiFetchJson, getApiErrorMessage } from "@/lib/api-client";
@@ -203,7 +211,13 @@ function FieldRenderer({
     </div>
   );
 
-  const helpText = field.description;
+  // The ontology describes `note` as "description, reason, verification
+  // notes", but it is published as the record's public description. Say so,
+  // so private remarks go to the reviewer, not into the graph.
+  const helpText =
+    field.key === "note"
+      ? "Published with the record as its description. Remarks meant only for reviewers belong in your source description."
+      : field.description;
   const constraintHint = buildFieldConstraintHint(field);
 
   const descEl =
@@ -540,6 +554,25 @@ function FieldRenderer({
       );
 
     case "relation": {
+      if (!field.relationEndpoint) {
+        // The range has no record type to pick from (Actor, TimeSpan, Material,
+        // …). Take the names as written; they are kept as a sourced value.
+        return (
+          <div className="space-y-1">
+            {labelEl}
+            {descEl}
+            <Input
+              id={id}
+              value={typeof value === "string" ? value : ""}
+              onChange={(e) => onChange(field.key, e.target.value)}
+              placeholder={field.multivalued ? "Names, separated by commas" : "Name, as written in your source"}
+              disabled={disabled}
+              className={errorRing}
+            />
+            {errorFooter}
+          </div>
+        );
+      }
       const childClass = getRelatedOntologyClass?.(field);
       const showNested =
         Boolean(field.inlineAuthoring) &&
@@ -759,6 +792,15 @@ function FieldRenderer({
   }
 }
 
+/**
+ * Registry slots the API cannot store yet and refuses with a 400 (see
+ * ASSERTION_SLOTS_NOT_STORED in cidoc_data/serializers.py). Not offered,
+ * rather than offered and lost.
+ */
+const NOT_STORED_FIELDS: Record<string, readonly string[]> = {
+  assertion: ["asserts_about_entity", "asserts_about_event", "was_attributed_to_agent", "supersedes_assertion"],
+};
+
 export interface OntologyFormProps {
   ontologyClass: OntologyClass;
   redirectTo?: string;
@@ -828,6 +870,17 @@ export default function OntologyForm({
     contributor?: string;
   } | null>(null);
   const [submitConfirmOpen, setSubmitConfirmOpen] = useState(false);
+  // Contributor terms: asked once, before the first submission (and again when
+  // the terms change). The backend refuses contributions until they are accepted.
+  const [consent, setConsent] = useState<ContributorConsent | null>(null);
+  const [termsOpen, setTermsOpen] = useState(false);
+  useEffect(() => {
+    if (!isSignedIn) return;
+    const token = (session as { accessToken?: string } | null)?.accessToken;
+    fetchContributorConsent(token)
+      .then(setConsent)
+      .catch(() => setConsent(null));
+  }, [isSignedIn, session]);
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [suggestKey, setSuggestKey] = useState<string | null>(null);
@@ -933,7 +986,20 @@ export default function OntologyForm({
           },
         });
         if (cancelled) return;
-        setFormData(mapCidocRecordToFormData(ontologyClass, data));
+        const knownSource =
+          data.source && typeof data.source === "object"
+            ? (data.source as { id: string | number; name?: string })
+            : data.source
+              ? { id: data.source as string, name: String(data.source) }
+              : null;
+        setFormData({
+          ...mapCidocRecordToFormData(ontologyClass, data),
+          __source: {
+            ...EMPTY_SOURCE_ANSWER,
+            citation: typeof data.source_citation === "string" ? data.source_citation : "",
+            source: knownSource ? { id: knownSource.id, name: knownSource.name ?? String(knownSource.id) } : null,
+          },
+        });
         setRecordMeta({
           id: String(recordId),
           status: typeof data.status === "string" ? data.status : undefined,
@@ -975,10 +1041,11 @@ export default function OntologyForm({
   const sortedFields = useMemo(
     () =>
       [...ontologyClass.fields]
+        .filter((f) => !NOT_STORED_FIELDS[ontologyClass.key]?.includes(f.key))
         .map((f) => withContributePlainCopy(f, { showExpertFields }) ?? null)
         .filter((f): f is NonNullable<typeof f> => f != null)
         .sort((a, b) => (a.order ?? 99) - (b.order ?? 99)),
-    [ontologyClass.fields, showExpertFields]
+    [ontologyClass.fields, ontologyClass.key, showExpertFields]
   );
 
   const visibleSortedFields = sortedFields;
@@ -1643,11 +1710,29 @@ export default function OntologyForm({
     sectionLabelForField,
   ]);
 
+  const sourceAnswer: SourceAnswer =
+    (formData.__source as SourceAnswer | undefined) ?? EMPTY_SOURCE_ANSWER;
+  const setSourceAnswer = (next: SourceAnswer) =>
+    setFormData((prev) => ({ ...prev, __source: next }));
+  // The cultural-entity wrapper endpoint has no source columns; CIDOC records do.
+  const asksForSource = !ontologyClass.apiEndpoint.includes("cultural-entities");
+  const sourceReady = !asksForSource || sourceAnswerComplete(sourceAnswer);
+
   const openSubmitConfirm = () => {
     setSubmitAttempted(true);
     if (!validate()) return;
+    if (!sourceReady) {
+      toast.error("Say where this came from before submitting.", {
+        description: "Name a source, or describe it and choose its kind, and say how sure you are.",
+      });
+      return;
+    }
     if (!isSignedIn) {
       toast.error("Please sign in to submit contributions.");
+      return;
+    }
+    if (consent && !consent.accepted) {
+      setTermsOpen(true);
       return;
     }
     setSubmitConfirmOpen(true);
@@ -1659,7 +1744,10 @@ export default function OntologyForm({
     try {
       const token = (session as { accessToken?: string } | null)
         ?.accessToken;
-      const payload = buildOntologyFormPayload(ontologyClass.fields, formData);
+      const payload = {
+        ...buildOntologyFormPayload(ontologyClass.fields, formData),
+        ...(asksForSource ? sourceAnswerPayload(sourceAnswer) : {}),
+      };
 
       // The CulturalEntity endpoint ("entity" class) is not a flat CIDOC resource:
       // its serializer expects {name, description, category, form_data}, where
@@ -1927,6 +2015,17 @@ export default function OntologyForm({
 
   const submitConfirmDialogs = (
     <>
+      <ContributorTermsDialog
+        open={termsOpen}
+        consent={consent}
+        token={(session as { accessToken?: string } | null)?.accessToken}
+        onOpenChange={setTermsOpen}
+        onAccepted={(next) => {
+          setConsent(next);
+          setTermsOpen(false);
+          setSubmitConfirmOpen(true);
+        }}
+      />
       <ConfirmActionDialog
         open={submitConfirmOpen}
         onOpenChange={setSubmitConfirmOpen}
@@ -2084,6 +2183,10 @@ export default function OntologyForm({
             ) : null}
           </CardContent>
         </Card>
+
+        {asksForSource ? (
+          <SourcePrompt value={sourceAnswer} onChange={setSourceAnswer} disabled={!isSignedIn} />
+        ) : null}
 
         <div className="flex justify-end gap-3">
           <Button
@@ -2304,13 +2407,9 @@ export default function OntologyForm({
           )}
         </div>
 
-        <SourcePrompt
-          value={(formData.source_citation as string) ?? ""}
-          onChange={(next) =>
-            setFormData((prev) => ({ ...prev, source_citation: next }))
-          }
-          disabled={!isSignedIn}
-        />
+        {asksForSource ? (
+          <SourcePrompt value={sourceAnswer} onChange={setSourceAnswer} disabled={!isSignedIn} />
+        ) : null}
 
         <div className="flex gap-2">
           <Button

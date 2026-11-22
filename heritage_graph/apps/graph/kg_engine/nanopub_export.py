@@ -57,7 +57,7 @@ def nanopub_trig_for_assertion(assertion: Any) -> str:
     lines.append("}")
     lines.append("")
     lines.append(f"<{prov_graph}> {{")
-    lines.append(f"  <{np_id}> a <http://www.cidoc-crm.org/crminf/I2_Belief> .")
+    lines.append(f"  <{np_id}> a <http://www.cidoc-crm.org/extensions/crminf/I2_Belief> .")
     if assertion.source_id:
         lines.append(f"  <{np_id}> prov:wasDerivedFrom <{data_source_uri(assertion.source_id)}> .")
     agent = (assertion.attributed_to_agent or assertion.contributed_by or "").strip()

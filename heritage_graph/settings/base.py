@@ -121,6 +121,11 @@ AUTH_USER_MODEL = "users.User"
 REST_FRAMEWORK = {
     # Auth classes are set per-environment in development.py / production.py
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Fail closed: a view that forgets to declare permissions is read-only to
+    # anonymous callers, never writable (DRF's own default is AllowAny).
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
     # Versioning: prefer URL-based (/api/v1/...)
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
     "DEFAULT_VERSION": "v1",

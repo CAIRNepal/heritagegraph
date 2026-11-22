@@ -78,7 +78,7 @@ class PublishedEditLifecycleTest(APITestCase):
         # Submit and accept (publish).
         resp = self.client.post(
             "/api/v1/cidoc/persons/",
-            {"name": "King Bhupatindra Malla", "description": "Original."},
+            {"source_citation": "Test fixture source.", "name": "King Bhupatindra Malla", "description": "Original."},
             format="json",
         )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.content)
@@ -151,7 +151,7 @@ class PublishedEditLifecycleTest(APITestCase):
         a newer rejected proposal lingering as the latest revision."""
         resp = self.client.post(
             "/api/v1/cidoc/persons/",
-            {"name": "Stable Person", "description": "Original."},
+            {"source_citation": "Test fixture source.", "name": "Stable Person", "description": "Original."},
             format="json",
         )
         person = Person.objects.get(pk=resp.json()["id"])
@@ -186,7 +186,7 @@ class PublishedEditLifecycleTest(APITestCase):
         queues and My Contributions don't show stale labels."""
         resp = self.client.post(
             "/api/v1/cidoc/persons/",
-            {"name": "Old Label", "description": "Old desc."},
+            {"source_citation": "Test fixture source.", "name": "Old Label", "description": "Old desc."},
             format="json",
         )
         person = Person.objects.get(pk=resp.json()["id"])
@@ -221,7 +221,7 @@ class PublishedEditLifecycleTest(APITestCase):
         )
         resp = self.client.post(
             "/api/v1/cidoc/structures/",
-            {
+            {"source_citation": "Test fixture source.", 
                 "name": "Krishna Mandir",
                 "structure_type": "Temple",
                 "has_current_location": location.pk,
@@ -247,7 +247,7 @@ class PublishedEditLifecycleTest(APITestCase):
     def test_curator_withdrawal_unpublishes(self):
         resp = self.client.post(
             "/api/v1/cidoc/persons/",
-            {"name": "Withdrawable Person", "description": "tmp"},
+            {"source_citation": "Test fixture source.", "name": "Withdrawable Person", "description": "tmp"},
             format="json",
         )
         person = Person.objects.get(pk=resp.json()["id"])
@@ -545,7 +545,7 @@ class PublishedDeleteGuardTest(APITestCase):
         self.client.force_authenticate(user=user)
         resp = self.client.post(
             "/api/v1/cidoc/persons/",
-            {"name": "Keep Me", "description": "d"},
+            {"source_citation": "Test fixture source.", "name": "Keep Me", "description": "d"},
             format="json",
         )
         pk = resp.json()["id"]

@@ -64,6 +64,15 @@ def promote_public_contribution(contribution, *, target_type: str, reviewer):
         cidoc_kwargs["title"] = entity_name
     if "source_description" in field_names and contribution.source_description:
         cidoc_kwargs["source_description"] = contribution.source_description
+    # The observation is the evidence: say whose it was and how it arrived, so
+    # the record meets the same "names a source" bar as a form submission.
+    citation = (contribution.source_description or "").strip() or (
+        f"Field observation by {contribution.contributor_name or 'an anonymous visitor'}, "
+        f"submitted via {contribution.submitted_via or 'the public form'} on "
+        f"{contribution.created_at:%Y-%m-%d} (public contribution {contribution.id})."
+    )
+    if "source_citation" in field_names:
+        cidoc_kwargs["source_citation"] = citation
 
     with transaction.atomic():
         try:
@@ -92,6 +101,7 @@ def promote_public_contribution(contribution, *, target_type: str, reviewer):
             data={
                 "name": entity_name,
                 "description": contribution.content,
+                "source_citation": citation,
                 "_cidoc_model": model.__name__,
                 "_cidoc_id": cidoc_row.pk,
                 "_public_contribution_id": str(contribution.id),

@@ -19,6 +19,7 @@ import { User, KeyRound, MonitorSmartphone } from 'lucide-react';
 
 import { glassCard } from '@/lib/design';
 import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
+import { ContributorVisibilityCard } from '@/components/account/contributor-visibility-card';
 
 export default function MyAccount() {
   const { data: session, status } = useSession();
@@ -114,6 +115,8 @@ export default function MyAccount() {
           </p>
         </CardContent>
       </Card>
+
+      <ContributorVisibilityCard token={(session as { accessToken?: string } | null)?.accessToken} />
 
       <Card className={glassCard}>
         <CardHeader>

@@ -341,12 +341,16 @@ def provenance_coverage(engine: Any) -> dict[str, Any]:
             Q(attributed_to_agent__gt="") | Q(contributed_by__gt="")
         ).count()
         sourced = qs.filter(Q(source__isnull=False) | Q(source_citation__gt="")).count()
+        # Any citation text counts above, including placeholders such as
+        # "HeritageGraph curated corpus"; this counts only a registered source.
+        registered = qs.filter(source__isnull=False).count()
     except Exception:
         return {"value": None, "accepted_edges": None}
     return {
         "accepted_edges": total,
         "with_agent": attributed,
         "with_source": sourced,
+        "with_registered_source": registered,
         "value": round(attributed / total, 4) if total else None,
     }
 

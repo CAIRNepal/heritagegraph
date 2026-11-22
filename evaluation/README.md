@@ -21,6 +21,38 @@ holds only the format example. Producing a real gold standard — an independent
 double-annotated sample with inter-annotator agreement reported — is outstanding
 work, not a code task.
 
+## Producing the gold standard
+
+1. Draw the sample (reproducible from its seed; stratified by record type):
+
+       manage.py prepare_annotation_sample --output-dir annotation/ --size 40
+
+   This writes `annotator-A.csv`, `annotator-B.csv`, `sample.json` and
+   `INSTRUCTIONS.md`: one row per statement the public graph makes about each
+   sampled record.
+2. Two domain experts fill `judgement` (`correct` / `incorrect` / `unsure`)
+   independently, each in their own sheet.
+3. Agreement and the disagreements to settle:
+
+       manage.py score_annotations annotation/annotator-A.csv annotation/annotator-B.csv \
+           --output-dir annotation/
+
+   `agreement.json` reports observed agreement and Cohen's kappa;
+   `adjudication.csv` lists the disagreements.
+4. A third person fills `final` in `adjudication.csv`; then
+
+       manage.py score_annotations annotation/annotator-A.csv annotation/annotator-B.csv \
+           --adjudicated annotation/adjudication.csv --sample annotation/sample.json \
+           --output-dir annotation/
+
+   writes `precision.json` (share of judged statements that are correct,
+   overall and per type; `unsure` excluded and counted) and
+   `gold-entities.json`. Copy the latter to `evaluation/gold/entities.json` for
+   `kg_evaluate`.
+
+Report kappa, the adjudication count and precision together; precision without
+agreement is not evidence.
+
 ## Gold subset
 
 Place expert-annotated JSON under `evaluation/gold/`:

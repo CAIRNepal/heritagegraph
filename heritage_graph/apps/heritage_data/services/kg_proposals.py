@@ -167,6 +167,8 @@ def validate_relationship_proposal_ready(proposal: RelationshipProposal) -> None
 
     if not proposal.predicate.active:
         errors["predicate"] = "Predicate is inactive."
+    if proposal.confidence not in ("certain", "likely", "uncertain", "speculative"):
+        errors["confidence"] = "Say how sure you are: certain, likely, uncertain or speculative."
 
     for i, raw in enumerate(proposal.supporting_source_ids or []):
         try:
@@ -227,7 +229,9 @@ def materialize_entity_proposal(proposal: EntityProposal, actor) -> EntityCluste
             entity_cluster=cluster,
             source_id=primary.id,
             contributed_by=actor_label,
-            confidence="likely",
+            # Approving a proposal is a yes/no decision that the rows are one
+            # referent; it is not an estimate.
+            confidence="certain",
             reconciliation_status="accepted",
             data_quality_note="",
         )
@@ -270,7 +274,7 @@ def materialize_relationship_proposal(
         temporal_scope_edtf=proposal.temporal_scope_edtf or "",
         source_id=proposal.primary_source_id,
         contributed_by=_actor_label(actor),
-        confidence=proposal.confidence or "likely",
+        confidence=proposal.confidence,
         reconciliation_status="accepted",
         data_quality_note="",
         entity_cluster=None,

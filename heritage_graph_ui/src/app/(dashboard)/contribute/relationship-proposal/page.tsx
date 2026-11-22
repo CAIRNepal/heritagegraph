@@ -25,7 +25,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ContributorTermsDialog } from '@/components/contribute/contributor-terms-dialog';
 import { apiFetchJson, getApiErrorMessage } from '@/lib/api-client';
+import { fetchContributorConsent, type ContributorConsent } from '@/lib/contributor-consent';
 import { getPublicApiUrl } from '@/lib/api-base';
 import {
   buildPatternCompletionUrl,
@@ -74,6 +76,14 @@ function toPositiveInt(raw: unknown): number | null {
 export default function RelationshipProposalContributePage() {
   const { data: session, status } = useSession();
   const token = (session as { accessToken?: string } | null)?.accessToken;
+  const [consent, setConsent] = useState<ContributorConsent | null>(null);
+  const [termsOpen, setTermsOpen] = useState(false);
+  useEffect(() => {
+    if (!token) return;
+    fetchContributorConsent(token)
+      .then(setConsent)
+      .catch(() => setConsent(null));
+  }, [token]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftIdParam = searchParams.get('id');
@@ -95,7 +105,8 @@ export default function RelationshipProposalContributePage() {
     { id: string; label: string }[]
   >([]);
   const [temporal, setTemporal] = useState('');
-  const [confidence, setConfidence] = useState('likely');
+  // Empty until the contributor chooses: a preselected value would be a claim they never made.
+  const [confidence, setConfidence] = useState('');
   const [note, setNote] = useState('');
   const [proposalId, setProposalId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -302,13 +313,8 @@ export default function RelationshipProposalContributePage() {
         if (!cancelled) setSupportingSources(supRows);
 
         setTemporal(typeof row.temporal_scope_edtf === 'string' ? row.temporal_scope_edtf : '');
-        const conf =
-          typeof row.confidence === 'string' && row.confidence
-            ? row.confidence
-            : 'likely';
-        setConfidence(
-          ['certain', 'likely', 'uncertain', 'speculative'].includes(conf) ? conf : 'likely'
-        );
+        const conf = typeof row.confidence === 'string' ? row.confidence : '';
+        setConfidence(['certain', 'likely', 'uncertain', 'speculative'].includes(conf) ? conf : '');
         setNote(
           typeof row.interpretation_note === 'string' ? row.interpretation_note : ''
         );
@@ -385,8 +391,12 @@ export default function RelationshipProposalContributePage() {
     }
   };
 
-  const submitForReview = async () => {
+  const submitForReview = async (termsJustAccepted = false) => {
     if (!token) return;
+    if (!termsJustAccepted && consent && !consent.accepted) {
+      setTermsOpen(true);
+      return;
+    }
     if (!proposalEditable) {
       toast.error('This proposal cannot be edited.');
       return;
@@ -471,6 +481,18 @@ export default function RelationshipProposalContributePage() {
   }
 
   return (
+    <>
+      <ContributorTermsDialog
+        open={termsOpen}
+        consent={consent}
+        token={token}
+        onOpenChange={setTermsOpen}
+        onAccepted={(next) => {
+          setConsent(next);
+          setTermsOpen(false);
+          void submitForReview(true);
+        }}
+      />
     <div className="mx-auto max-w-3xl space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Propose a relationship</h1>
@@ -674,8 +696,8 @@ export default function RelationshipProposalContributePage() {
           <div className="space-y-2">
             <Label>How sure are you?</Label>
             <Select value={confidence} onValueChange={setConfidence}>
-              <SelectTrigger className="max-w-xs">
-                <SelectValue />
+              <SelectTrigger className="max-w-xs" aria-label="How sure are you?">
+                <SelectValue placeholder="Choose one" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="certain">Certain</SelectItem>
@@ -701,7 +723,8 @@ export default function RelationshipProposalContributePage() {
             </Button>
             <Button
               type="button"
-              disabled={busy || draftHydrating || !proposalEditable}
+              disabled={busy || draftHydrating || !proposalEditable || !confidence}
+              title={!confidence ? 'Say how sure you are first' : undefined}
               onClick={() => void submitForReview()}
             >
               Submit for review
@@ -714,5 +737,6 @@ export default function RelationshipProposalContributePage() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }

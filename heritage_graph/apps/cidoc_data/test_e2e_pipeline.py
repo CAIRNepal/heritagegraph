@@ -112,6 +112,7 @@ class FormToKnowledgeGraphToVisualizationTest(APITestCase):
         # capture+run the on-commit callbacks to mirror a real committed request.
         with self.captureOnCommitCallbacks(execute=True):
             assertion = HeritageAssertion.objects.create(
+                confidence="certain",
                 content_type=person_ct,
                 object_id=person.pk,
                 asserted_property="relationship.P74_has_current_or_former_residence",

@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -140,6 +142,9 @@ export default function ScanContributePage() {
     }
   }, [entityId]);
   
+  const tTerms = useTranslations('contribute.terms');
+  const [acceptsTerms, setAcceptsTerms] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -150,6 +155,11 @@ export default function ScanContributePage() {
     
     if (!formData.contributionType) {
       toast.error('Please select a contribution type');
+      return;
+    }
+
+    if (!acceptsTerms) {
+      toast.error(tTerms('qrLabel'));
       return;
     }
     
@@ -172,6 +182,7 @@ export default function ScanContributePage() {
           contributor_phone: formData.contributorPhone,
           source_description: formData.source,
           submitted_via: 'qr_scan',
+          accepts_terms: acceptsTerms,
         }),
       });
 
@@ -424,11 +435,27 @@ export default function ScanContributePage() {
             </div>
           </motion.div>
           
+          {/* A visitor has no account to record consent on: they agree with each submission. */}
+          <motion.div variants={fadeInUp} className="flex items-start gap-3">
+            <Checkbox
+              id="accepts-terms"
+              checked={acceptsTerms}
+              onCheckedChange={(v) => setAcceptsTerms(v === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="accepts-terms" className="text-sm leading-snug font-normal">
+              {tTerms('qrLabel')}{' '}
+              <Link href="/privacy" className="text-primary underline underline-offset-2">
+                {tTerms('privacyLink')}
+              </Link>
+            </Label>
+          </motion.div>
+
           {/* Submit */}
           <motion.div variants={fadeInUp}>
             <Button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || !acceptsTerms}
               className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-hero-from to-hero-to hover:from-hero-from hover:to-hero-to rounded-xl shadow-lg"
             >
               {submitting ? (

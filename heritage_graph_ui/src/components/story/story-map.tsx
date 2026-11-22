@@ -72,7 +72,7 @@ export function StoryMap({ focusLabel, items, revealed, active, className }: Sto
         );
       })}
 
-      <rect x={CX - 8} y={CY - 8} width={16} height={16} className="fill-story-accent" />
+      <rect x={CX - 8} y={CY - 8} width={16} height={16} rx={8} className="fill-story-accent" />
       {wrap(focusLabel, 22).map((line, k) => (
         <text key={k} x={CX} y={CY + 26 + k * 13} textAnchor="middle" className="fill-story-ink text-[12px] font-bold">
           {line}
@@ -90,6 +90,7 @@ export function StoryMap({ focusLabel, items, revealed, active, className }: Sto
               y={y - 6}
               width={12}
               height={12}
+              rx={6}
               className={cn(isActive ? 'fill-story-accent' : 'fill-story-paper', 'stroke-story-accent')}
               strokeWidth={2}
             />

@@ -113,10 +113,18 @@ export function EntitySearch({
           headers: { Accept: "application/json" },
         });
         const data = await res.json();
-        const items = Array.isArray(data) ? data : data.results || [];
+        const items: Record<string, unknown>[] = Array.isArray(data) ? data : data.results || [];
+        // The API filters but does not rank: put the exact name first, then
+        // names that start with the query, then the rest in API order.
+        const needle = q.toLowerCase();
+        const rank = (item: Record<string, unknown>) => {
+          const n = String(item.name ?? item.title ?? "").toLowerCase();
+          return n === needle ? 0 : n.startsWith(needle) ? 1 : 2;
+        };
+        const ranked = items.map((item, i) => ({ item, i })).sort((a, b) => rank(a.item) - rank(b.item) || a.i - b.i).map(({ item }) => item);
         setResults(
-          items.slice(0, 10).map((item: Record<string, unknown>) => ({
-            id: item.id,
+          ranked.slice(0, 10).map((item: Record<string, unknown>) => ({
+            id: item.id as string | number,
             name:
               (item.name as string) ||
               (item.title as string) ||

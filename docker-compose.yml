@@ -144,7 +144,7 @@ services:
       RDF_QUERY_URL: ${RDF_QUERY_URL:-http://oxigraph:7878/query}
       RDF_PUBLIC_GRAPH_URI: ${RDF_PUBLIC_GRAPH_URI:-https://cair-nepal.org/heritagegraph/graph/public}
       RDF_RESOURCE_BASE_URI: ${RDF_RESOURCE_BASE_URI:-https://cair-nepal.org/heritagegraph/resource/}
-      RDF_SHACL_VALIDATE_ON_WRITE: ${RDF_SHACL_VALIDATE_ON_WRITE:-false}
+      RDF_SHACL_VALIDATE_ON_WRITE: ${RDF_SHACL_VALIDATE_ON_WRITE:-true}
       HERITAGEGRAPH_SHACL_SHAPES_PATH: /app/ontology/shapes/generated-heritagegraph-minimal-shacl.ttl
       # KG ingestion pipeline (Agent 2): host-side Ollama
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
