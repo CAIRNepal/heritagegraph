@@ -18,13 +18,13 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 |---|-----------|--------|--------------------|
 | F1 | Findable PIDs (w3id resource IRIs) | ✅ | `RDF_RESOURCE_BASE_URI` + LOD content negotiation |
 | F2 | Dataset VoID / DCAT | ✅ | `void_generator` / `regen_void` |
-| F3 | Zenodo DOI for software + L0 dump | 🟡 | `.zenodo.json` + `CITATION.cff` (DOI placeholder until deposit) |
+| F3 | Zenodo DOI for software + dataset | 🟡 | `manage.py build_deposit` assembles the dataset deposit (exact N-Quads, ontology, reports, manifest, SHA-256 sums, README, `zenodo.json`); software metadata in `.zenodo.json` + `CITATION.cff`. No DOI until the deposits are published — see [Dataset deposit](#dataset-deposit). |
 | F4 | Corpus fingerprint (SHA-256 + ontology pin) | ✅ | `manage.py corpus_fingerprint` |
 | A1 | Public read-only SPARQL | ✅ | CARE proxy `/sparql/` |
 | A2 | Methods page reproducibility | ✅ | `/methods` |
 | A3 | Demo vs live corpus labeled | ✅ | Atlas `SampleDataBanner` (always visible) + `?source=` + Methods limitations. See [Sample corpus policy](#sample-corpus-policy). |
 | I1 | CIDOC-CRM + CRMinf + LinkML | ✅ | `ontology/HeritageGraph.yaml` + CRM bridge |
-| I2 | SHACL shapes generated | 🟡 | shapes exist; `RDF_SHACL_VALIDATE_ON_WRITE` default off |
+| I2 | SHACL shapes generated | 🟡 | Validation on write is **on** by default (dev and `docker-compose.yml`; logs, does not block). `manage.py shacl_conformance` validates the published, assertion and provenance graphs in one pass and writes a summary and full report. Records conform; beliefs fail two constraints that come from the ontology, not the data — see [SHACL conformance](#shacl-conformance). |
 | I3 | Crosswalk documented | ✅ | `data/reconcile_crosswalk.json` + DANAM report |
 | R1 | License matrix (OSM / WD / UNESCO / HG) | ✅ | `danam_import/licenses.py` + Methods |
 | R2 | Idempotent L1 ETL | ✅ | `LodExternalIdentity` + `import_danam_nq` |
@@ -33,12 +33,12 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 | R5 | Reject audit (unmapped predicates) | ✅ | `corpus_fingerprint --reject-audit-json` |
 | C1 | CARE-aware SPARQL filter | ✅ | `CARESparqlProxyView` |
 | C2 | DataSource CARE / TK fields | ✅ | model + importer notes |
-| C3 | Community review for new claims | ✅ | epistemic review queue |
+| C3 | Community review for new claims | ✅ | epistemic review queue; **two independent reviewers** (neither the contributor) for caste, guthi and Kumari records, any non-public CARE tier or CARE label, and caste or guthi membership links — `heritage_data/dual_review.py`. The first accept is recorded (HTTP 202) and the record stays in review until a second reviewer accepts. |
 | C4 | Community consent / authority agreement | 🔴 | **none obtained** — see [`ETHICS_AND_CONSENT.md`](./ETHICS_AND_CONSENT.md) §5 |
 | C5 | Contributor privacy notice + leaderboard opt-out | 🔴 | not implemented — see ethics doc §3 |
 | C6 | Institutional ethics review | 🔴 | not obtained |
 | P1 | Named-graph provenance (L0) | ✅ | OSM / WD / UNESCO / crosswalk graphs |
-| P2 | DataSource + PROV on L1 assertions | 🟡 | Supported and measured, **not required**: `HeritageAssertion.source` is nullable, `confidence` defaults to `likely`, and the `AssertionRequiresSource` SHACL shape runs only on project merge with `RDF_SHACL_VALIDATE_ON_WRITE` off by default. `kg_quality_report` reports `with_source`. See [Source coverage](#source-coverage). |
+| P2 | DataSource + PROV on L1 assertions | 🟡 | **Required for new records**: a record cannot be accepted without `source` or `source_citation`, and links from the contribute forms are published only as `relationship.*` assertions citing a registered DataSource with the contributor's stated confidence. Every accepted assertion states its confidence (no default). Older records were audited with `audit_provenance`. **Not yet**: `HeritageAssertion.source` is still nullable outside the forms, and SHACL-on-write is off. See [Source coverage](#source-coverage). |
 | P3 | Integrity gate | ✅ | `kg_rigor_audit` (incl. L0 isolation) |
 | P4 | No L0 IRIs in PUBLIC | ✅ | rigor HARD + `kg_verify` / purge |
 | H1 | L1 editable under revision semantics | ✅ | contribute / improve |
@@ -46,27 +46,152 @@ Status: ✅ in place · 🟡 partial · 🔴 gap (deposit / scale / paper packag
 
 ## Source coverage
 
-An assertion can currently be created, accepted and published with **no source
-at all**:
+What is enforced (new contributions):
 
-- `HeritageAssertion.source` is `null=True, blank=True`.
-- `confidence` defaults to `"likely"` — so an unsourced claim enters the graph
-  already carrying a confidence value that no contributor stated.
-- Entity records (`cidoc_data.MetaData` and its subclasses) have no source field
-  at all; evidence attaches to assertions, not to the descriptive record.
-- The `AssertionRequiresSource` SHACL shape detects the gap, but only for
-  project-scoped merges, and SHACL-on-write is opt-in.
+- **Records.** `accept_contribution` refuses to publish a record that names no
+  `source` and no `source_citation` (`registry_slots.require_evidence`); the
+  review API answers 400 and the record stays in review. Every contribute form
+  asks for the source, its kind and the contributor's confidence before Submit.
+- **Links and column-less values.** Registry slots with no column on the record
+  are no longer dropped by the serializer. They travel in the revision
+  (`_links` / `_values`), are shown to the reviewer by name, and on acceptance
+  become `HeritageAssertion` rows citing the record's DataSource (a typed
+  citation is registered as one, with the kind the contributor chose) and the
+  contributor's stated confidence. A key that is neither a field nor a slot is
+  refused with 400. `REGISTRY_MODEL_ALIGNMENT.md` reports 0 silently discarded
+  form fields.
+- **Review gate on assertions.** A contributor-created assertion is always
+  `pending`; only reviewers and admins can create one already accepted.
+- **Stated confidence.** `HeritageAssertion.confidence` has no default. An
+  accepted assertion must state one of certain / likely / uncertain /
+  speculative (model `save()` and `clean()`, the assertion API, the inline
+  contribute routes); a pending one may leave it for the reviewer. Forms and
+  relationship proposals start with no choice selected. System writers state
+  theirs explicitly: identity merges `certain` (a decision, not an estimate),
+  Wikidata statements `likely`, seed rows `uncertain`. Values outside the scale
+  (seed rows wrote `medium`) were cleared to unstated by migration 0024.
 
-What this means for the paper: do not claim that published assertions are
-source-backed. The accurate claim is that the model *supports* per-assertion
-provenance, that coverage is *measured* (`kg_quality_report` → `with_source`),
-and that enforcement is not yet switched on. Report the measured coverage
-figure rather than asserting the property.
+- **Field-level provenance.** A citation that supports only some fields does
+  not make the record count as sourced. When the Wikidata importer adds labels
+  or an image to an existing record, that goes in `field_sources`
+  (`{"labels": …, "media": …}`), not in `source_citation`; migration 0025 moved
+  the notes it had appended before.
 
-Before claiming enforcement, three things need to change: make `source` or
-`source_citation` required for the `accepted` transition, remove the silent
-`confidence` default so contributors state it explicitly, and enable
-SHACL-on-write.
+What is not (yet):
+
+- Records and assertions published **before** this enforcement keep whatever
+  provenance they had. `manage.py audit_provenance` measures it, counting
+  records, claims and identity bookkeeping separately (bookkeeping says which
+  records are the same, not anything about heritage). Quote its figures, and
+  `kg_quality_report` → `entity_source_coverage` /
+  `provenance_coverage.with_registered_source`, rather than asserting coverage.
+- Repairs that invent nothing: `--backfill-wikidata` points Wikidata cluster
+  memberships at the Wikidata source their record cites; `--withdraw --as
+  <curator> --manifest <path>` sends unsourced records and claims back to
+  review (out of the public graph) and `--restore <path>` undoes it exactly.
+- `HeritageAssertion.source` is still nullable on paths other than the
+  contribute forms.
+- The `AssertionRequiresSource` SHACL shape runs only on project merge, and
+  SHACL-on-write is off by default.
+
+What this means for the paper: the accurate claim is that new contributions
+are source-backed by construction, and that coverage of the whole graph is
+*measured* and reported as a figure, not asserted as a property. Backfilling
+or withdrawing the unsourced older records, removing the silent `confidence`
+default everywhere, and enabling SHACL-on-write would close the gap.
+
+## SHACL conformance
+
+`manage.py shacl_conformance --output-dir <dir>` validates the public graph
+plus every per-assertion belief and provenance graph against
+`ontology/shapes/generated-heritagegraph-minimal-shacl.ttl`, and writes
+`shacl-conformance.json` (counts, violations grouped by shape, path and
+constraint) and `shacl-conformance-report.ttl`. Run it on the deployed store
+and attach both files; do not quote numbers from a development database.
+
+What fixing it turned up:
+
+- `shacl_validate.py` did not import (two unclosed calls). Validation was off,
+  so nothing failed; switching it on would have broken every publish. Fixed and
+  covered by `test_shacl_validate`.
+- The shape generator mapped unknown prefixes onto the HeritageGraph namespace,
+  so the belief shape targeted a class no data uses and validated nothing. It
+  now raises on an unknown prefix.
+- Beliefs were typed `http://www.cidoc-crm.org/crminf/I2_Belief`, while the
+  ontology, OWL file and CRM bridge declare `…/extensions/crminf/`. The
+  projection now uses the ontology's namespace.
+- Graphs written before the namespace moved to cair-nepal.org were never
+  cleared and stayed queryable through the public SPARQL proxy, which forwards
+  any named graph. Clear any `https://w3id.org/heritagegraph/graph/` graphs on
+  a deployed store.
+
+Open, in the ontology rather than the data (raise upstream):
+
+1. `justification_note` uses `crminf:J4_that` with a string range. In CRMinf,
+   J4_that relates a belief to a proposition set — which is how the projection
+   uses it — so the generated shape demands a literal where the data, correctly,
+   has an IRI.
+2. `asserted_value` is required on every assertion. A relationship belief's
+   value is its object record, not a literal, so every relationship belief
+   fails `minCount 1`.
+
+Until those are settled, `RDF_SHACL_STRICT_ON_WRITE` stays off: strict mode
+would refuse every relationship belief.
+
+Both changes are written up, with the YAML diff, in
+[`../ontology/UPSTREAM_PROPOSALS.md`](../ontology/UPSTREAM_PROPOSALS.md). With
+them applied to the shapes, the published graph conforms with 0 violations.
+
+## Write permissions
+
+Audited endpoint by endpoint (every POST/PUT/PATCH/DELETE route, resolved
+per action, then each action body read). Fixed, with a failing-then-passing
+test each in `heritage_data/test_write_permissions.py`:
+
+- the DRF default was `AllowAny`, so a view that declared nothing was writable
+  by anyone; the project default is now `IsAuthenticatedOrReadOnly`;
+- merge requests could be approved (which runs the merge) by any signed-in user
+  other than the opener; deciding now needs a merge moderator, and editing or
+  deleting needs the opener or a moderator;
+- reconciled links (which feed `skos:exactMatch`) and curator alerts could be
+  changed or resolved by any signed-in user; now reviewers only;
+- person revisions were open to anonymous create, edit and delete;
+- partner institutions could be edited by any signed-in user; now staff;
+- any signed-in user could edit or delete anyone's comment; now the author or
+  staff;
+- project assets and entities could be edited by anyone who could view the
+  project; edits now need edit rights, as deletes already did;
+- contributor-created assertions were accepted on request (fixed earlier; see
+  Source coverage).
+
+Deliberately open: sign-in and token routes, QR public contributions, share
+tracking, the read-only `kg/query/` (it refuses SPARQL updates) and the
+assistant chat, all behind the default throttles.
+
+## Dataset deposit
+
+Two Zenodo records: the **software** (this repository at a tagged release;
+metadata in `.zenodo.json` and `CITATION.cff`, MIT) and the **dataset**
+(CC BY 4.0), built by
+
+```bash
+cd heritage_graph
+manage.py build_deposit --output-dir ../deposit-1.0.0 --dataset-version 1.0.0
+manage.py build_deposit --check ../deposit-1.0.0   # or: shasum -a 256 -c SHA256SUMS
+```
+
+The deposit holds the public graph and every belief/provenance graph as N-Quads
+written by the triplestore's own serialiser (datatypes, language tags and
+escaping are exact — the older line formatter dropped all three, and
+`rdf_export_dump` and `shacl_conformance` now use the exact serialiser too),
+the ontology files, the provenance audit, SHACL conformance and quality
+reports, a README with the snapshot's own figures, `LICENSE-DATA`, a
+`zenodo.json` for the dataset record, and `manifest.json` / `SHA256SUMS`.
+
+Build it from a clean checkout (the manifest marks a dirty tree with
+`-dirty`) against the deployed store, not a development database. Upload the
+folder, publish, then add the DOI to `CITATION.cff`, `.zenodo.json` and the
+paper — never before the record exists.
 
 ## Sample corpus policy
 
@@ -111,9 +236,10 @@ Do **not** commit `_fingerprint.local.json` / `_reject_audit.local.json` (local 
 
 ## Remaining for the paper package (not code)
 
-1. Mint Zenodo DOI; add the `doi:` key to `CITATION.cff` and the identifier to
-   `.zenodo.json` / Methods. Both files deliberately carry **no** DOI until the
-   deposit exists — a placeholder identifier propagates into bibliographies.
+1. Publish the two Zenodo records (see [Dataset deposit](#dataset-deposit)),
+   then add the DOIs to `CITATION.cff`, `.zenodo.json` and Methods. Both files
+   deliberately carry **no** DOI until the deposit exists — a placeholder
+   identifier propagates into bibliographies.
 2. Deposit `danam-heritagegraph.nq` with the pinned SHA-256 from `corpus_fingerprint`.
 3. Enable SHACL-on-write in staging; attach sample conformance report (≥100 shapes).
 4. Expert gold-standard evaluation (`kg_evaluate`). No reportable evaluation

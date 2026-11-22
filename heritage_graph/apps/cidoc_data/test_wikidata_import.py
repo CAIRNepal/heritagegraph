@@ -152,8 +152,9 @@ class WikidataImportTests(TestCase):
         self.assertIsNone(curated.source_id)
         self.assertEqual(curated.status, "published")
         self.assertEqual(curated.labels["ne"], "बिस्का जात्रा")
-        self.assertTrue(curated.source_citation.startswith("HeritageGraph curated corpus\n"))
-        self.assertIn("Labels added from Wikidata Q4", curated.source_citation)
+        # Wikidata supported the labels, not the curated record's content.
+        self.assertEqual(curated.source_citation, "HeritageGraph curated corpus")
+        self.assertIn("Wikidata Q4", curated.field_sources["labels"])
         self.assertIn("festival:Biska Jatra <- Q4", report.matched_existing)
 
     def test_reimport_is_idempotent(self):

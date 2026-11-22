@@ -67,6 +67,13 @@ def _get_category_for_model(model_class):
     return mapping.get(model_class.__name__, "other")
 
 
+def _extras_for_revision(serializer) -> dict:
+    """Links and values the serializer could not store, for the revision."""
+    from .registry_slots import revision_extras
+
+    return revision_extras(getattr(serializer, "registry_extras", None) or {})
+
+
 class ContributionFlowMixin:
     """
     Mixin for CIDOC ViewSets that hooks every create into the
@@ -221,6 +228,7 @@ class ContributionFlowMixin:
         data = dict(serializer.to_representation(instance))
         for key, value in serializer.validated_data.items():
             data[key] = coerce_for_jsonschema(value)
+        data.update(_extras_for_revision(serializer))
         return data
 
     def _append_wrapper_revision(self, instance, revision_data, *, entity=None):
@@ -314,6 +322,9 @@ class ContributionFlowMixin:
 
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
+        from apps.heritage_data.contributor_terms import require_accepted
+
+        require_accepted(request.user)
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self._validate_registry_payload(serializer, instance=instance)
@@ -330,7 +341,11 @@ class ContributionFlowMixin:
         try:
             with transaction.atomic():
                 entity, revision = self._append_wrapper_revision(
-                    instance, coerce_for_jsonschema(serializer.data)
+                    instance,
+                    {
+                        **coerce_for_jsonschema(serializer.data),
+                        **_extras_for_revision(serializer),
+                    },
                 )
                 entity.current_revision = revision
                 entity.save(update_fields=["current_revision"])
@@ -356,6 +371,9 @@ class ContributionFlowMixin:
             Revision,
         )
 
+        from apps.heritage_data.contributor_terms import require_accepted
+
+        require_accepted(self.request.user)
         self._validate_registry_payload(serializer, instance=None)
 
         # The CIDOC row, its review-queue wrapper, and the first revision are
@@ -398,6 +416,7 @@ class ContributionFlowMixin:
             # that exposes a UUID-pk relation from 500-ing the whole
             # contribution.
             revision_data = coerce_for_jsonschema(serializer.data)
+            revision_data.update(_extras_for_revision(serializer))
             revision_data["_cidoc_model"] = instance.__class__.__name__
             revision_data["_cidoc_id"] = coerce_for_jsonschema(instance.pk)
 
@@ -641,6 +660,15 @@ class PersonRevisionViewSet(viewsets.ModelViewSet):
     queryset = PersonRevision.objects.all()
     serializer_class = PersonRevisionSerializer
 
+    def get_permissions(self):
+        # Inherited the project default (AllowAny), so anyone could rewrite or
+        # delete a person's revision history.
+        if self.action in ("list", "retrieve"):
+            return [permissions.AllowAny()]
+        if self.action == "create":
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAuthenticated(), IsReviewerOrAdmin()]
+
 
 # =====================================================================
 # PROVENANCE VIEWSETS
@@ -748,6 +776,11 @@ class HeritageAssertionViewSet(viewsets.ModelViewSet):
             extra["contributed_by"] = (
                 self.request.user.email or self.request.user.username
             )
+        # Contributors propose; reviewers decide. An accepted assertion is
+        # projected to the public graph on save, so a contributor must not be
+        # able to create one already accepted.
+        if not IsReviewerOrAdmin().has_permission(self.request, self):
+            extra["reconciliation_status"] = "pending"
         serializer.save(**extra)
 
     def get_queryset(self):

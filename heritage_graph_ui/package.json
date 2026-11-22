@@ -15,6 +15,8 @@
     "verify:contribute-routes": "python3 ../tools/verify_contribute_intent_routes.py",
     "freeze:corpus": "node scripts/freeze-heritage-corpus.mjs",
     "check:corpus": "node scripts/freeze-heritage-corpus.mjs --check",
+    "freeze:kg": "tsx scripts/freeze-kg-extension.ts",
+    "check:kg": "tsx scripts/freeze-kg-extension.ts --check",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "test": "vitest run",

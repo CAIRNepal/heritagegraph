@@ -63,7 +63,16 @@ interface TriageBreakdown {
 }
 
 interface ReviewWorkspaceData {
-  entity_id: string; name: string; description: string; category: string; status: string;
+  entity_id: string; name: string; description: string; category: string; record_type?: string | null; status: string;
+  dual_review?: { required: boolean; reasons: string[]; needed: number; approvals: string[] };
+  proposal?: {
+    links: { slot: string; label: string; target_id: string; target_type: string; target_label: string | null; target_status: string | null }[];
+    values: { slot: string; label: string; value: string }[];
+    source: { id: string; name: string; kind: string } | null;
+    source_citation: string;
+    source_kind: string;
+    confidence: string;
+  };
   contributor: UserInfo; current_revision: Revision | null; created_at: string; updated_at: string;
   revisions: Revision[]; activities: ActivityItem[]; review_decisions: ReviewDecisionItem[];
   flags: ReviewFlagItem[]; contributor_stats: ContributorStats;
@@ -161,12 +170,19 @@ export default function ReviewWorkspacePage() {
       };
       if (confidenceOverride) body.confidence_override = confidenceOverride;
       if (verificationMethod) body.verification_method = verificationMethod;
-      await apiFetchJson(`${API_BASE}/data/api/review-workspace/${entityId}/decide/`, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(body),
-      });
-      toast.success('Review decision submitted successfully');
+      const result = await apiFetchJson<{ status?: string; detail?: string }>(
+        `${API_BASE}/data/api/review-workspace/${entityId}/decide/`,
+        {
+          method: 'POST',
+          headers: getHeaders(),
+          body: JSON.stringify(body),
+        },
+      );
+      if (result?.status === 'awaiting_second_review') {
+        toast.success('Your approval is recorded', { description: result.detail });
+      } else {
+        toast.success('Review decision submitted successfully');
+      }
       await fetchWorkspace();
       setDecisionConfirmOpen(false);
       setVerdict('');
@@ -267,7 +283,7 @@ export default function ReviewWorkspacePage() {
               </div>
               <h1 className="text-2xl font-black text-white">{workspace.name}</h1>
               <div className="flex items-center gap-2 mt-1">
-                <Badge className="bg-white/20 text-white border-white/30">{workspace.category}</Badge>
+                <Badge className="bg-white/20 text-white border-white/30">{workspace.record_type ?? workspace.category}</Badge>
                 <Badge className={`border-white/30 text-white ${workspace.status === 'pending_review' ? 'bg-amber-500/50' : 'bg-white/20'}`}>
                   {workspace.status.replace(/_/g, ' ')}
                 </Badge>
@@ -351,7 +367,7 @@ function ContextPanel({ workspace }: { workspace: ReviewWorkspaceData }) {
             <h3 className="text-sm font-bold flex items-center gap-2 text-primary dark:text-primary"><FileText className="h-4 w-4 text-primary" /> Current State</h3>
           </div>
           <div className="p-4 space-y-2 text-sm text-primary dark:text-primary">
-            <div><span className="font-medium text-primary dark:text-primary">Category:</span> {workspace.category}</div>
+            <div><span className="font-medium text-primary dark:text-primary">Type:</span> {workspace.record_type ?? workspace.category}</div>
             <div><span className="font-medium text-primary dark:text-primary">Status:</span> {workspace.status.replace(/_/g, ' ')}</div>
             <div><span className="font-medium text-primary dark:text-primary">Created:</span> {formatDate(workspace.created_at)}</div>
             <div><span className="font-medium text-primary dark:text-primary">Updated:</span> {formatDate(workspace.updated_at)}</div>
@@ -537,14 +553,28 @@ function SubmissionPanel({ workspace, revisionData, latestRevision }: {
             <div className="space-y-3">
               <div><Label className="text-xs text-primary dark:text-primary">Entity Name</Label><p className="font-medium text-primary dark:text-primary">{workspace.name}</p></div>
               <div><Label className="text-xs text-primary dark:text-primary">Description</Label><p className="text-sm text-primary dark:text-primary">{workspace.description || '—'}</p></div>
-              <div><Label className="text-xs text-primary dark:text-primary">Category</Label><p className="text-sm capitalize text-primary dark:text-primary">{workspace.category}</p></div>
+              <div><Label className="text-xs text-primary dark:text-primary">Type</Label><p className="text-sm capitalize text-primary dark:text-primary">{workspace.record_type ?? workspace.category}</p></div>
             </div>
+            <Separator className="bg-primary/10 dark:bg-gray-700" />
+            {workspace.dual_review?.required ? (
+              <div className="rounded-xl border border-warning/50 bg-warning-soft p-3 text-sm text-warning-on-soft">
+                <p className="font-medium">Needs two independent reviewers</p>
+                <p className="text-xs">
+                  Because of {workspace.dual_review.reasons.join(', ')}. Approvals so far:{' '}
+                  {workspace.dual_review.approvals.length
+                    ? workspace.dual_review.approvals.map((a) => `@${a}`).join(', ')
+                    : 'none'}{' '}
+                  ({workspace.dual_review.approvals.length} of {workspace.dual_review.needed}).
+                </p>
+              </div>
+            ) : null}
+            {workspace.proposal ? <ProposalSummary proposal={workspace.proposal} /> : null}
             <Separator className="bg-primary/10 dark:bg-gray-700" />
             <div>
               <Label className="text-xs text-primary dark:text-primary mb-2 block">Form Data (Revision #{latestRevision?.revision_number || '—'})</Label>
               {Object.keys(revisionData).length > 0 ? (
                 <div className="space-y-2">
-                  {Object.entries(revisionData).map(([key, value]) => (
+                  {Object.entries(revisionData).filter(([key]) => !key.startsWith('_')).map(([key, value]) => (
                     <div key={key} className="grid grid-cols-3 gap-2 py-1 border-b border-primary/30 dark:border-gray-700/50 last:border-0">
                       <span className="text-xs font-medium text-primary dark:text-primary col-span-1 break-words">{key.replace(/_/g, ' ')}</span>
                       <span className="text-sm col-span-2 break-words text-primary dark:text-primary">{typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value || '—')}</span>
@@ -824,3 +854,51 @@ function VerdictBadge({ verdict }: { verdict: string }) {
   const c = config[verdict] || { label: verdict, className: '' };
   return <Badge variant="secondary" className={`text-[10px] ${c.className}`}>{c.label}</Badge>;
 }
+
+type Proposal = NonNullable<ReviewWorkspaceData['proposal']>;
+
+/** What the revision asks the graph to say beyond its own fields, and on whose evidence. */
+function ProposalSummary({ proposal }: { proposal: Proposal }) {
+  const { links, values, source, source_citation, source_kind, confidence } = proposal;
+  return (
+    <div className="space-y-3">
+      <div>
+        <Label className="text-xs text-primary dark:text-primary">Evidence</Label>
+        {source ? (
+          <p className="text-sm text-primary">{source.name} <span className="text-xs text-muted-foreground">· {source.kind}</span></p>
+        ) : source_citation ? (
+          <p className="text-sm text-primary">{source_citation}{source_kind ? <span className="text-xs text-muted-foreground"> · {source_kind}</span> : null}</p>
+        ) : (
+          <p className="text-sm font-medium text-destructive">No source given — this record cannot be accepted until the contributor names one.</p>
+        )}
+        {confidence ? <p className="text-xs text-muted-foreground">Contributor&apos;s confidence: {confidence}</p> : null}
+      </div>
+      <div>
+        <Label className="text-xs text-primary dark:text-primary">Proposed links ({links.length})</Label>
+        {links.length ? (
+          <ul className="mt-1 space-y-1">
+            {links.map((l) => (
+              <li key={`${l.slot}-${l.target_id}`} className="text-sm text-primary">
+                <span className="text-muted-foreground">{l.label} →</span> {l.target_label ?? `missing record ${l.target_id}`}{' '}
+                <span className="text-xs text-muted-foreground">({l.target_type}{l.target_status && l.target_status !== 'accepted' ? `, ${l.target_status.replace(/_/g, ' ')} — appears once that record is published` : ''})</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">None</p>
+        )}
+      </div>
+      {values.length ? (
+        <div>
+          <Label className="text-xs text-primary dark:text-primary">Other details</Label>
+          <ul className="mt-1 space-y-1">
+            {values.map((v) => (
+              <li key={v.slot} className="text-sm text-primary"><span className="text-muted-foreground">{v.label}:</span> {v.value}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+

@@ -7,4 +7,5 @@ export interface MuseumCorpusProvenance {
   retrieved?: string;
   imageSource?: string;
   note?: string;
+  extension?: { records?: number } | null;
 }

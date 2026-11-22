@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { KgGraphEdge, KgGraphNode } from '@/lib/kg-graph';
-import { buildStory, indexGraph, recordRef, storyReadyRecords } from '@/lib/stories/build-story';
+import { buildStory, goesBeyondPlace, indexGraph, recordRef, storyReadyRecords, toRecord } from '@/lib/stories/build-story';
 
 const R = 'https://cair-nepal.org/heritagegraph/resource/';
 const HG = 'https://cair-nepal.org/heritagegraph/';
@@ -27,11 +27,11 @@ const edge = (s: string, local: string, o: string, ns = HG): KgGraphEdge => ({
 });
 
 const nodes = [
-  node('structure/1', 'Nyatapola Temple', { labels: { en: 'Nyatapola Temple', ne: 'न्यातपोल मन्दिर' }, imageUrl: 'https://x/n.jpg' }),
+  node('structure/1', 'Nyatapola Temple', { labels: { en: 'Nyatapola Temple', ne: 'न्यातपोल मन्दिर' }, imageUrl: 'https://x/n.jpg', imageCredits: { 'https://x/n.jpg': { artist: 'A', license: 'CC BY 4.0' } } }),
   node('location/2', 'Bhaktapur', { labels: { ne: 'भक्तपुर' } }),
   node('deity/3', 'Siddhi Lakshmi'),
   node('tradition/4', 'Hinduism'),
-  node('structure/5', 'Dattatreya Temple', { imageUrl: 'https://x/d.jpg' }),
+  node('structure/5', 'Dattatreya Temple', { imageUrl: 'https://x/d.jpg', imageCredits: { 'https://x/d.jpg': { artist: 'B', license: 'CC BY-SA 4.0' } } }),
   node('structure/6', 'Bhairavnath Temple'),
   node('source/7', 'Gutschow 2011'),
   node('festival/8', 'Biska Jatra'),
@@ -96,7 +96,7 @@ describe('person stories', () => {
       edges: [edge('person/1', 'active_during', 'period/2')],
     });
     expect(buildStory(idx, R + 'person/1')!.stops[0].question.en).toBe('When did they live?');
-    expect(buildStory(idx, R + 'period/2')!.stops[0].question.en).toBe('What was alive then?');
+    expect(buildStory(idx, R + 'period/2')!.stops[0].question.en).toBe('What was active then?');
   });
 });
 
@@ -111,5 +111,41 @@ describe('storyReadyRecords', () => {
   it('ranks a story that reaches belief above one that only lists places', () => {
     const labels = storyReadyRecords(index).map((r) => r.label);
     expect(labels.indexOf('Nyatapola Temple')).toBeLessThan(labels.indexOf('Bhaktapur'));
+  });
+});
+
+describe('photographs', () => {
+  it('leaves out a photograph that has no recorded credit', () => {
+    const index = indexGraph({
+      nodes: [
+        node('structure/1', 'Credited', { imageUrl: 'https://x/c.jpg', imageCredits: { 'https://x/c.jpg': { artist: 'A', license: 'CC BY 4.0' } } }),
+        node('structure/2', 'Uncredited', { imageUrl: 'https://x/u.jpg' }),
+      ],
+      edges: [],
+    });
+    expect(toRecord(index, R + 'structure/1')!.imageUrl).toBe('https://x/c.jpg');
+    expect(toRecord(index, R + 'structure/2')!.imageUrl).toBeNull();
+  });
+});
+
+describe('story wording and kind', () => {
+  const index = indexGraph({
+    nodes: [
+      node('person/1', 'Arniko'),
+      node('group/1', 'Newar'),
+      node('structure/1', 'Temple'),
+      node('location/1', 'Patan'),
+    ],
+    edges: [edge('person/1', 'member_of', 'group/1'), edge('structure/1', 'located_at', 'location/1')],
+  });
+
+  it('reads member_of from the group as "has as a member"', () => {
+    const story = buildStory(index, R + 'group/1')!;
+    expect(story.stops[0].links[0].phrase).toBe('has as a member');
+  });
+
+  it('tells a location-only story from one that says more', () => {
+    expect(goesBeyondPlace(buildStory(index, R + 'structure/1')!)).toBe(false);
+    expect(goesBeyondPlace(buildStory(index, R + 'person/1')!)).toBe(true);
   });
 });

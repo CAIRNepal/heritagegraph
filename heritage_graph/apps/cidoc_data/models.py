@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 
 # GIS support (PostGIS) - disabled for development on SQLite
@@ -134,6 +135,14 @@ class MetaData(models.Model):
         blank=True,
         related_name="+",
         help_text="Registered DataSource backing this record, when one exists.",
+    )
+    # Provenance for single fields, kept apart from the record's own source:
+    # labels or an image taken from Wikidata support those fields, not the
+    # record's description, so they must not make the record count as sourced.
+    field_sources = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text='Per-field provenance, e.g. {"labels": "Wikidata Q123 (revision 4), retrieved …"}.',
     )
     # `name` carries one label with no language. Records imported from an
     # authority (Wikidata) arrive with labels in several languages, and the
@@ -1385,8 +1394,12 @@ class HeritageAssertion(models.Model):
     confidence = models.CharField(
         max_length=20,
         choices=CONFIDENCE_CHOICES,
-        default="likely",
-        help_text="Contributor's confidence in this claim",
+        blank=True,
+        help_text=(
+            "Contributor's confidence in this claim. Deliberately no default: "
+            "an accepted assertion must say how sure it is; a pending one may "
+            "leave it for the reviewer to set."
+        ),
     )
     data_quality_note = models.TextField(
         blank=True, help_text="Notes on data quality or limitations"
@@ -1488,6 +1501,24 @@ class HeritageAssertion(models.Model):
 
         validate_membership_assertion(self)
         validate_relationship_assertion(self)
+        if (
+            self.reconciliation_status == "accepted"
+            and self.confidence not in dict(CONFIDENCE_CHOICES)
+        ):
+            raise ValidationError(
+                {"confidence": "State how sure this claim is before accepting it."}
+            )
+
+    def save(self, *args, **kwargs):
+        stated = self.confidence in dict(CONFIDENCE_CHOICES)
+        if self.confidence and not stated:
+            raise ValueError(f"Unknown confidence {self.confidence!r}.")
+        if not stated and self.reconciliation_status == "accepted":
+            raise ValueError(
+                "An accepted HeritageAssertion must state its confidence "
+                f"({', '.join(dict(CONFIDENCE_CHOICES))})."
+            )
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["-created_at"]

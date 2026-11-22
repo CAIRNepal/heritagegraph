@@ -108,7 +108,7 @@ class PlatformContributionE2ETest(APITestCase):
         with self.captureOnCommitCallbacks(execute=True):
             resp = self.client.post(
                 "/api/v1/cidoc/locations/",
-                {
+                {"source_citation": "Test fixture source.", 
                     "name": "E2E Platform Stupa Alpha",
                     "description": "Platform E2E unique label.",
                     "type": "archaeological_site",
@@ -159,7 +159,7 @@ class PlatformContributionE2ETest(APITestCase):
         with self.captureOnCommitCallbacks(execute=True):
             resp = self.client.post(
                 "/api/v1/cidoc/locations/",
-                {
+                {"source_citation": "Test fixture source.", 
                     "name": "E2E Platform Temple Dup",
                     "description": "Richer duplicate submission.",
                     "type": "temple",
@@ -279,7 +279,7 @@ class PlatformContributionReviewAcceptE2ETest(APITestCase):
         with self.captureOnCommitCallbacks(execute=True):
             resp = self.client.post(
                 "/api/v1/cidoc/locations/",
-                {
+                {"source_citation": "Test fixture source.", 
                     "name": label,
                     "description": "Full contribution pipeline (review accept).",
                     "type": "archaeological_site",
@@ -389,7 +389,7 @@ class PlatformRdfPublishE2ETest(APITestCase):
         with self.captureOnCommitCallbacks(execute=True):
             resp = self.client.post(
                 "/api/v1/cidoc/locations/",
-                {
+                {"source_citation": "Test fixture source.", 
                     "name": "E2E RDF Publish Site",
                     "description": "Should project when accepted.",
                     "type": "archaeological_site",

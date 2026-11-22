@@ -13,6 +13,15 @@ class IsContributorOrReadOnly(permissions.BasePermission):
         return obj.contributor == request.user
 
 
+class IsAuthorOrStaff(permissions.BasePermission):
+    """Only the author (``obj.user``) or staff may change or delete an object."""
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user.is_staff or getattr(obj, "user_id", None) == request.user.id
+
+
 class IsReviewerOrAdmin(permissions.BasePermission):
     """
     Any reviewer role (community, domain expert, or expert curator) or staff.

@@ -65,8 +65,8 @@ class AssertionAwareContributeTest(APITestCase):
             "citation did not materialise a DataSource",
         )
 
-    def test_canonical_endpoint_has_no_inline_provenance_field(self):
-        """The gap this endpoint exists to close, stated as an assertion."""
+    def test_canonical_endpoint_rejects_an_inline_provenance_field(self):
+        """Unknown keys are refused, not silently dropped."""
         resp = self.client.post(
             "/api/v1/cidoc/structures/",
             {
@@ -76,10 +76,8 @@ class AssertionAwareContributeTest(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(resp.status_code, status.HTTP_201_CREATED, resp.content)
-        structure = ArchitecturalStructure.objects.get(pk=resp.json()["id"])
+        self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST, resp.content)
+        self.assertIn("assertion", resp.json())
         self.assertFalse(
-            HeritageAssertion.objects.filter(object_id=str(structure.pk)).exists(),
-            "canonical endpoint unexpectedly grew inline assertion support — "
-            "if it did, the contribute/ routes can be retired",
+            ArchitecturalStructure.objects.filter(name="No Provenance Temple").exists()
         )

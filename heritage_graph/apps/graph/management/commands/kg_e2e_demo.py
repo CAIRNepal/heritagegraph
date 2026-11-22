@@ -44,6 +44,7 @@ class Command(BaseCommand):
             asserted_property="relationship.associated_with",
             reconciliation_status="accepted",
             contributed_by=TAG,
+            confidence="certain",
             assertion_content="kg_e2e_demo round-trip test",
         )
 

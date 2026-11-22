@@ -191,6 +191,15 @@ def accept_contribution(self, editor, comment=None):
         # staging and restored by rejection). Falling back to the newest
         # revision would resurrect a previously rejected proposal.
         reviewed_revision = self.current_revision or self.get_latest_revision()
+        from .dual_review import require_independent_approvals
+
+        require_independent_approvals(
+            self,
+            _resolve_linked_cidoc_instance(self),
+            reviewed_revision.data if reviewed_revision else None,
+            reviewed_revision,
+            editor,
+        )
         if reviewed_revision:
             self.current_revision = reviewed_revision
             self.accepted_revision = reviewed_revision
@@ -209,12 +218,23 @@ def accept_contribution(self, editor, comment=None):
 
         cidoc = _resolve_linked_cidoc_instance(self)
         if cidoc is not None:
+            from apps.cidoc_data.registry_slots import (
+                apply_revision_extras,
+                require_evidence,
+            )
+
             # The CIDOC row may still hold the previously accepted values
             # (published edits are staged in revisions, not written in place).
             if isinstance(data, dict):
                 _apply_revision_data_to_cidoc(cidoc, data)
+            # Nothing is published without saying where it came from.
+            require_evidence(cidoc)
             cidoc.status = "accepted"
             cidoc.save()
+            if isinstance(data, dict):
+                apply_revision_extras(
+                    cidoc, data, contributor=self.contributor, reviewer=editor
+                )
 
         # Log the activity
         Activity.objects.create(
@@ -1307,6 +1327,16 @@ class UserProfile(models.Model):
         default=0, validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
 
+    # Consent and visibility (see heritage_data/contributor_terms.py).
+    contributor_terms_version = models.CharField(
+        max_length=32, blank=True, help_text="Version of the contributor terms accepted."
+    )
+    contributor_terms_accepted_at = models.DateTimeField(null=True, blank=True)
+    show_on_leaderboard = models.BooleanField(
+        default=True,
+        help_text="Appear in the public leaderboard and contributor directory.",
+    )
+
     @property
     def member_since(self):
         return self.user.date_joined.strftime("%B %Y")
@@ -1942,7 +1972,8 @@ class RelationshipProposal(models.Model):
     )
     supporting_source_ids = models.JSONField(default=list, blank=True)
     temporal_scope_edtf = models.CharField(max_length=255, blank=True)
-    confidence = models.CharField(max_length=20, default="likely")
+    # No default: a proposal says how sure its author is before it is submitted.
+    confidence = models.CharField(max_length=20, blank=True, default="")
     interpretation_note = models.TextField(blank=True)
     moderator_comment = models.TextField(blank=True)
     materialized_assertion = models.ForeignKey(

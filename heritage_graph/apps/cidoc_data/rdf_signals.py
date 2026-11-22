@@ -97,6 +97,34 @@ def _project_entity_now(instance: Any) -> None:
         triples=triples,
         managed_predicate_iris=managed_preds,
     )
+    _publish_edges_touching(instance)
+
+
+def _publish_edges_touching(instance: Any) -> None:
+    """Project accepted edges that waited for this record to be published.
+
+    An edge is held back while either end is unpublished, so a link to a
+    record still in review only appears once that record is accepted too.
+    """
+    from django.contrib.contenttypes.models import ContentType
+    from django.db.models import Q
+
+    from apps.cidoc_data.models import HeritageAssertion
+    from apps.graph.kg_engine.engine import get_kg_engine
+
+    ct = ContentType.objects.get_for_model(instance, for_concrete_model=True)
+    edges = HeritageAssertion.objects.filter(
+        Q(content_type=ct, object_id=instance.pk)
+        | Q(object_content_type=ct, object_object_id=instance.pk),
+        asserted_property__startswith="relationship.",
+        reconciliation_status="accepted",
+    )
+    engine = get_kg_engine()
+    for edge in edges:
+        try:
+            engine.publish_assertion(edge)
+        except Exception:
+            logger.exception("Could not project edge %s", edge.pk)
 
 
 def _delete_projection(instance: Any) -> None:

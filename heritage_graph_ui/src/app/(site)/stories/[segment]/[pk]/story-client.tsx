@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
+
 import { Chip, Eyebrow, Marker, Nepali, StoryContainer, StoryShell } from '@/components/story/story-chrome';
 import { StoryFigure } from '@/components/story/story-figure';
 import { StoryMap, type StoryMapItem } from '@/components/story/story-map';
@@ -15,8 +17,10 @@ import {
   storyHref,
   storyLength,
   type StoryLink,
+  type StoryRecord,
   type StoryStop,
 } from '@/lib/stories/build-story';
+import { HERITAGEGRAPH_RELEASE } from '@/lib/provenance';
 
 interface StoryClientProps {
   segment: string;
@@ -25,7 +29,7 @@ interface StoryClientProps {
 
 export function StoryClient({ segment, pk }: StoryClientProps) {
   const t = useTranslations('stories');
-  const { index, loading, error } = useStoryGraph();
+  const { index, fetchedAt, loading, error } = useStoryGraph();
   const story = useMemo(() => {
     if (!index) return null;
     const id = findRecordId(index, segment, pk);
@@ -54,6 +58,11 @@ export function StoryClient({ segment, pk }: StoryClientProps) {
     stopRefs.current.forEach((el) => el && io.observe(el));
     return () => io.disconnect();
   }, [story]);
+
+  // The page's own title, so a saved or shared story says which one it is.
+  useEffect(() => {
+    if (story) document.title = `${story.focus.label} · ${t('titleSuffix')}`;
+  }, [story, t]);
 
   if (loading) return <Status text={t('loading')} />;
   if (error) return <Status text={t('error')} />;
@@ -85,7 +94,7 @@ export function StoryClient({ segment, pk }: StoryClientProps) {
           <Chip filled>{focus.typeLabel}</Chip>
           <Chip>{t('stops', { count: stops.length })}</Chip>
         </div>
-        <h1 className="mt-5 max-w-5xl text-5xl leading-[0.95] font-extrabold tracking-tight text-balance md:text-8xl">
+        <h1 className="mt-5 max-w-5xl text-5xl leading-[1.02] font-serif font-medium tracking-[-0.01em] text-balance md:text-7xl">
           {focus.label}
         </h1>
         {focus.labelNe && <Nepali className="mt-3 text-2xl md:text-3xl">{focus.labelNe}</Nepali>}
@@ -117,18 +126,20 @@ export function StoryClient({ segment, pk }: StoryClientProps) {
               onRecordPage={recordHref(focus)}
             />
           ))}
+          {story.sources.length > 0 && <SourcesSection sources={story.sources} />}
+          <CiteStory label={focus.label} fetchedAt={fetchedAt} />
           {next.length > 0 && (
             <section className="relative py-14 pl-10 md:pl-14">
               <Marker className="absolute top-[3.9rem] left-0" />
-              <h2 className="text-3xl font-bold text-story-accent md:text-4xl">{t('whereNext')}</h2>
-              <p className="mt-3 max-w-3xl text-4xl leading-tight font-extrabold tracking-tight md:text-5xl">
+              <h2 className="text-3xl font-serif font-medium text-story-accent md:text-4xl">{t('whereNext')}</h2>
+              <p className="mt-3 max-w-3xl text-4xl leading-tight font-serif font-medium tracking-[-0.01em] md:text-5xl">
                 {t('whereNextTitle')}
               </p>
-              <div className="mt-8 grid border border-story-rule sm:grid-cols-2 xl:grid-cols-3">
+              <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {next.map((r) => (
-                  <Link key={r.id} href={storyHref(r)} className="group border-story-rule p-4 hover:bg-story-panel sm:[&:not(:last-child)]:border-r">
+                  <Link key={r.id} href={storyHref(r)} className="group rounded-xl border border-story-rule bg-story-panel p-4 hover:shadow-md">
                     <Eyebrow>{r.typeLabel}</Eyebrow>
-                    <p className="mt-1 text-lg font-bold">{r.label}</p>
+                    <p className="mt-1 font-serif text-lg">{r.label}</p>
                     {r.labelNe && <Nepali className="text-sm font-normal">{r.labelNe}</Nepali>}
                     <p className="mt-3 text-sm font-semibold group-hover:underline">{t('readItsStory')} →</p>
                   </Link>
@@ -175,7 +186,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
   return (
     <section ref={ref} data-stop={index} className="relative border-b border-story-rule-soft py-14 pl-10 md:pl-14">
       <Marker className="absolute top-[3.9rem] left-0" />
-      <h2 className="text-3xl leading-tight font-bold text-story-accent md:text-[2.6rem]">{stop.question.en}</h2>
+      <h2 className="text-3xl leading-tight font-serif font-medium text-story-accent md:text-[2.6rem]">{stop.question.en}</h2>
       {stop.question.ne && <Nepali className="mt-1 text-lg">{stop.question.ne}</Nepali>}
       <Eyebrow className="mt-4" ne={kindNe || null}>
         {t('stop', { n: String(index + 1).padStart(2, '0') })} · {t(`kind.${stop.kind}`)}
@@ -183,7 +194,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
 
       <div className="mt-3 grid gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
         <div>
-          <h3 className="text-4xl leading-[0.98] font-extrabold tracking-tight text-balance md:text-6xl">
+          <h3 className="text-4xl leading-[0.98] font-serif font-medium tracking-[-0.01em] text-balance md:text-6xl">
             <Link href={recordHref(lead.record)} className="hover:underline">
               {lead.record.label}
             </Link>
@@ -197,7 +208,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
             src={lead.record.imageUrl}
             alt={lead.record.label}
             credit={lead.record.imageCredit}
-            className="aspect-[4/5] border border-story-rule"
+            className="aspect-[4/5] overflow-hidden rounded-xl border border-story-rule"
           />
         )}
       </div>
@@ -207,10 +218,10 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
       {shown.length > 0 && (
         <div className="mt-6">
           <p className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('alsoConnected')}</p>
-          <ul className="mt-3 grid border-t border-l border-story-rule sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {shown.map((l) => (
-              <li key={l.record.id} className="border-r border-b border-story-rule">
-                <Link href={recordHref(l.record)} className="block p-3 hover:bg-story-panel">
+              <li key={l.record.id}>
+                <Link href={recordHref(l.record)} className="block h-full rounded-xl border border-story-rule bg-story-panel p-3 hover:shadow-md">
                   <span className="block font-semibold">{l.record.label}</span>
                   {l.record.labelNe && (
                     <span lang="ne" className="block font-devanagari text-sm">
@@ -218,6 +229,9 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
                     </span>
                   )}
                   <span className="block text-xs text-story-ink-soft">{l.record.typeLabel}</span>
+                  <span className="mt-1 block text-[11px] text-story-ink-soft">
+                    {l.provenance?.source ? `${t('source')}: ${l.provenance.source}` : t('noLinkSource')}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -236,6 +250,7 @@ function StopSection({ index, stop, focusLabel, onRecordPage, ref }: StopSection
 function RelationLine({ focusLabel, link }: { focusLabel: string; link: StoryLink }) {
   const t = useTranslations('stories');
   const source = link.provenance?.source;
+  const citation = link.provenance?.citation?.trim();
   return (
     <div className="mt-8 border-y border-story-rule py-3">
       <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-semibold">
@@ -243,12 +258,66 @@ function RelationLine({ focusLabel, link }: { focusLabel: string; link: StoryLin
         <span className="text-story-accent">— {link.phrase} →</span>
         <span>{link.record.label}</span>
       </p>
-      {source && (
-        <p className="mt-1 text-xs text-story-ink-soft" title={link.provenance?.citation ?? undefined}>
-          {t('source')}: {source}
-        </p>
-      )}
+      {/* The citation is printed, not hidden in a tooltip that touch and
+          keyboard readers never see. A link with no source says so. */}
+      <p className="mt-1 text-xs text-story-ink-soft">
+        {source ? `${t('source')}: ${source}` : t('noLinkSource')}
+        {citation && citation !== source ? ` — ${citation}` : null}
+      </p>
     </div>
+  );
+}
+
+/** The records this one cites (`cites` edges), which the story walk skips. */
+function SourcesSection({ sources }: { sources: StoryRecord[] }) {
+  const t = useTranslations('stories');
+  return (
+    <section className="relative border-b border-story-rule-soft py-14 pl-10 md:pl-14">
+      <Marker className="absolute top-[3.9rem] left-0" />
+      <h2 className="text-3xl font-serif font-medium text-story-accent md:text-4xl">{t('citedSources')}</h2>
+      <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+        {sources.map((r) => (
+          <li key={r.id}>
+            <Link href={recordHref(r)} className="block h-full rounded-xl border border-story-rule bg-story-panel p-3 hover:shadow-md">
+              <span className="block font-semibold">{r.label}</span>
+              <span className="block text-xs text-story-ink-soft">{r.typeLabel}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/**
+ * How to cite this story: the record, the graph release and the date this page
+ * read the graph. A story is computed from the graph, so it can change when the
+ * graph does; the date says which state it reflects.
+ */
+function CiteStory({ label, fetchedAt }: { label: string; fetchedAt: string | null }) {
+  const t = useTranslations('stories');
+  const [url, setUrl] = useState('');
+  const [copied, setCopied] = useState(false);
+  useEffect(() => setUrl(window.location.href.split('#')[0]), []);
+  const date = fetchedAt ? fetchedAt.slice(0, 10) : null;
+  const citation = t('citation', { label, release: HERITAGEGRAPH_RELEASE, date: date ?? '—', url });
+  return (
+    <section className="relative border-b border-story-rule-soft py-10 pl-10 md:pl-14">
+      <h2 className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('citeTitle')}</h2>
+      <p className="mt-3 max-w-3xl font-mono text-xs leading-relaxed break-words">{citation}</p>
+      <p className="mt-2 max-w-3xl text-xs text-story-ink-soft">{t('citeNote')}</p>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-3"
+        onClick={() => {
+          void navigator.clipboard?.writeText(citation).then(() => setCopied(true));
+        }}
+      >
+        {copied ? t('citeCopied') : t('citeCopy')}
+      </Button>
+    </section>
   );
 }
 

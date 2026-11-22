@@ -31,7 +31,7 @@ export interface Relation {
   out: Question;
   /** Question raised by following it backwards. */
   in: Question;
-  /** `out`, worded for a person: "When did they live?", not "When was it alive?". */
+  /** `out`, worded for a person: "When did they live?", not "When was it active?". */
   outPerson?: Question;
   kind: ThemeKind;
   /** Lower comes first in a story. */
@@ -124,24 +124,26 @@ export const RELATIONS: Record<string, Relation> = {
   active_during: {
     phrase: 'was active during',
     inversePhrase: 'was the time of',
-    out: { en: 'When was it alive?' },
+    out: { en: 'When was it active?' },
     outPerson: { en: 'When did they live?' },
-    in: { en: 'What was alive then?' },
+    in: { en: 'What was active then?' },
     kind: 'time',
     order: 4,
   },
+  // Says what the edge says: a community observes the practice. "Keeps it
+  // alive" read continuity into it that the data does not record.
   observed_by: {
-    phrase: 'is kept alive by',
-    inversePhrase: 'keeps alive',
-    // Wording and Nepali from the supervisor's storytelling export.
-    out: { en: 'Who keeps it alive?', ne: 'कसले जीवित राख्छ?' },
-    in: { en: 'What do they keep alive?' },
+    phrase: 'is observed by',
+    inversePhrase: 'observes',
+    out: { en: 'Who observes it?' },
+    in: { en: 'What do they observe?' },
     kind: 'people',
     order: 5,
   },
   member_of: {
     phrase: 'is a member of',
-    inversePhrase: 'counts as a member',
+    // Read from the group: "Newar — has as a member → …", not the reverse.
+    inversePhrase: 'has as a member',
     out: { en: 'Who does it belong with?' },
     outPerson: { en: 'Who did they belong with?' },
     in: { en: 'Who belongs to it?' },
@@ -160,8 +162,9 @@ export const RELATIONS: Record<string, Relation> = {
   commissioned_by: {
     phrase: 'was commissioned by',
     inversePhrase: 'commissioned',
-    out: { en: 'Who had it built?' },
-    in: { en: 'What did they have built?' },
+    // Commissioning is not building: a commission may be an image or a text.
+    out: { en: 'Who commissioned it?' },
+    in: { en: 'What did they commission?' },
     kind: 'people',
     order: 5,
   },

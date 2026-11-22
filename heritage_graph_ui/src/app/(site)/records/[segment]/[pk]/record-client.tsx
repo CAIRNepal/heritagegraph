@@ -62,7 +62,7 @@ export function RecordClient({ segment, pk }: RecordClientProps) {
               {segment} {pk}
             </Chip>
           </div>
-          <h1 className="mt-5 text-5xl leading-[0.95] font-extrabold tracking-tight text-balance md:text-7xl">
+          <h1 className="mt-5 text-5xl leading-[1.02] font-serif font-medium tracking-[-0.01em] text-balance md:text-7xl">
             {focus.label}
           </h1>
           {focus.labelNe && <Nepali className="mt-3 text-2xl">{focus.labelNe}</Nepali>}
@@ -84,7 +84,7 @@ export function RecordClient({ segment, pk }: RecordClientProps) {
         <Link href={storyHref(focus)} className="block bg-story-accent text-story-accent-ink hover:brightness-110">
           <StoryContainer className="flex flex-wrap items-center justify-between gap-3 py-5">
             <span className="text-[11px] font-bold tracking-[0.14em] uppercase">{t('everyRecord')}</span>
-            <span className="text-xl font-extrabold tracking-tight md:text-3xl">
+            <span className="text-xl font-serif font-medium tracking-[-0.01em] md:text-3xl">
               {t('readStoryOf', { label: focus.label })} →
             </span>
           </StoryContainer>
@@ -97,13 +97,13 @@ export function RecordClient({ segment, pk }: RecordClientProps) {
           <p className="mt-3 text-2xl font-bold">{t('noThreads')}</p>
         ) : (
           <>
-            <h2 className="mt-2 max-w-3xl text-4xl leading-tight font-extrabold tracking-tight md:text-5xl">
+            <h2 className="mt-2 max-w-3xl text-4xl leading-tight font-serif font-medium tracking-[-0.01em] md:text-5xl">
               {t('threads', { count: threads.length })}
               <br />
               {t('pickOne')}
             </h2>
             <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
-              <div className="border border-story-rule p-4">
+              <div className="rounded-xl border border-story-rule bg-story-panel p-4">
                 <StoryMap
                   focusLabel={focus.label}
                   revealed={threads.length}
@@ -123,7 +123,7 @@ export function RecordClient({ segment, pk }: RecordClientProps) {
                       {focus.label} <span className="text-story-accent">— {link.phrase} →</span>
                     </p>
                     <div className="mt-1 flex items-baseline justify-between gap-4">
-                      <Link href={recordHref(link.record)} className="text-xl font-bold hover:underline">
+                      <Link href={recordHref(link.record)} className="font-serif text-xl hover:underline">
                         {link.record.label}
                       </Link>
                       <Link href={recordHref(link.record)} className="shrink-0 text-sm font-semibold">
@@ -151,7 +151,7 @@ export function RecordClient({ segment, pk }: RecordClientProps) {
         <StoryContainer className="grid gap-8 py-14 md:grid-cols-2">
           <div>
             <Eyebrow ne={t('sourcesNe')}>{t('sourcesEyebrow')}</Eyebrow>
-            <h2 className="mt-2 text-3xl font-extrabold tracking-tight">{t('sourcesTitle')}</h2>
+            <h2 className="mt-2 text-3xl font-serif font-medium tracking-[-0.01em]">{t('sourcesTitle')}</h2>
           </div>
           <div>
             {src ? (

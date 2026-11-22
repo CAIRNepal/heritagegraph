@@ -35,6 +35,8 @@ def expand_curie(curie: str) -> str:
         return f"https://cair-nepal.org/heritagegraph/{rest}"
     table = {
         "crm": "http://www.cidoc-crm.org/cidoc-crm/",
+        # As declared in ontology/HeritageGraph.yaml (prefixes.crminf).
+        "crminf": "http://www.cidoc-crm.org/extensions/crminf/",
         "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
         "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "heritageGraph": "https://cair-nepal.org/heritagegraph/",
@@ -48,8 +50,11 @@ def expand_curie(curie: str) -> str:
         "wikidata": "http://www.wikidata.org/entity/",
         "rico": "https://www.ica.org/standards/RiC/ontology#",
     }
-    base = table.get(prefix, "https://cair-nepal.org/heritagegraph/")
-    return f"{base}{rest}"
+    if prefix not in table:
+        # Falling back to the HeritageGraph namespace once turned crminf:I2_Belief
+        # into a class no data uses, so the shape silently validated nothing.
+        raise ValueError(f"Unknown prefix {prefix!r} in {curie!r}; add it to expand_curie")
+    return f"{table[prefix]}{rest}"
 
 
 def build_shacl_ttl(*, reg_path: Path) -> str:

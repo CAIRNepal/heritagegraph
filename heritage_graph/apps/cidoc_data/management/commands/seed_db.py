@@ -178,7 +178,8 @@ class Command(BaseCommand):
                         "contributed_by": SEED_CONTRIBUTOR,
                         "attributed_to_agent": SEED_CONTRIBUTOR,
                         "source_citation": citation,
-                        "confidence": "likely",
+                        # Seed rows carry no evidence; do not let them claim more.
+                        "confidence": "uncertain",
                     },
                 )
                 if not was_created:

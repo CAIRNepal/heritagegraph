@@ -246,10 +246,60 @@
     "submitError": "Failed to submit contribution.",
     "sourcePrompt": {
       "label": "What's your source for this?",
-      "help": "How do you know this? A book, inscription, museum label, interview, a site visit, or your own community knowledge all count. This travels with the record so others can check it.",
+      "help": "Reviewers can only publish a record that says where it came from. A book, inscription, museum label, interview, a site visit, or your own community knowledge all count.",
+      "registered": "A source already on HeritageGraph",
+      "registeredPlaceholder": "Search evidence sources…",
+      "citation": "Or describe it",
       "placeholder": "e.g. Inscription on the north wall, read during a visit in March 2026 — or: told to me by the temple guthi",
-      "optional": "Optional, but records with a source are far more useful to researchers and are easier for reviewers to accept.",
-      "answered": "Thank you — this will be published alongside the record."
+      "kind": "Kind of source",
+      "kindPlaceholder": "Choose a kind",
+      "kinds": {
+        "published": "Published book or article",
+        "archival": "Archival record",
+        "inscription": "Inscription",
+        "web": "Web page",
+        "field_survey": "Field survey",
+        "oral_history": "Oral history or personal knowledge",
+        "image": "Photograph or image",
+        "pdf": "PDF document"
+      },
+      "confidence": "How sure are you?",
+      "confidencePlaceholder": "Choose one",
+      "confidenceLevels": {
+        "certain": "Certain",
+        "likely": "Likely",
+        "uncertain": "Uncertain",
+        "speculative": "Speculative"
+      },
+      "required": "Required: name a source (or describe it and choose its kind), and say how sure you are.",
+      "answered": "Thank you — the source is published with the record and cited by every link you added."
+    },
+    "terms": {
+      "version": "2026-11-18",
+      "title": "Before your first contribution",
+      "intro": "HeritageGraph publishes what you contribute. Please read and agree to how that works.",
+      "points": [
+        "What you contribute is published openly under the Creative Commons Attribution 4.0 licence (CC BY 4.0), so anyone may reuse it with credit.",
+        "Your contributions are attributed to your username, publicly and permanently, together with their revision history and review decisions.",
+        "You confirm that you have the right to share what you submit, and that sharing it respects the wishes of the community it comes from.",
+        "You can leave the public leaderboard at any time. If you stop contributing, you can ask for your username to be replaced by a pseudonym on everything you contributed."
+      ],
+      "privacyLead": "How we handle your data:",
+      "privacyLink": "privacy notice",
+      "agree": "I agree",
+      "cancel": "Not now",
+      "error": "Could not save your agreement. Please try again.",
+      "qrLabel": "I agree that what I submit is published under CC BY 4.0, and that I have the right to share it.",
+      "account": {
+        "title": "Contributor terms and visibility",
+        "description": "What you agreed to, and whether you appear in public rankings.",
+        "accepted": "You accepted the contributor terms (version {version}) on {date}.",
+        "notAccepted": "You have not accepted the current contributor terms yet. You will be asked before your next contribution.",
+        "leaderboard": "Show me on the public leaderboard and contributor directory",
+        "leaderboardHelp": "Turning this off removes you from rankings. Your contributions stay attributed to your username.",
+        "erasure": "To withdraw your name from everything you contributed, contact the curators; your username is replaced by a pseudonym."
+      },
+      "termsLink": "full terms"
     }
   },
   "knowledge": {
@@ -381,7 +431,7 @@
     "switchToXr": "Switch to stories",
     "liveBadge": "Live graph",
     "graphCapped": "Showing the {shown} most connected of {total} entities — search or filter to focus on the rest.",
-    "demoBanner": "{count, plural, =0 {Illustrated demo corpus — curated heritage sites with sourced Wikimedia imagery.} other {Illustrated demo corpus — # curated sites with sourced Wikimedia imagery.}}",
+    "demoBanner": "{count, plural, =0 {Demo corpus — curated sites and records frozen from the public knowledge graph.} other {Demo corpus — # records: curated sites plus records frozen from the public knowledge graph, most of them imported from Wikidata and not yet reviewed by a person.}}",
     "demoBannerAction": "Switch to the live graph",
     "sparseLive": "The live graph has {count} entities — the corpus is still growing.",
     "storiesLiveHint": "Stories highlights illustrated places. Switch to Map or Graph to see all {count} live entities (including recent imports without photos).",
@@ -427,7 +477,8 @@
       "openSparql": "Open SPARQL endpoint",
       "fullMethodsPage": "Full methods documentation",
       "doiPending": "Not yet deposited",
-      "demoTextUnsourced": "Descriptive text in this sample corpus has no recorded source and must not be cited. Image credits above are verified; the narrative is not."
+      "demoExtension": "Also holds {count} records frozen from the public knowledge graph. Records imported from Wikidata were accepted by the importer, not reviewed by a person. They carry only sourced fields: labels, cited descriptions, licensed photographs, their own coordinates, dates and typed links, each with its record's source.",
+      "demoTextUnsourced": "The curated sites' descriptions, facts and dates have no recorded source, so they are not shown. Their photographs are credited, and the facts that can be checked come from Wikidata and Wikipedia, linked on each record."
     },
     "filters": {
       "regionLabel": "Heritage filters",
@@ -643,6 +694,9 @@
       "loadingRecord": "Loading the collection…",
       "relations": {
         "out": {
+          "hasReligiousTradition": "Tradition",
+          "P7_took_place_at": "Took place at",
+          "P9i_forms_part_of": "Part of",
           "P55_has_current_location": "Located at",
           "active_during": "Active during",
           "associated_with": "Associated with",
@@ -672,6 +726,9 @@
           "was_produced_by_event": "Made during"
         },
         "in": {
+          "hasReligiousTradition": "In this tradition",
+          "P7_took_place_at": "Took place here",
+          "P9i_forms_part_of": "Includes",
           "P55_has_current_location": "Located here",
           "active_during": "Active in this period",
           "associated_with": "Associated with",
@@ -810,7 +867,7 @@
       },
       "epistemicReview": {
         "title": "Epistemic review",
-        "desc": "Claims carry sources and confidence, and are reviewed before publication. How that works is documented on the methods page."
+        "desc": "Claims carry sources and confidence, and contributions are reviewed before publication. Records imported from Wikidata are marked as imported until a person reviews them. How that works is documented on the methods page."
       }
     },
     "data": {
@@ -1701,6 +1758,66 @@
       "people": "समुदाय",
       "part": "",
       "tie": ""
-    }
+    },
+    "titleSuffix": "Stories · HeritageGraph",
+    "noLinkSource": "No source recorded for this link",
+    "citedSources": "What does it cite?",
+    "citeTitle": "Cite this story",
+    "citation": "{label}. Story built from the HeritageGraph public knowledge graph (v{release}), as read on {date}. CAIR-Nepal. {url}",
+    "citeNote": "A story is computed from the graph, so it changes when the graph does. The date says which state of the graph this one reflects. Cite each fact by the source shown beside it.",
+    "citeCopy": "Copy citation",
+    "citeCopied": "Citation copied",
+    "placeOnlyHidden": "{count, plural, one {# story that only says where something is is not listed.} other {# stories that only say where things are are not listed.}}",
+    "placeOnlyIncluded": "{count, plural, one {Includes # story that only says where something is.} other {Includes # stories that only say where things are.}}",
+    "placeOnlyShow": "Show them",
+    "placeOnlyHide": "Hide them"
+  },
+  "privacy": {
+    "title": "Privacy notice",
+    "draft": "Draft — awaiting approval by CAIR-Nepal. It describes what the platform does today.",
+    "sections": [
+      {
+        "h": "What we collect",
+        "p": [
+          "When you sign in with Google: your name, email address and profile picture.",
+          "Each sign-in or failed sign-in is logged with your email, IP address, browser and time, to detect abuse.",
+          "What you contribute and every review decision, with their history.",
+          "If you contribute by scanning a QR code: the name, email or phone number you choose to give, if any."
+        ]
+      },
+      {
+        "h": "What is public",
+        "p": [
+          "Your contributions, their revision history and review decisions, attributed to your username.",
+          "Your username on the leaderboard and contributor directory, unless you turn that off in your account settings.",
+          "Your email address, IP address and sign-in history are never published. QR contact details are seen only by curators."
+        ]
+      },
+      {
+        "h": "What we do not do",
+        "p": [
+          "We do not use advertising or third-party analytics, and we do not sell or share personal data.",
+          "IP addresses are also used briefly to limit request rates; that record is not kept."
+        ]
+      },
+      {
+        "h": "How long we keep it",
+        "p": [
+          "Contributions are kept permanently, because they are reviewed, versioned and may be cited.",
+          "Sign-in logs currently have no fixed retention period."
+        ]
+      },
+      {
+        "h": "Your choices",
+        "p": [
+          "Leave the public leaderboard at any time from your account settings.",
+          "Ask the curators to replace your username with a pseudonym on everything you contributed, and to close your account."
+        ]
+      }
+    ],
+    "updated": "Last updated: 2026-11-18 · CAIR-Nepal",
+    "thirdParties": "Sign-in is provided by Google. Links to external authorities (Wikidata, Getty) lead to sites with their own policies.",
+    "termsLead": "See also the",
+    "termsLink": "Terms of Contribution"
   }
 }

@@ -52,6 +52,7 @@ from .models import (
     Share,
 )
 from .permissions import (
+    IsAuthorOrStaff,
     IsCommunityReviewer,
     IsContributorOrReadOnly,
     IsEditor,
@@ -60,6 +61,7 @@ from .permissions import (
     IsSchemaExtensionModerator,
     IsStaffOrExpertCurator,
 )
+from .contributor_terms import require_accepted as require_contributor_terms
 from .serializers import *
 from .throttles import (
     ProjectAssetUploadThrottle,
@@ -244,7 +246,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     queryset = Comments.objects.all().order_by("-created_at")
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrStaff]
 
     def get_queryset(self):
         submission_id = self.request.query_params.get("submission_id")
@@ -374,6 +376,36 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ContributorConsentView(APIView):
+    """The signed-in contributor's terms acceptance and leaderboard visibility.
+
+    GET returns the current terms and the contributor's status; POST with
+    ``{"accept": true}`` records acceptance of the current version, and
+    ``{"show_on_leaderboard": false}`` leaves the public rankings.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from .contributor_terms import status_for
+
+        return Response(status_for(request.user))
+
+    def post(self, request):
+        from .contributor_terms import _profile, accept, status_for
+
+        if request.data.get("accept") is True:
+            accept(request.user)
+        if "show_on_leaderboard" in request.data:
+            value = request.data.get("show_on_leaderboard")
+            if not isinstance(value, bool):
+                raise ValidationError({"show_on_leaderboard": "Must be true or false."})
+            profile = _profile(request.user)
+            profile.show_on_leaderboard = value
+            profile.save(update_fields=["show_on_leaderboard"])
+        return Response(status_for(request.user))
+
+
 class LeaderboardView(APIView):
     """
     Public leaderboard with server-side pagination, search, and filtering.
@@ -445,6 +477,8 @@ class LeaderboardView(APIView):
                 | Q(revision_count__gt=0)
                 | Q(submission_count__gt=0)
             )
+            # Contributors who left the leaderboard are not ranked publicly.
+            .exclude(profile__show_on_leaderboard=False)
         )
 
         users = list(qs.order_by("username"))
@@ -563,6 +597,7 @@ class ContributorsListView(APIView):
 
         qs = (
             User.objects.select_related("profile")
+            .exclude(profile__show_on_leaderboard=False)
             .annotate(
                 contributions_count=Count("contributed_entities", distinct=True),
                 accepted_count=Count(
@@ -948,6 +983,11 @@ class SubmissionSuggestionViewSet(viewsets.ModelViewSet):
     queryset = SubmissionEditSuggestion.objects.all()
     serializer_class = SubmissionEditSuggestionSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ("approve", "reject", "update", "partial_update", "destroy"):
+            return [permissions.IsAuthenticated(), IsReviewerOrAdmin()]
+        return [permissions.IsAuthenticated()]
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
@@ -1592,6 +1632,9 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
         action = serializer.validated_data["action"]
         comment = serializer.validated_data.get("comment", "")
 
+        from apps.cidoc_data.registry_slots import MissingEvidence
+
+        from .dual_review import AwaitingSecondReview
         from .models import IllegalStatusTransition
 
         try:
@@ -1608,8 +1651,16 @@ class ContributionQueueViewSet(viewsets.ReadOnlyModelViewSet):
                     {"message": "Entity rejected successfully"},
                     status=status.HTTP_200_OK,
                 )
-        except IllegalStatusTransition as exc:
+        except (IllegalStatusTransition, MissingEvidence) as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except AwaitingSecondReview:
+            return Response(
+                {
+                    "error": "This record needs two independent reviewers. "
+                    "Accept it from the review workspace, where each approval is recorded."
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
 
         return Response({"error": "Invalid action"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1984,6 +2035,7 @@ class SchemaExtensionProposalViewSet(viewsets.ModelViewSet):
         return qs.filter(author=user)
 
     def perform_create(self, serializer):
+        require_contributor_terms(self.request.user)
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
@@ -2181,6 +2233,7 @@ class EntityProposalViewSet(viewsets.ModelViewSet):
         return qs.filter(author=user)
 
     def perform_create(self, serializer):
+        require_contributor_terms(self.request.user)
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
@@ -2345,6 +2398,7 @@ class RelationshipProposalViewSet(viewsets.ModelViewSet):
         return qs.filter(author=user)
 
     def perform_create(self, serializer):
+        require_contributor_terms(self.request.user)
         serializer.save(author=self.request.user)
 
     def perform_update(self, serializer):
@@ -2526,6 +2580,9 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
             **serializer.validated_data,
         )
 
+        from apps.cidoc_data.registry_slots import MissingEvidence
+
+        from .dual_review import AwaitingSecondReview
         from .models import IllegalStatusTransition
 
         # Apply the verdict
@@ -2535,7 +2592,35 @@ class SubmitReviewDecisionView(generics.CreateAPIView):
                     entity.reject_contribution(request.user, feedback)
                 else:
                     entity.accept_contribution(request.user, feedback)
-            except IllegalStatusTransition as exc:
+            except AwaitingSecondReview as exc:
+                # Keep the decision: it is the first of the two approvals.
+                Activity.objects.create(
+                    entity=entity,
+                    user=request.user,
+                    activity_type="commented",
+                    comment=f"First approval by {request.user.username}; awaiting a second reviewer.",
+                )
+                for other in User.objects.filter(reviewer_role__is_active=True).exclude(
+                    pk__in=[request.user.pk, entity.contributor_id]
+                ):
+                    Notification.objects.create(
+                        user=other,
+                        actor=request.user,
+                        notification_type="submission_update",
+                        message=f'"{entity.name}" needs a second reviewer before it is published.',
+                        entity=entity,
+                        link=f"/curation/review/{entity.entity_id}",
+                    )
+                return Response(
+                    {
+                        "status": "awaiting_second_review",
+                        "detail": str(exc),
+                        "approvals": exc.approvals,
+                        "needed": 2,
+                    },
+                    status=status.HTTP_202_ACCEPTED,
+                )
+            except (IllegalStatusTransition, MissingEvidence) as exc:
                 decision.delete()
                 return Response(
                     {"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST
@@ -2616,7 +2701,7 @@ class ReviewFlagViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == "create":
             return [permissions.IsAuthenticated()]
-        if self.action in ["update", "partial_update", "destroy"]:
+        if self.action in ["update", "partial_update", "destroy", "resolve"]:
             return [permissions.IsAuthenticated(), IsCommunityReviewer()]
         return [permissions.IsAuthenticated()]
 
@@ -3557,6 +3642,9 @@ class RevisionDiffView(APIView):
 class ShareViewSet(viewsets.ViewSet):
     """Track shares of entities to external platforms."""
 
+    # Anonymous visitors share too; declared rather than inherited.
+    permission_classes = [permissions.AllowAny]
+
     def create(self, request):
         serializer = ShareCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -3610,7 +3698,7 @@ class EntityCommentViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = CommentWithReactionsSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsAuthorOrStaff]
 
     def get_queryset(self):
         entity_id = self.kwargs.get("entity_id")
@@ -4720,6 +4808,10 @@ class ProjectAssetViewSet(_ProjectScopedViewSet):
             payload={"media_id": str(asset.media_id), "role": asset.role},
         )
 
+    def perform_update(self, serializer):
+        self._require_edit(self._get_project())
+        serializer.save()
+
     def perform_destroy(self, instance):
         project = self._get_project()
         self._require_edit(project)
@@ -4756,6 +4848,10 @@ class ProjectEntityViewSet(_ProjectScopedViewSet):
             target_id=link.id,
             payload={"entity_id": str(link.entity_id)},
         )
+
+    def perform_update(self, serializer):
+        self._require_edit(self._get_project())
+        serializer.save()
 
     def perform_destroy(self, instance):
         project = self._get_project()
@@ -4828,6 +4924,39 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from rest_framework.permissions import IsAuthenticated
         return [IsAuthenticated()]
 
+    def _require_merge_moderator(self, mr):
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        from .project_services import user_can_merge_project
+
+        # Approving runs the merge into the canonical graph; deciding is a
+        # moderator's job, not any signed-in user's.
+        if not user_can_merge_project(self.request.user, mr.project):
+            raise DRFPermDenied("Only moderators can decide merge requests.")
+
+    def perform_update(self, serializer):
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        from .project_services import user_can_merge_project
+
+        mr = serializer.instance
+        if mr.opened_by_id != self.request.user.id and not user_can_merge_project(
+            self.request.user, mr.project
+        ):
+            raise DRFPermDenied("Only the opener or a moderator can edit this merge request.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        from rest_framework.exceptions import PermissionDenied as DRFPermDenied
+
+        from .project_services import user_can_merge_project
+
+        if instance.opened_by_id != self.request.user.id and not user_can_merge_project(
+            self.request.user, instance.project
+        ):
+            raise DRFPermDenied("Only the opener or a moderator can delete this merge request.")
+        instance.delete()
+
     def perform_create(self, serializer):
         from apps.graph.conflict_diff import compute_diff
         from apps.graph.shacl_validate import check_pid_uniqueness, validate_project_graph
@@ -4865,6 +4994,7 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from rest_framework.exceptions import PermissionDenied as DRFPermDenied
 
         mr = self.get_object()
+        self._require_merge_moderator(mr)
         if request.user == mr.opened_by:
             raise DRFPermDenied("You cannot approve your own merge request.")
         if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
@@ -4886,6 +5016,7 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from .models import MergeRequest as _MR
 
         mr = self.get_object()
+        self._require_merge_moderator(mr)
         if mr.status not in (_MR.STATUS_PENDING, _MR.STATUS_CHANGES_REQUESTED):
             return Response({"detail": f"Cannot reject from status '{mr.status}'."}, status=400)
 
@@ -4901,6 +5032,7 @@ class MergeRequestViewSet(viewsets.ModelViewSet):
         from .models import MergeRequest as _MR
 
         mr = self.get_object()
+        self._require_merge_moderator(mr)
         if mr.status != _MR.STATUS_PENDING:
             return Response({"detail": "Can only request changes on a pending MR."}, status=400)
 
@@ -4930,6 +5062,13 @@ class ReconciledLinkViewSet(viewsets.ModelViewSet):
     """CRUD for skos:exactMatch / closeMatch / broadMatch links to authority files."""
 
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        # Links to external authorities feed skos:exactMatch; reading them is
+        # open to signed-in users, changing them is a reviewer's job.
+        if self.action in ("list", "retrieve"):
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsReviewerOrAdmin()]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["authority", "is_stale", "match_type"]
     search_fields = ["entity_uri", "target_uri", "target_label"]
@@ -4971,6 +5110,11 @@ class CuratorAlertViewSet(viewsets.ReadOnlyModelViewSet):
     """Read + dismiss/resolve curator alerts created by the re-reconciliation beat task."""
 
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ("list", "retrieve"):
+            return [IsAuthenticated()]
+        return [IsAuthenticated(), IsReviewerOrAdmin()]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ["status", "issue_type"]
     ordering_fields = ["detected_at"]
