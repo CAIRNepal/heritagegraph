@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2289,6 +2289,12 @@ the <strong>same accept gate</strong> into the graph; D is a read-only archive.<
 4. Creates a <strong><code>CulturalEntity</code></strong> wrapper (<code>status="pending_review"</code>) — the review-queue item.
 5. Creates <strong><code>Revision</code> #1</strong> whose JSON <code>data</code> includes the fields <strong>plus <code>_cidoc_model</code> and
    <code>_cidoc_id</code></strong> (the back-link to the CIDOC row).
+   Registry slots the row has no column for — every link to another record, and
+   some plain values — ride along as <strong><code>_links</code></strong> / <strong><code>_values</code></strong>, with the
+   contributor's <strong><code>_source_kind</code></strong> and <strong><code>_confidence</code></strong>
+   (<code>CulturalEntityLinkMixin.to_internal_value</code> → <code>registry_slots.split_registry_extras</code>).
+   A link must name an existing record of the slot's target type; a key that is
+   neither a field nor a slot is refused with 400 rather than dropped.
 6. Logs an <strong><code>Activity</code></strong> ("submitted") and fires <strong><code>Notification</code>s</strong> to the contributor and
    every active reviewer.</p>
 <h3 id="1b-review-acceptance">1b. Review / acceptance</h3>
@@ -2300,7 +2306,15 @@ the <strong>same accept gate</strong> into the graph; D is a read-only archive.<
 3. Resolves the CIDOC row via the real FK (<code>cidoc_content_type</code>/<code>cidoc_object_id</code>;
    the legacy <code>_cidoc_model</code>/<code>_cidoc_id</code> JSON back-link is a logged fallback that
    heals the FK), <strong>applies the accepted revision's fields to the row</strong>, and sets its
-   <code>status="accepted"</code>. Every resolution failure logs at ERROR — never silent.</p>
+   <code>status="accepted"</code>. Every resolution failure logs at ERROR — never silent.
+4. <strong>Refuses a record that names no source</strong> (<code>source</code> or <code>source_citation</code>):
+   <code>MissingEvidence</code> → 400, nothing changes.
+5. Turns the revision's <code>_links</code> / <code>_values</code> into accepted <code>HeritageAssertion</code>
+   rows (<code>registry_slots.apply_revision_extras</code>) citing the record's DataSource —
+   a typed citation is registered as one, with the contributor's chosen kind —
+   and the contributor's stated confidence. An edge whose other end is still in
+   review is projected when that record is accepted
+   (<code>rdf_signals._publish_edges_touching</code>).</p>
 <h3 id="1b-editing-a-published-record-staged-revisions">1b′. Editing a published record (staged revisions)</h3>
 <p><code>PATCH /api/v1/cidoc/&lt;type&gt;/&lt;id&gt;/</code> on a published row <strong>never edits it in place</strong>:
 - The accepted content stays live in browse <strong>and</strong> in the public graph.

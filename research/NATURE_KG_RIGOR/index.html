@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -1911,6 +1911,39 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#shacl-conformance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SHACL conformance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#write-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Write permissions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dataset-deposit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dataset deposit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sample-corpus-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2000,9 +2033,9 @@
 </tr>
 <tr>
 <td>F3</td>
-<td>Zenodo DOI for software + L0 dump</td>
+<td>Zenodo DOI for software + dataset</td>
 <td>🟡</td>
-<td><code>.zenodo.json</code> + <code>CITATION.cff</code> (DOI placeholder until deposit)</td>
+<td><code>manage.py build_deposit</code> assembles the dataset deposit (exact N-Quads, ontology, reports, manifest, SHA-256 sums, README, <code>zenodo.json</code>); software metadata in <code>.zenodo.json</code> + <code>CITATION.cff</code>. No DOI until the deposits are published — see <a href="#dataset-deposit">Dataset deposit</a>.</td>
 </tr>
 <tr>
 <td>F4</td>
@@ -2038,7 +2071,7 @@
 <td>I2</td>
 <td>SHACL shapes generated</td>
 <td>🟡</td>
-<td>shapes exist; <code>RDF_SHACL_VALIDATE_ON_WRITE</code> default off</td>
+<td>Validation on write is <strong>on</strong> by default (dev and <code>docker-compose.yml</code>; logs, does not block). <code>manage.py shacl_conformance</code> validates the published, assertion and provenance graphs in one pass and writes a summary and full report. Records conform; beliefs fail two constraints that come from the ontology, not the data — see <a href="#shacl-conformance">SHACL conformance</a>.</td>
 </tr>
 <tr>
 <td>I3</td>
@@ -2092,7 +2125,7 @@
 <td>C3</td>
 <td>Community review for new claims</td>
 <td>✅</td>
-<td>epistemic review queue</td>
+<td>epistemic review queue; <strong>two independent reviewers</strong> (neither the contributor) for caste, guthi and Kumari records, any non-public CARE tier or CARE label, and caste or guthi membership links — <code>heritage_data/dual_review.py</code>. The first accept is recorded (HTTP 202) and the record stays in review until a second reviewer accepts.</td>
 </tr>
 <tr>
 <td>C4</td>
@@ -2122,7 +2155,7 @@
 <td>P2</td>
 <td>DataSource + PROV on L1 assertions</td>
 <td>🟡</td>
-<td>Supported and measured, <strong>not required</strong>: <code>HeritageAssertion.source</code> is nullable, <code>confidence</code> defaults to <code>likely</code>, and the <code>AssertionRequiresSource</code> SHACL shape runs only on project merge with <code>RDF_SHACL_VALIDATE_ON_WRITE</code> off by default. <code>kg_quality_report</code> reports <code>with_source</code>. See <a href="#source-coverage">Source coverage</a>.</td>
+<td><strong>Required for new records</strong>: a record cannot be accepted without <code>source</code> or <code>source_citation</code>, and links from the contribute forms are published only as <code>relationship.*</code> assertions citing a registered DataSource with the contributor's stated confidence. Every accepted assertion states its confidence (no default). Older records were audited with <code>audit_provenance</code>. <strong>Not yet</strong>: <code>HeritageAssertion.source</code> is still nullable outside the forms, and SHACL-on-write is off. See <a href="#source-coverage">Source coverage</a>.</td>
 </tr>
 <tr>
 <td>P3</td>
@@ -2151,26 +2184,143 @@
 </tbody>
 </table>
 <h2 id="source-coverage">Source coverage</h2>
-<p>An assertion can currently be created, accepted and published with <strong>no source
-at all</strong>:</p>
+<p>What is enforced (new contributions):</p>
 <ul>
-<li><code>HeritageAssertion.source</code> is <code>null=True, blank=True</code>.</li>
-<li><code>confidence</code> defaults to <code>"likely"</code> — so an unsourced claim enters the graph
-  already carrying a confidence value that no contributor stated.</li>
-<li>Entity records (<code>cidoc_data.MetaData</code> and its subclasses) have no source field
-  at all; evidence attaches to assertions, not to the descriptive record.</li>
-<li>The <code>AssertionRequiresSource</code> SHACL shape detects the gap, but only for
-  project-scoped merges, and SHACL-on-write is opt-in.</li>
+<li><strong>Records.</strong> <code>accept_contribution</code> refuses to publish a record that names no
+  <code>source</code> and no <code>source_citation</code> (<code>registry_slots.require_evidence</code>); the
+  review API answers 400 and the record stays in review. Every contribute form
+  asks for the source, its kind and the contributor's confidence before Submit.</li>
+<li><strong>Links and column-less values.</strong> Registry slots with no column on the record
+  are no longer dropped by the serializer. They travel in the revision
+  (<code>_links</code> / <code>_values</code>), are shown to the reviewer by name, and on acceptance
+  become <code>HeritageAssertion</code> rows citing the record's DataSource (a typed
+  citation is registered as one, with the kind the contributor chose) and the
+  contributor's stated confidence. A key that is neither a field nor a slot is
+  refused with 400. <code>REGISTRY_MODEL_ALIGNMENT.md</code> reports 0 silently discarded
+  form fields.</li>
+<li><strong>Review gate on assertions.</strong> A contributor-created assertion is always
+  <code>pending</code>; only reviewers and admins can create one already accepted.</li>
+<li>
+<p><strong>Stated confidence.</strong> <code>HeritageAssertion.confidence</code> has no default. An
+  accepted assertion must state one of certain / likely / uncertain /
+  speculative (model <code>save()</code> and <code>clean()</code>, the assertion API, the inline
+  contribute routes); a pending one may leave it for the reviewer. Forms and
+  relationship proposals start with no choice selected. System writers state
+  theirs explicitly: identity merges <code>certain</code> (a decision, not an estimate),
+  Wikidata statements <code>likely</code>, seed rows <code>uncertain</code>. Values outside the scale
+  (seed rows wrote <code>medium</code>) were cleared to unstated by migration 0024.</p>
+</li>
+<li>
+<p><strong>Field-level provenance.</strong> A citation that supports only some fields does
+  not make the record count as sourced. When the Wikidata importer adds labels
+  or an image to an existing record, that goes in <code>field_sources</code>
+  (<code>{"labels": …, "media": …}</code>), not in <code>source_citation</code>; migration 0025 moved
+  the notes it had appended before.</p>
+</li>
 </ul>
-<p>What this means for the paper: do not claim that published assertions are
-source-backed. The accurate claim is that the model <em>supports</em> per-assertion
-provenance, that coverage is <em>measured</em> (<code>kg_quality_report</code> → <code>with_source</code>),
-and that enforcement is not yet switched on. Report the measured coverage
-figure rather than asserting the property.</p>
-<p>Before claiming enforcement, three things need to change: make <code>source</code> or
-<code>source_citation</code> required for the <code>accepted</code> transition, remove the silent
-<code>confidence</code> default so contributors state it explicitly, and enable
-SHACL-on-write.</p>
+<p>What is not (yet):</p>
+<ul>
+<li>Records and assertions published <strong>before</strong> this enforcement keep whatever
+  provenance they had. <code>manage.py audit_provenance</code> measures it, counting
+  records, claims and identity bookkeeping separately (bookkeeping says which
+  records are the same, not anything about heritage). Quote its figures, and
+  <code>kg_quality_report</code> → <code>entity_source_coverage</code> /
+  <code>provenance_coverage.with_registered_source</code>, rather than asserting coverage.</li>
+<li>Repairs that invent nothing: <code>--backfill-wikidata</code> points Wikidata cluster
+  memberships at the Wikidata source their record cites; <code>--withdraw --as
+  &lt;curator&gt; --manifest &lt;path&gt;</code> sends unsourced records and claims back to
+  review (out of the public graph) and <code>--restore &lt;path&gt;</code> undoes it exactly.</li>
+<li><code>HeritageAssertion.source</code> is still nullable on paths other than the
+  contribute forms.</li>
+<li>The <code>AssertionRequiresSource</code> SHACL shape runs only on project merge, and
+  SHACL-on-write is off by default.</li>
+</ul>
+<p>What this means for the paper: the accurate claim is that new contributions
+are source-backed by construction, and that coverage of the whole graph is
+<em>measured</em> and reported as a figure, not asserted as a property. Backfilling
+or withdrawing the unsourced older records, removing the silent <code>confidence</code>
+default everywhere, and enabling SHACL-on-write would close the gap.</p>
+<h2 id="shacl-conformance">SHACL conformance</h2>
+<p><code>manage.py shacl_conformance --output-dir &lt;dir&gt;</code> validates the public graph
+plus every per-assertion belief and provenance graph against
+<code>ontology/shapes/generated-heritagegraph-minimal-shacl.ttl</code>, and writes
+<code>shacl-conformance.json</code> (counts, violations grouped by shape, path and
+constraint) and <code>shacl-conformance-report.ttl</code>. Run it on the deployed store
+and attach both files; do not quote numbers from a development database.</p>
+<p>What fixing it turned up:</p>
+<ul>
+<li><code>shacl_validate.py</code> did not import (two unclosed calls). Validation was off,
+  so nothing failed; switching it on would have broken every publish. Fixed and
+  covered by <code>test_shacl_validate</code>.</li>
+<li>The shape generator mapped unknown prefixes onto the HeritageGraph namespace,
+  so the belief shape targeted a class no data uses and validated nothing. It
+  now raises on an unknown prefix.</li>
+<li>Beliefs were typed <code>http://www.cidoc-crm.org/crminf/I2_Belief</code>, while the
+  ontology, OWL file and CRM bridge declare <code>…/extensions/crminf/</code>. The
+  projection now uses the ontology's namespace.</li>
+<li>Graphs written before the namespace moved to cair-nepal.org were never
+  cleared and stayed queryable through the public SPARQL proxy, which forwards
+  any named graph. Clear any <code>https://w3id.org/heritagegraph/graph/</code> graphs on
+  a deployed store.</li>
+</ul>
+<p>Open, in the ontology rather than the data (raise upstream):</p>
+<ol>
+<li><code>justification_note</code> uses <code>crminf:J4_that</code> with a string range. In CRMinf,
+   J4_that relates a belief to a proposition set — which is how the projection
+   uses it — so the generated shape demands a literal where the data, correctly,
+   has an IRI.</li>
+<li><code>asserted_value</code> is required on every assertion. A relationship belief's
+   value is its object record, not a literal, so every relationship belief
+   fails <code>minCount 1</code>.</li>
+</ol>
+<p>Until those are settled, <code>RDF_SHACL_STRICT_ON_WRITE</code> stays off: strict mode
+would refuse every relationship belief.</p>
+<p>Both changes are written up, with the YAML diff, in
+<a href="../../ontology/UPSTREAM_PROPOSALS/"><code>../ontology/UPSTREAM_PROPOSALS.md</code></a>. With
+them applied to the shapes, the published graph conforms with 0 violations.</p>
+<h2 id="write-permissions">Write permissions</h2>
+<p>Audited endpoint by endpoint (every POST/PUT/PATCH/DELETE route, resolved
+per action, then each action body read). Fixed, with a failing-then-passing
+test each in <code>heritage_data/test_write_permissions.py</code>:</p>
+<ul>
+<li>the DRF default was <code>AllowAny</code>, so a view that declared nothing was writable
+  by anyone; the project default is now <code>IsAuthenticatedOrReadOnly</code>;</li>
+<li>merge requests could be approved (which runs the merge) by any signed-in user
+  other than the opener; deciding now needs a merge moderator, and editing or
+  deleting needs the opener or a moderator;</li>
+<li>reconciled links (which feed <code>skos:exactMatch</code>) and curator alerts could be
+  changed or resolved by any signed-in user; now reviewers only;</li>
+<li>person revisions were open to anonymous create, edit and delete;</li>
+<li>partner institutions could be edited by any signed-in user; now staff;</li>
+<li>any signed-in user could edit or delete anyone's comment; now the author or
+  staff;</li>
+<li>project assets and entities could be edited by anyone who could view the
+  project; edits now need edit rights, as deletes already did;</li>
+<li>contributor-created assertions were accepted on request (fixed earlier; see
+  Source coverage).</li>
+</ul>
+<p>Deliberately open: sign-in and token routes, QR public contributions, share
+tracking, the read-only <code>kg/query/</code> (it refuses SPARQL updates) and the
+assistant chat, all behind the default throttles.</p>
+<h2 id="dataset-deposit">Dataset deposit</h2>
+<p>Two Zenodo records: the <strong>software</strong> (this repository at a tagged release;
+metadata in <code>.zenodo.json</code> and <code>CITATION.cff</code>, MIT) and the <strong>dataset</strong>
+(CC BY 4.0), built by</p>
+<pre><code class="language-bash">cd heritage_graph
+manage.py build_deposit --output-dir ../deposit-1.0.0 --dataset-version 1.0.0
+manage.py build_deposit --check ../deposit-1.0.0   # or: shasum -a 256 -c SHA256SUMS
+</code></pre>
+<p>The deposit holds the public graph and every belief/provenance graph as N-Quads
+written by the triplestore's own serialiser (datatypes, language tags and
+escaping are exact — the older line formatter dropped all three, and
+<code>rdf_export_dump</code> and <code>shacl_conformance</code> now use the exact serialiser too),
+the ontology files, the provenance audit, SHACL conformance and quality
+reports, a README with the snapshot's own figures, <code>LICENSE-DATA</code>, a
+<code>zenodo.json</code> for the dataset record, and <code>manifest.json</code> / <code>SHA256SUMS</code>.</p>
+<p>Build it from a clean checkout (the manifest marks a dirty tree with
+<code>-dirty</code>) against the deployed store, not a development database. Upload the
+folder, publish, then add the DOI to <code>CITATION.cff</code>, <code>.zenodo.json</code> and the
+paper — never before the record exists.</p>
 <h2 id="sample-corpus-policy">Sample corpus policy</h2>
 <p>The Atlas ships a fictional sample corpus so the interface is explorable before
 a deployment has data. It is a demonstration fixture and is governed by three
@@ -2208,9 +2358,10 @@ DJANGO_ENV=development ../.venv/bin/python manage.py kg_rigor_audit
 <p>Do <strong>not</strong> commit <code>_fingerprint.local.json</code> / <code>_reject_audit.local.json</code> (local artifacts).</p>
 <h2 id="remaining-for-the-paper-package-not-code">Remaining for the paper package (not code)</h2>
 <ol>
-<li>Mint Zenodo DOI; add the <code>doi:</code> key to <code>CITATION.cff</code> and the identifier to
-   <code>.zenodo.json</code> / Methods. Both files deliberately carry <strong>no</strong> DOI until the
-   deposit exists — a placeholder identifier propagates into bibliographies.</li>
+<li>Publish the two Zenodo records (see <a href="#dataset-deposit">Dataset deposit</a>),
+   then add the DOIs to <code>CITATION.cff</code>, <code>.zenodo.json</code> and Methods. Both files
+   deliberately carry <strong>no</strong> DOI until the deposit exists — a placeholder
+   identifier propagates into bibliographies.</li>
 <li>Deposit <code>danam-heritagegraph.nq</code> with the pinned SHA-256 from <code>corpus_fingerprint</code>.</li>
 <li>Enable SHACL-on-write in staging; attach sample conformance report (≥100 shapes).</li>
 <li>Expert gold-standard evaluation (<code>kg_evaluate</code>). No reportable evaluation
