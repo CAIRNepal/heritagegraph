@@ -71,6 +71,12 @@ What is enforced (new contributions):
   Wikidata statements `likely`, seed rows `uncertain`. Values outside the scale
   (seed rows wrote `medium`) were cleared to unstated by migration 0024.
 
+- **Field-level provenance.** A citation that supports only some fields does
+  not make the record count as sourced. When the Wikidata importer adds labels
+  or an image to an existing record, that goes in `field_sources`
+  (`{"labels": …, "media": …}`), not in `source_citation`; migration 0025 moved
+  the notes it had appended before.
+
 What is not (yet):
 
 - Records and assertions published **before** this enforcement keep whatever
