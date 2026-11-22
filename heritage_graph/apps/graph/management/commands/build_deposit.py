@@ -10,6 +10,7 @@ running platform:
     reports/provenance-audit.json       audit_provenance measurement
     reports/shacl-conformance.json      shacl_conformance summary (+ full .ttl)
     reports/kg-quality.json             kg_quality_report
+    reports/competency-queries.json     run_competency_queries
     manifest.json                       version, commit, counts, SHA-256 per file
     SHA256SUMS                          the same checksums, for `shasum -c`
     README.md, LICENSE-DATA, zenodo.json
@@ -106,7 +107,7 @@ built on {generated} from commit `{commit}` with ontology version {ontology}.
 | `data/heritagegraph-public.nq` | Published records and their links (named graph `{public_graph}`): {public_triples} quads |
 | `data/heritagegraph-beliefs.nq` | One belief graph and one provenance graph per accepted assertion (CRMinf I2 Belief, PROV-O): {belief_triples} quads in {belief_graphs} graphs |
 | `ontology/` | The LinkML schema, OWL TBox, CIDOC-CRM alignment and generated SHACL shapes |
-| `reports/` | Provenance audit, SHACL conformance and quality metrics for this snapshot |
+| `reports/` | Provenance audit, SHACL conformance, quality metrics and competency-question results for this snapshot |
 | `manifest.json`, `SHA256SUMS` | Checksums of every file (`shasum -a 256 -c SHA256SUMS`) |
 
 ## What is and is not included
@@ -133,6 +134,7 @@ From the HeritageGraph repository at the commit above:
 
     manage.py audit_provenance --json
     manage.py shacl_conformance --output-dir reports/
+    manage.py run_competency_queries --output reports/competency-queries.json
     manage.py kg_quality_report
 """
 
@@ -188,6 +190,13 @@ class Command(BaseCommand):
         (out / "reports/shacl-conformance-report.ttl").write_text(shacl_ttl)
         (out / "reports/kg-quality.json").write_text(
             json.dumps(quality, indent=2, default=str) + "\n"
+        )
+        from apps.graph.management.commands.run_competency_queries import (
+            run as run_competency,
+        )
+
+        (out / "reports/competency-queries.json").write_text(
+            json.dumps(run_competency(), indent=2) + "\n"
         )
 
         facts = {

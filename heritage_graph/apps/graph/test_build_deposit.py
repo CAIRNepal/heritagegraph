@@ -42,6 +42,7 @@ class BuildDepositTest(TestCase):
             "zenodo.json",
             "SHA256SUMS",
             "manifest.json",
+            "reports/competency-queries.json",
         ):
             self.assertTrue((out / rel).is_file(), rel)
         quads = list(
@@ -63,3 +64,17 @@ class BuildDepositTest(TestCase):
         (out / "README.md").write_text("tampered")
         with self.assertRaises(CommandError):
             call_command("build_deposit", check=out, stdout=StringIO())
+
+
+class CompetencyQueryParseTest(TestCase):
+    def test_every_question_is_parsed_with_its_graphs(self):
+        from apps.graph.management.commands.run_competency_queries import (
+            QUERIES,
+            parse,
+        )
+
+        questions = parse(QUERIES.read_text())
+        self.assertEqual([q["id"] for q in questions], [f"CQ{i}" for i in range(1, 11)])
+        for q in questions:
+            self.assertIn("PREFIX rdf:", q["sparql"])
+            self.assertNotIn("\n# ", q["sparql"])
