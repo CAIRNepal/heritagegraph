@@ -284,11 +284,16 @@ def _enrich_curated(instance, labels: dict, media: list, qid: str, ent: dict, re
     if media and not instance.media:
         instance.media = media
         changed.append("media")
-    note = f"Labels{' and image' if media else ''} added from {_citation(qid, ent, retrieved)}"
-    citation = (instance.source_citation or "").strip()
-    if changed and f"Wikidata {qid}" not in citation:
-        instance.source_citation = f"{citation}\n{note}".strip()
-        changed.append("source_citation")
+    # What Wikidata supplied supports these fields only, not the record's own
+    # content, so it is recorded per field rather than in source_citation.
+    if changed:
+        cite = _citation(qid, ent, retrieved)
+        sources = dict(instance.field_sources or {})
+        for field in ("labels", "media"):
+            if field in changed:
+                sources[field] = cite
+        instance.field_sources = sources
+        changed.append("field_sources")
     if changed:
         instance.save(update_fields=changed)
     return bool(changed)
