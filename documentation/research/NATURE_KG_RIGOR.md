@@ -138,6 +138,10 @@ Open, in the ontology rather than the data (raise upstream):
 Until those are settled, `RDF_SHACL_STRICT_ON_WRITE` stays off: strict mode
 would refuse every relationship belief.
 
+Both changes are written up, with the YAML diff, in
+[`../ontology/UPSTREAM_PROPOSALS.md`](../ontology/UPSTREAM_PROPOSALS.md). With
+them applied to the shapes, the published graph conforms with 0 violations.
+
 ## Write permissions
 
 Audited endpoint by endpoint (every POST/PUT/PATCH/DELETE route, resolved
