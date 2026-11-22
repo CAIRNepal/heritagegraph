@@ -40,6 +40,17 @@ from django.db.models import Q
 PUBLISHED = ("accepted", "merged", "published")
 WIKIDATA_CONTRIBUTOR = "wikidata_import"
 
+# Writers whose confidence is a policy, not someone's judgement.
+SYSTEM_WRITERS = frozenset(
+    {
+        WIKIDATA_CONTRIBUTOR,
+        "seed_db",
+        "bootstrap_identity_clusters",
+        "danam_import",
+        "kg_test_seed",
+    }
+)
+
 
 def _record_models():
     from apps.cidoc_data.models import MetaData
@@ -108,7 +119,67 @@ def measure() -> dict:
             "wikidata_without_source": identity.filter(
                 contributed_by=WIKIDATA_CONTRIBUTOR, source__isnull=True
             ).count(),
+            **_identity_resolution(),
         },
+        "beyond_wikidata": {
+            # The share of the graph that Wikidata does not already hold: the
+            # platform's own contribution, as opposed to restructured import.
+            "records": n_records - records.get("wikidata import", 0),
+            "records_share": round(
+                (n_records - records.get("wikidata import", 0)) / n_records, 4
+            )
+            if n_records
+            else None,
+            "claims": claims.exclude(contributed_by=WIKIDATA_CONTRIBUTOR).count(),
+            "claims_share": round(
+                claims.exclude(contributed_by=WIKIDATA_CONTRIBUTOR).count()
+                / claims.count(),
+                4,
+            )
+            if claims.count()
+            else None,
+        },
+        "confidence_basis": {
+            # A confidence a person stated is evidence about the claim; one an
+            # importer assigned is an editorial default. Analyses must not mix them.
+            "stated_by_contributor": dict(
+                Counter(
+                    claims.exclude(contributed_by__in=SYSTEM_WRITERS)
+                    .exclude(contributed_by__startswith="system-")
+                    .values_list("confidence", flat=True)
+                )
+            ),
+            "assigned_by_policy": dict(
+                Counter(
+                    claims.filter(
+                        Q(contributed_by__in=SYSTEM_WRITERS)
+                        | Q(contributed_by__startswith="system-")
+                    ).values_list("confidence", flat=True)
+                )
+            ),
+        },
+    }
+
+
+def _identity_resolution() -> dict:
+    """How identity clustering stands: singletons, merges and competing clusters."""
+    from apps.cidoc_data.models import HeritageAssertion
+
+    rows = HeritageAssertion.objects.filter(asserted_property__startswith="identity.")
+    accepted = rows.filter(
+        reconciliation_status="accepted", entity_cluster__isnull=False
+    )
+    members = Counter(accepted.values_list("entity_cluster_id", flat=True))
+    per_record = Counter(accepted.values_list("content_type_id", "object_id"))
+    return {
+        "clusters": len(members),
+        "singleton_clusters": sum(1 for n in members.values() if n == 1),
+        "multi_member_clusters": sum(1 for n in members.values() if n > 1),
+        "records_in_competing_clusters": sum(1 for n in per_record.values() if n > 1),
+        "superseded_memberships": rows.filter(
+            reconciliation_status="superseded"
+        ).count(),
+        "by_writer": dict(Counter(accepted.values_list("contributed_by", flat=True))),
     }
 
 
@@ -211,7 +282,9 @@ def withdraw(manifest_path: Path, actor) -> dict:
             reconciliation_status="accepted", source__isnull=True
         ).exclude(asserted_property__startswith="identity.")
         for ha in claims:
-            manifest["claims"].append({"pk": str(ha.pk), "status": ha.reconciliation_status})
+            manifest["claims"].append(
+                {"pk": str(ha.pk), "status": ha.reconciliation_status}
+            )
             ha.reconciliation_status = "pending"
             ha.save(update_fields=["reconciliation_status", "updated_at"])
 
@@ -309,4 +382,21 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Identity bookkeeping (not claims about heritage): {i['accepted']}, "
             f"of which Wikidata without source: {i['wikidata_without_source']}"
+        )
+        self.stdout.write(
+            f"  clusters {i['clusters']} ({i['singleton_clusters']} singletons, "
+            f"{i['multi_member_clusters']} with several records); records in "
+            f"competing clusters: {i['records_in_competing_clusters']}; superseded "
+            f"memberships: {i['superseded_memberships']}"
+        )
+        b, cb = report["beyond_wikidata"], report["confidence_basis"]
+        self.stdout.write(
+            f"Beyond Wikidata: {b['records']} records "
+            f"({(b['records_share'] or 0):.0%}), "
+            f"{b['claims']} claims ({(b['claims_share'] or 0):.0%})"
+        )
+        self.stdout.write(
+            "Confidence stated by contributors: "
+            f"{cb['stated_by_contributor'] or 'none'}; "
+            f"assigned by import policy: {cb['assigned_by_policy'] or 'none'}"
         )

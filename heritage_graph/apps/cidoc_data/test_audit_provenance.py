@@ -33,7 +33,9 @@ class AuditProvenanceTest(TestCase):
             status="accepted",
             contributor="wikidata_import",
             source=self.wikidata,
-            source_citation="Wikidata Q11380 (revision 1), retrieved 2026-10-25, CC0 1.0.",
+            source_citation=(
+                "Wikidata Q11380 (revision 1), retrieved 2026-10-25, CC0 1.0."
+            ),
         )
         self.seed = Deity.objects.create(name="Seeded", status="accepted")
         self.sourced = Tradition.objects.create(
@@ -111,3 +113,39 @@ class AuditProvenanceTest(TestCase):
         self.assertFalse(
             CulturalEntity.objects.filter(cidoc_object_id=self.seed.pk).exists()
         )
+
+
+@override_settings(RDF_SYNC_ENABLED=False)
+class AuditAddedValueTest(TestCase):
+    def test_beyond_wikidata_and_confidence_basis(self):
+        wd = DataSource.objects.create(name="Wikidata", source_type="web")
+        imported = Deity.objects.create(
+            name="Vishnu", status="accepted", contributor="wikidata_import", source=wd
+        )
+        ours = Deity.objects.create(
+            name="Local deity",
+            status="accepted",
+            contributor="author",
+            source_citation="Field notes.",
+        )
+        ct = ContentType.objects.get_for_model(Deity)
+        for subject, who, conf in (
+            (imported, "wikidata_import", "likely"),
+            (ours, "author", "certain"),
+        ):
+            HeritageAssertion.objects.create(
+                content_type=ct,
+                object_id=subject.pk,
+                asserted_property="note",
+                asserted_value="x",
+                source=wd,
+                reconciliation_status="accepted",
+                contributed_by=who,
+                confidence=conf,
+            )
+        m = measure()
+        self.assertEqual(m["beyond_wikidata"]["records"], 1)
+        self.assertEqual(m["beyond_wikidata"]["claims"], 1)
+        self.assertEqual(m["beyond_wikidata"]["claims_share"], 0.5)
+        self.assertEqual(m["confidence_basis"]["stated_by_contributor"], {"certain": 1})
+        self.assertEqual(m["confidence_basis"]["assigned_by_policy"], {"likely": 1})
